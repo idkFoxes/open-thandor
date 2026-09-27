@@ -436,18 +436,17 @@ Package_DeleteEntry_Fail:
 
 
 /* Address: 0x0040EE30.
-   Ownership: assets/package/runtime.
-   Purpose: Loads any package or loose-file asset into a newly allocated buffer. The returned allocation is untyped
-   at this layer; callers cast it to gfx, fld, lev, mdl, sound, text, and other asset types. CF reports success or
-   failure.
-   Local calls: Package_FindEntryAcrossMounts, Package_DecodeEntryInto.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path].
+   Loads an asset into a newly allocated buffer: from the first mounted package that has the path, otherwise as
+   a loose file (first relative to the executable directory, then as given). The buffer is untyped here;
+   callers cast it to their gfx, fld, lev, mdl, sound, text, ... layout. CF set: bufferOrError is an error code.
 */
 PackageLoadResult __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(uint16_t *path)
 
 {
   PckEntryHeader *entry;
-  uint8_t *destination;
+  /* the loose file's handle or the package entry's buffer; on failure the error code */
+  uint8_t *handleBufferOrError;
+  /* the loose file's size, then the error code of the failed step */
   uint8_t *byteCountOrError;
   ArenaAllocResult allocResult;
   PackageDecodeResult decodeResult;
@@ -465,26 +464,27 @@ PackageLoadResult __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(uint16_t *
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    destination = (uint8_t *)openResult.handleOrError;
+    handleBufferOrError = (uint8_t *)openResult.handleOrError;
     if (openResult.failed) {
       openResult = g_FileSystemOpen(0,path);
-      destination = (uint8_t *)openResult.handleOrError;
+      handleBufferOrError = (uint8_t *)openResult.handleOrError;
       if (openResult.failed) goto Package_LoadEntry_Fail;
     }
-    sizeResult = g_FileSystemGetSize(destination);
+    sizeResult = g_FileSystemGetSize(handleBufferOrError);
     byteCountOrError = (uint8_t *)sizeResult.sizeOrError;
     if (!sizeResult.failed) {
       allocResult = g_MemoryApi.alloc((uint32_t)byteCountOrError);
       if (allocResult.failed) {
+        /* the requested size becomes the detail of the out-of-memory message */
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)byteCountOrError,g_FatalErrorDetail1Utf16);
-        byteCountOrError = (uint8_t *)0x5;
+        byteCountOrError = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
       }
       else {
-        readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,destination);
+        readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,handleBufferOrError);
         byteCountOrError = (uint8_t *)readResult.valueOrError;
         if (!readResult.failed) {
-          g_FileSystemClose(destination);
+          g_FileSystemClose(handleBufferOrError);
           successResult.failed = false;
           successResult.bufferOrError = (uint8_t *)allocResult.payloadOrError;
           return successResult;
@@ -492,24 +492,25 @@ PackageLoadResult __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(uint16_t *
         g_MemoryApi.free((void *)allocResult.payloadOrError);
       }
     }
-    g_FileSystemClose(destination);
-    destination = byteCountOrError;
+    g_FileSystemClose(handleBufferOrError);
+    handleBufferOrError = byteCountOrError;
   }
   else {
-    destination = (uint8_t *)0x5;
-    if (entry->packedSize < 0x800001) {
+    handleBufferOrError = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
+    /* the packed data is staged in the package scratch buffer, so it must fit there */
+    if (entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1) {
       allocResult = g_MemoryApi.alloc(entry->unpackedSize);
-      destination = (uint8_t *)allocResult.payloadOrError;
+      handleBufferOrError = (uint8_t *)allocResult.payloadOrError;
       if (!allocResult.failed) {
-        decodeResult = Package_DecodeEntryInto(destination,entry,findResult.fileHandle);
+        decodeResult = Package_DecodeEntryInto(handleBufferOrError,entry,findResult.fileHandle);
         if (!decodeResult.failed) {
           successResult.failed = false;
-          successResult.bufferOrError = destination;
+          successResult.bufferOrError = handleBufferOrError;
           return successResult;
         }
         byteCountOrError = (uint8_t *)decodeResult.valueOrError;
-        g_MemoryApi.free(destination);
-        destination = byteCountOrError;
+        g_MemoryApi.free(handleBufferOrError);
+        handleBufferOrError = byteCountOrError;
       }
     }
   }
@@ -518,12 +519,12 @@ Package_LoadEntry_Fail:
     /* open-thandor diagnostics: first failed loads with their caller stack */
     static int loggedFailures;
     if (loggedFailures++ < 8) {
-      Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, (uint32_t)destination);
-      Thandor_LogStack("  load failure stack", (uint32_t)destination);
+      Thandor_Log("Package_LoadEntry failed: \"%ls\" (error 0x%08X)", (wchar_t *)path, (uint32_t)handleBufferOrError);
+      Thandor_LogStack("  load failure stack", (uint32_t)handleBufferOrError);
     }
   }
   failureResult.failed = true;
-  failureResult.bufferOrError = destination;
+  failureResult.bufferOrError = handleBufferOrError;
   return failureResult;
 }
 

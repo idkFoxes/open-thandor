@@ -12,6 +12,14 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/commands. */
+
+/* g_UiCommandRuntimeFlags bits that end the in-game session loop (InGameRuntime_RunSessionUntilExit) */
+#define UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING 0x800 /* an end trigger fired and chose the end movie
+                                                           (set in gameplay/session/runtime.c) */
+#define UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED 0x10000 /* command 150 with flag bit 1: the session is closed
+                                                          (InGameCommand150_HandlePlayerDepartureAndOwnership) */
+#define UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT 0x20000 /* command 150 reported the local player's departure */
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056DB40 */

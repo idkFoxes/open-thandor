@@ -166,14 +166,13 @@ Resource_Load_ReturnOpenAllocationOrDecodeResult:
 
 
 /* Address: 0x0040F1D0.
-   Ownership: assets/resource/runtime.
-   Purpose: Handles resource release.
+   Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap. Unlike a direct
+   g_MemoryApi.free call it keeps EAX, ECX and EDX, so register-convention callers need not save them.
 */
-void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *allocation)
+void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *resourceBuffer)
 
 {
-  g_MemoryApi.free(allocation);
-  return;
+  g_MemoryApi.free(resourceBuffer);
 }
 
 

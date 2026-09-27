@@ -7,7 +7,7 @@ digraph thandor {
   "FrontendSessionAction_ResetNetworkAndReturnToMainPage" [label="0x0054C770\nFrontendSessionAction_ResetNetworkAndReturnToMainPage"];
   "FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag" [label="0x0054D0B0\nFrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag"];
   "FrontendSession_SetGameSpeedPercent" [label="0x00544250\nFrontendSession_SetGameSpeedPercent"];
-  "FrontendSession_ShowPage9WithCompactLayout" [label="0x0054A790\nFrontendSession_ShowPage9WithCompactLayout"];
+  "FrontendSession_ShowQuitConfirmPage" [label="0x0054A790\nFrontendSession_ShowQuitConfirmPage"];
   "FrontendTransferPage_ResetSessionOpenAndRequestMailbox" [label="0x0054D2E0\nFrontendTransferPage_ResetSessionOpenAndRequestMailbox"];
   "FrontendSessionList_DecrementExpiryAndCompactRows" [label="0x0054E3A0\nFrontendSessionList_DecrementExpiryAndCompactRows"];
   "FrontendSession_PeriodicTick" [label="0x00565670\nFrontendSession_PeriodicTick"];

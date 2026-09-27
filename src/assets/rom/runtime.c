@@ -11,15 +11,11 @@
 /* Implementation ownership: assets/rom/runtime. */
 
 /* Address: 0x005452A0.
-   Ownership: assets/rom/runtime.
-   Purpose: Executes one indexed frontend ROM action record, including optional activation sound, queued action
-   dispatch, transition parameter copying, ROM record lookup, transition initialization, and visibility updates.
-   Typed parameters: p5 recordIndex→RomRecordTableIndex_V331. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged. Typed parameters: p4 suppressActivationSound→FrontendBooleanState32_V342.
-   Local calls: RomRegistry_FindRecordById, FrontendRomTransition_InitializeFromRecord,
-   RomRuntime_UpdateRecordVisibilityAndDescriptors.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   Executes entry recordIndex of the active frontend ROM action table (a menu-room hotspot or a scripted entry
+   from the frontend main loop): plays its click sound, then either posts its page action / a close request, or
+   starts a camera flight from the current menu-room camera pose to the pose of its target ROM record.
+   Gameplay settings, page 9, credits and closing are refused in network sessions, network setup without a
+   network backend.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendRomActionTable_ExecuteRecord
@@ -27,55 +23,63 @@ FrontendRomActionTable_ExecuteRecord
           RomRecordTableIndex recordIndex)
 
 {
+  /* Action entry layout (FRONTEND_ROM_ACTION_* offsets): viewed as RomAssetRecordPrefix[] (12-byte elements),
+     record[2].recordId = +0x20 page action, record[3].byteSize = +0x24 keyframe count,
+     record[3].rootNodeOffsetOrPointer = +0x28 target ROM record id, record[3].recordId = +0x2C sound index,
+     +0x40 keyframes of 0x20 bytes each (record[5]..record[7] = keyframe 0). */
   RomAssetRecordPrefix *record;
   uint32_t copiedDword;
   RomRecordByteSize copiedByteSize;
   RomRecordId copiedRecordId;
   int frontendRootNode;
   RomAssetRecordPrefix *targetRecord;
-  int transitionSlotIndex;
-  void *source;
+  int lastKeyframeIndex;
+  void *menuRoomView;
   bool visibilityLookupFailed;
   RomRecordResult targetLookup;
-  RomRecordId actionOrCopiedValue;
-  RomRecordId recordId;
-  
+  RomRecordId pageActionOrCopiedDword;
+  RomRecordId targetRecordId;
+
   frontendRootNode = g_FrontendRootNode;
-  if (recordIndex < *(uint32_t *)(g_FrontendActiveRomRecordTable + 0x3c)) {
-    record = (RomAssetRecordPrefix *)(recordIndex * 0x200 + 0x200 + g_FrontendActiveRomRecordTable);
-    source = FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
-    recordId = record[3].rootNodeOffsetOrPointer;
-    actionOrCopiedValue = record[2].recordId;
-    if ((((((actionOrCopiedValue != 3) && (actionOrCopiedValue != 4)) && (actionOrCopiedValue != 9)) && (-1 < (int)actionOrCopiedValue)) ||
+  if (recordIndex < *(uint32_t *)(g_FrontendActiveRomRecordTable + FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET)) {
+    record = (RomAssetRecordPrefix *)(recordIndex * FRONTEND_ROM_ACTION_ENTRY_SIZE + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE +
+                                      g_FrontendActiveRomRecordTable);
+    menuRoomView = FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
+    targetRecordId = record[3].rootNodeOffsetOrPointer;
+    pageActionOrCopiedDword = record[2].recordId;
+    if ((((((pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) &&
+            (pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE)) &&
+           (pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_CREDITS)) && (-1 < (int)pageActionOrCopiedDword)) ||
         ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-         SESSION_NETWORK_ROLE_LOCAL)) && ((actionOrCopiedValue != 2 || (g_NetworkBackendInstanceCount != 0)))) {
+         SESSION_NETWORK_ROLE_LOCAL)) &&
+       ((pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE || (g_NetworkBackendInstanceCount != 0)))) {
       if ((record[3].recordId != 0) &&
          ((suppressActivationSound == 0 &&
-          ((DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId] !=
-           (DirectSoundVoiceSet *)0x0)))) {
+          ((DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId] != NULL)))) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId]
                   );
       }
-      if (recordId == 0) {
-        if ((int)actionOrCopiedValue < 0) {
+      if (targetRecordId == 0) {
+        if ((int)pageActionOrCopiedDword < 0) {
+          /* A negative action closes the menu-room view (only outside network sessions). */
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
               SESSION_NETWORK_ROLE_LOCAL) {
-            UiActionQueue_Enqueue(0,source);
+            UiActionQueue_Enqueue(0,menuRoomView);
           }
         }
-        else if (actionOrCopiedValue != 0) {
-          g_FrontendPendingPageAction = actionOrCopiedValue;
+        else if (pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_NONE) {
+          g_FrontendPendingPageAction = pageActionOrCopiedDword;
         }
       }
-      else if ((recordId != 0) && (1 < (int)record[3].byteSize)) {
-        transitionSlotIndex = record[3].byteSize - 1;
-        /* Snapshot of the menu room camera: WorldRuntimeContext.motion (+0x60) of menuRoomModelView,
-           positionX/Y/Z, positionMagnitude, headingAngle, pitchAngle. */
-        actionOrCopiedValue = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x64,RomRecordId);
+      else if ((targetRecordId != 0) && (1 < (int)record[3].byteSize)) {
+        lastKeyframeIndex = record[3].byteSize - 1;
+        /* Keyframe 0 = snapshot of the menu room camera: WorldRuntimeContext.motion (+0x60) of menuRoomModelView,
+           positionX/Y/Z, positionMagnitude, headingAngle, pitchAngle; its timeQ12 (+0x18) is 0. */
+        pageActionOrCopiedDword = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x64,RomRecordId);
         record[5].rootNodeOffsetOrPointer = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x60,uint32_t);
-        record[5].recordId = actionOrCopiedValue;
+        record[5].recordId = pageActionOrCopiedDword;
         copiedDword = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x6C,uint32_t);
         record[6].byteSize = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x68,RomRecordByteSize);
         record[6].rootNodeOffsetOrPointer = copiedDword;
@@ -83,21 +87,31 @@ FrontendRomActionTable_ExecuteRecord
         record[6].recordId = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x70,RomRecordId);
         record[7].byteSize = copiedByteSize;
         record[7].rootNodeOffsetOrPointer = 0;
-        targetLookup = RomRegistry_FindRecordById(recordId);
+        targetLookup = RomRegistry_FindRecordById(targetRecordId);
         targetRecord = targetLookup.recordOrError;
         if (!targetLookup.notFound) {
-          actionOrCopiedValue = record[2].recordId;
+          pageActionOrCopiedDword = record[2].recordId;
+          /* The six channels of the last keyframe become the target record's camera pose (+0x20..+0x34); its
+             timeQ12 comes from the action entry. */
           copiedByteSize = targetRecord[3].byteSize;
-          *(RomRecordId *)((int)record + transitionSlotIndex * 0x20 + 0x40) = targetRecord[2].recordId;
-          *(RomRecordByteSize *)((int)record + transitionSlotIndex * 0x20 + 0x44) = copiedByteSize;
+          *(RomRecordId *)((int)record + lastKeyframeIndex * FRONTEND_ROM_ACTION_KEYFRAME_SIZE + 0x40) =
+               targetRecord[2].recordId;
+          *(RomRecordByteSize *)((int)record + lastKeyframeIndex * FRONTEND_ROM_ACTION_KEYFRAME_SIZE + 0x44) =
+               copiedByteSize;
           copiedRecordId = targetRecord[3].recordId;
-          *(uint32_t *)((int)record + transitionSlotIndex * 0x20 + 0x48) = targetRecord[3].rootNodeOffsetOrPointer;
-          *(RomRecordId *)((int)record + transitionSlotIndex * 0x20 + 0x4c) = copiedRecordId;
+          *(uint32_t *)((int)record + lastKeyframeIndex * FRONTEND_ROM_ACTION_KEYFRAME_SIZE + 0x48) =
+               targetRecord[3].rootNodeOffsetOrPointer;
+          *(RomRecordId *)((int)record + lastKeyframeIndex * FRONTEND_ROM_ACTION_KEYFRAME_SIZE + 0x4c) =
+               copiedRecordId;
           copiedDword = targetRecord[4].rootNodeOffsetOrPointer;
-          *(RomRecordByteSize *)((int)record + transitionSlotIndex * 0x20 + 0x50) = targetRecord[4].byteSize;
-          *(uint32_t *)((int)record + transitionSlotIndex * 0x20 + 0x54) = copiedDword;
-          FrontendRomTransition_InitializeFromRecord(recordId,record);
-          visibilityLookupFailed = RomRuntime_UpdateRecordVisibilityAndDescriptors(actionOrCopiedValue,recordId);
+          *(RomRecordByteSize *)((int)record + lastKeyframeIndex * FRONTEND_ROM_ACTION_KEYFRAME_SIZE + 0x50) =
+               targetRecord[4].byteSize;
+          *(uint32_t *)((int)record + lastKeyframeIndex * FRONTEND_ROM_ACTION_KEYFRAME_SIZE + 0x54) = copiedDword;
+          /* The first argument is stored as the pending transition value, i.e. the record to activate when
+             the camera flight ends (see FrontendRomTransition_ProcessPendingRecord). */
+          FrontendRomTransition_InitializeFromRecord(targetRecordId,record);
+          visibilityLookupFailed =
+               RomRuntime_UpdateRecordVisibilityAndDescriptors(pageActionOrCopiedDword,targetRecordId);
           if (visibilityLookupFailed) {
             g_FrontendRomTransitionPendingCount = 0;
           }
@@ -196,30 +210,31 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
 
 
 /* Address: 0x00547FC0.
-   Ownership: assets/rom/runtime.
-   Purpose: Under the frontend ROM-transition spin lock, completes a pending transition request, activates the
-   returned record ID when successful, frees the pending allocation, and clears the pending count.
-   Local calls: FrontendRomTransition_ActivateRecordById.
-   Cross-module calls: WorldMotionSpline_EvaluateAndApplyAtTime [core/math/interpolation].
+   Once per frontend frame: while a menu-room camera flight is pending, moves the camera along the flight
+   spline for the elapsed ticks; when the spline has ended, clears the pending value and, if it is a record id
+   (not negative), activates that ROM record. The elapsed ticks are advanced by the frontend timer callback
+   FrontendRuntime_IncrementActiveTickCounter; the body runs under the frontend tick spin lock.
 */
 void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(void)
 
 {
-  RomRecordId recordId;
-  WorldRuntimeContext *worldRuntime;
+  RomRecordId pendingRecordId;
+  WorldRuntimeContext *menuRoomView;
   bool splineStillRunning;
   StatusResult activateResult;
-  
+
   g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
-  recordId = g_FrontendRomTransitionPendingCount;
-  worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
+  /* g_FrontendRomTransitionPendingCount holds the target record id of the running flight (-1 = none to
+     activate, 0 = no flight). */
+  pendingRecordId = g_FrontendRomTransitionPendingCount;
+  menuRoomView = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
   if (g_FrontendRomTransitionPendingCount != 0) {
     splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,
                        g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
-                       worldRuntime);
-    if ((!splineStillRunning) && (g_FrontendRomTransitionPendingCount = 0, -1 < (int)recordId)) {
-      activateResult = FrontendRomTransition_ActivateRecordById(recordId,worldRuntime);
+                       menuRoomView);
+    if ((!splineStillRunning) && (g_FrontendRomTransitionPendingCount = 0, -1 < (int)pendingRecordId)) {
+      activateResult = FrontendRomTransition_ActivateRecordById(pendingRecordId,menuRoomView);
       FatalError_ExitIfFailed(activateResult.valueOrError,activateResult.failed);
     }
   }
@@ -275,15 +290,14 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRomRegistry_ClearAndReleaseNest
 
 
 /* Address: 0x00548720.
-   Ownership: assets/rom/runtime.
-   Purpose: If the ROM transition enable state is nonzero, publishes the exact transition state value 0x10000000.
-   No registers or flags are deliberately replaced by the prototype.
+   Skips a running menu-room camera flight: sets the elapsed ticks far past the last keyframe time, so the next
+   FrontendRomTransition_ProcessPendingRecord finds the spline finished and activates the target record.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendRomTransition_RequestStop(void)
 
 {
   if (g_FrontendRomTransitionPendingCount != 0) {
-    g_FrontendRomTransitionElapsedTicks = 0x10000000;
+    g_FrontendRomTransitionElapsedTicks = FRONTEND_ROM_TRANSITION_SKIP_TICKS;
   }
   return;
 }

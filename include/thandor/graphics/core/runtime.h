@@ -17,6 +17,10 @@
    adapters carry their real GUID, the primary display driver an all-zero one (passed as NULL). */
 #define GRAPHICS_ADAPTER_GUID_GLIDE 1
 
+/* Frames for g_GraphicsCursorSetFrame (GraphicsCursor_SetFrameIndex). */
+#define GRAPHICS_CURSOR_FRAME_ARROW 0
+#define GRAPHICS_CURSOR_FRAME_BUSY 6 /* shown while something loads (credits, session start, savegame list) */
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00576C30 */

@@ -39,6 +39,13 @@
 #define FATAL_ERROR_DIRECTINPUT_SETUP 0x25 /* DirectInputMouse_Init: DirectInputCreateA or a mouse-device
                                               setup call failed; the stage number (0..4) is left in
                                               g_PackageLastErrorPath */
+/* Generic failure code returned with CF set by many helpers (package mount/lookup, PCK codec, text copies,
+   runtime pools); InGameRuntime_RunSessionUntilExit returns it when the UI root stack runs empty */
+#define FATAL_ERROR_GENERAL_FAILURE 0x14
+/* Out of memory: the arena allocation failed (Package_LoadEntry, Resource_Load and the FileSystem whole-file
+   loaders then leave the requested byte count in g_FatalErrorDetail1Utf16); the package loaders also return
+   it for entries whose packed size exceeds PACKAGE_SCRATCH_BUFFER_BYTES */
+#define FATAL_ERROR_OUT_OF_MEMORY 0x05
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

@@ -349,19 +349,16 @@ void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
 
 
 /* Address: 0x004AF920.
-   Ownership: ui/controls/layout.
-   Purpose: Processes keyboard and pointer events, updates the active UI, dispatches queued actions, draws, and
-   presents one complete frame without changing the external synchronization state.
-   Local calls: UiFrame_Update, UiFrame_Draw.
-   Cross-module calls: UiKeyboard_DispatchPendingEvents [ui/controls/input], UiPointer_DispatchPendingEvents
-   [ui/controls/input], UiActionQueue_DispatchPending [ui/core/runtime].
+   Runs one complete UI frame: dispatches pending keyboard and pointer events, runs the pending frame ticks,
+   dispatches queued UI actions, draws and presents. Unlike UiFrame_ProcessAndPresentWithLockTransition it does
+   not touch the UI frame lock itself.
 */
 void __thandor_void_preserve_eax_ecx_edx UiFrame_ProcessAndPresent(void)
 
 {
   UiKeyboard_DispatchPendingEvents();
   UiPointer_DispatchPendingEvents();
-  UiFrame_Update(0);
+  UiFrame_Update(0); /* 0: pump messages once, do not wait for a frame tick */
   UiActionQueue_DispatchPending();
   UiFrame_Draw();
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
@@ -1165,9 +1162,8 @@ UiImageControl_LayoutChildrenToParent(UiImageControl *control)
 
 
 /* Address: 0x004AF3B0.
-   Ownership: ui/controls/layout.
-   Purpose: Flushes keyboard and pointer input through their installed service slots, then clears the pending UI
-   frame-tick counter.
+   Discards all buffered keyboard and pointer input and the frame ticks that piled up, so a UI loop that starts
+   (or resumes after a movie, session or error box) neither reacts to stale input nor catches up on old ticks.
 */
 void __thandor_void_preserve_eax_ecx_edx UiFrame_FlushInputAndResetPendingTicks(void)
 
@@ -1994,20 +1990,18 @@ UiWindow_BlitTiledHorizontalEdge
 
 
 /* Address: 0x004B14D0.
-   Ownership: ui/controls/layout.
-   Purpose: Clears the dirty-rectangle count and appends every UiRootNode in the active stack when invalidation is
-   not suppressed.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Marks the whole screen for redraw: drops the collected dirty rectangles and invalidates every root on the UI
+   root stack, top to bottom. Does nothing while invalidation is suppressed.
 */
 void __thandor_void_preserve_ecx_edx UiRootStack_InvalidateAll(void)
 
 {
-  UiRootNode *node;
-  
+  UiRootNode *root;
+
   if (g_UiInvalidationSuppressed == 0) {
     g_UiDirtyRectCount = 0;
-    for (node = g_UiRootNode; node != (UiRootNode *)0xffffffff; node = node->previousRoot) {
-      UiNode_InvalidateRoot(&node->base);
+    for (root = g_UiRootNode; root != UI_ROOT_STACK_END; root = root->previousRoot) {
+      UiNode_InvalidateRoot(&root->base);
     }
   }
   return;

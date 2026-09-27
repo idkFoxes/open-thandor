@@ -39,7 +39,7 @@ FrontendSession_SetGameSpeedPercent
           (uint32_t argument1,uint32_t argument2,uint32_t argument3,GameSpeedPercent gameSpeedPercent);
 
 /* 0x0054A790 */
-void __thandor_preserve_eax FrontendSession_ShowPage9WithCompactLayout(FrontendUiImage *frontendUi);
+void __thandor_preserve_eax FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi);
 
 /* 0x0054D2E0 */
 void __thandor_preserve_eax

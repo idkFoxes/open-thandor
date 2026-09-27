@@ -42,10 +42,11 @@ uint32_t WidePath_GetExtensionCode(uint16_t *path)
 }
 
 /* Address: 0x0040F2B0.
-   Ownership: core/text/path.
-   Purpose: CF remains clear. Typed parameters: p0 extensionCode→PackedFileExtensionCode32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Replaces the extension of the final path component with the packed code (one character per byte, as
+   WidePath_GetExtensionCode returns it, e.g. 0x786667 = "gfx"), appending '.' when there is none. Asset
+   loaders use it to derive sibling files (.gfx/.pal/.dat, .lev/.fld, ...). Always returns with CF clear.
+   Only three characters come out right: a fourth byte would be merged into the third code unit (all callers
+   pass three-character codes).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
@@ -53,23 +54,27 @@ WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path
 {
   uint32_t *extensionWriteCursor;
   short currentCodeUnit;
-  
+
+  /* A backslash restarts the search, so only a '.' in the last component counts. */
   do {
-    extensionWriteCursor = (uint32_t *)0x0;
+    extensionWriteCursor = NULL;
     while( true ) {
       currentCodeUnit = (short)*(uint32_t *)path;
       if (currentCodeUnit == 0) {
-        if (extensionWriteCursor == (uint32_t *)0x0) {
-          *path = 0x2e;
+        if (extensionWriteCursor == NULL) {
+          *path = '.';
           extensionWriteCursor = (uint32_t *)((int)path + 2);
         }
+        /* first two code units: characters 1 and 2 */
         *extensionWriteCursor = ((extensionCode & 0xff) << 8 | (extensionCode >> 8) << 0x18) >> 8;
+        /* code units 3 and 4: the upper 16 bits unspread (char3 | char4 << 8, then 0), which also writes
+           the terminator for a three-character extension */
         extensionWriteCursor[1] = extensionCode >> 0x10;
         return false;
       }
       path = (uint16_t *)((int)path + 2);
-      if (currentCodeUnit == 0x5c) break;
-      if (currentCodeUnit == 0x2e) {
+      if (currentCodeUnit == '\\') break;
+      if (currentCodeUnit == '.') {
         extensionWriteCursor = (uint32_t *)path;
       }
     }
@@ -134,9 +139,11 @@ WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path
 
 
 /* Address: 0x0040F3C0.
-   Ownership: core/text/path.
-   Purpose: Copies a bounded directory, appends a backslash when needed, then appends a bounded leaf name into the
-   destination.
+   Builds "directory\leaf" in destination: copies the directory without its terminator, adds a backslash
+   unless it already ends in one (nothing for an empty directory), then copies the leaf with its terminator.
+   The loaders use it to try a file relative to the executable directory before the plain path. A directory
+   without a terminator in its first WIDE_PATH_MAX_CODE_UNITS units writes nothing; such a leaf leaves the
+   directory part unterminated. The destination size is not checked (up to 2 * 256 units).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory)
@@ -146,50 +153,52 @@ WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *
   int copyCodeUnitsRemaining;
   int leafCodeUnitsRemaining;
   uint16_t *directoryScanCursor;
-  uint16_t *currentPathScanCursor;
+  uint16_t *leafScanCursor;
   bool terminatorFound;
   bool leafTerminatorFound;
-  
+
+  /* REPNE SCASW over the directory */
   terminatorFound = true;
-  codeUnitsRemaining = 0x100;
+  codeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS;
   directoryScanCursor = directory;
   do {
     if (codeUnitsRemaining == 0) break;
-    codeUnitsRemaining = codeUnitsRemaining + -1;
+    codeUnitsRemaining--;
     terminatorFound = *directoryScanCursor == 0;
-    directoryScanCursor = directoryScanCursor + 1;
+    directoryScanCursor++;
   } while (!terminatorFound);
   if (terminatorFound) {
-    copyCodeUnitsRemaining = 0xff - codeUnitsRemaining;
+    /* directory length without the terminator */
+    copyCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS - 1 - codeUnitsRemaining;
     if (copyCodeUnitsRemaining != 0) {
-      for (; copyCodeUnitsRemaining != 0; copyCodeUnitsRemaining = copyCodeUnitsRemaining + -1) {
+      for (; copyCodeUnitsRemaining != 0; copyCodeUnitsRemaining--) {
         *destination = *directory;
-        directory = directory + 1;
-        destination = destination + 1;
+        directory++;
+        destination++;
       }
-      if (destination[-1] != 0x5c) {
-        *destination = 0x5c;
-        destination = destination + 1;
+      if (destination[-1] != '\\') {
+        *destination = '\\';
+        destination++;
       }
     }
-    leafCodeUnitsRemaining = 0x100;
+    leafCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS;
     leafTerminatorFound = true;
-    currentPathScanCursor = leaf;
+    leafScanCursor = leaf;
     do {
       if (leafCodeUnitsRemaining == 0) break;
-      leafCodeUnitsRemaining = leafCodeUnitsRemaining + -1;
-      leafTerminatorFound = *currentPathScanCursor == 0;
-      currentPathScanCursor = currentPathScanCursor + 1;
+      leafCodeUnitsRemaining--;
+      leafTerminatorFound = *leafScanCursor == 0;
+      leafScanCursor++;
     } while (!leafTerminatorFound);
     if (leafTerminatorFound) {
-      for (leafCodeUnitsRemaining = 0x100 - leafCodeUnitsRemaining; leafCodeUnitsRemaining != 0; leafCodeUnitsRemaining = leafCodeUnitsRemaining + -1) {
+      /* leaf length including the terminator */
+      for (leafCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS - leafCodeUnitsRemaining; leafCodeUnitsRemaining != 0; leafCodeUnitsRemaining--) {
         *destination = *leaf;
-        leaf = leaf + 1;
-        destination = destination + 1;
+        leaf++;
+        destination++;
       }
     }
   }
-  return;
 }
 
 

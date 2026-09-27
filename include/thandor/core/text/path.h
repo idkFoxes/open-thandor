@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/text/path. */
+/* Engine path buffers hold at most 256 UTF-16 code units (0x200 bytes) including the terminator, e.g.
+   g_FileSystemCombinedPathScratchUtf16 and g_ExecutableDirectoryUtf16. */
+#define WIDE_PATH_MAX_CODE_UNITS 0x100
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0040F240 */

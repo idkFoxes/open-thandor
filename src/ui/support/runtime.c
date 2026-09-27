@@ -139,25 +139,22 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void)
 
 
 /* Address: 0x00548EC0.
-   Ownership: ui/support/runtime.
-   Purpose: Switches to the busy cursor, loads gfx\panel\credits.gfx, allocates two width*height work buffers,
-   initializes the credits runtime, activates its UI page, and hides the cursor. Any failure releases partial
-   resources, clears the three pointers, and restores cursor frame zero.
-   Cross-module calls: UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout], SoftwareMaskBuffer_Clear
-   [graphics/backend/software], UiPageStack_SetActiveIndex [ui/controls/layout].
+   Opens the credits screen (FRONTEND_PAGE_ACTION_CREDITS): loads gfx\panel\credits.gfx and two work buffers of
+   its width * height bytes for the mask effect, then switches the frontend view to the credits page and hides
+   the cursor. On any failure the partial resources are released and the menu stays as it was.
 */
 void __thandor_void_preserve_eax_ecx_edx
 CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 
 {
-  uint32_t bytes;
+  uint32_t bufferBytes;
   TextureSourceLoadResult textureLoadResult;
   ArenaAllocResult bufferAllocResult;
   TextureSizeResult textureSizeResult;
-  
-  g_GraphicsCursorSetFrame(6);
-  (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
-  (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)0x0;
+
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
+  (frontendCreditsView->creditsMaskRuntime).textureSource = NULL;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = NULL;
   (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
   (frontendCreditsView->creditsMaskRuntime).patternState54 = 0;
   (frontendCreditsView->creditsMaskRuntime).patternState58 = 0;
@@ -166,17 +163,19 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   if (!textureLoadResult.failed) {
     (frontendCreditsView->creditsMaskRuntime).textureSource = textureLoadResult.textureSource;
     textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,textureLoadResult.textureSource);
-    bytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
-    bufferAllocResult = g_MemoryApi.alloc(bytes);
+    bufferBytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
+    bufferAllocResult = g_MemoryApi.alloc(bufferBytes);
     if (!bufferAllocResult.failed) {
       (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)bufferAllocResult.payloadOrError;
-      bufferAllocResult = g_MemoryApi.alloc(bytes);
+      bufferAllocResult = g_MemoryApi.alloc(bufferBytes);
       if (!bufferAllocResult.failed) {
+        /* unresolved64 is the second work buffer */
         (frontendCreditsView->creditsMaskRuntime).unresolved64 = bufferAllocResult.payloadOrError;
         UiFrame_FlushInputAndResetPendingTicks();
         SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
+        /* page 1 of the frontend view-mode stack: the full-screen view instead of the menu room */
         UiPageStack_SetActiveIndex(1,&frontendCreditsView->pageStack);
-        g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
+        g_CursorVisibilityToken--;
         return;
       }
     }
@@ -185,11 +184,10 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
             ((frontendCreditsView->creditsMaskRuntime).textureSource);
   g_MemoryApi.free((frontendCreditsView->creditsMaskRuntime).maskPixels);
   g_MemoryApi.free((void *)(frontendCreditsView->creditsMaskRuntime).unresolved64);
-  (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
-  (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)0x0;
+  (frontendCreditsView->creditsMaskRuntime).textureSource = NULL;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = NULL;
   (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
-  g_GraphicsCursorSetFrame(0);
-  return;
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
 }
 
 

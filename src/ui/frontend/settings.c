@@ -11,162 +11,166 @@
 /* Implementation ownership: ui/frontend/settings. */
 
 /* Address: 0x00549250.
-   Ownership: ui/frontend/settings.
-   Purpose: Activates task page 11, configures seven faction/player rows, selects the local player row, updates
-   responsive visibility, and patches localized task-description template 0x218C.
-   Local calls: FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], TextResource_Resolve
-   [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext].
+   Opens the "Choose faction" page (FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE) for the loaded level. The seven
+   roster rows are set up from the level: assignable factions get an active mode button ("Computer"), the other
+   active factions a visible but inactive row, unused rows are hidden and their faction slot cleared. The players
+   are then spread round-robin over the assignable factions (mode "Player"), the local player's play checkbox is
+   ticked, and the page's buttons are arranged for a local game, a network host or a client.
+   The row controls are reached through g_FrontendTaskAssignmentControlOffsets; relative to taskRowControls04C
+   (+0x4C) an offset - 4 is the control's nodeFlags, + 0 its state flags and + 8 its text resource id.
 */
 
 void __thandor_void_preserve_eax_ecx_edx
 FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *frontendRootPage)
 
 {
-  UiNodeFlags *compactLayoutFlags;
+  UiNodeFlags *menuRoomContextFlags;
   uint32_t rowControlOffset;
   UiNodeVtable *rootVtable;
   int localPlayerRuntimeId;
   FrontendLoadedLevelRuntimeImage370 *loadedLevel;
-  uint32_t activeCountOffsetOrLocalRow;
+  uint32_t activeCountOffsetOrLocalRow; /* active factions left, then a control offset, then the local row */
   uint32_t rowOrAssignmentIndex;
   uint32_t rowCursor;
   uint8_t *rowTextIdBytes;
-  uint32_t assignableCountOrOffset;
+  uint32_t assignableCountOrOffset; /* assignable factions left, then a control offset */
   FrontendPlayerRuntimeRecord *playerRecord;
   TextResolveResult titleText;
   TextResolveResult templateText;
   FrontendPlayerRuntimeBlockCount remainingPlayerRecords;
-  
-  UiPageStack_SetActiveIndex(0xb,&frontendRootPage->primaryPageStack);
-  if ((int)g_FramebufferWidth < 0x281) {
-    compactLayoutFlags = &(frontendRootPage->compactLayoutControl).nodeFlags;
-    *compactLayoutFlags = *compactLayoutFlags | 0x2000;
+
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_FACTION_SETUP,&frontendRootPage->primaryPageStack);
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
+    /* compactLayoutControl.nodeFlags is +0x3B4, the menu room view's contextFlags */
+    menuRoomContextFlags = &(frontendRootPage->compactLayoutControl).nodeFlags;
+    *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
   activeCountOffsetOrLocalRow = (g_FrontendLoadedLevelAsset->runtimeTail2E0).activeFactionCount;
   assignableCountOrOffset = (g_FrontendLoadedLevelAsset->runtimeTail2E0).assignableFactionCount;
+  /* Rows 1..assignable count: factions a player may take; mode button active, caption "Computer". */
   rowOrAssignmentIndex = 0;
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & ~FRONTEND_CONTROL_INACTIVE;
     rowTextIdBytes = frontendRootPage->taskRowControls04C + rowControlOffset + 8;
-    rowTextIdBytes[0] = 0x9a;
-    rowTextIdBytes[1] = 0x21;
-    rowTextIdBytes[2] = 0;
-    rowTextIdBytes[3] = 0;
+    *(uint32_t *)rowTextIdBytes = TEXT_ID_FACTION_MODE_COMPUTER;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowOrAssignmentIndex + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & ~FRONTEND_CONTROL_INACTIVE;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowOrAssignmentIndex + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbfd;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) &
+         ~(FRONTEND_CONTROL_INACTIVE | UI_SELECTABLE_SELECTED_OR_CHECKED);
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowOrAssignmentIndex + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
          *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowOrAssignmentIndex + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
     rowCursor = rowOrAssignmentIndex + 1;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
          *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowOrAssignmentIndex + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    activeCountOffsetOrLocalRow = activeCountOffsetOrLocalRow - 1;
-    assignableCountOrOffset = assignableCountOrOffset - 1;
+    activeCountOffsetOrLocalRow--;
+    assignableCountOrOffset--;
     rowOrAssignmentIndex = rowCursor;
   } while (assignableCountOrOffset != 0);
-  for (; activeCountOffsetOrLocalRow != 0; activeCountOffsetOrLocalRow = activeCountOffsetOrLocalRow - 1) {
+  /* Further active factions (computer only): mode button active, the rest of the row hidden and inactive. */
+  for (; activeCountOffsetOrLocalRow != 0; activeCountOffsetOrLocalRow--) {
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) & 0xfffffff7;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) & ~UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & ~FRONTEND_CONTROL_INACTIVE;
     rowTextIdBytes = frontendRootPage->taskRowControls04C + assignableCountOrOffset + 8;
-    rowTextIdBytes[0] = 0x9a;
-    rowTextIdBytes[1] = 0x21;
-    rowTextIdBytes[2] = 0;
-    rowTextIdBytes[3] = 0;
+    *(uint32_t *)rowTextIdBytes = TEXT_ID_FACTION_MODE_COMPUTER;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & ~FRONTEND_CONTROL_INACTIVE;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffffd;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) &
+         ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) | 0x400;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) | FRONTEND_CONTROL_INACTIVE;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
          *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
          *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    rowCursor = rowCursor + 1;
+    rowCursor++;
   }
-  for (; rowCursor < 7; rowCursor = rowCursor + 1) {
+  /* Unused rows up to 7: everything hidden and inactive, caption "No-one", faction slot cleared. */
+  for (; rowCursor < 7; rowCursor++) {
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | FRONTEND_CONTROL_INACTIVE;
     rowTextIdBytes = frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8;
-    rowTextIdBytes[0] = 0x99;
-    rowTextIdBytes[1] = 0x21;
-    rowTextIdBytes[2] = 0;
-    rowTextIdBytes[3] = 0;
+    *(uint32_t *)rowTextIdBytes = TEXT_ID_FACTION_MODE_NOBODY;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | FRONTEND_CONTROL_INACTIVE;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) &
+         ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | FRONTEND_CONTROL_INACTIVE;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
          *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
          *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] = 0;
   }
+  /* Colour buttons of rows 7..1 show the faction name of the level's player slot; none is selected. */
   do {
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8) =
          *(int *)((int)&loadedLevel->playerSlots[0].aiClassOrMode +
-                 g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]) + 0x2173 + rowCursor;
+                 g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]) + TEXT_ID_FACTION_NAME_BASE +
+         rowCursor;
     *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) &
+         ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     localPlayerRuntimeId = g_LocalPlayerRuntimeId;
-    rowCursor = rowCursor - 1;
+    rowCursor--;
   } while (rowCursor != 0);
+  /* Players round-robin over the assignable factions (as FrontendPlayerRuntime_InitializeFactionAssignments);
+     their rows switch to "Player". activeCountOffsetOrLocalRow ends as the local player's zero-based row. */
   rowOrAssignmentIndex = 1;
   activeCountOffsetOrLocalRow = 0;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -177,77 +181,80 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
     rowTextIdBytes = frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 0x4c);
     (playerRecord->factionAssignment).readyOrWaitState = 0;
     (playerRecord->factionAssignment).consensusValue = 0;
-    rowTextIdBytes[0x54] = 0x98;
-    rowTextIdBytes[0x55] = 0x21;
-    rowTextIdBytes[0x56] = 0;
-    rowTextIdBytes[0x57] = 0;
+    *(uint32_t *)(rowTextIdBytes + 0x54) = TEXT_ID_FACTION_MODE_PLAYER;
     if (localPlayerRuntimeId == playerRecord->playerRuntimeId) {
       activeCountOffsetOrLocalRow = rowOrAssignmentIndex - 1;
     }
-    rowOrAssignmentIndex = rowOrAssignmentIndex + 1;
-    playerRecord = playerRecord + 1;
+    rowOrAssignmentIndex++;
+    playerRecord++;
     if ((loadedLevel->runtimeTail2E0).assignableFactionCount < rowOrAssignmentIndex) {
       rowOrAssignmentIndex = rowOrAssignmentIndex - (loadedLevel->runtimeTail2E0).assignableFactionCount;
     }
-    remainingPlayerRecords = remainingPlayerRecords - 1;
+    remainingPlayerRecords--;
   } while (remainingPlayerRecords != 0);
+  /* tick and show the local player's play checkbox */
   *(uint32_t *)(frontendRootPage->taskRowControls04C +
            g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) =
        *(uint32_t *)(frontendRootPage->taskRowControls04C +
-                g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) | 2;
+                g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) |
+       UI_SELECTABLE_SELECTED_OR_CHECKED;
   *(uint32_t *)(frontendRootPage->taskRowControls04C +
            (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) =
        *(uint32_t *)(frontendRootPage->taskRowControls04C +
                 (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) &
-       0xfffffff7;
+       ~UI_NODE_SUPPRESSED;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
   rootVtable = (frontendRootPage->rootNode).vtable;
+  /* taskPageControlState55C[i] is page offset 0x55C + 4 * i: [0x176]/[0x177] nodeFlags/state flags of
+     factionSetupBackButton, [0x18E]/[0x18F] of factionSetupNextButton, [0x1BE]/[0x1BF] of
+     factionSetupFinishButton, [0x1CC]/[0x1CE] leftOffset/rightOffset of factionRosterTable. */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
+    /* local game: roster left/right offsets 96 (no participant column); Back and Next, no Finish */
     frontendRootPage->taskPageControlState55C[0x1cc] = 0x60;
     frontendRootPage->taskPageControlState55C[0x1ce] = 0x60;
     frontendRootPage->taskPageControlState55C[0x1be] =
-         frontendRootPage->taskPageControlState55C[0x1be] | 8;
+         frontendRootPage->taskPageControlState55C[0x1be] | UI_NODE_SUPPRESSED;
     frontendRootPage->taskPageControlState55C[0x18e] =
-         frontendRootPage->taskPageControlState55C[0x18e] & 0xfffffff7;
+         frontendRootPage->taskPageControlState55C[0x18e] & ~UI_NODE_SUPPRESSED;
     frontendRootPage->taskPageControlState55C[0x176] =
-         frontendRootPage->taskPageControlState55C[0x176] & 0xfffffff7;
+         frontendRootPage->taskPageControlState55C[0x176] & ~UI_NODE_SUPPRESSED;
     frontendRootPage->taskPageControlState55C[0x177] =
-         frontendRootPage->taskPageControlState55C[0x177] & 0xfffffbff;
+         frontendRootPage->taskPageControlState55C[0x177] & ~FRONTEND_CONTROL_INACTIVE;
   }
   else {
+    /* network game: full-width roster, Finish instead of Next; a client cannot go back */
     frontendRootPage->taskPageControlState55C[0x1cc] = 0;
     frontendRootPage->taskPageControlState55C[0x1ce] = 0;
     frontendRootPage->taskPageControlState55C[0x1be] =
-         frontendRootPage->taskPageControlState55C[0x1be] & 0xfffffff7;
+         frontendRootPage->taskPageControlState55C[0x1be] & ~UI_NODE_SUPPRESSED;
     frontendRootPage->taskPageControlState55C[0x1bf] =
-         frontendRootPage->taskPageControlState55C[0x1bf] & 0xfffffffd;
+         frontendRootPage->taskPageControlState55C[0x1bf] & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     frontendRootPage->taskPageControlState55C[0x18e] =
-         frontendRootPage->taskPageControlState55C[0x18e] | 8;
+         frontendRootPage->taskPageControlState55C[0x18e] | UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
       frontendRootPage->taskPageControlState55C[399] =
-           frontendRootPage->taskPageControlState55C[399] | 0x400;
+           frontendRootPage->taskPageControlState55C[399] | FRONTEND_CONTROL_INACTIVE;
       frontendRootPage->taskPageControlState55C[0x176] =
-           frontendRootPage->taskPageControlState55C[0x176] | 8;
+           frontendRootPage->taskPageControlState55C[0x176] | UI_NODE_SUPPRESSED;
       frontendRootPage->taskPageControlState55C[0x177] =
-           frontendRootPage->taskPageControlState55C[0x177] | 0x400;
+           frontendRootPage->taskPageControlState55C[0x177] | FRONTEND_CONTROL_INACTIVE;
     }
     else {
       frontendRootPage->taskPageControlState55C[399] =
-           frontendRootPage->taskPageControlState55C[399] & 0xfffffbff;
+           frontendRootPage->taskPageControlState55C[399] & ~FRONTEND_CONTROL_INACTIVE;
       frontendRootPage->taskPageControlState55C[0x176] =
-           frontendRootPage->taskPageControlState55C[0x176] & 0xfffffff7;
+           frontendRootPage->taskPageControlState55C[0x176] & ~UI_NODE_SUPPRESSED;
       frontendRootPage->taskPageControlState55C[0x177] =
-           frontendRootPage->taskPageControlState55C[0x177] & 0xfffffbff;
+           frontendRootPage->taskPageControlState55C[0x177] & ~FRONTEND_CONTROL_INACTIVE;
     }
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
   rootVtable->layout(&frontendRootPage->rootNode);
-  titleText = TextResource_Resolve((loadedLevel->header).titleTextResourceIndex + 0x2230);
+  titleText = TextResource_Resolve((loadedLevel->header).titleTextResourceIndex + TEXT_ID_LEVEL_TITLE_BASE);
   *titleText.text = 0x8000;
-  templateText = TextResource_Resolve(0x218c);
+  templateText = TextResource_Resolve(TEXT_ID_FACTION_SETUP_TASK_TEMPLATE);
   RichTextCommandStream_PatchPayloadBySelector(0,titleText.text,templateText.text);
-  return;
 }
 
 
@@ -664,44 +671,43 @@ FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 
 /* Address: 0x0054A9F0.
-   Ownership: ui/frontend/settings.
-   Purpose: Selects gameplay-settings page five, applies compact layout, restores optionFlags40 and optionFlags5C
-   controls with mutual-exclusion suppression, and restores the camera-scroll setting.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], PersistentSettings_ReadDword
-   [core/settings/persistent], UiSelectableControl_SetSelected [ui/controls/lists], UiNodeList_SuppressActionId
-   [ui/controls/lists].
+   Opens the options page (FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) and loads its controls from the
+   persistent settings: map and mouse option checkboxes and the scroll speed. The two "link rotation" options
+   exclude each other, so the one that is set hides the other checkbox.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
 
 {
-  int32_t *compactLayoutFlags;
+  int32_t *menuRoomContextFlags;
   uint32_t persistedValue;
-  
-  UiPageStack_SetActiveIndex(5,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
-  if ((int)g_FramebufferWidth < 0x281) {
-    compactLayoutFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,int32_t);
-    *compactLayoutFlags = *compactLayoutFlags | 0x2000;
+
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
+    menuRoomContextFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,int32_t);
+    *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  persistedValue = PersistentSettings_Read(0,0x40);
+  persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   UiSelectableControl_SetSelected
             (persistedValue & 1,(UiSelectableControl *)FRONTEND_UI(frontendRoot,autoZoomOffCheckbox));
   UiSelectableControl_SetSelected
             (persistedValue & 2,(UiSelectableControl *)FRONTEND_UI(frontendRoot,autoRotationOffCheckbox));
+  /* Bit 4 is "right button does not scroll" (its action 0x2049 handler is
+     FrontendGameplaySettings_SetRightButtonDoesNotScroll); the template calls this control hidePanelCheckbox. */
   UiSelectableControl_SetSelected(persistedValue & 4,(UiSelectableControl *)FRONTEND_UI(frontendRoot,hidePanelCheckbox));
-  persistedValue = PersistentSettings_Read(0,0x5c);
+  persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   if ((persistedValue & 1) != 0) {
-    UiNodeList_SuppressActionId(0x203f,&frontendRoot->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected
             (persistedValue & 1,(UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationZoomCheckbox));
   if ((persistedValue & 2) != 0) {
-    UiNodeList_SuppressActionId(0x203e,&frontendRoot->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox));
-  persistedValue = PersistentSettings_Read(0x20,0x48);
-  FRONTEND_UI_FIELD(frontendRoot,scrollSpeedSlider,0x58,uint32_t) = persistedValue;
-  return;
+  /* bit 4 of this word (hide panel, action 0x2051) is not loaded into its checkbox here */
+  persistedValue = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+  ((UiRangeSliderControl *)FRONTEND_UI(frontendRoot,scrollSpeedSlider))->value = persistedValue;
 }
 
 

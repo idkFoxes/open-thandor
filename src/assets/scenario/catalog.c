@@ -112,67 +112,64 @@ FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listContro
 
 
 /* Address: 0x0054A280.
-   Ownership: assets/scenario/catalog.
-   Purpose: Initializes the scenario-selection page, chooses the save, level, or campaign catalog, applies the
-   command-line map option when it matches an existing level, and updates mode-dependent control visibility.
-   Local calls: ScenarioCatalog_RefreshSelectedRecordField70DisplayId,
-   FrontendScenarioSession_LoadOrRequestLevelAsset.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiSelectableGroup_NoneVisibleSelected
-   [ui/controls/lists], UiSelectableGroup_SelectExclusive [ui/controls/lists], Text_CopyNarrowToUtf16
-   [core/text/string], WidePath_SetExtensionCode [core/text/path], Resource_Release [assets/resource/runtime].
+   Opens page 10 "Choose game" (tabs Load game / Single game / Campaigns) and fills the list of the active tab;
+   network sessions always use the Single game tab. Network clients only watch: all buttons are hidden. With
+   the command-line option KARTE="<level>" matching a single mission, that mission is selected and loaded
+   directly; network hosts never get the Load game tab.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSelectionPage_InitializeAndApplyMapOption
           (FrontendScenarioSelectionPageView26C4 *scenarioSelectionPage)
 
 {
+  /* scenarioOptionRow0..4 are the page's Cancel, Start, Load game, Single game and Campaigns buttons. */
   UiNodeFlags *controlFlags;
   short codeUnit;
   CommandPayloadDword04 selectionIndex;
-  UiControlCount activeGroupIndex;
+  UiControlCount activeTabIndex;
   int remainingCount;
   uint32_t compareUnitsRemaining;
   uint8_t *scanCursor;
   uint8_t *textCursor;
   short *levelNameCursor;
   bool namesMatch;
-  SelectableGroupNodeResult selectedGroup;
+  SelectableGroupNodeResult selectedTab;
   CommandLineOptionResult mapOption;
-  uint32_t zeroDispatchArg6;
-  uint32_t zeroDispatchArg5;
-  uint32_t zeroDispatchArg4;
-  
-  UiPageStack_SetActiveIndex(10,&scenarioSelectionPage->primaryPageStack);
-  if ((int)g_FramebufferWidth < 0x281) {
+
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_STACK_CHOOSE_GAME,&scenarioSelectionPage->primaryPageStack);
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
+    /* compactLayoutControl.nodeFlags is the menuRoomModelView field +0x4C; 0x2000 selects the compact layout. */
     controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
     *controlFlags = *controlFlags | 0x2000;
   }
-  selectedGroup = UiSelectableGroup_NoneVisibleSelected(3,
+  selectedTab = UiSelectableGroup_NoneVisibleSelected(3,
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
-  activeGroupIndex = selectedGroup.controlIndexOrCount;
-  if (selectedGroup.noneSelected) {
-    activeGroupIndex = 1;
+  activeTabIndex = selectedTab.controlIndexOrCount;
+  if (selectedTab.noneSelected) {
+    activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3,
+    UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
-    activeGroupIndex = 1;
+    activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
+  /* option name "KARTE=\"" (7 characters) */
   mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
   if (!mapOption.notFound) {
-    UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3,
+    UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
-    activeGroupIndex = 1;
+    activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
-  g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeGroupIndex](0,0,0,0);
-  g_FrontendScenarioMapOptionHandlerTable[activeGroupIndex](0,0,0,0);
+  /* Rebuild the tab's list, then refresh the description of its selected entry. */
+  g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeTabIndex](0,0,0,0);
+  g_FrontendScenarioMapOptionHandlerTable[activeTabIndex](0,0,0,0);
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     controlFlags = &(scenarioSelectionPage->scenarioOptionRow1).control.base.nodeFlags;
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
@@ -189,10 +186,11 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
   textCursor = mapOption.option;
   if (!mapOption.notFound) {
+    /* The level name runs from after KARTE=" to the closing quote, which must end the command line. */
     remainingCount = 0x3fffff;
-    for (scanCursor = textCursor + 7; *scanCursor != 0x22; scanCursor = scanCursor + 1) {
-      if ((*scanCursor < 0x20) || (remainingCount = remainingCount + -1, remainingCount == 0))
-      goto 
+    for (scanCursor = textCursor + 7; *scanCursor != '"'; scanCursor++) {
+      if ((*scanCursor < ' ') || (remainingCount--, remainingCount == 0))
+      goto
       FrontendScenarioSelectionPage_InitializeAndApplyMapOption_UpdateNetworkRoleActionAvailabilityAndReturn
       ;
     }
@@ -200,14 +198,16 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     if (scanCursor[1] == 0) {
       Text_CopyNarrowToUtf16(0x800000,(uint16_t *)g_PackageScratchBuffer,textCursor + 7);
       WidePath_SetExtensionCode(0,(uint16_t *)g_PackageScratchBuffer);
-      *scanCursor = 0x22;
-      *textCursor = 0x6b;
+      *scanCursor = '"';
+      /* "KARTE" -> "kARTE": the option is used only once, returning to this page later finds no match. */
+      *textCursor = 'k';
+      /* wcslen + 1 (REPNE SCASW): scanCursor ends behind the terminator, which the compare includes. */
       remainingCount = 0x400000;
       textCursor = g_PackageScratchBuffer;
       do {
         scanCursor = textCursor;
         if (remainingCount == 0) break;
-        remainingCount = remainingCount + -1;
+        remainingCount--;
         scanCursor = textCursor + 2;
         codeUnit = *(short *)textCursor;
         textCursor = scanCursor;
@@ -217,16 +217,17 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
         selectionIndex = 0;
         namesMatch = true;
         do {
+          /* REPE CMPSW of the name against the row's text */
           compareUnitsRemaining = (uint32_t)((int)scanCursor - (int)g_PackageScratchBuffer) >> 1;
           textCursor = g_PackageScratchBuffer;
           levelNameCursor =
                (short *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots[selectionIndex];
           do {
             if (compareUnitsRemaining == 0) break;
-            compareUnitsRemaining = compareUnitsRemaining - 1;
+            compareUnitsRemaining--;
             namesMatch = *(short *)textCursor == *levelNameCursor;
             textCursor = textCursor + 2;
-            levelNameCursor = levelNameCursor + 1;
+            levelNameCursor++;
           } while (namesMatch);
           if (namesMatch) {
             controlFlags = &(scenarioSelectionPage->scenarioOptionRow0).control.base.nodeFlags;
@@ -243,7 +244,9 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
               *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
             }
             Resource_Release(g_FrontendLoadedCampaignAsset);
-            g_FrontendLoadedCampaignAsset = (void *)0x0;
+            g_FrontendLoadedCampaignAsset = NULL;
+            /* Select the mission and load it: directly, or in a network session through the command queue
+               (0x12A0 / 0x920 are the command codes of the two functions). */
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                 SESSION_NETWORK_ROLE_LOCAL) {
               ScenarioCatalog_RefreshSelectedRecordField70DisplayId
@@ -262,8 +265,8 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
             }
             return;
           }
-          selectionIndex = selectionIndex + 1;
-          remainingCount = remainingCount + -1;
+          selectionIndex++;
+          remainingCount--;
           namesMatch = remainingCount == 0;
         } while (!namesMatch);
       }
@@ -434,29 +437,22 @@ void FrontendScenarioAction_StartFieldGridLoad(void *source)
 
 
 /* Address: 0x00549FD0.
-   Ownership: assets/scenario/catalog.
-   Purpose: Recreates the 0x30000-byte frontend catalog. It imports level\level.dat and level\campagne.dat, merges
-   numbered levelNN.dat and campagneNN.dat overrides by their 0x40-byte identifiers, enumerates save\*.sve, loads
-   each 0x100-byte save record, relocates localized string IDs at +0x70 and optional +0x90, and updates the six-
-   field header. The extra four bytes reserved per counted record remain intentionally untyped until their consumer
-   is recovered.
-   Local calls: ScenarioCatalog_MergeRecordsByName.
-   Cross-module calls: Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime],
-   WidePath_CombineDirectoryAndLeaf [core/text/path].
+   Rebuilds g_ScenarioCatalog, the list behind the "Choose game" tabs: the single missions of level\level.dat
+   and the campaigns of level\campagne.dat, each updated by the add-on files level00..99.dat /
+   campagne00..99.dat (records merged by name), followed by the header record of every save\*.sve.
+   The catalog is also what a network host sends to its clients.
 */
 void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
 
 {
-  ScenarioCatalogByteOffset *saveOffsetField;
-  ScenarioCatalogRecordCount *campaignCountField;
   ScenarioCatalogHeader *catalog;
   uint32_t recordCount;
   void *handle;
   uint32_t dwordsRemaining;
   uint32_t saveFilesRemaining;
-  uint16_t *leaf;
-  uint32_t *recordCopyDwordsLevel;
-  uint32_t *recordCopyDwordsCampaign;
+  uint16_t *saveFileName;
+  uint32_t *levelSourceDword;
+  uint32_t *campaignSourceDword;
   ScenarioCatalogRecord *recordsBase;
   ScenarioCatalogRecord *recordCopyCursor;
   ScenarioCatalogSaveRecord *saveRecord;
@@ -466,33 +462,36 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
   ResourceLoadResult loadedResource;
   DirectoryEnumerationResult saveEnumeration;
   void *handleToClose;
-  
+
   g_MemoryApi.free(g_ScenarioCatalog);
-  allocation = g_MemoryApi.alloc(0x30000);
+  allocation = g_MemoryApi.alloc(SCENARIO_CATALOG_CAPACITY);
   checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
   catalog = (ScenarioCatalogHeader *)checkedResult.valueOrError;
-  g_ScenarioCatalogUsedBytes = 0x18;
+  g_ScenarioCatalogUsedBytes = SCENARIO_CATALOG_HEADER_SIZE;
   g_ScenarioCatalog = catalog;
-  catalog->levelRecordsOffset = 0x18;
-  catalog->campaignRecordsOffset = 0x18;
-  catalog->saveRecordsOffset = 0x18;
+  catalog->levelRecordsOffset = SCENARIO_CATALOG_HEADER_SIZE;
+  catalog->campaignRecordsOffset = SCENARIO_CATALOG_HEADER_SIZE;
+  catalog->saveRecordsOffset = SCENARIO_CATALOG_HEADER_SIZE;
   catalog->levelRecordCount = 0;
   catalog->campaignRecordCount = 0;
   catalog->saveRecordCount = 0;
   loadedResource = Resource_Load((uint16_t *)u_level_level_dat_0050da0e);
   catalog = g_ScenarioCatalog;
   if (!loadedResource.failed) {
-    recordCount = loadedResource.byteCount / 0x100;
+    recordCount = loadedResource.byteCount / SCENARIO_CATALOG_RECORD_SIZE;
     recordsBase = (ScenarioCatalogRecord *)
              ((int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset);
-    recordCopyDwordsLevel = (uint32_t *)loadedResource.bufferOrError;
+    /* REP MOVSD of the whole file into the level section */
+    levelSourceDword = (uint32_t *)loadedResource.bufferOrError;
     recordCopyCursor = recordsBase;
-    for (dwordsRemaining = loadedResource.byteCount >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
-      *(uint32_t *)recordCopyCursor->identifier = *recordCopyDwordsLevel;
-      recordCopyDwordsLevel = recordCopyDwordsLevel + 1;
+    for (dwordsRemaining = loadedResource.byteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
+      *(uint32_t *)recordCopyCursor->identifier = *levelSourceDword;
+      levelSourceDword++;
       recordCopyCursor = (ScenarioCatalogRecord *)(recordCopyCursor->identifier + 2);
     }
     Resource_Release((uint32_t *)loadedResource.bufferOrError);
+    /* level00.dat .. level99.dat: the two digit code units are packed as one dword, 0x300030 = "00"; the
+       units digit counts '0'..'9', then subtracting 0x9FFFF resets it to '0' and increments the tens digit. */
     g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
     do {
       loadedResource = Resource_Load(g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits);
@@ -501,35 +500,35 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
                           (loadedResource.byteCount,(ScenarioCatalogRecord *)loadedResource.bufferOrError,recordCount,recordsBase);
         Resource_Release((ScenarioCatalogRecord *)loadedResource.bufferOrError);
       }
-      g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] =
-           g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] + 1;
-    } while ((g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] < 0x3a) ||
+      g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1]++;
+    } while ((g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] < '9' + 1) ||
             (g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits =
                   g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits - 0x9ffff,
-            g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[0] < 0x3a));
+            g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[0] < '9' + 1));
     do {
-      catalog->campaignRecordsOffset = catalog->campaignRecordsOffset + 0x104;
-      catalog->saveRecordsOffset = catalog->saveRecordsOffset + 0x104;
-      catalog->levelRecordCount = catalog->levelRecordCount + 1;
-      g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + 0x104;
-      recordCount = recordCount - 1;
+      catalog->campaignRecordsOffset = catalog->campaignRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
+      catalog->saveRecordsOffset = catalog->saveRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
+      catalog->levelRecordCount++;
+      g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + SCENARIO_CATALOG_RECORD_STRIDE;
+      recordCount--;
     } while (recordCount != 0);
   }
   loadedResource = Resource_Load((uint16_t *)u_level_campagne_dat_0050da52);
   catalog = g_ScenarioCatalog;
   if (!loadedResource.failed) {
-    recordCount = loadedResource.byteCount / 0x100;
+    recordCount = loadedResource.byteCount / SCENARIO_CATALOG_RECORD_SIZE;
     recordsBase = (ScenarioCatalogRecord *)
              ((int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->campaignRecordsOffset
              );
-    recordCopyDwordsCampaign = (uint32_t *)loadedResource.bufferOrError;
+    campaignSourceDword = (uint32_t *)loadedResource.bufferOrError;
     recordCopyCursor = recordsBase;
-    for (dwordsRemaining = loadedResource.byteCount >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
-      *(uint32_t *)recordCopyCursor->identifier = *recordCopyDwordsCampaign;
-      recordCopyDwordsCampaign = recordCopyDwordsCampaign + 1;
+    for (dwordsRemaining = loadedResource.byteCount >> 2; dwordsRemaining != 0; dwordsRemaining--) {
+      *(uint32_t *)recordCopyCursor->identifier = *campaignSourceDword;
+      campaignSourceDword++;
       recordCopyCursor = (ScenarioCatalogRecord *)(recordCopyCursor->identifier + 2);
     }
     Resource_Release((uint32_t *)loadedResource.bufferOrError);
+    /* campagne00.dat .. campagne99.dat, counted like the level files above */
     g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
     do {
       loadedResource = Resource_Load(g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits);
@@ -538,19 +537,16 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
                           (loadedResource.byteCount,(ScenarioCatalogRecord *)loadedResource.bufferOrError,recordCount,recordsBase);
         Resource_Release((ScenarioCatalogRecord *)loadedResource.bufferOrError);
       }
-      g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] =
-           g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] + 1;
-    } while ((g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] < 0x3a) ||
+      g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1]++;
+    } while ((g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] < '9' + 1) ||
             (g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits =
                   g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits - 0x9ffff,
-            g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[0] < 0x3a));
+            g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[0] < '9' + 1));
     do {
-      saveOffsetField = &catalog->saveRecordsOffset;
-      *saveOffsetField = *saveOffsetField + 0x104;
-      campaignCountField = &catalog->campaignRecordCount;
-      *campaignCountField = *campaignCountField + 1;
-      g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + 0x104;
-      recordCount = recordCount - 1;
+      catalog->saveRecordsOffset = catalog->saveRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
+      catalog->campaignRecordCount++;
+      g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + SCENARIO_CATALOG_RECORD_STRIDE;
+      recordCount--;
     } while (recordCount != 0);
   }
   WidePath_CombineDirectoryAndLeaf
@@ -565,13 +561,13 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
     saveRecord = (ScenarioCatalogSaveRecord *)
                  ((int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->saveRecordsOffset
                  );
-    leaf = (uint16_t *)g_PackageScratchBuffer;
+    saveFileName = (uint16_t *)g_PackageScratchBuffer;
     do {
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
       WidePath_CombineDirectoryAndLeaf
-                ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
+                ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,saveFileName,
                  (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
       openResult = g_FileSystemOpen
                          (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16
@@ -579,18 +575,22 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
       checkedResult = FatalError_ExitIfFailed(openResult.handleOrError,openResult.failed);
       handle = (void *)checkedResult.valueOrError;
       handleToClose = handle;
-      g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0x100,handle);
-      g_FileSystemReadExact(0x100,saveRecord,handle);
+      /* The save's catalog record is the second 0x100-byte block of the file. */
+      g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,SCENARIO_CATALOG_RECORD_SIZE,handle);
+      g_FileSystemReadExact(SCENARIO_CATALOG_RECORD_SIZE,saveRecord,handle);
       g_FileSystemClose(handleToClose);
-      saveRecord->localizedStringId70 = saveRecord->localizedStringId70 + 0x2230;
+      /* Turn the stored level title index and the optional campaign title index (negative = none) into
+         text resource ids. */
+      saveRecord->localizedStringId70 = saveRecord->localizedStringId70 + TEXT_ID_LEVEL_TITLE_BASE;
       if (-1 < saveRecord->optionalLocalizedStringId90) {
-        saveRecord->optionalLocalizedStringId90 = saveRecord->optionalLocalizedStringId90 + 0x2220;
+        saveRecord->optionalLocalizedStringId90 =
+             saveRecord->optionalLocalizedStringId90 + TEXT_ID_CAMPAIGN_TITLE_BASE;
       }
-      saveRecord = saveRecord + 1;
-      catalog->saveRecordCount = catalog->saveRecordCount + 1;
-      g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + 0x104;
-      leaf = (uint16_t *)((int)leaf + saveEnumeration.recordSizeBytes);
-      saveFilesRemaining = saveFilesRemaining - 1;
+      saveRecord++;
+      catalog->saveRecordCount++;
+      g_ScenarioCatalogUsedBytes = g_ScenarioCatalogUsedBytes + SCENARIO_CATALOG_RECORD_STRIDE;
+      saveFileName = (uint16_t *)((int)saveFileName + saveEnumeration.recordSizeBytes);
+      saveFilesRemaining--;
     } while (saveFilesRemaining != 0);
   }
   return;
@@ -613,14 +613,10 @@ ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t unusedArg0,uint32_t un
 
 
 /* Address: 0x00547860.
-   Ownership: assets/scenario/catalog.
-   Purpose: Consumes the current frontend transfer-mailbox payload according to the pending asset state, decodes
-   scenario catalog, level, field-grid, or campaign data, updates player readiness flags, and queues the matching
-   local command.
-   Cross-module calls: UiTransferMailbox_GetReceivedBuffer [network/protocol/transfer], PckCodec_DecodeHuffmanRle
-   [assets/package/codec], UiTransferMailbox_ClearReceivedState [network/protocol/transfer],
-   DwordBlock64Array_ContainsExactRecord [core/memory/allocator], FrontendCommandQueue_EnqueueLocalPlayerCommand
-   [network/protocol/commands], Resource_Release [assets/resource/runtime].
+   Network client, once per frontend frame: when the asset announced in g_FrontendScenarioTransferState has
+   arrived in the transfer mailbox, unpacks it (scenario catalog, level, field grid, or a level/campaign bundle),
+   frees the mailbox buffer and reports the new state to the host through the frontend command queue (or
+   directly when no network session runs). Every packet starts with the unpacked size(s), then the packed data.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceivedAsset(void)
 
@@ -635,7 +631,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
   ScenarioCatalogByteOffset *oldCatalogBase;
   uint32_t *receivedDwords;
   FrontendLoadedLevelRuntimeImage370 *levelAsset;
-  uint8_t *levelPathOrSelectedId;
+  uint8_t *levelPathOrCurrentLevelField;
   uint32_t maskBit;
   int maskSlotOrRecordsLeft;
   ScenarioCatalogRecordCount newRecordsRemaining;
@@ -645,10 +641,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
   FatalErrorCheckResult checkedResult;
   MailboxReceiveResult received;
   ScenarioCatalogHeader *previousCatalog;
-  
+
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) &&
-     (g_FrontendScenarioTransferState != 0)) {
-    if (g_FrontendScenarioTransferState == 1) {
+     (g_FrontendScenarioTransferState != SCENARIO_TRANSFER_NONE)) {
+    if (g_FrontendScenarioTransferState == SCENARIO_TRANSFER_CATALOG) {
+      /* packet: unpacked size, packed catalog */
       received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
@@ -664,9 +661,10 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         PckCodec_DecodeHuffmanRle(payloadSizeBytes,(uint8_t *)checkedResult.valueOrError,received.byteCount - 4,(uint8_t *)(receivedDwords + 1));
         g_MemoryApi.free(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
-        g_FrontendScenarioTransferState = 0;
+        g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
+        /* Mark every received level record (up to 96) that the previous catalog did not contain. */
         newRecordsRemaining = g_ScenarioCatalog->levelRecordCount;
-        if (previousCatalog != (ScenarioCatalogHeader *)0x0) {
+        if (previousCatalog != NULL) {
           recordCount = previousCatalog->levelRecordCount;
           receivedDwords = (uint32_t *)((int)&g_ScenarioCatalog->levelRecordsOffset +
                             g_ScenarioCatalog->levelRecordsOffset);
@@ -681,14 +679,14 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
               if (!recordAlreadyKnown) {
                 changedLevelMask[maskSlotOrRecordsLeft] = changedLevelMask[maskSlotOrRecordsLeft] | maskBit;
               }
-              receivedDwords = receivedDwords + 0x40;
+              receivedDwords = receivedDwords + SCENARIO_CATALOG_RECORD_SIZE / 4;
               maskBit = maskBit * 2;
               if (maskBit == 0) {
                 maskBit = 1;
-                maskSlotOrRecordsLeft = maskSlotOrRecordsLeft + -1;
+                maskSlotOrRecordsLeft--;
                 if (maskSlotOrRecordsLeft == 0) break;
               }
-              newRecordsRemaining = newRecordsRemaining - 1;
+              newRecordsRemaining--;
             } while (newRecordsRemaining != 0);
           }
         }
@@ -697,19 +695,22 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
                   (0xe00,changedLevelMask[1],changedLevelMask[2],changedLevelMask[3]);
       }
     }
-    else if (g_FrontendScenarioTransferState < 3) {
+    else if (g_FrontendScenarioTransferState < SCENARIO_TRANSFER_FIELD_GRID) {
+      /* SCENARIO_TRANSFER_LEVEL, packet: unpacked size, packed level asset */
       received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
         payloadSizeBytes = *receivedDwords;
-        if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
+        /* The level's path offset field holds the loaded field grid once one was attached (values above
+           0xFFFF are pointers). */
+        if ((g_FrontendLoadedLevelAsset != NULL) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
           Resource_Release((void *)(g_FrontendLoadedLevelAsset->header).pathState.
                                    levelPathOffsetOrLoadedFieldGrid);
         }
         Resource_Release(g_FrontendLoadedLevelAsset);
-        g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
+        g_FrontendLoadedLevelAsset = NULL;
         allocation = g_MemoryApi.alloc(payloadSizeBytes);
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
@@ -724,10 +725,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         }
         g_MemoryApi.free(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
-        g_FrontendScenarioTransferState = 0;
+        g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
       }
     }
-    else if (g_FrontendScenarioTransferState == 3) {
+    else if (g_FrontendScenarioTransferState == SCENARIO_TRANSFER_FIELD_GRID) {
+      /* packet: unpacked size, packed field grid; it is attached to the already loaded level */
       received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
@@ -747,21 +749,23 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         }
         g_MemoryApi.free(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
-        g_FrontendScenarioTransferState = 0;
+        g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
       }
     }
-    else if (g_FrontendScenarioTransferState < 5) {
+    else if (g_FrontendScenarioTransferState < SCENARIO_TRANSFER_LEVEL_BUNDLE) {
+      /* SCENARIO_TRANSFER_CAMPAIGN_BUNDLE, packet: unpacked sizes of level, campaign and field grid, packed
+         sizes of the three, then the three packed streams */
       received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
-        if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
+        if ((g_FrontendLoadedLevelAsset != NULL) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
           Resource_Release((void *)(g_FrontendLoadedLevelAsset->header).pathState.
                                    levelPathOffsetOrLoadedFieldGrid);
         }
         Resource_Release(g_FrontendLoadedLevelAsset);
-        g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
+        g_FrontendLoadedLevelAsset = NULL;
         allocation = g_MemoryApi.alloc(*receivedDwords);
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
@@ -774,13 +778,15 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         PckCodec_DecodeHuffmanRle(receivedDwords[1],g_FrontendLoadedCampaignAsset,receivedDwords[4],streamOrRecordCursor);
         levelAsset = g_FrontendLoadedLevelAsset;
         payloadSizeBytes = receivedDwords[4];
-        levelPathOrSelectedId = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
+        /* The level's relative path (asset base + path offset) becomes <exe dir>\<level>.fld, the path the
+           game uses for the field grid; afterwards the offset field holds the received field grid. */
+        levelPathOrCurrentLevelField = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
                  assetRelativeAddressAnchor28 +
                  ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
                  0x28);
-        WidePath_SetExtensionCode(0x646c66,(uint16_t *)levelPathOrSelectedId);
+        WidePath_SetExtensionCode(ASSET_MAGIC_FLD,(uint16_t *)levelPathOrCurrentLevelField);
         WidePath_CombineDirectoryAndLeaf
-                  ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrSelectedId,
+                  ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrCurrentLevelField,
                    (uint16_t *)&g_ExecutableDirectoryUtf16);
         allocation = g_MemoryApi.alloc(receivedDwords[2]);
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
@@ -796,45 +802,50 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         g_MemoryApi.free(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
         streamOrRecordCursor = g_FrontendLoadedCampaignAsset;
-        g_FrontendScenarioTransferState = 0;
-        levelPathOrSelectedId = g_FrontendLoadedCampaignAsset + 0xb4;
+        g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
+        /* The campaign starts at its first level (+0xB4, stored as current level +0xC4): find that level's
+           record (0x180 bytes each, id at +0x300 and file name at +0x30C from the asset base, +0xB8 = count)
+           and build level\<name>.lev. */
+        levelPathOrCurrentLevelField = g_FrontendLoadedCampaignAsset + 0xb4;
         maskSlotOrRecordsLeft = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
-        *(int *)(g_FrontendLoadedCampaignAsset + 0xc4) = *(int *)levelPathOrSelectedId;
+        *(int *)(g_FrontendLoadedCampaignAsset + 0xc4) = *(int *)levelPathOrCurrentLevelField;
         do {
-          if (*(int *)levelPathOrSelectedId == *(int *)(streamOrRecordCursor + 0x300)) break;
+          if (*(int *)levelPathOrCurrentLevelField == *(int *)(streamOrRecordCursor + 0x300)) break;
           streamOrRecordCursor = streamOrRecordCursor + 0x180;
-          maskSlotOrRecordsLeft = maskSlotOrRecordsLeft + -1;
+          maskSlotOrRecordsLeft--;
         } while (maskSlotOrRecordsLeft != 0);
         WidePath_CombineDirectoryAndLeaf
                   (&g_FrontendScenarioPathScratchUtf16,(uint16_t *)(streamOrRecordCursor + 0x30c),
                    (uint16_t *)u_level_0050daac);
-        WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
+        WidePath_SetExtensionCode(ASSET_MAGIC_LEV,&g_FrontendScenarioPathScratchUtf16);
         FrontendPlayerRuntime_InitializeFactionAssignments();
       }
     }
     else {
+      /* SCENARIO_TRANSFER_LEVEL_BUNDLE, packet: unpacked sizes of level and field grid, their packed sizes,
+         then the two packed streams */
       received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
-        if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
+        if ((g_FrontendLoadedLevelAsset != NULL) &&
            (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid
            )) {
           Resource_Release((void *)(g_FrontendLoadedLevelAsset->header).pathState.
                                    levelPathOffsetOrLoadedFieldGrid);
         }
         Resource_Release(g_FrontendLoadedLevelAsset);
-        g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
+        g_FrontendLoadedLevelAsset = NULL;
         allocation = g_MemoryApi.alloc(*receivedDwords);
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         levelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
         g_FrontendLoadedLevelAsset = levelAsset;
         PckCodec_DecodeHuffmanRle(*receivedDwords,(uint8_t *)levelAsset,receivedDwords[2],(uint8_t *)(receivedDwords + 4));
         payloadSizeBytes = receivedDwords[2];
-        levelPathOrSelectedId = (levelAsset->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+        levelPathOrCurrentLevelField = (levelAsset->header).common.buildMetadata.assetRelativeAddressAnchor28 +
                  ((levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid - 0x28);
-        WidePath_SetExtensionCode(0x646c66,(uint16_t *)levelPathOrSelectedId);
+        WidePath_SetExtensionCode(ASSET_MAGIC_FLD,(uint16_t *)levelPathOrCurrentLevelField);
         WidePath_CombineDirectoryAndLeaf
-                  ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrSelectedId,
+                  ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrCurrentLevelField,
                    (uint16_t *)&g_ExecutableDirectoryUtf16);
         allocation = g_MemoryApi.alloc(receivedDwords[1]);
         checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
@@ -851,7 +862,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         }
         g_MemoryApi.free(receivedDwords);
         UiTransferMailbox_ClearReceivedState();
-        g_FrontendScenarioTransferState = 0;
+        g_FrontendScenarioTransferState = SCENARIO_TRANSFER_NONE;
         FrontendPlayerRuntime_InitializeFactionAssignments();
       }
     }

@@ -14,6 +14,10 @@
 /* Submodule: network/protocol/transfer. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* g_UiTransferMailbox.receivedAllocation sentinel published by UiTransferMailbox_MarkUnavailable when a
+   requested transfer cannot be served; UiTransferMailbox_GetReceivedBuffer reports it like an empty mailbox. */
+#define UI_TRANSFER_MAILBOX_UNAVAILABLE ((void *)0xffffffff)
+
 /* 0x004AEB10 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitTimer(void);
 

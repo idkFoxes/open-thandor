@@ -1534,7 +1534,7 @@ const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {
     {0x0054A610u, (void *)&FrontendScenarioPage_OpenSaveRecordsAndRefresh},
     {0x0054A690u, (void *)&FrontendScenarioPage_OpenLevelRecordsAndRefresh},
     {0x0054A710u, (void *)&FrontendScenarioPage_OpenCampaignRecordsAndRefresh},
-    {0x0054A790u, (void *)&FrontendSession_ShowPage9WithCompactLayout},
+    {0x0054A790u, (void *)&FrontendSession_ShowQuitConfirmPage},
     {0x0054A7D0u, (void *)&FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary},
     {0x0054A810u, (void *)&FrontendGameplaySettings_SetRightButtonDoesNotScroll},
     {0x0054A850u, (void *)&FrontendGameplaySettings_SetCameraScrollStep},

@@ -199,20 +199,17 @@ FrontendSession_SetGameSpeedPercent
 
 
 /* Address: 0x0054A790.
-   Ownership: ui/frontend/session.
-   Purpose: Selects frontend page index 9 and sets runtime flag 0x2000 at +0x3B4 when the framebuffer width is at
-   most 640 pixels. EAX is preserved.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout].
+   Opens the "Exit programme" confirmation page (FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE from the main menu). At 640 pixels
+   width or less the page covers the menu room, so the room's 3D rendering is switched off.
 */
-void __thandor_preserve_eax FrontendSession_ShowPage9WithCompactLayout(FrontendUiImage *frontendUi)
+void __thandor_preserve_eax FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
 
 {
-  UiPageStack_SetActiveIndex(9,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
-  if ((int)g_FramebufferWidth < 0x281) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_QUIT_CONFIRM,
+                             (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) |= FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  return;
 }
 
 

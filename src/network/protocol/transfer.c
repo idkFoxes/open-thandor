@@ -1099,14 +1099,13 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchReques
 
 
 /* Address: 0x004AF110.
-   Ownership: network/protocol/transfer.
-   Purpose: Clears receivedAllocation, receivedByteCount, receiveBusy, and receiveComplete without modifying the
-   outgoing allocation pair.
+   Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a
+   new transfer can be received; the outgoing buffer is left alone. Consumers call it after taking a buffer.
 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(void)
 
 {
-  g_UiTransferMailbox.receivedAllocation = (void *)0x0;
+  g_UiTransferMailbox.receivedAllocation = NULL;
   g_UiTransferMailbox.receivedByteCount = 0;
   g_UiTransferMailbox.receivedRemainingBytes = 0;
   g_UiTransferMailbox.receiveRetryTicks = 0;
@@ -1115,9 +1114,8 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(vo
 
 
 /* Address: 0x004AF170.
-   Ownership: network/protocol/transfer.
-   Purpose: If receivedAllocation is neither null nor 0xFFFFFFFF and receiveBusy is zero, returns allocation in EAX
-   and byte count in ECX with CF clear. Otherwise CF is set.
+   Hands out a completely received transfer: returns its buffer (EAX) and byte count (ECX) with CF clear once an
+   allocation exists and no bytes are outstanding. An empty, unavailable or still incomplete mailbox sets CF.
 */
 MailboxReceiveResult __thandor_eax_ecx_cf_preserve_edx
 UiTransferMailbox_GetReceivedBuffer(void)
@@ -1125,10 +1123,10 @@ UiTransferMailbox_GetReceivedBuffer(void)
 {
   MailboxReceiveResult receivedResult;
   MailboxReceiveResult unavailableResult;
-  
-  if (((g_UiTransferMailbox.receivedAllocation != (void *)0xffffffff) &&
-      (g_UiTransferMailbox.receivedAllocation != (void *)0x0)) &&
-     (g_UiTransferMailbox.receivedRemainingBytes == 0)) {
+
+  if (g_UiTransferMailbox.receivedAllocation != UI_TRANSFER_MAILBOX_UNAVAILABLE &&
+      g_UiTransferMailbox.receivedAllocation != NULL &&
+      g_UiTransferMailbox.receivedRemainingBytes == 0) {
     receivedResult.byteCount = g_UiTransferMailbox.receivedByteCount;
     receivedResult.buffer = (uint32_t)g_UiTransferMailbox.receivedAllocation;
     receivedResult.unavailable = false;
@@ -1538,14 +1536,13 @@ UiTransferBlock_Transform64BitBlocksWithRoundKeys16
 
 
 /* Address: 0x004AF140.
-   Ownership: network/protocol/transfer.
-   Purpose: Publishes the 0xFFFFFFFF unavailable sentinel and sets receivedByteCount, receiveBusy, and
-   receiveComplete to one.
+   Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the
+   byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor receivable.
 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_MarkUnavailable(void)
 
 {
-  g_UiTransferMailbox.receivedAllocation = (void *)0xffffffff;
+  g_UiTransferMailbox.receivedAllocation = UI_TRANSFER_MAILBOX_UNAVAILABLE;
   g_UiTransferMailbox.receivedByteCount = 1;
   g_UiTransferMailbox.receivedRemainingBytes = 1;
   g_UiTransferMailbox.receiveRetryTicks = 1;
@@ -1554,9 +1551,8 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_MarkUnavailable(void)
 
 
 /* Address: 0x004AF1A0.
-   Ownership: network/protocol/transfer.
-   Purpose: Publishes an outgoing allocation and byte count. The allocation is later released through
-   g_MemoryApi.free by frontend transfer consumers.
+   Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it). The allocation is later
+   released through g_MemoryApi.free by the frontend transfer consumers.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation)

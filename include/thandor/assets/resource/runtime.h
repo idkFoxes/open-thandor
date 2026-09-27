@@ -22,7 +22,7 @@ ResourceRegistration_OpenSource(void *packagePath);
 ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path);
 
 /* 0x0040F1D0 */
-void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *allocation);
+void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *resourceBuffer);
 
 /* 0x0050E890 */
 ResourceRegistrationImagePair ResourceRegistration_SelectDomainPair (ResourceRegistrationRuntimeImageSerializedScalarViewDC *runtimeImage);

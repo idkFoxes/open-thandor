@@ -577,9 +577,10 @@ FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
 
 
 /* Address: 0x00549190.
-   Ownership: ui/frontend/player.
-   Purpose: Builds faction availability bytes from the active configuration, initializes every 0x13B0-byte player
-   block's faction and state fields, and leaves the local zero-based faction slot in EDX while preserving EAX.
+   Default faction line-up for a freshly loaded level (scenario catalogue, frontend main loop): marks factions
+   1..active count as active and clears the slots above, then hands the players the assignable factions
+   round-robin (player n gets faction (n mod assignable count) + 1) and clears their ready and consensus state.
+   The original also computes the local player's zero-based faction in EDX but restores EDX before returning.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFactionAssignments(void)
 
@@ -590,25 +591,27 @@ void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFaction
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   uint32_t assignableRemaining;
   FrontendPlayerRuntimeRecord *playerBlock;
-  
+
   loadedLevel = g_FrontendLoadedLevelAsset;
-  factionSlot = 1;
+  factionSlot = 1; /* slot 0 is not a player faction */
   activeRemaining = (g_FrontendLoadedLevelAsset->runtimeTail2E0).activeFactionCount;
   assignableRemaining = (g_FrontendLoadedLevelAsset->runtimeTail2E0).assignableFactionCount;
+  /* the assignable factions come first, the remaining active (computer-only) ones follow */
   do {
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    activeRemaining = activeRemaining - 1;
-    factionSlot = factionSlot + 1;
-    assignableRemaining = assignableRemaining - 1;
+    activeRemaining--;
+    factionSlot++;
+    assignableRemaining--;
   } while (assignableRemaining != 0);
-  for (; activeRemaining != 0; activeRemaining = activeRemaining - 1) {
+  for (; activeRemaining != 0; activeRemaining--) {
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-    factionSlot = factionSlot + 1;
+    factionSlot++;
   }
+  /* slot 7 is only cleared when fewer than six factions are active (factionSlot < 7), as in the original */
   if (factionSlot < 7) {
     do {
       g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = 0;
-      factionSlot = factionSlot + 1;
+      factionSlot++;
     } while (factionSlot < 8);
   }
   factionSlot = 1;
@@ -618,14 +621,13 @@ void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFaction
     (playerBlock->factionAssignment).factionAssignmentIndex = factionSlot;
     (playerBlock->factionAssignment).readyOrWaitState = 0;
     (playerBlock->factionAssignment).consensusValue = 0;
-    factionSlot = factionSlot + 1;
-    playerBlock = playerBlock + 1;
+    factionSlot++;
+    playerBlock++;
     if ((loadedLevel->runtimeTail2E0).assignableFactionCount < factionSlot) {
       factionSlot = factionSlot - (loadedLevel->runtimeTail2E0).assignableFactionCount;
     }
-    remainingBlocks = remainingBlocks - 1;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
-  return;
 }
 
 

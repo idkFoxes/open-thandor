@@ -14,6 +14,10 @@
 /* Submodule: ui/controls/layout. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* End marker of the UI root stack: g_UiRootNode holds it when no root is open, and the bottom root's
+   previousRoot link holds it. */
+#define UI_ROOT_STACK_END ((UiRootNode *)0xffffffff)
+
 /* 0x004B49A0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren

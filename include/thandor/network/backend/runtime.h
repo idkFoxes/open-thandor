@@ -18,6 +18,9 @@
 #define NETWORK_BACKEND_MODE_WSOCK32 1 /* wsock32.dll, WinSock 1.1 */
 #define NETWORK_BACKEND_MODE_WS2_32 2 /* ws2_32.dll; no reachable code sets it */
 
+/* UDP port (host byte order) the frontend passes to g_NetworkBackendSlot2 (open and bind) for every session. */
+#define NETWORK_GAME_UDP_PORT 929
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0054EF60 */

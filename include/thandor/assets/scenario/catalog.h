@@ -14,6 +14,36 @@
 /* Submodule: assets/scenario/catalog. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Scenario catalog (g_ScenarioCatalog): ScenarioCatalogHeader followed by the level, campaign and save
+   records (0x100 bytes each). Every counted record advances the following section offsets and
+   g_ScenarioCatalogUsedBytes by 0x104, although the records are packed 0x100 apart. */
+#define SCENARIO_CATALOG_CAPACITY 0x30000
+#define SCENARIO_CATALOG_HEADER_SIZE 0x18
+#define SCENARIO_CATALOG_RECORD_SIZE 0x100
+#define SCENARIO_CATALOG_RECORD_STRIDE 0x104
+/* Text resource ids: a level title is 0x2230 + its title index, a campaign title 0x2220 + its index (the
+   level text page aliases, see TextResourcePage_LoadCompatibilityAliases). */
+#define TEXT_ID_LEVEL_TITLE_BASE 0x2230
+#define TEXT_ID_CAMPAIGN_TITLE_BASE 0x2220
+
+/* Index of the "Choose game" page (gameSelectPage) in the frontend page stack. */
+#define FRONTEND_PAGE_STACK_CHOOSE_GAME 10
+
+/* Tabs of the scenario-selection page (index into scenarioCatalogRebuildCallbacks and
+   g_FrontendScenarioMapOptionHandlerTable). */
+#define SCENARIO_SELECTION_TAB_SAVED_GAMES 0
+#define SCENARIO_SELECTION_TAB_SINGLE_GAMES 1
+#define SCENARIO_SELECTION_TAB_CAMPAIGNS 2
+
+/* g_FrontendScenarioTransferState: which asset a network client expects next in the transfer mailbox
+   (handled by FrontendScenarioTransfer_ProcessReceivedAsset). */
+#define SCENARIO_TRANSFER_NONE 0
+#define SCENARIO_TRANSFER_CATALOG 1            /* scenario catalog */
+#define SCENARIO_TRANSFER_LEVEL 2              /* level asset */
+#define SCENARIO_TRANSFER_FIELD_GRID 3         /* field grid of the loaded level */
+#define SCENARIO_TRANSFER_CAMPAIGN_BUNDLE 4    /* level + campaign + field grid */
+#define SCENARIO_TRANSFER_LEVEL_BUNDLE 5       /* level + field grid (every value >= 5) */
+
 /* 0x00549E50 */
 void __thandor_preserve_eax
 FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *listControl);

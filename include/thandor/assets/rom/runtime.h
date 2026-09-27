@@ -14,6 +14,15 @@
 /* Submodule: assets/rom/runtime. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Frontend ROM action table (g_FrontendActiveRomRecordTable): a 0x200-byte header whose dword at +0x3C is the
+   entry count, followed by 0x200-byte entries; each entry holds camera-flight keyframes of 0x20 bytes at +0x40. */
+#define FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE 0x200
+#define FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET 0x3c
+#define FRONTEND_ROM_ACTION_ENTRY_SIZE 0x200
+#define FRONTEND_ROM_ACTION_KEYFRAME_SIZE 0x20
+/* Elapsed-tick value beyond every flight's last keyframe time: ends the flight on the next frame. */
+#define FRONTEND_ROM_TRANSITION_SKIP_TICKS 0x10000000
+
 /* 0x005452A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendRomActionTable_ExecuteRecord

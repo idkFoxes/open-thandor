@@ -12,17 +12,10 @@
 /* Implementation ownership: gameplay/session/runtime. */
 
 /* Address: 0x00564F70.
-   Ownership: gameplay/session/runtime.
-   Purpose: Chooses new-session or loaded-session initialization, processes frames until an exit flag is raised,
-   performs the matching movie or frontend transition, and releases the in-game runtime resources. Typed
-   parameters: p3 loadExistingSessionFlag→FrontendBooleanState32_V342. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: InGameRuntime_InitializeNewSession, InGameRuntime_InitializeLoadedSession,
-   InGameRuntime_ShutdownAndReleaseResources.
-   Cross-module calls: UiRootStack_InvalidateAll [ui/controls/layout], UiFrame_ProcessAndPresent
-   [ui/controls/layout], GridScratch_ReleaseBuffers [world/pathing/grid],
-   OldUnitRuntime_RebuildScenarioReplayTables [gameplay/faction/runtime], UiRuntime_SetSynchronizationHooks
-   [ui/core/runtime], UiRootStack_PopUntilWindowTextureBoundary [ui/controls/text].
+   Runs one in-game session from the frontend: starts a new level or loads a saved game (bit 0 of
+   loadExistingSessionFlag), then renders frames until the session is closed, the end movie is due or the local
+   player left, tears the session down along the matching path and returns to the frontend. A failed start or an
+   emptied UI root stack returns an error code with CF set, which the caller hands to the fatal-error dispatcher.
 */
 SessionRunResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_RunSessionUntilExit
@@ -33,8 +26,8 @@ InGameRuntime_RunSessionUntilExit
   uint32_t startupErrorOrExitCode;
   NewSessionInitResult newSessionInit;
   LoadedSessionInitResult loadedSessionInit;
-  SessionRunResult abortResult;
-  SessionRunResult quitResult;
+  SessionRunResult localPlayerLeftResult;
+  SessionRunResult sessionClosedResult;
   SessionRunResult endMovieResult;
   SessionRunResult failureResult;
   
@@ -51,36 +44,37 @@ InGameRuntime_RunSessionUntilExit
     goto InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCarrySet;
   }
   do {
-    g_TestAidInGameFrames = g_TestAidInGameFrames + 1;
-    g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks + -2;
+    g_TestAidInGameFrames++; /* project test aid, not part of the original code */
+    /* two pending simulation ticks are consumed per rendered frame, clamped at zero */
+    g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks - 2;
     if ((int)g_InGamePendingSimulationTicks < 0) {
       g_InGamePendingSimulationTicks = 0;
     }
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresent();
-    if ((g_UiCommandRuntimeFlags & 0x10000) != 0) {
+    /* The success paths return 0x0C in EAX; callers ignore it because CF is clear. */
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED) != 0) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       g_EndMovieSelectionIndex = 0;
       OldUnitRuntime_RebuildScenarioReplayTables();
-      UiRuntime_SetSynchronizationHooks
-                ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
+      UiRuntime_SetSynchronizationHooks(NULL,NULL);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
-      quitResult.exitCodeOrError = 0xc;
-      quitResult.failed = false;
-      return quitResult;
+      sessionClosedResult.exitCodeOrError = 0xc;
+      sessionClosedResult.failed = false;
+      return sessionClosedResult;
     }
-    if ((g_UiCommandRuntimeFlags & 0x800) != 0) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
+      /* FrontendSession_PeriodicTick keeps running under the in-game tick lock while the end movie plays */
       UiRuntime_SetSynchronizationHooks(FrontendSession_PeriodicTick,&g_InGameStateTickSpinLock);
       Frontend_PlaySelectedEndMovie();
       OldUnitRuntime_RebuildScenarioReplayTables();
-      UiRuntime_SetSynchronizationHooks
-                ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
+      UiRuntime_SetSynchronizationHooks(NULL,NULL);
       UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16 = 0;
@@ -88,20 +82,19 @@ InGameRuntime_RunSessionUntilExit
       endMovieResult.failed = false;
       return endMovieResult;
     }
-    if ((g_UiCommandRuntimeFlags & 0x20000) != 0) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT) != 0) {
       g_SoundStopAllVoices();
       g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
-      UiRuntime_SetSynchronizationHooks
-                ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
+      UiRuntime_SetSynchronizationHooks(NULL,NULL);
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16 = 0;
-      abortResult.exitCodeOrError = 0xc;
-      abortResult.failed = false;
-      return abortResult;
+      localPlayerLeftResult.exitCodeOrError = 0xc;
+      localPlayerLeftResult.failed = false;
+      return localPlayerLeftResult;
     }
-  } while (g_UiRootNode != (UiRootNode *)0xffffffff);
-  startupErrorOrExitCode = 0x14;
+  } while (g_UiRootNode != UI_ROOT_STACK_END);
+  startupErrorOrExitCode = FATAL_ERROR_GENERAL_FAILURE;
 InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCarrySet:
   InGameRuntime_ShutdownAndReleaseResources();
   failureResult.failed = true;

@@ -14,6 +14,78 @@
 /* Submodule: ui/frontend/runtime. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Frontend menu state machine (Frontend_MainLoop).
+   g_FrontendPendingPageAction holds the next step of the menu. A ROM action-table record writes it when the
+   player activates a menu entry (FrontendRomActionTable_ExecuteRecord; 3, 4 and 9 are refused in a network
+   session, 2 needs a network backend), Frontend_MainLoop writes it after re-initialising the frontend. Every
+   frame Frontend_MainLoop performs the pending action and resets it to FRONTEND_PAGE_ACTION_NONE; the
+   "wait" actions stay pending until every player block has reached the matching FRONTEND_PLAYER_STATE_* bit. */
+#define FRONTEND_PAGE_ACTION_NONE 0
+#define FRONTEND_PAGE_ACTION_START_SESSION 1 /* leave the frontend, run a new session of the loaded level */
+#define FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE 2
+#define FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE 3
+#define FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE 4 /* quit confirmation, page-stack page 9 (FrontendSession_ShowQuitConfirmPage) */
+#define FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE 5 /* waits for the scenario catalogue exchange */
+#define FRONTEND_PAGE_ACTION_RESUME_SAVED_SESSION 6 /* leave the frontend, run the loaded save (load flag 1) */
+#define FRONTEND_PAGE_ACTION_TASK_ASSIGNMENT_PAGE 7 /* waits until every player is ready for it */
+#define FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE 8 /* waits until every player has the level */
+#define FRONTEND_PAGE_ACTION_CREDITS 9
+/* Any other value tears the frontend down and rebuilds it at the entry record. */
+
+/* Record ids in engine\zentrale.rom that Frontend_Init activates (the camera/room the menu starts in).
+   1 is the entry record ProcessEntry passes to Frontend_MainLoop. */
+#define FRONTEND_ROM_RECORD_MAIN_MENU 1
+#define FRONTEND_ROM_RECORD_MISSION_BRIEFING 10 /* followed by FRONTEND_PAGE_ACTION_MISSION_BRIEFING_PAGE */
+#define FRONTEND_ROM_RECORD_SCENARIO_SELECTION 12 /* followed by FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE */
+
+/* Bits of FrontendPlayerRuntimeRecord.factionAssignment.roleStateFlags: per-player progress through the
+   network menu handshake, set locally or from the peer's packets (ui/frontend/player, assets/scenario/catalog). */
+#define FRONTEND_PLAYER_STATE_SCENARIO_CATALOG 0x01 /* scenario catalogue exchanged */
+#define FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT 0x02 /* ready for the task-assignment page */
+#define FRONTEND_PLAYER_STATE_LEVEL_LOADED 0x04 /* level package loaded locally */
+#define FRONTEND_PLAYER_STATE_LEVEL_RECEIVED 0x08 /* level package received from / confirmed to the host */
+#define FRONTEND_PLAYER_STATE_LEVEL_READY_MASK 0x0C
+
+/* Pages of FrontendUiImage.frontendPageStack (see generated/ui_templates.h). */
+#define FRONTEND_PAGE_NETWORK_GAME 1 /* protocol, player name, host address, session list */
+#define FRONTEND_PAGE_HOST_GAME_SETUP 2
+#define FRONTEND_PAGE_HOST_LOBBY 3
+#define FRONTEND_PAGE_OPTIONS 5
+#define FRONTEND_PAGE_QUIT_CONFIRM 9
+#define FRONTEND_PAGE_FACTION_SETUP 11 /* FrontendTaskAssignmentPage_Initialize */
+#define FRONTEND_PAGE_MISSION_BRIEFING 12
+/* Up to 640 pixels wide the dialog pages cover the menu room, so opening one also stops the room's 3D
+   rendering: FrontendModelPointerContext_RenderWorldViewQueuesClipped returns at once while
+   FRONTEND_MENU_ROOM_RENDER_SUPPRESSED is set in menuRoomModelView's contextFlags (+0x4C). */
+#define FRONTEND_COMPACT_LAYOUT_MAX_WIDTH 640
+#define FRONTEND_MENU_ROOM_RENDER_SUPPRESSED 0x2000
+/* UiSelectableControl.stateFlags bit set together with UI_NODE_SUPPRESSED to switch a frontend button off:
+   sprite buttons skip it in the hit test and draw it only while selected (ui/controls/buttons). */
+#define FRONTEND_CONTROL_INACTIVE 0x400
+/* Action ids of frontend controls (UiSelectableControl.actionId; handler g_UiActionPage20InitializedHandlers
+   [id - 0x2000]). UiNodeList_SuppressActionId/UnsuppressActionId hide and show the controls carrying one. */
+#define FRONTEND_ACTION_HOST_GAME 0x2001 /* networkGameHostButton */
+#define FRONTEND_ACTION_JOIN_GAME 0x2002 /* networkGameJoinButton */
+#define FRONTEND_ACTION_KICK_PLAYER 0x200B /* hostLobbyKickPlayerButton */
+#define FRONTEND_ACTION_LINK_ROTATION_ZOOM 0x203E /* linkRotationZoomCheckbox */
+#define FRONTEND_ACTION_LINK_ROTATION_TILT 0x203F /* linkRotationTiltCheckbox */
+#define FRONTEND_ACTION_GAME_SPEED 0x204A /* gameSpeedSlider on the mission briefing page */
+/* g_FrontendNetworkState, dispatched by Frontend_StateTick (values 3..5 are set by network/protocol/transfer). */
+#define FRONTEND_NETWORK_STATE_IDLE 0
+#define FRONTEND_NETWORK_STATE_BROWSING 1 /* network game page: polls for sessions, handles join acks */
+#define FRONTEND_NETWORK_STATE_HOSTING 2 /* host lobby: publishes the session, handles joining players */
+/* Text resource ids of the faction setup and mission briefing pages. */
+#define TEXT_ID_FACTION_NAME_BASE 0x2173
+#define TEXT_ID_FACTION_SETUP_TASK_TEMPLATE 0x218C /* "Task description (%s):", combined with the level title */
+#define TEXT_ID_FACTION_MODE_PLAYER 0x2198 /* mode button captions */
+#define TEXT_ID_FACTION_MODE_NOBODY 0x2199
+#define TEXT_ID_FACTION_MODE_COMPUTER 0x219A
+#define TEXT_ID_MISSION_BRIEFING_TEMPLATE 0x219B /* combined with the level title */
+
+/* g_FrontendRuntimeFlags bit set by Frontend_Init; cleared once every player has reported ready
+   (FrontendPlayerRuntime_RecordReadyAndUpdateWaitState), which ends Frontend_Init's wait loop. */
+#define FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS 0x10
+
 /* 0x00546BD0 */
 FrontendMainLoopResult __thandor_eax_cf_preserve_ecx_edx
 Frontend_MainLoop(RomRecordId frontendEntryRecordId);
