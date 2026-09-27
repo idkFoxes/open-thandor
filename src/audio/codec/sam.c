@@ -8,6 +8,9 @@
 #include <thandor/audio/codec/sam.h>
 #include <thandor/thandor.h>
 
+/* Two 32-bit MMX lanes as one qword (high lane in the upper half), as PUNPCKLDQ builds them. */
+#define SAM_PACK_LANE_PAIR(highLane, lowLane) ((ulonglong)(dword)(highLane) << 32 | (dword)(lowLane))
+
 /* Implementation ownership: audio/codec/sam. */
 
 /* Address: 0x00417700.
@@ -740,7 +743,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
             (int)coefficientPairProducts232 + (int)coefficientPairProducts8 +
             (int)coefficientPairProducts249 + (int)coefficientPairProducts17;
     packedOutputWords1 =
-         CONCAT44(bank0HighLaneSum * 0x20,
+         SAM_PACK_LANE_PAIR(bank0HighLaneSum * 0x20,
                   (bank0HighLaneSum + (int)coefficientPairProducts46 + (int)coefficientPairProducts45 +
                            (int)coefficientPairProducts47 + (int)coefficientPairProducts50 +
                            (int)coefficientPairProducts36 + (int)coefficientPairProducts35 +
@@ -774,7 +777,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
                            (int)coefficientPairProducts230 + (int)coefficientPairProducts229 +
                            (int)coefficientPairProducts231 + (int)coefficientPairProducts250) * 0x20
                  ) >> 0x10 & g_SoundDecodeMmxWordLaneMask0 |
-         CONCAT44(bank1HighLaneSum * 0x20,
+         SAM_PACK_LANE_PAIR(bank1HighLaneSum * 0x20,
                   (bank1HighLaneSum + (int)coefficientPairProducts252 + (int)coefficientPairProducts251 +
                            (int)coefficientPairProducts253 + (int)coefficientPairProducts256 +
                            (int)coefficientPairProducts242 + (int)coefficientPairProducts241 +
@@ -808,7 +811,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
                            (int)coefficientPairProducts6 + (int)coefficientPairProducts5 +
                            (int)coefficientPairProducts7 + (int)coefficientPairProducts18) * 0x20) &
          g_SoundDecodeMmxWordLaneMask1 |
-         CONCAT44((bank3LowLaneSum + (int)(coefficientPairProducts48 >> 0x20) +
+         SAM_PACK_LANE_PAIR((bank3LowLaneSum + (int)(coefficientPairProducts48 >> 0x20) +
                            (int)(coefficientPairProducts254 >> 0x20) +
                            (int)(coefficientPairProducts49 >> 0x20) +
                            (int)(coefficientPairProducts255 >> 0x20) +
@@ -873,7 +876,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
                            (int)(coefficientPairProducts249 >> 0x20) +
                            (int)(coefficientPairProducts17 >> 0x20)) * 0x20,bank3LowLaneSum * 0x20) &
          g_SoundDecodeMmxWordLaneMask3 |
-         CONCAT44((bank2LowLaneSum + (int)(coefficientPairProducts91 >> 0x20) +
+         SAM_PACK_LANE_PAIR((bank2LowLaneSum + (int)(coefficientPairProducts91 >> 0x20) +
                            (int)(coefficientPairProducts124 >> 0x20) +
                            (int)(coefficientPairProducts93 >> 0x20) +
                            (int)(coefficientPairProducts123 >> 0x20) +
@@ -1680,7 +1683,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
              (int)mm3PackedValue86 + (int)mm2PackedValue89 + (int)mm3PackedValue89 +
              (int)mm2PackedValue92 + (int)mm3PackedValue92 + (int)mm2PackedValue95 +
              (int)mm3PackedValue95;
-    packedOutputWords = CONCAT44(bank0HighLaneSum * 0x20,
+    packedOutputWords = SAM_PACK_LANE_PAIR(bank0HighLaneSum * 0x20,
                      (bank0HighLaneSum + (int)mm2PackedValue0 + (int)mm2PackedValue1 + (int)mm2PackedValue3 +
                               (int)mm2PackedValue4 + (int)mm2PackedValue6 + (int)mm2PackedValue7 +
                               (int)mm2PackedValue9 + (int)mm2PackedValue10 + (int)mm2PackedValue12 +
@@ -1707,7 +1710,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
                               (int)mm2PackedValue88 + (int)mm2PackedValue90 + (int)mm2PackedValue91
                               + (int)mm2PackedValue93 + (int)mm2PackedValue94) * 0x20) >> 0x10 &
             g_SoundDecodeMmxWordLaneMask0 |
-            CONCAT44(bank1HighLaneSum * 0x20,
+            SAM_PACK_LANE_PAIR(bank1HighLaneSum * 0x20,
                      (bank1HighLaneSum + (int)mm3PackedValue0 + (int)mm3PackedValue1 + (int)mm3PackedValue3 +
                               (int)mm3PackedValue4 + (int)mm3PackedValue6 + (int)mm3PackedValue7 +
                               (int)mm3PackedValue9 + (int)mm3PackedValue10 + (int)mm3PackedValue12 +
@@ -1734,7 +1737,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
                               (int)mm3PackedValue88 + (int)mm3PackedValue90 + (int)mm3PackedValue91
                               + (int)mm3PackedValue93 + (int)mm3PackedValue94) * 0x20) &
             g_SoundDecodeMmxWordLaneMask1 |
-            CONCAT44((bank3LowLaneSum + (int)((ulonglong)mm2PackedValue2 >> 0x20) +
+            SAM_PACK_LANE_PAIR((bank3LowLaneSum + (int)((ulonglong)mm2PackedValue2 >> 0x20) +
                                (int)((ulonglong)mm3PackedValue2 >> 0x20) +
                                (int)((ulonglong)mm2PackedValue5 >> 0x20) +
                                (int)((ulonglong)mm3PackedValue5 >> 0x20) +
@@ -1799,7 +1802,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
                                (int)((ulonglong)mm2PackedValue95 >> 0x20) +
                                (int)((ulonglong)mm3PackedValue95 >> 0x20)) * 0x20,bank3LowLaneSum * 0x20) &
             g_SoundDecodeMmxWordLaneMask3 |
-            CONCAT44((bank2LowLaneSum + (int)((ulonglong)mm0PackedValue0 >> 0x20) +
+            SAM_PACK_LANE_PAIR((bank2LowLaneSum + (int)((ulonglong)mm0PackedValue0 >> 0x20) +
                                (int)((ulonglong)mm1PackedValue0 >> 0x20) +
                                (int)((ulonglong)mm0PackedValue1 >> 0x20) +
                                (int)((ulonglong)mm1PackedValue1 >> 0x20) +
@@ -2669,7 +2672,7 @@ SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coeff
             (int)mm3PackedValue95;
     cosineBankCursor = cosineBankCursor + 0x400;
     mm0PackedValue64 =
-         psraw(CONCAT44(bank0HighLaneSum,bank0HighLaneSum + (int)mm2PackedValue0 + (int)mm2PackedValue1 +
+         psraw(SAM_PACK_LANE_PAIR(bank0HighLaneSum,bank0HighLaneSum + (int)mm2PackedValue0 + (int)mm2PackedValue1 +
                                       (int)mm2PackedValue3 + (int)mm2PackedValue4 +
                                       (int)mm2PackedValue6 + (int)mm2PackedValue7 +
                                       (int)mm2PackedValue9 + (int)mm2PackedValue10 +
@@ -2702,7 +2705,7 @@ SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coeff
                                       (int)mm2PackedValue90 + (int)mm2PackedValue91 +
                                       (int)mm2PackedValue93 + (int)mm2PackedValue94) >> 0x10 &
                g_SoundDecodeMmxWordLaneMask0 |
-               CONCAT44(bank1HighLaneSum,bank1HighLaneSum + (int)mm3PackedValue0 + (int)mm3PackedValue1 +
+               SAM_PACK_LANE_PAIR(bank1HighLaneSum,bank1HighLaneSum + (int)mm3PackedValue0 + (int)mm3PackedValue1 +
                                       (int)mm3PackedValue3 + (int)mm3PackedValue4 +
                                       (int)mm3PackedValue6 + (int)mm3PackedValue7 +
                                       (int)mm3PackedValue9 + (int)mm3PackedValue10 +
@@ -2735,7 +2738,7 @@ SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coeff
                                       (int)mm3PackedValue90 + (int)mm3PackedValue91 +
                                       (int)mm3PackedValue93 + (int)mm3PackedValue94) &
                g_SoundDecodeMmxWordLaneMask1 |
-               CONCAT44(bank3LowLaneSum + (int)((ulonglong)mm2PackedValue2 >> 0x20) +
+               SAM_PACK_LANE_PAIR(bank3LowLaneSum + (int)((ulonglong)mm2PackedValue2 >> 0x20) +
                                 (int)((ulonglong)mm3PackedValue2 >> 0x20) +
                                 (int)((ulonglong)mm2PackedValue5 >> 0x20) +
                                 (int)((ulonglong)mm3PackedValue5 >> 0x20) +
@@ -2800,7 +2803,7 @@ SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coeff
                                 (int)((ulonglong)mm2PackedValue95 >> 0x20) +
                                 (int)((ulonglong)mm3PackedValue95 >> 0x20),bank3LowLaneSum) &
                g_SoundDecodeMmxWordLaneMask3 |
-               CONCAT44(bank2LowLaneSum + (int)((ulonglong)mm0PackedValue1 >> 0x20) +
+               SAM_PACK_LANE_PAIR(bank2LowLaneSum + (int)((ulonglong)mm0PackedValue1 >> 0x20) +
                                 (int)((ulonglong)mm1PackedValue1 >> 0x20) +
                                 (int)((ulonglong)mm0PackedValue3 >> 0x20) +
                                 (int)((ulonglong)mm1PackedValue3 >> 0x20) +
