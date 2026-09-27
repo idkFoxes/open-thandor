@@ -559,4 +559,16 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
     return color;
 }
 
+/* ---- WP3: 32-bit framebuffer blend modes ----------------------------------------------------- */
+
+/* Depth rule of the alpha-blended modes that write depth (4/6, 12/14): write the depth when the
+   blend index of the Q4 source colour, (word)alpha >> 4, is above 0x7f, i.e. the source alpha is
+   >= 128 (a negative lane also passes). The textured modes 20/22/28/30 test exactly this on their
+   modulated colour. The untextured modes 4/6/12/14 of the original instead test a stale MM2 that
+   they never load (see docs/software_raster.md); the C implementation deliberately uses this rule. */
+static __inline int Raster32_BlendWritesDepth(RasterColor sourceQ4)
+{
+    return ((word)sourceQ4.lane[RASTER_LANE_ALPHA] >> 4) > 0x7f;
+}
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
