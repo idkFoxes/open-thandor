@@ -2980,8 +2980,8 @@ FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
    (terrainHeight + waterSurfaceDelta) of the six hexagonal neighbours 1/8 of the way toward the source
    cell's surface. Sources with negative water or FIELD_CELL_FLUID_SOURCE_EXCLUDED are skipped, receivers
    with FIELD_CELL_FLUID_RECEIVER_EXCLUDED are left alone.
-   NOTE: the original reads the source from the centre cell itself ([ESI+0x4C] with ESI = centre); this C
-   reads it from centerCell[1], one cell to the right (see the stage-2 notes).
+   The source is the centre cell itself ([ESI+0x4C] with ESI = centre); verified against the original
+   machine code by OPEN_THANDOR_SELFTEST=relaxcmp.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
@@ -3002,10 +3002,9 @@ TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
     centerCell = rowStartCell;
     do {
       centerCell++;
-      if ((-1 < centerCell[1].waterSurfaceDelta) &&
-         ((centerCell[1].flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
-        sourceSurfaceHeightQ12 =
-             centerCell[1].waterSurfaceDelta + centerCell[1].terrainHeight;
+      if ((-1 < centerCell->waterSurfaceDelta) &&
+         ((centerCell->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
+        sourceSurfaceHeightQ12 = centerCell->waterSurfaceDelta + centerCell->terrainHeight;
         if ((centerCell[-gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
             0) {
           centerCell[-gridWidth].waterSurfaceDelta =
@@ -3061,8 +3060,7 @@ TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
    cells backwards from the bottom-right, so water spreads evenly in both directions over two ticks.
    Cells are addressed by raw byte offsets (cell size 0x80; +0x48 terrainHeight, +0x4C waterSurfaceDelta,
    +0x50 flagsAndMaterial; +/-0x80 is the next/previous cell).
-   NOTE: the original reads the source from the centre cell (ESI); this C reads it at -0x34/-0x30/-0x38,
-   i.e. from the cell to the left of the centre (see the stage-2 notes).
+   The source is the centre cell itself (ESI); verified by OPEN_THANDOR_SELFTEST=relaxcmp.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
@@ -3087,10 +3085,10 @@ TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
     centerCellAddress = rowStartCellAddress;
     do {
       centerCellAddress = centerCellAddress - 0x80;
-      if ((-1 < *(int *)(centerCellAddress + -0x34)) &&
-         ((*(uint32_t *)(centerCellAddress + -0x30) & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
+      if ((-1 < *(int *)(centerCellAddress + 0x4c)) &&
+         ((*(uint32_t *)(centerCellAddress + 0x50) & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
         sourceSurfaceHeightQ12 =
-             *(int *)(centerCellAddress + -0x34) + *(int *)(centerCellAddress + -0x38);
+             *(int *)(centerCellAddress + 0x4c) + *(int *)(centerCellAddress + 0x48);
         upperCellAddress = centerCellAddress + rowLength * -0x80;
         if ((*(uint32_t *)(upperCellAddress + 0x50) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           neighborWaterDeltaAddress = upperCellAddress + 0x4c;
@@ -3164,9 +3162,9 @@ TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
     cellBeforeSource = sourceCell;
     do {
       cellBeforeSource = cellBeforeSource + 1;
-      if ((cellBeforeSource[1].flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0) {
+      if ((cellBeforeSource->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0) {
         sourceSurfaceHeightQ12 =
-             cellBeforeSource[1].waterSurfaceDelta + cellBeforeSource[1].terrainHeight;
+             cellBeforeSource->waterSurfaceDelta + cellBeforeSource->terrainHeight;
         if ((cellBeforeSource[-gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
             0) {
           cellBeforeSource[-gridWidth].waterSurfaceDelta =
@@ -3249,9 +3247,9 @@ TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
     cellAfterSourceAddress = sourceCellAddress;
     do {
       cellAfterSourceAddress = cellAfterSourceAddress + -0x80;
-      if ((*(uint32_t *)(cellAfterSourceAddress + -0x30) & 0x40000000) == 0) {
+      if ((*(uint32_t *)(cellAfterSourceAddress + 0x50) & 0x40000000) == 0) {
         sourceSurfaceHeightQ12 =
-             *(int *)(cellAfterSourceAddress + -0x34) + *(int *)(cellAfterSourceAddress + -0x38);
+             *(int *)(cellAfterSourceAddress + 0x4c) + *(int *)(cellAfterSourceAddress + 0x48);
         upperRowCellAddress = cellAfterSourceAddress + rowLength * -0x80;
         if ((*(uint32_t *)(upperRowCellAddress + 0x50) & 0x20000000) == 0) {
           neighborWaterDeltaAddress = upperRowCellAddress + 0x4c;

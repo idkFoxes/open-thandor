@@ -138,6 +138,7 @@ static void Thandor_SelfTestStretch(void)
 void Thandor_SelfTestRasterCompare(void);
 void Thandor_SelfTestBlendScaleCompare(void);
 void Thandor_SelfTestBlitCompare(void);
+void Thandor_SelfTestRelaxCompare(void);
 
 typedef void (__stdcall *OriginalStretchProc)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, void *, void *);
 
@@ -493,6 +494,10 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
         }
         if (value != NULL && strcmp(value, "blitcmp") == 0) {
             Thandor_SelfTestBlitCompare(); /* selftest_blit.c */
+            return 0;
+        }
+        if (value != NULL && strcmp(value, "relaxcmp") == 0) {
+            Thandor_SelfTestRelaxCompare(); /* selftest_relax.c */
             return 0;
         }
         if (value != NULL && strcmp(value, "crash") == 0) {
