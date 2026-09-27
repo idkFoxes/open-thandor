@@ -34,6 +34,8 @@ Environment:
   OPEN_THANDOR_RASTERCMP_RUNS    runs per handler (default 300)
   OPEN_THANDOR_RASTERCMP_FILTER  only handlers whose name contains this text (e.g. "Raster16_Mode0")
   OPEN_THANDOR_RASTERCMP_SEED    base seed (default 1)
+  OPEN_THANDOR_RASTERCMP_STATE   set: log where the scan state differs (first two runs per handler)
+Mode04/06/12/14 (all families) read MM2 without loading it; see RasterReadsStaleMm2.
 Log lines start with "rastercmp" (thandor.log next to the executable).
 */
 
@@ -617,7 +619,8 @@ void Thandor_SelfTestRasterCompare(void)
             }
             else if (stateDiff >= 0) {
                 stateDiffs++;
-                if (stateDiffs <= 2) {
+                /* expected once a handler keeps its scan state in locals; details on request */
+                if (stateDiffs <= 2 && getenv("OPEN_THANDOR_RASTERCMP_STATE") != NULL) {
                     Thandor_Log("rastercmp %s run %d: state differs at +0x%02x (mine %02x theirs %02x)",
                                 testCase->name, run, stateDiff, mine.state[stateDiff], theirs.state[stateDiff]);
                 }

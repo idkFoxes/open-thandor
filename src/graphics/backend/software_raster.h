@@ -194,6 +194,18 @@ static __inline RasterColor Raster_Unpack16(word pixel)
     return result;
 }
 
+/* Unpacks a 32-bit pixel (blue in the low byte) into lanes of (c * 0x101) >> 4, about channel * 16
+   (Q4): MOVD + PUNPCKLBW with itself + PSRLW 4. Used by the Non16 and Aux families. */
+static __inline RasterColor Raster_Unpack32(dword pixel)
+{
+    RasterColor result;
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        result.lane[i] = (short)((Raster_Channel(pixel, i) * 0x101) >> 4);
+    }
+    return result;
+}
+
 /* Packs four channel bytes into a 16-bit framebuffer pixel with the runtime 565/555 constants:
    widen to 12 bits (PUNPCKLBW + PSRLW 4), keep the channel's top bits (PAND), move them into place
    with PMADDWD and add the two dword halves. */
