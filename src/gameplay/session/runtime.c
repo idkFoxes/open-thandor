@@ -45,6 +45,14 @@ InGameRuntime_RunSessionUntilExit
   }
   do {
     g_TestAidInGameFrames++; /* project test aid, not part of the original code */
+    {
+      /* Open Thandor addition: -EDITOR opens the hidden map editor on the first frame of the first session. */
+      static bool editorOpenedAtStart;
+      if (!editorOpenedAtStart && MapEditor_DirectStartRequested()) {
+        editorOpenedAtStart = true;
+        MapEditor_Open();
+      }
+    }
     /* two pending simulation ticks are consumed per rendered frame, clamped at zero */
     g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks - 2;
     if ((int)g_InGamePendingSimulationTicks < 0) {

@@ -2976,6 +2976,48 @@ void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(voi
 }
 
 
+/* ---- Open Thandor addition, not in the original: the hidden map editor ----
+   The shipped game contains an in-game map editor that is only ever closed, never opened:
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState is only called with bit 2 set (close). With bit 2
+   clear it pauses the game, shows the editor tabs and hands the keyboard to
+   InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags, whose own keys close it again. */
+
+/* -EDITOR on the command line: the editor opens on the first in-game frame of the first session. */
+bool MapEditor_DirectStartRequested(void)
+{
+  static int requested = -1;
+  if (requested < 0) {
+    static char optionName[] = "EDITOR";
+    requested = !g_CommandLineFindOption(sizeof optionName - 1,optionName).notFound;
+  }
+  return requested != 0;
+}
+
+void MapEditor_Open(void)
+{
+  /* The terrain tools accumulate height deltas in a per-player dword plane of gridWidth * gridHeight cells
+     (terrainHeightScratchPlane8088). No code in the shipped game allocates it, so do it here, once per grid
+     size; it is never freed. */
+  static int *editorScratchPlane;
+  static uint32_t editorScratchPlaneCells;
+  FieldGridAsset *fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  uint32_t cells = fieldGrid->gridWidth * fieldGrid->gridHeight;
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
+    return;
+  }
+  if ((editorScratchPlane == NULL) || (editorScratchPlaneCells != cells)) {
+    editorScratchPlane = (int *)calloc(cells,sizeof(int));
+    editorScratchPlaneCells = cells;
+  }
+  if (editorScratchPlane == NULL) {
+    return;
+  }
+  g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->terrainHeightScratchPlane8088 = editorScratchPlane;
+  Thandor_Log("editor: open (%u cells)",cells);
+  InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,0);
+}
+
+
 /* Continuation addresses stored in g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 (entry points
    inside the original function; the rewritten dispatcher below switches on them). */
 enum InGameKeyCommandContinuation {
@@ -3039,29 +3081,10 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlags
   bool commandsBlocked =
        (g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0;
 
-  /* Open Thandor addition, not in the original: Ctrl+Alt+K opens the hidden map editor (single player only).
-     The original only ever calls InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState with bit 2 set
-     (close); with bit 2 clear it pauses the game, shows the editor tabs and hands the keyboard to
-     InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags, whose own keys close it again. */
+  /* Open Thandor addition, not in the original: Ctrl+Alt+K opens the hidden map editor (single player only). */
   if ((commandCode == KEYBOARD_KEY_CODE_CHAR('k')) && localSession &&
       ((modifierFlags & KEYBOARD_STATE_CTRL) != 0) && ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) {
-    /* The terrain tools accumulate height deltas in a per-player dword plane of gridWidth * gridHeight cells
-       (terrainHeightScratchPlane8088). No code in the shipped game allocates it, so do it here, once per grid
-       size; it is never freed (the process keeps at most one plane per size change). */
-    static int *editorScratchPlane;
-    static uint32_t editorScratchPlaneCells;
-    FieldGridAsset *fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-    uint32_t cells = fieldGrid->gridWidth * fieldGrid->gridHeight;
-    if ((editorScratchPlane == NULL) || (editorScratchPlaneCells != cells)) {
-      editorScratchPlane = (int *)calloc(cells,sizeof(int));
-      editorScratchPlaneCells = cells;
-    }
-    if (editorScratchPlane == NULL) {
-      return;
-    }
-    g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->terrainHeightScratchPlane8088 = editorScratchPlane;
-    Thandor_Log("editor: open (%u cells)",cells);
-    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,0);
+    MapEditor_Open();
     return;
   }
 

@@ -163,4 +163,9 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source);
 /* 0x005669B0 */
 void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void);
 
+
+/* Open Thandor addition: the hidden map editor (ui/ingame/runtime.c) */
+bool MapEditor_DirectStartRequested(void);
+void MapEditor_Open(void);
+
 #endif /* THANDOR_UI_INGAME_RUNTIME_H */
