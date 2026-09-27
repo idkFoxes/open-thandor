@@ -441,7 +441,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
       THANDOR_UI_AT(Thandor_UiRoot(source),0x15ac),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1544));
     if (!selectedArea.carry) {
-      doubledTechnologyId = selectedArea.node[-1].layoutHeight - 0x300000;
+      /* the dword 8 bytes before the selected area tab (see InGameTechnologyPanel_Rebuild) */
+      doubledTechnologyId = THANDOR_UI_FIELD(selectedArea.node,-8,sdword) - 0x300000;
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -472,7 +473,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
 void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
 
 {
-  sdword *scrollableControl;
+  UiScrollableControl *scrollableControl;
   int *entityDefinition;
   int technologyId;
   int rowFlagOffset;
@@ -518,7 +519,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
     resolvedName = TextResource_Resolve(*(int *)(definitionOrEnergyCost + 4) + 0x18004f);
     RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.eax,resolvedText.eax);
     armyRecord = ArmyAssetRegistry_FindByIdCf((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
-    inGameRoot[0x4e].base.bottom = armyRecord.eax[1].rootNodeOffsetOrPointer;
+    ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
+         (GraphicsTextureSourceAsset *)armyRecord.eax[1].rootNodeOffsetOrPointer;
     UiNodeList_SuppressActionId(0x1014,&inGameRoot->base);
     UiNodeList_SuppressActionId(0x1015,&inGameRoot->base);
     UiNodeList_SuppressActionId(0x1016,&inGameRoot->base);
@@ -534,10 +536,15 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
                           (firstSelectedEntity->common).ownership.ownerIndex);
       if (isAvailable) {
         technologyId = *(int *)(definitionOrEnergyCost + 0x1c4 + remainingCount * 4);
-        *(int *)((int)&inGameRoot[1].base.nextSibling + *(int *)(areaIndex * 4 + THANDOR_ADDR(g_TechnologyPanelRowValueOffsets,0))) = technologyId;
+        /* the area tab's icon (technologyAreaTabNIcon) shows subresource technologyId of tech.gfx */
+        ((UiImagePanelControl *)
+         THANDOR_UI_AT(inGameRoot,*(int *)(areaIndex * 4 + THANDOR_ADDR(g_TechnologyPanelRowValueOffsets,0))))->
+        subresource = technologyId;
         rowFlagOffset = *(int *)(areaIndex * 4 + THANDOR_ADDR(g_TechnologyPanelRowFlagOffsets,0));
-        actionId = *(UiActionId *)((int)&inGameRoot->callbacks + rowFlagOffset);
-        *(int *)((int)inGameRoot + rowFlagOffset + -8) = technologyId * 2 + 0x300000;
+        /* rowFlagOffset is the area tab technologyAreaTabN; the dwords 8 and 4 bytes before it (the +0x60/+0x64
+           slots of the preceding 0x68-byte text button) hold the area's text id and a text pointer */
+        actionId = ((UiSelectableControl *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))->actionId;
+        THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,int) = technologyId * 2 + 0x300000;
         firstNode = inGameRoot;
         resolvedText = TextResource_Resolve(0x2181);
         labelText = resolvedText.eax;
@@ -545,9 +552,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
         formattedText = labelText;
         stream = labelText;
         source = labelText;
-        resolvedText = TextResource_Resolve(*(TextResourceId *)((int)inGameRoot + rowFlagOffset + -8));
+        resolvedText = TextResource_Resolve(THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,TextResourceId));
         RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.eax,labelText);
-        labelText = *(word **)((int)inGameRoot + rowFlagOffset + -4);
+        labelText = THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -4,word *);
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                    (int)g_TechnologyAsset->records[*(int *)(definitionOrEnergyCost + 0x1c4 + remainingCount * 4)].
@@ -571,23 +578,24 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       THANDOR_UI_AT(inGameRoot,0x15ac),
       THANDOR_UI_AT(inGameRoot,0x1544));
     if (selectedArea.carry) {
-      playerBlock = g_SelectionPlayerRuntimeBlockPointers[(int)inGameRoot[0x20].base.vtable];
+      playerBlock = g_SelectionPlayerRuntimeBlockPointers
+                    [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
-      inGameRoot[0x51].base.nextSibling = (UiNodeBase *)0x217f;
-      inGameRoot[0x3d].base.rightAnchorQ31 = 0x2180;
-      inGameRoot[0x50].base.bottomOffset = 6;
-      inGameRoot[0x50].base.leftAnchorQ31 = 6;
+      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (word *)0x217f;
+      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x2180;
+      INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = 6;
+      INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = 6;
       if ((playerBlock->assignmentFlags80A4 & 0x80) == 0) {
         UiNodeList_SuppressActionId(0x1013,&inGameRoot->base);
       }
-      scrollableControl = &inGameRoot[0x4e].base.topOffset;
-      UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)scrollableControl);
-      UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)scrollableControl);
+      scrollableControl = (UiScrollableControl *)INGAME_UI(inGameRoot,technologyDescriptionScroll);
+      UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
+      UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
     }
     else {
-      inGameRoot[0x3d].base.rightAnchorQ31 = 0x217e;
+      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x217e;
       technologyAsset = g_TechnologyAsset;
-      definitionOrEnergyCost = selectedArea.node[-1].layoutHeight;
+      definitionOrEnergyCost = THANDOR_UI_FIELD(selectedArea.node,-8,sdword);
       resourceId = (UiNodeBase *)(definitionOrEnergyCost + 1);
       selectedTechnologyId = definitionOrEnergyCost - 0x300000U >> 1;
       xeniteCost = g_TechnologyAsset->records[selectedTechnologyId].xeniteCostQ4;
@@ -624,15 +632,16 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,labelText)
       ;
       textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                         (g_UiTextStyleNormal,labelText,(UiPixelExtent)inGameRoot[0x50].previousRoot);
-      inGameRoot[0x50].base.bottomOffset = textExtent.widthPixels + 6;
-      inGameRoot[0x50].base.leftAnchorQ31 = textExtent.heightPixels + 6;
-      scrollableControl = &inGameRoot[0x4e].base.topOffset;
+                         (g_UiTextStyleNormal,labelText,
+                          ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->wrapWidth);
+      INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = textExtent.widthPixels + 6;
+      INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = textExtent.heightPixels + 6;
+      scrollableControl = (UiScrollableControl *)INGAME_UI(inGameRoot,technologyDescriptionScroll);
       if (g_InGameSelectedTechnologyId != previousTechnologyId) {
-        UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)scrollableControl);
-        UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,(UiScrollableControl *)scrollableControl);
+        UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
+        UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
       }
-      inGameRoot[0x51].base.nextSibling = resourceId;
+      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (word *)resourceId;
     }
   }
   return;

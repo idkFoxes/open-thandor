@@ -7,6 +7,12 @@
 
 #include <thandor/ui/ingame/settings.h>
 #include <thandor/thandor.h>
+#include <stddef.h>
+
+/* The handlers below get one node of the in-game UI template copy and address sibling nodes by their
+   fixed distance in the template: node `node` seen from node `self`, which is template node `selfNode`. */
+#define INGAME_UI_FROM(self, selfNode, node) \
+  THANDOR_UI_AT(self, offsetof(InGameUiImage,node) - offsetof(InGameUiImage,selfNode))
 
 /* Implementation ownership: ui/ingame/settings. */
 
@@ -29,8 +35,10 @@ void __thandor_preserve_eax InGameSettingsAction_CloseAlternatePanel(UiNodeBase 
     source = source->parent;
     parentNodeAddress = (int)source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)&source[0xe5].firstChild);
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)&source[0xe5].firstChild);
+  /* source is now the in-game UI root (template start) */
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,missionObjectivesButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls
+            ((UiSelectableControl *)INGAME_UI(source,missionObjectivesButton));
   return;
 }
 
@@ -56,8 +64,8 @@ void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode0(UiNod
     source = source->parent;
     parentNodeAddress = (int)source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)&source[0xe3].topOffset);
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)&source[0xe3].topOffset);
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     InGameCommand150_HandlePlayerDepartureAndOwnership(g_LocalPlayerRuntimeId,0,0,0);
@@ -90,8 +98,8 @@ void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode1(UiNod
     source = source->parent;
     parentNodeAddress = (int)source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)&source[0xe3].topOffset);
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)&source[0xe3].topOffset);
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     InGameCommand150_HandlePlayerDepartureAndOwnership(g_LocalPlayerRuntimeId,0,0,1);
@@ -121,8 +129,8 @@ void __thandor_preserve_eax InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *
     source = source->parent;
     parentCursor = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)&source[0xe3].topOffset);
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)&source[0xe3].topOffset);
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   return;
 }
 
@@ -145,8 +153,8 @@ void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *s
     source = source->parent;
     parentCursor = source->parent;
   }
-  UiSelectableControl_SetSelected(1,(UiSelectableControl *)&source[0xe3].topOffset);
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)&source[0xe3].topOffset);
+  UiSelectableControl_SetSelected(1,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   return;
 }
 
@@ -254,29 +262,39 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
-  sdword *stack;
+  UiPageStackControl *stack;
   dword optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
   optionFlags = PersistentSettings_ReadDword(0,0x40);
-  stack = &control[0x4e].base.layoutHeight;
+  /* control is rightButtonNoScrollCheckbox of the in-game UI template copy */
+  stack = (UiPageStackControl *)INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,sidePanelStack);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 4;
-    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)stack);
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5c].base.leftAnchorQ31);
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5f].base.nodeFlags);
-    control[-0x58].base.top = 0;
+    UiPageStack_SetActiveIndex(1,stack);
+    UiPageStack_SetActiveIndex
+              (0,(UiPageStackControl *)
+                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,resourceBarModeStack));
+    UiPageStack_SetActiveIndex
+              (0,(UiPageStackControl *)
+                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,gamePanelsModeStack));
+    INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset = 0;
   }
   else {
     value = optionFlags & 0xfffffffb;
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)stack);
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5c].base.leftAnchorQ31);
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x5f].base.nodeFlags);
-    control[-0x58].base.top = control[0x50].base.top;
+    UiPageStack_SetActiveIndex(0,stack);
+    UiPageStack_SetActiveIndex
+              (0,(UiPageStackControl *)
+                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,resourceBarModeStack));
+    UiPageStack_SetActiveIndex
+              (0,(UiPageStackControl *)
+                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,gamePanelsModeStack));
+    INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset =
+         INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,sidePanelFrameLeftEdge)->leftOffset;
   }
-  UiContainer_LayoutChildren((UiNodeBase *)&control[-0x77].base.bottomAnchorQ31);
+  UiContainer_LayoutChildren(INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,inGameRootPanel));
   PersistentSettings_WriteDword(value,0x40);
   return;
 }
@@ -317,7 +335,9 @@ InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 1;
-    control[0x159].base.layoutWidth = 0x800;
+    /* control is autoZoomOffCheckbox; reset the minimap zoom */
+    ((UiSelectionGeometryControl *)INGAME_UI_FROM(control,autoZoomOffCheckbox,minimapView))->sampleScaleQ12 =
+         0x800;
   }
   else {
     value = optionFlags & 0xfffffffe;
@@ -347,7 +367,9 @@ InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 2;
-    control[0x158].base.rightAnchorQ31 = 0x2000;
+    /* control is autoRotationOffCheckbox; reset the minimap rotation */
+    ((UiSelectionGeometryControl *)INGAME_UI_FROM(control,autoRotationOffCheckbox,minimapView))->
+    rotationAngle = 0x2000;
   }
   else {
     value = optionFlags & 0xfffffffd;
@@ -370,7 +392,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
-  UiAnchorFractionQ31 *runtimeFlagsField;
+  WorldRuntimeFlags *runtimeFlagsField;
   dword optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
@@ -379,13 +401,17 @@ InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 1;
-    runtimeFlagsField = &control[-0x61].base.bottomAnchorQ31;
+    /* control is linkRotationZoomCheckbox; the world view's runtime flags */
+    runtimeFlagsField =
+         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationZoomCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | 0x40000000;
     UiNodeList_SuppressActionId(0x1215,(control->base).parent);
   }
   else {
     value = optionFlags & 0xfffffffe;
-    runtimeFlagsField = &control[-0x61].base.bottomAnchorQ31;
+    /* control is linkRotationZoomCheckbox; the world view's runtime flags */
+    runtimeFlagsField =
+         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationZoomCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & 0xbfffffff;
     UiNodeList_UnsuppressActionId(0x1215,(control->base).parent);
   }
@@ -407,7 +433,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
-  UiAnchorFractionQ31 *runtimeFlagsField;
+  WorldRuntimeFlags *runtimeFlagsField;
   dword optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
@@ -416,13 +442,17 @@ InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 2;
-    runtimeFlagsField = &control[-0x62].base.leftAnchorQ31;
+    /* control is linkRotationTiltCheckbox; the world view's runtime flags */
+    runtimeFlagsField =
+         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationTiltCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | 0x80000000;
     UiNodeList_SuppressActionId(0x1214,(control->base).parent);
   }
   else {
     value = optionFlags & 0xfffffffd;
-    runtimeFlagsField = &control[-0x62].base.leftAnchorQ31;
+    /* control is linkRotationTiltCheckbox; the world view's runtime flags */
+    runtimeFlagsField =
+         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationTiltCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & 0x7fffffff;
     UiNodeList_UnsuppressActionId(0x1214,(control->base).parent);
   }
@@ -443,7 +473,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
-  sdword *runtimeFlagsField;
+  WorldRuntimeFlags *runtimeFlagsField;
   dword optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
@@ -452,12 +482,16 @@ InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 4;
-    runtimeFlagsField = &control[-99].base.topOffset;
+    /* control is hidePanelCheckbox; the world view's runtime flags */
+    runtimeFlagsField =
+         &((WorldRuntimeContext *)INGAME_UI_FROM(control,hidePanelCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | 0x4000000;
   }
   else {
     value = optionFlags & 0xfffffffb;
-    runtimeFlagsField = &control[-99].base.topOffset;
+    /* control is hidePanelCheckbox; the world view's runtime flags */
+    runtimeFlagsField =
+         &((WorldRuntimeContext *)INGAME_UI_FROM(control,hidePanelCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & 0xfbffffff;
   }
   PersistentSettings_WriteDword(value,0x5c);
@@ -635,11 +669,13 @@ void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectab
   }
   if ((selectedState & 1) == 0) {
     UiNodeList_SuppressActionId(0x1205,&control->base);
-    control[0x1f].actionId = control[0x1f].actionId & 0xfffdffff;
+    ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags =
+         ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags & 0xfffdffff;
   }
   else {
     UiNodeList_UnsuppressActionId(0x1205,&control->base);
-    control[0x1f].actionId = control[0x1f].actionId | 0x20000;
+    ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags =
+         ((WorldRuntimeContext *)INGAME_UI(control,worldView))->runtimeFlags | 0x20000;
   }
   PersistentSettings_WriteDword(selectedState & 1,0x1c);
   return;
@@ -1051,20 +1087,20 @@ InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsTog
 
 {
   UiNodeBase *parentCursor;
-  UiSelectableControl *firstNode;
+  UiNodeBase *uiRoot;
   dword settingValue;
   bool isSelected;
   
   parentCursor = (settingsToggle->base).parent;
-  firstNode = settingsToggle;
+  uiRoot = &settingsToggle->base;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
-    firstNode = (UiSelectableControl *)(firstNode->base).parent;
-    parentCursor = (firstNode->base).parent;
+    uiRoot = uiRoot->parent;
+    parentCursor = uiRoot->parent;
   }
   isSelected = (bool)UiSelectableControl_IsSelectedCf(settingsToggle);
   if (!isSelected) {
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(firstNode + 0x24));
-    firstNode[0x1f].stateFlags = firstNode[0x1f].stateFlags & 0xfffffff7;
+    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
+    INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags & 0xfffffff7;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if ((g_UiCommandRuntimeFlags & 0x400) == 0) {
@@ -1076,26 +1112,28 @@ InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsTog
     }
     return;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)&firstNode[0xcf].base.top);
-  firstNode[0x1f].stateFlags = firstNode[0x1f].stateFlags | 8;
-  UiKeyboardFocus_ReleaseNode((UiNodeBase *)&firstNode[0x1f].base.firstChild);
-  UiPageStack_SetActiveIndex(3,(UiPageStackControl *)(firstNode + 0x24));
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(uiRoot,missionObjectivesButton));
+  INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags | 8;
+  UiKeyboardFocus_ReleaseNode(INGAME_UI(uiRoot,worldView));
+  UiPageStack_SetActiveIndex(3,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
   settingValue = PersistentSettings_ReadDword(0,0x40);
-  UiSelectableControl_SetSelected(settingValue & 1,(UiSelectableControl *)&firstNode[0x7c].actionId);
-  UiSelectableControl_SetSelected(settingValue & 2,(UiSelectableControl *)&firstNode[0x7e].base.parent);
-  UiSelectableControl_SetSelected(settingValue & 4,(UiSelectableControl *)&firstNode[0x76].base.right);
+  UiSelectableControl_SetSelected(settingValue & 1,(UiSelectableControl *)INGAME_UI(uiRoot,autoZoomOffCheckbox));
+  UiSelectableControl_SetSelected(settingValue & 2,(UiSelectableControl *)INGAME_UI(uiRoot,autoRotationOffCheckbox));
+  UiSelectableControl_SetSelected
+            (settingValue & 4,(UiSelectableControl *)INGAME_UI(uiRoot,rightButtonNoScrollCheckbox));
   settingValue = PersistentSettings_ReadDword(0,0x5c);
   if ((settingValue & 1) != 0) {
-    UiNodeList_SuppressActionId(0x1215,&firstNode->base);
+    UiNodeList_SuppressActionId(0x1215,uiRoot);
   }
-  UiSelectableControl_SetSelected(settingValue & 1,(UiSelectableControl *)&firstNode[0x80].base.top);
+  UiSelectableControl_SetSelected
+            (settingValue & 1,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationZoomCheckbox));
   if ((settingValue & 2) != 0) {
-    UiNodeList_SuppressActionId(0x1214,&firstNode->base);
+    UiNodeList_SuppressActionId(0x1214,uiRoot);
   }
-  UiSelectableControl_SetSelected(settingValue & 2,(UiSelectableControl *)&firstNode[0x81].base.leftOffset)
-  ;
+  UiSelectableControl_SetSelected
+            (settingValue & 2,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationTiltCheckbox));
   settingValue = PersistentSettings_ReadDword(0x20,0x48);
-  firstNode[0x7b].base.layoutWidth = settingValue;
+  ((UiRangeSliderControl *)INGAME_UI(uiRoot,scrollSpeedSlider))->value = settingValue;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_UiCommandRuntimeFlags & 0x4000) == 0) {
@@ -1106,7 +1144,7 @@ InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsTog
     }
   }
   else {
-    UiNodeList_SuppressActionId(0x120e,&firstNode->base);
+    UiNodeList_SuppressActionId(0x120e,uiRoot);
   }
   return;
 }

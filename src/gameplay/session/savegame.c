@@ -116,7 +116,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
     carryIn = WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
     errorOrValue = (*g_FileSystemDeleteCf)(0,(word *)&g_ScenarioCatalogPathScratchUtf16);
     (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,carryIn);
-    InGameSaveGamePage_RebuildCatalog((UiRootNode *)(saveGamePageControl + -0x760));
+    InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(saveGamePageControl + -0x760));
   }
   return;
 }
@@ -134,16 +134,20 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
    UiPointerList_InitializeColumnLayout [ui/controls/lists], UiPointerList_SortByDwordPairFieldDescending
    [ui/controls/lists], UiPointerList_SelectIndexVariantB [ui/controls/lists].
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiRootNode *savePageRoot)
+void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
 
 {
-  UiNodeBase *parentOrSelectedRow;
-  UiRootNode *firstNode;
-  UiNodeVtable *listRowCount;
+  InGameUiImage *inGameUi;
+  UiPointerListControl *saveList;
+  UiWrappedTextControl *descriptionText;
+  UiNodeBase *parentCursor;
+  UiNodeBase *firstNode;
+  UiListRowCount listRowCount;
+  void **rowSlots;
+  ScenarioCatalogSaveRecord *selectedRecord;
   TextResourceId resourceId;
   ScenarioCatalogHeader *rowPointerCursor;
   void *handle;
-  sdword *controlPtr;
   dword remainingCount;
   int clearCount;
   word *leaf;
@@ -209,47 +213,47 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiRoo
     }
     resolvedText = TextResource_Resolve(0x2151);
     RichTextCommandStream_CopyExpandedCf(0x100,(word *)destination,resolvedText.eax);
-    controlPtr = &savePageRoot[0x18].base.left;
-    UiPointerList_InitializeColumnLayout
-              (rowCount,(void **)g_ScenarioCatalog,(UiPointerListControl *)controlPtr);
-    UiPointerList_SortByDwordPairFieldDescending(0xf0,(UiPointerListControl *)controlPtr);
-    UiPointerList_InitializeColumnLayout
-              (rowCount + 1,(void **)g_ScenarioCatalog,(UiPointerListControl *)controlPtr);
-    UiPointerList_SelectIndexVariantB(rowCount,(UiPointerListControl *)controlPtr);
-    UiPageStack_SetActiveIndex(5,(UiPageStackControl *)&savePageRoot[-0x4b].base.nodeFlags);
-    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&savePageRoot[0x1b].base.bottomAnchorQ31);
-    parentOrSelectedRow = (savePageRoot->base).parent;
-    firstNode = savePageRoot;
-    while (parentOrSelectedRow != (UiNodeBase *)0xffffffff) {
-      firstNode = (UiRootNode *)(firstNode->base).parent;
-      parentOrSelectedRow = (firstNode->base).parent;
+    /* The action source is the game menu's Save button (in-game template +0x2550). */
+    inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
+    saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
+    descriptionText = (UiWrappedTextControl *)INGAME_UI(inGameUi, saveGameDescriptionText);
+    UiPointerList_InitializeColumnLayout(rowCount,(void **)g_ScenarioCatalog,saveList);
+    UiPointerList_SortByDwordPairFieldDescending(0xf0,saveList);
+    UiPointerList_InitializeColumnLayout(rowCount + 1,(void **)g_ScenarioCatalog,saveList);
+    UiPointerList_SelectIndexVariantB(rowCount,saveList);
+    UiPageStack_SetActiveIndex(5,(UiPageStackControl *)INGAME_UI(inGameUi, gameWindowPageStack));
+    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(inGameUi, saveNameEntryStack));
+    parentCursor = saveMenuButton->parent;
+    firstNode = saveMenuButton;
+    while (parentCursor != (UiNodeBase *)0xffffffff) {
+      firstNode = firstNode->parent;
+      parentCursor = firstNode->parent;
     }
-    UiNodeList_SuppressActionId(0x1210,&firstNode->base);
-    UiNodeList_SuppressActionId(0x1219,&firstNode->base);
-    controlPtr = &firstNode[0x89].base.top;
-    UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)controlPtr);
-    InGameSaveName_UpdateSaveActionValidity((UiNodeBase *)controlPtr);
-    listRowCount = savePageRoot[0x19].base.vtable;
-    parentOrSelectedRow = savePageRoot[0x19].base.parent;
-    selectionResult = UiPointerList_GetSelectedIndexVariantBCf
-                       ((UiPointerListControl *)&savePageRoot[0x18].base.left);
-    parentOrSelectedRow = (&parentOrSelectedRow->nextSibling)[(int)selectionResult.rowIndex];
-    savePageRoot[0x1b].base.topAnchorQ31 = 0x215d;
-    if ((undefined1 *)((int)&listRowCount[-1].pointerWheel + 3U) != (undefined1 *)selectionResult.rowIndex) {
+    UiNodeList_SuppressActionId(0x1210,firstNode);
+    UiNodeList_SuppressActionId(0x1219,firstNode);
+    UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)INGAME_UI(firstNode, saveNameEdit));
+    InGameSaveName_UpdateSaveActionValidity(INGAME_UI(firstNode, saveNameEdit));
+    listRowCount = saveList->rowCount;
+    rowSlots = saveList->rowSlots;
+    selectionResult = UiPointerList_GetSelectedIndexVariantBCf(saveList);
+    selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectionResult.rowIndex];
+    /* The description text holds a TextResourceId (labelFlags & 0x10 clear). */
+    descriptionText->text = (word *)0x215d;
+    if (listRowCount - 1 != selectionResult.rowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = parentOrSelectedRow[1].topOffset;
+        resourceId = selectedRecord->localizedStringId70;
         resolvedText = TextResource_Resolve(resourceId);
         *resolvedText.eax = 0x8000;
-        savePageRoot[0x1b].base.topAnchorQ31 = resourceId;
+        descriptionText->text = (word *)resourceId;
       }
       else {
         resolvedText = TextResource_Resolve(0x215e);
-        fieldText = TextResource_Resolve(parentOrSelectedRow[1].topOffset);
+        fieldText = TextResource_Resolve(selectedRecord->localizedStringId70);
         *fieldText.eax = 0x8000;
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,resolvedText.eax);
-        fieldText = TextResource_Resolve(parentOrSelectedRow[1].layoutHeight);
+        fieldText = TextResource_Resolve(selectedRecord->optionalLocalizedStringId90);
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,resolvedText.eax);
-        savePageRoot[0x1b].base.topAnchorQ31 = 0x215e;
+        descriptionText->text = (word *)0x215e;
       }
     }
   }

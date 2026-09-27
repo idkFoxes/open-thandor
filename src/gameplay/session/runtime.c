@@ -703,7 +703,7 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
       InGameCommandPanel_OpenPage4AndRefreshAvailability((InGameCommandPanelSourceAddress32)RT(0x25b0));
     }
     else if (target == 0x5673a0) {
-      InGameSaveGamePage_RebuildCatalog((UiRootNode *)RT(0x2550));
+      InGameSaveGamePage_RebuildCatalog((UiNodeBase *)RT(0x2550));
     }
     break;
   }

@@ -266,8 +266,8 @@ InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source)
     source = source->parent;
     parentCursor = source->parent;
   }
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)&source[0xe3].topOffset);
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)&source[0xe3].topOffset);
+  UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     InGameCommand150_HandlePlayerDepartureAndOwnership(g_LocalPlayerRuntimeId,0,0,2);
@@ -657,9 +657,9 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
     recordCursor = recordCursor + 1;
   }
   recordCursor = g_UiCommandSpriteVariantARecords;
-  remainingAssets = g_GameFactionRuntimeImage.records[node[0x23].bottom].primaryArmyAssetCount;
+  remainingAssets = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetCount;
   itemCount = 0;
-  assetCursor = g_GameFactionRuntimeImage.records[node[0x23].bottom].primaryArmyAssetPointersOrIds;
+  assetCursor = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetPointersOrIds;
   if ((remainingAssets != 0) && ((g_UiCommandRuntimeFlags & 0x100) == 0)) {
     do {
       if ((((UiCommandRuntimeRecordPrefix *)*assetCursor)->textureSource !=
@@ -683,24 +683,24 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCommandSpriteVariantAColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
-    node[0x1da].leftOffset = -0x1f;
-    node[0x1da].rightOffset = -0x1f;
-    node[0x1da].topOffset = -0xd;
-    node[0x1da].bottomOffset = -0xd;
+    INGAME_UI(node,armyStockFrame)->leftOffset = -0x1f;
+    INGAME_UI(node,armyStockFrame)->rightOffset = -0x1f;
+    INGAME_UI(node,armyStockFrame)->topOffset = -0xd;
+    INGAME_UI(node,armyStockFrame)->bottomOffset = -0xd;
   }
   else {
-    node[0x1da].leftOffset = -0x27;
-    node[0x1da].rightOffset = -0x27;
-    node[0x1da].topOffset = -0x12;
-    node[0x1da].bottomOffset = -0x12;
+    INGAME_UI(node,armyStockFrame)->leftOffset = -0x27;
+    INGAME_UI(node,armyStockFrame)->rightOffset = -0x27;
+    INGAME_UI(node,armyStockFrame)->topOffset = -0x12;
+    INGAME_UI(node,armyStockFrame)->bottomOffset = -0x12;
   }
-  node[0x1da].leftOffset = node[0x1da].leftOffset - countWidthOrOffset;
-  node[0x1da].topOffset = node[0x1da].topOffset - panelHeight;
+  INGAME_UI(node,armyStockFrame)->leftOffset = INGAME_UI(node,armyStockFrame)->leftOffset - countWidthOrOffset;
+  INGAME_UI(node,armyStockFrame)->topOffset = INGAME_UI(node,armyStockFrame)->topOffset - panelHeight;
   if (itemCount == 0) {
-    node[0x1da].nodeFlags = node[0x1da].nodeFlags | UI_NODE_SUPPRESSED;
+    INGAME_UI(node,armyStockFrame)->nodeFlags = INGAME_UI(node,armyStockFrame)->nodeFlags | UI_NODE_SUPPRESSED;
   }
   else {
-    node[0x1da].nodeFlags = node[0x1da].nodeFlags & ~UI_NODE_SUPPRESSED;
+    INGAME_UI(node,armyStockFrame)->nodeFlags = INGAME_UI(node,armyStockFrame)->nodeFlags & ~UI_NODE_SUPPRESSED;
   }
   offsetTable = g_UiCommandSpriteVariantAOffsetTables[columnCount];
   slotIndex = 0;
@@ -722,7 +722,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
     ((UiCommandSpriteButtonControl *)((int)node + countWidthOrOffset))->sprite.primaryTextureSource = slotTexture;
     recordCursor = recordCursor + 1;
   } while (slotIndex < 0x18);
-  (**(code **)(node[0x1d8].rightAnchorQ31 + 0xc))(&node[0x1d8].bottomOffset);
+  INGAME_UI(node,armyStockPanel)->vtable->layout(INGAME_UI(node,armyStockPanel));
   return;
 }
 
@@ -750,8 +750,8 @@ InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
     control = control->parent;
     parentCursor = control->parent;
   }
-  control[0x23].top = control[0x23].top & 0xfffffff7;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&control[0x27].bottomAnchorQ31);
+  INGAME_UI(control,worldView)->nodeFlags = INGAME_UI(control,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(control,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != (GameEntityRuntime *)0x0) {
     modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
@@ -1698,8 +1698,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   dword pageBase;
   
   g_UiCommandAbsoluteSelectionIndex = absoluteIndex;
-  root[0x20d].topAnchorQ31 =
-       (UiAnchorFractionQ31)g_TerrainMaterialTextureSets[absoluteIndex]->entries[0].sourceAsset;
+  ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource =
+       g_TerrainMaterialTextureSets[absoluteIndex]->entries[0].sourceAsset;
   pageEnd = g_UiCommandSelectionPageBaseIndex + 0xc;
   pageBase = g_UiCommandSelectionPageBaseIndex;
   while( true ) {
@@ -1719,8 +1719,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 1]->entries[0].sourceAsset;
   }
   g_UiCommandSelectionPageBaseIndex = pageBase;
-  root[0x234].top = (sdword)firstTexture;
-  root[0x236].topAnchorQ31 = (UiAnchorFractionQ31)secondTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch00))->textureSource = firstTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch01))->textureSource = secondTexture;
   firstTexture = (GraphicsTextureSourceAsset *)0x0;
   if (g_TerrainMaterialTextureSets[pageBase + 2] != (GraphicsTextureSet *)0x0) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 2]->entries[0].sourceAsset;
@@ -1729,8 +1729,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   if (g_TerrainMaterialTextureSets[pageBase + 3] != (GraphicsTextureSet *)0x0) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 3]->entries[0].sourceAsset;
   }
-  root[0x239].parent = (UiNodeBase *)firstTexture;
-  root[0x23b].rightOffset = (sdword)secondTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch02))->textureSource = firstTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch03))->textureSource = secondTexture;
   firstTexture = (GraphicsTextureSourceAsset *)0x0;
   if (g_TerrainMaterialTextureSets[pageBase + 4] != (GraphicsTextureSet *)0x0) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 4]->entries[0].sourceAsset;
@@ -1739,8 +1739,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   if (g_TerrainMaterialTextureSets[pageBase + 5] != (GraphicsTextureSet *)0x0) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 5]->entries[0].sourceAsset;
   }
-  root[0x23d].nodeFlags = (UiNodeFlags)firstTexture;
-  root[0x240].bottom = (sdword)secondTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch04))->textureSource = firstTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch05))->textureSource = secondTexture;
   firstTexture = (GraphicsTextureSourceAsset *)0x0;
   if (g_TerrainMaterialTextureSets[pageBase + 6] != (GraphicsTextureSet *)0x0) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 6]->entries[0].sourceAsset;
@@ -1749,8 +1749,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   if (g_TerrainMaterialTextureSets[pageBase + 7] != (GraphicsTextureSet *)0x0) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 7]->entries[0].sourceAsset;
   }
-  root[0x242].bottomAnchorQ31 = (UiAnchorFractionQ31)firstTexture;
-  root[0x245].left = (sdword)secondTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch06))->textureSource = firstTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch07))->textureSource = secondTexture;
   firstTexture = (GraphicsTextureSourceAsset *)0x0;
   if (g_TerrainMaterialTextureSets[pageBase + 8] != (GraphicsTextureSet *)0x0) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 8]->entries[0].sourceAsset;
@@ -1759,8 +1759,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   if (g_TerrainMaterialTextureSets[pageBase + 9] != (GraphicsTextureSet *)0x0) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 9]->entries[0].sourceAsset;
   }
-  root[0x247].leftAnchorQ31 = (UiAnchorFractionQ31)firstTexture;
-  root[0x24a].firstChild = (UiNodeBase *)secondTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch08))->textureSource = firstTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch09))->textureSource = secondTexture;
   firstTexture = (GraphicsTextureSourceAsset *)0x0;
   if (g_TerrainMaterialTextureSets[pageBase + 10] != (GraphicsTextureSet *)0x0) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 10]->entries[0].sourceAsset;
@@ -1769,8 +1769,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   if (g_TerrainMaterialTextureSets[pageBase + 0xb] != (GraphicsTextureSet *)0x0) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 0xb]->entries[0].sourceAsset;
   }
-  root[0x24c].topOffset = (sdword)firstTexture;
-  root[0x24e].layoutHeight = (sdword)secondTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch10))->textureSource = firstTexture;
+  ((UiImagePanelControl *)INGAME_UI(root,materialSwatch11))->textureSource = secondTexture;
   controlIndex = 0xb;
   do {
     controlIndex = controlIndex + -1;

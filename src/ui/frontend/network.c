@@ -273,8 +273,10 @@ void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(Ui
   sdword *sourceCursor;
   sdword *destinationCursor;
   
-  g_SharedWorldStatePointer = root[0xd0].base.topOffset;
-  sourceCursor = &root[0xe2].base.right;
+  /* root is the frontend template copy; both values are written back into the template
+     (g_SharedWorldStatePointer = template bottomBarStatusText text, snapshot = template hostAddressEdit text). */
+  g_SharedWorldStatePointer = (sdword)((UiSingleLineTextControl *)FRONTEND_UI(root,bottomBarStatusText))->text;
+  sourceCursor = (sdword *)((UiRequiredTextEditControl *)FRONTEND_UI(root,hostAddressEdit))->textPrefix6C;
   destinationCursor = &g_FrontendRootStateSnapshot80;
   g_InGameWorldStatePointerMirror = g_SharedWorldStatePointer;
   for (dwordsRemaining = 0x20; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {

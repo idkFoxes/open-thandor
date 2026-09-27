@@ -24,7 +24,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
           (InGameSaveGamePageControlAddress32 saveGamePageControl);
 
 /* 0x0056BDD0 */
-void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiRootNode *savePageRoot);
+void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton);
 
 /* 0x0056C230 */
 void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(void *source);

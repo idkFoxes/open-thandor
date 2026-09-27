@@ -310,7 +310,7 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
     sourceNode = sourceNode->parent;
     parentCursor = sourceNode->parent;
   }
-  sourceNode[0x6e].layoutHeight = 0x215d;
+  ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,savedGameDescriptionText))->text = (word *)0x215d;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     ScenarioCatalog_RebuildSaveRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
@@ -348,7 +348,7 @@ void __thandor_preserve_eax FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNo
     sourceNode = sourceNode->parent;
     parentCursor = sourceNode->parent;
   }
-  sourceNode[0x75].left = 0x215d;
+  ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,missionDescriptionText))->text = (word *)0x215d;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     ScenarioCatalog_RebuildLevelRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
@@ -388,7 +388,7 @@ FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
     sourceNode = sourceNode->parent;
     parentCursor = sourceNode->parent;
   }
-  sourceNode[0x7b].right = 0x215d;
+  ((UiWrappedTextControl *)FRONTEND_UI(sourceNode,campaignDescriptionText))->text = (word *)0x215d;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);

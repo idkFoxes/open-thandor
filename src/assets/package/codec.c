@@ -347,8 +347,8 @@ PckCodec_EncodeHuffmanRle
     lowestWeightNode->weight = 0;
     leafOrSecondLowestNode->weight = 0;
     nextInternalNode = nextInternalNode + 1;
-    if ((PckHuffmanNodePtr)((int)&g_PckHuffmanInternalNodeWorkspace256[0xff].parent + 3) <
-        nextInternalNode) goto LAB_0040a77f;
+    /* Workspace exhausted: all 256 internal nodes used (original: CMP next,end; JC continue). */
+    if (g_PckHuffmanInternalNodeWorkspace256 + 0x100 <= nextInternalNode) goto LAB_0040a77f;
   }
   if (destinationCapacityBytes < 0x100) goto LAB_0040a77f;
   countOrCodeLength = 0x100;

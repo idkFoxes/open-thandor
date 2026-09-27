@@ -379,7 +379,7 @@ override_jmp_0056e406_switch:
     break;
   case 0x56ee20:
     InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
-    InGameCommandModeC_Select1((UiSpriteButtonControl *)(uiRoot + 0x213));
+    InGameCommandModeC_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption1));
     break;
   case 0x56ee40:
     InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
@@ -425,11 +425,11 @@ override_jmp_0056e406_switch:
     break;
   case 0x56ef90:
     InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
-    InGameCommandRange_DispatchState1(&uiRoot[0x222].base);
+    InGameCommandRange_DispatchState1(INGAME_UI(uiRoot,smoothingRelaxLandButton));
     break;
   case 0x56efb0:
     if (g_UiCommandModeG == 4) {
-      InGameCommandModeG_Select4((UiSelectableControl *)(uiRoot + 0x1bf));
+      InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
       InGameCommandModeB_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption0));
     }
     else {
@@ -443,7 +443,7 @@ override_jmp_0056e406_switch:
     break;
   case 0x56f020:
     if (g_UiCommandModeG == 4) {
-      InGameCommandModeG_Select4((UiSelectableControl *)(uiRoot + 0x1bf));
+      InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
       InGameCommandModeB_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption1));
     }
     else {
@@ -457,7 +457,7 @@ override_jmp_0056e406_switch:
     break;
   case 0x56f090:
     if (g_UiCommandModeG == 4) {
-      InGameCommandModeG_Select4((UiSelectableControl *)(uiRoot + 0x1bf));
+      InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
       InGameCommandModeB_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption2));
     }
     else {
@@ -473,7 +473,7 @@ override_jmp_0056e406_switch:
     InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
     break;
   case 0x56f120:
-    InGameCommandModeG_Select4((UiSelectableControl *)(uiRoot + 0x1bf));
+    InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
     break;
   case 0x56f140:
     InGameCommandModeG_Select5((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabRegion));
@@ -3364,7 +3364,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   remainingFactions = g_GameFactionRuntimeImage.tail.activeFactionCount;
   do {
     if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexOrRecord] ==
-          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (factionIndexOrRecord != node[0x23].bottom)) &&
+          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (factionIndexOrRecord != INGAME_UI_FIELD(node,worldView,0x50,sdword))) &&
        ((g_UiCommandRuntimeFlags & 0x100) == 0)) {
       otherActiveCount = otherActiveCount + 1;
     }
@@ -3377,31 +3377,31 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   controlOffset = (int)(gridDimensions >> 0x20) * g_InGamePanelTextureSubresource32Height +
           g_InGamePanelTextureSubresource18Height + g_InGamePanelTextureSubresource23Height;
   if ((int)g_FramebufferWidth < 800) {
-    node[0x105].bottom = -0x1f;
-    node[0x105].topOffset = -0x1f;
-    node[0x105].leftOffset = -100;
-    node[0x105].rightOffset = -100;
+    INGAME_UI(node,diplomacyFrame)->leftOffset = -0x1f;
+    INGAME_UI(node,diplomacyFrame)->rightOffset = -0x1f;
+    INGAME_UI(node,diplomacyFrame)->topOffset = -100;
+    INGAME_UI(node,diplomacyFrame)->bottomOffset = -100;
   }
   else {
-    node[0x105].bottom = -0x27;
-    node[0x105].topOffset = -0x27;
-    node[0x105].leftOffset = -0x7e;
-    node[0x105].rightOffset = -0x7e;
+    INGAME_UI(node,diplomacyFrame)->leftOffset = -0x27;
+    INGAME_UI(node,diplomacyFrame)->rightOffset = -0x27;
+    INGAME_UI(node,diplomacyFrame)->topOffset = -0x7e;
+    INGAME_UI(node,diplomacyFrame)->bottomOffset = -0x7e;
   }
-  node[0x105].bottom = node[0x105].bottom - factionIndexOrRecord;
-  node[0x105].leftOffset = node[0x105].leftOffset - controlOffset;
-  node[0x104].topOffset = node[0x104].topOffset | 8;
+  INGAME_UI(node,diplomacyFrame)->leftOffset = INGAME_UI(node,diplomacyFrame)->leftOffset - factionIndexOrRecord;
+  INGAME_UI(node,diplomacyFrame)->topOffset = INGAME_UI(node,diplomacyFrame)->topOffset - controlOffset;
+  INGAME_UI(node,diplomacyPanel)->nodeFlags = INGAME_UI(node,diplomacyPanel)->nodeFlags | 8;
   if ((otherActiveCount != 0) && ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) == 0)) {
-    node[0x104].topOffset = node[0x104].topOffset & 0xfffffff7;
+    INGAME_UI(node,diplomacyPanel)->nodeFlags = INGAME_UI(node,diplomacyPanel)->nodeFlags & 0xfffffff7;
   }
-  (**(code **)(node[0x103].topAnchorQ31 + 0xc))((UiNodeBase *)&node[0x103].rightOffset);
+  (*INGAME_UI(node,diplomacyPanel)->vtable->layout)(INGAME_UI(node,diplomacyPanel));
   slotIndex = 0;
   if (otherActiveCount != 0) {
     candidateFactionIndex = 1;
     factionIndexOrRecord = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
     do {
       nextRemainingCount = otherActiveCount + 1;
-      if ((candidateFactionIndex != node[0x23].bottom) &&
+      if ((candidateFactionIndex != INGAME_UI_FIELD(node,worldView,0x50,sdword)) &&
          (g_GameFactionRuntimeImage.tail.factionLifecycleStates[candidateFactionIndex] ==
           FACTION_RUNTIME_LIFECYCLE_ACTIVE)) {
         g_UiAction1012TargetPlayerIndices[slotIndex] = candidateFactionIndex;
@@ -3412,7 +3412,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
              (word *)(*(int *)(factionIndexOrRecord + 0x38) + 0x2173);
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
              (word *)(candidateFactionIndex + 0x2190);
-        relationState = g_GameFactionRuntimeImage.records[node[0x23].bottom].packedRelationStates >>
+        relationState = g_GameFactionRuntimeImage.records[INGAME_UI_FIELD(node,worldView,0x50,sdword)].packedRelationStates >>
                 ((byte)(candidateFactionIndex << 2) & 0x1f) & 0xf;
         candidateFactionIndex = candidateFactionIndex & 0x3fffffff;
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
@@ -3814,7 +3814,7 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&uiRootNode[0x6a].bottomOffset);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRootNode,messageRecipientPageStack));
   resourceId = 0x216d;
   filledSlotCount = 0;
   factionIndexCursor = 1;
@@ -3834,11 +3834,11 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
     factionIndexCursor = factionIndexCursor + 1;
     factionRecordAddress = factionRecordAddress + 0x740;
   } while (factionIndexCursor < 8);
-  uiRootNode[0x6e].left = filledSlotCount * 0x18;
+  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 0x18;
   UiScrollableControl_RebuildViewportAndScrollbars
-            ((UiScrollableControl *)&uiRootNode[0x6b].rightAnchorQ31);
+            ((UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   UiScrollableControl_ClampOffsetsToViewport
-            (0,0,0,0,(UiScrollableControl *)&uiRootNode[0x6b].rightAnchorQ31);
+            (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   for (; filledSlotCount < 7; filledSlotCount = filledSlotCount + 1) {
     controlFlags = (uint *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
     *controlFlags = *controlFlags | 8;
@@ -3880,7 +3880,7 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&uiRootNode[0x6a].bottomOffset);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRootNode,messageRecipientPageStack));
   resourceId = 0x216d;
   filledSlotCount = 0;
   do {
@@ -3894,11 +3894,11 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     RichTextCommandStream_PatchPayloadBySelector(0,selectionBlock->reserved80B0_8117 + 0x40,resolvedText.eax);
     if (6 < filledSlotCount) break;
   } while (filledSlotCount < g_FrontendPlayerRuntimeBlockCount);
-  uiRootNode[0x6e].left = filledSlotCount * 0x18;
+  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 0x18;
   UiScrollableControl_RebuildViewportAndScrollbars
-            ((UiScrollableControl *)&uiRootNode[0x6b].rightAnchorQ31);
+            ((UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   UiScrollableControl_ClampOffsetsToViewport
-            (0,0,0,0,(UiScrollableControl *)&uiRootNode[0x6b].rightAnchorQ31);
+            (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   for (; filledSlotCount < 7; filledSlotCount = filledSlotCount + 1) {
     controlFlags = (uint *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
     *controlFlags = *controlFlags | 8;
@@ -3932,7 +3932,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNode
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
       THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&rootNodeCursor[0x6a].bottomOffset);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(rootNodeCursor,messageRecipientPageStack));
   return;
 }
 
@@ -5245,8 +5245,8 @@ void __thandor_preserve_eax InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
     source = source->parent;
     parentCursor = source->parent;
   }
-  source[0x23].top = source[0x23].top & 0xfffffff7;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&source[0x27].bottomAnchorQ31);
+  INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & 0xfffffff7;
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(source,gameWindowPageStack));
   return;
 }
 
@@ -5283,13 +5283,13 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
     source = source->parent;
     ancestorParent = source->parent;
   }
-  formBase = &source[0x60].right;
+  formBase = (sdword *)INGAME_UI(source,messageTextEdit);
   RichTextCommandStream_CopyToNarrowCf
-            (0x30,g_UiSevenSlotCommandPayloadText.textBytes,(word *)&source[0x61].rightAnchorQ31);
+            (0x30,g_UiSevenSlotCommandPayloadText.textBytes,((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textPrefix6C);
   visibleSelection = UiSelectableGroup_NoneVisibleSelectedCf(3,
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x2ac),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x24c),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ec));
+      INGAME_UI(source,messageRecipientAllTab),
+      INGAME_UI(source,messageRecipientGroupsTab),
+      INGAME_UI(source,messageRecipientPlayersTab));
   offsetOrCount = (int)visibleSelection.node - (int)formBase;
   if (offsetOrCount == 0x1ec) {
     slotIndex = 0;
@@ -5390,10 +5390,10 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   else {
     InGameCommandQueue_AppendLocalPlayerCommand(0x1810,0,0,0);
   }
-  source[0x61].rightOffset = 0;
-  source[0x61].bottomOffset = 0;
-  source[0x61].leftAnchorQ31 = 0;
-  textCursor = &source[0x61].rightAnchorQ31;
+  ((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->cursorIndex = 0;
+  ((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->selectionStart = 0;
+  ((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->selectionEnd = 0;
+  textCursor = (UiAnchorFractionQ31 *)((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textPrefix6C;
   for (offsetOrCount = 0x18; offsetOrCount != 0; offsetOrCount = offsetOrCount + -1) {
     *textCursor = 0;
     textCursor = textCursor + 1;
