@@ -914,7 +914,7 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
     }
     linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
     modelNode1 = modelRuntime->rootModelNode;
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind])
+    g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (heightOffsetQ12,(Q12)(nextPosition >> 0x20),(Q12)nextPosition,modelNode2,dispatchWorldRuntime);
     primaryDelta = linkedOrOwnerArmy->actionVector1Q12 + -1;
     if (primaryDelta < 0) goto ArmyGroundMovementCollision_FinalizeEffectsAnimationAndTransforms;
@@ -1233,7 +1233,7 @@ ArmyMovementBanking_SnapFacingToDesiredHeading:
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
     armyOrWaypointY = modelRuntime->ownerArmyRuntime;
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind])
+    g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (heightOffsetQ12,(Q12)(nextPosition >> 0x20),(Q12)nextPosition,modelNode2,dispatchWorldRuntime);
     modelNode2 = modelRuntime->rootModelNode;
     primaryDelta = armyOrWaypointY->actionVector1Q12 + -1;
@@ -1836,7 +1836,7 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
     linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind])
+    g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (heightOffsetQ12,(Q12)(nextPosition >> 0x20),(Q12)nextPosition,modelNode2,dispatchWorldRuntime);
     modelNode2 = modelRuntime->rootModelNode;
     primaryDelta = linkedOrOwnerArmy->actionVector1Q12 + -1;
@@ -2319,7 +2319,7 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
     linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind])
+    g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (heightOffsetQ12,(Q12)(nextPosition >> 0x20),(Q12)nextPosition,modelNode2,dispatchWorldRuntime);
     modelNode2 = modelRuntime->rootModelNode;
     primaryDelta = linkedOrOwnerArmy->actionVector1Q12 + -1;

@@ -61,7 +61,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
   ArmySegmentMeter armyMetrics;
   
   inGameRoot = g_InGameRuntimeRoot;
-  framebufferBusy = (*g_GraphicsFramebufferBeginAccess)();
+  framebufferBusy = g_GraphicsFramebufferBeginAccess();
   if (framebufferBusy) {
     return;
   }
@@ -466,7 +466,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
     ;
   }
 SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
-  (*g_GraphicsFramebufferEndAccess)();
+  g_GraphicsFramebufferEndAccess();
   return;
 }
 
@@ -789,7 +789,7 @@ SelectionPlayerRuntime_ReissuePrimarySelectionPosition
     if (placementContactKind == 3) {
       ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = 0x7fffffff;
     }
-    (*g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind])
+    g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (*(Q12 *)(classRecordAddress + 0x54),worldXQ12,worldYQ12,modelNode,worldRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
     ModelNodeRuntime_UpdateDepthBinMasks(*(DepthIntervalRadius32 *)(classRecordAddress + 0xdc),modelNode);
@@ -853,11 +853,11 @@ SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
   AssetRelativeOffset swappedSelectionDataOffset;
   uint32_t referencePayloadValue;
   
-  textureLoad = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_select_gfx_0052ce18);
+  textureLoad = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_select_gfx_0052ce18);
   loadedResource = textureLoad.textureSource;
   if (!textureLoad.failed) {
     g_SelectionPanelTextureSource = loadedResource;
-    textureLoad = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_info_gfx_0052ce42);
+    textureLoad = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_info_gfx_0052ce42);
     loadedResource = textureLoad.textureSource;
     if (!textureLoad.failed) {
       g_InfoPanelTextureSource = loadedResource;
@@ -1112,8 +1112,8 @@ SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
 void __thandor_preserve_eax SelectionInfoPanel_ShutdownResources(void)
 
 {
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(g_SelectionPanelTextureSource);
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(g_InfoPanelTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_SelectionPanelTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InfoPanelTextureSource);
   Resource_Release(g_SelectionPanelData);
   Resource_Release(g_InfoPanelData);
   g_SelectionPanelTextureSource = (GraphicsTextureSourceAsset *)0x0;
@@ -1936,51 +1936,51 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
   cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
   rowCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
-  textLeftBorderSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+  pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
+  textLeftBorderSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   textRightBorderSubresource = baseSubresource + 5;
-  textRightBorderSize = (*g_GraphicsTextureSourceGetLogicalSize)(textRightBorderSubresource,g_SelectionPanelTextureSource);
-  leftCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
+  textRightBorderSize = g_GraphicsTextureSourceGetLogicalSize(textRightBorderSubresource,g_SelectionPanelTextureSource);
+  leftCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   leftCapWidth = leftCapSize.logicalWidthPixels;
   requiredEnd = textWidth + pieceSize.logicalWidthPixels + textLeftBorderSize.logicalWidthPixels + textRightBorderSize.logicalWidthPixels
           + spanStartCoordinate + leftCapWidth;
   if ((uint32_t)spanEndCoordinate < requiredEnd) {
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,spanStartCoordinate,baseSubresource,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+    pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
     innerCursor = spanEndCoordinate - pieceSize.logicalWidthPixels;
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,innerCursor,rowCoordinate,
                spanStartCoordinate + leftCapWidth,baseSubresource + 1,g_SelectionPanelTextureSource,
                g_FramebufferAccess);
   }
   else {
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,spanStartCoordinate,baseSubresource,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     innerCursor = spanStartCoordinate + leftCapWidth;
-    pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+    pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
     rightCapStart = spanEndCoordinate - pieceSize.logicalWidthPixels;
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,rightCapStart,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     if ((*cellFlags & 0x100) == 0) {
       if ((*cellFlags & 0x200) == 0) {
         segmentCursor = ((int)(rightCapStart - requiredEnd) >> 1) + innerCursor;
-        (*g_SelectionPanelBlitClipped)
+        g_SelectionPanelBlitClipped
                   (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+        pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
         segmentCursor = segmentCursor + pieceSize.logicalWidthPixels;
         innerCursor = textWidth + segmentCursor;
-        (*g_SelectionPanelBlitClipped)
+        g_SelectionPanelBlitClipped
                   (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,innerCursor,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
@@ -1988,23 +1988,23 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
                   (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
                    commandStream,rowCoordinate,segmentCursor);
         rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 5,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 5,g_SelectionPanelTextureSource);
-        (*g_SelectionPanelBlitClipped)
+        pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 5,g_SelectionPanelTextureSource);
+        g_SelectionPanelBlitClipped
                   (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,
                    innerCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                    g_FramebufferAccess);
       }
       else {
-        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(textRightBorderSubresource,g_SelectionPanelTextureSource);
+        pieceSize = g_GraphicsTextureSourceGetLogicalSize(textRightBorderSubresource,g_SelectionPanelTextureSource);
         rightCapStart = rightCapStart - pieceSize.logicalWidthPixels;
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,rightCapStart,textRightBorderSubresource,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         segmentCursor = rightCapStart - textWidth;
-        (*g_SelectionPanelBlitClipped)
+        g_SelectionPanelBlitClipped
                   (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
@@ -2012,24 +2012,24 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
                   (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
                    commandStream,rowCoordinate,segmentCursor);
         rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
-        pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+        pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
         segmentCursor = segmentCursor - pieceSize.logicalWidthPixels;
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        (*g_SelectionPanelBlitClipped)
+        g_SelectionPanelBlitClipped
                   (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
       }
     }
     else {
-      (*g_SelectionPanelBlitOpaque)
+      g_SelectionPanelBlitOpaque
                 (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 3,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+      pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
       innerCursor = innerCursor + pieceSize.logicalWidthPixels;
       segmentCursor = textWidth + innerCursor;
-      (*g_SelectionPanelBlitClipped)
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
@@ -2037,11 +2037,11 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
                 (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,commandStream
                  ,rowCoordinate,innerCursor);
       rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
-      (*g_SelectionPanelBlitOpaque)
+      g_SelectionPanelBlitOpaque
                 (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,textRightBorderSubresource,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      pieceSize = (*g_GraphicsTextureSourceGetLogicalSize)(textRightBorderSubresource,g_SelectionPanelTextureSource);
-      (*g_SelectionPanelBlitClipped)
+      pieceSize = g_GraphicsTextureSourceGetLogicalSize(textRightBorderSubresource,g_SelectionPanelTextureSource);
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,
                  segmentCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                  g_FramebufferAccess);
@@ -2080,7 +2080,7 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
   SelectionPanelAdvanceEaxEdx8 cellAdvance;
   TextureSizeResult spriteSize;
   
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,0xf,1,value,
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16);
   textExtent = RichTextCommandStream_MeasureRegs
@@ -2090,10 +2090,10 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
   cellDrawY = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
   cellDrawX = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceOrWidth,g_SelectionPanelTextureSource);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
   subresourceOrWidth = spriteSize.logicalWidthPixels;
   RichTextCommandStream_DrawSingleLine
@@ -2141,12 +2141,12 @@ SelectionPanel_DrawIconCellAndAdvanceRegs
   panelData = g_SelectionPanelData;
   cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
   subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,
              drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10),
              drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc),subresourceOrWidth,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceOrWidth,g_SelectionPanelTextureSource);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
   subresourceOrWidth = spriteSize.logicalWidthPixels;
   cellFlags = *cellFlagsPtr;
@@ -2210,13 +2210,13 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
   cellDrawY = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
   cellDrawX = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,meterFrame + baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceOrWidth,g_SelectionPanelTextureSource);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
   subresourceOrWidth = spriteSize.logicalWidthPixels;
   cellFlags = *cellFlagsPtr;
@@ -2263,14 +2263,14 @@ SelectionPanel_DrawProportionalCappedBar
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
-  (*g_SelectionPanelBlitOpaque)
+  capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   interiorStart = barStartCoordinate + capSize.logicalWidthPixels;
-  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - capSize.logicalWidthPixels;
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   filledSpan = endCapCoordinate - interiorStart;
@@ -2294,10 +2294,10 @@ SelectionPanel_DrawProportionalCappedBar
       fillFrame = fillFrame + 1;
     }
   }
-  (*g_SelectionPanelBlitClipped)
+  g_SelectionPanelBlitClipped
             (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,filledSpan + interiorStart,fixedDrawCoordinate,interiorStart,
              fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
-  (*g_SelectionPanelBlitClipped)
+  g_SelectionPanelBlitClipped
             (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,endCapCoordinate,fixedDrawCoordinate,filledSpan + interiorStart,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
@@ -2328,14 +2328,14 @@ SelectionPanel_DrawVerticalProportionalCappedBar
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
-  (*g_SelectionPanelBlitOpaque)
+  capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   interiorStart = barStartCoordinate + capSize.logicalHeightPixels;
-  capSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - capSize.logicalHeightPixels;
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   filledSpan = endCapCoordinate - interiorStart;
@@ -2359,10 +2359,10 @@ SelectionPanel_DrawVerticalProportionalCappedBar
       fillFrame = fillFrame + 1;
     }
   }
-  (*g_SelectionPanelBlitClipped)
+  g_SelectionPanelBlitClipped
             (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,endCapCoordinate - filledSpan,fixedDrawCoordinate,
              fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
-  (*g_SelectionPanelBlitClipped)
+  g_SelectionPanelBlitClipped
             (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate - filledSpan,-0x80000000,interiorStart,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
@@ -2393,16 +2393,16 @@ SelectionPanel_DrawForwardCappedBar
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  startCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
-  (*g_SelectionPanelBlitOpaque)
+  startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  endCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  endCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - endCapSize.logicalWidthPixels;
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  (*g_SelectionPanelBlitClipped)
+  g_SelectionPanelBlitClipped
             (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,endCapCoordinate,fixedDrawCoordinate,
              barStartCoordinate + startCapSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
@@ -2435,16 +2435,16 @@ SelectionPanel_DrawSolidCappedBar
   
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  startCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
-  (*g_SelectionPanelBlitOpaque)
+  startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  endCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  endCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - endCapSize.logicalHeightPixels;
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  (*g_SelectionPanelBlitClipped)
+  g_SelectionPanelBlitClipped
             (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,
              barStartCoordinate + startCapSize.logicalHeightPixels,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
@@ -2475,36 +2475,36 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
   cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
-  (*g_SelectionPanelBlitOpaque)
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   interiorStart = spanStartCoordinate + spriteSize.logicalWidthPixels;
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 2,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   segmentsEnd = filledSegmentCount;
   if ((*cellFlags & 0x400) != 0) {
     segmentsEnd = totalSegmentCount;
   }
   segmentsEnd = spriteSize.logicalWidthPixels * segmentsEnd + interiorStart;
   if (spanEndCoordinate < segmentsEnd) {
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   else if ((*cellFlags & 0x100) == 0) {
     if ((*cellFlags & 0x200) == 0) {
       spanStartCoordinate = (spanEndCoordinate - segmentsEnd >> 1) + interiorStart;
-      (*g_SelectionPanelBlitClipped)
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanStartCoordinate,fixedDrawCoordinate,interiorStart,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
-      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+      spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
@@ -2512,21 +2512,21 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
       }
       if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-          (*g_SelectionPanelBlitOpaque)
+          g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
           spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
         }
       }
-      (*g_SelectionPanelBlitClipped)
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,
                  spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
     else {
-      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+      spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
         spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
@@ -2534,21 +2534,21 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
       if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
           spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
-          (*g_SelectionPanelBlitOpaque)
+          g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
-      (*g_SelectionPanelBlitClipped)
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
   }
   else {
-    spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+    spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
     spanStartCoordinate = interiorStart;
     for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-      (*g_SelectionPanelBlitOpaque)
+      g_SelectionPanelBlitOpaque
                 (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
@@ -2556,13 +2556,13 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
     }
     if ((*cellFlags & 0x400) != 0) {
       for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
       }
     }
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,
                spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
@@ -2600,37 +2600,37 @@ SelectionPanel_DrawSegmentedCappedBar
   cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
   fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource,g_SelectionPanelTextureSource);
-  (*g_SelectionPanelBlitOpaque)
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 2,g_SelectionPanelTextureSource);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
-  (*g_SelectionPanelBlitOpaque)
+  g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
-  spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 3,g_SelectionPanelTextureSource);
+  spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   segmentsEnd = filledSegmentCount;
   if ((*cellFlags & 0x400) != 0) {
     segmentsEnd = totalSegmentCount;
   }
   segmentsEnd = spriteSize.logicalHeightPixels * segmentsEnd + barStartCoordinate;
   if (endCapCoordinate < segmentsEnd) {
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barStartCoordinate,fixedDrawCoordinate,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   else if ((*cellFlags & 0x100) == 0) {
     if ((*cellFlags & 0x200) == 0) {
       barEndCoordinate = endCapCoordinate - (endCapCoordinate - segmentsEnd >> 1);
-      (*g_SelectionPanelBlitClipped)
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barEndCoordinate,fixedDrawCoordinate,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
-      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+      spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
         barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
@@ -2638,22 +2638,22 @@ SelectionPanel_DrawSegmentedCappedBar
       if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
           barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
-          (*g_SelectionPanelBlitOpaque)
+          g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
-      (*g_SelectionPanelBlitClipped)
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
                  barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
     else {
-      spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+      spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
       barEndCoordinate = endCapCoordinate;
       for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
         barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount = totalSegmentCount + -1;
@@ -2661,21 +2661,21 @@ SelectionPanel_DrawSegmentedCappedBar
       if ((*cellFlags & 0x400) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
           barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
-          (*g_SelectionPanelBlitOpaque)
+          g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
-      (*g_SelectionPanelBlitClipped)
+      g_SelectionPanelBlitClipped
                 (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
                  barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
   }
   else {
-    spriteSize = (*g_GraphicsTextureSourceGetLogicalSize)(baseSubresource + 4,g_SelectionPanelTextureSource);
+    spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
     for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
-      (*g_SelectionPanelBlitOpaque)
+      g_SelectionPanelBlitOpaque
                 (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
@@ -2683,13 +2683,13 @@ SelectionPanel_DrawSegmentedCappedBar
     }
     if ((*cellFlags & 0x400) != 0) {
       for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
-        (*g_SelectionPanelBlitOpaque)
+        g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
       }
     }
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barStartCoordinate,fixedDrawCoordinate,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }

@@ -2747,7 +2747,7 @@ FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords)
   ArenaFreeResult freeResult;
   
   imageSizeOrDwordsLeft = sourceImageDwords[1];
-  allocResult = (*g_MemoryApi.alloc)(imageSizeOrDwordsLeft);
+  allocResult = g_MemoryApi.alloc(imageSizeOrDwordsLeft);
   fieldGridImageCopy = (FieldGridAsset *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     copyDestinationDwords = (uint32_t *)fieldGridImageCopy;
@@ -2795,11 +2795,11 @@ FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords)
                       ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                        (uint16_t *)&g_LevelResourcePathScratchUtf16);
     if (!writeStatus.failed) {
-      freeResult = (*g_MemoryApi.free)(fieldGridImageCopy);
+      freeResult = g_MemoryApi.free(fieldGridImageCopy);
       return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(ArenaFreeResult, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
     writeErrorValue = (FieldGridAsset *)writeStatus.valueOrError;
-    (*g_MemoryApi.free)(fieldGridImageCopy);
+    g_MemoryApi.free(fieldGridImageCopy);
     fieldGridImageCopy = writeErrorValue;
   }
   writeStatus.failed = true;

@@ -55,10 +55,10 @@ void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(
   }
   Movie_Close();
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(source,frontendViewModeStack));
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
             (FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *));
-  (*g_MemoryApi.free)(FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *));
-  (*g_MemoryApi.free)(FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *));
+  g_MemoryApi.free(FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *));
+  g_MemoryApi.free(FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *));
   FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *) = (GraphicsTextureSourceAsset *)0x0;
   FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *) = (void *)0x0;
   FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *) = (void *)0x0;
@@ -116,9 +116,9 @@ void __thandor_preserve_eax FrontendSessionAction_ApplySpeedOrToggleReady(void *
 void __thandor_preserve_eax FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
 
 {
-  (*g_NetworkBackendSlot3)();
+  g_NetworkBackendSlot3();
   g_FrontendNetworkState = 0;
-  (*g_NetworkBackendSlot1)();
+  g_NetworkBackendSlot1();
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
@@ -351,7 +351,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
   bool callResult;
   RecordRingDiscardResult discardedRecord;
   
-  callResult = (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
+  callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (callResult) {
     return;
@@ -405,7 +405,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
     g_EndMoviePendingTicks = g_EndMoviePendingTicks + 1;
   }
 FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
-  (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
   return;
 }
 
@@ -536,8 +536,8 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
   g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks - 1;
   if (g_SessionTransferTimeoutTicks == 0) {
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
-    (*g_NetworkBackendSlot3)();
-    (*g_NetworkBackendSlot1)();
+    g_NetworkBackendSlot3();
+    g_NetworkBackendSlot1();
     shutdownText = TextResource_Resolve(0xff01);
     RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText.text);
     InGameRecentTextHistory_InsertAndRebuild8(shutdownText.text);

@@ -798,7 +798,7 @@ InGameTextureSettings_SetQuality(UiSelectableControl *control)
   UiNodeBase *selectedQualityControl;
   UiNodeBase *graphicsSettingsRoot;
   
-  (*g_GraphicsCursorSetFrame)(6);
+  g_GraphicsCursorSetFrame(6);
   /* control is one of the texture quality buttons, its parent is textureQualityGroup */
   graphicsSettingsRoot = (control->base).parent;
   if ((UiSelectableControl *)THANDOR_UI_SIBLING(graphicsSettingsRoot,InGameUiImage,textureQualityGroup,textureQualityLowButton) == control) {
@@ -819,8 +819,8 @@ InGameTextureSettings_SetQuality(UiSelectableControl *control)
       THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityLowButton));
   PersistentSettings_Write(qualityLevel,0x30);
   g_TextureDownsampleShift = qualityLevel;
-  (*g_GraphicsRebuildAllStagingTextures)();
-  (*g_GraphicsCursorSetFrame)(0);
+  g_GraphicsRebuildAllStagingTextures();
+  g_GraphicsCursorSetFrame(0);
   return;
 }
 
@@ -847,7 +847,7 @@ InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   
   isEnabled = (bool)UiSelectableControl_IsSelectedCf(control);
   if (!isEnabled) {
-    (*g_SoundStopVoice)(g_InGameActiveEffectVoice);
+    g_SoundStopVoice(g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = (IDirectSoundBuffer *)0x0;
   }
   isEnabled = isEnabled;
@@ -924,7 +924,7 @@ InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     musicEnabledBit = 2;
   }
   else {
-    (*g_SoundStopVoice)(g_InGameActiveMusicVoice);
+    g_SoundStopVoice(g_InGameActiveMusicVoice);
     g_InGameActiveMusicVoice = (IDirectSoundBuffer *)0x0;
     g_InGameMusicEnabled = 1;
   }
@@ -1008,7 +1008,7 @@ void __thandor_preserve_eax InGameAudioSettings_SetEffectsGain(UiSettingsValueCo
   PersistentSettings_Write(value,0x24);
   g_UiSoundGainQ15 = value;
   g_SoundEffectsGainQ15 = value;
-  (*g_SoundSetVoiceGains)(value,value,g_InGameActiveEffectVoice);
+  g_SoundSetVoiceGains(value,value,g_InGameActiveEffectVoice);
   return;
 }
 
@@ -1046,7 +1046,7 @@ void __thandor_preserve_eax InGameAudioSettings_SetMusicGain(UiSettingsValueCont
   
   value = control->boundValue;
   PersistentSettings_Write(value,0x2c);
-  (*g_SoundSetVoiceGains)(value,value,g_InGameActiveMusicVoice);
+  g_SoundSetVoiceGains(value,value,g_InGameActiveMusicVoice);
   return;
 }
 

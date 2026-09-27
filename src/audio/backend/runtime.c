@@ -21,16 +21,16 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void)
 {
   SoundBackendDisabled_StopAllVoices();
   if (g_PrimarySoundBuffer != (IDirectSoundBuffer *)0x0) {
-    (*g_PrimarySoundBuffer->lpVtbl->SetVolume)(g_PrimarySoundBuffer,g_PrimaryVolume);
-    (*g_PrimarySoundBuffer->lpVtbl->SetPan)(g_PrimarySoundBuffer,g_PrimaryPan);
-    (*g_PrimarySoundBuffer->lpVtbl->Release)(g_PrimarySoundBuffer);
+    g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,g_PrimaryVolume);
+    g_PrimarySoundBuffer->lpVtbl->SetPan(g_PrimarySoundBuffer,g_PrimaryPan);
+    g_PrimarySoundBuffer->lpVtbl->Release(g_PrimarySoundBuffer);
     g_PrimarySoundBuffer = (IDirectSoundBuffer *)0x0;
   }
   if (g_DirectSound != (IDirectSound *)0x0) {
-    (*g_DirectSound->lpVtbl->Release)(g_DirectSound);
+    g_DirectSound->lpVtbl->Release(g_DirectSound);
     g_DirectSound = (IDirectSound *)0x0;
   }
-  (*g_MemoryApi.free)(g_DirectSoundVoiceSetRegistry);
+  g_MemoryApi.free(g_DirectSoundVoiceSetRegistry);
   g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)0x0;
   return;
 }
@@ -201,13 +201,13 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
       (resolveResult = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21), !resolveResult.failed)) &&
      ((resolveResult = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !resolveResult.failed &&
       (resolveResult = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !resolveResult.failed)))) {
-    directSoundResult = (*pDirectSoundCreate)((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
+    directSoundResult = pDirectSoundCreate((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
     Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
     if (directSoundResult != 0) {
       /* no DirectSound device: not an error, the game runs silent */
       return StatusValue_Ok((uint32_t)directSoundResult);
     }
-    directSoundResult = (*g_DirectSound->lpVtbl->SetCooperativeLevel)(g_DirectSound,g_MainWindow,3);
+    directSoundResult = g_DirectSound->lpVtbl->SetCooperativeLevel(g_DirectSound,g_MainWindow,3);
     if (directSoundResult == 0) {
       failedStage = 1;
       Memory_ZeroDwords(0x14,&WaveFormat_PCM_22050_Stereo16);
@@ -220,30 +220,30 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
       WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 0x10;
       PrimarySoundBufferDesc.dwSize = 0x14;
       PrimarySoundBufferDesc.dwFlags = 0xc1;
-      directSoundResult = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
+      directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
                         (g_DirectSound,&PrimarySoundBufferDesc,&g_PrimarySoundBuffer,
                          (TH_LEGACY_LPVOID)0x0);
       if (directSoundResult == 0) {
         failedStage = 2;
-        directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->SetFormat)
+        directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetFormat
                           (g_PrimarySoundBuffer,&WaveFormat_PCM_22050_Stereo16);
         if (directSoundResult == 0) {
           failedStage = 3;
-          directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->GetVolume)(g_PrimarySoundBuffer,&g_PrimaryVolume);
+          directSoundResult = g_PrimarySoundBuffer->lpVtbl->GetVolume(g_PrimarySoundBuffer,&g_PrimaryVolume);
           if (directSoundResult == 0) {
             failedStage = 4;
-            directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->GetPan)(g_PrimarySoundBuffer,&g_PrimaryPan);
+            directSoundResult = g_PrimarySoundBuffer->lpVtbl->GetPan(g_PrimarySoundBuffer,&g_PrimaryPan);
             if (directSoundResult == 0) {
               failedStage = 5;
-              directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->SetVolume)(g_PrimarySoundBuffer,0);
+              directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,0);
               if (directSoundResult == 0) {
                 failedStage = 6;
-                directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->SetPan)(g_PrimarySoundBuffer,0);
+                directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetPan(g_PrimarySoundBuffer,0);
                 if (directSoundResult == 0) {
                   failedStage = 7;
-                  directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->Play)(g_PrimarySoundBuffer,0,0,1);
+                  directSoundResult = g_PrimarySoundBuffer->lpVtbl->Play(g_PrimarySoundBuffer,0,0,1);
                   if (directSoundResult == 0) {
-                    registryAlloc = (*g_MemoryApi.alloc)(0x400);
+                    registryAlloc = g_MemoryApi.alloc(0x400);
                     if (!registryAlloc.failed) {
                       registryCursor = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
                       g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
@@ -275,7 +275,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
       }
     }
     Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage, (uint32_t)directSoundResult);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
     return StatusValue_Fail(0x29); /* DirectSound failed at stage <g_PackageLastErrorPath> */
   }
   Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
@@ -333,12 +333,12 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
     PrimarySoundBufferDesc.dwSize = 0x14;
     PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
     PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
-    directSoundResult = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
+    directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
                       (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,(TH_LEGACY_LPVOID)0x0);
     voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
     if (directSoundResult == 0) {
       failedStage = 0x65;
-      directSoundResult = (*soundBuffer->lpVtbl->Lock)
+      directSoundResult = soundBuffer->lpVtbl->Lock
                         (soundBuffer,0,0,&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,2);
       voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
       if (directSoundResult == 0) {
@@ -353,10 +353,10 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
           outputStereoPcm = outputStereoPcm + 0x200;
           remainingBlocks = remainingBlocks - 1;
         } while (remainingBlocks != 0);
-        directSoundResult = (*soundBuffer->lpVtbl->Unlock)(soundBuffer,lockedPcm,lockedByteCount,wrapRegion,wrapByteCount);
+        directSoundResult = soundBuffer->lpVtbl->Unlock(soundBuffer,lockedPcm,lockedByteCount,wrapRegion,wrapByteCount);
         voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
         if (directSoundResult == 0) {
-          voiceSetAlloc = (*g_MemoryApi.alloc)(0x20);
+          voiceSetAlloc = g_MemoryApi.alloc(0x20);
           voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
           if (!voiceSetAlloc.failed) {
             remainingCount = 8;
@@ -387,9 +387,9 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
     }
   }
   if (soundBuffer != (IDirectSoundBuffer *)0x0) {
-    (*soundBuffer->lpVtbl->Release)(soundBuffer);
+    soundBuffer->lpVtbl->Release(soundBuffer);
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
   failureResult.failed = true;
   failureResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
   return failureResult;
@@ -418,12 +418,12 @@ DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
     do {
       voiceBuffer = *voiceCursor;
       if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
-        (*voiceBuffer->lpVtbl->Release)(voiceBuffer);
+        voiceBuffer->lpVtbl->Release(voiceBuffer);
       }
       voiceCursor = voiceCursor + 1;
       voicesRemaining = voicesRemaining + -1;
     } while (voicesRemaining != 0);
-    (*g_MemoryApi.free)(voiceSet);
+    g_MemoryApi.free(voiceSet);
     registryRemaining = (DirectSoundVoiceSet **)0x100;
     registryCursor = g_DirectSoundVoiceSetRegistry;
     registryGuard = g_DirectSoundVoiceSetRegistry;
@@ -487,12 +487,12 @@ DirectSound_CreatePcmVoiceSet
   PrimarySoundBufferDesc.dwSize = 0x14;
   PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
   PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
-  directSoundResult = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
+  directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
                     (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,(TH_LEGACY_LPVOID)0x0);
   voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
   pendingStage = failedStage;
   if (directSoundResult == 0) {
-    directSoundResult = (*soundBuffer->lpVtbl->Lock)
+    directSoundResult = soundBuffer->lpVtbl->Lock
                       (soundBuffer,0,0,&lockedData,&lockedByteCount,&wrapRegion,&wrapByteCount,2);
     voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
     pendingStage = 0x65;
@@ -504,11 +504,11 @@ DirectSound_CreatePcmVoiceSet
         pcmData = pcmData + 1;
         destCursor = destCursor + 1;
       }
-      directSoundResult = (*soundBuffer->lpVtbl->Unlock)(soundBuffer,lockedData,lockedByteCount,wrapRegion,wrapByteCount);
+      directSoundResult = soundBuffer->lpVtbl->Unlock(soundBuffer,lockedData,lockedByteCount,wrapRegion,wrapByteCount);
       voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
       pendingStage = 0x66;
       if (directSoundResult == 0) {
-        voiceSetAlloc = (*g_MemoryApi.alloc)(0x20);
+        voiceSetAlloc = g_MemoryApi.alloc(0x20);
         voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
         pendingStage = failedStage;
         if (!voiceSetAlloc.failed) {
@@ -540,9 +540,9 @@ DirectSound_CreatePcmVoiceSet
   }
   failedStage = pendingStage;
   if (soundBuffer != (IDirectSoundBuffer *)0x0) {
-    (*soundBuffer->lpVtbl->Release)(soundBuffer);
+    soundBuffer->lpVtbl->Release(soundBuffer);
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
   failureResult.failed = true;
   failureResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
   return failureResult;
@@ -571,12 +571,12 @@ DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
     do {
       voiceBuffer = *voiceCursor;
       if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
-        (*voiceBuffer->lpVtbl->Release)(voiceBuffer);
+        voiceBuffer->lpVtbl->Release(voiceBuffer);
       }
       voiceCursor = voiceCursor + 1;
       voicesRemaining = voicesRemaining + -1;
     } while (voicesRemaining != 0);
-    (*g_MemoryApi.free)(voiceSet);
+    g_MemoryApi.free(voiceSet);
     registryRemaining = (DirectSoundVoiceSet **)0x100;
     registryCursor = g_DirectSoundVoiceSetRegistry;
     registryGuard = g_DirectSoundVoiceSetRegistry;
@@ -605,9 +605,9 @@ static void DirectSound_ApplyChannelGains
 {
   int32_t leftAttenuation = g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8];
   int32_t rightAttenuation = g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8];
-  (*voice->lpVtbl->SetVolume)
+  voice->lpVtbl->SetVolume
             (voice,rightChannelGainQ15 < leftChannelGainQ15 ? leftAttenuation : rightAttenuation);
-  (*voice->lpVtbl->SetPan)(voice,leftAttenuation - rightAttenuation);
+  voice->lpVtbl->SetPan(voice,leftAttenuation - rightAttenuation);
 }
 
 /* Shared body of PlayOneShot/PlayLooping (0x00583930 / 0x00583A70), rewritten from the assembly:
@@ -630,16 +630,16 @@ static SoundPlayResult DirectSound_PlayVoiceSet
   for (slot = 0; slot < 8; slot = slot + 1) {
     voice = voiceSet->voices[slot];
     if (voice == (IDirectSoundBuffer *)0x0) {
-      if ((*g_DirectSound->lpVtbl->DuplicateSoundBuffer)
+      if (g_DirectSound->lpVtbl->DuplicateSoundBuffer
                     (g_DirectSound,voiceSet->voices[0],&voiceSet->voices[slot]) != 0) {
         return result;
       }
       voice = voiceSet->voices[slot];
-      (*voice->lpVtbl->SetCurrentPosition)(voice,0);
+      voice->lpVtbl->SetCurrentPosition(voice,0);
       break;
     }
     status = 0;
-    (*voice->lpVtbl->GetStatus)(voice,&status);
+    voice->lpVtbl->GetStatus(voice,&status);
     if ((status & 1) == 0) {
       break;
     }
@@ -647,7 +647,7 @@ static SoundPlayResult DirectSound_PlayVoiceSet
   if (slot == 8) {
     return result;
   }
-  (*voice->lpVtbl->Play)(voice,0,0,playFlags);
+  voice->lpVtbl->Play(voice,0,0,playFlags);
   DirectSound_ApplyChannelGains(leftChannelGainQ15,rightChannelGainQ15,voice);
   result.soundBuffer = voice;
   result.failed = false;
@@ -695,7 +695,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopVoice(IDirectSoundBuffe
 
 {
   if (voice != (IDirectSoundBuffer *)0x0) {
-    (*voice->lpVtbl->Stop)(voice);
+    voice->lpVtbl->Stop(voice);
   }
   return;
 }
@@ -714,7 +714,7 @@ bool __thandor_cf_preserve_eax_ecx_edx DirectSound_IsVoicePlaying(IDirectSoundBu
   
   notPlaying = true;
   if (voice != (IDirectSoundBuffer *)0x0) {
-    (*voice->lpVtbl->GetStatus)(voice,&voiceStatusFlags);
+    voice->lpVtbl->GetStatus(voice,&voiceStatusFlags);
     notPlaying = (voiceStatusFlags & 1) == 0;
   }
   return notPlaying;
@@ -747,7 +747,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void)
     while (voiceGuard != (IDirectSoundBuffer **)0x0) {
       voiceBuffer = *voiceCursor;
       if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
-        (*voiceBuffer->lpVtbl->Stop)(voiceBuffer);
+        voiceBuffer->lpVtbl->Stop(voiceBuffer);
       }
       voiceCursor = voiceCursor + 1;
       voicesRemaining = (IDirectSoundBuffer **)((int)voicesRemaining + -1);

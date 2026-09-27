@@ -2490,7 +2490,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_Initi
   char *tableCursor;
   ArenaAllocResult allocResult;
   
-  allocResult = (*g_MemoryApi.alloc)(0x20000);
+  allocResult = g_MemoryApi.alloc(0x20000);
   if (!allocResult.failed) {
     inputValue = 0;
     tableCursor = (char *)(allocResult.payloadOrError + 0xffff & 0xffff0000);
@@ -2778,7 +2778,7 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
   StatusResult failureStatus;
   
   allocationSize = gridHalfSize * 2 * gridHalfSize * 2;
-  allocResult = (*g_MemoryApi.alloc)(allocationSize);
+  allocResult = g_MemoryApi.alloc(allocationSize);
   allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     allocationSize = allocationSize >> 2;
@@ -2790,7 +2790,7 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
                &(allocationCursor->asset).common.allocationSizeBytes;
     }
     allocationSize = (textureDimension * textureDimension + 0x20) * subresourceCount + 0xa00;
-    allocResult = (*g_MemoryApi.alloc)(allocationSize);
+    allocResult = g_MemoryApi.alloc(allocationSize);
     allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       entryCursor = allocationCursor;
@@ -2840,13 +2840,13 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
       g_GraphicsShadingPositiveGridOriginQ12 = counterOrGridOrigin * 0x1000;
       g_GraphicsShadingNegativeGridOriginQ12 = counterOrGridOrigin * -0x1000;
       g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
-      textureSetResult = (*g_GraphicsCreateTextureSet)(g_GraphicsShadingGeneratedAsset);
+      textureSetResult = g_GraphicsCreateTextureSet(g_GraphicsShadingGeneratedAsset);
       allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)textureSetResult.textureSet;
       if (!textureSetResult.failed) {
         g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&allocationCursor->asset;
         return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(TextureSetResult, uint64_t, textureSetResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
-      (*g_MemoryApi.free)(g_GraphicsShadingGeneratedAsset);
+      g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
     }
   }
   failureStatus.failed = true;
@@ -2863,11 +2863,11 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
 void __thandor_void_preserve_eax GraphicsShadingRuntime_Shutdown(void)
 
 {
-  (*g_GraphicsDestroyTextureSet)(g_GraphicsShadingTextureSet);
+  g_GraphicsDestroyTextureSet(g_GraphicsShadingTextureSet);
   g_GraphicsShadingTextureSet = (GraphicsTextureSet *)0x0;
-  (*g_MemoryApi.free)(g_GraphicsShadingGeneratedAsset);
+  g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
   g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)0x0;
-  (*g_MemoryApi.free)(g_GraphicsShadingGridScratch);
+  g_MemoryApi.free(g_GraphicsShadingGridScratch);
   g_GraphicsShadingGridScratch = (void *)0x0;
   return;
 }
@@ -2930,13 +2930,13 @@ GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
   
   subresourceIndex = 0;
   for (subresourcesRemaining = g_GraphicsShadingGeneratedTextureSubresourceIndex; subresourcesRemaining != 0; subresourcesRemaining = subresourcesRemaining - 1) {
-    (*g_GraphicsRefreshTextureAlpha)(subresourceIndex,g_GraphicsShadingTextureSet);
+    g_GraphicsRefreshTextureAlpha(subresourceIndex,g_GraphicsShadingTextureSet);
     subresourceIndex = subresourceIndex + 1;
   }
   if ((g_GraphicsShadingGeneratedTextureCompletedTraversalCount == 0) &&
      ((g_GraphicsShadingGeneratedTextureTileX != 0 || (g_GraphicsShadingGeneratedTextureTileY != 0))
      )) {
-    (*g_GraphicsRefreshTextureAlpha)(subresourceIndex,g_GraphicsShadingTextureSet);
+    g_GraphicsRefreshTextureAlpha(subresourceIndex,g_GraphicsShadingTextureSet);
   }
   return;
 }

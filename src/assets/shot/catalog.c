@@ -89,7 +89,7 @@ ShotDefinitions_ValidateTerrainMaterialReferences(void)
         if ((0x19 < materialIndex) ||
            ((-1 < materialIndex && (g_TerrainMaterialTextureSets[materialIndex] == (GraphicsTextureSet *)0x0)
             ))) {
-          (*g_WideNumberFormatUtf16)
+          g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100 - registrySlotsRemaining,g_PackageLastErrorPath);
           failureResult.failed = true;
           failureResult.valueOrError = 0x46;
@@ -132,7 +132,7 @@ ShotDefinitionRegistry_FindByIdWithErrorCf(PckShotDefinitionIdCatalog definition
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
       notFoundResult.notFound = true;
       notFoundResult.definitionOrError = (ShotDefinition *)0x44;
@@ -386,11 +386,11 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
       registrySlotCursor = registrySlotCursor + 1;
       slotsRemainingOrIndex = slotsRemainingOrIndex + -1;
     } while (slotsRemainingOrIndex != 0);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100,g_PackageLastErrorPath);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100,g_PackageLastErrorPath);
     asset = (ShotDefinition *)0x45;
   }
   else {
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     asset = (ShotDefinition *)0x4d;
   }

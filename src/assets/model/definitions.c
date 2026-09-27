@@ -414,7 +414,7 @@ ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(PckModelDefinitionIdCatalog d
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
       missResult.metric1 = definitionId;
       missResult.metric0 = 0x3e;
@@ -589,7 +589,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
   existingLookup = ModelDefinitionRegistry_FindByIdWithErrorCf(definition->definitionId);
   if (!existingLookup.notFound) {
     /* Duplicate identifier. */
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     resolverStatusOrSentinel = MODEL_DEFINITION_REFERENCE_FAILURE_SENTINEL_0x4B;
     goto ModelDefinition_ReturnReferenceResolutionResult;
@@ -599,7 +599,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
     slotsRemainingOrClassIndex = slotsRemainingOrClassIndex + -1;
     if (slotsRemainingOrClassIndex == 0) {
       /* Registry full. */
-      (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
+      g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
       resolverStatusOrSentinel = 0x3f;
       goto ModelDefinition_ReturnReferenceResolutionResult;
     }
@@ -843,7 +843,7 @@ ModelDefinitionRegistry_FindByIdWithErrorCf(PckModelDefinitionIdCatalog definiti
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
       missResult.notFound = true;
       missResult.modelDefinition = (ModelDefinitionRecordPrefix *)0x3e;

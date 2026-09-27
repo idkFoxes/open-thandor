@@ -478,7 +478,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   case 0x56f160:
     /* The original calls this without pushing arguments (stale stack, RET 0x10); capture the whole
        framebuffer like the end-game and end-movie screenshot commands. */
-    capturedFramebuffer = (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
+    capturedFramebuffer = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
     if (!capturedFramebuffer.failed) {
       FileSystem_WriteBufferToPathCf
                 (((capturedFramebuffer.capture)->common).allocationSizeBytes,capturedFramebuffer.capture,
@@ -746,7 +746,7 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   handle = (void *)upsertStatus.valueOrError;
   if (upsertStatus.failed) {
     WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),resourcePath);
-    upsertStatus = (*g_FileSystemCreateDirectoryRecursiveCf)
+    upsertStatus = g_FileSystemCreateDirectoryRecursiveCf
                       (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
     if (upsertStatus.failed) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
     upsertStatus = ResourceRegistration_OpenSourceCf(resourcePath);
@@ -845,7 +845,7 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
     Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
   }
   else {
-    oldUnitAllocation = (*g_MemoryApi.alloc)(0x4104);
+    oldUnitAllocation = g_MemoryApi.alloc(0x4104);
     sourceCursor = g_OldUnitPrimaryTable;
     oldUnitImage = (uint32_t *)oldUnitAllocation.payloadOrError;
     if (oldUnitAllocation.failed) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
@@ -863,33 +863,33 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
     }
     Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(int)destinationCursor - (int)oldUnitImage,oldUnitImage,
                         (uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
-    (*g_MemoryApi.free)(oldUnitImage);
+    g_MemoryApi.free(oldUnitImage);
   }
   destination = g_PackageScratchBuffer;
   headerDwords = (uint32_t *)destination; /* EDX: the 0x200-byte package header just read */
-  seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
+  seekResult = g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,0,handle);
   if ((!seekResult.failed) &&
-     (readResult = (*g_FileSystemReadExactCf)(0x200,destination,handle), !readResult.failed)){
+     (readResult = g_FileSystemReadExactCf(0x200,destination,handle), !readResult.failed)){
     WidePath_SplitParentAndLeaf
               ((uint16_t *)(destination + 0x100),(uint16_t *)(destination + 0x200),resourcePath);
-    localeValue = (*g_LocaleGetPackedCurrentDate)();
+    localeValue = g_LocaleGetPackedCurrentDate();
     *(uint32_t *)(destination + 0x1f0) = localeValue;
-    localeValue = (*g_LocaleGetPackedCurrentTime)();
+    localeValue = g_LocaleGetPackedCurrentTime();
     *(uint32_t *)(destination + 500) = localeValue;
-    localeValue = (*g_LocaleFormatCurrentDateUtf16)((uint16_t *)(destination + 0x1c0));
+    localeValue = g_LocaleFormatCurrentDateUtf16((uint16_t *)(destination + 0x1c0));
     timeTextDestination = (uint16_t *)(localeValue + 4 + (int)(destination + 0x1c0));
     timeTextDestination[-2] = 0x2c; /* ", " between date and time */
     timeTextDestination[-1] = 0x20;
-    (*g_LocaleFormatCurrentTimeUtf16)(timeTextDestination);
+    g_LocaleFormatCurrentTimeUtf16(timeTextDestination);
     localeValue = g_InGameLevelCampaignAssociationIndex;
     if (g_FrontendLoadedCampaignAsset == (uint32_t *)0x0) {
       localeValue = 0xffffffff;
     }
     headerDwords[0x5c] = g_InGameLevelTitleTextResourceIndex;
     headerDwords[100] = localeValue;
-    seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
+    seekResult = g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,0,handle);
     if ((!seekResult.failed) &&
-       (writeResult = (*g_FileSystemWriteExactOrFlushCf)(0x200,headerDwords,handle), !writeResult.failed)){
+       (writeResult = g_FileSystemWriteExactOrFlushCf(0x200,headerDwords,handle), !writeResult.failed)){
       Package_Unmount((EngineFileHandle)handle);
       g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
       return false;
@@ -1041,67 +1041,67 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 0x27;
     INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 0xf;
   }
-  loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
+  loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
   textureSourceValue = g_InGamePanelTextureSource;
   loadedTextureSource = loadedTexture.textureSource;
   if (!loadedTexture.failed) {
     LOCK();
     UNLOCK();
     g_InGamePanelTextureSource = loadedTextureSource;
-    (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(textureSourceValue);
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,loadedTextureSource);
+    g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(textureSourceValue);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,loadedTextureSource);
     g_InGamePanelTextureSubresource00Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(1,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(1,loadedTextureSource);
     g_InGamePanelTextureSubresource01Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(2,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(2,loadedTextureSource);
     g_InGamePanelTextureSubresource02Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(6,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(6,loadedTextureSource);
     g_InGamePanelTextureSubresource06Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(7,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(7,loadedTextureSource);
     g_InGamePanelTextureSubresource07Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x1b,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x1b,loadedTextureSource);
     g_InGamePanelTextureSubresource27Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x1c,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x1c,loadedTextureSource);
     g_InGamePanelTextureSubresource28Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x13,loadedTextureSource);
     g_InGamePanelTextureSubresource19Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x14,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x14,loadedTextureSource);
     g_InGamePanelTextureSubresource20Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x22,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x22,loadedTextureSource);
     g_InGamePanelTextureSubresource34Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x20,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x20,loadedTextureSource);
     g_InGamePanelTextureSubresource32Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x21,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x21,loadedTextureSource);
     g_InGamePanelTextureSubresource33Width = logicalSize.logicalWidthPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(2,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(2,loadedTextureSource);
     g_InGamePanelTextureSubresource02Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(3,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(3,loadedTextureSource);
     g_InGamePanelTextureSubresource03Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(4,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(4,loadedTextureSource);
     g_InGamePanelTextureSubresource04Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(5,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(5,loadedTextureSource);
     g_InGamePanelTextureSubresource05Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x24,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x24,loadedTextureSource);
     g_InGamePanelTextureSubresource36Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x25,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x25,loadedTextureSource);
     g_InGamePanelTextureSubresource37Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(6,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(6,loadedTextureSource);
     g_InGamePanelTextureSubresource06Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,loadedTextureSource);
     g_InGamePanelTextureSubresource00Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(7,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(7,loadedTextureSource);
     g_InGamePanelTextureSubresource07Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x1a,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x1a,loadedTextureSource);
     g_InGamePanelTextureSubresource26Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x1f,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x1f,loadedTextureSource);
     g_InGamePanelTextureSubresource31Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x12,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x12,loadedTextureSource);
     g_InGamePanelTextureSubresource18Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x17,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x17,loadedTextureSource);
     g_InGamePanelTextureSubresource23Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x22,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x22,loadedTextureSource);
     g_InGamePanelTextureSubresource34Height = logicalSize.logicalHeightPixels;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x20,loadedTextureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0x20,loadedTextureSource);
     textureSourceValue = g_InGamePanelTextureSource;
     g_InGamePanelTextureSubresource32Height = logicalSize.logicalHeightPixels;
     INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset = 0;
@@ -2346,25 +2346,25 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
         cellTop = cellTop - stepOffset;
       }
     } while (detailIndex < 0xc);
-    loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_diagram0_gfx_00563120);
+    loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_diagram0_gfx_00563120);
     textureSourceValue = g_InGameDiagramTextureSource;
     loadedTextureSource = loadedTexture.textureSource;
     if (!loadedTexture.failed) {
       LOCK();
       UNLOCK();
       g_InGameDiagramTextureSource = loadedTextureSource;
-      (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(textureSourceValue);
+      g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(textureSourceValue);
       INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x58,int32_t) = (int32_t)loadedTextureSource;
       INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x58,int32_t) = (int32_t)loadedTextureSource;
       INGAME_UI_FIELD(inGameRoot,energyGauge,0x58,struct UiRootNode *) = (UiRootNode *)loadedTextureSource;
-      loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_window_gfx_0056318e);
+      loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_window_gfx_0056318e);
       textureSourceValue = g_InGameWindowTextureSource;
       loadedTextureSource = loadedTexture.textureSource;
       if (!loadedTexture.failed) {
         LOCK();
         UNLOCK();
         g_InGameWindowTextureSource = loadedTextureSource;
-        (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(textureSourceValue);
+        g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(textureSourceValue);
         INGAME_UI_FIELD(inGameRoot,technologyWindow,0x54,struct UiRootCallbacks *) = (UiRootCallbacks *)loadedTextureSource;
         INGAME_UI_FIELD(inGameRoot,messageWindow,0x54,struct UiNodeBase *) = (UiNodeBase *)loadedTextureSource;
         INGAME_UI_FIELD(inGameRoot,gameMenuWindow,0x54,uint32_t) = (UiAnchorFractionQ31)loadedTextureSource;
@@ -2373,14 +2373,14 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
         INGAME_UI_FIELD(inGameRoot,graphicsSettingsWindow,0x54,int32_t) = (int32_t)loadedTextureSource;
         INGAME_UI_FIELD(inGameRoot,audioSettingsWindow,0x54,enum UiNodeFlags) = (UiNodeFlags)loadedTextureSource;
         INGAME_UI_FIELD(inGameRoot,missionHelpWindow,0x54,enum UiRootFlags) = (UiRootFlags)loadedTextureSource;
-        loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_tech_gfx_005630fa);
+        loadedTexture = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_tech_gfx_005630fa);
         textureSourceValue = g_InGameTechnologyTextureSource;
         loadedTextureSource = loadedTexture.textureSource;
         if (!loadedTexture.failed) {
           LOCK();
           UNLOCK();
           g_InGameTechnologyTextureSource = loadedTextureSource;
-          (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(textureSourceValue);
+          g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(textureSourceValue);
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab1Icon,0x54,struct UiNodeBase *) = (UiNodeBase *)loadedTextureSource;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab2Icon,0x54,struct UiNodeBase *) = (UiNodeBase *)loadedTextureSource;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab3Icon,0x54,struct UiNodeBase *) = (UiNodeBase *)loadedTextureSource;
@@ -2388,7 +2388,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab5Icon,0x54,int32_t) = (int32_t)loadedTextureSource;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab6Icon,0x54,int32_t) = (int32_t)loadedTextureSource;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab7Icon,0x54,int32_t) = (int32_t)loadedTextureSource;
-          logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,loadedTextureSource);
+          logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,loadedTextureSource);
           techTextureHeight = logicalSize.logicalHeightPixels;
           sdwordField = &INGAME_UI(inGameRoot,technologyAreaTab1)->topOffset;
           *sdwordField = *sdwordField - techTextureHeight;
@@ -2795,12 +2795,12 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
                      ((runtimeRoot->worldRuntime0A30).selection.reserved04_1F + 0xc),
                g_FrontendDebugOverlayTextSlot11Utf16);
   }
-  value = (*g_MemoryApi.queryFreeBytes)();
+  value = g_MemoryApi.queryFreeBytes();
   WideNumber_FormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_HEXADECIMAL,0,10,1,value,
              g_FrontendDebugOverlayTextSlot12Utf16);
   elapsedSeconds = (uint64_t)(g_GameFactionRuntimeImage.tail.simulationTick + 0x4af) / 0x4b0;
-  (*g_LocaleFormatTimeFieldsUtf16)
+  g_LocaleFormatTimeFieldsUtf16
             ((uint32_t)(elapsedSeconds / 0x3c),(uint32_t)(elapsedSeconds % 0x3c),g_FrontendDebugOverlayTextSlot13Utf16);
   frameOrFactionIndex = 1;
   factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
@@ -2809,7 +2809,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[frameOrFactionIndex] != 0) &&
        (g_GameFactionRuntimeImage.tail.factionLifecycleStates[frameOrFactionIndex] <
         FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED)) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),(uint16_t *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0));
       rosterCount = 0;
@@ -2916,12 +2916,12 @@ void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(voi
   TextureSizeResult windowTextureSize;
   UiConditionalActionControl *statusBox;
   
-  (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
+  g_SpinLockAcquire(&g_InGameStateTickSpinLock);
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
-    windowTextureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
+    windowTextureSize = g_GraphicsTextureSourceGetLogicalSize(0x72,g_UiWindowTextureSource);
     replacementPayload = &firstPlayerRecord->playerName;
     textExtent = RichTextCommandStream_MeasureRegs
                       (g_UiTextStyleNormal,(uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
@@ -2950,7 +2950,7 @@ void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(voi
       remainingPlayers = remainingPlayers - 1;
     } while (remainingPlayers != 0);
   }
-  (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
   return;
 }
 
@@ -3112,7 +3112,7 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
       break;
     }
     if (((*(uint32_t *)(button + 0x4c) & 0x200) != 0) && (*(uint32_t *)(button + 0x70) != 0)) {
-      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,*(DirectSoundVoiceSet **)(button + 0x70));
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,*(DirectSoundVoiceSet **)(button + 0x70));
     }
     InGameSelectionPage_ToggleAndRefreshPage2((UiNodeBase *)rt);
     break;
@@ -4774,7 +4774,7 @@ InGameUiCommand_UpdateInteractionByMode
     /* EAX is the horizontal drag distance computed before the call (MOV EAX,[EBX+0x168]; SUB EAX,
        [DragStartScreenX] at 00570ac0); g_PointerSetPosition preserves EAX, it does not return a value. */
     workValue = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX;
-    (*g_PointerSetPosition)(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
+    g_PointerSetPosition(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameCommandQueue_AppendLocalPlayerCommand(0x30f0,0,0,workValue << 6);
@@ -5164,7 +5164,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     do {
       armyAsset = *registrySlot;
       if (armyAsset != (ArmyAssetRecordPrefix *)0x0) {
-        (*g_MemoryApi.free)((void *)armyAsset[2].byteSize);
+        g_MemoryApi.free((void *)armyAsset[2].byteSize);
         armyAsset[2].byteSize = 0;
       }
       registrySlot = registrySlot + 1;
@@ -5519,11 +5519,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
         workValue = ModelRuntimeHierarchy_SumMetric3C((int *)lastSelectedEntity);
         rootCursor->selectionDetailArmyAssetValueA060 = detailValue;
         rootCursor->selectionDetailEntityA068 = lastSelectedEntity;
-        (*g_WideNumberFormatUtf16)
+        g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,workValue,g_InGameSelectionDetailArmourTextUtf16
                   );
         metricValue = ModelRuntime_QueryActiveHierarchyMetric((ArmyRuntimeSlot *)lastSelectedEntity);
-        (*g_WideNumberFormatUtf16)
+        g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,metricValue >> 4,
                    g_InGameSelectionDetailEnergyTextUtf16);
         *(int *)(rootCursor->opaqueA06C_C3E3 + 0x54) = *(int *)(armyAssetResult.valueOrError + 4) + 0x18002c;
@@ -5624,7 +5624,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
             if (workValue != 0xe) {
               return;
             }
-            (*g_WideNumberFormatUtf16)
+            g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordCursor[0x18],
                        g_InGameSelectionDetailWeaponName0TextUtf16);
             return;
@@ -5695,18 +5695,18 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
     *(GraphicsTextureSourceAsset **)(rootCursor->opaqueA06C_C3E3 + 0x128) = hoverTextureSource;
     metricValue = definitionNode->buildXeniteCostQ4;
     buildDuration = definitionNode->buildDurationQ5;
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,detailValue,g_InGameSelectionDetailArmourTextUtf16);
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,metricValue >> 4,
                g_InGameSelectionDetailBuildXeniteCostTextUtf16);
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,buildDuration >> 5,
                g_InGameSelectionDetailBuildTimeTextUtf16);
     displayedEnergy = ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
                       ((rootCursor->worldRuntime0A30).activeFactionRuntimeIndex,
                        (ModelDefinitionHierarchyNodeAddress32)definitionNode);
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,displayedEnergy >> 4,g_InGameSelectionDetailEnergyTextUtf16
               );
     workValue = *(int *)(definitionNode->reserved00_07 + 4) + 0x180045;

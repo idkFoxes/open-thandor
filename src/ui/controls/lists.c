@@ -149,7 +149,7 @@ UiTimedListControl_HandleKeyboardNavigationCf
     if (control->recordSelectionCallback == 0) {
       return false;
     }
-    (*control->recordSelectionCallback)
+    control->recordSelectionCallback
               (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
     return false;
   case 0x10016:
@@ -162,7 +162,7 @@ UiTimedListControl_HandleKeyboardNavigationCf
     if (control->recordSelectionCallback == 0) {
       return false;
     }
-    (*control->recordSelectionCallback)
+    control->recordSelectionCallback
               (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
     return false;
   default:
@@ -268,7 +268,7 @@ UiListControl_HandleKeyboardNavigationCf
     if (newSelectedSlot != previousSelectedSlot) {
       if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
          (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-        (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+        g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
       }
       rowValue = ((uint32_t)((int)newSelectedSlot - (int)control->rowSlots) >> 2) * control->rowHeight;
       UiScrollableControl_ClampOffsetsToViewport
@@ -304,7 +304,7 @@ UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   parentNode = (control->base).parent;
   parentVtable = parentNode->vtable;
   (control->base).bottomOffset = control->rowHeight * control->rowCount + 1;
-  (*parentVtable->layout)(parentNode);
+  parentVtable->layout(parentNode);
   selectedIndex = UiPointerList_GetSelectedIndexVariantBCf(control);
   UiPointerList_SelectIndexVariantB(selectedIndex.rowIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
@@ -337,7 +337,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
   horizontalBarHit = false;
   if ((control->scrollStateFlags &
       (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
       horizontalBarHit = (-1 < localY) && (localY < (int)textureSize.logicalHeightPixels);
     }
@@ -348,7 +348,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
     }
     if (horizontalBarHit) {
       horizontalTrackEnd = (control->base).layoutWidth;
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
         horizontalTrackEnd = horizontalTrackEnd - textureSize.logicalWidthPixels;
       }
@@ -365,7 +365,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
       return;
     }
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
       if (localXOrTrackBottom < 0) {
         return;
@@ -383,7 +383,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
       }
     }
     localXOrTrackBottom = (control->base).layoutHeight;
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
       localXOrTrackBottom = localXOrTrackBottom - textureSize.logicalHeightPixels;
     }
@@ -398,7 +398,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
       return;
     }
     if (localY < control->verticalThumbTop) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       if ((int)(localY - trackStartOffset) < (int)textureSize.logicalHeightPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
@@ -417,7 +417,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
         UiNode_InvalidateRoot(&control->base);
         return;
       }
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       if (localXOrTrackBottom - localY <= (int)textureSize.logicalHeightPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
@@ -431,7 +431,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
     }
   }
   else if (localXOrTrackBottom < control->horizontalThumbLeft) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
     if ((int)(localXOrTrackBottom - trackStartOffset) < (int)textureSize.logicalWidthPixels) {
       control->scrollStateFlags =
            control->scrollStateFlags |
@@ -450,7 +450,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
       UiNode_InvalidateRoot(&control->base);
       return;
     }
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
     if (horizontalTrackEnd - localXOrTrackBottom <= (int)textureSize.logicalWidthPixels) {
       control->scrollStateFlags =
            control->scrollStateFlags |
@@ -535,12 +535,12 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     thumbOffsetOrLocalX = (control->base).left;
     anchorOrLocalY = control->pointerAnchorX;
     trackLength = (control->base).layoutWidth;
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
     thumbOffsetOrLocalX = ((pointerX - thumbOffsetOrLocalX) - anchorOrLocalY) - textureSize.logicalWidthPixels;
     trackLength = trackLength + textureSize.logicalWidthPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
         thumbOffsetOrLocalX = thumbOffsetOrLocalX - textureSize.logicalWidthPixels;
       }
@@ -558,12 +558,12 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     thumbOffsetOrLocalX = (control->base).top;
     anchorOrLocalY = control->pointerAnchorY;
     trackLength = (control->base).layoutHeight;
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
     thumbOffsetOrLocalX = ((pointerY - thumbOffsetOrLocalX) - anchorOrLocalY) - textureSize.logicalHeightPixels;
     trackLength = trackLength + textureSize.logicalHeightPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
         thumbOffsetOrLocalX = thumbOffsetOrLocalX - textureSize.logicalHeightPixels;
       }
@@ -582,7 +582,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
   thumbOffsetOrLocalX = pointerX - (control->base).left;
   arrowHovered = false;
   if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) != 0) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
       inArrowBar = (anchorOrLocalY < (control->base).layoutHeight) &&
@@ -594,7 +594,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowStart = 0;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
         arrowStart = textureSize.logicalWidthPixels;
       }
       arrowHovered = ((int)arrowStart <= thumbOffsetOrLocalX) &&
@@ -602,7 +602,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) != 0) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
       inArrowBar = (anchorOrLocalY < (control->base).layoutHeight) &&
@@ -614,14 +614,14 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowEnd = (control->base).layoutWidth;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalWidthPixels;
       }
       arrowHovered = (thumbOffsetOrLocalX < arrowEnd) && ((int)(arrowEnd - arrowSize) <= thumbOffsetOrLocalX);
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) != 0) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
       inArrowBar = (thumbOffsetOrLocalX < (control->base).layoutWidth) &&
@@ -633,14 +633,14 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowStart = 0;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
         arrowStart = textureSize.logicalHeightPixels;
       }
       arrowHovered = ((int)arrowStart <= anchorOrLocalY) && (anchorOrLocalY < (int)(arrowStart + arrowSize));
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) != 0) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
       inArrowBar = (thumbOffsetOrLocalX < (control->base).layoutWidth) &&
@@ -652,7 +652,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowEnd = (control->base).layoutHeight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalHeightPixels;
       }
       arrowHovered = (anchorOrLocalY < arrowEnd) && ((int)(arrowEnd - arrowSize) <= anchorOrLocalY);
@@ -706,7 +706,7 @@ UiScrollableControl_UpdateSecondaryScrollDrag
   }
   UiScrollableControl_RefreshChildAndScrollThumbs(control);
   UiNode_InvalidateRoot(&control->base);
-  (*g_PointerSetPosition)(control->pointerAnchorY,control->pointerAnchorX);
+  g_PointerSetPosition(control->pointerAnchorY,control->pointerAnchorX);
   return;
 }
 
@@ -836,7 +836,7 @@ UiListControl_SelectRowFromPointer
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
            (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
         }
       }
     }
@@ -1060,7 +1060,7 @@ UiTimedListControl_SelectRowFromPointer
   if (x < 0) {
     /* Inside the indentation: the expand/collapse icon of the row. */
     if (((record->recordFlags0C & 1) != 0) && (indent != 0) &&
-        (*g_GraphicsTextureSourceTestOpaquePixel)
+        g_GraphicsTextureSourceTestOpaquePixel
                   (y + (int)list->base.rowHeight,x + (int)list->observedDrawParameter80,0,0,
                    list->base.observedDrawParameter6C,list->base.rowTextureSource) &&
         (list->base.recordSelectionCallback != 0)) {
@@ -1174,7 +1174,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
   DriveLetterEnumerationEaxEcx8 driveEnum;
   
   if (*pathUtf16 == 0) {
-    allocResult = (*g_MemoryApi.alloc)(0x220);
+    allocResult = g_MemoryApi.alloc(0x220);
     outputRecords = (uint32_t *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       *outputRecords = 1;
@@ -1185,14 +1185,14 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
       outputRecords[5] = 0x27;
       outputRecords[6] = 0;
       outputRecords[7] = 1;
-      (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(outputRecords + 8));
+      g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputRecords + 8));
       return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
-    driveEnum = (*g_FileSystemEnumerateDriveLetters)((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
+    driveEnum = g_FileSystemEnumerateDriveLetters((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     directoryEntryCount = driveEnum.driveCount;
-    allocResult = (*g_MemoryApi.alloc)(driveEnum.driveCountMirror * 0x210 + 0x10);
+    allocResult = g_MemoryApi.alloc(driveEnum.driveCountMirror * 0x210 + 0x10);
     outputRecords = (uint32_t *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       result.recordBlockOrError = outputRecords + 4;
@@ -1206,7 +1206,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
         driveLetter = (uint32_t)*driveLetterCursor;
         *(uint32_t *)result.recordBlockOrError = (uint32_t)labelCursor;
         scanValue = driveLetter;
-        driveType = (*g_FileSystemGetDriveTypeCode)(driveLetter);
+        driveType = g_FileSystemGetDriveTypeCode(driveLetter);
         ((uint32_t *)result.recordBlockOrError)[1] = (uint32_t)driveType;
         ((uint32_t *)result.recordBlockOrError)[2] = 0;
         ((uint32_t *)result.recordBlockOrError)[3] = 0;
@@ -1218,10 +1218,10 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
         ((uint16_t *)((int)labelCursor + 6))[1] = 0;
         /* Label "X:[<volume label>]"; any failure closes it as "X:[]" (a failing directory probe
            also truncates an already written volume label, as in the original). */
-        mediaCheckResult = (*g_FileSystemCheckDriveMediaReady)(scanValue);
+        mediaCheckResult = g_FileSystemCheckDriveMediaReady(scanValue);
         closeLabelEmpty = mediaCheckResult;
         if (!closeLabelEmpty) {
-          enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+          enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
                              (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8,
                               (uint8_t *)((int)labelCursor + 6),(uint8_t *)u________0040ff58);
           closeLabelEmpty = enumResult.failed;
@@ -1244,7 +1244,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
               ((uint16_t *)((int)nextScanPointer + -2))[0] = 0x5d;
               ((uint16_t *)((int)nextScanPointer + -2))[1] = 0;
             }
-            enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+            enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
                                (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                 (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                 (uint8_t *)u________0040ff58);
@@ -1275,20 +1275,20 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
     WidePath_CombineDirectoryAndLeaf
               (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                g_UiTimedListCombinedPathScratch.codeUnits);
-    largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+    largestBlock = g_MemoryApi.allocLargestFreeBlock();
     outputRecords = (uint32_t *)largestBlock.allocationOrError;
     if (!largestBlock.failed) {
-      enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+      enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
                          (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,largestBlock.blockSizeOrSentinel,
                           (uint8_t *)outputRecords,(uint8_t *)g_UiTimedListRecordPathScratch.codeUnits);
       directoryEntryCount = enumResult.entryCount;
       entryStride = (uint32_t *)enumResult.recordSizeBytes;
       result.recordBlockOrError = entryStride;
       if (!enumResult.failed) {
-        shrinkResult = (*g_MemoryApi.shrinkInPlace)((int)entryStride * directoryEntryCount,outputRecords);
+        shrinkResult = g_MemoryApi.shrinkInPlace((int)entryStride * directoryEntryCount,outputRecords);
         result.recordBlockOrError = (uint32_t *)shrinkResult.scratchOrError;
         if (!shrinkResult.failed) {
-          largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+          largestBlock = g_MemoryApi.allocLargestFreeBlock();
           result.recordBlockOrError = (uint32_t *)largestBlock.allocationOrError;
           if (!largestBlock.failed) {
             scanRemaining = directoryEntryCount + 1;
@@ -1313,7 +1313,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
                 WidePath_CombineDirectoryAndLeaf
                           (g_UiTimedListSecondaryPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                            g_UiTimedListRecordPathScratch.codeUnits);
-                enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+                enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
                                    (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                     (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                     (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
@@ -1344,23 +1344,23 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
               }
               /* The loop only ends early (entries left) when the labels no longer fit. */
               if (directoryEntryCount == 0) {
-                shrinkResult = (*g_MemoryApi.shrinkInPlace)
+                shrinkResult = g_MemoryApi.shrinkInPlace
                                    ((int)labelWriteCursor + (0x200 - (int)result.recordBlockOrError),
                                     result.recordBlockOrError);
                 scanCursor = (uint32_t *)shrinkResult.scratchOrError;
                 if (!shrinkResult.failed) {
-                  (*g_MemoryApi.free)(outputRecords);
+                  g_MemoryApi.free(outputRecords);
                   result.failed = false;
                   return result;
                 }
               }
             }
-            (*g_MemoryApi.free)(result.recordBlockOrError);
+            g_MemoryApi.free(result.recordBlockOrError);
             result.recordBlockOrError = scanCursor;
           }
         }
       }
-      (*g_MemoryApi.free)(outputRecords);
+      g_MemoryApi.free(outputRecords);
       outputRecords = result.recordBlockOrError;
     }
   }
@@ -1472,7 +1472,7 @@ fail:
   /* As in the original: one pop per level (not per pair), so this frees the top blocks and
      interleaved found-record pointers, not every pushed block. */
   for (; levelCount != 0; levelCount = levelCount + -1) {
-    (*g_MemoryApi.free)(levelStack[--levelStackTop]);
+    g_MemoryApi.free(levelStack[--levelStackTop]);
   }
   result.selectedRecordOrNull = (UiTimedListTreeRecord16 *)0x0;
   result.rootRecordBlockOrError = builtBlock.recordBlockOrError;
@@ -1510,7 +1510,7 @@ UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
       recordCursor = recordCursor + 1;
     }
   }
-  (*g_MemoryApi.free)(recordBlock);
+  g_MemoryApi.free(recordBlock);
   return containsCount != 0;
 }
 
@@ -1724,7 +1724,7 @@ UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
   for (; firstNode != (UiNodeBase *)0xffffffff; firstNode = firstNode->nextSibling) {
-    (*firstNode->vtable->unsuppressActionId)(actionId,firstNode);
+    firstNode->vtable->unsuppressActionId(actionId,firstNode);
   }
   return;
 }
@@ -1742,7 +1742,7 @@ UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
   for (; firstNode != (UiNodeBase *)0xffffffff; firstNode = firstNode->nextSibling) {
-    (*firstNode->vtable->suppressActionId)(actionId,firstNode);
+    firstNode->vtable->suppressActionId(actionId,firstNode);
   }
   return;
 }
@@ -1788,7 +1788,7 @@ UiSelectableControl_KeyboardEventCf
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
     if ((((control->selectable).stateFlags & 0x80) != 0) &&
        (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     UiActionQueue_Enqueue((control->selectable).actionId,control);
     UiNode_InvalidateRoot(&(control->selectable).base);
@@ -1797,7 +1797,7 @@ UiSelectableControl_KeyboardEventCf
   if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
     if ((((control->selectable).stateFlags & 0x80) != 0) &&
        (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     (control->selectable).stateFlags =
          (control->selectable).stateFlags ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -1808,7 +1808,7 @@ UiSelectableControl_KeyboardEventCf
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     if ((((control->selectable).stateFlags & 0x80) != 0) &&
        (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     (control->selectable).stateFlags =
          (control->selectable).stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2083,7 +2083,7 @@ UiScrollableControl_DrawFrameContentAndScrollbars
   TextureSizeResult textureSize;
   uint32_t capSize;
   
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     tileEnd = 0;
     contentTop = 0;
@@ -2096,18 +2096,18 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       edgeScratch = contentRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
         barOffset = 0;
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalWidthPixels;
         contentTop = contentTop + textureSize.logicalHeightPixels;
       }
       else {
         trackStart = contentBottom;
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalWidthPixels;
         barOffset = contentBottom - textureSize.logicalHeightPixels;
         contentBottom = trackStart - textureSize.logicalHeightPixels;
       }
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       horizontalBarLeft = tileEnd;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
         horizontalBarLeft = textureSize.logicalWidthPixels;
@@ -2117,13 +2117,13 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       }
       if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    horizontalBarLeft + (control->base).left,0x5a,g_UiWindowTextureSource,g_FramebufferAccess);
         tileEnd = capSize;
       }
       else {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    horizontalBarLeft + (control->base).left,0x62,g_UiWindowTextureSource,g_FramebufferAccess);
         tileEnd = capSize;
@@ -2132,13 +2132,13 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       trackEnd = contentRight - arrowLength;
       if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    trackEnd + (control->base).left,0x5b,g_UiWindowTextureSource,g_FramebufferAccess);
         contentRight = edgeScratch;
       }
       else {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    trackEnd + (control->base).left,99,g_UiWindowTextureSource,g_FramebufferAccess);
         contentRight = edgeScratch;
@@ -2168,27 +2168,27 @@ UiScrollableControl_DrawFrameContentAndScrollbars
         UiWindow_BlitTiledHorizontalEdge
                   (clipTop,clipLeft,clipBottom,edgeScratch,0x65,trackEnd,barOffset,trackStart,control);
       }
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc0,g_UiWindowTextureSource);
       capSize = textureSize.logicalWidthPixels;
       edgeScratch = control->horizontalThumbLeft;
       trackStart = control->horizontalThumbRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    edgeScratch + (control->base).left,0xc0,g_UiWindowTextureSource,g_FramebufferAccess);
         trackStart = trackStart - capSize;
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    trackStart + (control->base).left,0xc1,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
                   (clipTop,clipLeft,clipBottom,clipRight,0x5c,trackStart,barOffset,edgeScratch + capSize,control);
       }
       else {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    edgeScratch + (control->base).left,0xc4,g_UiWindowTextureSource,g_FramebufferAccess);
         trackStart = trackStart - capSize;
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    trackStart + (control->base).left,0xc5,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
@@ -2201,26 +2201,26 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       barOffset = contentTop;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
         capSize = tileEnd;
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalHeightPixels;
         capSize = capSize + textureSize.logicalWidthPixels;
       }
       else {
         trackStart = contentRight;
         capSize = tileEnd;
-        textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalHeightPixels;
         tileEnd = contentRight - textureSize.logicalWidthPixels;
         contentRight = trackStart - textureSize.logicalWidthPixels;
       }
       if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
                    tileEnd + (control->base).left,0x5e,g_UiWindowTextureSource,g_FramebufferAccess);
       }
       else {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
                    tileEnd + (control->base).left,0x66,g_UiWindowTextureSource,g_FramebufferAccess);
       }
@@ -2228,14 +2228,14 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       trackEnd = contentBottom - arrowLength;
       if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
                    tileEnd + (control->base).left,0x5f,g_UiWindowTextureSource,g_FramebufferAccess);
         contentBottom = edgeScratch;
         contentTop = barOffset;
       }
       else {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
                    tileEnd + (control->base).left,0x67,g_UiWindowTextureSource,g_FramebufferAccess);
         contentBottom = edgeScratch;
@@ -2266,16 +2266,16 @@ UiScrollableControl_DrawFrameContentAndScrollbars
         UiWindow_BlitTiledVerticalEdge
                   (clipTop,clipLeft,edgeScratch,clipRight,0x69,trackEnd,trackStart,tileEnd,control);
       }
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc2,g_UiWindowTextureSource);
       arrowLength = textureSize.logicalHeightPixels;
       edgeScratch = control->verticalThumbTop;
       barOffset = control->verticalThumbBottom;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
                    tileEnd + (control->base).left,0xc2,g_UiWindowTextureSource,g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    tileEnd + (control->base).left,0xc3,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
@@ -2283,11 +2283,11 @@ UiScrollableControl_DrawFrameContentAndScrollbars
         tileEnd = capSize;
       }
       else {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
                    tileEnd + (control->base).left,0xc6,g_UiWindowTextureSource,g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
                    tileEnd + (control->base).left,199,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
@@ -2296,20 +2296,20 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       }
     }
     if ((control->scrollStateFlags & 0x400) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x6a,g_UiWindowTextureSource);
       capSize = textureSize.logicalWidthPixels;
       contentBottom = contentBottom - textureSize.logicalHeightPixels;
       contentRight = contentRight - capSize;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
                  tileEnd + (control->base).left,0x6a,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
                  contentRight + (control->base).left,0x6b,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
                  tileEnd + (control->base).left,0x6c,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
                  contentRight + (control->base).left,0x6d,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
@@ -2325,20 +2325,20 @@ UiScrollableControl_DrawFrameContentAndScrollbars
                 (clipTop,clipLeft,clipBottom,clipRight,0x71,contentRight,contentBottom,tileEnd,control);
     }
     if ((control->scrollStateFlags & 0x800) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x72,g_UiWindowTextureSource);
       capSize = textureSize.logicalWidthPixels;
       contentBottom = contentBottom - textureSize.logicalHeightPixels;
       contentRight = contentRight - capSize;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
                  tileEnd + (control->base).left,0x72,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
                  contentRight + (control->base).left,0x73,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
                  tileEnd + (control->base).left,0x74,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
                  contentRight + (control->base).left,0x75,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
@@ -2362,7 +2362,7 @@ UiScrollableControl_DrawFrameContentAndScrollbars
                 (clipTop,clipLeft,clipBottom,clipRight,subresource,contentBottom,contentRight,contentTop,tileEnd,control
                 );
     }
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
     edgeScratch = tileEnd + (control->base).left;
     contentTop = contentTop + (control->base).top;
     contentRight = contentRight + (control->base).left;
@@ -2434,14 +2434,14 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     control->contentOriginX = 0;
     control->contentOriginY = 0;
     if ((control->scrollStateFlags & 0x400) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x6a,g_UiWindowTextureSource);
       control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
       availableWidth = availableWidth + textureSize.logicalWidthPixels * -2;
       availableHeight = availableHeight + textureSize.logicalHeightPixels * -2;
     }
     if ((control->scrollStateFlags & 0x800) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x72,g_UiWindowTextureSource);
       control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
       availableWidth = availableWidth + textureSize.logicalWidthPixels * -2;
@@ -2469,7 +2469,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     if (((control->scrollStateFlags & 0xffffffcf) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0)) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       horizontalExtent = horizontalExtent - textureSize.logicalWidthPixels;
       if (horizontalExtent < 0) {
         control->scrollStateFlags =
@@ -2480,12 +2480,12 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     if (((control->scrollStateFlags & 0xffffff3f) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
       if ((int)(verticalExtent - textureSize.logicalHeightPixels) < 0) {
         if (((control->scrollStateFlags &
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) &&
            ((control->scrollStateFlags & 0xffffffcf) != 0)) {
-          textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+          textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
           if ((int)(horizontalExtent - textureSize.logicalWidthPixels) < 0) {
             control->scrollStateFlags =
                  control->scrollStateFlags |
@@ -2504,7 +2504,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
            UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP));
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
       control->viewportHeight = control->viewportHeight - textureSize.logicalHeightPixels;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
         control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
@@ -2512,7 +2512,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       control->viewportWidth = control->viewportWidth - textureSize.logicalWidthPixels;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
         control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
@@ -2551,18 +2551,18 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     contentChild->top = contentChild->top + offsetY;
     contentChild->right = contentChild->right + offsetX;
     contentChild->bottom = contentChild->bottom + offsetY;
-    (*contentChild->vtable->layout)(contentChild);
+    contentChild->vtable->layout(contentChild);
     control->horizontalThumbLeft = 0;
     control->verticalThumbTop = 0;
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
       control->verticalThumbTop = control->verticalThumbTop + textureSize.logicalHeightPixels;
       control->verticalThumbBottom = control->verticalThumbBottom + textureSize.logicalHeightPixels;
     }
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       control->horizontalThumbLeft = control->horizontalThumbLeft + textureSize.logicalWidthPixels;
       control->horizontalThumbRight = control->horizontalThumbRight + textureSize.logicalWidthPixels;
     }
@@ -2570,7 +2570,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     verticalExtent = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalWidthPixels;
       control->horizontalThumbLeft = control->horizontalThumbLeft + arrowSize;
       control->horizontalThumbRight = control->horizontalThumbRight + arrowSize;
@@ -2579,7 +2579,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalHeightPixels;
       control->verticalThumbTop = control->verticalThumbTop + arrowSize;
       control->verticalThumbBottom = control->verticalThumbBottom + arrowSize;
@@ -2590,7 +2590,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
                     (int64_t)(int)control->contentWidth);
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc0,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalWidthPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
@@ -2605,7 +2605,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
                     (int64_t)(int)control->contentHeight);
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc2,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalHeightPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
@@ -2689,7 +2689,7 @@ UiScrollableControl_BeginSecondaryScrollInteraction
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
       cursorFrame = 5;
     }
-    (*g_GraphicsCursorSetFrame)(cursorFrame);
+    g_GraphicsCursorSetFrame(cursorFrame);
   }
   return;
 }
@@ -2706,7 +2706,7 @@ void UiScrollableControl_EndSecondaryScrollInteraction
 {
   g_CursorUseOverridePosition = 0;
   control->scrollStateFlags = control->scrollStateFlags & 0xffffafff;
-  (*g_GraphicsCursorSetFrame)(0);
+  g_GraphicsCursorSetFrame(0);
   return;
 }
 
@@ -2803,7 +2803,7 @@ UiListControl_DrawRowsAndSelection
     }
     lastRowSlot = control->rowSlots + (int)lastRowIndex;
     if (rowSlot <= lastRowSlot) {
-      accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+      accessFailed = g_GraphicsFramebufferBeginAccess();
       if (!accessFailed) {
         do {
           if (rowSlot == control->selectedRowSlot) {
@@ -2813,15 +2813,15 @@ UiListControl_DrawRowsAndSelection
                         (clipTop,clipLeft,clipBottom,clipRight,0x82,widthOrColumnCount,rowTop,0,control);
             }
             else {
-              textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
+              textureSize = g_GraphicsTextureSourceGetLogicalSize(0x83,g_UiWindowTextureSource);
               widthOrColumnCount = widthOrColumnCount - textureSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
                         (clipTop,clipLeft,clipBottom,clipRight,0x84,widthOrColumnCount,rowTop,
                          textureSize.logicalWidthPixels,control);
-              (*g_GraphicsTextureSourceBlitSourceAlpha)
+              g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
                          (control->base).left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
-              (*g_GraphicsTextureSourceBlitSourceAlpha)
+              g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
                          widthOrColumnCount + (control->base).left,0x85,g_UiWindowTextureSource,
                          g_FramebufferAccess);
@@ -2857,7 +2857,7 @@ UiListControl_DrawRowsAndSelection
           rowSlot = rowSlot + 1;
           rowTop = (int)control->rowHeight + rowTop;
         } while (rowSlot <= lastRowSlot);
-        (*g_GraphicsFramebufferEndAccess)();
+        g_GraphicsFramebufferEndAccess();
       }
     }
   }
@@ -2967,7 +2967,7 @@ UiPointerList_InitializeColumnLayout
   (control->base).rightOffset = totalWidth;
   (control->base).leftOffset = 0;
   (control->base).topOffset = 0;
-  (*parentVtable->layout)(parent);
+  parentVtable->layout(parent);
   return;
 }
 
@@ -3027,7 +3027,7 @@ UiTimedListControl_DrawRowsAndSelection
   int level;
   GraphicsTextureSourceAsset *rowTexture;
 
-  if ((*g_GraphicsFramebufferBeginAccess)()) {
+  if (g_GraphicsFramebufferBeginAccess()) {
     return;
   }
   header = list->base.recordTree;
@@ -3045,18 +3045,18 @@ UiTimedListControl_DrawRowsAndSelection
            entries below. The root level's saved count is not drawn. */
         for (level = 1; level < depth; level++) {
           if (savedRemaining[level] != 0) {
-            (*g_GraphicsTextureSourceBlitSourceAlpha)
+            g_GraphicsTextureSourceBlitSourceAlpha
                       (clipTop,clipLeft,clipBottom,clipRight,y,x,list->observedDrawParameter74,
                        rowTexture,g_FramebufferAccess);
           }
           x = x + (int)list->observedDrawParameter80;
         }
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,y,x,
                    (remaining <= 1) ? list->observedDrawParameter7C : list->observedDrawParameter78,
                    rowTexture,g_FramebufferAccess);
         if ((record->recordFlags0C & 1) != 0) {
-          (*g_GraphicsTextureSourceBlitSourceAlpha)
+          g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,y,x,
                      ((record->recordFlags0C & 2) != 0) ? list->observedDrawParameter70 :
                                                           list->base.observedDrawParameter6C,
@@ -3064,7 +3064,7 @@ UiTimedListControl_DrawRowsAndSelection
         }
         x = x + (int)list->observedDrawParameter80;
       }
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,y,x,record->rowPayload04,rowTexture,
                  g_FramebufferAccess);
       x = x + (int)list->observedDrawParameter84 - control->left;
@@ -3074,15 +3074,15 @@ UiTimedListControl_DrawRowsAndSelection
         int width = (int)extent.widthPixels + 6;
         if ((control->nodeFlags & 4) != 0) {
           TextureSizeResult cap =
-               (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
+               g_GraphicsTextureSourceGetLogicalSize(0x83,g_UiWindowTextureSource);
           int capWidth = (int)cap.logicalWidthPixels;
           int endX = width - capWidth + x;
           UiWindow_BlitTiledHorizontalEdge
                     (clipTop,clipLeft,clipBottom,clipRight,0x84,endX,rowY,capWidth + x,control);
-          (*g_GraphicsTextureSourceBlitSourceAlpha)
+          g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,x + control->left,
                      0x83,g_UiWindowTextureSource,g_FramebufferAccess);
-          (*g_GraphicsTextureSourceBlitSourceAlpha)
+          g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,endX + control->left,
                      0x85,g_UiWindowTextureSource,g_FramebufferAccess);
         }
@@ -3115,7 +3115,7 @@ UiTimedListControl_DrawRowsAndSelection
       }
     }
   }
-  (*g_GraphicsFramebufferEndAccess)();
+  g_GraphicsFramebufferEndAccess();
   return;
 }
 
@@ -3201,7 +3201,7 @@ UiCatalogEntryControl_DrawClipped
   if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
      (((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0
        && (((control->command).sprite.selectable.stateFlags & 0x400) != 0)) ||
-      (accessFailed = (*g_GraphicsFramebufferBeginAccess)(), accessFailed)))) {
+      (accessFailed = g_GraphicsFramebufferBeginAccess(), accessFailed)))) {
     return;
   }
   spriteTextureSource = (control->command).sprite.primaryTextureSource;
@@ -3220,7 +3220,7 @@ UiCatalogEntryControl_DrawClipped
       if (((control->command).sprite.selectable.stateFlags & 0x80) != 0) {
         backgroundSubresource = backgroundSubresource + (control->command).sprite.animationFrameOffset;
       }
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top
                  ,(control->command).sprite.selectable.base.left,backgroundSubresource,
                  (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
@@ -3229,7 +3229,7 @@ UiCatalogEntryControl_DrawClipped
   if (((control->command).sprite.selectable.stateFlags & 0x80) != 0) {
     subresourceOrTextLength = subresourceOrTextLength + (control->command).sprite.animationFrameOffset;
   }
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top,
              (control->command).sprite.selectable.base.left,subresourceOrTextLength,spriteTextureSource,framebuffer);
   factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
@@ -3242,7 +3242,7 @@ UiCatalogEntryControl_DrawClipped
   }
   g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
   g_UiCatalogEntryRichTextScratchUtf16[1] = 0;
-  subresourceOrTextLength = (*g_WideNumberFormatUtf16)
+  subresourceOrTextLength = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
   *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
@@ -3267,7 +3267,7 @@ UiCatalogEntryControl_DrawClipped
       }
       if (assetCountOrPercent != 0) {
         g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-        subresourceOrTextLength = (*g_WideNumberFormatUtf16)
+        subresourceOrTextLength = g_WideNumberFormatUtf16
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
         factionIndexOrPercent = (control->command).sprite.selectable.base.top;
@@ -3297,7 +3297,7 @@ UiCatalogEntryControl_DrawClipped
       }
       if (-1 < factionIndexOrPercent) {
         g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-        subresourceOrTextLength = (*g_WideNumberFormatUtf16)
+        subresourceOrTextLength = g_WideNumberFormatUtf16
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,factionIndexOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
         *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
@@ -3309,7 +3309,7 @@ UiCatalogEntryControl_DrawClipped
                    (control->command).sprite.selectable.base.top + 2,
                    (control->command).sprite.selectable.base.right - textExtent.widthPixels);
       }
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
       return;
     }
     recordIndexOrPercent = recordIndexOrPercent + -1;
@@ -3319,7 +3319,7 @@ UiCatalogEntryControl_DrawClipped
          g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][recordIndexOrPercent]) {
     recordIndexOrPercent = recordIndexOrPercent + -1;
     if (recordIndexOrPercent < 0) {
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
       return;
     }
   }
@@ -3334,7 +3334,7 @@ UiCatalogEntryControl_DrawClipped
   }
   if (assetCountOrPercent != 0) {
     g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-    subresourceOrTextLength = (*g_WideNumberFormatUtf16)
+    subresourceOrTextLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
     factionIndexOrPercent = (control->command).sprite.selectable.base.top;
@@ -3374,7 +3374,7 @@ UiCatalogEntryControl_DrawClipped
   }
   if (-1 < recordIndexOrPercent) {
     g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
-    subresourceOrTextLength = (*g_WideNumberFormatUtf16)
+    subresourceOrTextLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordIndexOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
     *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
@@ -3385,7 +3385,7 @@ UiCatalogEntryControl_DrawClipped
                (control->command).sprite.selectable.base.top + 2,
                (control->command).sprite.selectable.base.right - textExtent.widthPixels);
   }
-  (*g_GraphicsFramebufferEndAccess)();
+  g_GraphicsFramebufferEndAccess();
   return;
 }
 
@@ -3459,7 +3459,7 @@ UiCatalogEntryControl_NonRightRelease
     (control->command).activationInputState = activationInputState;
     if ((((control->command).sprite.selectable.stateFlags & 0x200) != 0) &&
        ((control->command).sprite.activationSoundId != 0)) {
-      (*g_SoundPlayOneShot)
+      g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
                  (DirectSoundVoiceSet *)(control->command).sprite.activationSoundId);
     }
@@ -3643,7 +3643,7 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
   (control->base).base.leftOffset = 0;
   (control->base).base.topOffset = 0;
   (control->base).base.bottomOffset = (control->base).rowCount * (control->base).rowHeight + 1;
-  (*parent->vtable->layout)(parent);
+  parent->vtable->layout(parent);
   return;
 }
 
@@ -3756,18 +3756,18 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
     contentChild->top = contentChild->top + offsetY;
     contentChild->right = contentChild->right + offsetX;
     contentChild->bottom = contentChild->bottom + offsetY;
-    (*contentChild->vtable->layout)(contentChild);
+    contentChild->vtable->layout(contentChild);
     control->horizontalThumbLeft = 0;
     control->verticalThumbTop = 0;
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
       control->verticalThumbTop = control->verticalThumbTop + textureSize.logicalHeightPixels;
       control->verticalThumbBottom = control->verticalThumbBottom + textureSize.logicalHeightPixels;
     }
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       control->horizontalThumbLeft = control->horizontalThumbLeft + textureSize.logicalWidthPixels;
       control->horizontalThumbRight = control->horizontalThumbRight + textureSize.logicalWidthPixels;
     }
@@ -3775,7 +3775,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
     verticalExtent = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalWidthPixels;
       control->horizontalThumbLeft = control->horizontalThumbLeft + arrowSize;
       control->horizontalThumbRight = control->horizontalThumbRight + arrowSize;
@@ -3784,7 +3784,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalHeightPixels;
       control->verticalThumbTop = control->verticalThumbTop + arrowSize;
       control->verticalThumbBottom = control->verticalThumbBottom + arrowSize;
@@ -3795,7 +3795,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
                     (int64_t)(int)control->contentWidth);
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc0,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalWidthPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
@@ -3810,7 +3810,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
                     (int64_t)(int)control->contentHeight);
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc2,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalHeightPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;

@@ -39,11 +39,11 @@ FileSystem_BuildEnumerationStringTableCf
   EnumerationStringTableResult successResult;
   EnumerationStringTableResult failureResult;
   
-  largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+  largestBlock = g_MemoryApi.allocLargestFreeBlock();
   outputCapacityBytes = largestBlock.blockSizeOrSentinel;
   outputRecords = (uint8_t *)largestBlock.allocationOrError;
   if (!largestBlock.failed) {
-    enumerationResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+    enumerationResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
                        (enumerationMode,reserved,outputCapacityBytes,outputRecords,pathOrVolumeText)
     ;
     foundEntryCount = enumerationResult.entryCount;
@@ -52,17 +52,17 @@ FileSystem_BuildEnumerationStringTableCf
     outputCapacityBytes = foundEntryCount;
     if (!enumerationResult.failed) {
       if (foundEntryCount == 0) {
-        (*g_MemoryApi.free)(outputRecords);
+        g_MemoryApi.free(outputRecords);
         successResult.tableOrError = 0;
         successResult.entryCountOrScratch = 0;
         successResult.failed = false;
         return successResult;
       }
       outputCapacityBytes = foundEntryCount * (int)recordStride;
-      shrinkResult = (*g_MemoryApi.shrinkInPlace)(outputCapacityBytes,outputRecords);
+      shrinkResult = g_MemoryApi.shrinkInPlace(outputCapacityBytes,outputRecords);
       memory = (uint8_t *)shrinkResult.scratchOrError;
       if (!shrinkResult.failed) {
-        largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+        largestBlock = g_MemoryApi.allocLargestFreeBlock();
         outputCapacityBytes = largestBlock.blockSizeOrSentinel;
         memory = (uint8_t *)largestBlock.allocationOrError;
         if (!largestBlock.failed) {
@@ -89,8 +89,8 @@ FileSystem_BuildEnumerationStringTableCf
               sourceRecord = sourceRecord + (int)recordStride;
               remainingEntries = remainingEntries - 1;
               if (remainingEntries == 0) {
-                (*g_MemoryApi.shrinkInPlace)((int)stringCursor - (int)memory,memory);
-                (*g_MemoryApi.free)(outputRecords);
+                g_MemoryApi.shrinkInPlace((int)stringCursor - (int)memory,memory);
+                g_MemoryApi.free(outputRecords);
                 successResult.entryCountOrScratch = foundEntryCount;
                 successResult.tableOrError = (uint32_t)memory;
                 successResult.failed = false;
@@ -99,12 +99,12 @@ FileSystem_BuildEnumerationStringTableCf
             } while( true );
           }
 FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
-          freeResult = (*g_MemoryApi.free)(memory);
+          freeResult = g_MemoryApi.free(memory);
           memory = (uint8_t *)freeResult.valueOrError;
         }
       }
     }
-    (*g_MemoryApi.free)(outputRecords);
+    g_MemoryApi.free(outputRecords);
     outputRecords = memory;
   }
   failureResult.entryCountOrScratch = outputCapacityBytes;
@@ -409,10 +409,10 @@ FileLoadResult __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(uint
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+  openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
   handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
-    openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
+    openResult = g_FileSystemOpenCf(0,pathUtf16);
     handle = (void *)openResult.handleOrError;
     if (openResult.failed) {
       failureResult.failed = true;
@@ -420,26 +420,26 @@ FileLoadResult __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(uint
       return failureResult;
     }
   }
-  sizeResult = (*g_FileSystemGetSizeCf)(handle);
+  sizeResult = g_FileSystemGetSizeCf(handle);
   bytes = (void *)sizeResult.sizeOrError;
   if (!sizeResult.failed) {
-    allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
+    allocResult = g_MemoryApi.alloc((uint32_t)bytes);
     if (allocResult.failed) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
       bytes = (void *)0x5;
     }
     else {
-      readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)allocResult.payloadOrError,handle);
+      readResult = g_FileSystemReadExactCf((FileIoByteCount)bytes,(void *)allocResult.payloadOrError,handle);
       bytes = (void *)readResult.valueOrError;
       if (!readResult.failed) {
-        (*g_FileSystemClose)(handle);
+        g_FileSystemClose(handle);
         return THANDOR_BITCAST(uint64_t, FileLoadResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
-      (*g_MemoryApi.free)((void *)allocResult.payloadOrError);
+      g_MemoryApi.free((void *)allocResult.payloadOrError);
     }
   }
-  (*g_FileSystemClose)(handle);
+  g_FileSystemClose(handle);
   handle = bytes;
   failureResult.failed = true;
   failureResult.bufferOrError = handle;
@@ -465,10 +465,10 @@ FileSystem_LoadWholeFileAlternatePathCf(uint16_t *pathUtf16)
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+  openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
   handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
-    openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
+    openResult = g_FileSystemOpenCf(0,pathUtf16);
     handle = (void *)openResult.handleOrError;
     if (openResult.failed) {
       failureResult.failed = true;
@@ -476,26 +476,26 @@ FileSystem_LoadWholeFileAlternatePathCf(uint16_t *pathUtf16)
       return failureResult;
     }
   }
-  sizeResult = (*g_FileSystemGetSizeCf)(handle);
+  sizeResult = g_FileSystemGetSizeCf(handle);
   bytes = (void *)sizeResult.sizeOrError;
   if (!sizeResult.failed) {
-    allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
+    allocResult = g_MemoryApi.alloc((uint32_t)bytes);
     if (allocResult.failed) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
       bytes = (void *)0x5;
     }
     else {
-      readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)allocResult.payloadOrError,handle);
+      readResult = g_FileSystemReadExactCf((FileIoByteCount)bytes,(void *)allocResult.payloadOrError,handle);
       bytes = (void *)readResult.valueOrError;
       if (!readResult.failed) {
-        (*g_FileSystemClose)(handle);
+        g_FileSystemClose(handle);
         return THANDOR_BITCAST(uint64_t, FileLoadResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
-      (*g_MemoryApi.free)((void *)allocResult.payloadOrError);
+      g_MemoryApi.free((void *)allocResult.payloadOrError);
     }
   }
-  (*g_FileSystemClose)(handle);
+  g_FileSystemClose(handle);
   handle = bytes;
   failureResult.failed = true;
   failureResult.bufferOrError = handle;
@@ -517,21 +517,21 @@ StatusResult FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void *sour
   StatusResult successResult;
   StatusResult failureResult;
   
-  openResult = (*g_FileSystemOpenCf)
+  openResult = g_FileSystemOpenCf
                     (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path);
   handle = (void *)openResult.handleOrError;
   if (!openResult.failed) {
-    writeResult = (*g_FileSystemWriteExactOrFlushCf)(byteCount,source,handle);
+    writeResult = g_FileSystemWriteExactOrFlushCf(byteCount,source,handle);
     writeFailureStatusCode = (void *)writeResult.valueOrError;
     if (!writeResult.failed) {
-      (*g_FileSystemClose)(handle);
+      g_FileSystemClose(handle);
       successResult.valueOrError = 0;
       successResult.failed = false;
       return successResult;
     }
-    (*g_FileSystemClose)(handle);
+    g_FileSystemClose(handle);
     handle = writeFailureStatusCode;
-    (*g_FileSystemDeleteCf)(1,path);
+    g_FileSystemDeleteCf(1,path);
   }
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)handle;

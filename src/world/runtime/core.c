@@ -871,7 +871,7 @@ WorldRuntime_ForEachNodeInOwnerListD8
   WorldOwnerListNode100 *node;
   
   for (node = world->ownerListHead; node != (WorldOwnerListNode100 *)0x0; node = node->nextNode) {
-    (*callback)(callbackContext,node);
+    callback(callbackContext,node);
   }
   return;
 }
@@ -1001,7 +1001,7 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
               (worldRuntime->activeFactionRuntimeIndex ==
                *(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc))) &&
              (modelOverlayBase = *(int *)(*(int *)ownerNode->runtimePayload + 0x19c), modelOverlayBase != 0)) {
-            (*overlayCallback)(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,ownerNode->worldXQ12,
+            overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,ownerNode->worldXQ12,
                       worldRuntime->fieldGrid);
           }
           ownerNode = ownerNode->nextNode;

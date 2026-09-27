@@ -227,7 +227,7 @@ GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
   loadResult = Package_LoadEntry(pathUtf16);
   loadedPaletteAsset = loadResult.bufferOrError;
   if (!loadResult.failed) {
-    validateResult = (*g_GraphicsPaletteAssetValidate)(loadedPaletteAsset);
+    validateResult = g_GraphicsPaletteAssetValidate(loadedPaletteAsset);
     validatedPaletteAsset = validateResult.paletteAsset;
     if (!validateResult.failed) {
       return validateResult;
@@ -254,7 +254,7 @@ GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
 {
   GraphicsPaletteAsset *allocation;
   
-  allocation = (*g_GraphicsPaletteAssetResolveAllocationBase)(paletteAsset);
+  allocation = g_GraphicsPaletteAssetResolveAllocationBase(paletteAsset);
   Resource_Release(allocation);
   return;
 }
@@ -277,7 +277,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   ArenaFreeResult freeResult;
   
   sizeOrDwordCount = paletteAsset->allocationSizeBytes;
-  allocResult = (*g_MemoryApi.alloc)(sizeOrDwordCount);
+  allocResult = g_MemoryApi.alloc(sizeOrDwordCount);
   clonedAsset = (GraphicsPaletteAsset *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     destinationCursor = clonedAsset;
@@ -286,11 +286,11 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
       paletteAsset = (GraphicsPaletteAsset *)&paletteAsset->allocationSizeBytes;
       destinationCursor = (GraphicsPaletteAsset *)&destinationCursor->allocationSizeBytes;
     }
-    validateResult = (*g_GraphicsPaletteAssetValidate)(clonedAsset);
+    validateResult = g_GraphicsPaletteAssetValidate(clonedAsset);
     if (!validateResult.failed) {
       return validateResult.paletteAsset;
     }
-    freeResult = (*g_MemoryApi.free)(clonedAsset);
+    freeResult = g_MemoryApi.free(clonedAsset);
     clonedAsset = (GraphicsPaletteAsset *)freeResult.valueOrError;
   }
   return clonedAsset;
@@ -309,8 +309,8 @@ GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
 {
   GraphicsPaletteAsset *memory;
   
-  memory = (*g_GraphicsPaletteAssetResolveAllocationBase)(paletteAsset);
-  (*g_MemoryApi.free)(memory);
+  memory = g_GraphicsPaletteAssetResolveAllocationBase(paletteAsset);
+  g_MemoryApi.free(memory);
   return;
 }
 
@@ -378,7 +378,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
   PaletteTextureSourceResult result;
   
   bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - 0x200;
-  allocResult = (*g_MemoryApi.alloc)(bytes);
+  allocResult = g_MemoryApi.alloc(bytes);
   result.paletteSource = (GraphicsPaletteTextureSourceAsset *)allocResult.payloadOrError;
   if (allocResult.failed) {
     result.failed = true;

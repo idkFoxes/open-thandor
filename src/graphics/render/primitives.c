@@ -280,7 +280,7 @@ StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCap
   ArenaAllocResult allocResult;
   
   g_PrimitiveQueuePoolCapacity = packetCapacity;
-  allocResult = (*g_MemoryApi.alloc)(packetCapacity * 0xa0 + 0x20);
+  allocResult = g_MemoryApi.alloc(packetCapacity * 0xa0 + 0x20);
   allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.payloadOrError;
   if (allocResult.failed) {
     return StatusValue_Fail(allocResult.payloadOrError);
@@ -324,7 +324,7 @@ GraphicsPrimitiveQueue_ResetGlobal(void)
 void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue)
 
 {
-  (*g_MemoryApi.free)(queue);
+  g_MemoryApi.free(queue);
   return;
 }
 

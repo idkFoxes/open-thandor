@@ -82,7 +82,7 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
         (((((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x4000) != 0 ||
           (((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x8000) != 0)) ||
          (((hardwareDesc->dpcTriCaps).dwRasterCaps & 0x200) != 0)))))))))) {
-    descAllocation = (*g_MemoryApi.alloc)(0x198);
+    descAllocation = g_MemoryApi.alloc(0x198);
     updatedAdapterCount = g_GraphicsAdapterCount;
     if (!descAllocation.failed) {
       newRecord = g_GraphicsAdapters + newAdapterIndex;
@@ -234,7 +234,7 @@ Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
   RenderStateApplyResult successResult;
   RenderStateApplyResult failureResult;
   
-  direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+  direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,antialiasMode);
   if (direct3DResult == 0) {
     g_Direct3DAntialiasMode = antialiasMode;
@@ -242,7 +242,7 @@ Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
     successResult.appliedValueOrError = antialiasMode;
     return successResult;
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
   failureResult.failed = true;
   failureResult.appliedValueOrError = 0x1d;
   return failureResult;
@@ -263,11 +263,11 @@ Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
   int32_t errorCode;
   
   errorCode = 0x6e;
-  direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+  direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAG,textureFilterMode);
   if (direct3DResult == 0) {
     errorCode = 0x6f;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,textureFilterMode);
     if (direct3DResult == 0) {
       g_Direct3DTextureFilterMode = textureFilterMode;
@@ -276,7 +276,7 @@ Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
       return successResult;
     }
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,errorCode,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,errorCode,g_PackageLastErrorPath);
   failureResult.failed = true;
   failureResult.appliedValueOrError = 0x1d;
   return failureResult;
@@ -295,7 +295,7 @@ Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled
   RenderStateApplyResult successResult;
   RenderStateApplyResult failureResult;
   
-  direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+  direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,texturePerspectiveEnabled);
   if (direct3DResult == 0) {
     g_Direct3DTexturePerspectiveEnabled = texturePerspectiveEnabled;
@@ -303,7 +303,7 @@ Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled
     successResult.appliedValueOrError = texturePerspectiveEnabled;
     return successResult;
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x78,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x78,g_PackageLastErrorPath);
   failureResult.failed = true;
   failureResult.appliedValueOrError = 0x1d;
   return failureResult;
@@ -337,7 +337,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[0].zWriteEnable);
   }
@@ -346,11 +346,11 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[0].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -358,7 +358,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
@@ -443,7 +443,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   }
   if (g_BoundTextureHandle != 0) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -482,7 +482,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[2].zWriteEnable);
   }
@@ -491,11 +491,11 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[2].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -503,14 +503,14 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[2].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[2].sourceBlend;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[2].sourceBlend);
   }
@@ -518,7 +518,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[2].destinationBlend
     ;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[2].destinationBlend);
   }
@@ -602,7 +602,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   if (g_BoundTextureHandle != 0) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -642,7 +642,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[3].zWriteEnable);
   }
@@ -651,11 +651,11 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[3].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -663,14 +663,14 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[3].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[3].sourceBlend;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[3].sourceBlend);
   }
@@ -678,7 +678,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[3].destinationBlend
     ;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[3].destinationBlend);
   }
@@ -762,7 +762,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   if (g_BoundTextureHandle != 0) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -801,7 +801,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                          g_PrimitiveRenderStatePresets[4].zWriteEnable);
   }
@@ -810,11 +810,11 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[4].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                           (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                            g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -822,14 +822,14 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                             (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[4].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[4].sourceBlend;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                          g_PrimitiveRenderStatePresets[4].sourceBlend);
   }
@@ -837,7 +837,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[4].destinationBlend
     ;
-    direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                         (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                          g_PrimitiveRenderStatePresets[4].destinationBlend);
   }
@@ -921,7 +921,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   if (g_BoundTextureHandle != 0) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -963,7 +963,7 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                g_PrimitiveRenderStatePresets[0].zWriteEnable);
   }
@@ -972,11 +972,11 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[0].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -984,14 +984,14 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[0].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[0].sourceBlend;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                g_PrimitiveRenderStatePresets[0].sourceBlend);
   }
@@ -999,7 +999,7 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[0].destinationBlend
     ;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[0].destinationBlend);
   }
@@ -1125,7 +1125,7 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -1167,7 +1167,7 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[1].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[1].zWriteEnable;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                g_PrimitiveRenderStatePresets[1].zWriteEnable);
   }
@@ -1176,11 +1176,11 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[1].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[1].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[1].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -1188,14 +1188,14 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[1].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[1].sourceBlend;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                g_PrimitiveRenderStatePresets[1].sourceBlend);
   }
@@ -1203,7 +1203,7 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[1].destinationBlend
     ;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[1].destinationBlend);
   }
@@ -1329,7 +1329,7 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -1371,7 +1371,7 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                g_PrimitiveRenderStatePresets[2].zWriteEnable);
   }
@@ -1380,11 +1380,11 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[2].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -1392,14 +1392,14 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[2].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[2].sourceBlend;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                g_PrimitiveRenderStatePresets[2].sourceBlend);
   }
@@ -1407,7 +1407,7 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[2].destinationBlend
     ;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[2].destinationBlend);
   }
@@ -1533,7 +1533,7 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -1576,7 +1576,7 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                g_PrimitiveRenderStatePresets[3].zWriteEnable);
   }
@@ -1585,11 +1585,11 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[3].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -1597,14 +1597,14 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[3].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[3].sourceBlend;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                g_PrimitiveRenderStatePresets[3].sourceBlend);
   }
@@ -1612,7 +1612,7 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[3].destinationBlend
     ;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[3].destinationBlend);
   }
@@ -1738,7 +1738,7 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
@@ -1780,7 +1780,7 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                g_PrimitiveRenderStatePresets[4].zWriteEnable);
   }
@@ -1789,11 +1789,11 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
     g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[4].alphaBlendEnable
     ;
     if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+      g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
@@ -1801,14 +1801,14 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
       if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+        g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[4].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[4].sourceBlend;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                g_PrimitiveRenderStatePresets[4].sourceBlend);
   }
@@ -1816,7 +1816,7 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
       g_PrimitiveRenderStateCache.destinationBlend) {
     g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[4].destinationBlend
     ;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[4].destinationBlend);
   }
@@ -1942,7 +1942,7 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
     newBoundTextureHandle = g_Direct3DDevice2;
-    bindResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
+    bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;

@@ -1001,7 +1001,7 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
   /* The original rejects on the terrain test's CF (JC after the indirect call); the decompile
      dropped that result and re-tested the runtime-list flag. */
   if ((!blocked) &&
-     (blocked = (*terrainTest)(placementDefinition->placementRadiusOrClearanceDC,heightRadiusOrDeltaY,
+     (blocked = terrainTest(placementDefinition->placementRadiusOrClearanceDC,heightRadiusOrDeltaY,
                  (rootNode->worldTransform).translation.y,
                  (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid),
      !blocked)) {
@@ -1095,7 +1095,7 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
                      worldRuntime);
   if (!blocked) {
     terrainTest.value = 0;
-    terrainTest.rejected = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[contactKindIndex])
+    terrainTest.rejected = g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[contactKindIndex]
                       (modelDefinition->placementRadiusOrClearanceDC,dispatchArg3,worldXQ12,
                        worldYQ12,worldRuntime->fieldGrid);
     eaxContinuity = terrainTest.value;

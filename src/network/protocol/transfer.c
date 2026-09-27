@@ -41,14 +41,14 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitT
   ArenaAllocResult allocResult;
   
   g_UiTransferMailboxTickCounter = g_UiTransferMailboxTickCounter + 1;
-  lockBusy = (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
+  lockBusy = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
   if (!lockBusy) {
     /* Receive loop: every handled (or rejected) record jumps back here until the backend has no more data. */
 UiTransferMailbox_ReceiveNextRecord:
     slotIndexOrByteCount = g_UiRuntimeRecordWriteIndex;
     ringRecord = g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex;
     nextIndexOrChunkSize = g_UiRuntimeRecordWriteIndex + 1;
-    receiveResult = (*g_NetworkBackendSlot4)
+    receiveResult = g_NetworkBackendSlot4
                        ((WinSockAddress *)
                         (g_UiRuntimeRecordWriteIndex * 0x80 + g_UiRuntimeAuxiliaryBuffer8000),0x100,
                         (uint8_t *)ringRecord);
@@ -79,7 +79,7 @@ UiTransferMailbox_ReceiveNextRecord:
             slotIndexOrByteCount = *(uint32_t *)(ringRecord->payload10_FF + 4);
             if (g_UiTransferMailbox.receivedAllocation != (void *)0x0) {
               if (g_UiTransferMailbox.receivedAllocation == (void *)0xffffffff) {
-                allocResult = (*g_MemoryApi.alloc)(slotIndexOrByteCount);
+                allocResult = g_MemoryApi.alloc(slotIndexOrByteCount);
                 if (allocResult.failed) goto UiTransferMailbox_ReceiveNextRecord;
                 counterOrOffset = 0;
                 g_UiTransferMailbox.receivedAllocation = (void *)allocResult.payloadOrError;
@@ -182,7 +182,7 @@ UiTransferMailbox_ReceiveNextRecord:
                 counterOrOffset = g_UiTransferMailboxTickCounter - *(int *)ringRecord->payload10_FF;
                 *(int *)playerRecord->reserved90_AF = counterOrOffset;
                 latencyTextCursor = playerRecord->reserved90_AF + 4;
-                slotIndexOrByteCount = (*g_WideNumberFormatUtf16)
+                slotIndexOrByteCount = g_WideNumberFormatUtf16
                                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,counterOrOffset * 4,(uint16_t *)latencyTextCursor);
                 latencySuffixCursor = latencyTextCursor + slotIndexOrByteCount;
                 latencySuffixCursor[0] = 0x6d;
@@ -223,7 +223,7 @@ UiTransferMailbox_ReceiveNextRecord:
                 (&g_FrontendSelectedNetworkEndpoint,
                  (UiTransferPacketHeader *)(s_mohTG_sakere___e_004ae9d8 + 0x10));
     }
-    (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
+    g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
   }
   return;
 }
@@ -540,7 +540,7 @@ FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
         playersRemaining = playersRemaining - 1;
         playerRecord = playerRecord + 1;
       } while (playersRemaining != 0);
-      (*g_MemoryApi.free)(g_UiTransferMailbox.outgoingAllocation);
+      g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
       UiTransferMailbox_SetOutgoingBuffer(0,(void *)0x0);
       return;
     }
@@ -821,7 +821,7 @@ FrontendTransfer_InitializeJoiningPlayerWithFreeId:
     joiningPlayerRecordDwordCursor[10] = 0x440043;
   }
   *(uint16_t *)((int)joiningPlayerRecordDwordCursor + -0x12) = 0;
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,*(int32_t *)(frontendRuntime + 0x5640),
              (uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
   g_FrontendPacket10003Buffer.networkTickInterval = g_SessionNetworkTickInterval;
@@ -881,7 +881,7 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
     g_FrontendPacket40008Buffer.selectedPlayerIndex = selectedIndexOrPackedCommand;
     g_FrontendPacket40008Buffer.playerCount = playerOrCommandCount;
     endpoint = peerEndpointCursor;
-    roundRobinOrTextLength = (*g_WideNumberFormatUtf16)
+    roundRobinOrTextLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                        peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x136].addressHeader.packedFamilyAndPort << 2,
                        g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16);
@@ -1668,7 +1668,7 @@ UiTransfer_StagePacketAndSendCf
     endpoint = (UiTransferEndpointDescriptor *)&endpoint->ipv4AddressNetworkOrder;
     endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
   }
-  sendResult = (*g_NetworkBackendSlot5)
+  sendResult = g_NetworkBackendSlot5
                      ((WinSockAddress *)(endpointBufferBase + endpointOffset + -8),byteCount,(uint8_t *)outputBlocks);
   return sendResult.failed;
 }

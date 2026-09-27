@@ -81,7 +81,7 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
   remainingSources = 2;
   scanLimitOrSlotCount = 0x21;
   do {
-    textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)pathUtf16);
+    textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16);
     checkedResult = FatalError_ExitIfFailed((uint32_t)textureLoadResult.textureSource,textureLoadResult.failed);
     *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
     pathCursor = pathUtf16;
@@ -96,10 +96,10 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
     textureSourceSlot = textureSourceSlot + 1;
     remainingSources = remainingSources + -1;
     if (remainingSources == 0) {
-      allocResult = (*g_MemoryApi.alloc)(0x4000);
+      allocResult = g_MemoryApi.alloc(0x4000);
       checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
       g_FontRuntimeBuffer = (uint8_t *)checkedResult.valueOrError;
-      allocResult = (*g_MemoryApi.alloc)(0x8000);
+      allocResult = g_MemoryApi.alloc(0x8000);
       checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
       g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.valueOrError;
       overrideSlot = g_TextResourceOverrides;
@@ -161,13 +161,13 @@ FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
   uint32_t fontIndex;
   
   fontIndex = g_ActiveFontIndex;
-  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
+  textureSize = g_GraphicsTextureSourceGetLogicalSize
                     (glyphSubresource,g_FontTextureSources[g_ActiveFontIndex]);
   glyphWidth = textureSize.logicalWidthPixels;
   if (textureSize.failed) {
     glyphWidth = 0;
   }
-  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
   glyphSize.lineHeight = textureSize.logicalHeightPixels;
   glyphSize.width = glyphWidth;
   glyphSize.failed = false;
@@ -193,13 +193,13 @@ FontGlyph_GetLogicalSizeForStyleRegs
   GlyphSizeResult glyphSize;
   
   fontIndex = packedStyle >> 0x18 & 7;
-  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,g_FontTextureSources[fontIndex])
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,g_FontTextureSources[fontIndex])
   ;
   glyphWidth = textureSize.logicalWidthPixels;
   if (textureSize.failed) {
     glyphWidth = 0;
   }
-  textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
+  textureSize = g_GraphicsTextureSourceGetLogicalSize(0,g_FontTextureSources[fontIndex]);
   glyphSize.lineHeight = textureSize.logicalHeightPixels;
   glyphSize.width = glyphWidth;
   glyphSize.failed = false;
@@ -229,17 +229,17 @@ uint32_t FontGlyph_DrawBottomAligned
   
   fontTexture = g_FontTextureSources[g_ActiveFontIndex];
   if (fontTexture != (GraphicsTextureSourceAsset *)0x0) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,fontTexture);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
     drawY = baselineY - textureSize.logicalHeightPixels;
     colorArgb = g_RichTextCurrentColorArgb;
     framebuffer = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
                  drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
-    (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
     /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
     return textureSize.logicalWidthPixels;
@@ -270,17 +270,17 @@ uint32_t FontGlyph_DrawVerticallyCentered
   
   fontTexture = g_FontTextureSources[g_ActiveFontIndex];
   if (fontTexture != (GraphicsTextureSourceAsset *)0x0) {
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,fontTexture);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
     drawY = (lineBottom - lineTop) + ((int)(lineTop - textureSize.logicalHeightPixels) >> 1);
     colorArgb = g_RichTextCurrentColorArgb;
     framebuffer = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
                  drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
-    (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
     /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
     return textureSize.logicalWidthPixels;
@@ -328,7 +328,7 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
       remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
       countryCode = g_LocaleCountryCodeOverride;
       if (g_LocaleCountryCodeOverride == 0) {
-        countryCode = (*g_LocaleGetDefaultTelephoneCountryCode)();
+        countryCode = g_LocaleGetDefaultTelephoneCountryCode();
       }
       /* Select the block for the country code, else the Great Britain block, else the first block. */
       localeBlockOrError = allocation + 1;

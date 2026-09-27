@@ -415,7 +415,7 @@ ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedAr
   do {
     registeredRecord = *registryCursor;
     if (registeredRecord != (ArmyAssetRecordPrefix *)0x0) {
-      (*g_MemoryApi.free)((void *)registeredRecord[2].byteSize);
+      g_MemoryApi.free((void *)registeredRecord[2].byteSize);
       registeredRecord[2].byteSize = 0;
     }
     registryCursor = registryCursor + 1;
@@ -631,7 +631,7 @@ ArmyAssetRecord_RegisterAndRelocate
 
   existing = ArmyAssetRegistry_FindByIdCf(record->registryId);
   if (!existing.notFound) {
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
     status.failed = true;
     status.valueOrError = 0x4c;
@@ -653,7 +653,7 @@ ArmyAssetRecord_RegisterAndRelocate
     }
     slot = slot + 1;
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
   status.failed = true;
   status.valueOrError = 0x42;
   return status;
@@ -729,7 +729,7 @@ ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
       failureResult.notFound = true;
       failureResult.recordOrError = (ArmyAssetRecordPrefix *)0x41;

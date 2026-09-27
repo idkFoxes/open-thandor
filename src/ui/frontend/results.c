@@ -54,7 +54,7 @@ FrontendResultsTable_DrawColumnSequenceByType
     drawXOrCount = (control->base).top;
     remainingColumns = control->columnTypeCount;
     columnTypeOrColorCursor = &control->columnTypes0;
-    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       do {
                     // WARNING: Switch is manually overridden
@@ -164,7 +164,7 @@ FrontendResultsTable_DrawColumnSequenceByType
         columnTypeOrColorCursor = columnTypeOrColorCursor + 1;
         remainingColumns = remainingColumns - 1;
       } while (remainingColumns != 0);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   else {
@@ -190,14 +190,14 @@ FrontendResultsTable_DrawColumnSequenceByType
     } while (drawXOrCount != 0);
     drawXOrCount = (control->base).layoutWidth;
     historySampleCount = g_GameFactionRuntimeImage.tail.simulationTick >> 7;
-    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       g_FrontendResultsFramebufferBytesPerPixel = framebufferAccess->bytesPerPixel;
       g_FrontendResultsFramebufferScanlineStrideBytes =
            framebufferAccess->width * g_FrontendResultsFramebufferBytesPerPixel;
       pixelColumn = 0;
       do {
-        (*control->factionWeightRaster)
+        control->factionWeightRaster
                   ((control->base).bottom,(control->base).top,pixelColumn + (control->base).left,
                    (FrontendResultsFactionWeightPair8 *)
                    ((int)(((uint64_t)pixelColumn * (uint64_t)historySampleCount) /
@@ -205,7 +205,7 @@ FrontendResultsTable_DrawColumnSequenceByType
         pixelColumn = pixelColumn + 1;
         drawXOrCount = drawXOrCount + -1;
       } while (drawXOrCount != 0);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   return;
@@ -535,7 +535,7 @@ FrontendResultsTable_DrawFormattedFactionFieldColumn
   factionFieldCursor = g_GameFactionRuntimeImage.records[1].reserved78_87 + (factionFieldOffset - 0x78);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,*(int32_t *)factionFieldCursor,
                  (uint16_t *)&g_FrontendResultsValueTextUtf16);
       resolvedText = TextResource_Resolve(valueFormatResourceId);
@@ -585,7 +585,7 @@ FrontendResultsTable_DrawPointsColumn
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),
                  (uint16_t *)&g_FrontendResultsValueTextUtf16);
@@ -636,7 +636,7 @@ FrontendResultsTable_DrawEconomyColumn
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int32_t *)(factionRecordAddress + 0x90),(uint16_t *)&g_FrontendResultsValueTextUtf16);
       resolvedText = TextResource_Resolve(0x21c4);
@@ -686,7 +686,7 @@ FrontendResultsTable_DrawMilitaryColumn
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int32_t *)(factionRecordAddress + 0x94),(uint16_t *)&g_FrontendResultsValueTextUtf16);
       resolvedText = TextResource_Resolve(0x21c4);

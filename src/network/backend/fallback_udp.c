@@ -158,10 +158,10 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
   uint32_t socketToClose;
   
   socketToClose = 0xffffffff;
-  socketResult.valueOrError = (*g_WinSock_socket)(2,2,0x11);
+  socketResult.valueOrError = g_WinSock_socket(2,2,0x11);
   if (socketResult.valueOrError != 0xffffffff) {
     bindAddress = 0;
-    ipOption = (*g_CommandLineFindOption)(3,(char *)THANDOR_ADDR(s_CommandLineOptionIp,0));
+    ipOption = g_CommandLineFindOption(3,(char *)THANDOR_ADDR(s_CommandLineOptionIp,0));
     if (!ipOption.notFound) {
       optionCursor = ipOption.option + 4;
       nextOutput = g_PackageScratchBuffer;
@@ -178,9 +178,9 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
            address). */
         if ((copiedByte == 0x22) && (*optionCursor == 0)) {
           *outputCursor = 0;
-          bindAddress = (*g_WinSock_inet_addr)(g_PackageScratchBuffer);
+          bindAddress = g_WinSock_inet_addr(g_PackageScratchBuffer);
           if (bindAddress == 0xffffffff) {
-            hostEntry = (*g_WinSock_gethostbyname)(g_PackageScratchBuffer);
+            hostEntry = g_WinSock_gethostbyname(g_PackageScratchBuffer);
             bindAddress = 0;
             if (hostEntry != (WinSockHostEnt32 *)0x0) {
               bindAddress = *(NetworkIpv4AddressNetworkOrder *)*hostEntry->addressList;
@@ -190,7 +190,7 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
       }
     }
     g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
-         (*g_WinSock_htons)((uint16_t)localPort);
+         g_WinSock_htons((uint16_t)localPort);
     g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = bindAddress;
     g_NetworkFallbackBindEndpoint.addressHeader.fields.addressFamily = NETWORK_ADDRESS_FAMILY_IPV4;
     g_NetworkFallbackBindEndpoint.zeroPadding[0] = 0;
@@ -203,12 +203,12 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
     g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[7] = 0;
-    winsockResultOrError = (*g_WinSock_bind)(socketResult.valueOrError,&g_NetworkFallbackBindEndpoint,0x10);
+    winsockResultOrError = g_WinSock_bind(socketResult.valueOrError,&g_NetworkFallbackBindEndpoint,0x10);
     socketToClose = socketResult.valueOrError;
     if (winsockResultOrError == 0) {
-      winsockResultOrError = (*g_WinSock_setsockopt)(socketResult.valueOrError,0xffff,0x20,(uint8_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
+      winsockResultOrError = g_WinSock_setsockopt(socketResult.valueOrError,0xffff,0x20,(uint8_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
       if (winsockResultOrError == 0) {
-        winsockResultOrError = (*g_WinSock_ioctlsocket)(socketResult.valueOrError,0x8004667e,(uint32_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0));
+        winsockResultOrError = g_WinSock_ioctlsocket(socketResult.valueOrError,0x8004667e,(uint32_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0));
         if (winsockResultOrError == 0) {
           g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder = 0xffffffff;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0;
@@ -226,10 +226,10 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
       }
     }
   }
-  winsockResultOrError = (*g_WinSock_WSAGetLastError)();
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockResultOrError,g_PackageLastErrorPath);
+  winsockResultOrError = g_WinSock_WSAGetLastError();
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockResultOrError,g_PackageLastErrorPath);
   if (socketToClose != 0xffffffff) {
-    (*g_WinSock_closesocket)(socketToClose);
+    g_WinSock_closesocket(socketToClose);
   }
   failureResult.failed = true;
   failureResult.valueOrError = 0x2a;
@@ -252,7 +252,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
     LOCK();
     g_NetworkFallbackSocket = 0xffffffff;
     UNLOCK();
-    (*g_WinSock_closesocket)(socket);
+    g_WinSock_closesocket(socket);
   }
   return;
 }
@@ -276,7 +276,7 @@ NetworkFallback_ReceiveDatagramCf
   receivedByteCount = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != 0xffffffff) {
     receivedByteCount =
-         (*g_WinSock_recvfrom)
+         g_WinSock_recvfrom
                    (g_NetworkFallbackSocket,buffer,byteCount,0,sourceAddress,
                     (int *)&g_NetworkFallbackAddressLength);
     if (-1 < (int)receivedByteCount) {
@@ -309,10 +309,10 @@ NetworkFallback_SendDatagramCf
   sentByteCount = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != 0xffffffff) {
     sentByteCount =
-         (*g_WinSock_sendto)(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,0x10);
+         g_WinSock_sendto(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,0x10);
     if ((int)sentByteCount < 0) {
-      winsockErrorCode = (*g_WinSock_WSAGetLastError)();
-      (*g_WideNumberFormatUtf16)
+      winsockErrorCode = g_WinSock_WSAGetLastError();
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
       failureResult.failed = true;
       failureResult.valueOrError = 0x2a;
@@ -349,9 +349,9 @@ NetworkFallback_ParsePeerEndpointCf
   }
   ipv4AddressNetworkOrder = g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder;
   if ((g_NetworkEndpointTextScratchA != '\0') &&
-     (ipv4AddressNetworkOrder = (*g_WinSock_inet_addr)((uint8_t *)&g_NetworkEndpointTextScratchA),
+     (ipv4AddressNetworkOrder = g_WinSock_inet_addr((uint8_t *)&g_NetworkEndpointTextScratchA),
      ipv4AddressNetworkOrder == 0xffffffff)) {
-    resolvedHostEntry = (*g_WinSock_gethostbyname)((uint8_t *)&g_NetworkEndpointTextScratchA);
+    resolvedHostEntry = g_WinSock_gethostbyname((uint8_t *)&g_NetworkEndpointTextScratchA);
     if (resolvedHostEntry == (WinSockHostEnt32 *)0x0) {
       return true;
     }
@@ -384,7 +384,7 @@ NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress
 {
   uint8_t *source;
   
-  source = (*g_WinSock_inet_ntoa)(socketAddress->ipv4AddressNetworkOrder);
+  source = g_WinSock_inet_ntoa(socketAddress->ipv4AddressNetworkOrder);
   if (source != (uint8_t *)0x0) {
     Text_CopyNarrowToUtf16Cf(0x200,(uint16_t *)outputText,source);
     return;
@@ -424,11 +424,11 @@ NetworkBackend_OpenAndBindActiveSocketCf(uint16_t portHostOrder)
   uint32_t socketHandle;
   
   socketHandle = 0xffffffff;
-  socketOrAddressLength = (*g_Ws2_32_socket)(g_NetworkBackendActiveAddressFamily,g_NetworkBackendActiveSocketType,
+  socketOrAddressLength = g_Ws2_32_socket(g_NetworkBackendActiveAddressFamily,g_NetworkBackendActiveSocketType,
                              g_NetworkBackendActiveProtocol);
   if (socketOrAddressLength != 0xffffffff) {
     socketHandle = socketOrAddressLength;
-    networkPort = (*g_Ws2_32_htons)(portHostOrder);
+    networkPort = g_Ws2_32_htons(portHostOrder);
     /* The asm stores all of EAX after htons; the high word is whatever htons left there. Every reader
        (this function and NetworkBackend_ParseEndpointTextCf) uses only the low word (CX). */
     g_NetworkBackendPortNetworkOrderCarrier = (uint32_t)networkPort;
@@ -450,11 +450,11 @@ NetworkBackend_OpenAndBindActiveSocketCf(uint16_t portHostOrder)
       THANDOR_PART(uint8_t, g_NetworkBackendBindAddress, 15) = 0;
       g_NetworkBackendBindAddress.ipx.socketNetworkOrder = networkPort;
     }
-    winsockResultOrError = (*g_Ws2_32_bind)(socketHandle,&g_NetworkBackendBindAddress.ipv4,socketOrAddressLength);
+    winsockResultOrError = g_Ws2_32_bind(socketHandle,&g_NetworkBackendBindAddress.ipv4,socketOrAddressLength);
     if (winsockResultOrError == 0) {
-      winsockResultOrError = (*g_Ws2_32_setsockopt)(socketHandle,0xffff,0x20,(uint8_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
+      winsockResultOrError = g_Ws2_32_setsockopt(socketHandle,0xffff,0x20,(uint8_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
       if (winsockResultOrError == 0) {
-        winsockResultOrError = (*g_Ws2_32_WSAIoctl)
+        winsockResultOrError = g_Ws2_32_WSAIoctl
                           (socketHandle,0x8004667e,(void *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4,(void *)0x0,0,&bytesReturned,
                            (void *)0x0,(void *)0x0);
         if (winsockResultOrError == 0) {
@@ -487,10 +487,10 @@ NetworkBackend_OpenAndBindActiveSocketCf(uint16_t portHostOrder)
       }
     }
   }
-  winsockResultOrError = (*g_Ws2_32_WSAGetLastError)();
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockResultOrError,g_PackageLastErrorPath);
+  winsockResultOrError = g_Ws2_32_WSAGetLastError();
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockResultOrError,g_PackageLastErrorPath);
   if (socketHandle != 0xffffffff) {
-    (*g_Ws2_32_closesocket)(socketHandle);
+    g_Ws2_32_closesocket(socketHandle);
   }
   failureResult.failed = true;
   failureResult.valueOrError = 0x2a;
@@ -512,7 +512,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallbackUdp_CloseSocket(void)
     LOCK();
     g_NetworkFallbackSocket = 0xffffffff;
     UNLOCK();
-    (*g_Ws2_32_closesocket)(socket);
+    g_Ws2_32_closesocket(socket);
   }
   return;
 }
@@ -535,7 +535,7 @@ NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLengt
   receivedByteCount = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != 0xffffffff) {
     successResult.valueOrError =
-         (*g_Ws2_32_recvfrom)
+         g_Ws2_32_recvfrom
                    (g_NetworkFallbackSocket,buffer,bufferLength,0,sourceAddress,
                     (int *)&g_NetworkFallbackAddressLength);
     receivedByteCount = successResult.valueOrError;
@@ -565,11 +565,11 @@ NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount
   
   sentByteCount = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != 0xffffffff) {
-    sentByteCount = (*g_Ws2_32_sendto)(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,
+    sentByteCount = g_Ws2_32_sendto(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,
                                g_NetworkBackendActiveSocketAddressLength);
     if ((int)sentByteCount < 0) {
-      winsockErrorCode = (*g_Ws2_32_WSAGetLastError)();
-      (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
+      winsockErrorCode = g_Ws2_32_WSAGetLastError();
+      g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
       failureResult.failed = true;
       failureResult.valueOrError = 0x2a;
       return failureResult;
@@ -604,11 +604,11 @@ NetworkBackend_ParseEndpointTextCf(NetworkEndpointAddressHeader4 *endpointOut,ui
     return true;
   }
   if (g_NetworkEndpointTextScratchA != '\0') {
-    conversionResult = (*g_Ws2_32_WSAStringToAddressA)
+    conversionResult = g_Ws2_32_WSAStringToAddressA
                       (&g_NetworkEndpointTextScratchA,g_NetworkBackendActiveAddressFamily,
                        (void *)0x0,(NetworkBackendSocketAddress16 *)endpointOut,&addressLength);
     if (conversionResult != 0) {
-      hostEntry = (*g_Ws2_32_gethostbyname)((uint8_t *)&g_NetworkEndpointTextScratchA);
+      hostEntry = g_Ws2_32_gethostbyname((uint8_t *)&g_NetworkEndpointTextScratchA);
       bindAddressHeader = g_NetworkFallbackBindEndpoint.addressHeader;
       if (hostEntry == (WinSockHostEnt32 *)0x0) {
         return true;
@@ -653,7 +653,7 @@ NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address
   uint32_t textLength;
   
   textLength = 0xff;
-  conversionResult = (*g_Ws2_32_WSAAddressToStringA)
+  conversionResult = g_Ws2_32_WSAAddressToStringA
                     (address,g_NetworkBackendActiveSocketAddressLength,(void *)0x0,
                      &g_NetworkEndpointTextScratchA,&textLength);
   if (conversionResult == 0) {

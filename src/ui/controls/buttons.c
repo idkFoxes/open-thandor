@@ -108,7 +108,7 @@ UiSpriteButtonControl_DrawClipped
      (((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0 ||
        (((control->selectable).stateFlags & 0x400) == 0)) &&
       (control->primaryTextureSource != (GraphicsTextureSourceAsset *)0x0)))) {
-    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
         drawOffsetX = (control->drawOffsets).normalX;
@@ -132,7 +132,7 @@ UiSpriteButtonControl_DrawClipped
       if (((control->selectable).stateFlags & 0x80) != 0) {
         subresourceIndex = subresourceIndex + control->animationFrameOffset;
       }
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(int)drawOffsetY + (control->selectable).base.top,
                  (int)drawOffsetX + (control->selectable).base.left,0x7f000000,subresourceIndex,textureSource,
                  g_FramebufferAccess);
@@ -152,7 +152,7 @@ UiSpriteButtonControl_DrawClipped
           if (((control->selectable).stateFlags & 0x80) != 0) {
             underlaySubresource = underlaySubresource + control->animationFrameOffset;
           }
-          (*g_GraphicsTextureSourceBlitSourceAlpha)
+          g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
                      (control->selectable).base.left,underlaySubresource,control->primaryTextureSource,
                      g_FramebufferAccess);
@@ -161,10 +161,10 @@ UiSpriteButtonControl_DrawClipped
       if (((control->selectable).stateFlags & 0x80) != 0) {
         subresourceIndex = subresourceIndex + control->animationFrameOffset;
       }
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
                  (control->selectable).base.left,subresourceIndex,textureSource,framebufferAccess);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   return;
@@ -203,7 +203,7 @@ UiSpriteButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & 0x200) != 0) && (control->activationSoundId != 0)) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
@@ -229,7 +229,7 @@ UiSpriteButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if ((((control->selectable).stateFlags & 0x200) != 0) && (control->activationSoundId != 0)) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
@@ -280,7 +280,7 @@ UiSpriteButtonControl_NonRightRelease
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       if ((((control->selectable).stateFlags & 0x200) != 0) && (control->activationSoundId != 0)) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
@@ -324,14 +324,14 @@ UiSpriteButtonControl_NonRightDrag
     pointerInside = false;
     if (control->primaryTextureSource != (GraphicsTextureSourceAsset *)0x0) {
       if (((control->selectable).stateFlags & 0x400) == 0) {
-        pointerInside = (*g_GraphicsTextureSourceTestOpaquePixel)
+        pointerInside = g_GraphicsTextureSourceTestOpaquePixel
                           (pointerY,pointerX,(control->selectable).base.top,
                            (control->selectable).base.left,
                            control->normalSubresourceStartOrDescriptor,control->primaryTextureSource
                           );
       }
       else {
-        pointerInside = (*g_GraphicsTextureSourceTestOpaquePixel)
+        pointerInside = g_GraphicsTextureSourceTestOpaquePixel
                           (pointerY,pointerX,(control->selectable).base.top,
                            (control->selectable).base.left,control->selectedSubresourceStart,
                            control->primaryTextureSource);
@@ -387,13 +387,13 @@ UiSpriteButtonControl_HitTestOpaque
         hitNode = (UiSpriteButtonControl *)0xffffffff;
         return (UiNodeBase *)hitNode;
       }
-      spritePixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      spritePixelHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresourceStartOrDescriptor
                          ,control->primaryTextureSource);
     }
     else {
-      spritePixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      spritePixelHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->selectedSubresourceStart,
                          control->primaryTextureSource);
@@ -429,25 +429,25 @@ UiImageActionControl_DrawImageAndChildren
   
   if (((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && (control->textureSource != (GraphicsTextureSourceAsset *)0x0))
   {
-    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       if ((control->displayFlags & 1) == 0) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,
                    control->subresource,control->textureSource,
                    g_FramebufferAccess);
-        (*g_GraphicsFramebufferEndAccess)();
+        g_GraphicsFramebufferEndAccess();
       }
       else {
         sourceWidth = control->letterboxWidth;
         horizontalMargin = control->base.layoutWidth - sourceWidth;
         if (((uint32_t)control->base.layoutWidth < sourceWidth || horizontalMargin == 0) ||
            ((control->displayFlags & 4) == 0)) {
-          (*g_GraphicsTextureSourceStretchDirectColorBilinear)
+          g_GraphicsTextureSourceStretchDirectColorBilinear
                     (control->base.layoutHeight,control->base.layoutWidth,control->base.top,control->base.left,
                      control->subresource,control->textureSource,
                      g_FramebufferAccess);
-          (*g_GraphicsFramebufferEndAccess)();
+          g_GraphicsFramebufferEndAccess();
         }
         else {
           scaledHeight = (uint32_t)(((int64_t)(int)sourceWidth * (int64_t)control->base.layoutHeight) /
@@ -456,22 +456,22 @@ UiImageActionControl_DrawImageAndChildren
           imageTop = (control->base.layoutHeight - scaledHeight >> 1) + control->base.top;
           drawWidth = control->letterboxWidth;
           imageBottom = scaledHeight + imageTop;
-          (*g_GraphicsFramebufferFillRectArgb)
+          g_GraphicsFramebufferFillRectArgb
                     (clipTop,clipLeft,clipBottom,clipRight,imageTop,control->base.right,control->base.top,
                      control->base.left,0xff000000,g_FramebufferAccess);
-          (*g_GraphicsFramebufferFillRectArgb)
+          g_GraphicsFramebufferFillRectArgb
                     (clipTop,clipLeft,clipBottom,clipRight,control->base.bottom,control->base.right,imageBottom,
                      control->base.left,0xff000000,g_FramebufferAccess);
-          (*g_GraphicsFramebufferFillRectArgb)
+          g_GraphicsFramebufferFillRectArgb
                     (clipTop,clipLeft,clipBottom,clipRight,imageBottom,imageLeft,imageTop,control->base.left,0xff000000,
                      g_FramebufferAccess);
-          (*g_GraphicsFramebufferFillRectArgb)
+          g_GraphicsFramebufferFillRectArgb
                     (clipTop,clipLeft,clipBottom,clipRight,imageBottom,control->base.right,imageTop,imageLeft + drawWidth,
                      0xff000000,g_FramebufferAccess);
-          (*g_GraphicsTextureSourceStretchDirectColorBilinear)
+          g_GraphicsTextureSourceStretchDirectColorBilinear
                     (scaledHeight,control->letterboxWidth,imageTop,imageLeft,control->subresource,
                      control->textureSource,g_FramebufferAccess);
-          (*g_GraphicsFramebufferEndAccess)();
+          g_GraphicsFramebufferEndAccess();
         }
       }
     }
@@ -573,12 +573,12 @@ UiConditionalActionControl_DrawClipped
   GraphicsSubresourceIndex backgroundSubresource;
   
   if ((control->lineCount != 0) &&
-     (accessFailed = (*g_GraphicsFramebufferBeginAccess)(), !accessFailed)) {
+     (accessFailed = g_GraphicsFramebufferBeginAccess(), !accessFailed)) {
     backgroundSubresource = 0x7b;
     if ((control->base.layoutWidth == 0x1a0) && (control->base.layoutHeight == 0x3a)) {
       backgroundSubresource = 200;
     }
-    cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
+    cornerSize = g_GraphicsTextureSourceGetLogicalSize(0x72,g_UiWindowTextureSource);
     tileStart = cornerSize.logicalHeightPixels;
     tileEnd = cornerSize.logicalWidthPixels;
     innerWidthOrRight = control->base.layoutWidth;
@@ -586,16 +586,16 @@ UiConditionalActionControl_DrawClipped
     if (backgroundSubresource == 0x7b) {
       innerWidthOrRight = innerWidthOrRight - tileEnd;
       innerHeightOrBottom = innerHeightOrBottom - tileStart;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,0x72,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,control->base.top,innerWidthOrRight + control->base.left,0x73,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,control->base.left,0x74,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,innerWidthOrRight + control->base.left,
                  0x75,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
@@ -655,7 +655,7 @@ UiConditionalActionControl_DrawClipped
         lineIndexOrCount = lineIndexOrCount - 1;
       } while (lineIndexOrCount != 0);
     }
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }

@@ -22,7 +22,7 @@ StatusResult SpatialSoundPool_Init(void)
   bool allocationFailed;
   ArenaAllocResult allocResult;
   
-  allocResult = (*g_MemoryApi.alloc)(0x1000);
+  allocResult = g_MemoryApi.alloc(0x1000);
   allocationFailed = allocResult.failed;
   spatialSoundStorageCursor = (SpatialSoundSlot *)allocResult.payloadOrError;
   if (!allocationFailed) {
@@ -132,7 +132,7 @@ SpatialSound_PlayPositionedOneShot
       if (0x8000 < (int)volumeOrRightGainQ15) {
         volumeOrRightGainQ15 = 0x8000;
       }
-      (*g_SoundPlayOneShot)(volumeOrRightGainQ15,azimuthOrLeftGainQ15,*voiceSetRef);
+      g_SoundPlayOneShot(volumeOrRightGainQ15,azimuthOrLeftGainQ15,*voiceSetRef);
     }
   }
   return;
@@ -223,7 +223,7 @@ SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
   SpatialSoundSlotResult failureResult;
   SpatialSoundSlotResult successResult;
   
-  createResult = (*g_SoundCreateSampleVoiceSet)(sampleAsset);
+  createResult = g_SoundCreateSampleVoiceSet(sampleAsset);
   voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
   if (!createResult.failed) {
     slotsRemaining = 0x100;
@@ -241,7 +241,7 @@ SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
       slotCursor = slotCursor + 1;
       slotsRemaining = slotsRemaining + -1;
     } while (slotsRemaining != 0);
-    (*g_SoundReleaseSampleVoiceSet)((DirectSoundVoiceSet *)voiceSetOrError);
+    g_SoundReleaseSampleVoiceSet((DirectSoundVoiceSet *)voiceSetOrError);
     voiceSetOrError = (SpatialSoundSlot *)0x14;
   }
   failureResult.failed = true;
@@ -266,7 +266,7 @@ SpatialSoundSlot_CreateFromPcm
   SpatialSoundSlot *slotCursor;
   PcmVoiceSetResult createResult;
   
-  createResult = (*g_SoundCreatePcmVoiceSet)
+  createResult = g_SoundCreatePcmVoiceSet
                     (bufferByteCount,sampleRateHz,bitsPerSample,channelCount,pcmData);
   voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
   if (!createResult.failed) {
@@ -283,7 +283,7 @@ SpatialSoundSlot_CreateFromPcm
       slotCursor = slotCursor + 1;
       slotsRemaining = slotsRemaining + -1;
     } while (slotsRemaining != 0);
-    (*g_SoundReleasePcmVoiceSet)((DirectSoundVoiceSet *)voiceSetOrError);
+    g_SoundReleasePcmVoiceSet((DirectSoundVoiceSet *)voiceSetOrError);
     voiceSetOrError = (SpatialSoundSlot *)0x14;
   }
   return voiceSetOrError;
@@ -302,7 +302,7 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleaseSample(SpatialSound
   
   slotEntriesRemaining = 4;
   if (slot != (SpatialSoundSlot *)0x0) {
-    (*g_SoundReleaseSampleVoiceSet)(slot->voiceSet);
+    g_SoundReleaseSampleVoiceSet(slot->voiceSet);
     for (; slotEntriesRemaining != 0; slotEntriesRemaining = slotEntriesRemaining + -1) {
       slot->voiceSet = (DirectSoundVoiceSet *)0x0;
       slot = (SpatialSoundSlot *)&slot->activeVoice;
@@ -324,7 +324,7 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleasePcm(SpatialSoundSlo
   
   slotEntriesRemaining = 4;
   if (slot != (SpatialSoundSlot *)0x0) {
-    (*g_SoundReleasePcmVoiceSet)(slot->voiceSet);
+    g_SoundReleasePcmVoiceSet(slot->voiceSet);
     for (; slotEntriesRemaining != 0; slotEntriesRemaining = slotEntriesRemaining + -1) {
       slot->voiceSet = (DirectSoundVoiceSet *)0x0;
       slot = (SpatialSoundSlot *)&slot->activeVoice;
@@ -380,7 +380,7 @@ void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void
       existingVoice = slotCursor->activeVoice;
       if (existingVoice == (IDirectSoundBuffer *)0x0) {
         if (slotCursor->desiredLeftGainQ15 != 0 || slotCursor->desiredRightGainQ15 != 0) {
-          playResult = (*g_SoundPlayLooping)
+          playResult = g_SoundPlayLooping
                             (slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,
                              slotCursor->voiceSet);
           activeVoice = playResult.soundBuffer;
@@ -388,11 +388,11 @@ void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void
         }
       }
       else if (slotCursor->desiredLeftGainQ15 == 0 && slotCursor->desiredRightGainQ15 == 0) {
-        (*g_SoundStopVoice)(existingVoice);
+        g_SoundStopVoice(existingVoice);
         slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
       }
       else {
-        (*g_SoundSetVoiceGains)(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,existingVoice)
+        g_SoundSetVoiceGains(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,existingVoice)
         ;
       }
     }

@@ -110,7 +110,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
   bool carryIn;
   ListSelectionResult selectionResult;
   
-  (*g_GraphicsCursorSetFrame)(6);
+  g_GraphicsCursorSetFrame(6);
   selectionResult = UiPointerList_GetSelectedIndexVariantBCf
                     ((UiPointerListControl *)(saveGamePageControl + 0xf0));
   rowOrdinal = selectionResult.rowIndex + 1;
@@ -123,7 +123,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     carryIn = WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    errorOrValue = (*g_FileSystemDeleteCf)(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    errorOrValue = g_FileSystemDeleteCf(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(errorOrValue,carryIn);
     InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(saveGamePageControl + -0x760));
   }
@@ -174,16 +174,16 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+  enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
                      (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
   remainingCount = enumResult.entryCount;
   if (enumResult.failed) {
     remainingCount = 0;
   }
-  (*g_MemoryApi.free)(g_ScenarioCatalog);
+  g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = (ScenarioCatalogHeader *)0x0;
-  allocResult = (*g_MemoryApi.alloc)((remainingCount + 1) * 0x104);
+  allocResult = g_MemoryApi.alloc((remainingCount + 1) * 0x104);
   rowPointerCursor = (ScenarioCatalogHeader *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     destination = &rowPointerCursor->campaignRecordsOffset + remainingCount;
@@ -199,14 +199,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-      openResult = (*g_FileSystemOpenCf)
+      openResult = g_FileSystemOpenCf
                         (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
       handle = (void *)openResult.handleOrError;
       if (!openResult.failed) {
         closeHandle = handle;
-        (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0x100,handle);
-        (*g_FileSystemReadExactCf)(0x100,destination,handle);
-        (*g_FileSystemClose)(closeHandle);
+        g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,0x100,handle);
+        g_FileSystemReadExactCf(0x100,destination,handle);
+        g_FileSystemClose(closeHandle);
         destination[0x1c] = destination[0x1c] + 0x2230;
         destination[0x24] = destination[0x24] + 0x2220;
       }
@@ -289,7 +289,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   ListSelectionResult selectionResult;
   uint32_t saveCarry;
   
-  (*g_GraphicsCursorSetFrame)(6);
+  g_GraphicsCursorSetFrame(6);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
   selectionResult = UiPointerList_GetSelectedIndexVariantBCf(saveList);
   errorOrValue = selectionResult.rowIndex + 1;
@@ -311,7 +311,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
                     (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
                      &g_ScenarioCatalogPathScratchUtf16);
   saveCarry = (uint32_t)(saveStatus & 1);
-  (*g_GraphicsCursorSetFrame)(0);
+  g_GraphicsCursorSetFrame(0);
   FatalError_ReportIfFailed(errorOrValue,(saveCarry & 1) != 0);
   UiSelectableControl_SetSelected
             (0,(UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));

@@ -356,7 +356,7 @@ GameFactionRelations_MaybeAdvancePairStateRare
   uint32_t randomValue;
   uint32_t maskedRandom;
   
-  randomValue = (*g_RandomGeneratorState.next)();
+  randomValue = g_RandomGeneratorState.next();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (pairPressure == 0) {
     maskedRandom = randomValue & 0x17f;
@@ -394,7 +394,7 @@ GameFactionRelations_MaybeAdvancePairStateCommon
   uint32_t randomValue;
   uint32_t maskedRandom;
   
-  randomValue = (*g_RandomGeneratorState.next)();
+  randomValue = g_RandomGeneratorState.next();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (pairPressure == 0) {
     maskedRandom = randomValue & 0x7f;
@@ -430,7 +430,7 @@ GameFactionRelations_MaybeResetPairState
 {
   uint32_t randomValue;
   
-  randomValue = (*g_RandomGeneratorState.next)();
+  randomValue = g_RandomGeneratorState.next();
   if ((randomValue & 0x180) == 0x80) {
     GameFactionRuntime_ResetPairwiseRelationState
               (0xffffffff,0,sourceFactionIndex,targetFactionIndex);

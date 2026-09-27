@@ -516,9 +516,9 @@ ImageData_00407510 g_ImageData_00407510 = {
     0, /* 00407B14 g_FatalErrorDetail3Utf16 */
     {0},
     {0},
-    0, /* 00407D14 g_FatalErrorPrimaryDispatchCf */
-    0, /* 00407D18 g_FatalErrorRuntimeDispatchCf */
-    0, /* 00407D1C g_FatalErrorExitFallbackDispatchCf */
+    0, /* 00407D14 g_FatalErrorExitHandler */
+    0, /* 00407D18 g_FatalErrorReportHandler */
+    0, /* 00407D1C g_FatalErrorFallbackHandler */
     L"texte\\error.str", /* 00407D20 u_texte_error_str_00407d20 */
     L"error: IO: initialization failed!", /* 00407D40 g_ErrorTextIoInitializationFailed */
     L"error: HEAP: cannot allocate heap memory! Please check your swap-file.", /* 00407D84 g_ErrorTextHeapAllocationFailed */
@@ -1531,7 +1531,7 @@ ImageData_004A8E60 g_ImageData_004A8E60 = {
     0, /* 004A8EA4 g_GraphicsAdapters */
     0, /* 004A8EA8 g_GraphicsAdapterCount */
     {0}, /* 004A8EAC g_SoftwarePixelFormatConfig */
-    (void *)SoftwarePixelFormat_BaseDisplayModeHook, /* 004A8ED0 g_GraphicsDisplayModeHook */
+    (void *)SoftwarePixelFormat_BaseDisplayModeHook, /* 004A8ED0 g_GraphicsSetDisplayMode */
     (void *)GraphicsBackend_RefreshActiveAdapterNoOp, /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapterCf */
     (void *)SoftwareFramebuffer_Create, /* 004A8ED8 g_SoftwareFramebufferCreate */
     /* 004A8EDC g_SoftwareFramebufferDestroy */
@@ -2559,8 +2559,8 @@ ImageData_004D11B8 g_ImageData_004D11B8 = {
     0, /* 004D1238 g_SoftwareDepthBuffer */
     0, /* 004D123C g_SoftwareAuxiliaryTargetBase */
     0, /* 004D1240 g_SoftwareDepthEpoch */
-    0, /* 004D1244 g_SoftwarePreviousDisplayModeHook */
-    0, /* 004D1248 g_SoftwareDrawQueueProc */
+    0, /* 004D1244 g_SoftwareChainedSetDisplayMode */
+    0, /* 004D1248 g_SoftwareDrawQueue */
     {
         0x90909090, 0x90909090, 0x90909090, 0x90909090, 0x90909090},
     /* 004D1260 g_SoftwareRasterHandlers16Bit */
@@ -11963,7 +11963,7 @@ ImageData_00576B04 g_ImageData_00576B04 = {
     0, /* 00576C14 g_MouseWheelDelta */
     0, /* 00576C18 g_MouseButtonMask */
     0, /* 00576C1C g_MouseEventsProcessed */
-    0, /* 00576C20 g_DirectInputMousePreviousDisplayModeHookCf */
+    0, /* 00576C20 g_DirectInputMouseChainedSetDisplayModeCf */
     0x10, /* 00576C24 g_DirectInputMouseRefreshCountdown */
     {
         0x90909090, 0x90909090},

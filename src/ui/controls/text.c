@@ -233,7 +233,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
         }
         return false;
       default:
@@ -332,7 +332,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
   }
   return false;
 }
@@ -551,7 +551,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
         }
         return false;
       default:
@@ -727,7 +727,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
   }
   return false;
 }
@@ -920,7 +920,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
         }
         return false;
       case 0x10000:
@@ -939,7 +939,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
            (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
         }
         return false;
       default:
@@ -1155,7 +1155,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
   }
   return false;
 }
@@ -1185,7 +1185,7 @@ UiGraphicsAdapterTextButton_DrawFormattedAdapterText
     adapterRecords = g_GraphicsAdapters;
     stream = resolvedText.text;
     if (((control->selectable).stateFlags & 0x80) != 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
                  (uint16_t *)&g_GraphicsAdapterFormatScratch0Utf16);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_GraphicsAdapterFormatScratch0Utf16,stream);
@@ -1193,10 +1193,10 @@ UiGraphicsAdapterTextButton_DrawFormattedAdapterText
       return;
     }
     if (((control->selectable).stateFlags & 0x800) == 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
                  (uint16_t *)&g_GraphicsAdapterFormatScratch0Utf16);
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].textResourceId,
                  (uint16_t *)&g_GraphicsAdapterFormatScratch1Utf16);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_GraphicsAdapterFormatScratch0Utf16,stream);
@@ -1289,7 +1289,7 @@ UiTextEditControl_DrawTextSelectionAndCaret
   GraphicsTextureSourceAsset *caretTextureSource;
   SoftwareFramebufferAccess *caretFramebuffer;
   
-  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (!framebufferUnavailable) {
     if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) == 0) {
       borderWidthOrCaretFrame = 0;
@@ -1301,7 +1301,7 @@ UiTextEditControl_DrawTextSelectionAndCaret
     else {
       rightOrCaretX = (control->base).layoutWidth;
       bottomOrCaretY = (control->base).layoutHeight;
-      cornerTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6d,g_UiWindowTextureSource);
+      cornerTileSize = g_GraphicsTextureSourceGetLogicalSize(0x6d,g_UiWindowTextureSource);
       tileBottom = cornerTileSize.logicalHeightPixels;
       borderWidthOrCaretFrame = cornerTileSize.logicalWidthPixels;
       rightOrCaretX = rightOrCaretX - borderWidthOrCaretFrame;
@@ -1311,16 +1311,16 @@ UiTextEditControl_DrawTextSelectionAndCaret
                   (clipTop,clipLeft,clipBottom,clipRight,0x7a,bottomOrCaretY,rightOrCaretX,tileBottom,borderWidthOrCaretFrame,control)
         ;
       }
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,(control->base).left,0x6a
                  ,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
                  rightOrCaretX + (control->base).left,0x6b,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY + (control->base).top,
                  (control->base).left,0x6c,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY + (control->base).top,
                  rightOrCaretX + (control->base).left,0x6d,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
@@ -1398,17 +1398,17 @@ UiTextEditControl_DrawTextSelectionAndCaret
       }
       caretTextureSource = g_UiWindowTextureSource;
       caretFramebuffer = g_FramebufferAccess;
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY,rightOrCaretX + styleVerticalOffset,0x7f000000,0x89,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,packedStyle,control->textPrefix6C,
                  topOrTextOffsetY + (control->base).top,leftOrTextOffsetX + (control->base).left);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,topOrTextOffsetY + (control->base).top + -1,rightOrCaretX,borderWidthOrCaretFrame
                  ,caretTextureSource,caretFramebuffer);
     }
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -1437,7 +1437,7 @@ UiTextEditControl_BeginSelectionAtPointer
   }
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
   }
   return;
 }
@@ -1479,7 +1479,7 @@ UiTextEditControl_UpdateSelectionFromPointer
       UNLOCK();
       control->selectionEnd = previousCursorOrSelectionStart;
     }
-    (*nodeVtable->layout)(&control->base);
+    nodeVtable->layout(&control->base);
     UiNode_InvalidateRoot(&control->base);
   }
   return;
@@ -1721,10 +1721,10 @@ UiNumericPairTextButton_DrawFormattedValues
 
   if (((control->base).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     resolvedText = TextResource_Resolve((control->base).textResourceId);
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->firstValue,
                (uint16_t *)&g_UiNumericPairFirstValueScratchUtf16);
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->secondValue,
                (uint16_t *)&g_UiNumericPairSecondValueScratchUtf16);
     RichTextCommandStream_PatchPayloadBySelector(0,&g_UiNumericPairFirstValueScratchUtf16,resolvedText.text)
@@ -1804,13 +1804,13 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
       commandStream = resolvedText.text;
     }
     textExtent = RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
-    tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xbc,g_UiWindowTextureSource);
+    tileSize = g_GraphicsTextureSourceGetLogicalSize(0xbc,g_UiWindowTextureSource);
     edgeTileWidth = tileSize.logicalWidthPixels;
     frameWidthOrMiddleEnd = textExtent.widthPixels + edgeTileWidth * 2;
     targetLeftOrTileX = tooltipTarget->left;
     frameTop = tooltipTarget->top - tileSize.logicalHeightPixels;
     targetRight = tooltipTarget->right;
-    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       frameLeft = (targetLeftOrTileX + targetRight) - frameWidthOrMiddleEnd >> 1;
       if (rootNode == (UiNodeBase *)0xffffffff) {
@@ -1828,20 +1828,20 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
       if (frameTop < rootNode->top) {
         frameTop = frameTop + tooltipTarget->layoutHeight + tileSize.logicalHeightPixels;
       }
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameLeft,0xbc,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       frameWidthOrMiddleEnd = frameRight - edgeTileWidth;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameWidthOrMiddleEnd,0xbe,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       if (clipRight < frameWidthOrMiddleEnd) {
         frameWidthOrMiddleEnd = clipRight;
       }
-      tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xbd,g_UiWindowTextureSource);
+      tileSize = g_GraphicsTextureSourceGetLogicalSize(0xbd,g_UiWindowTextureSource);
       targetLeftOrTileX = edgeTileWidth + frameLeft;
       do {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipBottom,frameWidthOrMiddleEnd,clipTop,clipLeft,frameTop,targetLeftOrTileX,0xbd,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         targetLeftOrTileX = targetLeftOrTileX + tileSize.logicalWidthPixels;
@@ -1849,16 +1849,16 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
       RichTextCommandStream_DrawSingleLine
                 (clipBottom,clipRight,clipTop,clipLeft,g_UiTooltipTextStyle,commandStream,frameTop + 3,
                  edgeTileWidth + frameLeft);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   if (g_UiRootNode == (UiRootNode *)0xffffffff) {
-    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
-      (*g_GraphicsFramebufferFillRectArgb)
+      g_GraphicsFramebufferFillRectArgb
                 (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0
                  ,0,0x80000000,g_FramebufferAccess);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   return;
@@ -1952,7 +1952,7 @@ UiFramedTextButtonControl_DrawClipped
   int baselineY;
   int drawX;
 
-  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (framebufferUnavailable) {
     drawFrame = false;
   }
@@ -1979,25 +1979,25 @@ UiFramedTextButtonControl_DrawClipped
     }
   }
   if (drawFrame) {
-    tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(frameTileOrTextWidth,g_UiWindowTextureSource);
+    tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(frameTileOrTextWidth,g_UiWindowTextureSource);
     tileStart = tileSizeOrEndCapSize.logicalHeightPixels;
     tileEnd = tileSizeOrEndCapSize.logicalWidthPixels;
     rightEdgeOrTextY = (control->selectable).base.layoutWidth - tileEnd;
     bottomEdgeOrTextX = (control->selectable).base.layoutHeight - tileStart;
     if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) ||
        (((control->selectable).stateFlags & 0x800) == 0)) {
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
                  (control->selectable).base.left,frameTileOrTextWidth,g_UiWindowTextureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
                  rightEdgeOrTextY + (control->selectable).base.left,frameTileOrTextWidth + 1,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + (control->selectable).base.top,
                  (control->selectable).base.left,frameTileOrTextWidth + 2,g_UiWindowTextureSource,
                  g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + (control->selectable).base.top,
                  rightEdgeOrTextY + (control->selectable).base.left,frameTileOrTextWidth + 3,g_UiWindowTextureSource,
                  g_FramebufferAccess);
@@ -2046,22 +2046,22 @@ UiFramedTextButtonControl_DrawClipped
       rightEdgeOrTextY = rightEdgeOrTextY + (control->selectable).base.top;
       baselineY = bottomEdgeOrTextX;
       drawX = rightEdgeOrTextY;
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,rightEdgeOrTextY,bottomEdgeOrTextX + -2,0x7f000000,0x86,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+      tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(0x88,g_UiWindowTextureSource);
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x86,g_UiWindowTextureSource);
       focusTileXOrTop = bottomEdgeOrTextX + -2 + focusTileSize.logicalWidthPixels;
-      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
       bottomEdgeOrTextX = ((bottomEdgeOrTextX + 4) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,rightEdgeOrTextY,bottomEdgeOrTextX,0x7f000000,0x88,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       if (clipLeft < bottomEdgeOrTextX) {
         bottomEdgeOrTextX = clipLeft;
       }
       do {
-        (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+        g_GraphicsTextureSourceBlitModulatedSourceAlpha
                   (clipTop,bottomEdgeOrTextX,clipBottom,clipRight,rightEdgeOrTextY,focusTileXOrTop,0x7f000000,0x87,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         focusTileXOrTop = focusTileXOrTop + focusTileSize.logicalWidthPixels;
@@ -2069,22 +2069,22 @@ UiFramedTextButtonControl_DrawClipped
       focusTileXOrTop = drawX + -1;
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,drawX,baselineY);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,baselineY + -3,0x86,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+      tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(0x88,g_UiWindowTextureSource);
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x86,g_UiWindowTextureSource);
       rightEdgeOrTextY = baselineY + -3 + focusTileSize.logicalWidthPixels;
-      focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
       bottomEdgeOrTextX = ((baselineY + 3) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,bottomEdgeOrTextX,0x88,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       if (clipLeft < bottomEdgeOrTextX) {
         bottomEdgeOrTextX = clipLeft;
       }
       do {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,bottomEdgeOrTextX,clipBottom,clipRight,focusTileXOrTop,rightEdgeOrTextY,0x87,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         rightEdgeOrTextY = rightEdgeOrTextY + focusTileSize.logicalWidthPixels;
@@ -2092,7 +2092,7 @@ UiFramedTextButtonControl_DrawClipped
     }
   }
   if (!framebufferUnavailable) {
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     UiContainer_DrawIntersectingChildren
@@ -2127,7 +2127,7 @@ UiFramedTextButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
@@ -2139,7 +2139,7 @@ UiFramedTextButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
@@ -2171,7 +2171,7 @@ UiFramedTextButtonControl_NonRightRelease
       (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
-      (*g_SoundPlayOneShot)
+      g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control->activationSoundId
                 );
     }
@@ -2296,7 +2296,7 @@ UiWindowControl_DrawFramedTextAndChrome
   TextureSizeResult tileSizeOrEndCapSize;
   TextureSizeResult focusTileSize;
   
-  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (framebufferUnavailable) {
     return;
   }
@@ -2313,7 +2313,7 @@ UiWindowControl_DrawFramedTextAndChrome
   }
   else {
     if (((control->selectable).stateFlags & 0x400) != 0) {
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
       return;
     }
     if (((control->selectable).stateFlags & 4) == 0) {
@@ -2323,21 +2323,21 @@ UiWindowControl_DrawFramedTextAndChrome
       frameTileOrTextWidth = 0xa4;
     }
   }
-  tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(frameTileOrTextWidth,g_UiWindowTextureSource);
+  tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(frameTileOrTextWidth,g_UiWindowTextureSource);
   tileStart = tileSizeOrEndCapSize.logicalHeightPixels;
   tileEnd = tileSizeOrEndCapSize.logicalWidthPixels;
   rightEdgeOrTextY = (control->selectable).base.layoutWidth - tileEnd;
   bottomEdgeOrTextX = (control->selectable).base.layoutHeight - tileStart;
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,(control->selectable).base.left,frameTileOrTextWidth,
              g_UiWindowTextureSource,g_FramebufferAccess);
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,rightEdgeOrTextY + (control->selectable).base.left,frameTileOrTextWidth + 1,
              g_UiWindowTextureSource,g_FramebufferAccess);
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + (control->selectable).base.top,(control->selectable).base.left,frameTileOrTextWidth + 2,
              g_UiWindowTextureSource,g_FramebufferAccess);
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeOrTextX + (control->selectable).base.top,rightEdgeOrTextY + (control->selectable).base.left,
              frameTileOrTextWidth + 3,g_UiWindowTextureSource,g_FramebufferAccess);
   UiWindow_BlitTiledHorizontalEdge
@@ -2384,22 +2384,22 @@ UiWindowControl_DrawFramedTextAndChrome
     styleOffsetOrIconY = (int)(textStyle << 0x10) >> 0x18;
     focusCoordOrIconX = styleOffsetOrIconY + -3 + bottomEdgeOrTextX;
     styleOffsetOrIconY = styleOffsetOrIconY + -1 + rightEdgeOrTextY;
-    (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,0x7f000000,0x86,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(0x88,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x86,g_UiWindowTextureSource);
     focusTileX = focusCoordOrIconX + focusTileSize.logicalWidthPixels;
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
     focusCoordOrIconX = ((focusCoordOrIconX + 6) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
-    (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,0x7f000000,0x88,
                g_UiWindowTextureSource,g_FramebufferAccess);
     if (clipLeft < focusCoordOrIconX) {
       focusCoordOrIconX = clipLeft;
     }
     do {
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,focusCoordOrIconX,clipBottom,clipRight,styleOffsetOrIconY,focusTileX,0x7f000000,0x87,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       focusTileX = focusTileX + focusTileSize.logicalWidthPixels;
@@ -2407,28 +2407,28 @@ UiWindowControl_DrawFramedTextAndChrome
     focusCoordOrIconX = rightEdgeOrTextY + -1;
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,rightEdgeOrTextY,bottomEdgeOrTextX);
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomEdgeOrTextX + -3,0x86,g_UiWindowTextureSource,
                g_FramebufferAccess);
-    tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(0x88,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x86,g_UiWindowTextureSource);
     rightEdgeOrTextY = bottomEdgeOrTextX + -3 + focusTileSize.logicalWidthPixels;
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
     bottomEdgeOrTextX = ((bottomEdgeOrTextX + 3) - tileSizeOrEndCapSize.logicalWidthPixels) + frameTileOrTextWidth;
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomEdgeOrTextX,0x88,g_UiWindowTextureSource,
                g_FramebufferAccess);
     if (clipLeft < bottomEdgeOrTextX) {
       bottomEdgeOrTextX = clipLeft;
     }
     do {
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,bottomEdgeOrTextX,clipBottom,clipRight,focusCoordOrIconX,rightEdgeOrTextY,0x87,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       rightEdgeOrTextY = rightEdgeOrTextY + focusTileSize.logicalWidthPixels;
     } while (rightEdgeOrTextY < bottomEdgeOrTextX);
   }
-  tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)
+  tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize
                      (control->iconSubresource,control->iconTextureSource);
   focusCoordOrIconX = (((uint32_t)(control->selectable).base.layoutWidth >> 2) - tileSizeOrEndCapSize.logicalWidthPixels) + (control->selectable).base.left;
   styleOffsetOrIconY = ((int)((control->selectable).base.layoutHeight - tileSizeOrEndCapSize.logicalHeightPixels) >> 1) + (control->selectable).base.top;
@@ -2446,13 +2446,13 @@ UiWindowControl_DrawFramedTextAndChrome
     bottomEdgeOrTextX = focusCoordOrIconX + iconOffsetX;
     rightEdgeOrTextY = styleOffsetOrIconY + iconOffsetY;
   }
-  (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+  g_GraphicsTextureSourceBlitModulatedSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,rightEdgeOrTextY,bottomEdgeOrTextX,0x7f000000,control->iconSubresource,
              control->iconTextureSource,g_FramebufferAccess);
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,control->iconSubresource,
              control->iconTextureSource,g_FramebufferAccess);
-  (*g_GraphicsFramebufferEndAccess)();
+  g_GraphicsFramebufferEndAccess();
   return;
 }
 
@@ -2493,12 +2493,12 @@ UiTextButtonControl_NonRightPress
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) == 0) {
-      pixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      pixelHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,0x46,g_UiWindowTextureSource);
       if (pixelHit) {
         if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
-          (*g_SoundPlayOneShot)
+          g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
                      (DirectSoundVoiceSet *)control->activationSoundId);
         }
@@ -2512,12 +2512,12 @@ UiTextButtonControl_NonRightPress
       }
     }
     else {
-      pixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      pixelHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,0x40,g_UiWindowTextureSource);
       if (pixelHit) {
         if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
-          (*g_SoundPlayOneShot)
+          g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
                      (DirectSoundVoiceSet *)control->activationSoundId);
         }
@@ -2557,7 +2557,7 @@ UiTextButtonControl_KeyboardEventCf
      (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
@@ -2571,7 +2571,7 @@ UiTextButtonControl_KeyboardEventCf
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if ((((control->selectable).stateFlags & 0x80) != 0) && (control->activationSoundId != 0)) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
       }
@@ -2630,7 +2630,7 @@ UiImagePanelControl_DrawAlignedTextureAndChildren
     drawX = (control->base).left;
     drawY = (control->base).top;
     if (control->textureSource != (GraphicsTextureSourceAsset *)0x0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
                         (control->subresource,control->textureSource);
       slackWidth = (control->base).layoutWidth - textureSize.logicalWidthPixels;
       slackHeight = (control->base).layoutHeight - textureSize.logicalHeightPixels;
@@ -2646,26 +2646,26 @@ UiImagePanelControl_DrawAlignedTextureAndChildren
       if ((control->panelFlags & 4) != 0) {
         drawY = drawY + (slackHeight >> 1);
       }
-      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
         if ((control->panelFlags & 0x10) != 0) {
-          (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+          g_GraphicsTextureSourceBlitModulatedSourceAlpha
                     (clippedBottom,clippedRight,clippedTop,clippedLeft,control->shadowOffsetY + drawY,
                      control->shadowOffsetX + drawX,0x7f000000,control->subresource,
                      control->textureSource,g_FramebufferAccess);
         }
         if ((control->panelFlags & 0x80) == 0) {
-          (*g_GraphicsTextureSourceBlitSourceAlpha)
+          g_GraphicsTextureSourceBlitSourceAlpha
                     (clippedBottom,clippedRight,clippedTop,clippedLeft,drawY,drawX,control->subresource,
                      control->textureSource,g_FramebufferAccess);
         }
         else {
-          (*g_GraphicsTextureSourceStretchDirectColorBilinear)
+          g_GraphicsTextureSourceStretchDirectColorBilinear
                     ((control->base).layoutHeight,(control->base).layoutWidth,(control->base).top,(control->base).left,
                      control->subresource,control->textureSource,
                      g_FramebufferAccess);
         }
-        (*g_GraphicsFramebufferEndAccess)();
+        g_GraphicsFramebufferEndAccess();
       }
       UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
     }
@@ -2708,7 +2708,7 @@ UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,U
       if (control->textureSource == (GraphicsTextureSourceAsset *)0x0) {
         return hitNode;
       }
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
                         (control->subresource,control->textureSource);
       slackWidth = (control->base).layoutWidth - textureSize.logicalWidthPixels;
       slackHeight = (control->base).layoutHeight - textureSize.logicalHeightPixels;
@@ -2724,7 +2724,7 @@ UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,U
       if ((control->panelFlags & 4) != 0) {
         drawY = drawY + (slackHeight >> 1);
       }
-      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,drawY,drawX,control->subresource,
                          control->textureSource);
       if (!opaqueHit) {
@@ -2767,12 +2767,12 @@ UiFillPanelControl_DrawColorOrTiledTextureAndChildren
   tileLeft = (control->base).left;
   tileTop = (control->base).top;
   if (control->textureSource == (GraphicsTextureSourceAsset *)0x0) {
-    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
-      (*g_GraphicsFramebufferFillRectArgb)
+      g_GraphicsFramebufferFillRectArgb
                 (clipTop,clipLeft,clipBottom,clipRight,controlBottom,controlRight,tileTop,tileLeft,control->subresourceOrFillArgb,
                  g_FramebufferAccess);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   else {
@@ -2782,22 +2782,22 @@ UiFillPanelControl_DrawColorOrTiledTextureAndChildren
     if (controlBottom < clipTop) {
       clipTop = controlBottom;
     }
-    tileSize = (*g_GraphicsTextureSourceGetLogicalSize)
+    tileSize = g_GraphicsTextureSourceGetLogicalSize
                       (control->subresourceOrFillArgb,control->textureSource);
     tileHeight = tileSize.logicalHeightPixels;
     tileWidth = tileSize.logicalWidthPixels;
-    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       /* Tile rows left to right (fill flag 1), then top to bottom (fill flag 2). */
       while( true ) {
         if ((control->fillFlags & 0x10) != 0) {
-          (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+          g_GraphicsTextureSourceBlitModulatedSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,
                      control->shadowOffsetY + tileTop,
                      control->shadowOffsetX + tileLeft,0x7f000000,control->subresourceOrFillArgb,
                      control->textureSource,g_FramebufferAccess);
         }
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,tileTop,tileLeft,control->subresourceOrFillArgb,
                    control->textureSource,g_FramebufferAccess);
         if ((control->fillFlags & 1) != 0) {
@@ -2807,7 +2807,7 @@ UiFillPanelControl_DrawColorOrTiledTextureAndChildren
         }
         if (((control->fillFlags & 2) == 0) || (tileTop = tileTop + tileHeight, clipTop <= tileTop)) break;
       }
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
@@ -2828,7 +2828,7 @@ void UiTextEditControl_EndSelection
   control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
   if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
      (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
   }
   return;
 }
@@ -2967,7 +2967,7 @@ UiSingleLineTextControl_DrawClipped
       lineWidth = -lineWidth;
     }
     lineWidth = textExtent.widthPixels + lineWidth;
-    tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    tileSize = g_GraphicsTextureSourceGetLogicalSize(0x86,g_UiWindowTextureSource);
     streamCapWidthOrChild = (UiNodeBase *)tileSize.logicalWidthPixels;
     if (control->focusChild != (UiNodeBase *)0x0) {
       lineWidth = lineWidth + (int)streamCapWidthOrChild * 2;
@@ -2985,28 +2985,28 @@ UiSingleLineTextControl_DrawClipped
       alignOffsetX = (control->base).layoutWidth - lineWidth >> 1;
     }
     lineWidth = lineWidth + -1;
-    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       restoredClipLeft = clipLeft;
       if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
         tileX = alignOffsetX + 1 + (control->base).left;
         frameTopOrTileX = alignOffsetY + 1 + (control->base).top;
         rightCapXOrFrameTop = lineWidth + tileX;
-        (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+        g_GraphicsTextureSourceBlitModulatedSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,0x7f000000,0x86,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         rightCapXOrFrameTop = rightCapXOrFrameTop - (int)streamCapWidthOrChild;
-        (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+        g_GraphicsTextureSourceBlitModulatedSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,rightCapXOrFrameTop,0x7f000000,0x88,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         tileX = (int)&streamCapWidthOrChild->nextSibling + tileX;
         if (rightCapXOrFrameTop <= clipLeft) {
           clipLeft = rightCapXOrFrameTop;
         }
-        tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+        tileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
         capWidthOrStream = streamCapWidthOrChild;
         do {
-          (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+          g_GraphicsTextureSourceBlitModulatedSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,0x7f000000,0x87,
                      g_UiWindowTextureSource,g_FramebufferAccess);
           tileX = tileX + tileSize.logicalWidthPixels;
@@ -3015,11 +3015,11 @@ UiSingleLineTextControl_DrawClipped
         rightCapXOrFrameTop = alignOffsetY + (control->base).top;
         streamCapWidthOrChild = capWidthOrStream;
         restoredClipLeft = originalClipLeft;
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,0x86,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         lineWidth = (lineWidth + frameTopOrTileX) - (int)capWidthOrStream;
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,lineWidth,0x88,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         frameTopOrTileX = (int)&capWidthOrStream->nextSibling + frameTopOrTileX;
@@ -3027,9 +3027,9 @@ UiSingleLineTextControl_DrawClipped
         if (lineWidth <= originalClipLeft) {
           clipLeft = lineWidth;
         }
-        tileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+        tileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
         do {
-          (*g_GraphicsTextureSourceBlitSourceAlpha)
+          g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,0x87,g_UiWindowTextureSource,
                      g_FramebufferAccess);
           frameTopOrTileX = frameTopOrTileX + tileSize.logicalWidthPixels;
@@ -3066,7 +3066,7 @@ UiSingleLineTextControl_DrawClipped
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,textStyle | control->styleOverride,
                  (uint16_t *)capWidthOrStream,alignOffsetY + (control->base).top,alignOffsetX + (control->base).left);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = streamCapWidthOrChild;
@@ -3117,7 +3117,7 @@ UiTextListControl_DrawRowsAndSelection
     }
     lastRowSlot = control->rowTextSlots + lastVisibleRow;
     if (rowSlot <= lastRowSlot) {
-      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
         do {
           if (rowSlot == control->selectedRowSlot) {
@@ -3128,15 +3128,15 @@ UiTextListControl_DrawRowsAndSelection
                         (clipTop,clipLeft,clipBottom,clipRight,0x82,highlightWidth,rowTop,0,control);
             }
             else {
-              capSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
+              capSize = g_GraphicsTextureSourceGetLogicalSize(0x83,g_UiWindowTextureSource);
               highlightWidth = highlightWidth - capSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
                         (clipTop,clipLeft,clipBottom,clipRight,0x84,highlightWidth,rowTop,
                          capSize.logicalWidthPixels,control);
-              (*g_GraphicsTextureSourceBlitSourceAlpha)
+              g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
                          (control->base).left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
-              (*g_GraphicsTextureSourceBlitSourceAlpha)
+              g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
                          highlightWidth + (control->base).left,0x85,g_UiWindowTextureSource,
                          g_FramebufferAccess);
@@ -3148,7 +3148,7 @@ UiTextListControl_DrawRowsAndSelection
           rowSlot = rowSlot + 1;
           rowTop = rowTop + control->rowHeight;
         } while (rowSlot <= lastRowSlot);
-        (*g_GraphicsFramebufferEndAccess)();
+        g_GraphicsFramebufferEndAccess();
       }
     }
   }
@@ -3194,7 +3194,7 @@ UiTextListControl_SelectRowFromPointer
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
            (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+          g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
         }
       }
     }
@@ -3237,7 +3237,7 @@ UiTextListControl_HandleKeyboardNavigationAndSearchCf
     if (remainingRows != 0) {
       do {
         candidateSlot = slotCursorOrSelection;
-        delegatedOrMismatch = (*g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags)
+        delegatedOrMismatch = g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags
                           (keyCode,*(uint32_t *)*candidateSlot);
         if (!delegatedOrMismatch) break;
         remainingRows = remainingRows - 1;
@@ -3293,7 +3293,7 @@ UiTextListControl_HandleKeyboardNavigationAndSearchCf
   if (slotCursorOrSelection != previousSelectedSlot) {
     if (((control->listStateFlags & UI_TEXT_LIST_PLAY_SELECTION_SOUND) != 0) &&
        (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     rowIndexOrTopOrPulse = ((uint32_t)((int)slotCursorOrSelection - (int)control->rowTextSlots) >> 2) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
@@ -3405,7 +3405,7 @@ UiPointerList_InitializeMeasuredTextRows
   (control->base).rightOffset = maximumTextWidthPixels + 6;
   (control->base).leftOffset = 0;
   (control->base).topOffset = 0;
-  (*parentVtable->layout)(parentNode);
+  parentVtable->layout(parentNode);
   return;
 }
 
@@ -3429,7 +3429,7 @@ UiWrappedTextControl_DrawClipped
   bool framebufferUnavailable;
   TextResolveResult resolvedText;
   
-  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (!framebufferUnavailable) {
     if ((control->labelFlags & 0x40) == 0) {
       control->wrapWidth = (control->base).layoutWidth;
@@ -3457,7 +3457,7 @@ UiWrappedTextControl_DrawClipped
               (clipTop,clipLeft,clipBottom,clipRight,(textStyle | packedStyleOverride) & 0xffff0000,
                commandStream,control->wrapWidth,(control->base).top,(control->base).left
               );
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
   return;
@@ -3491,86 +3491,86 @@ UiNineSlicePanelControl_DrawTextureFrameAndChildren
   TextureSizeResult slice7Size;
   
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       baseTextureFrame = control->firstFrameSubresource;
-      slice0Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice0Size = g_GraphicsTextureSourceGetLogicalSize
                         (baseTextureFrame,control->textureSource);
-      slice1Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice1Size = g_GraphicsTextureSourceGetLogicalSize
                         (baseTextureFrame + 1,
                          control->textureSource);
-      slice2Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice2Size = g_GraphicsTextureSourceGetLogicalSize
                         (baseTextureFrame + 2,
                          control->textureSource);
-      slice3Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice3Size = g_GraphicsTextureSourceGetLogicalSize
                          (baseTextureFrame + 3,
                           control->textureSource);
-      slice4Or5Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice4Or5Size = g_GraphicsTextureSourceGetLogicalSize
                          (baseTextureFrame + 4,
                           control->textureSource);
       slice4Width = slice4Or5Size.logicalWidthPixels;
-      slice4Or5Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice4Or5Size = g_GraphicsTextureSourceGetLogicalSize
                          (baseTextureFrame + 5,
                           control->textureSource);
-      slice6Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice6Size = g_GraphicsTextureSourceGetLogicalSize
                          (baseTextureFrame + 6,
                           control->textureSource);
-      slice7Size = (*g_GraphicsTextureSourceGetLogicalSize)
+      slice7Size = g_GraphicsTextureSourceGetLogicalSize
                          (baseTextureFrame + 7,
                           control->textureSource);
       leftEdgeX = (control->base).left;
       topEdgeY = (control->base).top;
       bottomEdgeY = (control->base).bottom;
       rightEdgeX = (control->base).right - slice1Size.logicalWidthPixels;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,topEdgeY,leftEdgeX,baseTextureFrame,
                  control->textureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,topEdgeY,rightEdgeX,
                  baseTextureFrame + 1,
                  control->textureSource,g_FramebufferAccess);
       leftEdgeX = leftEdgeX + slice0Size.logicalWidthPixels;
-      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
+      g_GraphicsTextureSourceBlitTiledSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightEdgeX,topEdgeY,leftEdgeX,
                  baseTextureFrame + 2,
                  control->textureSource,g_FramebufferAccess);
       leftEdgeX = leftEdgeX - slice0Size.logicalWidthPixels;
       topEdgeY = topEdgeY + slice0Size.logicalHeightPixels;
       bottomEdgeY = bottomEdgeY - slice4Or5Size.logicalHeightPixels;
-      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
+      g_GraphicsTextureSourceBlitTiledSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,-0x80000000,topEdgeY,leftEdgeX,
                  baseTextureFrame + 3,
                  control->textureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,leftEdgeX,
                  baseTextureFrame + 5,
                  control->textureSource,g_FramebufferAccess);
       rightEdgeX = (rightEdgeX + slice1Size.logicalWidthPixels) - slice4Width;
       topEdgeY = (topEdgeY - slice0Size.logicalHeightPixels) + slice1Size.logicalHeightPixels;
       bottomEdgeY = (bottomEdgeY + slice4Or5Size.logicalHeightPixels) - slice6Size.logicalHeightPixels;
-      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
+      g_GraphicsTextureSourceBlitTiledSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,-0x80000000,topEdgeY,rightEdgeX,
                  baseTextureFrame + 4,control->textureSource,
                  g_FramebufferAccess);
       rightEdgeX = (rightEdgeX + slice4Width) - slice6Size.logicalWidthPixels;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,rightEdgeX,
                  baseTextureFrame + 6,
                  control->textureSource,g_FramebufferAccess);
       leftEdgeX = leftEdgeX + slice4Or5Size.logicalWidthPixels;
       bottomEdgeY = (bottomEdgeY + slice6Size.logicalHeightPixels) - slice7Size.logicalHeightPixels;
-      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
+      g_GraphicsTextureSourceBlitTiledSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightEdgeX,bottomEdgeY,leftEdgeX,
                  baseTextureFrame + 7,
                  control->textureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitTiledSourceAlpha)
+      g_GraphicsTextureSourceBlitTiledSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY,
                  (rightEdgeX + slice6Size.logicalWidthPixels) - slice4Width,
                  (topEdgeY - slice1Size.logicalHeightPixels) + slice2Size.logicalHeightPixels,
                  (leftEdgeX - slice4Or5Size.logicalWidthPixels) + slice3Size.logicalWidthPixels,
                  control->centerSubresource,control->textureSource,
                  g_FramebufferAccess);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
@@ -3633,7 +3633,7 @@ UiFormattedContainer_DrawClipped
   int tertiaryMarkerOffset;
   
   if ((control->limitValue == 0) ||
-     (framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)(), framebufferUnavailable))
+     (framebufferUnavailable = g_GraphicsFramebufferBeginAccess(), framebufferUnavailable))
   goto UiFormattedContainer_RefreshNumericText;
   if (clipRight < (control->base).left) {
     clipRight = (control->base).left;
@@ -3650,16 +3650,16 @@ UiFormattedContainer_DrawClipped
   textureFrame = control->firstFrameSubresource;
   barStartX = (control->base).left;
   barEndOrSpanOrMarkerX = (control->base).right;
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barStartX,textureFrame,
              control->textureSource,g_FramebufferAccess);
-  frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+  frameSize = g_GraphicsTextureSourceGetLogicalSize
                      (textureFrame,control->textureSource);
   barStartX = barStartX + frameSize.logicalWidthPixels;
-  frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+  frameSize = g_GraphicsTextureSourceGetLogicalSize
                      (textureFrame + 2,control->textureSource);
   barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - frameSize.logicalWidthPixels;
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barEndOrSpanOrMarkerX,textureFrame + 2,
              control->textureSource,g_FramebufferAccess);
   if (barStartX < barEndOrSpanOrMarkerX) {
@@ -3704,10 +3704,10 @@ UiFormattedContainer_DrawClipped
     }
     textureFrame = variantOrFillEnd + control->firstFrameSubresource;
     if (control->currentValue != 0) {
-      frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      frameSize = g_GraphicsTextureSourceGetLogicalSize
                          (textureFrame,control->textureSource);
       barStartX = barStartX - frameSize.logicalWidthPixels;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barStartX,textureFrame,
                  control->textureSource,g_FramebufferAccess);
       barStartX = barStartX + frameSize.logicalWidthPixels;
@@ -3715,38 +3715,38 @@ UiFormattedContainer_DrawClipped
       GraphicsTextureSource_BlitTiledSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,variantOrFillEnd,(control->base).top,barStartX,
                  textureFrame + 1,control->textureSource,g_FramebufferAccess);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,variantOrFillEnd,textureFrame + 2,
                  control->textureSource,g_FramebufferAccess);
     }
     barEndOrSpanOrMarkerX = barStartX + (int)(((int64_t)secondaryValue * (int64_t)barEndOrSpanOrMarkerX) / (int64_t)scaleRange);
     textureFrame = control->firstFrameSubresource + 0x15;
-    frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+    frameSize = g_GraphicsTextureSourceGetLogicalSize
                        (textureFrame,control->textureSource);
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
                barEndOrSpanOrMarkerX - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
                control->textureSource,g_FramebufferAccess);
     if ((control->gaugeFlags & 2) != 0) {
       textureFrame = control->firstFrameSubresource + 0x15;
-      frameSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      frameSize = g_GraphicsTextureSourceGetLogicalSize
                          (textureFrame,control->textureSource);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
                  (barStartX + tertiaryMarkerOffset) - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
                  control->textureSource,g_FramebufferAccess);
     }
   }
-  (*g_GraphicsFramebufferEndAccess)();
+  g_GraphicsFramebufferEndAccess();
 UiFormattedContainer_RefreshNumericText:
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->currentValue,
              control->currentValueTextUtf16);
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->limitValue,
              control->limitValueTextUtf16);
   if ((control->gaugeFlags & 2) != 0) {
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,((UiFormattedContainerWithMarker *)control)->markerValue,
                ((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16);
   }
@@ -3799,7 +3799,7 @@ UiArmyMetricsPanel_DrawTextureMetricsAndChildren
     drawX = (control->base).base.left;
     drawY = (control->base).base.top;
     if ((control->base).textureSource != (GraphicsTextureSourceAsset *)0x0) {
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
                         ((control->base).subresource,(control->base).textureSource);
       slackWidth = (control->base).base.layoutWidth - textureSize.logicalWidthPixels;
       slackHeight = (control->base).base.layoutHeight - textureSize.logicalHeightPixels;
@@ -3815,12 +3815,12 @@ UiArmyMetricsPanel_DrawTextureMetricsAndChildren
       if (((control->base).panelFlags & 4) != 0) {
         drawY = drawY + (slackHeight >> 1);
       }
-      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clippedBottom,clippedRight,clippedTop,clippedLeft,drawY,drawX,(control->base).subresource,
                    (control->base).textureSource,g_FramebufferAccess);
-        (*g_GraphicsFramebufferEndAccess)();
+        g_GraphicsFramebufferEndAccess();
         savedPanelData = g_SelectionPanelData;
         savedTextureSource = g_SelectionPanelTextureSource;
         g_SelectionPanelTextureSource = savedTextureSource;
@@ -3858,7 +3858,7 @@ UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
   
   if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (control->textureSource != (GraphicsTextureSourceAsset *)0x0)) {
-    framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+    framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       SoftwareTexture_BilinearBlendScaleSubresources
                 ((control->base).layoutHeight,(control->base).layoutWidth,(control->base).top,(control->base).left,
@@ -3866,7 +3866,7 @@ UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
                  control->incomingSubresource,
                  control->outgoingSubresource,(int *)control->textureSource,
                  (int *)g_FramebufferAccess);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
@@ -3999,7 +3999,7 @@ UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
     outputCursor = control->textBuffer + 1;
   }
   if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,remainingValue,outputCursor);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,remainingValue,outputCursor);
   }
   else {
     highBitOrDigitsLeft = 0x1f;
@@ -4119,7 +4119,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTooltip_PrepareTargetText(UiNodeBase 
       commandStream = resolvedText.text;
     }
     RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
-    (*g_GraphicsTextureSourceGetLogicalSize)(0xbc,g_UiWindowTextureSource);
+    g_GraphicsTextureSourceGetLogicalSize(0xbc,g_UiWindowTextureSource);
     UiRootStack_InvalidateAll();
   }
   return;
@@ -4205,7 +4205,7 @@ UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditContro
   
   targetOffsetX = (pointerX - (control->base).left) + control->horizontalScrollPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
-    decorationSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+    decorationSize = g_GraphicsTextureSourceGetLogicalSize(0x6a,g_UiWindowTextureSource);
     targetOffsetX = targetOffsetX - decorationSize.logicalWidthPixels;
   }
   measuredPrefixWidthPixels = 0;
@@ -4236,7 +4236,7 @@ UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
   bool pathRejected;
   bool validatorRejected;
   
-  validatorRejected = (*g_FileSystemValidateDos83Path)
+  validatorRejected = g_FileSystemValidateDos83Path
                           (control->editStateFlags >> 1 & 3,(uint8_t *)control->pathBuffer);
   if (validatorRejected) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
@@ -4322,11 +4322,11 @@ UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
     overflowOrContentWidth = overflowOrContentWidth + glyphSize.width;
   }
   fullTextWidth = UiTextEditControl_MeasurePrefixWidth(0x10,control);
-  decorationSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x8a,g_UiWindowTextureSource);
+  decorationSize = g_GraphicsTextureSourceGetLogicalSize(0x8a,g_UiWindowTextureSource);
   cursorWidthOrMinScroll = overflowOrContentWidth + decorationSize.logicalWidthPixels;
   overflowOrContentWidth = fullTextWidth + decorationSize.logicalWidthPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
-    decorationSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x6a,g_UiWindowTextureSource);
+    decorationSize = g_GraphicsTextureSourceGetLogicalSize(0x6a,g_UiWindowTextureSource);
     overflowOrContentWidth = overflowOrContentWidth + decorationSize.logicalWidthPixels * 2;
     cursorWidthOrMinScroll = cursorWidthOrMinScroll + decorationSize.logicalWidthPixels * 2;
   }
@@ -4372,7 +4372,7 @@ UiTextButtonControl_DrawClipped
   int baselineY;
   int drawX;
   
-  framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+  framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
   if (framebufferUnavailable) {
     return;
   }
@@ -4386,15 +4386,15 @@ UiTextButtonControl_DrawClipped
   }
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
     if (((control->selectable).stateFlags & 0x400) != 0) {
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
       return;
     }
     skinFrame = skinFrame + 1;
   }
-  (*g_GraphicsTextureSourceBlitSourceAlpha)
+  g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
              (control->selectable).base.left,skinFrame,g_UiWindowTextureSource,g_FramebufferAccess);
-  skinSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(skinFrame,g_UiWindowTextureSource);
+  skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(skinFrame,g_UiWindowTextureSource);
   textXOrFocusEnd = skinSizeOrEndCapSize.logicalWidthPixels + 6;
   resolvedText = TextResource_Resolve(control->textResourceId);
   commandStream = resolvedText.text;
@@ -4429,22 +4429,22 @@ UiTextButtonControl_DrawClipped
     textYOrTileX = textYOrTileX + (control->selectable).base.top;
     baselineY = textXOrFocusEnd;
     drawX = textYOrTileX;
-    (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd + -2,0x7f000000,0x86,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    skinSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(0x88,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x86,g_UiWindowTextureSource);
     focusTileXOrTop = textXOrFocusEnd + -2 + focusTileSize.logicalWidthPixels;
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
     textXOrFocusEnd = ((textXOrFocusEnd + 4) - skinSizeOrEndCapSize.logicalWidthPixels) + textExtent.widthPixels;
-    (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+    g_GraphicsTextureSourceBlitModulatedSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd,0x7f000000,0x88,
                g_UiWindowTextureSource,g_FramebufferAccess);
     if (clipLeft < textXOrFocusEnd) {
       textXOrFocusEnd = clipLeft;
     }
     do {
-      (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
+      g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,textXOrFocusEnd,clipBottom,clipRight,textYOrTileX,focusTileXOrTop,0x7f000000,0x87,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       focusTileXOrTop = focusTileXOrTop + focusTileSize.logicalWidthPixels;
@@ -4452,28 +4452,28 @@ UiTextButtonControl_DrawClipped
     focusTileXOrTop = drawX + -1;
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,drawX,baselineY);
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,baselineY + -3,0x86,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    skinSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x88,g_UiWindowTextureSource);
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x86,g_UiWindowTextureSource);
+    skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(0x88,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x86,g_UiWindowTextureSource);
     textYOrTileX = baselineY + -3 + focusTileSize.logicalWidthPixels;
-    focusTileSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x87,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(0x87,g_UiWindowTextureSource);
     textXOrFocusEnd = ((baselineY + 3) - skinSizeOrEndCapSize.logicalWidthPixels) + textExtent.widthPixels;
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,textXOrFocusEnd,0x88,g_UiWindowTextureSource,
                g_FramebufferAccess);
     if (clipLeft < textXOrFocusEnd) {
       textXOrFocusEnd = clipLeft;
     }
     do {
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,textXOrFocusEnd,clipBottom,clipRight,focusTileXOrTop,textYOrTileX,0x87,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       textYOrTileX = textYOrTileX + focusTileSize.logicalWidthPixels;
     } while (textYOrTileX < textXOrFocusEnd);
   }
-  (*g_GraphicsFramebufferEndAccess)();
+  g_GraphicsFramebufferEndAccess();
   return;
 }
 

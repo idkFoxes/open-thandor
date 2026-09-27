@@ -1546,7 +1546,7 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
     swapMergeDirection = bitOrPlayerCountOrSlot != 0;
   }
   else {
-    randomValue = (*g_RandomGeneratorState.next)();
+    randomValue = g_RandomGeneratorState.next();
     swapMergeDirection = (randomValue & 0x2000) == 0;
   }
   if (swapMergeDirection) {

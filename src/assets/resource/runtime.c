@@ -53,16 +53,16 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
   source[0xd] = 0;
   source[0xe] = 1;
   source[0xf] = 0;
-  packedTimeOrDate = (*g_LocaleGetPackedCurrentTime)();
+  packedTimeOrDate = g_LocaleGetPackedCurrentTime();
   *(uint32_t *)(source + 0x10) = packedTimeOrDate;
   *(uint32_t *)(source + 0x18) = packedTimeOrDate;
   *(uint32_t *)(source + 0x20) = packedTimeOrDate;
-  packedTimeOrDate = (*g_LocaleGetPackedCurrentDate)();
+  packedTimeOrDate = g_LocaleGetPackedCurrentDate();
   *(uint32_t *)(source + 0x14) = packedTimeOrDate;
   *(uint32_t *)(source + 0x1c) = packedTimeOrDate;
   *(uint32_t *)(source + 0x24) = packedTimeOrDate;
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(source + 0x30));
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(source + 0x70));
+  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(source + 0x30));
+  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(source + 0x70));
   source[0x100] = 0;
   source[0xb0] = 0;
   source[0xb1] = 0;
@@ -105,44 +105,44 @@ ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *pat
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+    openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
     if (openResult.failed) {
-      openResult = (*g_FileSystemOpenCf)(0,path);
+      openResult = g_FileSystemOpenCf(0,path);
       fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
       if (openResult.failed) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
-    sizeResult = (*g_FileSystemGetSizeCf)(fileOrPackageResult.bufferOrError);
+    sizeResult = g_FileSystemGetSizeCf(fileOrPackageResult.bufferOrError);
     bytes = (uint8_t *)sizeResult.sizeOrError;
     sizeOrFailureCode = bytes;
     if (!sizeResult.failed) {
-      allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
+      allocResult = g_MemoryApi.alloc((uint32_t)bytes);
       fileLoadResult.bufferOrError = (void *)allocResult.payloadOrError;
       failureByteCount = (uint32_t)bytes;
       if (allocResult.failed) {
-        (*g_WideNumberFormatUtf16)
+        g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
         sizeOrFailureCode = (uint8_t *)0x5;
       }
       else {
-        readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
+        readResult = g_FileSystemReadExactCf((FileIoByteCount)bytes,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
         sizeOrFailureCode = (uint8_t *)readResult.valueOrError;
         if (!readResult.failed) {
-          (*g_FileSystemClose)(fileOrPackageResult.bufferOrError);
+          g_FileSystemClose(fileOrPackageResult.bufferOrError);
           fileLoadResult.byteCount = (uint32_t)bytes;
           fileLoadResult.failed = false;
           return fileLoadResult;
         }
-        (*g_MemoryApi.free)(fileLoadResult.bufferOrError);
+        g_MemoryApi.free(fileLoadResult.bufferOrError);
       }
     }
-    (*g_FileSystemClose)(fileOrPackageResult.bufferOrError);
+    g_FileSystemClose(fileOrPackageResult.bufferOrError);
     fileOrPackageResult.bufferOrError = sizeOrFailureCode;
   }
   else {
     fileOrPackageResult.bufferOrError = (uint8_t *)0x5;
     if (entry->packedSize < 0x800001) {
-      allocResult = (*g_MemoryApi.alloc)(entry->unpackedSize);
+      allocResult = g_MemoryApi.alloc(entry->unpackedSize);
       fileOrPackageResult.bufferOrError = (uint8_t *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         decodeResult = Package_DecodeEntryInto(fileOrPackageResult.bufferOrError,entry,findResult.fileHandle);
@@ -152,7 +152,7 @@ ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *pat
           return fileOrPackageResult;
         }
         sizeOrFailureCode = (uint8_t *)decodeResult.valueOrError;
-        (*g_MemoryApi.free)(fileOrPackageResult.bufferOrError);
+        g_MemoryApi.free(fileOrPackageResult.bufferOrError);
         fileOrPackageResult.bufferOrError = sizeOrFailureCode;
       }
     }
@@ -172,7 +172,7 @@ Resource_Load_ReturnOpenAllocationOrDecodeResult:
 void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *allocation)
 
 {
-  (*g_MemoryApi.free)(allocation);
+  g_MemoryApi.free(allocation);
   return;
 }
 

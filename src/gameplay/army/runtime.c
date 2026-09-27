@@ -1493,7 +1493,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,uint16_t *graphicsBas
   ArmyPreviewTextureResult previewResult;
   ArmyRuntimeInitResult finalResult;
   
-  allocResult = (*g_MemoryApi.alloc)(0x48000);
+  allocResult = g_MemoryApi.alloc(0x48000);
   armySlot1 = (ArmyRuntimeSlot *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_ArmyRuntimeRebaseBaseMinusOne = (void *)((int)&armySlot1[-1].selectionMetric5 + 3);
@@ -1547,7 +1547,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,uint16_t *graphicsBas
         }
         ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
                   (frontendPlayerRuntimeId,(ArmyGraphicsAssetAddress32)textureSourceAsset);
-        textureSetResult = (*g_GraphicsCreateTextureSet)(textureSourceAsset);
+        textureSetResult = g_GraphicsCreateTextureSet(textureSourceAsset);
         loadedTextureSet = textureSetResult.textureSet;
         if (textureSetResult.failed) {
           LOCK();
@@ -1560,7 +1560,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,uint16_t *graphicsBas
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].textureSet = loadedTextureSet;
         WidePath_SetExtensionCode(0x6c6170,graphicsBasePath);
-        initResult = THANDOR_BITCAST(PaletteAssetResult, ArmyRuntimeInitResult, (*g_GraphicsPaletteAssetLoadPackage)(graphicsBasePath));
+        initResult = THANDOR_BITCAST(PaletteAssetResult, ArmyRuntimeInitResult, g_GraphicsPaletteAssetLoadPackage(graphicsBasePath));
         paletteOrResult = (GraphicsPaletteAsset *)initResult.errorOrValue;
         if (initResult.failed) {
           return initResult;
@@ -2048,17 +2048,17 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntime_ShutdownPoolAndGraphics(voi
   ArmyGraphicsBinding *graphicsBindingCursor;
   ArmyAssetRecordPrefix **assetRegistryCursor;
   
-  (*g_MemoryApi.free)(g_ArmyRuntimeSlots);
+  g_MemoryApi.free(g_ArmyRuntimeSlots);
   g_ArmyRuntimeSlots = (ArmyRuntimeSlot *)0x0;
   graphicsBindingCursor = g_ArmyGraphicsBindings;
   remainingCount = 8;
   do {
     if (graphicsBindingCursor->textureSet != (GraphicsTextureSet *)0x0) {
-      (*g_GraphicsTextureSetReleasePackageCf)(graphicsBindingCursor->textureSet);
+      g_GraphicsTextureSetReleasePackageCf(graphicsBindingCursor->textureSet);
       graphicsBindingCursor->textureSet = (GraphicsTextureSet *)0x0;
     }
     if (graphicsBindingCursor->paletteAsset != (GraphicsPaletteAsset *)0x0) {
-      (*g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage)
+      g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage
                 (graphicsBindingCursor->paletteAsset);
       graphicsBindingCursor->paletteAsset = (GraphicsPaletteAsset *)0x0;
     }
@@ -2070,8 +2070,8 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntime_ShutdownPoolAndGraphics(voi
   do {
     armyAsset = *assetRegistryCursor;
     if (armyAsset != (ArmyAssetRecordPrefix *)0x0) {
-      (*g_MemoryApi.free)((void *)armyAsset[1].rootNodeOffsetOrPointer);
-      (*g_MemoryApi.free)((void *)armyAsset[1].registryId);
+      g_MemoryApi.free((void *)armyAsset[1].rootNodeOffsetOrPointer);
+      g_MemoryApi.free((void *)armyAsset[1].registryId);
       *assetRegistryCursor = (ArmyAssetRecordPrefix *)0x0;
     }
     assetRegistryCursor = assetRegistryCursor + 1;
@@ -2946,7 +2946,7 @@ ArmyRuntime_RenderPreviewTextureCf
     g_ArmyPreviewViewAngle1 = 0;
     g_ArmyPreviewProjectionShift = 4;
     g_ArmyPreviewModelNodePointer = (uint32_t)rootNodeOrSize;
-    offscreenResult = (*g_GraphicsOffscreenRenderModelListToTextureSourceCf)
+    offscreenResult = g_GraphicsOffscreenRenderModelListToTextureSourceCf
                        ((GraphicsOffscreenSceneExtents *)&g_ArmyPreviewPrimaryColorArgb,
                         &g_ArmyPreviewAuxiliaryOrientation0,
                         (GraphicsOffscreenViewParameters *)&g_ArmyPreviewViewOriginXQ12,
@@ -3025,7 +3025,7 @@ ArmyRuntime_RenderPreviewTextureCf
       memory[1].common.ownership.modelNode = (ModelRuntimeNode *)entityRuntime1;
       rootNodeOrSize = (ModelRuntimeNode *)((int)halvedWidth * (int)entityRuntime1 * 4 + 0x220);
       (memory->common).ownership.modelNode = rootNodeOrSize;
-      (*g_MemoryApi.shrinkInPlace)((uint32_t)rootNodeOrSize,memory);
+      g_MemoryApi.shrinkInPlace((uint32_t)rootNodeOrSize,memory);
       successResult.failed = false;
       successResult.previewTexture = (GraphicsTextureResource *)memory;
       return successResult;
@@ -3067,7 +3067,7 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
   uint32_t limitOrFlags;
   
   definitionOrCount = (modelRuntime->definitionOrSavedId).savedIdOrOffset;
-  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[*(int *)(definitionOrCount + 0x4c)])
+  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[*(int *)(definitionOrCount + 0x4c)]
             (worldRuntime,(ArmyRuntimeSlot *)modelRuntime);
   if (((modelRuntime->classState).classStateEC & 0x10) == 0) {
     classStateField = &(modelRuntime->classState).classStateF8;
@@ -3460,7 +3460,7 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
              0x10) != 0)) &&
            (0x10 < g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick)) {
           g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick = 0;
-          (*g_SoundPlayOneShot)
+          g_SoundPlayOneShot
                     (g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,*voiceSetRef);
         }
       }
@@ -4039,7 +4039,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
           WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)modelNodeRuntime);
           ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
           remainingOrDefinition = *THANDOR_BITCAST(ModelRuntimeSlotReferenceOrSavedOffset4, int *, armyRuntime->modelRuntimeOrSavedOffset);
-          (*g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(remainingOrDefinition + 0x278)])
+          g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(remainingOrDefinition + 0x278)]
                     (*(Q12 *)(remainingOrDefinition + 0x54),(modelNodeRuntime->worldTransform).translation.y,
                      (modelNodeRuntime->worldTransform).translation.x,modelNodeRuntime,worldRuntime)
           ;
@@ -4060,7 +4060,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
       goto ArmyRuntime_CreateInstanceFromAsset_ReturnCreationFailure;
     }
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath)
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath)
   ;
   resultOrModelNode = (ModelRuntimeNode *)0x41;
 ArmyRuntime_CreateInstanceFromAsset_ReturnCreationFailure:
@@ -4254,7 +4254,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters
      ((emitterDefinition->shotDefinitionReference168).definition != (ShotDefinition *)0xffffffff)) {
     randomOrPointCount = 0;
     if (*(int *)(emitterDefinition->reserved16C_173 + 4) != 0) {
-      nodeOrWorldX = (*g_RandomGeneratorState.next)();
+      nodeOrWorldX = g_RandomGeneratorState.next();
       randomOrPointCount = nodeOrWorldX % *(uint32_t *)(emitterDefinition->reserved16C_173 + 4);
     }
     shotDefinition = (emitterDefinition->shotDefinitionReference168).definition;
@@ -4282,7 +4282,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters
   goto ArmyRuntime_UpdateTimedShotAndEffectEmitters_UpdateDamageThresholdEffectAndReturn;
   randomOrPointCount = 0;
   if (*(int *)(emitterDefinition->reserved178_187 + 4) != 0) {
-    nodeOrWorldX = (*g_RandomGeneratorState.next)();
+    nodeOrWorldX = g_RandomGeneratorState.next();
     randomOrPointCount = nodeOrWorldX % *(uint32_t *)(emitterDefinition->reserved178_187 + 4);
   }
   (modelRuntime->classState).enabledStateE8 = randomOrPointCount + *(int *)emitterDefinition->reserved178_187;
@@ -4314,7 +4314,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters_UseModelWorldPositionForEffectEmitt
     goto ArmyRuntime_UpdateTimedShotAndEffectEmitters_UseModelWorldPositionForEffectEmitter;
     pointSelector = (modelRuntime->classState).classStateE0;
     if ((emitterDefinition->runtimeValue68 & 1) == 0) {
-      pointSelector = (*g_RandomGeneratorState.next)();
+      pointSelector = g_RandomGeneratorState.next();
     }
     nodeOrWorldX = emitterDefinition->serializedNodeOffsetOrPointer64;
     if (emitterDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
@@ -4349,7 +4349,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters_UseModelWorldPositionForEffectEmitt
     orientationAngle0 = (modelNode1->modelPayload).worldRotationAngle2;
   }
   else {
-    randomValue = (*g_RandomGeneratorState.next)();
+    randomValue = g_RandomGeneratorState.next();
     orientationAngle0 = randomValue & 0xffff;
     orientationAngle1 = 0x4000 - (randomValue >> 0x14);
     orientationAngle2 = orientationAngle0;

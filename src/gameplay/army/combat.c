@@ -685,7 +685,7 @@ ArmyRuntime_EmitDamageThresholdEffect
   }
   randomOffset = 0;
   if (*(int *)(definitionOrRandom + 0x25c) != 0) {
-    randomOrPointX = (*g_RandomGeneratorState.next)();
+    randomOrPointX = g_RandomGeneratorState.next();
     randomOffset = randomOrPointX % *(uint32_t *)(definitionOrRandom + 0x25c);
   }
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
@@ -715,9 +715,9 @@ ArmyRuntime_EmitDamageThresholdEffect
     armyRuntime->selectionMetric4 = armyRuntime->selectionMetric4 + 1;
   }
   effectDefinition = *(EffectDefinition **)(definitionOrRandom + 0x254);
-  definitionOrRandom = (*g_RandomGeneratorState.next)();
+  definitionOrRandom = g_RandomGeneratorState.next();
   randomOffset = definitionOrRandom & 0xffff;
-  randomValue = (*g_RandomGeneratorState.next)();
+  randomValue = g_RandomGeneratorState.next();
   EffectRuntimePool_CreateInstanceFromDefinitionCf
             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),definitionOrRandom >> 0x10,
              (randomValue & 0x1fff) + 0x1fff,randomOffset,worldZQ12,worldXQ12,randomOrPointX,effectDefinition,worldRuntime

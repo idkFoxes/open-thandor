@@ -65,7 +65,7 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
   subresourceIndex = 0;
   do {
     selectedPixelFormat = GraphicsTexture_SelectPixelFormat(subresourceIndex,setSourceAsset);
-    textureAllocation = (*g_MemoryApi.alloc)(0x50);
+    textureAllocation = g_MemoryApi.alloc(0x50);
     newTexture = (GraphicsTextureResource *)textureAllocation.payloadOrError;
     if (!textureAllocation.failed) {
       newTexture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
@@ -86,7 +86,7 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
       registerFailed = GraphicsTexture_RegisterSlot(newTexture);
       if (registerFailed) {
         GraphicsTexture_ReleaseObjects(newTexture);
-        (*g_MemoryApi.free)(newTexture);
+        g_MemoryApi.free(newTexture);
         entryCursor->texture = (GraphicsTextureResource *)0x0;
       }
       else {
@@ -177,7 +177,7 @@ GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
         } while (slotsRemaining != 0);
         *matchedSlot = (GraphicsTextureResource *)0x0;
         GraphicsTexture_ReleaseObjects(texture);
-        (*g_MemoryApi.free)(texture);
+        g_MemoryApi.free(texture);
       }
       entryCursor = entryCursor + 1;
       entriesRemaining = entriesRemaining - 1;
@@ -208,7 +208,7 @@ GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16)
   loadResult = Package_LoadEntry(pathUtf16);
   loadedTextureSource = loadResult.bufferOrError;
   if (!loadResult.failed) {
-    createResult = (*g_GraphicsCreateTextureSet)(loadedTextureSource);
+    createResult = g_GraphicsCreateTextureSet(loadedTextureSource);
     createdTextureSet = createResult.textureSet;
     if (!createResult.failed) {
       return createResult;
@@ -233,7 +233,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSet_ReleasePackage(Graph
 {
   GraphicsTextureSourceAsset *allocation;
   
-  allocation = (*g_GraphicsDestroyTextureSet)(set);
+  allocation = g_GraphicsDestroyTextureSet(set);
   Resource_Release(allocation);
   return;
 }
@@ -388,7 +388,7 @@ GraphicsTextureSource_BlitTiledSourceAlpha
   bool overflowed;
   TextureSizeResult logicalSize;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
@@ -425,7 +425,7 @@ GraphicsTextureSource_BlitTiledSourceAlpha
   if ((int)(tileOriginX - tileWidth) < repeatEndX) {
     for (; tileX = tileOriginX - tileWidth, tileY < repeatEndY; tileY = tileY + tileHeight) {
       do {
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (repeatEndY,repeatEndX,clipMinY,clipMinX,tileY,tileX,subresourceIndex,sourceAsset,
                    framebuffer);
         tileX = tileX + tileWidth;
@@ -461,7 +461,7 @@ GraphicsTextureSource_BlitTiledHalfSourceRgb
   bool overflowed;
   TextureSizeResult logicalSize;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
@@ -498,7 +498,7 @@ GraphicsTextureSource_BlitTiledHalfSourceRgb
   if ((int)(tileOriginX - tileWidth) < repeatEndX) {
     for (; tileX = tileOriginX - tileWidth, tileY < repeatEndY; tileY = tileY + tileHeight) {
       do {
-        (*g_GraphicsTextureSourceBlitHalfSourceRgb)
+        g_GraphicsTextureSourceBlitHalfSourceRgb
                   (repeatEndY,repeatEndX,clipMinY,clipMinX,tileY,tileX,subresourceIndex,sourceAsset,
                    framebuffer);
         tileX = tileX + tileWidth;
@@ -533,7 +533,7 @@ GraphicsTextureSource_BlitTiledSaturatedAddRgb
   bool overflowed;
   TextureSizeResult logicalSize;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
@@ -570,7 +570,7 @@ GraphicsTextureSource_BlitTiledSaturatedAddRgb
   if ((int)(tileOriginX - tileWidth) < repeatEndX) {
     for (; tileX = tileOriginX - tileWidth, tileY < repeatEndY; tileY = tileY + tileHeight) {
       do {
-        (*g_GraphicsTextureSourceBlitSaturatedAddRgb)
+        g_GraphicsTextureSourceBlitSaturatedAddRgb
                   (repeatEndY,repeatEndX,clipMinY,clipMinX,tileY,tileX,subresourceIndex,sourceAsset,
                    framebuffer);
         tileX = tileX + tileWidth;
@@ -605,7 +605,7 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   bool overflowed;
   TextureSizeResult logicalSize;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
   tileWidth = logicalSize.logicalWidthPixels;
   if (repeatEndX == -0x80000000) {
@@ -642,7 +642,7 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   if ((int)(tileOriginX - tileWidth) < repeatEndX) {
     for (; tileX = tileOriginX - tileWidth, tileY < repeatEndY; tileY = tileY + tileHeight) {
       do {
-        (*g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd)
+        g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd
                   (repeatEndY,repeatEndX,clipMinY,clipMinX,tileY,tileX,subresourceIndex,sourceAsset,
                    framebuffer);
         tileX = tileX + tileWidth;
@@ -722,7 +722,7 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
                    offsetOrColumnCount + -0x10);
   rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                       offsetOrColumnCount + -0xc);
-  largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+  largestBlock = g_MemoryApi.allocLargestFreeBlock();
   largestBlockSize = largestBlock.blockSizeOrSentinel;
   decomposedAsset.assetOrError = (GraphicsTextureSourceAsset *)largestBlock.allocationOrError;
   if (largestBlock.failed) {
@@ -744,13 +744,13 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
   if (remainingBytesOrCount != 0 && 0x1ff < (int)largestBlockSize) {
     offsetOrColumnCount = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                      offsetOrColumnCount + -0x1c);
-    packedDateTime = (*g_LocaleGetPackedCurrentTime)();
+    packedDateTime = g_LocaleGetPackedCurrentTime();
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue1 = packedDateTime;
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue2 = packedDateTime;
-    packedDateTime = (*g_LocaleGetPackedCurrentDate)();
+    packedDateTime = g_LocaleGetPackedCurrentDate();
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.timeValue1 = packedDateTime;
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.timeValue2 = packedDateTime;
-    (*g_LocaleCopyDefaultComputerLabelUtf16)
+    g_LocaleCopyDefaultComputerLabelUtf16
               (((decomposedAsset.assetOrError)->common).buildMetadata.names.sourceName);
     entryOrByteCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + offsetOrColumnCount + -0x28;
     if (paletteIndexOrCount == -1) {
@@ -988,7 +988,7 @@ TrueColorPackRegion:
             packedPixelCursor = packedPixelCursor + 1;
             entryOrByteCursor = entryOrByteCursor + 4;
           }
-          shrinkResult = (*g_MemoryApi.shrinkInPlace)
+          shrinkResult = g_MemoryApi.shrinkInPlace
                              (((decomposedAsset.assetOrError)->common).allocationSizeBytes,
                               decomposedAsset.assetOrError);
           copySourceOrError = (GraphicsTextureSourceAsset *)shrinkResult.scratchOrError;
@@ -1261,7 +1261,7 @@ PalettedPackRegion:
                 packedPixelCursor = (uint32_t *)((int)packedPixelCursor + 4);
                 entryOrByteCursor = entryOrByteCursor + 4;
               }
-              shrinkResult = (*g_MemoryApi.shrinkInPlace)
+              shrinkResult = g_MemoryApi.shrinkInPlace
                                  (((decomposedAsset.assetOrError)->common).allocationSizeBytes,
                                   decomposedAsset.assetOrError);
               copySourceOrError = (GraphicsTextureSourceAsset *)shrinkResult.scratchOrError;
@@ -1288,7 +1288,7 @@ PalettedPackRegion:
     }
   }
 DecomposeFreeWorkBufferAndFail:
-  (*g_MemoryApi.free)(decomposedAsset.assetOrError);
+  g_MemoryApi.free(decomposedAsset.assetOrError);
   decomposedAsset.assetOrError = copySourceOrError;
   failureResult.failed = true;
   failureResult.assetOrError = decomposedAsset.assetOrError;
@@ -1315,7 +1315,7 @@ GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16)
   loadResult = Package_LoadEntry(pathUtf16);
   loadedPaletteTextureSource = loadResult.bufferOrError;
   if (!loadResult.failed) {
-    convertResult = THANDOR_BITCAST(PaletteTextureSourceResult, TextureSourceLoadResult, (*g_GraphicsTextureSourceConvertPaletteEntries)(loadedPaletteTextureSource));
+    convertResult = THANDOR_BITCAST(PaletteTextureSourceResult, TextureSourceLoadResult, g_GraphicsTextureSourceConvertPaletteEntries(loadedPaletteTextureSource));
     convertedTextureSource = (GraphicsPaletteTextureSourceAsset *)convertResult.textureSource;
     if (!convertResult.failed) {
       return convertResult;
@@ -1347,7 +1347,7 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
   ArenaFreeResult freeResult;
   
   allocationSizeOrCount = (sourceAsset->common).allocationSizeBytes;
-  cloneAllocation = (*g_MemoryApi.alloc)(allocationSizeOrCount);
+  cloneAllocation = g_MemoryApi.alloc(allocationSizeOrCount);
   clonedAsset = (GraphicsPaletteTextureSourceAsset *)cloneAllocation.payloadOrError;
   if (!cloneAllocation.failed) {
     cloneCursor = clonedAsset;
@@ -1356,11 +1356,11 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
       sourceAsset = (GraphicsTextureSourceAsset *)&(sourceAsset->common).allocationSizeBytes;
       cloneCursor = (GraphicsPaletteTextureSourceAsset *)&cloneCursor->allocationSizeBytes;
     }
-    convertResult = (*g_GraphicsTextureSourceConvertPaletteEntries)(clonedAsset);
+    convertResult = g_GraphicsTextureSourceConvertPaletteEntries(clonedAsset);
     if (!convertResult.failed) {
       return (GraphicsTextureSourceAsset *)convertResult.paletteSource;
     }
-    freeResult = (*g_MemoryApi.free)(clonedAsset);
+    freeResult = g_MemoryApi.free(clonedAsset);
     clonedAsset = (GraphicsPaletteTextureSourceAsset *)freeResult.valueOrError;
   }
   return (GraphicsTextureSourceAsset *)clonedAsset;
@@ -1419,7 +1419,7 @@ GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsse
 {
   GraphicsTextureSourceAsset *allocation;
   
-  allocation = (*g_GraphicsTextureSourceResolveAllocationBase)(sourceAsset);
+  allocation = g_GraphicsTextureSourceResolveAllocationBase(sourceAsset);
   Resource_Release(allocation);
   return;
 }
@@ -1437,8 +1437,8 @@ GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset
 {
   GraphicsTextureSourceAsset *memory;
   
-  memory = (*g_GraphicsTextureSourceResolveAllocationBase)(sourceAsset);
-  (*g_MemoryApi.free)(memory);
+  memory = g_GraphicsTextureSourceResolveAllocationBase(sourceAsset);
+  g_MemoryApi.free(memory);
   return;
 }
 
@@ -1549,15 +1549,15 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
   sourceAsset = texture->sourceAsset;
   subresourceIndex = texture->subresourceIndex;
   if (stagingSurface3 != (IDirectDrawSurface3 *)0x0) {
-    hresult = (*stagingSurface3->lpVtbl->IsLost)(stagingSurface3);
+    hresult = stagingSurface3->lpVtbl->IsLost(stagingSurface3);
     paletteIndexOrCounter = 0;
     if (hresult != 0) {
-      paletteIndexOrCounter = (*stagingSurface3->lpVtbl->Restore)(stagingSurface3);
+      paletteIndexOrCounter = stagingSurface3->lpVtbl->Restore(stagingSurface3);
     }
     if (paletteIndexOrCounter == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      hresult = (*stagingSurface3->lpVtbl->Lock)
+      hresult = stagingSurface3->lpVtbl->Lock
                          (stagingSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,
                           (TH_LEGACY_HANDLE)0x0);
       surfaceBits = g_SurfaceDesc.lpSurface;
@@ -1597,7 +1597,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                 sourceByteRow = sourcePixel;
                 destinationByteRow = destinationByteRow + destinationPitch;
               } while (rowsRemaining != 0);
-              (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 0x100;
               grayPaletteEntry.red = 0;
               grayPaletteEntry.green = 0;
@@ -1610,11 +1610,11 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                 grayPaletteEntry = THANDOR_BITCAST(int, DirectDrawPaletteEntry, (THANDOR_BITCAST(DirectDrawPaletteEntry, int, grayPaletteEntry) + 0x1010101));
                 paletteIndexOrCounter = paletteIndexOrCounter + -1;
               } while (paletteIndexOrCounter != 0);
-              hresult = (*g_DirectDraw2->lpVtbl->CreatePalette)
+              hresult = g_DirectDraw2->lpVtbl->CreatePalette
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (*createdPalette->lpVtbl->Release)(createdPalette);
+                createdPalette->lpVtbl->Release(createdPalette);
               }
               goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
             }
@@ -1756,7 +1756,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                 sourceByteRow = sourcePixel;
                 destinationByteRow = destinationByteRow + destinationPitch;
               } while (rowsRemaining != 0);
-              (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 0x100;
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
@@ -1772,11 +1772,11 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                 paletteEntryCursor = paletteEntryCursor + 1;
                 paletteIndexOrCounter = paletteIndexOrCounter + -1;
               } while (paletteIndexOrCounter != 0);
-              hresult = (*g_DirectDraw2->lpVtbl->CreatePalette)
+              hresult = g_DirectDraw2->lpVtbl->CreatePalette
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (*createdPalette->lpVtbl->Release)(createdPalette);
+                createdPalette->lpVtbl->Release(createdPalette);
               }
               goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
             }
@@ -1865,7 +1865,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                   byteCursorOrSourceRow = sourcePixel;
                   destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                 } while (rowsRemaining != 0);
-                (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               }
               else {
                 do {
@@ -1891,13 +1891,13 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                   byteCursorOrSourceRow = sourcePixel;
                   destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                 } while (rowsRemaining != 0);
-                (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               }
               goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
             }
           }
         }
-        (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+        stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
       }
     }
   }
@@ -1979,15 +1979,15 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
   sourceAsset = texture->sourceAsset;
   subresourceIndex = texture->subresourceIndex;
   if (stagingSurface3 != (IDirectDrawSurface3 *)0x0) {
-    hresult = (*stagingSurface3->lpVtbl->IsLost)(stagingSurface3);
+    hresult = stagingSurface3->lpVtbl->IsLost(stagingSurface3);
     paletteIndexOrCounter = 0;
     if (hresult != 0) {
-      paletteIndexOrCounter = (*stagingSurface3->lpVtbl->Restore)(stagingSurface3);
+      paletteIndexOrCounter = stagingSurface3->lpVtbl->Restore(stagingSurface3);
     }
     if (paletteIndexOrCounter == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      hresult = (*stagingSurface3->lpVtbl->Lock)
+      hresult = stagingSurface3->lpVtbl->Lock
                          (stagingSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,
                           (TH_LEGACY_HANDLE)0x0);
       surfaceBits = g_SurfaceDesc.lpSurface;
@@ -2032,7 +2032,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                 byteCursorOrRow = byteCursorOrRow + destinationPitch;
                 rowsRemaining = offsetOrRemaining;
               } while (offsetOrRemaining != 0 && hasMore);
-              (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 0x100;
               grayPaletteEntry.red = 0;
               grayPaletteEntry.green = 0;
@@ -2045,11 +2045,11 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                 grayPaletteEntry = THANDOR_BITCAST(int, DirectDrawPaletteEntry, (THANDOR_BITCAST(DirectDrawPaletteEntry, int, grayPaletteEntry) + 0x1010101));
                 paletteIndexOrCounter = paletteIndexOrCounter + -1;
               } while (paletteIndexOrCounter != 0);
-              hresult = (*g_DirectDraw2->lpVtbl->CreatePalette)
+              hresult = g_DirectDraw2->lpVtbl->CreatePalette
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (*createdPalette->lpVtbl->Release)(createdPalette);
+                createdPalette->lpVtbl->Release(createdPalette);
               }
               goto GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn;
             }
@@ -2226,7 +2226,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                 destinationByteRow = destinationByteRow + destinationPitch;
                 rowsRemaining = offsetOrRemaining;
               } while (offsetOrRemaining != 0 && hasMore);
-              (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 0x100;
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
@@ -2242,11 +2242,11 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                 paletteEntryCursor = paletteEntryCursor + 1;
                 paletteIndexOrCounter = paletteIndexOrCounter + -1;
               } while (paletteIndexOrCounter != 0);
-              hresult = (*g_DirectDraw2->lpVtbl->CreatePalette)
+              hresult = g_DirectDraw2->lpVtbl->CreatePalette
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (*createdPalette->lpVtbl->Release)(createdPalette);
+                createdPalette->lpVtbl->Release(createdPalette);
               }
               goto GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn;
             }
@@ -2359,7 +2359,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                   destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   rowsRemaining = offsetOrRemaining;
                 } while (offsetOrRemaining != 0 && hasMore);
-                (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               }
               else {
                 do {
@@ -2409,13 +2409,13 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                   destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   rowsRemaining = offsetOrRemaining;
                 } while (offsetOrRemaining != 0 && hasMore);
-                (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               }
               goto GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn;
             }
           }
         }
-        (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+        stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
       }
     }
   }
@@ -2509,15 +2509,15 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
   sourceAsset = texture->sourceAsset;
   subresourceIndex = texture->subresourceIndex;
   if (stagingSurface3 != (IDirectDrawSurface3 *)0x0) {
-    hresult = (*stagingSurface3->lpVtbl->IsLost)(stagingSurface3);
+    hresult = stagingSurface3->lpVtbl->IsLost(stagingSurface3);
     paletteIndexOrCounter = 0;
     if (hresult != 0) {
-      paletteIndexOrCounter = (*stagingSurface3->lpVtbl->Restore)(stagingSurface3);
+      paletteIndexOrCounter = stagingSurface3->lpVtbl->Restore(stagingSurface3);
     }
     if (paletteIndexOrCounter == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      hresult = (*stagingSurface3->lpVtbl->Lock)
+      hresult = stagingSurface3->lpVtbl->Lock
                          (stagingSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,
                           (TH_LEGACY_HANDLE)0x0);
       surfaceBits = g_SurfaceDesc.lpSurface;
@@ -2561,7 +2561,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                 byteCursorOrRow = byteCursorOrRow + destinationPitch;
                 rowsRemaining = paletteIndexOrCounter;
               } while (paletteIndexOrCounter != 0 && hasMore);
-              (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 0x100;
               grayPaletteEntry.red = 0;
               grayPaletteEntry.green = 0;
@@ -2574,11 +2574,11 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                 grayPaletteEntry = THANDOR_BITCAST(int, DirectDrawPaletteEntry, (THANDOR_BITCAST(DirectDrawPaletteEntry, int, grayPaletteEntry) + 0x1010101));
                 paletteIndexOrCounter = paletteIndexOrCounter + -1;
               } while (paletteIndexOrCounter != 0);
-              hresult = (*g_DirectDraw2->lpVtbl->CreatePalette)
+              hresult = g_DirectDraw2->lpVtbl->CreatePalette
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (*createdPalette->lpVtbl->Release)(createdPalette);
+                createdPalette->lpVtbl->Release(createdPalette);
               }
               goto GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn;
             }
@@ -2829,7 +2829,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                 destinationByteRow = destinationByteRow + destinationPitch;
                 rowsRemaining = paletteIndexOrCounter;
               } while (paletteIndexOrCounter != 0 && hasMore);
-              (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+              stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 0x100;
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
@@ -2845,11 +2845,11 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                 paletteEntryCursor = paletteEntryCursor + 1;
                 paletteIndexOrCounter = paletteIndexOrCounter + -1;
               } while (paletteIndexOrCounter != 0);
-              hresult = (*g_DirectDraw2->lpVtbl->CreatePalette)
+              hresult = g_DirectDraw2->lpVtbl->CreatePalette
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (*createdPalette->lpVtbl->Release)(createdPalette);
+                createdPalette->lpVtbl->Release(createdPalette);
               }
               goto GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn;
             }
@@ -3023,7 +3023,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                   destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   rowsRemaining = paletteIndexOrCounter;
                 } while (paletteIndexOrCounter != 0 && hasMore);
-                (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               }
               else {
                 do {
@@ -3134,13 +3134,13 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                   destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   rowsRemaining = paletteIndexOrCounter;
                 } while (paletteIndexOrCounter != 0 && hasMore);
-                (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+                stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               }
               goto GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn;
             }
           }
         }
-        (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
+        stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
       }
     }
   }
@@ -3189,15 +3189,15 @@ GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
   textureSource = texture->sourceAsset;
   textureSubresource = texture->subresourceIndex;
   if (This != (IDirectDrawSurface3 *)0x0) {
-    hresult = (*This->lpVtbl->IsLost)(This);
+    hresult = This->lpVtbl->IsLost(This);
     restoreResultOrWidth = 0;
     if (hresult != 0) {
-      restoreResultOrWidth = (*This->lpVtbl->Restore)(This);
+      restoreResultOrWidth = This->lpVtbl->Restore(This);
     }
     if (restoreResultOrWidth == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      hresult = (*This->lpVtbl->Lock)
+      hresult = This->lpVtbl->Lock
                         (This,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,(TH_LEGACY_HANDLE)0x0);
       surfaceBits = g_SurfaceDesc.lpSurface;
       destinationPitch = g_SurfaceDesc.lPitch;
@@ -3257,7 +3257,7 @@ GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
             } while (rowsRemaining != 0);
           }
         }
-        (*This->lpVtbl->Unlock)(This,surfaceBits);
+        This->lpVtbl->Unlock(This,surfaceBits);
       }
     }
   }
@@ -3309,15 +3309,15 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
   textureSource = texture->sourceAsset;
   textureSubresource = texture->subresourceIndex;
   if (This != (IDirectDrawSurface3 *)0x0) {
-    hresult = (*This->lpVtbl->IsLost)(This);
+    hresult = This->lpVtbl->IsLost(This);
     restoreResultOrWidth = 0;
     if (hresult != 0) {
-      restoreResultOrWidth = (*This->lpVtbl->Restore)(This);
+      restoreResultOrWidth = This->lpVtbl->Restore(This);
     }
     if (restoreResultOrWidth == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      hresult = (*This->lpVtbl->Lock)
+      hresult = This->lpVtbl->Lock
                          (This,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,(TH_LEGACY_HANDLE)0x0);
       surfaceBits = g_SurfaceDesc.lpSurface;
       destinationPitch = g_SurfaceDesc.lPitch;
@@ -3392,7 +3392,7 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
             } while (nextRemaining != 0 && hasMore);
           }
         }
-        (*This->lpVtbl->Unlock)(This,surfaceBits);
+        This->lpVtbl->Unlock(This,surfaceBits);
       }
     }
   }
@@ -3444,15 +3444,15 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
   textureSource = texture->sourceAsset;
   textureSubresource = texture->subresourceIndex;
   if (This != (IDirectDrawSurface3 *)0x0) {
-    hresult = (*This->lpVtbl->IsLost)(This);
+    hresult = This->lpVtbl->IsLost(This);
     restoreResultOrWidth = 0;
     if (hresult != 0) {
-      restoreResultOrWidth = (*This->lpVtbl->Restore)(This);
+      restoreResultOrWidth = This->lpVtbl->Restore(This);
     }
     if (restoreResultOrWidth == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      hresult = (*This->lpVtbl->Lock)
+      hresult = This->lpVtbl->Lock
                          (This,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,(TH_LEGACY_HANDLE)0x0);
       surfaceBits = g_SurfaceDesc.lpSurface;
       destinationPitch = g_SurfaceDesc.lPitch;
@@ -3529,7 +3529,7 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
             } while (nextRemaining != 0 && hasMore);
           }
         }
-        (*This->lpVtbl->Unlock)(This,surfaceBits);
+        This->lpVtbl->Unlock(This,surfaceBits);
       }
     }
   }
@@ -3556,9 +3556,9 @@ GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,Graphi
     return;
   }
   texture = set->entries[subresourceIndex].texture;
-  (*g_GraphicsDispatchTable.colorUpload[texture->downsampleShift])(texture);
+  g_GraphicsDispatchTable.colorUpload[texture->downsampleShift](texture);
   if (texture->deviceTexture2 != (IDirect3DTexture2 *)0x0) {
-    (*texture->deviceTexture2->lpVtbl->Load)(texture->deviceTexture2,texture->stagingTexture2);
+    texture->deviceTexture2->lpVtbl->Load(texture->deviceTexture2,texture->stagingTexture2);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
@@ -3583,9 +3583,9 @@ GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Graphi
     return;
   }
   texture = set->entries[subresourceIndex].texture;
-  (*g_GraphicsDispatchTable.alphaUpload[texture->downsampleShift])(texture);
+  g_GraphicsDispatchTable.alphaUpload[texture->downsampleShift](texture);
   if (texture->deviceTexture2 != (IDirect3DTexture2 *)0x0) {
-    (*texture->deviceTexture2->lpVtbl->Load)(texture->deviceTexture2,texture->stagingTexture2);
+    texture->deviceTexture2->lpVtbl->Load(texture->deviceTexture2,texture->stagingTexture2);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
@@ -3632,7 +3632,7 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   }
   g_SurfaceDesc.dwFlags = 0x1007;
   g_SurfaceDesc.ddsCaps.dwCaps = 0x4001000;
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset);
   if (deviceDesc->dcmColorModel == 0) {
     g_SurfaceDesc.ddsCaps.dwCaps = g_SurfaceDesc.ddsCaps.dwCaps | 0x800;
   }
@@ -3660,18 +3660,18 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
     destinationFormatCursor = (DDPIXELFORMAT *)&destinationFormatCursor->dwFlags;
   }
   for (;;) {
-    hresult = (*g_DirectDraw2->lpVtbl->CreateSurface)
+    hresult = g_DirectDraw2->lpVtbl->CreateSurface
                       (g_DirectDraw2,&g_SurfaceDesc,&deviceSurfaceBase,(TH_LEGACY_LPVOID)0x0);
     if (hresult == 0) {
-      hresult = (*deviceSurfaceBase->lpVtbl->QueryInterface)
+      hresult = deviceSurfaceBase->lpVtbl->QueryInterface
                         (deviceSurfaceBase,&IID_IDirectDrawSurface3_Local,&deviceSurface3);
       if ((hresult == 0) &&
-         (hresult = (*deviceSurface3->lpVtbl->QueryInterface)
+         (hresult = deviceSurface3->lpVtbl->QueryInterface
                             (deviceSurface3,&IID_IDirect3DTexture2_Local,&deviceTexture2),
          hresult == 0)) {
-        hresult = (*deviceTexture2->lpVtbl->Load)(deviceTexture2,texture->stagingTexture2);
+        hresult = deviceTexture2->lpVtbl->Load(deviceTexture2,texture->stagingTexture2);
         if (hresult == 0) {
-          handleResult = (*deviceTexture2->lpVtbl->GetHandle)
+          handleResult = deviceTexture2->lpVtbl->GetHandle
                             (deviceTexture2,g_Direct3DDevice2,&textureHandle);
           if (handleResult == 0) {
             texture->deviceSurfaceBase = deviceSurfaceBase;
@@ -3688,28 +3688,28 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
     /* A creation step or Load failed: release this attempt; on DDERR_OUTOFVIDEOMEMORY evict the oldest device
        texture and retry while eviction succeeds. */
     if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
-      (*deviceTexture2->lpVtbl->Release)(deviceTexture2);
+      deviceTexture2->lpVtbl->Release(deviceTexture2);
       deviceTexture2 = (IDirect3DTexture2 *)0x0;
     }
     if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
-      (*deviceSurface3->lpVtbl->Release)(deviceSurface3);
+      deviceSurface3->lpVtbl->Release(deviceSurface3);
       deviceSurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
-      (*deviceSurfaceBase->lpVtbl->Release)(deviceSurfaceBase);
+      deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
       deviceSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if ((hresult != -0x7789fe84) || (evictFailed = GraphicsTexture_EvictOldestDeviceTexture(texture), evictFailed)
        ) break;
   }
   if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
-    (*deviceTexture2->lpVtbl->Release)(deviceTexture2);
+    deviceTexture2->lpVtbl->Release(deviceTexture2);
   }
   if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
-    (*deviceSurface3->lpVtbl->Release)(deviceSurface3);
+    deviceSurface3->lpVtbl->Release(deviceSurface3);
   }
   if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
-    (*deviceSurfaceBase->lpVtbl->Release)(deviceSurfaceBase);
+    deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
   }
   texture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
   texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
@@ -3742,13 +3742,13 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
   TextureSetResult failureResult;
   GraphicsAssetAllocationByteSize entriesRemaining;
   
-  convertResult = (*g_GraphicsTextureSourceConvertPaletteEntries)
+  convertResult = g_GraphicsTextureSourceConvertPaletteEntries
                     ((GraphicsPaletteTextureSourceAsset *)sourceAsset);
   convertedSource = convertResult.paletteSource;
   metadataOrError = convertedSource;
   if (!convertResult.failed) {
     entriesRemaining = convertedSource->subresourceCount;
-    metadataAllocation = (*g_MemoryApi.alloc)(entriesRemaining * 0x20 + 8);
+    metadataAllocation = g_MemoryApi.alloc(entriesRemaining * 0x20 + 8);
     metadataOrError = (GraphicsPaletteTextureSourceAsset *)metadataAllocation.payloadOrError;
     if (!metadataAllocation.failed) {
       entryFieldCursor = &metadataOrError->formatVersion;
@@ -3805,7 +3805,7 @@ GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
   releasedTextureSet = (GraphicsTextureSourceAsset *)0x0;
   if (set != (GraphicsTextureSet *)0x0) {
     releasedTextureSet = set->sourceAsset;
-    (*g_MemoryApi.free)(set);
+    g_MemoryApi.free(set);
   }
   return releasedTextureSet;
 }
@@ -3850,15 +3850,15 @@ GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
   }
   deviceTexture2 = oldestTexture->deviceTexture2;
   if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
-    (*deviceTexture2->lpVtbl->Release)(deviceTexture2);
+    deviceTexture2->lpVtbl->Release(deviceTexture2);
   }
   deviceSurface3 = oldestTexture->deviceSurface3;
   if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
-    (*deviceSurface3->lpVtbl->Release)(deviceSurface3);
+    deviceSurface3->lpVtbl->Release(deviceSurface3);
   }
   deviceSurfaceBase = oldestTexture->deviceSurfaceBase;
   if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
-    (*deviceSurfaceBase->lpVtbl->Release)(deviceSurfaceBase);
+    deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
   }
   evictedHandle = oldestTexture->textureHandle;
   oldestTexture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
@@ -3867,7 +3867,7 @@ GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
   oldestTexture->textureHandle = 0;
   if (evictedHandle == g_BoundTextureHandle) {
     g_BoundTextureHandle = 0;
-    (*g_Direct3DDevice2->lpVtbl->SetRenderState)(g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
+    g_Direct3DDevice2->lpVtbl->SetRenderState(g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
   }
   return false;
 }
@@ -3980,7 +3980,7 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
   if (1 < g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1) {
     g_SurfaceDesc.dwFlags = 0x1007;
     g_SurfaceDesc.ddsCaps.dwCaps = 0x1800;
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset)
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset)
     ;
     largerExtent = logicalSize.logicalWidthPixels;
     if (logicalSize.logicalWidthPixels < logicalSize.logicalHeightPixels) {
@@ -4002,25 +4002,25 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
       sourceFormatCursor = (DDPIXELFORMAT *)&sourceFormatCursor->dwFlags;
       destinationFormatCursor = (DDPIXELFORMAT *)&destinationFormatCursor->dwFlags;
     }
-    hresult = (*g_DirectDraw2->lpVtbl->CreateSurface)
+    hresult = g_DirectDraw2->lpVtbl->CreateSurface
                       (g_DirectDraw2,&g_SurfaceDesc,&surfaceBase,(TH_LEGACY_LPVOID)0x0);
     if (hresult == 0) {
-      hresult = (*surfaceBase->lpVtbl->QueryInterface)
+      hresult = surfaceBase->lpVtbl->QueryInterface
                         (surfaceBase,&IID_IDirectDrawSurface3_Local,&surface3);
       if (hresult == 0) {
-        hresult = (*surface3->lpVtbl->QueryInterface)(surface3,&IID_IDirect3DTexture2_Local,&texture2)
+        hresult = surface3->lpVtbl->QueryInterface(surface3,&IID_IDirect3DTexture2_Local,&texture2)
         ;
       }
     }
     if (hresult != 0) {
       if (texture2 != (IDirect3DTexture2 *)0x0) {
-        (*texture2->lpVtbl->Release)(texture2);
+        texture2->lpVtbl->Release(texture2);
       }
       if (surface3 != (IDirectDrawSurface3 *)0x0) {
-        (*surface3->lpVtbl->Release)(surface3);
+        surface3->lpVtbl->Release(surface3);
       }
       if (surfaceBase != (IDirectDrawSurface *)0x0) {
-        (*surfaceBase->lpVtbl->Release)(surfaceBase);
+        surfaceBase->lpVtbl->Release(surfaceBase);
       }
       texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
       texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
@@ -4035,7 +4035,7 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
   texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
   texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
   texture->textureHandle = 0;
-  (*g_GraphicsDispatchTable.colorUpload[texture->downsampleShift])(texture);
+  g_GraphicsDispatchTable.colorUpload[texture->downsampleShift](texture);
   return texture; /* preserved EAX: callers mirror texture in EAX */
 }
 
@@ -4060,27 +4060,27 @@ GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture)
   
   currentTexture2 = texture->deviceTexture2;
   if (currentTexture2 != (IDirect3DTexture2 *)0x0) {
-    (*currentTexture2->lpVtbl->Release)(currentTexture2);
+    currentTexture2->lpVtbl->Release(currentTexture2);
   }
   currentSurface3 = texture->deviceSurface3;
   if (currentSurface3 != (IDirectDrawSurface3 *)0x0) {
-    (*currentSurface3->lpVtbl->Release)(currentSurface3);
+    currentSurface3->lpVtbl->Release(currentSurface3);
   }
   currentBaseSurface = texture->deviceSurfaceBase;
   if (currentBaseSurface != (IDirectDrawSurface *)0x0) {
-    (*currentBaseSurface->lpVtbl->Release)(currentBaseSurface);
+    currentBaseSurface->lpVtbl->Release(currentBaseSurface);
   }
   stagingTexture2 = texture->stagingTexture2;
   if (stagingTexture2 != (IDirect3DTexture2 *)0x0) {
-    (*stagingTexture2->lpVtbl->Release)(stagingTexture2);
+    stagingTexture2->lpVtbl->Release(stagingTexture2);
   }
   stagingSurface3 = texture->stagingSurface3;
   if (stagingSurface3 != (IDirectDrawSurface3 *)0x0) {
-    (*stagingSurface3->lpVtbl->Release)(stagingSurface3);
+    stagingSurface3->lpVtbl->Release(stagingSurface3);
   }
   stagingSurfaceBase = texture->stagingSurfaceBase;
   if (stagingSurfaceBase != (IDirectDrawSurface *)0x0) {
-    (*stagingSurfaceBase->lpVtbl->Release)(stagingSurfaceBase);
+    stagingSurfaceBase->lpVtbl->Release(stagingSurfaceBase);
   }
   releasedTextureHandle = texture->textureHandle;
   texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;

@@ -93,7 +93,7 @@ digraph thandor {
   "SoftwareRasterAux_Mode09" [label="0x004FD6F0\nSoftwareRasterAux_Mode09"];
   "SoftwareRasterAux_Mode10" [label="0x004FDC00\nSoftwareRasterAux_Mode10"];
   "SoftwareRasterAux_Mode12" [label="0x004FE110\nSoftwareRasterAux_Mode12"];
-  "SoftwareRenderer_DisplayModeHook" [label="0x004FE620\nSoftwareRenderer_DisplayModeHook"];
+  "SoftwareRenderer_SetDisplayMode" [label="0x004FE620\nSoftwareRenderer_DisplayModeHook"];
   "SoftwareRenderer_InstallDisplayModeHook" [label="0x004FE7D0\nSoftwareRenderer_InstallDisplayModeHook"];
   "SoftwareTexture_BilinearBlendScaleSubresources" [label="0x00518CE0\nSoftwareTexture_BilinearBlendScaleSubresources"];
   "SoftwareRenderer_AdvanceDepthEpoch" [label="0x004D16D0\nSoftwareRenderer_AdvanceDepthEpoch"];

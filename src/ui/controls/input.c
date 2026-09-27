@@ -50,13 +50,13 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
   UiPointerWheelDelta wheelDelta;
   CursorEventResult pointerEvent;
   
-  (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
+  g_SpinLockAcquire(g_UiRuntimeFrameLock);
   if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
     DirectInputMouse_PollBufferedEvents();
   }
   while( true ) {
     control = g_UiPointerCaptureTarget;
-    pointerEvent = (*g_GraphicsCursorConsumeEvent)();
+    pointerEvent = g_GraphicsCursorConsumeEvent();
     pointerX = pointerEvent.pointerX;
     wheelDelta = pointerEvent.wheelDelta;
     pointerY = pointerEvent.pointerY;
@@ -67,7 +67,7 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
       if (eventKind == '\x06') {
         if ((control != (UiNodeBase *)0xffffffff) &&
            (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_MIDDLE)) {
-          (*control->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control);
+          control->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,control);
           g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
           g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
           UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
@@ -92,7 +92,7 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
       }
       else if ((control != (UiNodeBase *)0xffffffff) &&
               (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_LEFT)) {
-        (*control->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,control);
+        control->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,control);
         g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
         g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
         UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
@@ -100,13 +100,13 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
     }
     else if ((control != (UiNodeBase *)0xffffffff) &&
             (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT)) {
-      (*control->vtable->rightRelease)(wheelDelta,pointerY,pointerX,control);
+      control->vtable->rightRelease(wheelDelta,pointerY,pointerX,control);
       g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
       g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
       UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
     }
   }
-  (*g_SpinLockReleaseAndInvoke)
+  g_SpinLockReleaseAndInvoke
             ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
 }
@@ -149,9 +149,9 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
   bool passToNext;
   KeyboardEventResult keyboardEvent;
 
-  (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
+  g_SpinLockAcquire(g_UiRuntimeFrameLock);
   while( true ) {
-    keyboardEvent = (*g_KeyboardReadEvent)();
+    keyboardEvent = g_KeyboardReadEvent();
     if (keyboardEvent.queueEmpty) break;
     if (g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff) continue;
     keyboardStateMask = keyboardEvent.eventData;
@@ -161,7 +161,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
     if (control != (UiNodeBase *)0xffffffff) {
       dispatchToRoot = false;
       wrappedOnce = false;
-      passToNext = (*control->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control);
+      passToNext = control->vtable->keyboardEventCf(keyboardStateMask,keyCode,control);
       /* CF set: offer the event to the following focus targets in pre-order, wrapping around once
          through the topmost ancestor; the first one that takes it gets the keyboard focus. */
       while (passToNext) {
@@ -190,7 +190,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
           break;
         }
         if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
-        passToNext = (*control->vtable->keyboardEventCf)(keyboardStateMask,keyCode,control);
+        passToNext = control->vtable->keyboardEventCf(keyboardStateMask,keyCode,control);
         if (!passToNext) {
           UiKeyboardFocus_Set(control);
         }
@@ -198,10 +198,10 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
     }
     if ((dispatchToRoot) && (g_UiRootNode != (UiRootNode *)0xffffffff) &&
        (g_UiRootNode->callbacks->keyboardFallbackCf != (UiRootKeyboardFallbackCf *)0x0)) {
-      (*g_UiRootNode->callbacks->keyboardFallbackCf)(keyboardStateMask,keyCode,g_UiRootNode);
+      g_UiRootNode->callbacks->keyboardFallbackCf(keyboardStateMask,keyCode,g_UiRootNode);
     }
   }
-  (*g_SpinLockReleaseAndInvoke)
+  g_SpinLockReleaseAndInvoke
             ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
 }
@@ -319,7 +319,7 @@ UiRangeSliderControl_HandleKeyboardCf
   }
   control->value = adjustedSliderValue;
   if (((control->sliderFlags & 4) != 0) && (control->clickSound != (DirectSoundVoiceSet *)0x0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
   }
   UiActionQueue_Enqueue(control->actionId,&control->base);
   UiNode_InvalidateRoot(&control->base);
@@ -353,7 +353,7 @@ UiSingleLineTextControl_ForwardKeyboardEventToChildCf
     return eventResult;
   }
   if (childControl != (UiNodeBase *)0x0) {
-    eventResult = (*childControl->vtable->keyboardEventCf)(keyboardStateMask,keyCode,childControl);
+    eventResult = childControl->vtable->keyboardEventCf(keyboardStateMask,keyCode,childControl);
     if (!eventResult) {
       UiNode_InvalidateRoot(&control->base);
       return false;
@@ -385,7 +385,7 @@ UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
         g_UiKeyboardFocusNode = childControl;
         childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
       }
-      (*childControl->vtable->pointerWheel)(wheelDelta,pointerY,pointerX,childControl);
+      childControl->vtable->pointerWheel(wheelDelta,pointerY,pointerX,childControl);
       if (childControl == g_UiKeyboardFocusNode) {
         g_UiKeyboardFocusNode = &control->base;
         childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -431,7 +431,7 @@ UiRangeSliderControl_UpdateValueFromPointer
 
   if ((control->sliderFlags & 2) != 0) {
     if ((control->sliderFlags & 1) == 0) {
-      thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
+      thumbSize = g_GraphicsTextureSourceGetLogicalSize(0xaf,g_UiWindowTextureSource);
       trackLength = control->base.layoutWidth - thumbSize.logicalWidthPixels;
       if (trackLength == 0) {
         trackLength = 1;
@@ -455,7 +455,7 @@ UiRangeSliderControl_UpdateValueFromPointer
       UiNode_InvalidateRoot(&control->base);
       return;
     }
-    thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
+    thumbSize = g_GraphicsTextureSourceGetLogicalSize(0xb7,g_UiWindowTextureSource);
     trackLength = control->base.layoutHeight - thumbSize.logicalHeightPixels;
     if (trackLength == 0) {
       trackLength = 1;
@@ -568,7 +568,7 @@ UiSingleLineTextControl_ForwardNonRightPressToChild
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*childControl->vtable->nonRightPress)(wheelDelta,pointerY,pointerX,childControl);
+    childControl->vtable->nonRightPress(wheelDelta,pointerY,pointerX,childControl);
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
       childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -598,7 +598,7 @@ UiSingleLineTextControl_ForwardNonRightReleaseToChild
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*childControl->vtable->nonRightRelease)(wheelDelta,pointerY,pointerX,childControl);
+    childControl->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,childControl);
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
       childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -629,7 +629,7 @@ UiSingleLineTextControl_ForwardRightPressToChild
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     if (&control->base != childControl->parent) {
-      (*childControl->vtable->rightPress)(wheelDelta,pointerY,pointerX,childControl);
+      childControl->vtable->rightPress(wheelDelta,pointerY,pointerX,childControl);
     }
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
@@ -660,7 +660,7 @@ UiSingleLineTextControl_ForwardRightReleaseToChild
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*childControl->vtable->rightRelease)(wheelDelta,pointerY,pointerX,childControl);
+    childControl->vtable->rightRelease(wheelDelta,pointerY,pointerX,childControl);
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
       childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -690,7 +690,7 @@ UiSingleLineTextControl_ForwardNonRightDragToChild
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*childControl->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,childControl);
+    childControl->vtable->nonRightDrag(wheelDelta,pointerY,pointerX,childControl);
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
       childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -720,7 +720,7 @@ UiSingleLineTextControl_ForwardRightDragToChild
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*childControl->vtable->rightDrag)(wheelDelta,pointerY,pointerX,childControl);
+    childControl->vtable->rightDrag(wheelDelta,pointerY,pointerX,childControl);
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
       childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -751,7 +751,7 @@ UiSingleLineTextControl_ForwardPointerMoveToChild
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    cursorFrame = (*childControl->vtable->pointerMove)(pointerY,pointerX,childControl);
+    cursorFrame = childControl->vtable->pointerMove(pointerY,pointerX,childControl);
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
       childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -809,7 +809,7 @@ void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSin
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
-    (*childControl->vtable->tick)(childControl);
+    childControl->vtable->tick(childControl);
     if (childControl == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = &control->base;
       childControl->nodeFlags = childControl->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -838,7 +838,7 @@ UiImageControl_PointerMove
   
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & 0x40) == 0) {
-      opaqueTestResult = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueTestResult = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
                          control->textureSource);
@@ -847,7 +847,7 @@ UiImageControl_PointerMove
       }
     }
     else {
-      opaqueTestResult = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueTestResult = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);
@@ -1035,7 +1035,7 @@ UiSelectionGeometryControl_DrawClipped
       sourceHeight = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0xc));
       pixelDataOffset = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x1c))
       ;
-      framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
+      framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
         rowStepUHigh = (int)(rowStepU >> 0x20);
         sinTermOrSourceU = (uint32_t)sourceStartU;
@@ -1181,7 +1181,7 @@ UiSelectionGeometryControl_DrawClipped
             destRowStart = destPixel;
           } while (clipTop != 0);
         }
-        (*g_GraphicsFramebufferEndAccess)();
+        g_GraphicsFramebufferEndAccess();
       }
     }
   }
@@ -1317,11 +1317,11 @@ UiPointer_DispatchLeftPress
       (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
     UiKeyboardFocus_Set((UiNodeBase *)node);
   }
-  (*nodeVtable->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
+  nodeVtable->nonRightPress(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
   if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
     return;
   }
-  (*g_UiPointerCaptureTarget->vtable->nonRightDrag)
+  g_UiPointerCaptureTarget->vtable->nonRightDrag
             (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
   return;
 }
@@ -1403,11 +1403,11 @@ UiPointer_DispatchMiddlePress
       (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
     UiKeyboardFocus_Set((UiNodeBase *)node);
   }
-  (*nodeVtable->nonRightPress)(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
+  nodeVtable->nonRightPress(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
   if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
     return;
   }
-  (*g_UiPointerCaptureTarget->vtable->nonRightDrag)
+  g_UiPointerCaptureTarget->vtable->nonRightDrag
             (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
   return;
 }
@@ -1468,11 +1468,11 @@ UiPointer_DispatchRightPress
         {
           UiKeyboardFocus_Set(node);
         }
-        (*nodeVtable->rightPress)(wheelDelta,pointerY,pointerX,node);
+        nodeVtable->rightPress(wheelDelta,pointerY,pointerX,node);
         if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
           return;
         }
-        (*g_UiPointerCaptureTarget->vtable->rightDrag)
+        g_UiPointerCaptureTarget->vtable->rightDrag
                   (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
         return;
       }
@@ -1556,10 +1556,10 @@ UiPointer_DispatchMotionAndWheel
   root = g_UiRootNode;
   if (targetNode != (UiNodeBase *)0xffffffff) {
     if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT) {
-      (*targetNode->vtable->rightDrag)(wheelDelta,pointerY,pointerX,targetNode);
+      targetNode->vtable->rightDrag(wheelDelta,pointerY,pointerX,targetNode);
     }
     else {
-      (*targetNode->vtable->nonRightDrag)(wheelDelta,pointerY,pointerX,targetNode);
+      targetNode->vtable->nonRightDrag(wheelDelta,pointerY,pointerX,targetNode);
     }
     return;
   }
@@ -1574,18 +1574,18 @@ UiPointer_DispatchMotionAndWheel
         return;
       }
       nodeVtable = targetNode->vtable;
-      (*nodeVtable->pointerMove)(pointerY,pointerX,targetNode);
+      nodeVtable->pointerMove(pointerY,pointerX,targetNode);
       if (wheelDelta == 0) {
         return;
       }
-      (*nodeVtable->pointerWheel)(wheelDelta,pointerY,pointerX,targetNode);
+      nodeVtable->pointerWheel(wheelDelta,pointerY,pointerX,targetNode);
       return;
     }
     missPolicy = root->callbacks->pointerMissPolicy;
     if (missPolicy == (UiRootPointerMissPolicyCallback *)0x0) {
       return;
     }
-    missPolicyResult = (*missPolicy)(root);
+    missPolicyResult = missPolicy(root);
     if (-1 < missPolicyResult) break;
     root = root->previousRoot;
   }
@@ -1607,7 +1607,7 @@ UiNode_ForwardPointerWheelToParent
   
   parentControl = control->parent;
   if (parentControl != (UiNodeBase *)0xffffffff) {
-    (*parentControl->vtable->pointerWheel)(wheelDelta,pointerY,pointerX,parentControl);
+    parentControl->vtable->pointerWheel(wheelDelta,pointerY,pointerX,parentControl);
   }
   return;
 }

@@ -29,7 +29,7 @@ UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   if ((colorBiasQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,uint32_t)) || (colorScaleQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,uint32_t))) {
     DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,uint32_t) = colorBiasQ16;
     DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,uint32_t) = colorScaleQ16;
-    (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
+    g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,uint32_t),(UiNodeBase *)DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,uint32_t),
                DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,int32_t),DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,int32_t),&root->base);
@@ -138,7 +138,7 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
   UiRootStack_PopCf(root);
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
-  modeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,bitsPerPixel,modeHeight,modeWidth);
+  modeResult = g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,modeHeight,modeWidth);
   FatalError_ExitIfFailed(modeResult.valueOrError,modeResult.failed);
   root = g_UiRootNode;
   do {
@@ -202,8 +202,8 @@ UiImageControl_NonRightDrag
     hitVtable = (hitControl->selectable).base.vtable;
     /* The handlers preserve EAX/EDX: the original keeps passing the hit child and its vtable, and
        stores that child as the new activeChild (the decompiler lost both). */
-    (*hitVtable->nonRightPress)(0,0x70000000,0x70000000,(UiNodeBase *)hitControl);
-    (*hitVtable->nonRightDrag)(wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
+    hitVtable->nonRightPress(0,0x70000000,0x70000000,(UiNodeBase *)hitControl);
+    hitVtable->nonRightDrag(wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
     newActiveChild = (UiNodeBase *)hitControl;
     LOCK();
     previousActiveChild = control->activeChild;
@@ -211,8 +211,8 @@ UiImageControl_NonRightDrag
     UNLOCK();
   }
   if (previousActiveChild != (UiNodeBase *)0x0) {
-    (*previousActiveChild->vtable->nonRightDrag)(0,0x70000000,0x70000000,previousActiveChild);
-    (*previousActiveChild->vtable->nonRightRelease)(0,0x70000000,0x70000000,previousActiveChild);
+    previousActiveChild->vtable->nonRightDrag(0,0x70000000,0x70000000,previousActiveChild);
+    previousActiveChild->vtable->nonRightRelease(0,0x70000000,0x70000000,previousActiveChild);
   }
   UiRootStack_InvalidateAll();
   return;
@@ -246,13 +246,13 @@ void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *co
           hitChildVtable = (hitControl->selectable).base.vtable;
           hoverStateFlagsField = &(control->selectable).stateFlags;
           *hoverStateFlagsField = *hoverStateFlagsField & 0xfffff7ff;
-          (*hitChildVtable->nonRightRelease)
+          hitChildVtable->nonRightRelease
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl
                     );
           /* EAX (the hovered child) and ECX (its vtable) survive the handler calls. */
-          (*hitChildVtable->nonRightPress)
+          hitChildVtable->nonRightPress
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
-          (*hitChildVtable->nonRightDrag)
+          hitChildVtable->nonRightDrag
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
         }
       }
@@ -309,9 +309,9 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
     currentAdapterIndex = g_ActiveGraphicsAdapterIndex;
     pendingWidthOrCurrentHeight = g_FramebufferHeight;
     pendingHeightOrCurrentWidth = g_FramebufferWidth;
-    pendingModeResult = (*g_GraphicsDisplayModeHook)(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,pendingModeWidth);
+    pendingModeResult = g_GraphicsSetDisplayMode(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,pendingModeWidth);
     if (pendingModeResult.failed) {
-      restoreModeResult = (*g_GraphicsDisplayModeHook)(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
+      restoreModeResult = g_GraphicsSetDisplayMode(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
       FatalError_ExitIfFailed(restoreModeResult.valueOrError,restoreModeResult.failed);
       g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
       FatalError_ReportIfFailed(pendingModeResult.valueOrError,true);
@@ -343,7 +343,7 @@ UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x84,int32_t);
   colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x88,int32_t);
   UiRootStack_PopCf((UiRootNode *)sourceNode);
-  (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
+  g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
   return;
 }
 
@@ -371,7 +371,7 @@ UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
       UiActionQueue_Enqueue(0x20d,root);
     }
     else {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,struct UiNodeVtable *),
                  (uint16_t *)&FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t));
     }
@@ -402,25 +402,25 @@ UiRangeSliderControl_DrawTrackAndThumb
   bool accessFailed;
   TextureSizeResult textureSize;
   
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     subresourceBase = 0xac;
     if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
       subresourceBase = 0xb0;
     }
     if ((control->sliderFlags & 1) != 0) {
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,subresourceBase + 8,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 8,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + 8,g_UiWindowTextureSource);
       edgeLength = control->base.layoutHeight - textureSize.logicalHeightPixels;
       UiWindow_BlitTiledVerticalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + 9,edgeLength,textureSize.logicalHeightPixels,0,
                  &control->base);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,edgeLength + control->base.top,control->base.left,subresourceBase + 10,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 0xb,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + 0xb,g_UiWindowTextureSource);
       rangeMax = control->maximumValue;
       clampedValue = control->value;
       if (rangeMax < control->value) {
@@ -438,26 +438,26 @@ UiRangeSliderControl_DrawTrackAndThumb
         valueOffsetOrRange = rangeOrValueOffset - valueOffsetOrRange;
       }
       scaledOffset = (uint64_t)valueOffsetOrRange * (uint64_t)(control->base.layoutHeight - textureSize.logicalHeightPixels);
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,
                  (int)(scaledOffset / rangeOrValueOffset) + (uint32_t)(rangeOrValueOffset < (uint32_t)((int)(scaledOffset % (uint64_t)rangeOrValueOffset) * 2))
                  + control->base.top,control->base.left,subresourceBase + 0xb,g_UiWindowTextureSource,g_FramebufferAccess
                 );
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
       return;
     }
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,subresourceBase,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase,g_UiWindowTextureSource);
     edgeLength = control->base.layoutWidth - textureSize.logicalWidthPixels;
     UiWindow_BlitTiledHorizontalEdge
               (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + 1,edgeLength,0,textureSize.logicalWidthPixels,
                &control->base);
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,control->base.top,edgeLength + control->base.left,subresourceBase + 2,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 3,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + 3,g_UiWindowTextureSource);
     rangeMax = control->maximumValue;
     clampedValue = control->value;
     if (rangeMax < control->value) {
@@ -475,11 +475,11 @@ UiRangeSliderControl_DrawTrackAndThumb
       rangeOrValueOffset = valueOffsetOrRange - rangeOrValueOffset;
     }
     scaledOffset = (uint64_t)rangeOrValueOffset * (uint64_t)(control->base.layoutWidth - textureSize.logicalWidthPixels);
-    (*g_GraphicsTextureSourceBlitSourceAlpha)
+    g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,control->base.top,
                (int)(scaledOffset / valueOffsetOrRange) + (uint32_t)(valueOffsetOrRange < (uint32_t)((int)(scaledOffset % (uint64_t)valueOffsetOrRange) * 2)) +
                control->base.left,subresourceBase + 3,g_UiWindowTextureSource,g_FramebufferAccess);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -504,21 +504,21 @@ UiRangeSliderControl_BeginThumbDrag
       (localY = pointerY - control->base.top, control->base.top <= pointerY)) &&
      ((localX < control->base.layoutWidth && (localY < control->base.layoutHeight)))) {
     if ((control->sliderFlags & 1) == 0) {
-      thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
+      thumbSize = g_GraphicsTextureSourceGetLogicalSize(0xaf,g_UiWindowTextureSource);
       if ((int)thumbSize.logicalHeightPixels <= localY) {
         return;
       }
       control->sliderFlags = control->sliderFlags | 2;
     }
     else {
-      thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
+      thumbSize = g_GraphicsTextureSourceGetLogicalSize(0xb7,g_UiWindowTextureSource);
       if ((int)thumbSize.logicalWidthPixels <= localX) {
         return;
       }
       control->sliderFlags = control->sliderFlags | 2;
     }
     if (((control->sliderFlags & 4) != 0) && (control->clickSound != (DirectSoundVoiceSet *)0x0)) {
-      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
     }
   }
   return;
@@ -537,7 +537,7 @@ void UiRangeSliderControl_EndThumbDrag
   control->sliderFlags = control->sliderFlags & 0xfffffffd;
   if ((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && ((control->sliderFlags & 4) != 0)
       ) && (control->clickSound != (DirectSoundVoiceSet *)0x0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
+    g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
   }
   return;
 }
@@ -600,7 +600,7 @@ UiImageControl_DrawClipped
     }
     if ((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) ||
        (((control->selectable).stateFlags & 0x40) == 0)) {
-      accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+      accessFailed = g_GraphicsFramebufferBeginAccess();
       if (!accessFailed) {
         if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
           subresource = control->normalSubresource;
@@ -608,10 +608,10 @@ UiImageControl_DrawClipped
         else {
           subresource = control->alternateSubresource;
         }
-        (*g_GraphicsTextureSourceBlitSourceAlpha)
+        g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
                    (control->selectable).base.left,subresource,control->textureSource,g_FramebufferAccess);
-        (*g_GraphicsFramebufferEndAccess)();
+        g_GraphicsFramebufferEndAccess();
       }
     }
   }
@@ -642,20 +642,20 @@ UiImageControl_NonRightPress
   if (((((control->selectable).stateFlags & 0x400) == 0) &&
       (((control->selectable).stateFlags & 0x20) != 0)) && (control->pointerActivationSoundId != 0))
   {
-    (*g_SoundPlayOneShot)
+    g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
                (DirectSoundVoiceSet *)control->pointerActivationSoundId);
   }
   opaqueHit = false;
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
     if (((control->selectable).stateFlags & 0x40) == 0) {
-      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
                          control->textureSource);
     }
     else {
-      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);
@@ -702,7 +702,7 @@ UiImageControl_NonRightRelease
       if (previousActiveChild != (UiNodeBase *)0x0) {
         activeChildVtable = previousActiveChild->vtable;
         control->activeChild = (UiNodeBase *)0x0;
-        (*activeChildVtable->nonRightRelease)(wheelDelta,pointerY,pointerX,previousActiveChild);
+        activeChildVtable->nonRightRelease(wheelDelta,pointerY,pointerX,previousActiveChild);
         preserveHover = (((control->selectable).stateFlags & 0x400) == 0) ||
                         (((control->selectable).stateFlags & 0x800) != 0);
       }
@@ -712,7 +712,7 @@ UiImageControl_NonRightRelease
         *stateFlagsField = *stateFlagsField & 0xfffff9fc;
         if ((((control->selectable).stateFlags & 0x20) != 0) &&
            (control->pointerActivationSoundId != 0)) {
-          (*g_SoundPlayOneShot)
+          g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
                      (DirectSoundVoiceSet *)control->pointerActivationSoundId);
         }
@@ -840,7 +840,7 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
   ArenaAllocResult allocResult;
   
   if (1 < g_GraphicsDisplayModeCount) {
-    allocResult = (*g_MemoryApi.alloc)(0xbd4);
+    allocResult = g_MemoryApi.alloc(0xbd4);
     root = (UiRootNode *)allocResult.payloadOrError;
     if (allocResult.failed) {
       return;
@@ -1116,7 +1116,7 @@ UiImageControl_HitTestOpaque
   hitNode = (UiImageControl *)0xffffffff;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & 0x40) == 0) {
-      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
                          control->textureSource);
@@ -1125,7 +1125,7 @@ UiImageControl_HitTestOpaque
       }
     }
     else {
-      opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+      opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);

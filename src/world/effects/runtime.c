@@ -35,7 +35,7 @@ EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
       failureResult.notFound = true;
       failureResult.definitionOrError = (EffectDefinition *)0x48;
@@ -64,16 +64,16 @@ StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadOrAllocResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
+  loadOrAllocResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackageCf(mutableBasePath));
   if (!loadOrAllocResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_EffectTextureSet = (GraphicsTextureSet *)loadOrAllocResult.payloadOrError;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    loadOrAllocResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
+    loadOrAllocResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
     if (!loadOrAllocResult.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_EffectPalette = (GraphicsPaletteAsset *)loadOrAllocResult.payloadOrError;
-      loadOrAllocResult = (*g_MemoryApi.alloc)(0x40000);
+      loadOrAllocResult = g_MemoryApi.alloc(0x40000);
       runtimeSlotCursor = (EffectRuntimeSlot *)loadOrAllocResult.payloadOrError;
       if (!loadOrAllocResult.failed) {
         g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)((int)&runtimeSlotCursor[-1].effectAgeTicks + 3)
@@ -108,14 +108,14 @@ void __thandor_void_preserve_eax_ecx EffectRuntime_ShutdownGraphicsResources(voi
   EffectDefinition **registryCursor;
   EffectDefinition *currentDefinition;
   
-  (*g_MemoryApi.free)(g_EffectRuntimeSlots);
+  g_MemoryApi.free(g_EffectRuntimeSlots);
   g_EffectRuntimeSlots = (EffectRuntimeSlot *)0x0;
   if (g_EffectTextureSet != (GraphicsTextureSet *)0x0) {
-    (*g_GraphicsTextureSetReleasePackageCf)(g_EffectTextureSet);
+    g_GraphicsTextureSetReleasePackageCf(g_EffectTextureSet);
     g_EffectTextureSet = (GraphicsTextureSet *)0x0;
   }
   if (g_EffectPalette != (GraphicsPaletteAsset *)0x0) {
-    (*g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage)(g_EffectPalette);
+    g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_EffectPalette);
     g_EffectPalette = (GraphicsPaletteAsset *)0x0;
   }
   registryCursor = g_EffectDefinitionRegistry;
@@ -282,7 +282,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
         (effectModelNode->worldTransform).translation.y = worldXQ12;
         (effectModelNode->worldTransform).translation.z = worldZQ12;
         if ((effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION) != 0) {
-          randomOrRuntimeValue = (*g_RandomGeneratorState.next)();
+          randomOrRuntimeValue = g_RandomGeneratorState.next();
           orientationAngle0 = randomOrRuntimeValue & 0xffff;
         }
         (effectModelNode->modelPayload).worldRotationAngle0 = orientationAngle2;

@@ -384,7 +384,7 @@ StatusResult __cdecl ModelRuntimePool_Init(void)
   ArenaAllocResult allocResult;
   StatusResult statusResult;
   
-  allocResult = (*g_MemoryApi.alloc)(0x400000);
+  allocResult = g_MemoryApi.alloc(0x400000);
   modelRuntimeStorageCursor = (ModelRuntimeSlot *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_ModelRuntimeRebaseDelta = (int)&modelRuntimeStorageCursor[-1].attachments140[5].reserved1C + 3
@@ -441,7 +441,7 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefi
   ModelDefinitionRecordPrefix **registryEntry;
   uint32_t resourceRecord;
   
-  (*g_MemoryApi.free)(g_ModelRuntimeSlots);
+  g_MemoryApi.free(g_ModelRuntimeSlots);
   g_ModelRuntimeSlots = (ModelRuntimeSlot *)0x0;
   registryEntry = g_ModelDefinitionRegistry;
   for (registryRemaining = 0x300; registryRemaining != 0; registryRemaining = registryRemaining + -1) {
@@ -510,7 +510,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     offsetClassOrCount = (modelRuntime->definitionReferenceOrSavedId).definition[6].flags;
     modelRuntime->definitionReferenceOrSavedId =
          THANDOR_BITCAST(PckModelDefinitionIdCatalog, ModelDefinitionReferenceOrSavedId4, ((modelRuntime->definitionReferenceOrSavedId).definition)->definitionId);
-    (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[offsetClassOrCount])
+    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[offsetClassOrCount]
               ((ModelRuntimeSlot *)modelRuntime);
     attachmentCursor = modelRuntime;
     for (offsetClassOrCount = modelRuntime->attachmentCount0C; offsetClassOrCount != 0; offsetClassOrCount = offsetClassOrCount - 1) {
@@ -594,7 +594,7 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
             (ModelDefinitionRecordPrefix *)registeredDefinition->definitionId)) {
           classIndexOrCount = registeredDefinition[6].flags;
           (modelRuntime->definitionOrSavedId).definition = registeredDefinition;
-          (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair[classIndexOrCount])
+          g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair[classIndexOrCount]
                     (modelRuntime);
           classIndexOrCount = modelRuntime->attachmentCount0C;
           linkedRuntimeOrCursor = modelRuntime;
@@ -677,7 +677,7 @@ ModelRuntimePool_DestroyHierarchyAndDetach
        (ModelDefinitionRecordPrefix *)(modelRuntime->definitionOrSavedId).savedIdOrOffset;
   classIndexOrCount = modelDefinition[6].flags;
   FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
-  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[classIndexOrCount])
+  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[classIndexOrCount]
             (modelDefinition,modelRuntime);
   attachmentCursor = modelRuntime;
   for (classIndexOrCount = modelRuntime->attachmentCount0C; classIndexOrCount != 0; classIndexOrCount = classIndexOrCount - 1) {
@@ -925,7 +925,7 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
       return createResult;
     }
   }
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
   failureResult.modelNode = (ModelRuntimeNode *)0x3e; /* definition not registered */
   return failureResult;

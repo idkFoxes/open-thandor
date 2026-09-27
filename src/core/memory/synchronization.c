@@ -82,7 +82,7 @@ SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockV
 {
   if ((lockValue != (RuntimeSpinLockValue *)0x0) &&
      (*lockValue = SPIN_LOCK_UNLOCKED, callback != (SpinLockReleaseCallbackProc *)0x0)) {
-    (*callback)();
+    callback();
   }
   return;
 }

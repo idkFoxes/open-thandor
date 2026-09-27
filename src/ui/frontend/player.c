@@ -1614,7 +1614,7 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
       sourceBlock = nextSourceBlock;
       destBlock = nextDestBlock;
     } while (blocksRemaining != 0);
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(frontendRoot->playerRuntimeList).rowCount,
                (uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
     UiPointerList_RefreshSelectionAndQueueAction(&frontendRoot->playerRuntimeList);

@@ -366,7 +366,7 @@ UiCommandSpriteButtonControl_NonRightRelease
     control->activationInputState = control->activationInputState | inputStateBits;
     if ((((control->sprite).selectable.stateFlags & 0x200) != 0) &&
        ((control->sprite).activationSoundId != 0)) {
-      (*g_SoundPlayOneShot)
+      g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
                  (DirectSoundVoiceSet *)(control->sprite).activationSoundId);
     }
@@ -400,7 +400,7 @@ UiCommandSpriteButtonControl_RightRelease
     control->activationInputState = inputStateBits | UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON;
     if ((((control->sprite).selectable.stateFlags & 0x200) != 0) &&
        ((control->sprite).activationSoundId != 0)) {
-      (*g_SoundPlayOneShot)
+      g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
                  (DirectSoundVoiceSet *)(control->sprite).activationSoundId);
     }
@@ -1609,8 +1609,8 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
             g_SessionNetworkRoleFlags =
                  g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
             g_SessionTransferTimeoutTicks = 0;
-            (*g_NetworkBackendSlot3)();
-            (*g_NetworkBackendSlot1)();
+            g_NetworkBackendSlot3();
+            g_NetworkBackendSlot1();
             playerRecord = g_FrontendPlayerRuntimeBlocks;
             g_FrontendPlayerRuntimeBlockCount = 1;
             g_LocalPlayerRuntimeId = 0;

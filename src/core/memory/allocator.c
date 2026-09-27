@@ -249,7 +249,7 @@ ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
     }
     blockCursor = blockCursor->next;
     if (blockCursor == (ArenaBlockHeader *)0xffffffff) {
-      (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreeOrOriginalSize,g_PackageLastErrorPath);
+      g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreeOrOriginalSize,g_PackageLastErrorPath);
       outOfMemoryResult.failed = true;
       outOfMemoryResult.payloadOrError = 0x12;
       return outOfMemoryResult;
@@ -367,7 +367,7 @@ ArenaHeap_AllocLargestFreeBlock(void)
     blockCursor = blockCursor->next;
   } while (blockCursor != (ArenaBlockHeader *)0xffffffff);
   if (largestFreePayloadBytes == 0) {
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
     outOfMemoryResult.failed = true;
     outOfMemoryResult.allocationOrError = 0x12;
     outOfMemoryResult.blockSizeOrSentinel = 0;

@@ -595,7 +595,7 @@ StatusResult __cdecl Graphics_Init(void)
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
   
-  allocResult = (*g_MemoryApi.alloc)(0x4000);
+  allocResult = g_MemoryApi.alloc(0x4000);
   cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_GraphicsTextureSlots = (GraphicsTextureResource **)cursorOrResult;
@@ -603,7 +603,7 @@ StatusResult __cdecl Graphics_Init(void)
       (cursorOrResult->adapterGuid).Data1 = 0;
       cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
     }
-    allocResult = (*g_MemoryApi.alloc)(0x400);
+    allocResult = g_MemoryApi.alloc(0x400);
     cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       g_TexturePaletteEntries = (DirectDrawPaletteEntry *)cursorOrResult;
@@ -613,12 +613,12 @@ StatusResult __cdecl Graphics_Init(void)
       }
       optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll);
       g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.notFound;
-      allocResult = (*g_MemoryApi.alloc)(0x800);
+      allocResult = g_MemoryApi.alloc(0x800);
       cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         g_GraphicsAdapterCount = 0;
         g_GraphicsAdapters = (GraphicsAdapterRecord *)allocResult.payloadOrError;
-        allocResult = (*g_MemoryApi.alloc)(0x1000);
+        allocResult = g_MemoryApi.alloc(0x1000);
         cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
         if (!allocResult.failed) {
           g_GraphicsDisplayModeCount = 0;
@@ -638,7 +638,7 @@ StatusResult __cdecl Graphics_Init(void)
               procResolve = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,dynapi_18);
               cursorOrResult = procResolve.procedureOrError;
               if (!procResolve.failed) {
-                hresult = (*pDirectDrawEnumerateA)
+                hresult = pDirectDrawEnumerateA
                                   (DirectDraw_EnumAdapterCallback,(TH_LEGACY_LPVOID)0x0);
                 cursorOrResult = (GraphicsAdapterRecord *)&k_LowAddressLiteral00000017;
                 if ((hresult == 0) &&
@@ -650,17 +650,17 @@ StatusResult __cdecl Graphics_Init(void)
                       if ((adapterOrModule->adapterGuid).Data1 == 0) {
                         cursorOrResult = (GraphicsAdapterRecord *)0x0;
                       }
-                      hresult = (*pDirectDrawCreate)
+                      hresult = pDirectDrawCreate
                                         (&cursorOrResult->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
                       if (hresult == 0) {
-                        hresult = (*directDraw->lpVtbl->QueryInterface)
+                        hresult = directDraw->lpVtbl->QueryInterface
                                           (directDraw,&IID_IDirect3D2_Local,&direct3D2);
                         if (hresult == 0) {
-                          (*direct3D2->lpVtbl->EnumDevices)
+                          direct3D2->lpVtbl->EnumDevices
                                     (direct3D2,Direct3D_EnumDeviceCallback,adapterOrModule);
-                          (*direct3D2->lpVtbl->Release)(direct3D2);
+                          direct3D2->lpVtbl->Release(direct3D2);
                         }
-                        (*directDraw->lpVtbl->Release)(directDraw);
+                        directDraw->lpVtbl->Release(directDraw);
                       }
                     }
                     remainingAdapters = remainingAdapters - 1;
@@ -675,16 +675,16 @@ StatusResult __cdecl Graphics_Init(void)
                       if ((cursorOrResult->adapterGuid).Data1 == 0) {
                         adapterOrModule = (GraphicsAdapterRecord *)0x0;
                       }
-                      hresult = (*pDirectDrawCreate)
+                      hresult = pDirectDrawCreate
                                         (&adapterOrModule->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
                       if (hresult == 0) {
-                        (*directDraw->lpVtbl->EnumDisplayModes)
+                        directDraw->lpVtbl->EnumDisplayModes
                                   (directDraw,0,(DDSURFACEDESC_DX6 *)0x0,displayAdapterIndex,
                                    DirectDraw_EnumDisplayModeCallback);
-                        (*directDraw->lpVtbl->Release)(directDraw);
+                        directDraw->lpVtbl->Release(directDraw);
                       }
                     }
-                    displayModeHook = g_GraphicsDisplayModeHook;
+                    displayModeHook = g_GraphicsSetDisplayMode;
                     displayAdapterIndex = displayAdapterIndex + 1;
                     cursorOrResult = cursorOrResult + 1;
                     remainingAdapters = remainingAdapters - 1;
@@ -693,7 +693,7 @@ StatusResult __cdecl Graphics_Init(void)
                   if (g_GraphicsDisplayModeCount != 0) {
                     g_GraphicsBackendRefreshActiveAdapterCf =
                          GraphicsBackend_RefreshActiveAdapterIfReady;
-                    g_GraphicsDisplayModeHook =
+                    g_GraphicsSetDisplayMode =
                          GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf;
                     g_GraphicsFramebufferBeginAccess = GraphicsFramebuffer_BeginAccess;
                     g_GraphicsFramebufferEndAccess = GraphicsFramebuffer_EndAccess;
@@ -752,9 +752,9 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
   GraphicsTextureResource **slotCursor;
   
   g_GraphicsBackendAccessState = -1;
-  (*g_MemoryApi.free)(g_CursorSavedBackground);
-  (*g_MemoryApi.free)(g_CursorCompositeBuffer);
-  (*g_MemoryApi.free)(g_CursorAlternateSavedBackground);
+  g_MemoryApi.free(g_CursorSavedBackground);
+  g_MemoryApi.free(g_CursorCompositeBuffer);
+  g_MemoryApi.free(g_CursorAlternateSavedBackground);
   g_CursorSavedBackground = (SoftwareFramebufferAccess *)0x0;
   g_CursorCompositeBuffer = (SoftwareFramebufferAccess *)0x0;
   g_CursorAlternateSavedBackground = (SoftwareFramebufferAccess *)0x0;
@@ -775,39 +775,39 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
   g_LastViewportRect.x2 = 0;
   g_LastViewportRect.y2 = 0;
   if (g_Direct3DViewport2 != (IDirect3DViewport2 *)0x0) {
-    (*g_Direct3DViewport2->lpVtbl->Release)(g_Direct3DViewport2);
+    g_Direct3DViewport2->lpVtbl->Release(g_Direct3DViewport2);
     g_Direct3DViewport2 = (IDirect3DViewport2 *)0x0;
   }
   if (g_ZSurface3 != (IDirectDrawSurface3 *)0x0) {
-    (*g_ZSurface3->lpVtbl->Release)(g_ZSurface3);
+    g_ZSurface3->lpVtbl->Release(g_ZSurface3);
     g_ZSurface3 = (IDirectDrawSurface3 *)0x0;
   }
   if (g_ZSurfaceBase != (IDirectDrawSurface *)0x0) {
-    (*g_ZSurfaceBase->lpVtbl->Release)(g_ZSurfaceBase);
+    g_ZSurfaceBase->lpVtbl->Release(g_ZSurfaceBase);
     g_ZSurfaceBase = (IDirectDrawSurface *)0x0;
   }
   if (g_Direct3DDevice2 != (IDirect3DDevice2 *)0x0) {
-    (*g_Direct3DDevice2->lpVtbl->Release)(g_Direct3DDevice2);
+    g_Direct3DDevice2->lpVtbl->Release(g_Direct3DDevice2);
     g_Direct3DDevice2 = (IDirect3DDevice2 *)0x0;
   }
   if (g_Direct3D2 != (IDirect3D2 *)0x0) {
-    (*g_Direct3D2->lpVtbl->Release)(g_Direct3D2);
+    g_Direct3D2->lpVtbl->Release(g_Direct3D2);
     g_Direct3D2 = (IDirect3D2 *)0x0;
   }
   if (g_BackSurface3 != (IDirectDrawSurface3 *)0x0) {
-    (*g_BackSurface3->lpVtbl->Release)(g_BackSurface3);
+    g_BackSurface3->lpVtbl->Release(g_BackSurface3);
     g_BackSurface3 = (IDirectDrawSurface3 *)0x0;
   }
   if (g_BackSurfaceBase != (IDirectDrawSurface *)0x0) {
-    (*g_BackSurfaceBase->lpVtbl->Release)(g_BackSurfaceBase);
+    g_BackSurfaceBase->lpVtbl->Release(g_BackSurfaceBase);
     g_BackSurfaceBase = (IDirectDrawSurface *)0x0;
   }
   if (g_PrimarySurface3 != (IDirectDrawSurface3 *)0x0) {
-    (*g_PrimarySurface3->lpVtbl->Release)(g_PrimarySurface3);
+    g_PrimarySurface3->lpVtbl->Release(g_PrimarySurface3);
     g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
   }
   if (g_PrimarySurfaceBase != (IDirectDrawSurface *)0x0) {
-    (*g_PrimarySurfaceBase->lpVtbl->Release)(g_PrimarySurfaceBase);
+    g_PrimarySurfaceBase->lpVtbl->Release(g_PrimarySurfaceBase);
     g_PrimarySurfaceBase = (IDirectDrawSurface *)0x0;
   }
   return;
@@ -866,7 +866,7 @@ Graphics_SetViewportAndClearDepth
       g_Direct3DViewportState.dvClipY = (float)coordinate2;
       g_Direct3DViewportState.dvClipWidth = (float)(int)g_Direct3DViewportState.dwWidth;
       g_Direct3DViewportState.dvClipHeight = (float)(int)g_Direct3DViewportState.dwHeight;
-      hresult = (*g_Direct3DViewport2->lpVtbl->SetViewport2)
+      hresult = g_Direct3DViewport2->lpVtbl->SetViewport2
                         (g_Direct3DViewport2,&g_Direct3DViewportState);
       if (hresult == 0) {
         g_LastViewportRect.x1 = savedX1;
@@ -875,7 +875,7 @@ Graphics_SetViewportAndClearDepth
         g_LastViewportRect.y2 = savedY2;
       }
     }
-    (*g_Direct3DViewport2->lpVtbl->Clear)(g_Direct3DViewport2,1,&g_CurrentClearRect,2);
+    g_Direct3DViewport2->lpVtbl->Clear(g_Direct3DViewport2,1,&g_CurrentClearRect,2);
     return;
   }
   Glide3_ClearViewport(coordinate0,coordinate1,coordinate2,coordinate3);
@@ -909,13 +909,13 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void)
     }
   }
   else {
-    hresult = (*g_BackSurface3->lpVtbl->IsLost)(g_BackSurface3);
+    hresult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
     restoreResult = 0;
     if (hresult != 0) {
-      restoreResult = (*g_BackSurface3->lpVtbl->Restore)(g_BackSurface3);
+      restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
     }
     if ((restoreResult == 0) &&
-       (hresult = (*g_Direct3DDevice2->lpVtbl->BeginScene)(g_Direct3DDevice2), hresult == 0)) {
+       (hresult = g_Direct3DDevice2->lpVtbl->BeginScene(g_Direct3DDevice2), hresult == 0)) {
       return;
     }
   }
@@ -939,7 +939,7 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_EndScene(void)
       GlideBackend_EndSceneNoOp();
     }
     else {
-      (*g_Direct3DDevice2->lpVtbl->EndScene)(g_Direct3DDevice2);
+      g_Direct3DDevice2->lpVtbl->EndScene(g_Direct3DDevice2);
     }
   }
   return;
@@ -977,9 +977,9 @@ Graphics_DrawPrimitiveQueue
   if (graphicsBackendSelector != 1) {
     packetResult = GraphicsPrimitiveQueue_Begin(queue);
     while (!packetResult.noPacket) {
-      (*g_GraphicsDispatchTable.primitive[((packetResult.packet)->renderFlags & 0x3f000) >> 12])
+      g_GraphicsDispatchTable.primitive[((packetResult.packet)->renderFlags & 0x3f000) >> 12]
                 (packetResult.packet);
-      (*g_Direct3DDevice2->lpVtbl->DrawPrimitive)
+      g_Direct3DDevice2->lpVtbl->DrawPrimitive
                 (g_Direct3DDevice2,6,3,g_ImmediateTLVertices,g_ImmediateVertexCount,8);
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
       packetResult = GraphicsPrimitiveQueue_Next(queue);
@@ -1027,7 +1027,7 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
       if ((g_CursorButtonState & 7) == 0) {
         cursorSubresourceIndex = cursorFrame->idleSubresourceIndex;
       }
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (g_FramebufferHeight,g_FramebufferWidth,0,0,0,0,cursorSubresourceIndex,g_CursorSourceAsset,
                  g_CursorCompositeBuffer);
       GraphicsCursor_RestoreSurfaceBackground(g_CursorCompositeBuffer,drawY,cursorX,backSurface);
@@ -1113,14 +1113,14 @@ GraphicsCursor_SaveSurfaceBackground
   if (copyWidth <= 0 || copyHeight <= 0) {
     return;
   }
-  result = (*sourceSurface->lpVtbl->IsLost)(sourceSurface);
+  result = sourceSurface->lpVtbl->IsLost(sourceSurface);
   if (result != 0) {
-    result = (*sourceSurface->lpVtbl->Restore)(sourceSurface);
+    result = sourceSurface->lpVtbl->Restore(sourceSurface);
   }
   if (result == 0) {
     Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
     g_GraphicsCursorSurfaceDescScratch = 0x6c;
-    result = (*sourceSurface->lpVtbl->Lock)
+    result = sourceSurface->lpVtbl->Lock
                        (sourceSurface,(TH_LEGACY_RECT *)0x0,
                         (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
                         (TH_LEGACY_HANDLE)0x0);
@@ -1135,7 +1135,7 @@ GraphicsCursor_SaveSurfaceBackground
     destination = destination + rowPixels * bytesPerPixel;
     source = source + (int)g_GraphicsCursorSurfacePitchBytes;
   }
-  (*sourceSurface->lpVtbl->Unlock)(sourceSurface,surfacePixels);
+  sourceSurface->lpVtbl->Unlock(sourceSurface,surfacePixels);
 }
 
 
@@ -1188,14 +1188,14 @@ GraphicsCursor_RestoreSurfaceBackground
   if (copyWidth <= 0 || copyHeight <= 0) {
     return;
   }
-  result = (*destinationSurface->lpVtbl->IsLost)(destinationSurface);
+  result = destinationSurface->lpVtbl->IsLost(destinationSurface);
   if (result != 0) {
-    result = (*destinationSurface->lpVtbl->Restore)(destinationSurface);
+    result = destinationSurface->lpVtbl->Restore(destinationSurface);
   }
   if (result == 0) {
     Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
     g_GraphicsCursorSurfaceDescScratch = 0x6c;
-    result = (*destinationSurface->lpVtbl->Lock)
+    result = destinationSurface->lpVtbl->Lock
                        (destinationSurface,(TH_LEGACY_RECT *)0x0,
                         (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
                         (TH_LEGACY_HANDLE)0x0);
@@ -1210,6 +1210,6 @@ GraphicsCursor_RestoreSurfaceBackground
     destination = destination + (int)g_GraphicsCursorSurfacePitchBytes;
     source = source + rowPixels * bytesPerPixel;
   }
-  (*destinationSurface->lpVtbl->Unlock)(destinationSurface,surfacePixels);
+  destinationSurface->lpVtbl->Unlock(destinationSurface,surfacePixels);
 }
 

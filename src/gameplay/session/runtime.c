@@ -59,8 +59,8 @@ InGameRuntime_RunSessionUntilExit
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresent();
     if ((g_UiCommandRuntimeFlags & 0x10000) != 0) {
-      (*g_SoundStopAllVoices)();
-      (*g_TimerUnregisterPeriodic)(InGameRuntime_ProcessQueuedSessionNotificationTimer);
+      g_SoundStopAllVoices();
+      g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       g_EndMovieSelectionIndex = 0;
       OldUnitRuntime_RebuildScenarioReplayTables();
@@ -73,8 +73,8 @@ InGameRuntime_RunSessionUntilExit
       return quitResult;
     }
     if ((g_UiCommandRuntimeFlags & 0x800) != 0) {
-      (*g_SoundStopAllVoices)();
-      (*g_TimerUnregisterPeriodic)(InGameRuntime_ProcessQueuedSessionNotificationTimer);
+      g_SoundStopAllVoices();
+      g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       UiRuntime_SetSynchronizationHooks(FrontendSession_PeriodicTick,&g_InGameStateTickSpinLock);
       Frontend_PlaySelectedEndMovie();
@@ -89,8 +89,8 @@ InGameRuntime_RunSessionUntilExit
       return endMovieResult;
     }
     if ((g_UiCommandRuntimeFlags & 0x20000) != 0) {
-      (*g_SoundStopAllVoices)();
-      (*g_TimerUnregisterPeriodic)(InGameRuntime_ProcessQueuedSessionNotificationTimer);
+      g_SoundStopAllVoices();
+      g_TimerUnregisterPeriodic(InGameRuntime_ProcessQueuedSessionNotificationTimer);
       GridScratch_ReleaseBuffers();
       UiRuntime_SetSynchronizationHooks
                 ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
@@ -188,7 +188,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
     hoveredNode = (*((endGameResultsRuntime->rootUi0000).base.vtable)->hitTest)
                        (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)endGameResultsRuntime);
     if (hoveredNode != (UiNodeBase *)0xffffffff) {
-      cursorFrameOrScratch = (*hoveredNode->vtable->pointerMove)(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
+      cursorFrameOrScratch = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
     }
     g_GameFactionRuntimeImage.tail.presentationTick =
          g_GameFactionRuntimeImage.tail.presentationTick + 1;
@@ -204,7 +204,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
         (candidateFrameOrScore = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime), candidateFrameOrScore != 0)))) {
       cursorFrameOrScratch = candidateFrameOrScore;
     }
-    (*g_GraphicsCursorSetFrame)(cursorFrameOrScratch);
+    g_GraphicsCursorSetFrame(cursorFrameOrScratch);
     cameraFieldGrid = (endGameResultsRuntime->worldRuntime0A30).fieldGrid;
     outOfBoundsAxisCount = 0;
     targetGridPosition = FieldGrid_WorldToGridQ12
@@ -264,7 +264,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
           InGameSelectionDetailPanel_Rebuild();
         }
         if (g_InGameEffectsEnabled == 0) {
-          voicePlaying = (*g_SoundIsVoicePlaying)(g_InGameActiveEffectVoice);
+          voicePlaying = g_SoundIsVoicePlaying(g_InGameActiveEffectVoice);
           if (voicePlaying) {
             g_InGameActiveEffectVoice = (IDirectSoundBuffer *)0x0;
             cursorFrameOrScratch = Random_NextPrimary();
@@ -276,7 +276,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
           if (g_InGameEffectsEnabled == 0) {
             cursorFrameOrScratch = PersistentSettings_Read(0x8000,0x24);
             candidateFrameOrScore = Random_NextPrimary();
-            playVoiceResult = (*g_SoundPlayOneShot)
+            playVoiceResult = g_SoundPlayOneShot
                                (cursorFrameOrScratch,cursorFrameOrScratch,
                                 (DirectSoundVoiceSet *)(&g_InGameLevelEffectVoiceSet0)[candidateFrameOrScore & 3]);
             if (!playVoiceResult.failed) {
@@ -289,7 +289,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
       levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
       if ((cursorFrameOrScratch & 2) != 0) {
         if (g_InGameMusicEnabled == 0) {
-          voicePlaying = (*g_SoundIsVoicePlaying)(g_InGameActiveMusicVoice);
+          voicePlaying = g_SoundIsVoicePlaying(g_InGameActiveMusicVoice);
           if (voicePlaying) {
             g_InGameActiveMusicVoice = (IDirectSoundBuffer *)0x0;
             cursorFrameOrScratch = Random_NextPrimary();
@@ -317,7 +317,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
               selectedMusicTrackId = (levelConditionStorage->levelImage).runtimeTail2E0.musicSampleNumbers[bestTrackOrSecondsLeft];
               cursorFrameOrScratch = PersistentSettings_Read(0x8000,0x2c);
               g_EndGameResultsCurrentMusicTrackId = selectedMusicTrackId;
-              playVoiceResult = (*g_SoundPlayOneShot)
+              playVoiceResult = g_SoundPlayOneShot
                                  (cursorFrameOrScratch,cursorFrameOrScratch,
                                   (DirectSoundVoiceSet *)(&g_InGameLevelMusicVoiceSet0)[bestTrackOrSecondsLeft]);
               if (!playVoiceResult.failed) {
@@ -436,10 +436,10 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
         if (((scheduledCondition->conditions[0].statusAndKind.kind & 0xfe) ==
              INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED) &&
            (bestTrackOrSecondsLeft = scheduledCondition->conditions[0].payload.operands[1], bestTrackOrSecondsLeft != 0)) {
-          cursorFrameOrScratch = (*g_WideNumberFormatUtf16)
+          cursorFrameOrScratch = g_WideNumberFormatUtf16
                              (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,bestTrackOrSecondsLeft / 0x3c,(uint16_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
           *(uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a;
-          (*g_WideNumberFormatUtf16)
+          g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,bestTrackOrSecondsLeft % 0x3c,
                      (uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0x2)));
           currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
@@ -693,7 +693,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
     UiSelectableControl_SetSelected(1,toggle);
     if (((*(uint32_t *)((uint8_t *)toggle + 0x4c) & 0x200) != 0) &&
         (*(uint32_t *)((uint8_t *)toggle + 0x70) != 0)) {
-      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,
                             *(DirectSoundVoiceSet **)((uint8_t *)toggle + 0x70));
     }
     if (target == 0x567460) {
@@ -738,7 +738,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
                                                     INGAME_UI(rt,messageRecipientPlayersTab));
     (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(uint32_t *)((uint8_t *)visible.node + 0x50) & 0xff) * 4))
               (visible.node);
-    (*g_KeyboardFlushEvents)();
+    g_KeyboardFlushEvents();
     break;
   }
   case 0x5675e0: /* pause */
@@ -783,22 +783,22 @@ InGameHotkeys_DispatchCommandByFlagsCf
   }
   case 0x5677e0: { /* screenshot */
     FramebufferCaptureResult capture =
-         (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
+         g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeResult pcx;
     uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
     uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
     if (capture.failed) {
       break;
     }
-    pcx = (*g_PcxFunctionExport3)(g_PcxFunctionModule,capture.capture);
+    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture.capture);
     if (pcx.failed) {
-      (*g_MemoryApi.free)(capture.capture);
+      g_MemoryApi.free(capture.capture);
       break;
     }
     FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
-    (*g_MemoryApi.free)(pcx.encodedBytesOrError);
-    (*g_MemoryApi.free)(capture.capture);
+    g_MemoryApi.free(pcx.encodedBytesOrError);
+    g_MemoryApi.free(capture.capture);
     *digitLow = *digitLow + 1;
     if (*digitLow > 0x39) {
       *digitHigh = *digitHigh + 1;
@@ -859,7 +859,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
   if (panelTextureSource == (GraphicsTextureSourceAsset *)inGameRoot->observedSessionNotificationValue9B50) {
     if (inGameRoot->notificationQueue9E60[0].priority04 != 0) {
       notificationMovieNumber = inGameRoot->notificationQueue9E60[0].notificationMovieId00;
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(uint16_t *)(u_flm_movie000_flm_0056314e + 9));
       openResult = Movie_Open(0x80000000,(uint16_t *)u_flm_movie000_flm_0056314e);
       if (!openResult.failed) {
@@ -1014,7 +1014,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
   g_SessionTransferTimeoutTicks = 0x400;
   g_InGameNetworkTickCountdown = 4;
   g_InGameStateTickSpinLock = 0;
-  (*g_TimerRegisterPeriodic)(0x50,InGameRuntime_PeriodicCountdownAndClockTick);
+  g_TimerRegisterPeriodic(0x50,InGameRuntime_PeriodicCountdownAndClockTick);
   UiRuntime_SetSynchronizationHooks
             (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
   titleTextIndex = (levelAsset->header).titleTextResourceIndex;
@@ -1040,7 +1040,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
     }
     countOrPlayerId = countOrPlayerId + -1;
   } while (countOrPlayerId != 0);
-  allocation = (*g_MemoryApi.alloc)(0x400000);
+  allocation = g_MemoryApi.alloc(0x400000);
   rootCursorOrError = (InGameRuntimeRootImageC3E4 *)allocation.payloadOrError;
   if (!allocation.failed) {
     g_RuntimeObjectRebaseBaseMinusOne = rootCursorOrError[-1].opaqueA06C_C3E3 + 0x2377;
@@ -1054,7 +1054,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                         g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]);
     rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
     if (!statusResult.failed) {
-      allocation = (*g_MemoryApi.alloc)(0xc3e4);
+      allocation = g_MemoryApi.alloc(0xc3e4);
       inGameRoot = (InGameRuntimeRootImageC3E4 *)allocation.payloadOrError;
       rootCursorOrError = inGameRoot;
       if (!allocation.failed) {
@@ -1138,7 +1138,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                     statusResult = TerrainCompositeTexture_Create();
                     rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
                     if (!statusResult.failed) {
-                      (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
+                      g_SpinLockAcquire(&g_InGameStateTickSpinLock);
                       g_InGameSimulationStepTicks = 1;
                       settingOrFactionToken = PersistentSettings_Read(0x40,0x14);
                       gridHalfSize = PersistentSettings_Read(0x20,0x10);
@@ -1229,9 +1229,9 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                           else {
                             InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
                           }
-                          (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
+                          g_SpinLockRelease(&g_InGameStateTickSpinLock);
                           UiFrame_FlushInputAndResetPendingTicks();
-                          (*g_GraphicsCursorSetFrame)(6);
+                          g_GraphicsCursorSetFrame(6);
                           g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
                           InGamePanel_RebuildPlayerStatusRows(inGameRoot);
                           do {
@@ -1239,20 +1239,20 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                             InGamePanel_RebuildPlayerStatusRows(inGameRoot);
                             UiFrame_Update(0);
                             UiFrame_Draw();
-                            (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+                            g_GraphicsFramebufferPresent(g_FramebufferAccess);
                             InGameRuntime_UpdateSimulationAndNetworkTick();
                           } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
                           inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
                           inGameRoot->playerStatusLayoutMetric093C = 0;
                           UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
                           Movie_Close();
-                          (*g_GraphicsCursorSetFrame)(0);
+                          g_GraphicsCursorSetFrame(0);
                           /* Lost load: the original reads the first of five level intro
                              notification movies from conditionStorage+0x324. */
                           notificationMovieId =
                                *(InGameNotificationMovieId *)
                                 ((uint8_t *)g_InGameLevelRuntimeGlobalBlock.conditionStorage + 0x324);
-                          (*g_TimerRegisterPeriodic)
+                          g_TimerRegisterPeriodic
                                     (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
                           if (notificationMovieId != 0) {
                             InGameNotificationQueue_InsertPriorityRecord
@@ -1347,8 +1347,8 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
       *sessionNameClearCursor = 0;
       sessionNameClearCursor = sessionNameClearCursor + 1;
     }
-    (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,mountResult);
-    (*g_FileSystemReadExactCf)(0x200,saveNameSource,mountResult);
+    g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,0,mountResult);
+    g_FileSystemReadExactCf(0x200,saveNameSource,mountResult);
     saveNameSource = saveNameSource + 0x100;
     terminatorOrFailure = true;
     remainingCount = 0x24;
@@ -1414,10 +1414,10 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
       g_InGameStateTickSpinLock = 0;
       g_EndGameResultsCurrentMusicTrackId = 0;
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
-      (*g_TimerRegisterPeriodic)(0x50,InGameRuntime_PeriodicCountdownAndClockTick);
+      g_TimerRegisterPeriodic(0x50,InGameRuntime_PeriodicCountdownAndClockTick);
       UiRuntime_SetSynchronizationHooks
                 (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
-      allocation = (*g_MemoryApi.alloc)(0x400000);
+      allocation = g_MemoryApi.alloc(0x400000);
       rootCursorOrError = (InGameRuntimeRootImageC3E4 *)allocation.payloadOrError;
       loadedLevelAsset = levelImage;
       if (!allocation.failed) {
@@ -1430,7 +1430,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
         statusResult = SelectionInfoPanel_InitResources((SelectionInfoEntitySlots *)entitySlots);
         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
         if (!statusResult.failed) {
-          allocation = (*g_MemoryApi.alloc)(0xc3e4);
+          allocation = g_MemoryApi.alloc(0xc3e4);
           inGameRoot = (InGameRuntimeRootImageC3E4 *)allocation.payloadOrError;
           rootCursorOrError = inGameRoot;
           if (!allocation.failed) {
@@ -1523,7 +1523,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                           statusResult = TerrainCompositeTexture_Create();
                           rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
                           if (!statusResult.failed) {
-                            (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
+                            g_SpinLockAcquire(&g_InGameStateTickSpinLock);
                             UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
                             UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
                             UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
@@ -1599,9 +1599,9 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                                 else {
                                   InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
                                 }
-                                (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
+                                g_SpinLockRelease(&g_InGameStateTickSpinLock);
                                 UiFrame_FlushInputAndResetPendingTicks();
-                                (*g_GraphicsCursorSetFrame)(6);
+                                g_GraphicsCursorSetFrame(6);
                                 g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
                                 InGamePanel_RebuildPlayerStatusRows(inGameRoot);
                                 do {
@@ -1609,7 +1609,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                                   InGamePanel_RebuildPlayerStatusRows(inGameRoot);
                                   UiFrame_Update(0);
                                   UiFrame_Draw();
-                                  (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+                                  g_GraphicsFramebufferPresent(g_FramebufferAccess);
                                   InGameRuntime_UpdateSimulationAndNetworkTick();
                                 } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
                                 inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
@@ -1618,8 +1618,8 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                                 Movie_Close();
                                 Resource_Release(levelImage);
                                 Package_Unmount((EngineFileHandle)mountResult);
-                                (*g_GraphicsCursorSetFrame)(0);
-                                (*g_TimerRegisterPeriodic)
+                                g_GraphicsCursorSetFrame(0);
+                                g_TimerRegisterPeriodic
                                           (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
                                 return THANDOR_BITCAST(uint64_t, LoadedSessionInitResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocation) & 0xFFFFFFFFFFull) & 0xffffffff));
                               }
@@ -1664,17 +1664,17 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
   InGameRuntimeRootImageC3E4 *inGameRoot;
   bool beginAccessFailed;
   
-  (*g_TimerUnregisterPeriodic)(InGameRuntime_PeriodicCountdownAndClockTick);
+  g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
   inGameRoot = g_InGameRuntimeRoot;
-  (*g_GraphicsCursorSetFrame)(6);
-  beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  g_GraphicsCursorSetFrame(6);
+  beginAccessFailed = g_GraphicsFramebufferBeginAccess();
   if (!beginAccessFailed) {
-    (*g_GraphicsFramebufferFillRectArgb)
+    g_GraphicsFramebufferFillRectArgb
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,0xff000000,g_FramebufferAccess);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
-  (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+  g_GraphicsFramebufferPresent(g_FramebufferAccess);
   GraphicsShadingRuntime_Shutdown();
   if (inGameRoot != (InGameRuntimeRootImageC3E4 *)0x0) {
     InGameRuntime_PublishRootWorldStatePointer(&inGameRoot->rootUi0000);
@@ -1685,18 +1685,18 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
     if ((inGameRoot->rootUi0000).previousRoot != (UiRootNode *)0x0) {
       UiRootStack_PopCf(&inGameRoot->rootUi0000);
     }
-    (*g_MemoryApi.free)(inGameRoot);
+    g_MemoryApi.free(inGameRoot);
     g_InGameRuntimeRoot = (InGameRuntimeRootImageC3E4 *)0x0;
   }
   InGameRuntime_ReleaseFactionScratchBuffers();
-  (*g_MemoryApi.free)(g_InGameWorldObjectRecords);
+  g_MemoryApi.free(g_InGameWorldObjectRecords);
   g_InGameWorldObjectRecords = (WorldObjectRecord *)0x0;
   Movie_Close();
   TerrainCompositeTexture_Destroy();
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(g_InGameDiagramTextureSource);
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(g_InGamePanelTextureSource);
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(g_InGameTechnologyTextureSource);
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(g_InGameWindowTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameDiagramTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGamePanelTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameTechnologyTextureSource);
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameWindowTextureSource);
   g_InGameDiagramTextureSource = (GraphicsTextureSourceAsset *)0x0;
   g_InGamePanelTextureSource = (GraphicsTextureSourceAsset *)0x0;
   g_InGameTechnologyTextureSource = (GraphicsTextureSourceAsset *)0x0;
@@ -1725,8 +1725,8 @@ void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(
   scratchBufferSetACursor = g_InGameFactionScratchBufferSetA8;
   scratchBufferSetBCursor = g_InGameFactionScratchBufferSetB8;
   do {
-    (*g_MemoryApi.free)(*scratchBufferSetACursor);
-    (*g_MemoryApi.free)(*scratchBufferSetBCursor);
+    g_MemoryApi.free(*scratchBufferSetACursor);
+    g_MemoryApi.free(*scratchBufferSetBCursor);
     *scratchBufferSetACursor = (void *)0x0;
     *scratchBufferSetBCursor = (void *)0x0;
     scratchBufferSetACursor = scratchBufferSetACursor + 1;
@@ -2483,7 +2483,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
   RecordRingDiscardResult discardedRecord;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   
-  boolResult = (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
+  boolResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
   if (boolResult) {
     return;
@@ -2640,7 +2640,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
         if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
           modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).savedIdOrOffset
           ;
-          (*g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(modelDefinition + 0x278)])
+          g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(modelDefinition + 0x278)]
                     (*(Q12 *)(modelDefinition + 0x54),(modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,modelNode,
                      &inGameRoot->worldRuntime0A30);
@@ -2659,7 +2659,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
     }
   }
 InGameRuntime_ReleaseSimulationTickLockAndReturn:
-  (*g_SpinLockRelease)(&g_InGameStateTickSpinLock);
+  g_SpinLockRelease(&g_InGameStateTickSpinLock);
   return;
 }
 

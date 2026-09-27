@@ -81,7 +81,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(vo
   terrainFieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   fieldWidth = terrainFieldGrid->gridWidth;
   fieldHeight = terrainFieldGrid->gridHeight;
-  allocResult = (*g_MemoryApi.alloc)(fieldWidth * 0xc * fieldHeight + 0x260);
+  allocResult = g_MemoryApi.alloc(fieldWidth * 0xc * fieldHeight + 0x260);
   compositeTexture = (TerrainCompositeTextureRuntime *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_TerrainCompositeTexture = compositeTexture;
@@ -151,7 +151,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize
   uint8_t *lookupWriteCursor;
   ArenaAllocResult allocResult;
   
-  allocResult = (*g_MemoryApi.alloc)(0x20000);
+  allocResult = g_MemoryApi.alloc(0x20000);
   lookupAllocationBase = (void *)allocResult.payloadOrError;
   if (allocResult.failed) {
     return StatusValue_Fail(allocResult.payloadOrError);
@@ -347,7 +347,7 @@ TerrainVisualResources_LoadPrimary
       if ((materialFlagBits & 1) == 0) {
         *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
-        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        textureSetLoad = g_GraphicsTextureSetLoadPackageCf(secondaryResourcePath);
         materialTextureSet = textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
           materialTextureSet = (GraphicsTextureSet *)0x0;
@@ -358,7 +358,7 @@ TerrainVisualResources_LoadPrimary
         *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        textureSetLoad = g_GraphicsTextureSetLoadPackageCf(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
           failureStatus.failed = true;
@@ -381,13 +381,13 @@ TerrainVisualResources_LoadPrimary
       g_TerrainSurfacePacketTablePayload =
            &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
       WidePath_SetExtensionCode(0x786667,primaryResourcePath);
-      textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
+      textureSetLoad = g_GraphicsTextureSetLoadPackageCf(primaryResourcePath);
       loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
       if (!textureSetLoad.failed) {
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)loadedResourceOrError;
         WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
-        paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
+        paletteLoad = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath);
         loadedResourceOrError = paletteLoad.paletteAsset;
         if (!paletteLoad.failed) {
           MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -395,7 +395,7 @@ TerrainVisualResources_LoadPrimary
           pathSuffixEntry->lowercaseLetterUtf16 = 0;
           pathSuffixEntry->terminator = 0;
           WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
-          paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
+          paletteLoad = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath);
           loadedResourceOrError = paletteLoad.paletteAsset;
           if (!paletteLoad.failed) {
             MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -523,7 +523,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
       if ((materialFlagBits & 1) == 0) {
         *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
-        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        textureSetLoad = g_GraphicsTextureSetLoadPackageCf(secondaryResourcePath);
         materialTextureSet = textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
           materialTextureSet = (GraphicsTextureSet *)0x0;
@@ -534,7 +534,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
         *pathSuffixEntry = *suffixLetterCursor;
         WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
-        textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
+        textureSetLoad = g_GraphicsTextureSetLoadPackageCf(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
           failureStatus.failed = true;
@@ -557,13 +557,13 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
       g_TerrainSurfacePacketTablePayload =
            &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
       WidePath_SetExtensionCode(0x786667,primaryResourcePath);
-      textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(primaryResourcePath);
+      textureSetLoad = g_GraphicsTextureSetLoadPackageCf(primaryResourcePath);
       loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
       if (!textureSetLoad.failed) {
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)loadedResourceOrError;
         WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
-        paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(primaryResourcePath);
+        paletteLoad = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath);
         loadedResourceOrError = paletteLoad.paletteAsset;
         if (!paletteLoad.failed) {
           MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -571,7 +571,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
           pathSuffixEntry->lowercaseLetterUtf16 = 0;
           pathSuffixEntry->terminator = 0;
           WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
-          paletteLoad = (*g_GraphicsPaletteAssetLoadPackage)(secondaryResourcePath);
+          paletteLoad = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath);
           loadedResourceOrError = paletteLoad.paletteAsset;
           if (!paletteLoad.failed) {
             MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -659,15 +659,15 @@ void __thandor_void_preserve_eax_ecx TerrainVisualResources_Shutdown(void)
   materialTextureSetsRemaining = 0x1a;
   do {
     if (*materialTextureSetCursor != (GraphicsTextureSet *)0x0) {
-      (*g_GraphicsTextureSetReleasePackageCf)(*materialTextureSetCursor);
+      g_GraphicsTextureSetReleasePackageCf(*materialTextureSetCursor);
       *materialTextureSetCursor = (GraphicsTextureSet *)0x0;
     }
     materialTextureSetCursor = materialTextureSetCursor + 1;
     materialTextureSetsRemaining = materialTextureSetsRemaining + -1;
   } while (materialTextureSetsRemaining != 0);
-  (*g_GraphicsTextureSetReleasePackageCf)(g_TerrainPrimaryTextureSet);
-  (*g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage)(g_TerrainSecondaryPalette);
-  (*g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage)(g_TerrainPrimaryPalette);
+  g_GraphicsTextureSetReleasePackageCf(g_TerrainPrimaryTextureSet);
+  g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainSecondaryPalette);
+  g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
   if (g_TerrainSoilPacketTablePayload != (void *)0x0) {
     Resource_Release((void *)((int)g_TerrainSoilPacketTablePayload + -0x20));
@@ -761,9 +761,9 @@ void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void)
 {
   GraphicsTextureSourceAsset *memory;
   
-  memory = (*g_GraphicsTextureSourceResolveAllocationBase)
+  memory = g_GraphicsTextureSourceResolveAllocationBase
                      (&g_TerrainCompositeTexture->textureSource);
-  (*g_MemoryApi.free)(memory);
+  g_MemoryApi.free(memory);
   return;
 }
 

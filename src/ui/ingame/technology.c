@@ -556,7 +556,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
         resolvedText = TextResource_Resolve(THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,TextResourceId));
         RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,labelText);
         labelText = THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -4,uint16_t *);
-        (*g_WideNumberFormatUtf16)
+        g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                    (int)g_TechnologyAsset->records[*(int *)(definitionOrEnergyCost + 0x1c4 + remainingCount * 4)].
                         xeniteCostQ4 >> 4,formatBuffer + 0xc0);
@@ -607,11 +607,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       }
       definitionOrEnergyCost = (int)g_TechnologyAsset->records[selectedTechnologyId].energyCostQ4 >> 4;
       g_InGameSelectedTechnologyId = selectedTechnologyId;
-      writtenBytes = (*g_WideNumberFormatUtf16)
+      writtenBytes = g_WideNumberFormatUtf16
                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int)xeniteCost >> 4,
                           g_InGameTechnologyXeniteCostTextUtf16);
       *(uint32_t *)((int)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) = 0x8000;
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionOrEnergyCost,g_InGameTechnologyEnergyCostTextUtf16);
       packedEnergyColor = definitionOrEnergyCost << 0x10 | costColor >> 0x10;
       g_InGameTechnologyCostColorWords8[1] = (uint16_t)costColor;
@@ -622,7 +622,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       g_InGameTechnologyCostColorWords8[7] = (uint16_t)(packedEnergyColor >> 8);
       g_InGameTechnologyCostColorWords8[2] = (uint16_t)(costColor >> 0xc);
       g_InGameTechnologyCostColorWords8[6] = (uint16_t)(packedEnergyColor >> 0xc);
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                  (int)technologyAsset->records[selectedTechnologyId].researchDurationQ5 >> 5,
                  g_InGameTechnologyResearchTimeTextUtf16);

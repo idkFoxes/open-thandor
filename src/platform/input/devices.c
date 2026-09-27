@@ -133,26 +133,26 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   procResolveResult = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.valueOrError,dynapi_19);
   FatalError_ExitIfFailed((uint32_t)procResolveResult.procedureOrError,procResolveResult.failed);
   SetCursor((HCURSOR)0x0);
-  directInputResult = (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
+  directInputResult = pDirectInputCreateA(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
   if (directInputResult == 0) {
     initStage = 1;
-    directInputResult = (*g_DirectInput->lpVtbl->CreateDevice)
+    directInputResult = g_DirectInput->lpVtbl->CreateDevice
                       (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,(TH_LEGACY_LPVOID)0x0);
     if (directInputResult == 0) {
       initStage = 2;
-      directInputResult = (*g_MouseDevice->lpVtbl->SetDataFormat)(g_MouseDevice,&MouseDataFormat);
+      directInputResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
       if (directInputResult == 0) {
         initStage = 3;
-        directInputResult = (*g_MouseDevice->lpVtbl->SetCooperativeLevel)(g_MouseDevice,g_MainWindow,5);
+        directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel(g_MouseDevice,g_MainWindow,5);
         if (directInputResult == 0) {
           initStage = 4;
-          directInputResult = (*g_MouseDevice->lpVtbl->SetProperty)
+          directInputResult = g_MouseDevice->lpVtbl->SetProperty
                             (g_MouseDevice,(TH_LEGACY_GUID *)0x1,&MouseBufferProperty.diph);
           if (directInputResult == 0) {
-            (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
-            g_DirectInputMousePreviousDisplayModeHookCf = g_GraphicsDisplayModeHook;
+            g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
+            g_DirectInputMouseChainedSetDisplayModeCf = g_GraphicsSetDisplayMode;
             LOCK();
-            g_GraphicsDisplayModeHook = DirectInputMouse_DisplayModeHookCf;
+            g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayModeCf;
             UNLOCK();
             TimerSystem_RegisterPeriodic(0x14,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer)
             ;
@@ -167,7 +167,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
               subresourceIndex = 0;
               g_CursorSourceAsset = cursorDataOrError;
               do {
-                logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,cursorDataOrError);
+                logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,cursorDataOrError);
                 subresourceIndex = subresourceIndex + 1;
                 if ((int)maxWidth < (int)logicalSize.logicalWidthPixels) {
                   maxWidth = logicalSize.logicalWidthPixels;
@@ -218,7 +218,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
       }
     }
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
   cursorDataOrError = (GraphicsTextureSourceAsset *)0x25;
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)cursorDataOrError;
@@ -251,7 +251,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
      device vanished under it. Reacquiring the existing device covers the lost-device case the
      refresh was for; the device is only (re)created when there is none. */
   if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
-    (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
+    g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
     g_MousePollBusy = 0;
     return;
   }
@@ -259,24 +259,24 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
     /* The original created a new DirectInput object every refresh without releasing the old one,
        accumulating thousands per session in dinput's hook thread. */
     if (g_DirectInput != (IDirectInputA *)0x0) {
-      (*g_DirectInput->lpVtbl->Release)(g_DirectInput);
+      g_DirectInput->lpVtbl->Release(g_DirectInput);
       g_DirectInput = (IDirectInputA *)0x0;
     }
     mouseDeviceSetupResult =
-         (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
+         pDirectInputCreateA(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
     if (mouseDeviceSetupResult == 0) {
       mouseDeviceOperationResult =
-           (*g_DirectInput->lpVtbl->CreateDevice)
+           g_DirectInput->lpVtbl->CreateDevice
                      (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,(TH_LEGACY_LPVOID)0x0);
       if (mouseDeviceOperationResult == 0) {
-        deviceConfigResult = (*g_MouseDevice->lpVtbl->SetDataFormat)(g_MouseDevice,&MouseDataFormat);
+        deviceConfigResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
         if (deviceConfigResult == 0) {
-          deviceConfigResult = (*g_MouseDevice->lpVtbl->SetCooperativeLevel)(g_MouseDevice,g_MainWindow,5);
+          deviceConfigResult = g_MouseDevice->lpVtbl->SetCooperativeLevel(g_MouseDevice,g_MainWindow,5);
           if (deviceConfigResult == 0) {
-            deviceConfigResult = (*g_MouseDevice->lpVtbl->SetProperty)
+            deviceConfigResult = g_MouseDevice->lpVtbl->SetProperty
                               (g_MouseDevice,(TH_LEGACY_GUID *)0x1,&MouseBufferProperty.diph);
             if (deviceConfigResult == 0) {
-              (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
+              g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
             }
           }
         }
@@ -299,11 +299,11 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_Shutdown(void)
   HCURSOR hCursor;
   
   if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
-    (*g_MouseDevice->lpVtbl->Release)(g_MouseDevice);
+    g_MouseDevice->lpVtbl->Release(g_MouseDevice);
     g_MouseDevice = (IDirectInputDeviceA *)0x0;
   }
   if (g_DirectInput != (IDirectInputA *)0x0) {
-    (*g_DirectInput->lpVtbl->Release)(g_DirectInput);
+    g_DirectInput->lpVtbl->Release(g_DirectInput);
     g_DirectInput = (IDirectInputA *)0x0;
   }
   TimerSystem_UnregisterPeriodic(DirectInputMouse_PollBufferedEvents);
@@ -347,7 +347,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
     /* read buffered events until the buffer is empty or 16 errors occurred */
     for (;;) {
       g_MouseDeviceDataCount = 1;
-      directInputResult = (*g_MouseDevice->lpVtbl->GetDeviceData)
+      directInputResult = g_MouseDevice->lpVtbl->GetDeviceData
                         (g_MouseDevice,0x10,&g_MouseDeviceEvent,&g_MouseDeviceDataCount,0);
       wasBusyOrEventIndex = g_CursorInputWriteIndex;
       if (directInputResult == 0) {
@@ -443,7 +443,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
       }
       if (directInputResult == -0x7ff8ffe2) {
         /* DIERR_INPUTLOST: reacquire and read again */
-        directInputResult = (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
+        directInputResult = g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
         if (directInputResult == 0) continue;
       }
       errorAttempts = errorAttempts + 1;
@@ -465,7 +465,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
    globals, locals, and executable data remain unchanged.
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-DirectInputMouse_DisplayModeHookCf
+DirectInputMouse_SetDisplayModeCf
           (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
 
@@ -478,40 +478,40 @@ DirectInputMouse_DisplayModeHookCf
   bool previousHookFailed;
   
   g_GraphicsBackendAccessState = -1;
-  (*g_MemoryApi.free)(g_CursorSavedBackground);
-  (*g_MemoryApi.free)(g_CursorCompositeBuffer);
-  (*g_MemoryApi.free)(g_CursorAlternateSavedBackground);
+  g_MemoryApi.free(g_CursorSavedBackground);
+  g_MemoryApi.free(g_CursorCompositeBuffer);
+  g_MemoryApi.free(g_CursorAlternateSavedBackground);
   g_CursorSavedBackground = (SoftwareFramebufferAccess *)0x0;
   g_CursorCompositeBuffer = (SoftwareFramebufferAccess *)0x0;
   g_CursorAlternateSavedBackground = (SoftwareFramebufferAccess *)0x0;
-  previousHookResult = (*g_DirectInputMousePreviousDisplayModeHookCf)
+  previousHookResult = g_DirectInputMouseChainedSetDisplayModeCf
                     (hookArg0,hookArg1,framebufferHeight,framebufferWidth);
   primaryFramebuffer = g_FramebufferAccess;
   previousHookFailed = previousHookResult.failed;
   newCursorFramebuffer = (SoftwareFramebufferAccess *)previousHookResult.valueOrError;
   if (!previousHookFailed) {
     newCursorFramebuffer =
-         (*g_SoftwareFramebufferCreate)
+         g_SoftwareFramebufferCreate
                    (g_FramebufferAccess->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
     if (!previousHookFailed) {
       g_CursorSavedBackground = newCursorFramebuffer;
       newCompositeFramebuffer =
-           (*g_SoftwareFramebufferCreate)(primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
+           g_SoftwareFramebufferCreate(primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
       newCursorFramebuffer = newCompositeFramebuffer;
       if (!previousHookFailed) {
         g_CursorCompositeBuffer = newCompositeFramebuffer;
         newCursorFramebuffer =
-             (*g_SoftwareFramebufferCreate)
+             g_SoftwareFramebufferCreate
                        (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
         if (!previousHookFailed) {
           g_CursorAlternateSavedBackground = newCursorFramebuffer;
-          (*g_GraphicsTextureSourceConvertPaletteEntries)
+          g_GraphicsTextureSourceConvertPaletteEntries
                     ((GraphicsPaletteTextureSourceAsset *)g_CursorSourceAsset);
           g_CursorOverrideX = framebufferWidth >> 1;
           g_CursorOverrideY = framebufferHeight >> 1;
           g_MouseX = g_CursorOverrideX;
           g_MouseY = g_CursorOverrideY;
-          successResult.valueOrError = (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
+          successResult.valueOrError = g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
           g_GraphicsBackendAccessState = 0;
           successResult.failed = false;
           return successResult;

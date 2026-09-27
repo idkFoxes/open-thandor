@@ -9,7 +9,7 @@ digraph thandor {
   "DirectInputMouse_RefreshDeviceIfIdle" [label="0x00576F20\nDirectInputMouse_RefreshDeviceIfIdle"];
   "DirectInputMouse_Shutdown" [label="0x00577000\nDirectInputMouse_Shutdown"];
   "DirectInputMouse_PollBufferedEvents" [label="0x00577080\nDirectInputMouse_PollBufferedEvents"];
-  "DirectInputMouse_DisplayModeHookCf" [label="0x005772F0\nDirectInputMouse_DisplayModeHookCf"];
+  "DirectInputMouse_SetDisplayModeCf" [label="0x005772F0\nDirectInputMouse_DisplayModeHookCf"];
   "DirectInputMouse_SetPosition" [label="0x00577420\nDirectInputMouse_SetPosition"];
   "DirectInputMouse_FlushBufferedEvents" [label="0x00577460\nDirectInputMouse_FlushBufferedEvents"];
   "Keyboard_OnKeyDown" [label="0x005774A0\nKeyboard_OnKeyDown"];

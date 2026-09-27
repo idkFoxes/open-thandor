@@ -49,7 +49,7 @@ FncModuleLoadResult FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
     moduleBaseOrError = (AssetMagic *)0x63;
     sizeOrDwordCount = serializedModule->allocationSizeBytes;
     if ((serializedModule->exportBinding).bindingMode == 0) {
-      reserveResult = (*g_MemoryApi.reserveLinear)(sizeOrDwordCount);
+      reserveResult = g_MemoryApi.reserveLinear(sizeOrDwordCount);
       moduleBaseOrError = (AssetMagic *)reserveResult.baseOrError;
       if (!reserveResult.failed) {
         copyCursor = moduleBaseOrError;

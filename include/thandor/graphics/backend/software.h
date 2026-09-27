@@ -433,7 +433,7 @@ void SoftwareRasterAux_Mode12 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenC
 
 /* 0x004FE620 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-SoftwareRenderer_DisplayModeHook
+SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 modeArg0,DisplayModeHookArgument1 modeArg1,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 

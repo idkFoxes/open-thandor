@@ -20,8 +20,8 @@
    FatalError_ReportIfFailed: FatalError_Exit until the UI error state exists
    (ErrorRuntime_InstallUiHandlerAndAllocateState), then FatalErrorRuntime_DispatchPendingErrorCf, which
    shows the error in a modal in-game dialog and returns. */
-#define FatalError_ExitIfFailed(valueOrError, failed) ((*g_FatalErrorPrimaryDispatchCf)((valueOrError), (failed)))
-#define FatalError_ReportIfFailed(valueOrError, failed) ((*g_FatalErrorRuntimeDispatchCf)((valueOrError), (failed)))
+#define FatalError_ExitIfFailed(valueOrError, failed) (g_FatalErrorExitHandler((valueOrError), (failed)))
+#define FatalError_ReportIfFailed(valueOrError, failed) (g_FatalErrorReportHandler((valueOrError), (failed)))
 
 /* Error codes handed to the fatal-error dispatcher (FatalError_ExitIfFailed); the code selects
    the message text. Named as they are found. */

@@ -75,13 +75,13 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
         g_CurrentClearRect.y1 = 0;
         g_CurrentClearRect.x2 = g_FramebufferWidth;
         g_CurrentClearRect.y2 = g_FramebufferHeight;
-        surfaceResult = (*g_PrimarySurface3->lpVtbl->IsLost)(g_PrimarySurface3);
+        surfaceResult = g_PrimarySurface3->lpVtbl->IsLost(g_PrimarySurface3);
         restoreResult = 0;
         if (surfaceResult != 0) {
-          restoreResult = (*g_PrimarySurface3->lpVtbl->Restore)(g_PrimarySurface3);
+          restoreResult = g_PrimarySurface3->lpVtbl->Restore(g_PrimarySurface3);
         }
         if (restoreResult == 0) {
-          (*g_PrimarySurface3->lpVtbl->BltFast)
+          g_PrimarySurface3->lpVtbl->BltFast
                     (g_PrimarySurface3,0,0,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,0x10
                     );
         }
@@ -105,13 +105,13 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
         g_CursorAlternateDrawX = savedCursorDrawX;
         g_CursorAlternateDrawY = savedCursorDrawY;
         GraphicsCursor_ComposeBeforePresent(g_BackSurface3);
-        surfaceResult = (*g_PrimarySurface3->lpVtbl->IsLost)(g_PrimarySurface3);
+        surfaceResult = g_PrimarySurface3->lpVtbl->IsLost(g_PrimarySurface3);
         restoreResult = 0;
         if (surfaceResult != 0) {
-          restoreResult = (*g_PrimarySurface3->lpVtbl->Restore)(g_PrimarySurface3);
+          restoreResult = g_PrimarySurface3->lpVtbl->Restore(g_PrimarySurface3);
         }
         if (restoreResult == 0) {
-          surfaceResult = (*g_PrimarySurface3->lpVtbl->Flip)(g_PrimarySurface3,(IDirectDrawSurface3 *)0x0,1)
+          surfaceResult = g_PrimarySurface3->lpVtbl->Flip(g_PrimarySurface3,(IDirectDrawSurface3 *)0x0,1)
           ;
           savedCursorDrawY = g_CursorCurrentDrawY;
           savedCursorDrawX = g_CursorCurrentDrawX;
@@ -179,7 +179,7 @@ GraphicsFramebuffer_CaptureRegion16Bit
     return captureResult;
   }
   allocationSizeOrPixel = captureWidth * captureHeight * 4 + 0x220;
-  allocResult = (*g_MemoryApi.alloc)(allocationSizeOrPixel);
+  allocResult = g_MemoryApi.alloc(allocationSizeOrPixel);
   capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     clearCursor = capturedAsset;
@@ -191,16 +191,16 @@ GraphicsFramebuffer_CaptureRegion16Bit
     (capturedAsset->common).allocationSizeBytes = allocationSizeOrPixel;
     (capturedAsset->common).formatVersion = 1;
     (capturedAsset->common).converterVersion = 0;
-    packedTimestamp = (*g_LocaleGetPackedCurrentTime)();
+    packedTimestamp = g_LocaleGetPackedCurrentTime();
     (capturedAsset->common).buildMetadata.timestamps.dateValue0 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.dateValue1 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.dateValue2 = packedTimestamp;
-    packedTimestamp = (*g_LocaleGetPackedCurrentDate)();
+    packedTimestamp = g_LocaleGetPackedCurrentDate();
     (capturedAsset->common).buildMetadata.timestamps.timeValue0 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue1 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue2 = packedTimestamp;
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((capturedAsset->common).buildMetadata.names.producerName);
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((capturedAsset->common).buildMetadata.names.sourceName);
+    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.producerName);
+    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.sourceName);
     capturedAsset->opaqueTablePayloadBC_1FF[0x44] = 0;
     (capturedAsset->tableDescriptor).subresourceCount = 1;
     (capturedAsset->tableDescriptor).paletteBankCount = 0;
@@ -213,15 +213,15 @@ GraphicsFramebuffer_CaptureRegion16Bit
     (capturedAsset->sourceEntry).originY = 0;
     (capturedAsset->sourceEntry).paletteIndex = -1;
     (capturedAsset->sourceEntry).dataOffset = 0x220;
-    surfaceResult = (*g_BackSurface3->lpVtbl->IsLost)(g_BackSurface3);
+    surfaceResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
     restoreResultOrPixelOffset = 0;
     if (surfaceResult != 0) {
-      restoreResultOrPixelOffset = (*g_BackSurface3->lpVtbl->Restore)(g_BackSurface3);
+      restoreResultOrPixelOffset = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
     }
     if (restoreResultOrPixelOffset == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      surfaceResult = (*g_BackSurface3->lpVtbl->Lock)
+      surfaceResult = g_BackSurface3->lpVtbl->Lock
                         (g_BackSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,0x11,
                          (TH_LEGACY_HANDLE)0x0);
       lockedSurfacePixels = g_SurfaceDesc.lpSurface;
@@ -258,12 +258,12 @@ GraphicsFramebuffer_CaptureRegion16Bit
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
-        (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,lockedSurfacePixels);
+        g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
         return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
-    (*g_MemoryApi.free)(capturedAsset);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
+    g_MemoryApi.free(capturedAsset);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
     capturedAsset = (GraphicsCapturedTextureSourceAsset *)&k_LowAddressLiteral0000001B;
   }
   captureResult.failed = true;
@@ -303,7 +303,7 @@ GraphicsFramebuffer_CaptureRegion32Bit
   uint32_t *sourceRowStart;
   
   allocationSizeOrPixel = captureWidth * captureHeight * 4 + 0x220;
-  allocResult = (*g_MemoryApi.alloc)(allocationSizeOrPixel);
+  allocResult = g_MemoryApi.alloc(allocationSizeOrPixel);
   capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     clearCursor = capturedAsset;
@@ -315,16 +315,16 @@ GraphicsFramebuffer_CaptureRegion32Bit
     (capturedAsset->common).allocationSizeBytes = allocationSizeOrPixel;
     (capturedAsset->common).formatVersion = 1;
     (capturedAsset->common).converterVersion = 0;
-    packedTimestamp = (*g_LocaleGetPackedCurrentTime)();
+    packedTimestamp = g_LocaleGetPackedCurrentTime();
     (capturedAsset->common).buildMetadata.timestamps.dateValue0 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.dateValue1 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.dateValue2 = packedTimestamp;
-    packedTimestamp = (*g_LocaleGetPackedCurrentDate)();
+    packedTimestamp = g_LocaleGetPackedCurrentDate();
     (capturedAsset->common).buildMetadata.timestamps.timeValue0 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue1 = packedTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue2 = packedTimestamp;
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((capturedAsset->common).buildMetadata.names.producerName);
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((capturedAsset->common).buildMetadata.names.sourceName);
+    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.producerName);
+    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.sourceName);
     capturedAsset->opaqueTablePayloadBC_1FF[0x44] = 0;
     (capturedAsset->tableDescriptor).subresourceCount = 1;
     (capturedAsset->tableDescriptor).paletteBankCount = 0;
@@ -337,15 +337,15 @@ GraphicsFramebuffer_CaptureRegion32Bit
     (capturedAsset->sourceEntry).originY = 0;
     (capturedAsset->sourceEntry).paletteIndex = -1;
     (capturedAsset->sourceEntry).dataOffset = 0x220;
-    surfaceResult = (*g_BackSurface3->lpVtbl->IsLost)(g_BackSurface3);
+    surfaceResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
     restoreResult = 0;
     if (surfaceResult != 0) {
-      restoreResult = (*g_BackSurface3->lpVtbl->Restore)(g_BackSurface3);
+      restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
     }
     if (restoreResult == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      surfaceResult = (*g_BackSurface3->lpVtbl->Lock)
+      surfaceResult = g_BackSurface3->lpVtbl->Lock
                         (g_BackSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,0x11,
                          (TH_LEGACY_HANDLE)0x0);
       lockedSurfacePixels = g_SurfaceDesc.lpSurface;
@@ -374,12 +374,12 @@ GraphicsFramebuffer_CaptureRegion32Bit
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
-        (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,lockedSurfacePixels);
+        g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
         return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
-    (*g_MemoryApi.free)(capturedAsset);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x65,g_PackageLastErrorPath);
+    g_MemoryApi.free(capturedAsset);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x65,g_PackageLastErrorPath);
     capturedAsset = (GraphicsCapturedTextureSourceAsset *)&k_LowAddressLiteral0000001B;
   }
   captureResult.failed = true;
@@ -409,15 +409,15 @@ bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccess(void)
     return glideAccessFailed;
   }
   if (g_ActiveTextureUploads == 0) {
-    surfaceOperationResult = (*g_BackSurface3->lpVtbl->IsLost)(g_BackSurface3);
+    surfaceOperationResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
     surfaceRestoreResult = 0;
     if (surfaceOperationResult != 0) {
-      surfaceRestoreResult = (*g_BackSurface3->lpVtbl->Restore)(g_BackSurface3);
+      surfaceRestoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
     }
     if (surfaceRestoreResult == 0) {
       Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
       g_SurfaceDesc.dwSize = 0x6c;
-      lockResult = (*g_BackSurface3->lpVtbl->Lock)
+      lockResult = g_BackSurface3->lpVtbl->Lock
                         (g_BackSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,(TH_LEGACY_HANDLE)0x0
                         );
       if (lockResult == 0) {
@@ -450,7 +450,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccess(void)
     Glide3_Framebuffer_EndAccess();
     return;
   }
-  (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,g_DisplayFramebufferAccess.pixels);
+  g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,g_DisplayFramebufferAccess.pixels);
   g_DisplayFramebufferAccess.pixels = (uint8_t *)0x0;
   return;
 }

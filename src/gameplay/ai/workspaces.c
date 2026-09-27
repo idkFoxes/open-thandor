@@ -537,7 +537,7 @@ AiStrategicCandidate_AddBestWorkspace12Entry
       candidatesRemaining = g_AiWorkspace12Count;
       candidateCursor = g_AiWorkspaceBuffer12_Size0200;
       do {
-        candidateScore = (*g_AiTechnologyCandidateScoreCallbackTable[candidateCursor->scoreKind08])
+        candidateScore = g_AiTechnologyCandidateScoreCallbackTable[candidateCursor->scoreKind08]
                           (factionIndex,candidateCursor->technologyId00,worldRuntime);
         if (wordIndexOrBestScore < candidateScore) {
           entityId = candidateCursor->technologyId00;
@@ -1124,51 +1124,51 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
   PackageLoadResult loadResult;
   StatusResult initStatus;
   
-  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
   workspaceAllocation = loadResult.bufferOrError;
   if (!loadResult.failed) {
     g_AiWorkspaceBuffer00_Size0400 = (AiWorkspace00EntryView8 *)workspaceAllocation;
-    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
+    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
     if (!loadResult.failed) {
       g_AiWorkspaceBuffer01_Size0200 = loadResult.bufferOrError;
-      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
       if (!loadResult.failed) {
         g_AiWorkspaceBuffer02_Size0400 = loadResult.bufferOrError;
-        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x1000));
+        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x1000));
         if (!loadResult.failed) {
           g_AiWorkspaceBuffer03_Size1000 = loadResult.bufferOrError;
-          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x40));
+          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x40));
           if (!loadResult.failed) {
             g_AiWorkspaceBuffer04_Size0040 = loadResult.bufferOrError;
-            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
+            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
             if (!loadResult.failed) {
               g_AiWorkspaceBuffer05_Size0200 = loadResult.bufferOrError;
-              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
               if (!loadResult.failed) {
                 g_AiWorkspaceBuffer06_Size0400 = loadResult.bufferOrError;
-                loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+                loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
                 if (!loadResult.failed) {
                   g_AiWorkspaceBuffer07_Size0400 = loadResult.bufferOrError;
-                  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
+                  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
                   if (!loadResult.failed) {
                     g_AiWorkspaceBuffer08_Size0200 = loadResult.bufferOrError;
-                    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x1000));
+                    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x1000));
                     if (!loadResult.failed) {
                       g_AiWorkspaceBuffer09_Size1000 = loadResult.bufferOrError;
-                      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+                      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
                       if (!loadResult.failed) {
                         g_AiWorkspaceBuffer10_Size0400 = loadResult.bufferOrError;
-                        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x1000));
+                        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x1000));
                         if (!loadResult.failed) {
                           g_AiWorkspaceBuffer11_Size1000 = loadResult.bufferOrError;
-                          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
+                          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
                           technologyCandidateWorkspaceAllocation = loadResult.bufferOrError;
                           if (!loadResult.failed) {
                             g_AiWorkspaceBuffer12_Size0200 = technologyCandidateWorkspaceAllocation;
-                            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+                            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
                             if (!loadResult.failed) {
                               g_AiWorkspaceBuffer13_Size0400 = loadResult.bufferOrError;
-                              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x100));
+                              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x100));
                               if (!loadResult.failed) {
                                 g_AiWorkspaceBuffer14_Size0100 = loadResult.bufferOrError;
                                 loadResult = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4);
@@ -1357,7 +1357,7 @@ AiCandidateWorkspace_AddOrAccumulateWeightedEntry
   uint32_t entriesRemaining;
   AiCandidateWorkspaceEntry *candidateEntry;
   
-  randomValue = (*g_RandomGeneratorState.next)();
+  randomValue = g_RandomGeneratorState.next();
   newEntryIndex = g_AiCandidateWorkspaceEntryCount;
   candidateEntry = g_AiWorkspaceBuffer13_Size0400;
   if (1 < weightRange) {

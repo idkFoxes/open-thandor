@@ -153,16 +153,16 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
+  loadResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackageCf(mutableBasePath));
   if (!loadResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_ShotTextureSet = (GraphicsTextureSet *)loadResult.payloadOrError;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    loadResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
+    loadResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
     if (!loadResult.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_ShotPalette = (GraphicsPaletteAsset *)loadResult.payloadOrError;
-      loadResult = (*g_MemoryApi.alloc)(0x40000);
+      loadResult = g_MemoryApi.alloc(0x40000);
       runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.payloadOrError;
       if (!loadResult.failed) {
         g_ShotRuntimeRebaseBaseMinusOne =
@@ -198,14 +198,14 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
   ShotDefinition **registryCursor;
   ShotDefinition *currentDefinition;
   
-  (*g_MemoryApi.free)(g_ShotRuntimeSlots);
+  g_MemoryApi.free(g_ShotRuntimeSlots);
   g_ShotRuntimeSlots = (ShotRuntimeSlot *)0x0;
   if (g_ShotTextureSet != (GraphicsTextureSet *)0x0) {
-    (*g_GraphicsTextureSetReleasePackageCf)(g_ShotTextureSet);
+    g_GraphicsTextureSetReleasePackageCf(g_ShotTextureSet);
     g_ShotTextureSet = (GraphicsTextureSet *)0x0;
   }
   if (g_ShotPalette != (GraphicsPaletteAsset *)0x0) {
-    (*g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage)(g_ShotPalette);
+    g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_ShotPalette);
     g_ShotPalette = (GraphicsPaletteAsset *)0x0;
   }
   registryCursor = g_ShotDefinitionRegistry;
@@ -249,7 +249,7 @@ ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId)
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
-      (*g_WideNumberFormatUtf16)
+      g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
       failureResult.notFound = true;
       failureResult.definitionOrError = (ShotDefinition *)0x44;

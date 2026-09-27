@@ -104,9 +104,9 @@ typedef struct ImageData_00407510 {
     uint8_t at_g_FatalErrorDetail3Utf16; /* 00407B14 g_FatalErrorDetail3Utf16 */
     uint32_t at_g_FatalErrorDetail3Utf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_FatalErrorDetail3Utf16_rest_tail[3];
-    FatalErrorPassThroughProc * at_g_FatalErrorPrimaryDispatchCf; /* 00407D14 g_FatalErrorPrimaryDispatchCf */
-    FatalErrorPassThroughProc * at_g_FatalErrorRuntimeDispatchCf; /* 00407D18 g_FatalErrorRuntimeDispatchCf */
-    FatalErrorPassThroughProc * at_g_FatalErrorExitFallbackDispatchCf; /* 00407D1C g_FatalErrorExitFallbackDispatchCf */
+    FatalErrorPassThroughProc * at_g_FatalErrorExitHandler; /* 00407D14 g_FatalErrorExitHandler */
+    FatalErrorPassThroughProc * at_g_FatalErrorReportHandler; /* 00407D18 g_FatalErrorReportHandler */
+    FatalErrorPassThroughProc * at_g_FatalErrorFallbackHandler; /* 00407D1C g_FatalErrorFallbackHandler */
     uint16_t at_u_texte_error_str_00407d20[16]; /* 00407D20 u_texte_error_str_00407d20 */
     uint16_t at_g_ErrorTextIoInitializationFailed[34]; /* 00407D40 g_ErrorTextIoInitializationFailed */
     uint16_t at_g_ErrorTextHeapAllocationFailed[71]; /* 00407D84 g_ErrorTextHeapAllocationFailed */
@@ -668,7 +668,7 @@ typedef struct ImageData_004A8E60 {
     GraphicsAdapterRecord * at_g_GraphicsAdapters; /* 004A8EA4 g_GraphicsAdapters */
     uint32_t at_g_GraphicsAdapterCount; /* 004A8EA8 g_GraphicsAdapterCount */
     SoftwarePixelFormatConfig at_g_SoftwarePixelFormatConfig; /* 004A8EAC g_SoftwarePixelFormatConfig */
-    SoftwareDisplayModeHookProc * at_g_GraphicsDisplayModeHook; /* 004A8ED0 g_GraphicsDisplayModeHook */
+    SoftwareDisplayModeHookProc * at_g_GraphicsSetDisplayMode; /* 004A8ED0 g_GraphicsSetDisplayMode */
     GraphicsBackendRefreshActiveAdapterProc * at_g_GraphicsBackendRefreshActiveAdapterCf; /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapterCf */
     SoftwareFramebufferCreateProc * at_g_SoftwareFramebufferCreate; /* 004A8ED8 g_SoftwareFramebufferCreate */
     uint32_t at_g_SoftwareFramebufferDestroy[1]; /* 004A8EDC g_SoftwareFramebufferDestroy */
@@ -1173,9 +1173,9 @@ typedef struct ImageData_004D11B8 {
     int32_t * at_g_SoftwareDepthBuffer; /* 004D1238 g_SoftwareDepthBuffer */
     void * at_g_SoftwareAuxiliaryTargetBase; /* 004D123C g_SoftwareAuxiliaryTargetBase */
     int32_t at_g_SoftwareDepthEpoch; /* 004D1240 g_SoftwareDepthEpoch */
-    SoftwareDisplayModeHookProc * at_g_SoftwarePreviousDisplayModeHook; /* 004D1244 g_SoftwarePreviousDisplayModeHook */
-    SoftwareDrawQueueProc * at_g_SoftwareDrawQueueProc; /* 004D1248 g_SoftwareDrawQueueProc */
-    uint32_t at_g_SoftwareDrawQueueProc_rest[5]; /* beyond the declared type */
+    SoftwareDisplayModeHookProc * at_g_SoftwareChainedSetDisplayMode; /* 004D1244 g_SoftwareChainedSetDisplayMode */
+    SoftwareDrawQueueProc * at_g_SoftwareDrawQueue; /* 004D1248 g_SoftwareDrawQueue */
+    uint32_t at_g_SoftwareDrawQueue_rest[5]; /* beyond the declared type */
     SoftwareRasterHandler * at_g_SoftwareRasterHandlers16Bit[64]; /* 004D1260 g_SoftwareRasterHandlers16Bit */
     SoftwareRasterHandler * at_g_SoftwareRasterHandlersNon16Bit[64]; /* 004D1360 g_SoftwareRasterHandlersNon16Bit */
     SoftwareRasterHandler * at_g_SoftwareRasterHandlersAuxiliary[64]; /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
@@ -3308,7 +3308,7 @@ typedef struct ImageData_00576B04 {
     UiPointerWheelDelta at_g_MouseWheelDelta; /* 00576C14 g_MouseWheelDelta */
     GraphicsCursorButtonState at_g_MouseButtonMask; /* 00576C18 g_MouseButtonMask */
     uint32_t at_g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
-    SoftwareDisplayModeHookProc * at_g_DirectInputMousePreviousDisplayModeHookCf; /* 00576C20 g_DirectInputMousePreviousDisplayModeHookCf */
+    SoftwareDisplayModeHookProc * at_g_DirectInputMouseChainedSetDisplayModeCf; /* 00576C20 g_DirectInputMouseChainedSetDisplayModeCf */
     UiFrameRefreshCountdownFrames at_g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
     uint32_t at_g_DirectInputMouseRefreshCountdown_rest[2]; /* beyond the declared type */
 } ImageData_00576B04;
@@ -3724,9 +3724,9 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00407714 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail1Utf16)
 #define THANDOR_IMAGE_0x00407914 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail2Utf16)
 #define THANDOR_IMAGE_0x00407b14 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail3Utf16)
-#define THANDOR_IMAGE_0x00407d14 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorPrimaryDispatchCf)
-#define THANDOR_IMAGE_0x00407d18 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorRuntimeDispatchCf)
-#define THANDOR_IMAGE_0x00407d1c ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorExitFallbackDispatchCf)
+#define THANDOR_IMAGE_0x00407d14 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorExitHandler)
+#define THANDOR_IMAGE_0x00407d18 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorReportHandler)
+#define THANDOR_IMAGE_0x00407d1c ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorFallbackHandler)
 #define THANDOR_IMAGE_0x00407d20 ((uintptr_t)&g_ImageData_00407510.at_u_texte_error_str_00407d20)
 #define THANDOR_IMAGE_0x00407d40 ((uintptr_t)&g_ImageData_00407510.at_g_ErrorTextIoInitializationFailed)
 #define THANDOR_IMAGE_0x00407d84 ((uintptr_t)&g_ImageData_00407510.at_g_ErrorTextHeapAllocationFailed)
@@ -3989,7 +3989,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004a8ea4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsAdapters)
 #define THANDOR_IMAGE_0x004a8ea8 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsAdapterCount)
 #define THANDOR_IMAGE_0x004a8eac ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwarePixelFormatConfig)
-#define THANDOR_IMAGE_0x004a8ed0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsDisplayModeHook)
+#define THANDOR_IMAGE_0x004a8ed0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsSetDisplayMode)
 #define THANDOR_IMAGE_0x004a8ed4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsBackendRefreshActiveAdapterCf)
 #define THANDOR_IMAGE_0x004a8ed8 ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwareFramebufferCreate)
 #define THANDOR_IMAGE_0x004a8ee0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferPresent)
@@ -4167,8 +4167,8 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004d1238 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDepthBuffer)
 #define THANDOR_IMAGE_0x004d123c ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareAuxiliaryTargetBase)
 #define THANDOR_IMAGE_0x004d1240 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDepthEpoch)
-#define THANDOR_IMAGE_0x004d1244 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwarePreviousDisplayModeHook)
-#define THANDOR_IMAGE_0x004d1248 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDrawQueueProc)
+#define THANDOR_IMAGE_0x004d1244 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareChainedSetDisplayMode)
+#define THANDOR_IMAGE_0x004d1248 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareDrawQueue)
 #define THANDOR_IMAGE_0x004d1260 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareRasterHandlers16Bit)
 #define THANDOR_IMAGE_0x004d1360 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareRasterHandlersNon16Bit)
 #define THANDOR_IMAGE_0x004d1460 ((uintptr_t)&g_ImageData_004D11B8.at_g_SoftwareRasterHandlersAuxiliary)
@@ -5144,7 +5144,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00576c14 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseWheelDelta)
 #define THANDOR_IMAGE_0x00576c18 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseButtonMask)
 #define THANDOR_IMAGE_0x00576c1c ((uintptr_t)&g_ImageData_00576B04.at_g_MouseEventsProcessed)
-#define THANDOR_IMAGE_0x00576c20 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMousePreviousDisplayModeHookCf)
+#define THANDOR_IMAGE_0x00576c20 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMouseChainedSetDisplayModeCf)
 #define THANDOR_IMAGE_0x00576c24 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMouseRefreshCountdown)
 #define THANDOR_IMAGE_0x00577c00 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirectDraw2_Local)
 #define THANDOR_IMAGE_0x00577c10 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirectDrawSurface3_Local)

@@ -47,7 +47,7 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   uint32_t sequenceTokenOrBackendIndex;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-    (*g_NetworkBackendSlot7)
+    g_NetworkBackendSlot7
               (&g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
     UiNodeList_UnsuppressActionId(0x2001,FRONTEND_UI(frontendUi,frontendRoot));
@@ -62,7 +62,7 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     UiPointerList_InitializeColumnLayout
               (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
                (UiPointerListControl *)FRONTEND_UI(frontendUi,hostLobbyPlayerList));
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16
               );
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -92,7 +92,7 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     return;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
-    (*g_NetworkBackendSlot7)
+    g_NetworkBackendSlot7
               (&g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
     RichTextCommandStream_CopyExpandedCf
@@ -126,9 +126,9 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   backendIndex = UiPointerList_GetSelectedIndexVariantACf
                           ((UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
   selectedBackendIndex = backendIndex;
-  setSessionResult = (*g_NetworkBackendSlot0)(backendIndex);
+  setSessionResult = g_NetworkBackendSlot0(backendIndex);
   if (!setSessionResult.failed) {
-    openBindResult = (*g_NetworkBackendSlot2)(0x3a1);
+    openBindResult = g_NetworkBackendSlot2(0x3a1);
     if (!openBindResult.failed) {
 FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       UiPointerList_SelectIndexVariantA
@@ -140,7 +140,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
         localEndpointCursor = (UiTransferEndpointDescriptor *)&localEndpointCursor->ipv4AddressNetworkOrder;
         endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
       }
-      findOptionResult = (*g_CommandLineFindOption)(6,s_NAME__CLIENT__KARTE___00545e91);
+      findOptionResult = g_CommandLineFindOption(6,s_NAME__CLIENT__KARTE___00545e91);
       commandLineOptionBytes = findOptionResult.option;
       if (!findOptionResult.notFound) {
         optionTextCursor = commandLineOptionBytes + 6;
@@ -166,7 +166,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
           }
         }
       }
-      (*g_NetworkBackendSlot7)
+      g_NetworkBackendSlot7
                 (&g_FrontendNetworkEndpointTextUtf16,
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
@@ -185,9 +185,9 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       UiPointerList_InitializeColumnLayout
                 (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
       UiTransfer_SendPacketType10000Value2931Cf();
-      findOptionResult = (*g_CommandLineFindOption)(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
+      findOptionResult = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
       if (findOptionResult.notFound) {
-        findOptionResult = (*g_CommandLineFindOption)(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
+        findOptionResult = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
         secondaryCommandLineOptionBytes = findOptionResult.option;
         if (!findOptionResult.notFound) {
           remainingOrRootNode = 0x7fffff;
@@ -212,16 +212,16 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
             *secondaryCommandLineOptionBytes = 99;
             Text_CopyNarrowToUtf16Cf
                       (0x800000,(uint16_t *)g_PackageScratchBuffer,secondaryCommandLineOptionBytes + 8);
-            endpointParseFailed = (*g_NetworkBackendSlot6)
+            endpointParseFailed = g_NetworkBackendSlot6
                               (&g_FrontendSelectedNetworkEndpoint,(char *)g_PackageScratchBuffer);
             if (!endpointParseFailed) {
-              (*g_NetworkBackendSlot6)
+              g_NetworkBackendSlot6
                         (&g_FrontendNetworkEndpointScratch,(char *)g_PackageScratchBuffer);
               g_FrontendSessionToken = 0x12340000;
               g_FrontendSelectedPlayerToken = 0xffffffff;
               UiTransfer_SendPlayerDescriptorPacket20002Cf();
               remainingOrRootNode = g_FrontendRootNode;
-              (*g_NetworkBackendSlot7)
+              g_NetworkBackendSlot7
                         (&g_FrontendNetworkEndpointTextUtf16,
                          (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
               RichTextCommandStream_CopyExpandedCf
@@ -239,18 +239,18 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       }
       return;
     }
-    (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed a stale register */
+    g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed a stale register */
   }
   backendIndex = 0;
   do {
     sequenceTokenOrBackendIndex = backendIndex;
-    setSessionResult = (*g_NetworkBackendSlot0)(backendIndex);
+    setSessionResult = g_NetworkBackendSlot0(backendIndex);
     errorOrValue = setSessionResult.valueOrError;
     if (!setSessionResult.failed) {
-      openBindResult = (*g_NetworkBackendSlot2)(0x3a1);
+      openBindResult = g_NetworkBackendSlot2(0x3a1);
       errorOrValue = openBindResult.valueOrError;
       if (!openBindResult.failed) goto FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage;
-      (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed a stale register */
+      g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed a stale register */
     }
     backendIndex = backendIndex + 1;
     if (g_NetworkBackendInstanceCount <= backendIndex) {
@@ -311,7 +311,7 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferP
 {
   bool endpointParseFailed;
   
-  endpointParseFailed = (*g_NetworkBackendSlot6)
+  endpointParseFailed = g_NetworkBackendSlot6
                     (&g_FrontendNetworkEndpointScratch,(char *)transferPageControl->textPrefix6C);
   if (endpointParseFailed) {
     transferPageControl->editStateFlags =
@@ -321,7 +321,7 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferP
   transferPageControl->editStateFlags =
        transferPageControl->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
   UiTransfer_SendPacketType10000Value2931Cf();
-  (*g_NetworkBackendSlot7)
+  g_NetworkBackendSlot7
             (&g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
             );
   return;
@@ -387,7 +387,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   CommandLineOptionResult findOptionResult;
   
   appliedOptionMask = 0;
-  findOptionResult = (*g_CommandLineFindOption)(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
+  findOptionResult = g_CommandLineFindOption(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
   optionText = findOptionResult.option;
   if ((((!findOptionResult.notFound) && (optionText[10] == 0x22)) &&
       (parsedCountOrTickSetting = optionText[9] - 0x30, 0x2f < optionText[9] && parsedCountOrTickSetting != 0)) &&
@@ -397,7 +397,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,maxPlayersSlider))->value =
          parsedCountOrTickSetting;
   }
-  findOptionResult = (*g_CommandLineFindOption)(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
+  findOptionResult = g_CommandLineFindOption(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
   optionText = findOptionResult.option;
   if (!findOptionResult.notFound) {
     optionTextCursor = optionText + 7;
@@ -422,7 +422,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
       }
     }
   }
-  findOptionResult = (*g_CommandLineFindOption)(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
+  findOptionResult = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
   optionText = findOptionResult.option;
   if (((((!findOptionResult.notFound) && (optionText[0xb] == 0x22)) &&
        (parsedCountOrTickSetting = optionText[10] - 0x30, 0x2f < optionText[10] && parsedCountOrTickSetting != 0)) &&
@@ -440,7 +440,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
          FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
   }
   g_FrontendNetworkState = 0;
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
              ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,maxPlayersSlider))->value,
              (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
@@ -493,7 +493,7 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
   UiPointerList_InitializeColumnLayout
             (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
              (UiPointerListControl *)FRONTEND_UI(frontendUi,hostLobbyPlayerList));
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
   firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   sequenceToken = g_UiTransferSequenceToken;

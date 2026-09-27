@@ -71,7 +71,7 @@ Glide3_TextureSet_CreateBackend
   currentSubresource = 0;
   do {
     selectedPixelFormat = GraphicsTexture_SelectPixelFormat(currentSubresource,setSourceAsset);
-    textureAlloc = (*g_MemoryApi.alloc)(0x50);
+    textureAlloc = g_MemoryApi.alloc(0x50);
     texture = (GraphicsTextureResource *)textureAlloc.payloadOrError;
     if (!textureAlloc.failed) {
       texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
@@ -92,7 +92,7 @@ Glide3_TextureSet_CreateBackend
       registerFailed = GraphicsTexture_RegisterSlot(texture);
       if (registerFailed) {
         Glide3_TextureResource_Release(texture);
-        (*g_MemoryApi.free)(texture);
+        g_MemoryApi.free(texture);
         entryCursor->texture = (GraphicsTextureResource *)0x0;
       }
     }
@@ -202,19 +202,19 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
         }
         binding = binding + 1;
       } while (binding->importName != (char *)0x0);
-      (*g_GrGlideInit)();
+      g_GrGlideInit();
       THANDOR_PART(uint16_t, sstIndexOrSizeOrCount, 0) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
       THANDOR_PART(uint16_t, sstIndexOrSizeOrCount, 2) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
-      (*g_GrSstSelect)(sstIndexOrSizeOrCount);
+      g_GrSstSelect(sstIndexOrSizeOrCount);
       g_GlideSelectedResolutionQuery = resolutionQueryCode;
-      sstIndexOrSizeOrCount = (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,(void *)0x0);
+      sstIndexOrSizeOrCount = g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,(void *)0x0);
       output = (void *)0x19;
       if (0xf < (int)sstIndexOrSizeOrCount) {
-        resolutionAlloc = (*g_MemoryApi.alloc)(sstIndexOrSizeOrCount);
+        resolutionAlloc = g_MemoryApi.alloc(sstIndexOrSizeOrCount);
         output = (void *)resolutionAlloc.payloadOrError;
         if (!resolutionAlloc.failed) {
           remainingResolutions = sstIndexOrSizeOrCount >> 4;
-          (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,output);
+          g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,output);
           resolutionKeyOrBestHz = 0;
           resolutionCursor = output;
           do {
@@ -226,14 +226,14 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
             resolutionCursor = (void *)((int)resolutionCursor + 0x10);
             remainingResolutions = remainingResolutions - 1;
           } while (remainingResolutions != 0);
-          (*g_MemoryApi.free)(output);
+          g_MemoryApi.free(output);
           g_GlideWindowContextHandle =
-               (*g_GrSstWinOpen)((uint32_t)g_MainWindow,resolutionQueryCode,selectedRefreshRateCode,0,0
+               g_GrSstWinOpen((uint32_t)g_MainWindow,resolutionQueryCode,selectedRefreshRateCode,0,0
                                  ,2,1);
           output = (void *)0x50;
           tmuCountOutput = &g_GraphicsAdapters[adapterIndex].reserved74;
           if (g_GlideWindowContextHandle != 0) {
-            (*g_GrGet)(GLIDE_QUERY_SELECTOR_0x13,4,tmuCountOutput);
+            g_GrGet(GLIDE_QUERY_SELECTOR_0x13,4,tmuCountOutput);
             g_GlideTmuCount = *tmuCountOutput;
             g_FramebufferWidth = width;
             g_FramebufferHeight = height;
@@ -278,42 +278,42 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
                  Glide3_TextureSource_StretchDirectColorBilinear;
             g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
                  Glide3_TextureSource_BlitHalfRgbSaturatedAdd;
-            (*g_GuGammaCorrectionRGB)(0x3f800000,0x3f800000,0x3f800000);
-            (*g_GrCoordinateSpace)(0);
-            (*g_GrVertexLayout)(1,0,1);
-            (*g_GrVertexLayout)(2,8,1);
-            (*g_GrVertexLayout)(4,0xc,1);
-            (*g_GrVertexLayout)(0x40,0x14,1);
-            (*g_GrVertexLayout)(0x30,0x1c,1);
-            (*g_GrCullMode)(0);
-            (*g_GrDepthBufferMode)(1);
-            (*g_GrDepthBufferFunction)(6);
-            (*g_GrDepthMask)(1);
+            g_GuGammaCorrectionRGB(0x3f800000,0x3f800000,0x3f800000);
+            g_GrCoordinateSpace(0);
+            g_GrVertexLayout(1,0,1);
+            g_GrVertexLayout(2,8,1);
+            g_GrVertexLayout(4,0xc,1);
+            g_GrVertexLayout(0x40,0x14,1);
+            g_GrVertexLayout(0x30,0x1c,1);
+            g_GrCullMode(0);
+            g_GrDepthBufferMode(1);
+            g_GrDepthBufferFunction(6);
+            g_GrDepthMask(1);
             g_GlideDepthWriteEnabledState = 1;
             tmuIndex = GRAPHICS_TEXTURE_RESIDENT_TMU0;
             sstIndexOrSizeOrCount = g_GlideTmuCount;
             do {
-              (*g_GrTexMipMapMode)(tmuIndex,0,0);
-              (*g_GrTexClampMode)(tmuIndex,0,0);
-              (*g_GrTexFilterMode)(tmuIndex,1,1);
-              (*g_GrTexCombine)(tmuIndex,1,1,1,1,0,0);
-              tmuAddress = (*g_GrTexMinAddress)(tmuIndex);
+              g_GrTexMipMapMode(tmuIndex,0,0);
+              g_GrTexClampMode(tmuIndex,0,0);
+              g_GrTexFilterMode(tmuIndex,1,1);
+              g_GrTexCombine(tmuIndex,1,1,1,1,0,0);
+              tmuAddress = g_GrTexMinAddress(tmuIndex);
               g_GlideTmuMinAddress[tmuIndex] = tmuAddress;
-              tmuAddress = (*g_GrTexMaxAddress)(tmuIndex);
+              tmuAddress = g_GrTexMaxAddress(tmuIndex);
               g_GlideTmuMaxAddress[tmuIndex] = tmuAddress;
               tmuIndex = tmuIndex + 1;
               sstIndexOrSizeOrCount = sstIndexOrSizeOrCount - 1;
             } while (sstIndexOrSizeOrCount != 0);
-            (*g_GrColorCombine)(3,1,0,1,0);
-            (*g_GrAlphaCombine)(3,1,0,1,0);
+            g_GrColorCombine(3,1,0,1,0);
+            g_GrAlphaCombine(3,1,0,1,0);
             g_GlideTexturingDisabledState = 1;
-            (*g_GrAlphaBlendFunction)(1,7,4,0);
+            g_GrAlphaBlendFunction(1,7,4,0);
             g_GlideBlendModeState = 0;
             g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
             g_GlideResidentTextureHead = (GraphicsTextureResource *)0x0;
             g_GlideResidentTextureTail = (GraphicsTextureResource *)g_GlideTmuMinAddress[0];
             g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
-            displayModeResult = (*g_GraphicsDisplayModeFinalizeCf)(adapterIndex,bitsPerPixel,height,width);
+            displayModeResult = g_GraphicsDisplayModeFinalizeCf(adapterIndex,bitsPerPixel,height,width);
             output = (void *)displayModeResult.valueOrError;
             if (!displayModeResult.failed) {
               slotsRemaining = 0x1000;
@@ -327,11 +327,11 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
               } while (slotsRemaining != 0);
               return false;
             }
-            (*g_GrSstWinClose)(g_GlideWindowContextHandle);
+            g_GrSstWinClose(g_GlideWindowContextHandle);
           }
         }
       }
-      (*g_GrGlideShutdown)(); /* grGlideShutdown(void); Ghidra passed a stale register */
+      g_GrGlideShutdown(); /* grGlideShutdown(void); Ghidra passed a stale register */
       DynDLL_Unload(dynapi_5);
       g_GlideRuntimeActiveCount = 0;
     }
@@ -522,8 +522,8 @@ Glide3_DrawPrimitiveQueue
       if (((widthLog2OrFlags & 0x10000) == 0) || (currentPacket->textureEntry == (GraphicsTextureSetEntry *)0x0)) {
         if (g_GlideTexturingDisabledState != 0) {
           /* Untextured color and alpha combine. */
-          (*g_GrColorCombine)(1,0,0,2,0);
-          (*g_GrAlphaCombine)(1,0,0,2,0);
+          g_GrColorCombine(1,0,0,2,0);
+          g_GrAlphaCombine(1,0,0,2,0);
         }
       }
       else {
@@ -531,18 +531,18 @@ Glide3_DrawPrimitiveQueue
         if (((int)texture->residentTmuIndex < 0) &&
            (Glide3_TextureResource_EnsureResident(texture), (int)texture->residentTmuIndex < 0)) {
           /* Texture could not be made resident: untextured color and alpha combine. */
-          (*g_GrColorCombine)(1,0,0,2,0);
-          (*g_GrAlphaCombine)(1,0,0,2,0);
+          g_GrColorCombine(1,0,0,2,0);
+          g_GrAlphaCombine(1,0,0,2,0);
         }
         else {
           if (g_GlideBoundTexture != texture) {
             g_GlideBoundTexture = texture;
-            (*g_GrTexSource)(texture->residentTmuIndex,texture->residentAddress,3,
+            g_GrTexSource(texture->residentTmuIndex,texture->residentAddress,3,
                              &texture->glideInfo);
           }
           if (g_GlideTexturingDisabledState == 0) {
-            (*g_GrColorCombine)(3,1,0,1,0);
-            (*g_GrAlphaCombine)(3,1,0,1,0);
+            g_GrColorCombine(3,1,0,1,0);
+            g_GrAlphaCombine(3,1,0,1,0);
           }
         }
       }
@@ -554,31 +554,31 @@ Glide3_DrawPrimitiveQueue
       }
       if (widthLog2OrFlags == 0x2000) {
         if (g_GlideBlendModeState != 1) {
-          (*g_GrAlphaBlendFunction)(4,4,4,0);
+          g_GrAlphaBlendFunction(4,4,4,0);
           g_GlideBlendModeState = 1;
         }
       }
       else if (widthLog2OrFlags == 0) {
         if (g_GlideBlendModeState != 2) {
-          (*g_GrAlphaBlendFunction)(4,0,4,0);
+          g_GrAlphaBlendFunction(4,0,4,0);
           g_GlideBlendModeState = 2;
         }
       }
       else if (g_GlideBlendModeState != 0) {
-        (*g_GrAlphaBlendFunction)(1,5,4,0);
+        g_GrAlphaBlendFunction(1,5,4,0);
         g_GlideBlendModeState = 0;
       }
       if ((widthLog2OrFlags == 0x2000) || (widthLog2OrFlags == 0x1000)) {
         if (g_GlideDepthWriteEnabledState != 0) {
-          (*g_GrDepthMask)(0);
+          g_GrDepthMask(0);
           g_GlideDepthWriteEnabledState = 0;
         }
       }
       else if (g_GlideDepthWriteEnabledState == 0) {
-        (*g_GrDepthMask)(1);
+        g_GrDepthMask(1);
         g_GlideDepthWriteEnabledState = 1;
       }
-      (*g_GrDrawTriangle)(&g_GlideVertex2ScreenX,&g_GlideVertex1ScreenX,&g_GlideVertex0ScreenX);
+      g_GrDrawTriangle(&g_GlideVertex2ScreenX,&g_GlideVertex1ScreenX,&g_GlideVertex0ScreenX);
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
       packetResult = GraphicsPrimitiveQueue_Next(queue);
     }
@@ -625,7 +625,7 @@ Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,GraphicsT
         } while (slotsRemaining != 0);
         *matchedSlot = (GraphicsTextureResource *)0x0;
         Glide3_TextureResource_Release(texture);
-        (*g_MemoryApi.free)(texture);
+        g_MemoryApi.free(texture);
       }
       entryCursor = entryCursor + 1;
       remainingEntries = remainingEntries - 1;
@@ -677,8 +677,8 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   g_GraphicsBackendAccessState = 1;
   UNLOCK();
   if (visibilityTokenOrAccessState == 0) {
-    (*g_GrFinish)();
-    (*g_GrBufferSwap)(1);
+    g_GrFinish();
+    g_GrBufferSwap(1);
     g_GraphicsBackendAccessState = g_GraphicsBackendAccessState + -1;
   }
   drawY = g_CursorCurrentDrawY;
@@ -750,15 +750,15 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
     }
     binding = binding + 1;
   } while (binding->importName != (char *)0x0);
-  (*g_GrGet)(0xf,4,&remainingBoards);
+  g_GrGet(0xf,4,&remainingBoards);
   if (remainingBoards != 0) {
     sstIndex = 0;
     do {
       if (0xf < g_GraphicsAdapterCount) break;
-      (*g_GrGlideInit)();
-      (*g_GrSstSelect)(sstIndex);
-      source = (uint8_t *)(*g_GrGetString)(0xa2);
-      driverDescription = (uint8_t *)(*g_GrGetString)(0xa1);
+      g_GrGlideInit();
+      g_GrSstSelect(sstIndex);
+      source = (uint8_t *)g_GrGetString(0xa2);
+      driverDescription = (uint8_t *)g_GrGetString(0xa1);
       adapter = g_GraphicsAdapters + g_GraphicsAdapterCount;
       Text_CopyNarrowToUtf16Cf(0x28,adapter->driverDescriptionUtf16,driverDescription);
       Text_CopyNarrowToUtf16Cf(0x28,adapter->deviceNameUtf16,source);
@@ -766,13 +766,13 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
       (adapter->adapterGuid).Data2 = (uint16_t)sstIndex;
       (adapter->adapterGuid).Data3 = THANDOR_PART(uint16_t, sstIndex, 2);
       (adapter->deviceGuid).Data1 = 1;
-      querySizeOrAdapterIndex = (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,(void *)0x0);
+      querySizeOrAdapterIndex = g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,(void *)0x0);
       if (querySizeOrAdapterIndex != 0) {
-        resolutionAlloc = (*g_MemoryApi.alloc)(querySizeOrAdapterIndex);
+        resolutionAlloc = g_MemoryApi.alloc(querySizeOrAdapterIndex);
         output = (int *)resolutionAlloc.payloadOrError;
         if (!resolutionAlloc.failed) {
           remainingResolutions = querySizeOrAdapterIndex >> 4;
-          (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,output);
+          g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,output);
           displayMode = g_GraphicsDisplayModes + g_GraphicsDisplayModeCount;
           resolutionCursor = output;
           do {
@@ -820,10 +820,10 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
             resolutionCursor = resolutionCursor + 4;
             remainingResolutions = remainingResolutions - 1;
           } while (remainingResolutions != 0);
-          (*g_MemoryApi.free)(output);
+          g_MemoryApi.free(output);
         }
       }
-      (*g_GrGlideShutdown)();
+      g_GrGlideShutdown();
       g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
       sstIndex = sstIndex + 1;
       remainingBoards = remainingBoards + -1;
@@ -874,12 +874,12 @@ Glide3_ClearViewport
 
 {
   if (g_GlideDepthWriteEnabledState == 0) {
-    (*g_GrDepthMask)(1);
+    g_GrDepthMask(1);
     g_GlideDepthWriteEnabledState = 1;
   }
-  (*g_GrViewport)(coordinate3,coordinate2,coordinate1 - coordinate3,coordinate0 - coordinate2);
-  (*g_GrClipWindow)(coordinate3,coordinate2,coordinate1,coordinate0);
-  (*g_GrBufferClear)(0,0,0);
+  g_GrViewport(coordinate3,coordinate2,coordinate1 - coordinate3,coordinate0 - coordinate2);
+  g_GrClipWindow(coordinate3,coordinate2,coordinate1,coordinate0);
+  g_GrBufferClear(0,0,0);
   return;
 }
 
@@ -898,9 +898,9 @@ Glide3_TextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,Graphic
   GraphicsTextureResource *textureResource;
   
   entryTexture = set->entries[subresourceIndex].texture;
-  (*g_GlideTextureColorUpload[entryTexture->downsampleShift])(entryTexture);
+  g_GlideTextureColorUpload[entryTexture->downsampleShift](entryTexture);
   if (-1 < (int)entryTexture->residentTmuIndex) {
-    (*g_GrTexDownloadMipMap)(entryTexture->residentTmuIndex,entryTexture->residentAddress,3,&entryTexture->glideInfo);
+    g_GrTexDownloadMipMap(entryTexture->residentTmuIndex,entryTexture->residentAddress,3,&entryTexture->glideInfo);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
@@ -921,9 +921,9 @@ Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Graphic
   GraphicsTextureResource *textureResource;
   
   entryTexture = set->entries[subresourceIndex].texture;
-  (*g_GlideTextureAlphaUpload[entryTexture->downsampleShift])(entryTexture);
+  g_GlideTextureAlphaUpload[entryTexture->downsampleShift](entryTexture);
   if (-1 < (int)entryTexture->residentTmuIndex) {
-    (*g_GrTexDownloadMipMap)(entryTexture->residentTmuIndex,entryTexture->residentAddress,3,&entryTexture->glideInfo);
+    g_GrTexDownloadMipMap(entryTexture->residentTmuIndex,entryTexture->residentAddress,3,&entryTexture->glideInfo);
     g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
   }
   return;
@@ -957,7 +957,7 @@ Glide3_Framebuffer_CaptureRegion
   uint16_t *destinationPixels;
   
   pixelCountOrRemaining = captureWidth * captureHeight;
-  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult, (*g_MemoryApi.alloc)(pixelCountOrRemaining * 4 + 0x220));
+  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult, g_MemoryApi.alloc(pixelCountOrRemaining * 4 + 0x220));
   capturedAsset = captureResult.capture;
   if (!captureResult.failed) {
     destinationPixels = (uint16_t *)((int)capturedAsset->argb8888Pixels + pixelCountOrRemaining * 2);
@@ -971,24 +971,24 @@ Glide3_Framebuffer_CaptureRegion
     width = captureWidth;
     height = captureHeight;
     sourcePixelCursor = destinationPixels;
-    (*g_GrFinish)();
-    (*g_GrLfbReadRegion)(buffer,sourceX,sourceY,width,height,strideOrTimestamp,destinationPixels);
+    g_GrFinish();
+    g_GrLfbReadRegion(buffer,sourceX,sourceY,width,height,strideOrTimestamp,destinationPixels);
     (capturedAsset->common).magic = ASSET_MAGIC_GFX;
     /* The original stores EDX after the Glide calls, i.e. whatever glide3x left there; this is the
        allocation size, as the DirectDraw capture stores (the screenshot writer uses it as file size). */
     (capturedAsset->common).allocationSizeBytes = captureWidth * captureHeight * 4 + 0x220;
     (capturedAsset->common).formatVersion = 1;
     (capturedAsset->common).converterVersion = 0;
-    strideOrTimestamp = (*g_LocaleGetPackedCurrentTime)();
+    strideOrTimestamp = g_LocaleGetPackedCurrentTime();
     (capturedAsset->common).buildMetadata.timestamps.dateValue0 = strideOrTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.dateValue1 = strideOrTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.dateValue2 = strideOrTimestamp;
-    strideOrTimestamp = (*g_LocaleGetPackedCurrentDate)();
+    strideOrTimestamp = g_LocaleGetPackedCurrentDate();
     (capturedAsset->common).buildMetadata.timestamps.timeValue0 = strideOrTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue1 = strideOrTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue2 = strideOrTimestamp;
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((capturedAsset->common).buildMetadata.names.producerName);
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((capturedAsset->common).buildMetadata.names.sourceName);
+    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.producerName);
+    g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.sourceName);
     capturedAsset->opaqueTablePayloadBC_1FF[0x44] = 0;
     (capturedAsset->tableDescriptor).subresourceCount = 1;
     (capturedAsset->tableDescriptor).paletteBankCount = 0;
@@ -3831,7 +3831,7 @@ Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
     }
     accessFailed = Glide3_Framebuffer_BeginAccess();
     if (!accessFailed) {
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (g_FramebufferHeight,g_FramebufferWidth,0,0,cursorY - cursorHotspotY,cursorX - cursorHotspotX,
                  cursorSubresource,g_CursorSourceAsset,g_FramebufferAccess);
       Glide3_Framebuffer_EndAccess();
@@ -3865,8 +3865,8 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_Shutdown(void)
       textureSlotCursor = textureSlotCursor + 1;
       textureSlotsRemaining = textureSlotsRemaining + -1;
     } while (textureSlotsRemaining != 0);
-    (*g_GrSstWinClose)(g_GlideWindowContextHandle);
-    (*g_GrGlideShutdown)();
+    g_GrSstWinClose(g_GlideWindowContextHandle);
+    g_GrGlideShutdown();
     DynDLL_Unload(dynapi_5);
     g_GlideRuntimeActiveCount = 0;
   }
@@ -3892,13 +3892,13 @@ bool __thandor_cf_preserve_eax_ecx_edx Glide3_Framebuffer_BeginAccess(void)
   g_GraphicsBackendAccessState = 1;
   UNLOCK();
   if (previousAccessState == 0) {
-    (*g_GrFinish)();
-    lfbLockSucceeded = (*g_GrLfbLock)(0x11,1,0,0,0,&g_GlidePrimaryLfbInfo);
+    g_GrFinish();
+    lfbLockSucceeded = g_GrLfbLock(0x11,1,0,0,0,&g_GlidePrimaryLfbInfo);
     if (lfbLockSucceeded != 0) {
       g_FramebufferRowStrideBytes = g_GlidePrimaryLfbInfo.strideBytes;
       g_DisplayFramebufferAccess.width = g_GlidePrimaryLfbInfo.strideBytes >> 1;
       g_DisplayFramebufferAccess.pixels = g_GlidePrimaryLfbInfo.pixels;
-      secondaryLfbLockSucceeded = (*g_GrLfbLock)(0x10,1,0,0,0,&g_GlideSecondaryLfbInfo);
+      secondaryLfbLockSucceeded = g_GrLfbLock(0x10,1,0,0,0,&g_GlideSecondaryLfbInfo);
       if ((secondaryLfbLockSucceeded != 0) &&
          (g_FramebufferRowStrideBytes == g_GlideSecondaryLfbInfo.strideBytes)) {
         /* The original reads the primary buffer's pointer here, not g_GlideSecondaryLfbInfo.pixels, so
@@ -3923,11 +3923,11 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_Framebuffer_EndAccess(void)
 
 {
   if (g_GlideSecondBufferBase != (uint8_t *)0x0) {
-    (*g_GrLfbUnlock)(0,1);
+    g_GrLfbUnlock(0,1);
     g_GlideSecondBufferOffset = 0;
     g_GlideSecondBufferBase = (uint8_t *)0x0;
   }
-  (*g_GrLfbUnlock)(1,1);
+  g_GrLfbUnlock(1,1);
   g_DisplayFramebufferAccess.pixels = (uint8_t *)0x0;
   g_GraphicsBackendAccessState = 0;
   return;
@@ -4034,7 +4034,7 @@ Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
   return;
 Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
   g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
-  (*g_GrTexDownloadMipMap)(texture->residentTmuIndex,texture->residentAddress,3,&texture->glideInfo);
+  g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,3,&texture->glideInfo);
   return;
 }
 
@@ -4061,7 +4061,7 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   TextureSizeResult logicalSize;
   
   globalDownsampleShift = g_TextureDownsampleShift;
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset);
   heightValue = logicalSize.logicalHeightPixels;
   widthOrLodSize = logicalSize.logicalWidthPixels;
   texture->downsampleShift = globalDownsampleShift;
@@ -4094,17 +4094,17 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   (texture->glideInfo).smallLodLog2 = (texture->glideInfo).smallLodLog2 - shift;
   largeLodLog2Field = &(texture->glideInfo).largeLodLog2;
   *largeLodLog2Field = *largeLodLog2Field - shift;
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset);
   (texture->glideInfo).data = (void *)0x0;
   texture->residentNext = (GraphicsTextureResource *)0x0;
   texture->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
   texture->residentAddress = 0;
-  uploadAlloc = (*g_MemoryApi.alloc)
+  uploadAlloc = g_MemoryApi.alloc
                     ((logicalSize.logicalHeightPixels >> ((uint8_t)shift & 0x1f)) *
                      (logicalSize.logicalWidthPixels >> ((uint8_t)shift & 0x1f)) * 2);
   if (!uploadAlloc.failed) {
     (texture->glideInfo).data = (void *)uploadAlloc.payloadOrError;
-    (*g_GlideTextureColorUpload[shift])(texture);
+    g_GlideTextureColorUpload[shift](texture);
   }
   return;
 }
@@ -4150,7 +4150,7 @@ Glide3_TextureResource_Release(GraphicsTextureResource *texture)
   texture->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
   texture->residentNext = (GraphicsTextureResource *)0x0;
   texture->residentAddress = 0;
-  (*g_MemoryApi.free)((texture->glideInfo).data);
+  g_MemoryApi.free((texture->glideInfo).data);
   (texture->glideInfo).data = (void *)0x0;
   return;
 }

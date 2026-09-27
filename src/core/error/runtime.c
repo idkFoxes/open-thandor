@@ -22,9 +22,9 @@ void __cdecl ErrorSystem_Init(void)
 {
   TextPageLoadResult loadResult;
   
-  g_FatalErrorPrimaryDispatchCf = FatalError_Exit;
-  g_FatalErrorRuntimeDispatchCf = FatalError_Exit;
-  g_FatalErrorExitFallbackDispatchCf = FatalError_Exit;
+  g_FatalErrorExitHandler = FatalError_Exit;
+  g_FatalErrorReportHandler = FatalError_Exit;
+  g_FatalErrorFallbackHandler = FatalError_Exit;
   loadResult = TextResourcePage_Load(0,(uint16_t *)u_texte_error_str_00407d20);
                     // WARNING: Subroutine does not return
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),loadResult.failed);
@@ -128,7 +128,7 @@ FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn)
   g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   UiFrame_FlushInputAndResetPendingTicks();
-  (*g_GraphicsCursorSetFrame)(0);
+  g_GraphicsCursorSetFrame(0);
   g_FatalErrorDialogDismissed = 0;
   do {
     UiRootStack_InvalidateAll();
@@ -151,10 +151,10 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
   void *allocatedFatalErrorUiRootTemplate;
   ArenaAllocResult allocResult;
   
-  allocResult = (*g_MemoryApi.alloc)(0x110);
+  allocResult = g_MemoryApi.alloc(0x110);
   allocatedFatalErrorUiRootTemplate = (void *)allocResult.payloadOrError;
   if (!allocResult.failed) {
-    g_FatalErrorRuntimeDispatchCf = FatalErrorRuntime_DispatchPendingErrorCf;
+    g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingErrorCf;
     g_FatalErrorUiRootTemplate = allocatedFatalErrorUiRootTemplate;
   }
   return;

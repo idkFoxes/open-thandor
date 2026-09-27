@@ -38,7 +38,7 @@ PckCodec_EncodeFieldGrid
   
   cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
   bytes = cellCount * 0x10 + 0x200;
-  allocResult = (*g_MemoryApi.alloc)(bytes);
+  allocResult = g_MemoryApi.alloc(bytes);
   compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     compactWriteCursor = compactFieldImageBase;
@@ -68,12 +68,12 @@ PckCodec_EncodeFieldGrid
                        (uint8_t *)compactFieldImageBase);
     encodedSizeOrError = (AssetMagic *)encodeResult.byteCountOrError;
     if (!encodeResult.failed) {
-      (*g_MemoryApi.free)(compactFieldImageBase);
+      g_MemoryApi.free(compactFieldImageBase);
       successResult.byteCountOrError = (uint32_t)encodedSizeOrError + 0x10; /* packed size plus the 0x10-byte prefix */
       successResult.failed = false;
       return successResult;
     }
-    (*g_MemoryApi.free)(compactFieldImageBase);
+    g_MemoryApi.free(compactFieldImageBase);
     compactFieldImageBase = encodedSizeOrError;
   }
   encodeResult.failed = true;
@@ -115,7 +115,7 @@ PckCodec_DecodeFieldGrid
   FieldGridDimension gridWidth;
   
   bytes = *(uint32_t *)source;
-  allocResult = (*g_MemoryApi.alloc)(bytes);
+  allocResult = g_MemoryApi.alloc(bytes);
   compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     decodeResult = PckCodec_DecodeHuffmanRle
@@ -171,13 +171,13 @@ PckCodec_DecodeFieldGrid
         columnsRemaining = gridWidth;
         countOrRowStartX = cellCountOrWorldX;
       } while (rowsRemaining != 0);
-      freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
+      freeResult = g_MemoryApi.free(compactFieldImageBase);
       /* EAX is whatever the free left in it (callers only test CF), CF clear. */
       decodeResult.failed = false;
       decodeResult.byteCountOrError = (uint32_t)freeResult.valueOrError;
       return decodeResult;
     }
-    freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
+    freeResult = g_MemoryApi.free(compactFieldImageBase);
     compactFieldImageBase = (AssetMagic *)freeResult.valueOrError;
   }
   decodeResult.failed = true;

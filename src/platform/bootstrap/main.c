@@ -48,14 +48,14 @@ static void Thandor_SelfTestCodec(void)
         }
         memset(packed, 0xCD, capacity + guard);
         memset(unpacked, 0xCD, size + guard);
-        enc = (*g_PckEncoderTable[0])(capacity, packed, size, source);
+        enc = g_PckEncoderTable[0](capacity, packed, size, source);
         for (i = capacity; i < capacity + guard; i++) {
             if (packed[i] != 0xCD) { packedGuardOk = 0; break; }
         }
         Thandor_Log("codec selftest %u: size=%x noisy=%d encode carry=%d packed=%x guard=%s", t, size,
                     noisy, enc.failed, enc.byteCountOrError, packedGuardOk ? "ok" : "OVERWRITTEN");
         if (!enc.failed) {
-            dec = (*g_PckDecoderTable[0])(size, unpacked, enc.byteCountOrError, packed);
+            dec = g_PckDecoderTable[0](size, unpacked, enc.byteCountOrError, packed);
             for (i = size; i < size + guard; i++) {
                 if (unpacked[i] != 0xCD) { unpackedGuardOk = 0; break; }
             }
@@ -326,7 +326,7 @@ static void Thandor_SelfTestScanAddresses(void)
                 position += 0x200 + (long)header.packedSize;
                 continue;
             }
-            decoded = (*g_PckDecoderTable[header.compressionMethod])
+            decoded = g_PckDecoderTable[header.compressionMethod]
                           (header.unpackedSize, unpacked, header.packedSize, packed);
             totalEntries++;
             if (decoded.failed) {

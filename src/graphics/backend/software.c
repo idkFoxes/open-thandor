@@ -54,7 +54,7 @@ SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRunt
         SoftwareMaskBuffer_ApplyCircularRegionBit(0,0x50,0xa0,radiusStep,maskRuntime);
         break;
       case 2:
-        logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+        logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
         SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
                   (logicalSize.logicalWidthPixels + logicalSize.logicalHeightPixels,radiusStep,maskRuntime);
         break;
@@ -64,7 +64,7 @@ SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRunt
         break;
       case 4:
       case 9:
-        logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+        logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
         reverseRows = logicalSize.logicalHeightPixels;
         SoftwareMaskBuffer_ApplyHorizontalBandBit(reverseRows,radiusStep,maskRuntime);
         break;
@@ -110,12 +110,12 @@ SoftwareRenderer_ClearViewport
 {
   bool accessFailed;
   
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
-    (*g_GraphicsFramebufferFillRectArgb)
+    g_GraphicsFramebufferFillRectArgb
               (clipMaxY,clipMaxX,clipMinY,clipMinX,clipMaxY,clipMaxX,clipMinY,clipMinX,0xff000000,
                g_FramebufferAccess);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   SoftwareRenderer_AdvanceDepthEpoch();
   return;
@@ -245,10 +245,10 @@ SoftwareRenderer_DrawPrimitiveQueueBridge
 {
   bool accessFailed;
   
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
-    (*g_SoftwareDrawQueueProc)(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_SoftwareDrawQueue(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -298,7 +298,7 @@ SoftwarePixelFormat_BaseDisplayModeHook
   
   packTables = g_SoftwarePixelPackTables;
   if (g_SoftwarePixelPackTables == (SoftwarePixelPackTables *)0x0) {
-    tableAllocation = (*g_MemoryApi.alloc)(0xc00);
+    tableAllocation = g_MemoryApi.alloc(0xc00);
     packTables = (SoftwarePixelPackTables *)tableAllocation.payloadOrError;
     if (tableAllocation.failed) {
       failureResult.valueOrError = tableAllocation.payloadOrError;
@@ -307,7 +307,7 @@ SoftwarePixelFormat_BaseDisplayModeHook
     }
   }
   g_SoftwarePixelPackTables = packTables;
-  (*g_SoftwareBuildPixelPackTables)(g_SoftwareColorScaleQ16,g_SoftwareColorBiasQ16);
+  g_SoftwareBuildPixelPackTables(g_SoftwareColorScaleQ16,g_SoftwareColorBiasQ16);
   redBits = (uint8_t)g_SoftwarePixelFormatConfig.redBitCount;
   greenBits = (uint8_t)g_SoftwarePixelFormatConfig.greenBitCount;
   blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
@@ -363,7 +363,7 @@ SoftwareFramebuffer_Create
   SoftwareFramebufferResult createResult;
   
   pixelBytesOrWordsLeft = width * height * bytesPerPixel;
-  frameAllocation = (*g_MemoryApi.alloc)(pixelBytesOrWordsLeft + 0x10);
+  frameAllocation = g_MemoryApi.alloc(pixelBytesOrWordsLeft + 0x10);
   headerCursor = (GraphicsPixelDimension *)frameAllocation.payloadOrError;
   if (!frameAllocation.failed) {
     headerCursor[2] = bytesPerPixel;
@@ -390,7 +390,7 @@ SoftwareFramebuffer_Create
 void __thandor_preserve_eax SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
 
 {
-  (*g_MemoryApi.free)(framebuffer);
+  g_MemoryApi.free(framebuffer);
   return;
 }
 
@@ -2965,7 +2965,7 @@ void SoftwareRasterAux_Mode12
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-SoftwareRenderer_DisplayModeHook
+SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 modeArg0,DisplayModeHookArgument1 modeArg1,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
@@ -2977,22 +2977,22 @@ SoftwareRenderer_DisplayModeHook
   uint8_t blueBits;
   DisplayModeResult hookResult;
   
-  hookResult = (*g_SoftwarePreviousDisplayModeHook)(modeArg0,modeArg1,height,width);
+  hookResult = g_SoftwareChainedSetDisplayMode(modeArg0,modeArg1,height,width);
   if (!hookResult.failed) {
     g_SoftwareDepthRowStrideBytes = width * 4;
     if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-      g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueue16Bit;
+      g_SoftwareDrawQueue = SoftwareRenderer_DrawQueue16Bit;
     }
     else {
-      g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueueNon16Bit;
+      g_SoftwareDrawQueue = SoftwareRenderer_DrawQueueNon16Bit;
     }
-    hookResult = THANDOR_BITCAST(ArenaAllocResult, DisplayModeResult, (*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * height));
+    hookResult = THANDOR_BITCAST(ArenaAllocResult, DisplayModeResult, g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height));
     memory = g_SoftwareDepthBuffer;
     if (!hookResult.failed) {
       LOCK();
       UNLOCK();
       g_SoftwareDepthBuffer = (int32_t *)hookResult.valueOrError;
-      (*g_MemoryApi.free)(memory);
+      g_MemoryApi.free(memory);
       g_SoftwareDepthEpoch = 0;
       redBits = (uint8_t)g_SoftwarePixelFormatConfig.redBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
@@ -3036,7 +3036,7 @@ SoftwareRenderer_DisplayModeHook
 
 /* Address: 0x004FE7D0.
    Ownership: graphics/backend/software.
-   Purpose: Installs SoftwareRenderer_DisplayModeHook after SoftwarePixelFormat_BaseDisplayModeHook and allocates
+   Purpose: Installs SoftwareRenderer_SetDisplayMode after SoftwarePixelFormat_BaseDisplayModeHook and allocates
    the initial software depth buffer. ABI: CF clear means success. CF set means failure.
 */
 StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
@@ -3046,18 +3046,18 @@ StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
   bool framebufferPixelFormatTooNarrow;
   ArenaAllocResult depthAllocation;
   
-  g_SoftwarePreviousDisplayModeHook = g_GraphicsDisplayModeHook;
+  g_SoftwareChainedSetDisplayMode = g_GraphicsSetDisplayMode;
   g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4;
   LOCK();
-  g_GraphicsDisplayModeHook = SoftwareRenderer_DisplayModeHook;
+  g_GraphicsSetDisplayMode = SoftwareRenderer_SetDisplayMode;
   UNLOCK();
   if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-    g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueue16Bit;
+    g_SoftwareDrawQueue = SoftwareRenderer_DrawQueue16Bit;
   }
   else {
-    g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueueNon16Bit;
+    g_SoftwareDrawQueue = SoftwareRenderer_DrawQueueNon16Bit;
   }
-  depthAllocation = (*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight);
+  depthAllocation = g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight);
   allocatedDepthBuffer = (int32_t *)depthAllocation.payloadOrError;
   if (!depthAllocation.failed) {
     g_SoftwareDepthBuffer = allocatedDepthBuffer;
@@ -3270,7 +3270,7 @@ SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
   
   maskQwordWriteCursor = (uint64_t *)maskControl->maskPixels;
   if (maskQwordWriteCursor != (uint64_t *)0x0) {
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
+    logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
     qwordBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 6;
     do {
       *maskQwordWriteCursor = 0;
@@ -3310,7 +3310,7 @@ SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *mas
   if (mask == NULL) {
     return;
   }
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   blocksLeft = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 5;
   do {
     for (i = 0; i < 32; i++) {
@@ -3347,7 +3347,7 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
   TextureSizeResult logicalSize;
   int rowY;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;
   maskWidth = logicalSize.logicalWidthPixels;
   radiusPixels = radiusStep * 0x1c;
@@ -3415,7 +3415,7 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
   uint8_t *maskCursor;
   TextureSizeResult logicalSize;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;
   maskWidth = logicalSize.logicalWidthPixels;
   thresholdSum = thresholdStep * 0x28;
@@ -3477,7 +3477,7 @@ SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
   uint64_t maskLogicalSizePair;
   TextureSizeResult logicalSize;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
   maskWordCursor = (uint32_t *)maskControl->maskPixels;
   maskBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 4;
   do {
@@ -3511,7 +3511,7 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
   uint32_t *maskWordCursor;
   TextureSizeResult logicalSize;
   
-  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   if ((uint32_t)bandIndex < 0x19) {
     bandBytesOrBlocksLeft = logicalSize.logicalWidthPixels * 0xf;
     if (reverseRows == 0) {

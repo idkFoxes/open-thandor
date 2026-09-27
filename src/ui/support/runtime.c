@@ -155,22 +155,22 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   ArenaAllocResult bufferAllocResult;
   TextureSizeResult textureSizeResult;
   
-  (*g_GraphicsCursorSetFrame)(6);
+  g_GraphicsCursorSetFrame(6);
   (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
   (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)0x0;
   (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
   (frontendCreditsView->creditsMaskRuntime).patternState54 = 0;
   (frontendCreditsView->creditsMaskRuntime).patternState58 = 0;
   (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
-  textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_credits_gfx_00545c22);
+  textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_credits_gfx_00545c22);
   if (!textureLoadResult.failed) {
     (frontendCreditsView->creditsMaskRuntime).textureSource = textureLoadResult.textureSource;
-    textureSizeResult = (*g_GraphicsTextureSourceGetLogicalSize)(0,textureLoadResult.textureSource);
+    textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,textureLoadResult.textureSource);
     bytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
-    bufferAllocResult = (*g_MemoryApi.alloc)(bytes);
+    bufferAllocResult = g_MemoryApi.alloc(bytes);
     if (!bufferAllocResult.failed) {
       (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)bufferAllocResult.payloadOrError;
-      bufferAllocResult = (*g_MemoryApi.alloc)(bytes);
+      bufferAllocResult = g_MemoryApi.alloc(bytes);
       if (!bufferAllocResult.failed) {
         (frontendCreditsView->creditsMaskRuntime).unresolved64 = bufferAllocResult.payloadOrError;
         UiFrame_FlushInputAndResetPendingTicks();
@@ -181,14 +181,14 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
       }
     }
   }
-  (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)
+  g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
             ((frontendCreditsView->creditsMaskRuntime).textureSource);
-  (*g_MemoryApi.free)((frontendCreditsView->creditsMaskRuntime).maskPixels);
-  (*g_MemoryApi.free)((void *)(frontendCreditsView->creditsMaskRuntime).unresolved64);
+  g_MemoryApi.free((frontendCreditsView->creditsMaskRuntime).maskPixels);
+  g_MemoryApi.free((void *)(frontendCreditsView->creditsMaskRuntime).unresolved64);
   (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
   (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)0x0;
   (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
-  (*g_GraphicsCursorSetFrame)(0);
+  g_GraphicsCursorSetFrame(0);
   return;
 }
 
@@ -235,7 +235,7 @@ PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,uint16_t *sou
   resourceLoadResult = Resource_Load((uint16_t *)&g_LevelResourcePathScratchUtf16);
   sourceBytes = (void *)resourceLoadResult.bufferOrError;
   if (!resourceLoadResult.failed) {
-    pcxDecodeResult = (*g_PcxFunctionExport2)(g_PcxFunctionModule,resourceLoadResult.byteCount,sourceBytes);
+    pcxDecodeResult = g_PcxFunctionExport2(g_PcxFunctionModule,resourceLoadResult.byteCount,sourceBytes);
     memory = pcxDecodeResult.decodedImageOrError;
     if (!pcxDecodeResult.failed) {
       headerOrPixelDataOffset = *(int *)((int)memory + 0xb8);
@@ -257,11 +257,11 @@ PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,uint16_t *sou
           pixelDwordCursor = pixelDwordCursor + 1;
           outputPreview = (PcxPreview64 *)&outputPreview->paletteRgbTriplets256[1].green;
         }
-        (*g_MemoryApi.free)(memory);
+        g_MemoryApi.free(memory);
         Resource_Release(sourceBytes);
         return false;
       }
-      (*g_MemoryApi.free)(memory);
+      g_MemoryApi.free(memory);
     }
     Resource_Release(sourceBytes);
   }

@@ -406,7 +406,7 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
   uint32_t secondAngleIndex16;
   ArenaAllocResult allocResult;
   
-  allocResult = (*g_MemoryApi.alloc)(0x40000);
+  allocResult = g_MemoryApi.alloc(0x40000);
   outputCursor = (short *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_CosineDerivedLookupAllocation = outputCursor;

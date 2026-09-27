@@ -59,7 +59,7 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
   
   Resource_Release(g_PersistentSettings.image);
   g_PersistentSettings.image = (PersistentSettingsImage *)0x0;
-  allocResult = (*g_MemoryApi.alloc)(200);
+  allocResult = g_MemoryApi.alloc(200);
   settingsClearCursor = (uint32_t *)allocResult.payloadOrError;
   if (allocResult.failed) {
     return;
@@ -69,15 +69,15 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
     settingsClearCursor = settingsClearCursor + 1;
   }
   destination = (PersistentSettingsImage *)(settingsClearCursor + -0x32);
-  openResult = (*g_FileSystemOpenCf)(0,g_PersistentSettings.path);
+  openResult = g_FileSystemOpenCf(0,g_PersistentSettings.path);
   handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+    openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     if (openResult.failed) {
-      (*g_MemoryApi.free)(destination);
+      g_MemoryApi.free(destination);
       return;
     }
     /* The original also continues with EAX = the byte count returned by the path copy below as the
@@ -87,15 +87,15 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
                       );
     handle = (void *)pathCopyResult.bytesWritten;
   }
-  sizeResult = (*g_FileSystemGetSizeCf)(handle);
+  sizeResult = g_FileSystemGetSizeCf(handle);
   if (!sizeResult.failed) {
     byteCount = 200;
     if (sizeResult.sizeOrError < 200) {
       byteCount = sizeResult.sizeOrError;
     }
-    readResult = (*g_FileSystemReadExactCf)(byteCount,destination,handle);
+    readResult = g_FileSystemReadExactCf(byteCount,destination,handle);
     if (!readResult.failed) {
-      (*g_FileSystemClose)(handle);
+      g_FileSystemClose(handle);
       if (byteCount < 0x3c) {
         g_PersistentSettings.image = destination;
         g_PersistentSettings.loadedByteCount = byteCount;
@@ -109,8 +109,8 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
       return;
     }
   }
-  (*g_FileSystemClose)(handle);
-  (*g_MemoryApi.free)(destination);
+  g_FileSystemClose(handle);
+  g_MemoryApi.free(destination);
   return;
 }
 

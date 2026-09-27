@@ -313,7 +313,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
       if (!encodeResult.failed) {
         *scratchCursor = sourceSizeBytes;
         commandCountOrBufferSize = encodeResult.byteCountOrError + 4;
-        allocResult = (*g_MemoryApi.alloc)(commandCountOrBufferSize);
+        allocResult = g_MemoryApi.alloc(commandCountOrBufferSize);
         if (!allocResult.failed) {
           outgoingCursor = (FrontendSnapshotTransferFlags *)allocResult.payloadOrError;
           for (packedCommandOrDwordCount = commandCountOrBufferSize >> 2; packedCommandOrDwordCount != 0; packedCommandOrDwordCount = packedCommandOrDwordCount - 1) {
@@ -356,8 +356,8 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
     UiTransferMailbox_ClearReceivedState();
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
     g_FrontendNetworkState = 0;
-    (*g_NetworkBackendSlot3)();
-    (*g_NetworkBackendSlot1)();
+    g_NetworkBackendSlot3();
+    g_NetworkBackendSlot1();
     frontendRootBase = g_FrontendRootNode;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     if ((g_FrontendRuntimeFlags & 0x10) != 0) {
@@ -746,7 +746,7 @@ uint32_t __cdecl Network_Init(void)
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
                                                     resultOrError = (HINSTANCE)
-                                                             (*g_WinSock_WSAStartup)
+                                                             g_WinSock_WSAStartup
                                                                        (0x101,&g_WinSockStartupData)
                                                     ;
                                                     if (resultOrError == (HINSTANCE)0x0) {
@@ -831,14 +831,14 @@ void __thandor_preserve_eax Network_Shutdown(void)
 
 {
   if (g_NetworkBackendMode == 1) {
-    (*g_WinSock_WSACleanup)();
+    g_WinSock_WSACleanup();
     g_NetworkBackendMode = 0;
     return;
   }
   if (g_NetworkBackendMode == 2) {
-    (*g_Ws2_32_WSACleanup)();
+    g_Ws2_32_WSACleanup();
     g_NetworkBackendMode = 0;
-    (*g_MemoryApi.free)(g_NetworkBackendInstanceTable);
+    g_MemoryApi.free(g_NetworkBackendInstanceTable);
     g_NetworkBackendInstanceTable = (NetworkBackendInstanceDescriptorPrefix *)0x0;
     g_NetworkBackendInstanceCount = 0;
   }

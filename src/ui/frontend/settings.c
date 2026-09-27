@@ -242,7 +242,7 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
     }
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
-  (*rootVtable->layout)(&frontendRootPage->rootNode);
+  rootVtable->layout(&frontendRootPage->rootNode);
   titleText = TextResource_Resolve((loadedLevel->header).titleTextResourceIndex + 0x2230);
   *titleText.text = 0x8000;
   templateText = TextResource_Resolve(0x218c);
@@ -336,7 +336,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   colorBitsCounterOrParentLink = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
           g_SoftwarePixelFormatConfig.blueBitCount;
-  selectedModeResult = (*g_GraphicsDisplayModeHook)
+  selectedModeResult = g_GraphicsSetDisplayMode
                     (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.adapterIndex,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
@@ -346,7 +346,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.width);
   if (selectedModeResult.failed) {
-    restoredModeResult = (*g_GraphicsDisplayModeHook)(previousAdapterIndex,colorBitsCounterOrParentLink + 0xfU & 0xfffffff0,previousHeight,previousWidth);
+    restoredModeResult = g_GraphicsSetDisplayMode(previousAdapterIndex,colorBitsCounterOrParentLink + 0xfU & 0xfffffff0,previousHeight,previousWidth);
     FatalError_ExitIfFailed(restoredModeResult.valueOrError,restoredModeResult.failed);
     g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
     FatalError_ReportIfFailed(selectedModeResult.valueOrError,true);
@@ -366,16 +366,16 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   PersistentSettings_Write(selectedHeight,8);
   PersistentSettings_Write(selectedBitsPerPixel,0xc);
   UiRootStack_Relayout();
-  (*g_GraphicsTextureSourceConvertPaletteEntries)
+  g_GraphicsTextureSourceConvertPaletteEntries
             ((GraphicsPaletteTextureSourceAsset *)g_FrontendMenuTextureSource);
-  (*g_GraphicsTextureSourceConvertPaletteEntries)
+  g_GraphicsTextureSourceConvertPaletteEntries
             ((GraphicsPaletteTextureSourceAsset *)g_UiWindowTextureSource);
-  (*g_GraphicsTextureSourceConvertPaletteEntries)
+  g_GraphicsTextureSourceConvertPaletteEntries
             ((GraphicsPaletteTextureSourceAsset *)g_UiWindowClassTextureSource);
   fontTextureSource = g_FontTextureSources;
   colorBitsCounterOrParentLink = 2;
   do {
-    (*g_GraphicsTextureSourceConvertPaletteEntries)((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
+    g_GraphicsTextureSourceConvertPaletteEntries((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
     fontTextureSource = fontTextureSource + 1;
     colorBitsCounterOrParentLink = colorBitsCounterOrParentLink + -1;
   } while (colorBitsCounterOrParentLink != 0);
@@ -998,7 +998,7 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
       THANDOR_UI_AT((control->base).parent,0x54) /* textureQualityLow */);
   PersistentSettings_Write(qualityLevel,0x30);
   g_TextureDownsampleShift = qualityLevel >> 1;
-  (*g_GraphicsRebuildAllStagingTextures)();
+  g_GraphicsRebuildAllStagingTextures();
   return;
 }
 
@@ -1102,12 +1102,12 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     musicEnabledBit = 2;
-    (*g_GraphicsCursorSetFrame)(6);
+    g_GraphicsCursorSetFrame(6);
     loadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
     musicSample = (SoundSampleAsset *)loadResult.bufferOrError;
     activeMusicBuffer = g_FrontendMusicActiveBuffer;
     if (!loadResult.failed) {
-      createVoiceResult = (*g_SoundCreateSampleVoiceSet)(musicSample);
+      createVoiceResult = g_SoundCreateSampleVoiceSet(musicSample);
       musicVoiceSet = createVoiceResult.voiceSet;
       if (createVoiceResult.failed) {
         Resource_Release(musicSample);
@@ -1117,21 +1117,21 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
         g_FrontendMusicVoiceSet = musicVoiceSet;
         Resource_Release(musicSample);
         gainOrAudioFlags = PersistentSettings_Read(0x8000,0x2c);
-        playResult = (*g_SoundPlayLooping)(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
+        playResult = g_SoundPlayLooping(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
         activeMusicBuffer = playResult.soundBuffer;
         if (playResult.failed) {
-          (*g_SoundReleaseSampleVoiceSet)(musicVoiceSet);
+          g_SoundReleaseSampleVoiceSet(musicVoiceSet);
           g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
           activeMusicBuffer = g_FrontendMusicActiveBuffer;
         }
       }
     }
     g_FrontendMusicActiveBuffer = activeMusicBuffer;
-    (*g_GraphicsCursorSetFrame)(0);
+    g_GraphicsCursorSetFrame(0);
   }
   else {
-    (*g_SoundStopVoice)(g_FrontendMusicActiveBuffer);
-    (*g_SoundReleaseSampleVoiceSet)(g_FrontendMusicVoiceSet);
+    g_SoundStopVoice(g_FrontendMusicActiveBuffer);
+    g_SoundReleaseSampleVoiceSet(g_FrontendMusicVoiceSet);
     g_FrontendMusicActiveBuffer = (IDirectSoundBuffer *)0x0;
     g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
   }
@@ -1273,7 +1273,7 @@ void __thandor_preserve_eax FrontendAudioSettings_SetMusicGain(UiSettingsValueCo
   
   value = control->boundValue;
   PersistentSettings_Write(value,0x2c);
-  (*g_SoundSetVoiceGains)(value,value,g_FrontendMusicActiveBuffer);
+  g_SoundSetVoiceGains(value,value,g_FrontendMusicActiveBuffer);
   return;
 }
 
@@ -1291,7 +1291,7 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetPlayerCount(UiSettingsVal
   
   value = control->boundValue;
   PersistentSettings_Write(value,0x3c);
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,value,
              (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
   return;

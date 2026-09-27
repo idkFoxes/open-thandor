@@ -90,22 +90,22 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   outputCursor[-0x7f] = 0x200;
   outputCursor[-0x7e] = 1;
   outputCursor[-0x7d] = 0x20001;
-  packedTimeOrDate = (*g_LocaleGetPackedCurrentTime)();
+  packedTimeOrDate = g_LocaleGetPackedCurrentTime();
   outputCursor[-0x7c] = packedTimeOrDate;
   outputCursor[-0x7a] = packedTimeOrDate;
   outputCursor[-0x78] = packedTimeOrDate;
-  packedTimeOrDate = (*g_LocaleGetPackedCurrentDate)();
+  packedTimeOrDate = g_LocaleGetPackedCurrentDate();
   outputCursor[-0x7b] = packedTimeOrDate;
   outputCursor[-0x79] = packedTimeOrDate;
   outputCursor[-0x77] = packedTimeOrDate;
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(outputCursor + -0x74));
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(outputCursor + -100));
+  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -0x74));
+  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -100));
   *(uint8_t *)(outputCursor + -0x40) = 0;
   outputCursor[-0x54] = frameWidthPixels;
   outputCursor[-0x53] = frameHeightPixels;
   outputCursor[-0x52] = 0;
   outputCursor[-0x51] = 0;
-  providerResult = (*frameProvider)((void *)0x0);
+  providerResult = frameProvider((void *)0x0);
   frameToReleaseOrNull = providerResult.frameOrError;
   if (!providerResult.noFrame) {
     frameCount = 1;
@@ -116,7 +116,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
     outputCursor = (uint32_t *)((int)outputCursor + byteCount);
     firstFrame = frameToReleaseOrNull;
     while( true ) {
-      providerResult = (*frameProvider)((void *)0x0);
+      providerResult = frameProvider((void *)0x0);
       frameToReleaseOrNull = providerResult.frameOrError;
       if (providerResult.noFrame) break;
       frameCount = frameCount + 1;
@@ -126,9 +126,9 @@ Movie_EncodeFlmBufferFromFrameProviderCf
                                           *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc) +
                                  (int)frameToReleaseOrNull));
       outputCursor = (uint32_t *)((int)outputCursor + byteCount);
-      (*frameProvider)(frameToReleaseOrNull);
+      frameProvider(frameToReleaseOrNull);
     }
-    (*frameProvider)(firstFrame);
+    frameProvider(firstFrame);
     byteCount = (int)outputCursor - (int)outputBuffer;
     outputBuffer[0x2e] = frameCount;
     outputBuffer[0x3f] = 0x10;
@@ -218,28 +218,28 @@ Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount re
   if (trackBytes == 0) {
     return result;
   }
-  seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,trackOffset + remainingVideoBytes,handle);
+  seekResult = g_FileSystemSeekCf(FILESYSTEM_SEEK_CURRENT,trackOffset + remainingVideoBytes,handle);
   result.failed = seekResult.failed;
   result.valueOrError = seekResult.positionOrError;
   if (seekResult.failed) {
     return result;
   }
-  allocResult = (*g_MemoryApi.alloc)(trackBytes);
+  allocResult = g_MemoryApi.alloc(trackBytes);
   result.failed = allocResult.failed;
   result.valueOrError = allocResult.payloadOrError;
   if (allocResult.failed) {
     return result;
   }
   audioSample = (void *)allocResult.payloadOrError;
-  readResult = (*g_FileSystemReadExactCf)(trackBytes,audioSample,handle);
+  readResult = g_FileSystemReadExactCf(trackBytes,audioSample,handle);
   result.failed = readResult.failed;
   result.valueOrError = readResult.valueOrError;
   if (!readResult.failed) {
-    voiceSetResult = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)audioSample);
+    voiceSetResult = g_SoundCreateSampleVoiceSet((SoundSampleAsset *)audioSample);
     result.failed = voiceSetResult.failed;
     result.valueOrError = (uint32_t)voiceSetResult.voiceSet;
   }
-  (*g_MemoryApi.free)(audioSample);
+  g_MemoryApi.free(audioSample);
   return result;
 }
 
@@ -287,7 +287,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   if (((movieOpenFlags & 0x80000000) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+    openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     handle = (void *)openResult.handleOrError;
     looseFileOpened = !openResult.failed;
   }
@@ -295,7 +295,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
     movieOpenFlags = movieOpenFlags & 0x7fffffff;
     packageEntry = Package_FindEntryAcrossMounts(path);
     if ((!packageEntry.notFound) &&
-       (seekResult = (*g_FileSystemSeekCf)
+       (seekResult = g_FileSystemSeekCf
                            (FILESYSTEM_SEEK_BEGIN,*(int *)(packageEntry.entry + 0x1ec) + 0x200,
                             (void *)packageEntry.fileHandle), !seekResult.failed)) {
       isSharedPackageHandle = isSharedPackageHandle + 1;
@@ -305,9 +305,9 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
-      openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+      openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
       if (openResult.failed) {
-        openResult = (*g_FileSystemOpenCf)(0,path);
+        openResult = g_FileSystemOpenCf(0,path);
         if (openResult.failed) {
           /* Nothing is open yet: no close. */
           failureResult.failed = true;
@@ -318,7 +318,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
       handle = (void *)openResult.handleOrError;
     }
   }
-  readResult = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle);
+  readResult = g_FileSystemReadExactCf(0x200,g_PackageScratchBuffer,handle);
   status = readResult.valueOrError;
   if (!readResult.failed) {
     header = (MovieFileHeader *)g_PackageScratchBuffer;
@@ -328,7 +328,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
       if ((0x3c0000 < sizeOrValue) && (movieOpenFlags != 0)) {
         sizeOrValue = 0x3c0000;
       }
-      allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
+      allocResult = g_MemoryApi.alloc(sizeOrValue);
       status = allocResult.payloadOrError;
       if (!allocResult.failed) {
         copySource = (uint32_t *)g_PackageScratchBuffer;
@@ -345,23 +345,23 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
         }
         remainingByteCount = header->videoStreamBytes - initialVideoBytes;
         loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
-        readResult = (*g_FileSystemReadExactCf)(initialVideoBytes,header + 1,handle);
+        readResult = g_FileSystemReadExactCf(initialVideoBytes,header + 1,handle);
         status = readResult.valueOrError;
         if (!readResult.failed) {
           /* The original also fails on CF of g_FileSystemGetPositionCf (JC 0x004a89f1), but
              FileSystemGetPositionCfProc has no CF result (it returns 0 on failure). */
-          streamPosition = (*g_FileSystemGetPositionCf)(handle);
+          streamPosition = g_FileSystemGetPositionCf(handle);
           audioResult = Movie_OpenLoadRandomAudioTrackCf(header,remainingByteCount,handle);
           status = audioResult.valueOrError;
           if (!audioResult.failed) {
             sizeOrValue = header->widthPixels * header->heightPixels * 4 + 0x220;
-            allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
+            allocResult = g_MemoryApi.alloc(sizeOrValue);
             status = allocResult.payloadOrError;
             if (!allocResult.failed) {
               movie = (MovieRuntime *)allocResult.payloadOrError;
               g_ActiveMovie = movie;
               if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
-                (*g_FileSystemClose)(handle);
+                g_FileSystemClose(handle);
               }
               (movie->textureCommon).magic = ASSET_MAGIC_GFX;
               (movie->textureCommon).allocationSizeBytes = sizeOrValue;
@@ -371,17 +371,17 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
               movie->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
               frameWidth = header->widthPixels;
               frameHeight = header->heightPixels;
-              sizeOrValue = (*g_LocaleGetPackedCurrentTime)();
+              sizeOrValue = g_LocaleGetPackedCurrentTime();
               (movie->textureCommon).buildMetadata.timestamps.dateValue0 = sizeOrValue;
               (movie->textureCommon).buildMetadata.timestamps.dateValue1 = sizeOrValue;
               (movie->textureCommon).buildMetadata.timestamps.dateValue2 = sizeOrValue;
-              sizeOrValue = (*g_LocaleGetPackedCurrentDate)();
+              sizeOrValue = g_LocaleGetPackedCurrentDate();
               (movie->textureCommon).buildMetadata.timestamps.timeValue0 = sizeOrValue;
               (movie->textureCommon).buildMetadata.timestamps.timeValue1 = sizeOrValue;
               (movie->textureCommon).buildMetadata.timestamps.timeValue2 = sizeOrValue;
-              (*g_LocaleCopyDefaultComputerLabelUtf16)
+              g_LocaleCopyDefaultComputerLabelUtf16
                         ((movie->textureCommon).buildMetadata.names.producerName);
-              (*g_LocaleCopyDefaultComputerLabelUtf16)
+              g_LocaleCopyDefaultComputerLabelUtf16
                         ((movie->textureCommon).buildMetadata.names.sourceName);
               movie->reserved100_1FF[0] = 0;
               movie->subresourceTableOffset = 0x200;
@@ -431,12 +431,12 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
             }
           }
         }
-        (*g_MemoryApi.free)(header);
+        g_MemoryApi.free(header);
       }
     }
   }
   if (isSharedPackageHandle == 0) {
-    (*g_FileSystemClose)(handle);
+    g_FileSystemClose(handle);
   }
   failureResult.failed = true;
   failureResult.frameCountOrError = status;
@@ -509,8 +509,8 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
       if (0x1e000 < byteCount) {
         byteCount = 0x1e000;
       }
-      (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
-      readResult = (*g_FileSystemReadExactCf)(byteCount,movie->loadedVideoEnd,handle);
+      g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
+      readResult = g_FileSystemReadExactCf(byteCount,movie->loadedVideoEnd,handle);
       if (readResult.failed) {
         if (movie->streamState != MOVIE_STREAM_SHUTDOWN) {
           movie->streamState = MOVIE_STREAM_READ_FAILED;
@@ -521,7 +521,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
       movie->streamFileOffset = movie->streamFileOffset + byteCount;
       movie->loadedVideoEnd = movie->loadedVideoEnd + byteCount;
       if ((movie->remainingVideoBytes == 0) && (movie->streamHandleIsSharedPackage == 0)) {
-        (*g_FileSystemClose)(handle);
+        g_FileSystemClose(handle);
       }
     }
     if ((movie->streamState == MOVIE_STREAM_SHUTDOWN) || (movie->remainingVideoBytes == 0)) break;
@@ -549,7 +549,7 @@ void Movie_Rewind(void)
     g_ActiveMovie->currentFrameIndex = 0;
     activeMovie->videoStreamOffset = 0x200;
     if (activeMovie->activeAudioBuffer != (IDirectSoundBuffer *)0x0) {
-      (*g_SoundStopVoice)(activeMovie->activeAudioBuffer);
+      g_SoundStopVoice(activeMovie->activeAudioBuffer);
       activeMovie->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
     }
   }
@@ -584,14 +584,14 @@ void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
       SetPriorityClass(hProcess,0x100);
     }
     g_ActiveMovie = (MovieRuntime *)0x0;
-    (*g_MemoryApi.free)(movie->fileHeader);
+    g_MemoryApi.free(movie->fileHeader);
     if (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0) {
-      (*g_SoundReleaseSampleVoiceSet)(movie->audioVoiceSet);
+      g_SoundReleaseSampleVoiceSet(movie->audioVoiceSet);
     }
     if ((movie->remainingVideoBytes != 0) && (movie->streamHandleIsSharedPackage == 0)) {
-      (*g_FileSystemClose)(movie->streamHandle);
+      g_FileSystemClose(movie->streamHandle);
     }
-    (*g_MemoryApi.free)(movie);
+    g_MemoryApi.free(movie);
   }
   return;
 }
@@ -662,22 +662,22 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
   switch (target) {
   case 0x5658f0: { /* screenshot */
     FramebufferCaptureResult capture =
-         (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
+         g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeResult pcx;
     uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
     uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
     if (capture.failed) {
       break;
     }
-    pcx = (*g_PcxFunctionExport3)(g_PcxFunctionModule,capture.capture);
+    pcx = g_PcxFunctionExport3(g_PcxFunctionModule,capture.capture);
     if (pcx.failed) {
-      (*g_MemoryApi.free)(capture.capture);
+      g_MemoryApi.free(capture.capture);
       break;
     }
     FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
-    (*g_MemoryApi.free)(pcx.encodedBytesOrError);
-    (*g_MemoryApi.free)(capture.capture);
+    g_MemoryApi.free(pcx.encodedBytesOrError);
+    g_MemoryApi.free(capture.capture);
     *digitLow = *digitLow + 1;
     if (*digitLow > 0x39) {
       *digitHigh = *digitHigh + 1;
@@ -1772,7 +1772,7 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
          MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
          open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
          CloseHandle on an unrelated value. */
-      (*g_FileSystemClose)((void *)0x0);
+      g_FileSystemClose((void *)0x0);
       movie->remainingVideoBytes = 0;
     }
     else {
@@ -1788,7 +1788,7 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
       previousFrameIndex = movie->currentFrameIndex;
       streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
       if ((previousFrameIndex == 0) && (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
-        playResult = (*g_SoundPlayOneShot)
+        playResult = g_SoundPlayOneShot
                           (movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet);
         movie->activeAudioBuffer = playResult.soundBuffer;
       }
@@ -1865,7 +1865,7 @@ MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
     g_MoviePlaybackCurrentFrame = frameIndex;
     UiRootStack_InvalidateAll();
     UiFrame_Draw();
-    (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
+    g_GraphicsFramebufferPresent(g_FramebufferAccess);
   }
   return;
 }

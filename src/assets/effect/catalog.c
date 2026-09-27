@@ -172,11 +172,11 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
       registrySlotCursor = registrySlotCursor + 1;
       registrySlotsRemaining = registrySlotsRemaining + -1;
     } while (registrySlotsRemaining != 0);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100,g_PackageLastErrorPath);
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100,g_PackageLastErrorPath);
     asset = (SpriteAssetHeader *)0x49;
   }
   else {
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     asset = (SpriteAssetHeader *)0x4e;
   }
@@ -211,7 +211,7 @@ EffectDefinitionRegistry_FindByIdWithErrorCf(PckEffectDefinitionIdCatalog defini
       registryCursor = registryCursor + 1;
       registrySlotsRemaining = registrySlotsRemaining + -1;
       if (registrySlotsRemaining == 0) {
-        (*g_WideNumberFormatUtf16)
+        g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
         missResult.notFound = true;
         missResult.definitionOrError = (EffectDefinition *)0x48;

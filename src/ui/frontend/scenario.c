@@ -84,18 +84,18 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   else {
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0xb0));
   }
-  (*g_FrontendModelPointerContextUpdateCallback)
+  g_FrontendModelPointerContextUpdateCallback
             (g_CursorOverrideY,g_CursorOverrideX,
              (FrontendModelPointerContextRuntimeState118 *)
              (frontendRoot->opaqueGap0000_4B67 + 0x368));
   hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
                     (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
   if (hoveredNode == (UiNodeBase *)0xffffffff) {
-    (*g_GraphicsCursorSetFrame)(0);
+    g_GraphicsCursorSetFrame(0);
   }
   else {
-    cursorFrame = (*hoveredNode->vtable->pointerMove)(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
-    (*g_GraphicsCursorSetFrame)(cursorFrame);
+    cursorFrame = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
+    g_GraphicsCursorSetFrame(cursorFrame);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     g_FrontendPlayerRuntimeBlocks->capabilityFlags = 0x100;
@@ -205,7 +205,7 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   *briefingText.text = 0x8000;
   templateText = TextResource_Resolve(0x219b);
   RichTextCommandStream_PatchPayloadBySelector(0,briefingText.text,templateText.text);
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,(loadedLevel->header).titleTextResourceIndex,
              (uint16_t *)&g_FrontendMissionBriefingLevelDigitsUtf16);
   WidePath_SetExtensionCode(0x6d6c66,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);

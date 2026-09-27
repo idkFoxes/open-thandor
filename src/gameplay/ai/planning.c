@@ -1439,7 +1439,7 @@ AiStrategicClass_SelectBestCandidate12ETo132
   freeBits25To27PercentOrScore = (int)(((uint64_t)freeBits25To27Cells * 100) / (uint64_t)cellCount);
   freeBit24Percent = (int)(((uint64_t)freeBit24Cells * 100) / (uint64_t)cellCount);
   freeBits28To30Percent = (int)(((uint64_t)freeBits28To30Cells * 100) / (uint64_t)cellCount);
-  randomizedTieBits = (*g_RandomGeneratorState.next)();
+  randomizedTieBits = g_RandomGeneratorState.next();
   bestCandidateScore = 0;
   selectedToken = 0;
   existingClassCount = 5;
@@ -1588,7 +1588,7 @@ AiStrategicClass_SelectWeightedClass141To143
   pressureSumPlusOne = g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[2] +
            g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[3] +
            g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[4] + 1;
-  randomBits = (*g_RandomGeneratorState.next)();
+  randomBits = g_RandomGeneratorState.next();
   class141Score = ((pressure2For141 + 1) * class141Coefficient0OrExistingCount + (pressure3For141 + 1) * class141Coefficient1 + (pressure4For141 + 1) * class141Coefficient2) / pressureSumPlusOne +
            (randomBits & 0x7f);
   class142Score = ((pressure2For142 + 1) * class142Coefficient0 + (pressure3For142 + 1) * class142Coefficient1 + (pressure4For142 + 1) * class142Coefficient2) / pressureSumPlusOne +
@@ -1696,7 +1696,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
               distanceY = -distanceY;
             }
           }
-          randomBits = (*g_RandomGeneratorState.next)();
+          randomBits = g_RandomGeneratorState.next();
           distanceXOrScore = distanceY + distanceXOrScore + (randomBits & 0xffff);
           if (distanceXOrScore < bestScore) {
             placementResult = ArmyPlacement_DispatchAssetAtFieldPoint

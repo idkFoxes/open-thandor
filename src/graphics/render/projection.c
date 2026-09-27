@@ -65,7 +65,7 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
   OffscreenRenderResult failureResult;
   
   byteSizeOrPixelsRemaining = outputHeight * outputWidth * 4 + 0x220;
-  textureAllocation = (*g_MemoryApi.alloc)(byteSizeOrPixelsRemaining);
+  textureAllocation = g_MemoryApi.alloc(byteSizeOrPixelsRemaining);
   textureSourceOrDepthBuffer = (int32_t *)textureAllocation.payloadOrError;
   if (!textureAllocation.failed) {
     zeroCursorOrDepthBuffer = textureSourceOrDepthBuffer;
@@ -77,16 +77,16 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
     textureSourceOrDepthBuffer[1] = byteSizeOrPixelsRemaining;
     textureSourceOrDepthBuffer[2] = 1;
     textureSourceOrDepthBuffer[3] = 0;
-    packedTimeOrDate = (*g_LocaleGetPackedCurrentTime)();
+    packedTimeOrDate = g_LocaleGetPackedCurrentTime();
     textureSourceOrDepthBuffer[4] = packedTimeOrDate;
     textureSourceOrDepthBuffer[6] = packedTimeOrDate;
     textureSourceOrDepthBuffer[8] = packedTimeOrDate;
-    packedTimeOrDate = (*g_LocaleGetPackedCurrentDate)();
+    packedTimeOrDate = g_LocaleGetPackedCurrentDate();
     textureSourceOrDepthBuffer[5] = packedTimeOrDate;
     textureSourceOrDepthBuffer[7] = packedTimeOrDate;
     textureSourceOrDepthBuffer[9] = packedTimeOrDate;
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(textureSourceOrDepthBuffer + 0xc));
-    (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(textureSourceOrDepthBuffer + 0x1c));
+    g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(textureSourceOrDepthBuffer + 0xc));
+    g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(textureSourceOrDepthBuffer + 0x1c));
     *(uint8_t *)(textureSourceOrDepthBuffer + 0x40) = 0;
     textureSourceOrDepthBuffer[0x2c] = 1;
     textureSourceOrDepthBuffer[0x2d] = 0;
@@ -99,7 +99,7 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
     textureSourceOrDepthBuffer[0x85] = 0;
     textureSourceOrDepthBuffer[0x82] = -1;
     textureSourceOrDepthBuffer[0x83] = 0x220;
-    depthAllocation = (*g_MemoryApi.alloc)(outputWidth * outputHeight * 4);
+    depthAllocation = g_MemoryApi.alloc(outputWidth * outputHeight * 4);
     zeroCursorOrDepthBuffer = (int32_t *)depthAllocation.payloadOrError;
     if (!depthAllocation.failed) {
       depthCursor = zeroCursorOrDepthBuffer;
@@ -144,10 +144,10 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
       UNLOCK();
       g_SoftwareDepthBuffer = savedDepthBuffer;
       g_SoftwareDepthEpoch = savedDepthEpoch;
-      (*g_MemoryApi.free)(textureSourceOrDepthBuffer);
+      g_MemoryApi.free(textureSourceOrDepthBuffer);
       return THANDOR_BITCAST(uint64_t, OffscreenRenderResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, textureAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
-    (*g_MemoryApi.free)(textureSourceOrDepthBuffer);
+    g_MemoryApi.free(textureSourceOrDepthBuffer);
     textureSourceOrDepthBuffer = zeroCursorOrDepthBuffer;
   }
   failureResult.failed = true;

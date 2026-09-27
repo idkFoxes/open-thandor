@@ -98,7 +98,7 @@
 - `0x004FD6F0` **[`SoftwareRasterAux_Mode09`](../../../../src/graphics/backend/software.c#L63522)**
 - `0x004FDC00` **[`SoftwareRasterAux_Mode10`](../../../../src/graphics/backend/software.c#L63862)**
 - `0x004FE110` **[`SoftwareRasterAux_Mode12`](../../../../src/graphics/backend/software.c#L64202)**
-- `0x004FE620` **[`SoftwareRenderer_DisplayModeHook`](../../../../src/graphics/backend/software.c#L64555)**
+- `0x004FE620` **[`SoftwareRenderer_SetDisplayMode`](../../../../src/graphics/backend/software.c#L64555)**
 - `0x004FE7D0` **[`SoftwareRenderer_InstallDisplayModeHook`](../../../../src/graphics/backend/software.c#L64636)**
 - `0x00518CE0` **[`SoftwareTexture_BilinearBlendScaleSubresources`](../../../../src/graphics/backend/software.c#L64669)**
 - `0x004D16D0` **[`SoftwareRenderer_AdvanceDepthEpoch`](../../../../src/graphics/backend/software.c#L65034)**

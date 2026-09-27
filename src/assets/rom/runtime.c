@@ -53,7 +53,7 @@ FrontendRomActionTable_ExecuteRecord
          ((suppressActivationSound == 0 &&
           ((DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId] !=
            (DirectSoundVoiceSet *)0x0)))) {
-        (*g_SoundPlayOneShot)
+        g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId]
                   );
@@ -210,7 +210,7 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
   bool splineStillRunning;
   StatusResult activateResult;
   
-  (*g_SpinLockAcquire)(&g_FrontendStateTickSpinLock);
+  g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
   recordId = g_FrontendRomTransitionPendingCount;
   worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
   if (g_FrontendRomTransitionPendingCount != 0) {
@@ -223,7 +223,7 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
       FatalError_ExitIfFailed(activateResult.valueOrError,activateResult.failed);
     }
   }
-  (*g_SpinLockRelease)(&g_FrontendStateTickSpinLock);
+  g_SpinLockRelease(&g_FrontendStateTickSpinLock);
   return;
 }
 

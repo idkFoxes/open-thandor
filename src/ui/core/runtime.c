@@ -20,7 +20,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_FreeCf(UiRootNode *root)
 {
   ArenaFreeResult freeResult;
   
-  freeResult = (*g_MemoryApi.free)(root);
+  freeResult = g_MemoryApi.free(root);
   return freeResult.failed;
 }
 
@@ -57,10 +57,10 @@ int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicy_ReturnCode8(UiRootNod
 void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *runtime)
 
 {
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,0x400000,
              *(int32_t *)((int)runtime + 0x140),(uint16_t *)((int)runtime + 0xbb4));
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,0x10000,
              *(int32_t *)((int)runtime + 0x144),(uint16_t *)((int)runtime + 0xb94));
   return;
@@ -89,7 +89,7 @@ UiRuntime_OpenFourValueDialogCf
   ArenaAllocResult allocResult;
   TextResolveResult resolvedText;
   
-  allocResult = (*g_MemoryApi.alloc)(0x1a4);
+  allocResult = g_MemoryApi.alloc(0x1a4);
   root = (UiRootNode *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     templateCursor = g_UiFourValueDialogTemplateImage;
@@ -102,7 +102,7 @@ UiRuntime_OpenFourValueDialogCf
     valueTextBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t);
     resolvedText = TextResource_Resolve(0x109);
     RichTextCommandStream_PatchPayloadBySelector(0,valueTextBuffer,resolvedText.text);
-    (*g_WideNumberFormatUtf16)
+    g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,int32_t),
                (uint16_t *)valueTextBuffer);
     FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,int32_t) = value3;
@@ -131,7 +131,7 @@ UiRuntimeRecordRing_DiscardOldestCf(void)
   RecordRingDiscardResult discardedResult;
   RecordRingDiscardResult emptyResult;
   
-  (*g_SpinLockAcquire)(&g_UiRuntimeRecordRingLock);
+  g_SpinLockAcquire(&g_UiRuntimeRecordRingLock);
   readIndex = g_UiRuntimeRecordReadIndex;
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
     nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
@@ -142,11 +142,11 @@ UiRuntimeRecordRing_DiscardOldestCf(void)
     if (0xff < nextReadIndex) {
       g_UiRuntimeRecordReadIndex = 0;
     }
-    (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
+    g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
     discardedResult.empty = false;
     return discardedResult;
   }
-  (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
+  g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
   emptyResult.endpointOrReadIndex = readIndex;
   emptyResult.payloadOrReadIndex = readIndex;
   emptyResult.empty = true;
@@ -194,14 +194,14 @@ UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
   UiRuntimeRecord *recordCursor;
   bool lockUnavailable;
   
-  lockUnavailable = (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
+  lockUnavailable = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
   if (!lockUnavailable) {
     if (g_UiRuntimeRecordReadIndex != g_UiRuntimeRecordWriteIndex) {
       recordCursor = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
       ringIndex = g_UiRuntimeRecordReadIndex;
       while( true ) {
         if (sequenceToken == (recordCursor->packetHeader).sequenceToken) {
-          (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
+          g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
           return true;
         }
         ringIndex = ringIndex + 1;
@@ -215,7 +215,7 @@ UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
         }
       }
     }
-    (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
+    g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
   }
   return false;
 }
@@ -250,28 +250,28 @@ void __thandor_preserve_eax UiRuntime_Initialize(void)
   ArenaAllocResult allocResult;
   FatalErrorCheckResult checkedResult;
   
-  (*g_TimerRegisterPeriodic)(0x14,UiRuntime_IncrementPeriodicTickCounter);
+  g_TimerRegisterPeriodic(0x14,UiRuntime_IncrementPeriodicTickCounter);
   g_UiRuntimeInitializationCount = g_UiRuntimeInitializationCount + 1;
   FontRuntime_Init();
   UiWindowResources_Init();
-  allocResult = (*g_MemoryApi.alloc)(0x600);
+  allocResult = g_MemoryApi.alloc(0x600);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedResult.valueOrError;
-  allocResult = (*g_MemoryApi.alloc)(0x80);
+  allocResult = g_MemoryApi.alloc(0x80);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiActionQueueEntries = (UiActionQueueEntry *)checkedResult.valueOrError;
   ErrorRuntime_InstallUiHandlerAndAllocateState();
-  (*g_TimerRegisterPeriodic)(0x7d,UiTransferMailbox_ServiceAndRetransmitTimer);
-  allocResult = (*g_MemoryApi.alloc)(0x8000);
+  g_TimerRegisterPeriodic(0x7d,UiTransferMailbox_ServiceAndRetransmitTimer);
+  allocResult = g_MemoryApi.alloc(0x8000);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiRuntimeAuxiliaryBuffer8000 = checkedResult.valueOrError;
-  allocResult = (*g_MemoryApi.alloc)(0x10000);
+  allocResult = g_MemoryApi.alloc(0x10000);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedResult.valueOrError;
-  allocResult = (*g_MemoryApi.alloc)(0x1000);
+  allocResult = g_MemoryApi.alloc(0x1000);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedResult.valueOrError;
-  allocResult = (*g_MemoryApi.alloc)(0x2000);
+  allocResult = g_MemoryApi.alloc(0x2000);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiTransferDataBuffer = (uint8_t *)checkedResult.valueOrError;
   g_UiRuntimeRecordWriteIndex = 0;
@@ -290,20 +290,20 @@ void UiRuntime_Shutdown(void)
 
 {
   if (g_UiRuntimeInitializationCount != 0) {
-    (*g_TimerUnregisterPeriodic)(UiTransferMailbox_ServiceAndRetransmitTimer);
-    (*g_MemoryApi.free)(g_UiRuntimeRecordRing);
-    (*g_MemoryApi.free)(g_UiRuntimeAuxiliaryBuffer8000);
-    (*g_MemoryApi.free)(g_UiTransferDataBuffer);
-    (*g_MemoryApi.free)(g_UiTransferEndpointBuffer);
+    g_TimerUnregisterPeriodic(UiTransferMailbox_ServiceAndRetransmitTimer);
+    g_MemoryApi.free(g_UiRuntimeRecordRing);
+    g_MemoryApi.free(g_UiRuntimeAuxiliaryBuffer8000);
+    g_MemoryApi.free(g_UiTransferDataBuffer);
+    g_MemoryApi.free(g_UiTransferEndpointBuffer);
     g_UiRuntimeRecordRing = (UiRuntimeRecord *)0x0;
     g_UiRuntimeAuxiliaryBuffer8000 = (void *)0x0;
     g_UiTransferDataBuffer = (uint8_t *)0x0;
     g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)0x0;
-    (*g_MemoryApi.free)(g_UiDirtyRectEntries);
+    g_MemoryApi.free(g_UiDirtyRectEntries);
     g_UiDirtyRectEntries = (UiDirtyRectEntry *)0x0;
-    (*g_MemoryApi.free)(g_UiActionQueueEntries);
+    g_MemoryApi.free(g_UiActionQueueEntries);
     g_UiActionQueueEntries = (UiActionQueueEntry *)0x0;
-    (*g_TimerUnregisterPeriodic)(UiRuntime_IncrementPeriodicTickCounter);
+    g_TimerUnregisterPeriodic(UiRuntime_IncrementPeriodicTickCounter);
     g_UiRuntimeInitializationCount = g_UiRuntimeInitializationCount + -1;
   }
   return;
@@ -336,7 +336,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
   UiActionQueueEntry *sourceEntry;
   UiActionQueueEntry *destinationEntry;
   
-  (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
+  g_SpinLockAcquire(g_UiRuntimeFrameLock);
   queueHead = g_UiActionQueueEntries;
   while (g_UiActionQueueUsedBytes != 0) {
     actionSource = queueHead->source;
@@ -351,9 +351,9 @@ void __cdecl UiActionQueue_DispatchPending(void)
       sourceEntry = (UiActionQueueEntry *)&sourceEntry->source;
       destinationEntry = (UiActionQueueEntry *)&destinationEntry->source;
     }
-    (*actionHandler)(actionSource);
+    actionHandler(actionSource);
   }
-  (*g_SpinLockReleaseAndInvoke)
+  g_SpinLockReleaseAndInvoke
             ((SpinLockReleaseCallbackProc *)g_UiRuntimePostUnlockCallback,g_UiRuntimeFrameLock);
   return;
 }
@@ -421,7 +421,7 @@ UiNode_ForwardRightPressToParent
     g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   }
   else {
-    (*g_UiPointerCaptureTarget->vtable->rightPress)
+    g_UiPointerCaptureTarget->vtable->rightPress
               (wheelDelta,pointerY,pointerX,g_UiPointerCaptureTarget);
   }
   return;
@@ -483,7 +483,7 @@ UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNo
   control->nodeFlags = control->nodeFlags | setMask;
   for (childControl = control->firstChild; childControl != (UiNodeBase *)0xffffffff;
       childControl = childControl->nextSibling) {
-    (*childControl->vtable->applyFlags)(setMask,retainMask,childControl);
+    childControl->vtable->applyFlags(setMask,retainMask,childControl);
   }
   return;
 }

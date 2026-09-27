@@ -49,7 +49,7 @@ static void Win32_AutoShotTick(void)
     return;
   }
   last = now;
-  capture = (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
+  capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
   if (!capture.failed && capture.capture != NULL) {
     GraphicsTextureSourceEntry *entry = &capture.capture->sourceEntry;
     const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture.capture + entry->dataOffset);
@@ -76,7 +76,7 @@ static void Win32_AutoShotTick(void)
       fclose(file);
       Thandor_Log("autoshot %s (%ux%u)", name, width, height);
     }
-    (*g_MemoryApi.free)(capture.capture);
+    g_MemoryApi.free(capture.capture);
   }
 }
 

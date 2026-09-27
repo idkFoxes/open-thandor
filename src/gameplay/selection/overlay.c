@@ -406,39 +406,39 @@ SelectionOverlay_DrawBoundsFrame
     frameCoordinate0B = frameCoordinate0A;
     frameCoordinate0A = originalCoordinate0B;
   }
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
-    cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xa4,g_SelectionPanelTextureSource);
+    cornerSize = g_GraphicsTextureSourceGetLogicalSize(0xa4,g_SelectionPanelTextureSource);
     cornerWidth = cornerSize.logicalWidthPixels;
     edgeX = frameCoordinate1B - cornerWidth;
     edgeY = frameCoordinate0B - cornerSize.logicalHeightPixels;
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,edgeY,edgeX,0xa4,g_SelectionPanelTextureSource,
                g_FramebufferAccess);
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,edgeY,frameCoordinate1A,0xa6,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,edgeX,0xa9,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    (*g_SelectionPanelBlitOpaque)
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,frameCoordinate1A,0xab,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     edgeX = edgeX + cornerWidth;
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,frameCoordinate1A,edgeY,edgeX,0xa5,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,frameCoordinate1A,frameCoordinate0A
                ,edgeX,0xaa,g_SelectionPanelTextureSource,g_FramebufferAccess);
     edgeY = edgeY + cornerSize.logicalHeightPixels;
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,edgeY,
                edgeX - cornerWidth,0xa7,g_SelectionPanelTextureSource,g_FramebufferAccess);
-    (*g_SelectionPanelBlitClipped)
+    g_SelectionPanelBlitClipped
               (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,edgeY,
                frameCoordinate1A,0xa8,g_SelectionPanelTextureSource,g_FramebufferAccess);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -470,7 +470,7 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
   SoftwareFramebufferAccess *blitFramebuffer;
   
   if (markerPointCount != 0) {
-    accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+    accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       do {
         packedCoordinate1 = (int64_t)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * 0x901;
@@ -493,8 +493,8 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
             blitTextureId = 0xad;
             blitTextureSource = g_SelectionPanelTextureSource;
             blitFramebuffer = g_FramebufferAccess;
-            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xad,g_SelectionPanelTextureSource);
-            (*g_SelectionPanelBlitOpaque)
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xad,g_SelectionPanelTextureSource);
+            g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
@@ -503,7 +503,7 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
         gridCoordinatePairs = gridCoordinatePairs + 2;
         markerPointCount = markerPointCount + -1;
       } while (markerPointCount != 0);
-      (*g_GraphicsFramebufferEndAccess)();
+      g_GraphicsFramebufferEndAccess();
     }
   }
   return;
@@ -559,15 +559,15 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
              (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)
   ;
   projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)(); /* Ghidra passed stale register values (worldCoordinate0Q12, worldCoordinate1Q12, fieldGrid); the callee takes none */
+  accessFailed = g_GraphicsFramebufferBeginAccess(); /* Ghidra passed stale register values (worldCoordinate0Q12, worldCoordinate1Q12, fieldGrid); the callee takes none */
   if (!accessFailed) {
-    markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xac,g_SelectionPanelTextureSource);
-    (*g_SelectionPanelBlitOpaque)
+    markerSize = g_GraphicsTextureSourceGetLogicalSize(0xac,g_SelectionPanelTextureSource);
+    g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,
                (projectedPoint.projectedY >> 0xc) - ((int)markerSize.logicalHeightPixels >> 1),
                (projectedPoint.projectedX >> 0xc) - ((int)markerSize.logicalWidthPixels >> 1),0xac,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -598,7 +598,7 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
   SoftwareFramebufferAccess *blitFramebuffer;
   uint8_t *rowStart;
   
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     coordinateOffset = 0;
     gridColumns = fieldGrid->gridWidth;
@@ -618,8 +618,8 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
           blitTextureId = 0xae;
           blitTextureSource = g_SelectionPanelTextureSource;
           blitFramebuffer = g_FramebufferAccess;
-          markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xae,g_SelectionPanelTextureSource);
-          (*g_SelectionPanelBlitOpaque)
+          markerSize = g_GraphicsTextureSourceGetLogicalSize(0xae,g_SelectionPanelTextureSource);
+          g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,
                      screenY - ((int)markerSize.logicalHeightPixels >> 1),
                      screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
@@ -632,7 +632,7 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
       columnsRemaining = columnCount;
       rowStart = vertexCursor;
     } while (-1 < (int)rowsRemaining);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -666,7 +666,7 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
   SoftwareFramebufferAccess *sourceFramebuffer;
   FieldGridCell *rowStartCell;
   
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     gridColumns = fieldGrid->gridWidth;
     rowsRemaining = fieldGrid->gridHeight;
@@ -689,8 +689,8 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
             receiverFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
             savedScreenX = screenX;
-            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_SelectionPanelTextureSource);
-            (*g_SelectionPanelBlitOpaque)
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xaf,g_SelectionPanelTextureSource);
+            g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),receiverTextureId,receiverTextureSource,receiverFramebuffer);
@@ -698,8 +698,8 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
             screenX = savedScreenX;
           }
           if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) != 0) {
-            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb0,g_SelectionPanelTextureSource);
-            (*g_SelectionPanelBlitOpaque)
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xb0,g_SelectionPanelTextureSource);
+            g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),sourceTextureId,sourceTextureSource,sourceFramebuffer);
@@ -713,7 +713,7 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
       columnsRemaining = gridColumns;
       rowStartCell = cellCursor;
     } while (rowsRemaining != 0);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -749,7 +749,7 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
   FieldGridCell *rowStartCell;
   
   markerFlagMask = 0x800 << (markerBitIndex & 0x1f);
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     gridColumns = fieldGrid->gridWidth;
     rowsRemaining = fieldGrid->gridHeight;
@@ -771,8 +771,8 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
             flaggedFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
             savedScreenX = screenX;
-            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb1,g_SelectionPanelTextureSource);
-            (*g_SelectionPanelBlitOpaque)
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xb1,g_SelectionPanelTextureSource);
+            g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),flaggedTextureId,flaggedTextureSource,flaggedFramebuffer);
@@ -781,8 +781,8 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           }
           if ((cellCursor->flagsAndMaterial & (markerFlagMask ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0)
           {
-            markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb2,g_SelectionPanelTextureSource);
-            (*g_SelectionPanelBlitOpaque)
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xb2,g_SelectionPanelTextureSource);
+            g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),otherTextureId,otherTextureSource,otherFramebuffer);
@@ -796,7 +796,7 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
       columnsRemaining = gridColumns;
       rowStartCell = cellCursor;
     } while (rowsRemaining != 0);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }
@@ -825,7 +825,7 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
   SoftwareFramebufferAccess *blitFramebuffer;
   FieldGridCell *rowStartCell;
   
-  accessFailed = (*g_GraphicsFramebufferBeginAccess)();
+  accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     gridColumns = fieldGrid->gridWidth;
     rowsRemaining = fieldGrid->gridHeight;
@@ -841,8 +841,8 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
           blitTextureId = 0xaf;
           blitTextureSource = g_SelectionPanelTextureSource;
           blitFramebuffer = g_FramebufferAccess;
-          markerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_SelectionPanelTextureSource);
-          (*g_SelectionPanelBlitOpaque)
+          markerSize = g_GraphicsTextureSourceGetLogicalSize(0xaf,g_SelectionPanelTextureSource);
+          g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,
                      screenY - ((int)markerSize.logicalHeightPixels >> 1),
                      screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
@@ -855,7 +855,7 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
       columnsRemaining = gridColumns;
       rowStartCell = cellCursor;
     } while (rowsRemaining != 0);
-    (*g_GraphicsFramebufferEndAccess)();
+    g_GraphicsFramebufferEndAccess();
   }
   return;
 }

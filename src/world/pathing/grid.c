@@ -113,7 +113,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
               (overlappedEntity);
   }
   armyRuntime = (routeEntityRuntime->common).ownership.runtimeLink;
-  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[runtimeClassId])
+  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[runtimeClassId]
             (routeEntityRuntime);
   g_GridPathEntityClassMask = 1 << ((uint8_t)armyRuntime->factionIndex & 0x1f);
   gridClassShift = (uint8_t)modelDefinition->gridClassification260;
@@ -218,7 +218,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
       [*(int *)((int)(overlappedEntity->common).ownership.definitionOrClassRecord + 0x4c)])
               (overlappedEntity);
   }
-  (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[startColumnOrScratch])(routeEntityRuntime);
+  g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[startColumnOrScratch](routeEntityRuntime);
   resolvedDestination.fallbackWorldXQ12 = targetWorldXQ12;
   resolvedDestination.primaryWorldXQ12 = primaryWorldPosition.worldXQ12;
   resolvedDestination.primaryWorldYQ12 = primaryWorldPosition.worldYQ12;
@@ -686,15 +686,15 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
   g_GridScratchHeight = fieldGrid->gridHeight * 4;
   bytes = fieldGrid->gridWidth * 0x20 * g_GridScratchHeight;
-  allocResult = (*g_MemoryApi.alloc)(bytes);
+  allocResult = g_MemoryApi.alloc(bytes);
   previousScratchBuffer = g_GridScratchPrimary;
   newScratchBuffer = (uint32_t *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     LOCK();
     UNLOCK();
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
-    (*g_MemoryApi.free)(previousScratchBuffer);
-    allocResult = (*g_MemoryApi.alloc)(bytes);
+    g_MemoryApi.free(previousScratchBuffer);
+    allocResult = g_MemoryApi.alloc(bytes);
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
     newSecondaryScratchBuffer = (uint32_t *)allocResult.payloadOrError;
     newScratchBuffer = newSecondaryScratchBuffer;
@@ -702,15 +702,15 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
       LOCK();
       UNLOCK();
       g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;
-      (*g_MemoryApi.free)(previousSecondaryScratchBuffer);
-      allocResult = (*g_MemoryApi.alloc)(0x180000);
+      g_MemoryApi.free(previousSecondaryScratchBuffer);
+      allocResult = g_MemoryApi.alloc(0x180000);
       previousCostQueueBuffer = g_GridPathCostQueueBegin;
       newAuxiliaryBuffer = (void *)allocResult.payloadOrError;
       newScratchBuffer = newAuxiliaryBuffer;
       if (!allocResult.failed) {
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + 0x180000);
         g_GridPathCostQueueBegin = newAuxiliaryBuffer;
-        freeResult = (*g_MemoryApi.free)(previousCostQueueBuffer);
+        freeResult = g_MemoryApi.free(previousCostQueueBuffer);
         return THANDOR_BITCAST(uint64_t, GridScratchAllocResult, ((THANDOR_BITCAST(ArenaFreeResult, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
@@ -729,9 +729,9 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
 void __thandor_preserve_eax GridScratch_ReleaseBuffers(void)
 
 {
-  (*g_MemoryApi.free)(g_GridPathCostQueueBegin);
-  (*g_MemoryApi.free)(g_GridScratchPrimary);
-  (*g_MemoryApi.free)(g_GridScratchSecondary);
+  g_MemoryApi.free(g_GridPathCostQueueBegin);
+  g_MemoryApi.free(g_GridScratchPrimary);
+  g_MemoryApi.free(g_GridScratchSecondary);
   g_GridPathCostQueueBegin = (GridScratchCell **)0x0;
   g_GridScratchPrimary = (GridScratchCell *)0x0;
   g_GridScratchSecondary = (GridScratchCell *)0x0;

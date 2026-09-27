@@ -214,10 +214,10 @@ RichTextCommandStream_DrawSingleLine
       commandStream = *(uint16_t **)commandStream;
       break;
     case 0x1a:
-      imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      imageSize = g_GraphicsTextureSourceGetLogicalSize
                         (*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream);
       imageWidth = imageSize.logicalWidthPixels;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,lineBaselineY - imageSize.logicalHeightPixels,
                  penX,*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream,
                  g_FramebufferAccess);
@@ -767,7 +767,7 @@ RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
   int assetGroupCount;
   int tagCount;
   
-  largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+  largestBlock = g_MemoryApi.allocLargestFreeBlock();
   remainingCapacityBytes = largestBlock.blockSizeOrSentinel;
   memory = (wchar_t *)largestBlock.allocationOrError;
   if (!largestBlock.failed) {
@@ -867,9 +867,9 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
         if ((tagCount != 0) && (!insideTagOrUnderflow)) {
           tagCount = tagCount + 1;
           dStackY_3c = 0x41c70a;
-          shrinkResult = (*g_MemoryApi.shrinkInPlace)((int)outputCursor - (int)memory,memory);
+          shrinkResult = g_MemoryApi.shrinkInPlace((int)outputCursor - (int)memory,memory);
           if (!shrinkResult.failed) {
-            largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
+            largestBlock = g_MemoryApi.allocLargestFreeBlock();
             stringAsset.assetOrError = (int *)largestBlock.allocationOrError;
             if (!largestBlock.failed) {
               remainingCapacityBytes = largestBlock.blockSizeOrSentinel - 0x200;
@@ -886,9 +886,9 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                     entryIndexOrOffset = entryIndexOrOffset + -1;
                     assetWriteCursor = groupHeader;
                     if (entryIndexOrOffset == 0) {
-                      (*g_MemoryApi.free)(memory);
+                      g_MemoryApi.free(memory);
                       assetSizeOrTimestamp = (int)groupHeader - (int)stringAsset.assetOrError;
-                      (*g_MemoryApi.shrinkInPlace)(assetSizeOrTimestamp,stringAsset.assetOrError);
+                      g_MemoryApi.shrinkInPlace(assetSizeOrTimestamp,stringAsset.assetOrError);
                       tagCount = tagCount * 8;
                       *(uint32_t *)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[0x2c] = assetGroupCount;
@@ -898,22 +898,22 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                       ((int *)stringAsset.assetOrError)[3] = 0;
                       stackSlot = &thandor_stack_frame[0x80 - 0x30] + tagCount;
                       *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c7b5;
-                      assetSizeOrTimestamp = (*g_LocaleGetPackedCurrentTime)();
+                      assetSizeOrTimestamp = g_LocaleGetPackedCurrentTime();
                       ((int *)stringAsset.assetOrError)[4] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[6] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[8] = assetSizeOrTimestamp;
                       callStackSlot = stackSlot + -4;
                       *(uint32_t *)(stackSlot + -4) = 0x41c7cd;
-                      assetSizeOrTimestamp = (*g_LocaleGetPackedCurrentDate)();
+                      assetSizeOrTimestamp = g_LocaleGetPackedCurrentDate();
                       ((int *)stringAsset.assetOrError)[5] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[7] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[9] = assetSizeOrTimestamp;
                       *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0xc;
                       *(uint32_t *)(callStackSlot + -8) = 0x41c7ec;
-                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(uint16_t **)(callStackSlot + -4));
+                      g_LocaleCopyDefaultComputerLabelUtf16(*(uint16_t **)(callStackSlot + -4));
                       *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0x1c;
                       *(uint32_t *)(callStackSlot + -8) = 0x41c7f9;
-                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(uint16_t **)(callStackSlot + -4));
+                      g_LocaleCopyDefaultComputerLabelUtf16(*(uint16_t **)(callStackSlot + -4));
                       stringAsset.failed = false;
                       return stringAsset;
                     }
@@ -964,14 +964,14 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                 }
               }
 RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError:
-              (*g_MemoryApi.free)(stringAsset.assetOrError);
+              g_MemoryApi.free(stringAsset.assetOrError);
             }
           }
 RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           tagCount = tagCount * 8;
           *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = memory;
           *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
-          (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount));
+          g_MemoryApi.free(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount));
           capacityErrorResult.failed = true;
           capacityErrorResult.assetOrError = (void *)0x14;
           return capacityErrorResult;
@@ -1094,7 +1094,7 @@ RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
   groupKeyOrIndex = tagCount * 8;
   *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = memory;
   *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = 0x41c5a2;
-  (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
+  g_MemoryApi.free(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
   *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
   *(int *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = (int)markupCursor - (int)markupBytes;
   *(uint32_t *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex) = 1;
@@ -1102,7 +1102,7 @@ RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
   (&dStackY_3c)[tagCount * 2] = 0;
   aWStackY_44[tagCount * 2 + 1] = 0x40;
   aWStackY_44[tagCount * 2] = 0x41c5bb;
-  (*g_WideNumberFormatUtf16)
+  g_WideNumberFormatUtf16
             (aWStackY_44[tagCount * 2 + 1],(&dStackY_3c)[tagCount * 2],
              *(uint32_t *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex),*(uint32_t *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex),
              *(int32_t *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex),*(uint16_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
@@ -1307,7 +1307,7 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *comman
       commandStream = *(uint16_t **)commandStream;
       break;
     case 0x1a:
-      textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
                               (*(uint32_t *)(command + 3),*(GraphicsTextureSourceAsset **)commandStream);
       extent.widthPixels = extent.widthPixels + textureSize.logicalWidthPixels;
       commandStream = command + 5;
@@ -1408,7 +1408,7 @@ RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
       }
       goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary;
     case 0x1a:
-      imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      imageSize = g_GraphicsTextureSourceGetLogicalSize
                         (*(uint32_t *)(commandCursor + 6),*(GraphicsTextureSourceAsset **)readCursor);
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
       readCursor = commandCursor + 10;
@@ -1528,7 +1528,7 @@ RichTextCommandStream_DrawNextWrappedLineCf
       }
       goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
     case 0x1a:
-      imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      imageSize = g_GraphicsTextureSourceGetLogicalSize
                          (*(uint32_t *)(measureCommand + 6),*(GraphicsTextureSourceAsset **)scanCursor);
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
       scanCursor = measureCommand + 10;
@@ -1626,10 +1626,10 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
     case 0x12:
       goto RichTextCommandStream_DrawNextWrappedLine_EndLine;
     case 0x1a:
-      imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
+      imageSize = g_GraphicsTextureSourceGetLogicalSize
                          (*(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor);
       fontIndexOrImageWidth = imageSize.logicalWidthPixels;
-      (*g_GraphicsTextureSourceBlitSourceAlpha)
+      g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,lineBottom - imageSize.logicalHeightPixels,drawX,
                  *(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor,g_FramebufferAccess);
       drawX = drawX + fontIndexOrImageWidth;
