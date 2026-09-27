@@ -16,8 +16,14 @@ if(THANDOR_MAPPED_IMAGE)
     add_compile_definitions(THANDOR_MAPPED_IMAGE)
 endif()
 
-if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
-    message(FATAL_ERROR "open-thandor must be built for 32-bit x86 (e.g. MSVC vcvars32 / -A Win32).")
+# The code needs MSVC (inline __asm, __stdcall/__fastcall, MSVC pragmas) targeting 32-bit x86.
+# Use a preset (CMakePresets.json: debug, release, mapped), which finds MSVC x86 by itself, or
+# configure from a vcvars32 prompt. In CLion: Settings > Build > CMake, enable the presets and
+# disable the default MinGW profile.
+if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
+    message(FATAL_ERROR "open-thandor must be built with MSVC for 32-bit x86: use a CMake preset "
+                        "(cmake --preset release) or a vcvars32 prompt. Found: ${CMAKE_C_COMPILER_ID}, "
+                        "${CMAKE_SIZEOF_VOID_P}-byte pointers.")
 endif()
 
 add_library(thandor_curated STATIC

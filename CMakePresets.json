@@ -1,0 +1,38 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "msvc-x86",
+      "hidden": true,
+      "description": "MSVC 32-bit x86, found without vcvars (cmake/msvc-x86.cmake)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build-msvc-${presetName}",
+      "toolchainFile": "${sourceDir}/cmake/msvc-x86.cmake",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
+    },
+    {
+      "name": "debug",
+      "displayName": "MSVC x86 Debug",
+      "inherits": "msvc-x86",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
+      "displayName": "MSVC x86 RelWithDebInfo (test build)",
+      "inherits": "msvc-x86",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+    },
+    {
+      "name": "mapped",
+      "displayName": "MSVC x86 RelWithDebInfo, mapped original image (self-tests)",
+      "inherits": "msvc-x86",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo", "THANDOR_MAPPED_IMAGE": "ON" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "debug", "configurePreset": "debug" },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "mapped", "configurePreset": "mapped" }
+  ]
+}
