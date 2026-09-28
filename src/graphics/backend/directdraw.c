@@ -11,9 +11,10 @@
 /* Implementation ownership: graphics/backend/directdraw. */
 
 /* Address: 0x00423CF0.
-   Ownership: graphics/backend/directdraw.
-   Purpose: Scans the exact 0x10-byte GraphicsDisplayMode array and compares width, height, bitsPerPixel, and
-   adapterIndex. CF clear means an exact tuple exists; CF set means absent; EAX is preserved.
+   Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
+   (g_GraphicsDisplayModes, filled by DirectDraw_EnumDisplayModeCallback): CF clear (false) when it was, CF set
+   (true) when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/controls/misc.c) to offer only
+   available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GraphicsDisplayMode_IsEnumerated
@@ -28,8 +29,8 @@ GraphicsDisplayMode_IsEnumerated
   modeCursor = g_GraphicsDisplayModes;
   while ((((width != modeCursor->width || (height != modeCursor->height)) ||
           (bitsPerPixel != modeCursor->bitsPerPixel)) || (adapterIndex != modeCursor->adapterIndex))) {
-    modeCursor = modeCursor + 1;
-    modesRemaining = modesRemaining - 1;
+    modeCursor++;
+    modesRemaining--;
     if (modesRemaining == 0) {
       return true;
     }
@@ -39,9 +40,9 @@ GraphicsDisplayMode_IsEnumerated
 
 
 /* Address: 0x0054B0E0.
-   Ownership: graphics/backend/directdraw.
-   Purpose: Scans the enumerated display-mode table for an exact four-dword mode tuple. CF clear reports a match
-   and CF set reports that no entry matched.
+   Same test as GraphicsDisplayMode_IsEnumerated with the parameters in a different order: CF clear (false) when
+   the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
+   (ui/frontend/settings.c).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 DisplayModeTable_ContainsExactMode
@@ -57,8 +58,8 @@ DisplayModeTable_ContainsExactMode
   while ((((width != modeCursor->width || (height != modeCursor->height)) ||
           (bitsPerPixel != modeCursor->bitsPerPixel)) || (adapterIndex != modeCursor->adapterIndex))
         ) {
-    modeCursor = modeCursor + 1;
-    modesRemaining = modesRemaining - 1;
+    modeCursor++;
+    modesRemaining--;
     if (modesRemaining == 0) {
       return true;
     }

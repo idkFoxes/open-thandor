@@ -30,6 +30,7 @@
    g_TerrainClassPlacementAndOverlayCallbacks10.placementTests. 0 terrain height, 1 water surface, 2 terrain
    height and normal, 3 articulated suspension, 4 top surface. */
 #define ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE 1
+#define ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION 3
 /* Byte size of one GameFactionRuntimeRecord (8 of them in g_GameFactionRuntimeImage). */
 #define GAME_FACTION_RUNTIME_RECORD_BYTES 0x740
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */

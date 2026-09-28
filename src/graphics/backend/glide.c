@@ -350,6 +350,7 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResources
 
 /* The g_GlideVertex* records are floats stored in uint32_t globals: FSTP float ptr writes the bit pattern,
    CMP/ADD/SUB dword ptr then work on that pattern, FMUL float ptr reads it back as a float. */
+/* Not an original function: the bit pattern of a float (the FSTP float ptr store). */
 static __inline uint32_t Glide_FloatBits(float value)
 {
   uint32_t bits;
@@ -357,6 +358,7 @@ static __inline uint32_t Glide_FloatBits(float value)
   return bits;
 }
 
+/* Not an original function: a stored bit pattern read back as a float (the FMUL/FLD float ptr load). */
 static __inline float Glide_BitsToFloat(uint32_t bits)
 {
   float value;
@@ -1027,18 +1029,18 @@ void Glide3_Cursor_RestoreAfterPresentNoOp(IDirectDrawSurface3 *backSurfaceSenti
 }
 
 /* Address: 0x005807B0.
-   Ownership: graphics/backend/glide.
-   Purpose: Converts the selected gfx subresource into the two-byte Glide CPU upload buffer. Indexed entries read
-   ARGB8888 colors from their 256-entry palette bank; direct-color entries read ARGB8888 pixels. glideInfo.format
-   0x0A selects RGB565-style packing and 0x0C selects ARGB4444-style packing. This variant preserves the source
-   dimensions.
+   Converts the texture's source subresource at full size into its two-byte Glide upload buffer
+   (glideInfo.data), as GR_TEXFMT_RGB_565 or GR_TEXFMT_ARGB_4444 (glideInfo.format). Paletted subresources take
+   each texel's ARGB8888 colour from their palette bank, direct ones read ARGB8888 pixels. Entry 0 (downsample
+   shift 0) of both g_GlideTextureColorUpload and g_GlideTextureAlphaUpload, called through them by
+   Glide3_TextureResource_Initialize, Glide3_TextureSet_RefreshColor and Glide3_TextureSet_RefreshAlpha.
 */
 void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
   int sourceWidth;
-  int entryPaletteIndex;
+  int paletteBank;
   uint32_t sourceArgb;
   int subresourceRecordOffset;
   uint8_t *sourceCursor;
@@ -1048,27 +1050,31 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_1x(GraphicsTexture
   
   asset = texture->sourceAsset;
   destinationCursor = (texture->glideInfo).data;
+  /* the subresource's 0x20-byte source entry, read through assetRelativeAddressAnchor28 (asset + 0x28), hence
+     the 0x28 bias: +0x08 palette bank (negative: direct ARGB8888 pixels), +0x0C pixel data offset (from the
+     asset), +0x18/+0x1C width/height */
   subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-  sourceWidth = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x10);
-  remainingRows = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0xc);
-  entryPaletteIndex = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x20);
+  sourceWidth = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10);
+  remainingRows = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc);
+  paletteBank = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x20);
   sourceCursor = (asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-           *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x1c) +
-           -0x28;
+           *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x1c) -
+           0x28;
   remainingColumns = sourceWidth;
-  if (entryPaletteIndex < 0) {
-    if ((texture->glideInfo).format == 10) {
+  if (paletteBank < 0) {
+    if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
           sourceArgb = *(uint32_t *)sourceCursor;
+          /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3 & 0x1f) << 0x15) >> 0x10) |
                             (uint16_t)(((sourceArgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                     (uint16_t)(((sourceArgb >> 0x13) << 0x1b) >> 0x10);
           sourceCursor = sourceCursor + 4;
-          destinationCursor = destinationCursor + 1;
-          remainingColumns = remainingColumns + -1;
+          destinationCursor++;
+          remainingColumns--;
         } while (remainingColumns != 0);
-        remainingRows = remainingRows + -1;
+        remainingRows--;
         remainingColumns = sourceWidth;
       } while (remainingRows != 0);
     }
@@ -1076,51 +1082,56 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_1x(GraphicsTexture
       do {
         do {
           sourceArgb = *(uint32_t *)sourceCursor;
+          /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((sourceArgb >> 4 & 0xf) << 0x18) >> 0x10) |
                                      (uint16_t)(((sourceArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                             (uint16_t)(((sourceArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
                     (uint16_t)(sourceArgb >> 0x10) & 0xf000;
           sourceCursor = sourceCursor + 4;
-          destinationCursor = destinationCursor + 1;
-          remainingColumns = remainingColumns + -1;
+          destinationCursor++;
+          remainingColumns--;
         } while (remainingColumns != 0);
-        remainingRows = remainingRows + -1;
+        remainingRows--;
         remainingColumns = sourceWidth;
       } while (remainingRows != 0);
     }
   }
   else {
+    /* palette entry n of bank b: an 8-byte record (ARGB8888, then the native pixel) at asset + 0x200 + b * 0x800
+       + n * 8 */
     asset = texture->sourceAsset;
-    if ((texture->glideInfo).format == 10) {
+    if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
-          sourceArgb = *(uint32_t *)(asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28
-                           + (uint32_t)*sourceCursor * 8 + -0x28);
+          sourceArgb = *(uint32_t *)(asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28
+                           + (uint32_t)*sourceCursor * 8 - 0x28);
+          /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3) << 0x1b) >> 0x16) |
                             (uint16_t)(((sourceArgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                     (uint16_t)(((sourceArgb >> 0x13) << 0x1b) >> 0x10);
-          sourceCursor = sourceCursor + 1;
-          destinationCursor = destinationCursor + 1;
-          remainingColumns = remainingColumns + -1;
+          sourceCursor++;
+          destinationCursor++;
+          remainingColumns--;
         } while (remainingColumns != 0);
-        remainingRows = remainingRows + -1;
+        remainingRows--;
         remainingColumns = sourceWidth;
       } while (remainingRows != 0);
     }
     else {
       do {
         do {
-          sourceArgb = *(uint32_t *)(asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28
-                           + (uint32_t)*sourceCursor * 8 + -0x28);
+          sourceArgb = *(uint32_t *)(asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28
+                           + (uint32_t)*sourceCursor * 8 - 0x28);
+          /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((sourceArgb >> 4) << 0x1c) >> 0x14) |
                                      (uint16_t)(((sourceArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                             (uint16_t)(((sourceArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
                     (uint16_t)(sourceArgb >> 0x10) & 0xf000;
-          sourceCursor = sourceCursor + 1;
-          destinationCursor = destinationCursor + 1;
-          remainingColumns = remainingColumns + -1;
+          sourceCursor++;
+          destinationCursor++;
+          remainingColumns--;
         } while (remainingColumns != 0);
-        remainingRows = remainingRows + -1;
+        remainingRows--;
         remainingColumns = sourceWidth;
       } while (remainingRows != 0);
     }
@@ -1130,17 +1141,15 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_1x(GraphicsTexture
 
 
 /* Address: 0x00580960.
-   Ownership: graphics/backend/glide.
-   Purpose: Converts the selected gfx subresource into the two-byte Glide CPU upload buffer. Indexed entries read
-   ARGB8888 colors from their 256-entry palette bank; direct-color entries read ARGB8888 pixels. glideInfo.format
-   0x0A selects RGB565-style packing and 0x0C selects ARGB4444-style packing. This variant reduces each dimension
-   by 2 and averages each 2x2 source block before packing.
+   Glide3_TextureUpload_1x at half size: each destination texel is the MMX average of a 2x2 block of source
+   colours, packed as GR_TEXFMT_RGB_565 or GR_TEXFMT_ARGB_4444. Entry 1 (downsample shift 1) of both
+   g_GlideTextureColorUpload and g_GlideTextureAlphaUpload.
 */
 void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
-  int entryPaletteIndex;
+  int paletteBank;
   uint32_t upperLeftSample;
   uint32_t upperRightSample;
   uint32_t lowerLeftSample;
@@ -1148,7 +1157,7 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
   uint8_t clampedRedOrAlpha;
   uint32_t destinationWidth;
   int subresourceRecordOffset;
-  AssetProducerSourceNames *sourceCursor;
+  AssetProducerSourceNames *sourceCursor; /* a byte cursor; producerName is a uint16_t array at offset 0 */
   uint16_t *destinationCursor;
   uint16_t blueAverage;
   uint16_t greenAverage;
@@ -1161,19 +1170,22 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
 
   asset = texture->sourceAsset;
   destinationCursor = (texture->glideInfo).data;
+  /* the subresource's 0x20-byte source entry, read through assetRelativeAddressAnchor28 (asset + 0x28), hence
+     the 0x28 bias: +0x08 palette bank (negative: direct ARGB8888 pixels), +0x0C pixel data offset (from the
+     asset), +0x18/+0x1C width/height */
   subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-  entryPaletteIndex = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x20);
+  paletteBank = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x20);
   sourceCursor = (AssetProducerSourceNames *)
             ((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-            *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x1c) +
-            -0x28);
-  destinationWidth = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x10) >>
+            *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x1c) -
+            0x28);
+  destinationWidth = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10) >>
           1;
-  remainingRows = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0xc)
+  remainingRows = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc)
               >> 1;
   remainingColumns = destinationWidth;
-  if (entryPaletteIndex < 0) {
-    if ((texture->glideInfo).format == 10) {
+  if (paletteBank < 0) {
+    if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
           upperLeftSample = *(uint32_t *)sourceCursor->producerName;
@@ -1189,13 +1201,15 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
           averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 0x15) >> 0x10) |
                              (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
           sourceCursor = (AssetProducerSourceNames *)((int)sourceCursor->producerName + 8);
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
+        /* skip the second source row of the block */
         sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + destinationWidth * 4);
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
@@ -1221,14 +1235,16 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
           averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | averagedRgb;
+          /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)((uint16_t)((((averagedRgb & 0xf0) >> 4) << 0x18) >> 0x10) |
                                       (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
           sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + 4);
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
+        /* skip the second source row of the block */
         sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + destinationWidth * 4);
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
@@ -1237,21 +1253,21 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
   }
   else {
     asset = texture->sourceAsset;
-    if ((texture->glideInfo).format == 10) {
+    if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
           upperLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[0] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor->producerName[0] * 8 - 0x28);
           upperRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1) * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1) * 8 - 0x28);
           lowerLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth] * 8 - 0x28);
           lowerRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 - 0x28);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1261,13 +1277,15 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
           averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)(((uint32_t)(averagedRgb >> 3) << 0x1b) >> 0x16) |
                              (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
           sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + 1);
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
+        /* skip the second source row of the block */
         sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + destinationWidth);
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
@@ -1277,17 +1295,17 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
       do {
         do {
           upperLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[0] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor->producerName[0] * 8 - 0x28);
           upperRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1) * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1) * 8 - 0x28);
           lowerLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth] * 8 - 0x28);
           lowerRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 - 0x28);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1300,14 +1318,16 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
           averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((averagedArgb >> 4) << 0x1c) >> 0x14) |
                                       (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
           sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + 1);
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
+        /* skip the second source row of the block */
         sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + destinationWidth);
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
@@ -1319,17 +1339,15 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
 
 
 /* Address: 0x00580C60.
-   Ownership: graphics/backend/glide.
-   Purpose: Converts the selected gfx subresource into the two-byte Glide CPU upload buffer. Indexed entries read
-   ARGB8888 colors from their 256-entry palette bank; direct-color entries read ARGB8888 pixels. glideInfo.format
-   0x0A selects RGB565-style packing and 0x0C selects ARGB4444-style packing. This variant reduces each dimension
-   by 4 and averages each 4x4 source block before packing.
+   Glide3_TextureUpload_1x at quarter size: each destination texel is the MMX average of four texels of its 4x4
+   source block (columns and rows 0 and 2), packed as GR_TEXFMT_RGB_565 or GR_TEXFMT_ARGB_4444. Entry 2
+   (downsample shift 2) of both g_GlideTextureColorUpload and g_GlideTextureAlphaUpload.
 */
 void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
-  int entryPaletteIndex;
+  int paletteBank;
   uint32_t upperLeftSample;
   uint32_t upperRightSample;
   uint32_t lowerLeftSample;
@@ -1337,7 +1355,7 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
   uint8_t clampedRedOrAlpha;
   uint32_t destinationWidth;
   int subresourceRecordOffset;
-  uint16_t *sourceCursor;
+  uint16_t *sourceCursor; /* steps in 16-bit units; paletted texels are the low byte of each word read */
   uint16_t *destinationCursor;
   uint16_t blueAverage;
   uint16_t greenAverage;
@@ -1350,18 +1368,21 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
   
   asset = texture->sourceAsset;
   destinationCursor = (texture->glideInfo).data;
+  /* the subresource's 0x20-byte source entry, read through assetRelativeAddressAnchor28 (asset + 0x28), hence
+     the 0x28 bias: +0x08 palette bank (negative: direct ARGB8888 pixels), +0x0C pixel data offset (from the
+     asset), +0x18/+0x1C width/height */
   subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-  entryPaletteIndex = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x20);
+  paletteBank = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x20);
   sourceCursor = (uint16_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
                     *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            subresourceRecordOffset + -0x1c) + -0x28);
-  destinationWidth = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x10) >>
+                            subresourceRecordOffset - 0x1c) - 0x28);
+  destinationWidth = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10) >>
           2;
-  remainingRows = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0xc)
+  remainingRows = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc)
               >> 2;
   remainingColumns = destinationWidth;
-  if (entryPaletteIndex < 0) {
-    if ((texture->glideInfo).format == 10) {
+  if (paletteBank < 0) {
+    if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
           upperLeftSample = *(uint32_t *)sourceCursor;
@@ -1377,14 +1398,15 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
           averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 0x15) >> 0x10) |
                              (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
           sourceCursor = sourceCursor + 8;
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
-        sourceCursor = sourceCursor + destinationWidth * 0x18;
+        sourceCursor = sourceCursor + destinationWidth * 0x18; /* skip the other three source rows of the block */
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
       } while (remainingRows != 0);
@@ -1409,15 +1431,16 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
           averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | averagedRgb;
+          /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)((uint16_t)((((averagedRgb & 0xf0) >> 4) << 0x18) >> 0x10) |
                                       (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
           sourceCursor = sourceCursor + 8;
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
-        sourceCursor = sourceCursor + destinationWidth * 0x18;
+        sourceCursor = sourceCursor + destinationWidth * 0x18; /* skip the other three source rows of the block */
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
       } while (remainingRows != 0);
@@ -1425,21 +1448,21 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
   }
   else {
     asset = texture->sourceAsset;
-    if ((texture->glideInfo).format == 10) {
+    if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
           upperLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)*sourceCursor * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)*sourceCursor * 8 - 0x28);
           upperRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[1] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor[1] * 8 - 0x28);
           lowerLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4] * 8 - 0x28);
           lowerRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1] * 8 - 0x28);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1449,14 +1472,15 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
           averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)(((uint32_t)(averagedRgb >> 3) << 0x1b) >> 0x16) |
                              (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
           sourceCursor = sourceCursor + 2;
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
-        sourceCursor = sourceCursor + destinationWidth * 6;
+        sourceCursor = sourceCursor + destinationWidth * 6; /* skip the other three source rows of the block */
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
       } while (remainingRows != 0);
@@ -1465,17 +1489,17 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
       do {
         do {
           upperLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)*sourceCursor * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)*sourceCursor * 8 - 0x28);
           upperRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[1] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor[1] * 8 - 0x28);
           lowerLeftSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4] * 8 - 0x28);
           lowerRightSample = *(uint32_t *)
-                   (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1] * 8 + -0x28);
+                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
+                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1] * 8 - 0x28);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1488,15 +1512,16 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
           averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((averagedArgb >> 4) << 0x1c) >> 0x14) |
                                       (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
           sourceCursor = sourceCursor + 2;
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
-        sourceCursor = sourceCursor + destinationWidth * 6;
+        sourceCursor = sourceCursor + destinationWidth * 6; /* skip the other three source rows of the block */
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
       } while (remainingRows != 0);
@@ -1507,8 +1532,8 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
 
 
 /* Address: 0x00580F60.
-   Ownership: graphics/backend/glide.
-   Purpose: Fills Glide texture data with the recovered constant 0x0FFF pattern.
+   Fills the texture's full-size Glide upload buffer with 0x0FFF, i.e. GR_TEXFMT_ARGB_4444 white with alpha 0.
+   Neither called nor referenced by any table in the original (like the two downsamplers after it).
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture)
@@ -1525,25 +1550,27 @@ GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture)
   asset = texture->sourceAsset;
   glideDataCursor = (texture->glideInfo).data;
   subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-  sourceWidth = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0x10);
-  remainingRows = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset + -0xc);
+  /* width and height of the source entry (see Glide3_TextureUpload_1x) */
+  sourceWidth = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10);
+  remainingRows = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc);
   remainingColumns = sourceWidth;
   do {
     do {
       nextGlideDataCursor = glideDataCursor + 1;
-      *glideDataCursor = 0xfff;
-      remainingColumns = remainingColumns + -1;
+      *glideDataCursor = 0xfff; /* ARGB4444: alpha 0, white */
+      remainingColumns--;
       glideDataCursor = nextGlideDataCursor;
     } while (remainingColumns != 0);
-    remainingRows = remainingRows + -1;
+    remainingRows--;
     remainingColumns = sourceWidth;
   } while (remainingRows != 0);
   return;
 }
 
 /* Address: 0x00580FF0.
-   Ownership: graphics/backend/glide.
-   Purpose: Downsamples alpha samples into white ARGB4444 texels in the dormant Glide path.
+   Half-size conversion of an 8-bit alpha image into GR_TEXFMT_ARGB_4444 white texels: the alpha nibble is the
+   average of the 2x2 source block (the sum of the four samples divided by 4 each). Neither called nor referenced
+   by any table in the original.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
@@ -1566,16 +1593,18 @@ GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
        (uint16_t *)
        ((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
        *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-               subresourceRecordOffset + -0x1c) + -0x28);
+               subresourceRecordOffset - 0x1c) - 0x28);
   downsampledWidth =
        *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset + -0x10) >> 1;
+                subresourceRecordOffset - 0x10) >> 1;
   remainingRows =
        *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset + -0xc) >> 1;
+                subresourceRecordOffset - 0xc) >> 1;
   remainingColumns = downsampledWidth;
   do {
     do {
+      /* high byte: the block average; the OR with 0xFFF keeps only its top nibble as alpha and makes the colour
+         white, so the first sample's quarter in the low byte has no effect */
       firstAlphaQuarter = (uint8_t)*sourcePairCursor >> 2;
       *glideDataCursor =
            (uint16_t)((uint32_t)(uint8_t)((uint8_t)(*sourcePairCursor >> 10) + firstAlphaQuarter +
@@ -1586,7 +1615,7 @@ GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
       glideDataCursor = glideDataCursor + 1;
       remainingColumns = remainingColumns - 1;
     } while (remainingColumns != 0);
-    sourcePairCursor = sourcePairCursor + downsampledWidth;
+    sourcePairCursor = sourcePairCursor + downsampledWidth; /* skip the second source row */
     remainingRows = remainingRows - 1;
     remainingColumns = downsampledWidth;
   } while (remainingRows != 0);
@@ -1594,8 +1623,10 @@ GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
 }
 
 /* Address: 0x005810A0.
-   Ownership: graphics/backend/glide.
-   Purpose: Downsamples alternating alpha samples into white ARGB4444 texels in the dormant Glide path.
+   Like GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444 for a 32-bit source: the alpha nibble averages bytes 0
+   and 2 of a texel and of the texel one source row (8 * downsampledWidth bytes) below. It advances only one texel
+   per output texel and two source rows per output row, so it reads just the left half of each row pair.
+   Neither called nor referenced by any table in the original.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureResource *texture)
@@ -1616,16 +1647,17 @@ GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureRes
   sourceByteCursor =
        (asset->common).buildMetadata.assetRelativeAddressAnchor28 +
        *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-               subresourceRecordOffset + -0x1c) + -0x28;
+               subresourceRecordOffset - 0x1c) - 0x28;
   downsampledWidth =
        *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset + -0x10) >> 1;
+                subresourceRecordOffset - 0x10) >> 1;
   remainingRows =
        *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset + -0xc) >> 1;
+                subresourceRecordOffset - 0xc) >> 1;
   remainingColumns = downsampledWidth;
   do {
     do {
+      /* as in the alpha8 variant, only the high byte survives the OR with 0xFFF */
       *glideDataCursor =
            (uint16_t)((uint32_t)(uint8_t)((*sourceByteCursor >> 2) + (sourceByteCursor[2] >> 2) +
                                  (sourceByteCursor[downsampledWidth * 8] >> 2) +

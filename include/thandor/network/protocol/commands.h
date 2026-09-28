@@ -32,6 +32,14 @@
 #define INGAME_COMMAND_ASSIGN_ARMY_TOKEN 0x16B0 /* FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 */
 #define INGAME_COMMAND_APPLY_UI_FLAG_MASKS 0x310 /* UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
 #define INGAME_COMMAND_MARK_PLAYER_READY_101B 0x470 /* FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B */
+/* Army lists and army placement (gameplay/faction/runtime) */
+#define INGAME_COMMAND_CANCEL_QUEUED_ARMY 0x1030 /* GameFactionRuntime_CancelQueuedArmyAssetsAndRefund */
+#define INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT 0x12D0 /* GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer */
+#define INGAME_COMMAND_SELL_ARMY 0x1570 /* GameFactionRuntime_SellArmyAssetAndRefundSevenEighths */
+#define INGAME_COMMAND_PLACEMENT_CREATE_ARMY 0x2E50 /* PlayerRuntime_ResolveAndStoreState8094 */
+#define INGAME_COMMAND_PLACEMENT_SET_FACTION 0x2EC0 /* PlayerRuntime_SetState8090 */
+#define INGAME_COMMAND_PLACEMENT_SET_ARMY 0x2EF0 /* PlayerRuntime_SetState8094 */
+#define INGAME_COMMAND_PLACEMENT_CLEAR_ARMY 0x3190 /* PlayerRuntime_ClearState8094 */
 /* Frontend command codes work the same way, relative to FrontendCommandQueue_EnqueueLocalPlayerCommand
    (0x00543F50). */
 #define FRONTEND_COMMAND_CODE_BASE 0x00543F50

@@ -12,9 +12,8 @@
 /* Implementation ownership: graphics/resources/framebuffer. */
 
 /* Address: 0x004A9250.
-   Ownership: graphics/resources/framebuffer.
-   Purpose: Default software-framebuffer begin-access hook. It performs no work and returns success by clearing CF.
-   ABI: CF clear means success. CF set means failure.
+   Default g_GraphicsFramebufferBeginAccess hook: an in-memory software framebuffer needs no lock, so it only
+   reports success (false, CF clear). Backends with a real surface install their own hook.
 */
 bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccessStub(void)
 
@@ -24,8 +23,8 @@ bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccessStub(void)
 
 
 /* Address: 0x004A9260.
-   Ownership: graphics/resources/framebuffer.
-   Purpose: Default software-framebuffer end-access hook. It performs no work.
+   Default g_GraphicsFramebufferEndAccess hook, the counterpart of GraphicsFramebuffer_BeginAccessStub: nothing
+   to unlock.
 */
 void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccessStub(void)
 

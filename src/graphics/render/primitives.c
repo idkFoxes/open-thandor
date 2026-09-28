@@ -11,257 +11,270 @@
 /* Implementation ownership: graphics/render/primitives. */
 
 /* Address: 0x00486080.
-   Ownership: graphics/render/primitives.
-   Purpose: Generates one sort key per primary node, performs a stable four-pass least-significant-byte radix sort
-   between primaryNodes and radixScratchPool, then rebuilds next/previous traversal links. Textured/opaque packets
-   use a texture/flag key; other packets use the summed vertex depth. When halveVertexRgb is nonzero, the function
-   preserves alpha and halves each vertex RGB channel with MMX. Typed parameters: p0
-   halveVertexRgb→GraphicsBooleanState_V307. Nearby but non-identical semantic domains were explicitly deferred.
+   Sorts a filled primitive queue for drawing and links the sorted nodes into the traversal list read by
+   GraphicsPrimitiveQueue_Begin/Next. Each node gets a 32-bit key: blended packets (any blend-mode bit) the sum
+   of their three vertex depths (below 0x80000000), opaque packets their texture entry with bits 0x30000000 of
+   the render flags subtracted from 0xB0000000 (0x80000000 and above). Four stable byte-wise radix passes (low
+   byte first) move the nodes between primaryNodes and radixScratchPool and back and order them by descending
+   key: opaque packets first, grouped by texture, then the blended ones from the largest depth sum down. With
+   halveVertexRgb set every packet's vertex RGB is halved (alpha kept, MMX).
+   Installed in the graphics dispatch slot PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 (called
+   by FrontendModelPointerContext_RenderWorldViewQueuesClipped with node flag 8) and called directly by the
+   offscreen model renderer (graphics/render/projection.c).
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPrimitiveQueue_RadixSortForRendering
           (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
 
 {
-  int *bucketWordPtr;
-  GraphicsPrimitivePacket *packetOrLinkNode;
+  int *bucketSlot;
+  GraphicsPrimitivePacket *packetOrNode;
   uint32_t *bucketWriteCursor;
   uint32_t bucketIndexOrOffset;
   GraphicsPrimitiveQueueNode *nodeCursor;
-  GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor1;
-  GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor2;
-  GraphicsPrimitivePacket *previousLinkNode;
-  GraphicsPrimitivePacket *primitivePacketCursor3;
-  GraphicsPrimitivePacket *primitivePacketCursor2;
+  GraphicsPrimitiveQueueNode *pass3BucketStart;
+  GraphicsPrimitiveQueueNode *primaryNodes;
+  GraphicsPrimitivePacket *previousNode;
+  GraphicsPrimitivePacket *previousNodeMmx;
+  GraphicsPrimitivePacket *linkNode;
   uint32_t nodeSortKey;
-  int bucketLoopOrVertexBase;
+  int bucketCountdownOrPacket;
   uint32_t remainingOrBucketCount;
   uint32_t remainingNodeCount;
   GraphicsPrimitiveQueueNode *readNode;
-  GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor3;
+  GraphicsPrimitiveQueueNode *pass3ReadNode;
   uint32_t *bucketWordCursor;
-  uint32_t *sortWordCursor2;
-  GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor4;
-  GraphicsPrimitivePacket *nextLinkNode;
-  GraphicsPrimitivePacket *primitivePacketCursor4;
-  uint64_t mm0PackedValue0;
-  uint64_t mm1PackedValue0;
-  uint64_t mm2PackedValue0;
-  GraphicsPrimitivePacket *primitivePacketCursor1;
-  uint32_t *sortWordCursor1;
+  uint32_t *pass4BucketCursor;
+  GraphicsPrimitiveQueueNode *scratchNodes;
+  GraphicsPrimitivePacket *nextNode;
+  GraphicsPrimitivePacket *nextNodeMmx;
+  uint64_t vertex0HalvedColor;
+  uint64_t vertex1HalvedColor;
+  uint64_t vertex2HalvedColor;
+  GraphicsPrimitivePacket *keyPacket;
+  uint32_t *pass2WriteCursor;
   
+  /* g_PrimitiveRadixBucketWords holds per pass first the bucket counts, then each bucket's write cursor
+     (bucket 0xFF gets the first place, so the result is in descending key order) */
   remainingNodeCount = queue->count;
-  primitiveQueueNodeCursor4 = queue->radixScratchPool;
-  primitiveQueueNodeCursor2 = queue->primaryNodes;
+  scratchNodes = queue->radixScratchPool;
+  primaryNodes = queue->primaryNodes;
   if (remainingNodeCount != 0) {
     remainingOrBucketCount = remainingNodeCount;
-    nodeCursor = primitiveQueueNodeCursor2;
+    nodeCursor = primaryNodes;
     if (remainingNodeCount != 1) {
       do {
-        primitivePacketCursor1 = nodeCursor->packet;
-        if ((primitivePacketCursor1->renderFlags & 0x7000) == 0) {
-          nodeSortKey = ((uint32_t)primitivePacketCursor1->textureEntry | 0xb0000000) -
-                  (primitivePacketCursor1->renderFlags & 0x30000000);
+        keyPacket = nodeCursor->packet;
+        if ((keyPacket->renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK) == GRAPHICS_PRIMITIVE_BLEND_OPAQUE) {
+          nodeSortKey = ((uint32_t)keyPacket->textureEntry | 0xb0000000) -
+                  (keyPacket->renderFlags & 0x30000000);
         }
         else {
-          nodeSortKey = primitivePacketCursor1->vertices[0].depth +
-                  primitivePacketCursor1->vertices[1].depth +
-                  primitivePacketCursor1->vertices[2].depth & 0x7fffffff;
+          nodeSortKey = keyPacket->vertices[0].depth +
+                  keyPacket->vertices[1].depth +
+                  keyPacket->vertices[2].depth & 0x7fffffff;
         }
         nodeCursor->sortKey = nodeSortKey;
-        nodeCursor = nodeCursor + 1;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
+        nodeCursor++;
+        remainingOrBucketCount--;
       } while (remainingOrBucketCount != 0);
+      /* pass 1: key bits 0..7, primaryNodes -> radixScratchPool */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor2, bucketLoopOrVertexBase != 0;
-          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primaryNodes, bucketCountdownOrPacket != 0;
+          bucketCountdownOrPacket--) {
         *bucketWordCursor = 0;
-        bucketWordCursor = bucketWordCursor + 1;
+        bucketWordCursor++;
       }
       do {
         g_PrimitiveRadixBucketWords[nodeCursor->sortKey & 0xff] =
              g_PrimitiveRadixBucketWords[nodeCursor->sortKey & 0xff] + 1;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
-        nodeCursor = nodeCursor + 1;
+        remainingOrBucketCount--;
+        nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketLoopOrVertexBase = 0x100;
+      bucketCountdownOrPacket = 0x100;
       bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
-      nodeCursor = primitiveQueueNodeCursor4;
+      nodeCursor = scratchNodes;
       do {
         remainingOrBucketCount = *bucketWordCursor;
         *bucketWordCursor = (uint32_t)nodeCursor;
-        bucketWordCursor = bucketWordCursor + -1;
+        bucketWordCursor--;
         nodeCursor = nodeCursor + remainingOrBucketCount;
-        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        bucketCountdownOrPacket--;
         remainingOrBucketCount = remainingNodeCount;
-        readNode = primitiveQueueNodeCursor2;
-      } while (bucketLoopOrVertexBase != 0);
+        readNode = primaryNodes;
+      } while (bucketCountdownOrPacket != 0);
       do {
         nodeSortKey = readNode->sortKey;
-        packetOrLinkNode = readNode->packet;
+        packetOrNode = readNode->packet;
         bucketIndexOrOffset = nodeSortKey & 0xff;
         bucketWriteCursor = (uint32_t *)g_PrimitiveRadixBucketWords[bucketIndexOrOffset];
         g_PrimitiveRadixBucketWords[bucketIndexOrOffset] = g_PrimitiveRadixBucketWords[bucketIndexOrOffset] + 0x10;
         *bucketWriteCursor = nodeSortKey;
-        bucketWriteCursor[1] = (uint32_t)packetOrLinkNode;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
-        readNode = readNode + 1;
+        bucketWriteCursor[1] = (uint32_t)packetOrNode;
+        remainingOrBucketCount--;
+        readNode++;
       } while (remainingOrBucketCount != 0);
+      /* pass 2: key bits 8..15 (shifted straight to a byte offset into the bucket words), back to primaryNodes */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor4, bucketLoopOrVertexBase != 0;
-          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = scratchNodes, bucketCountdownOrPacket != 0;
+          bucketCountdownOrPacket--) {
         *bucketWordCursor = 0;
-        bucketWordCursor = bucketWordCursor + 1;
+        bucketWordCursor++;
       }
       do {
-        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff00) >> 6));
-        *bucketWordPtr = *bucketWordPtr + 1;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
-        nodeCursor = nodeCursor + 1;
+        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff00) >> 6));
+        *bucketSlot = *bucketSlot + 1;
+        remainingOrBucketCount--;
+        nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketLoopOrVertexBase = 0x100;
+      bucketCountdownOrPacket = 0x100;
       bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
-      nodeCursor = primitiveQueueNodeCursor2;
+      nodeCursor = primaryNodes;
       do {
         remainingOrBucketCount = *bucketWordCursor;
         *bucketWordCursor = (uint32_t)nodeCursor;
-        bucketWordCursor = bucketWordCursor + -1;
+        bucketWordCursor--;
         nodeCursor = nodeCursor + remainingOrBucketCount;
-        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        bucketCountdownOrPacket--;
         remainingOrBucketCount = remainingNodeCount;
-        readNode = primitiveQueueNodeCursor4;
-      } while (bucketLoopOrVertexBase != 0);
+        readNode = scratchNodes;
+      } while (bucketCountdownOrPacket != 0);
       do {
         nodeSortKey = readNode->sortKey;
-        packetOrLinkNode = readNode->packet;
+        packetOrNode = readNode->packet;
         bucketIndexOrOffset = (nodeSortKey & 0xff00) >> 6;
-        sortWordCursor1 = *(uint32_t **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        *bucketWordPtr = *bucketWordPtr + 0x10;
-        *sortWordCursor1 = nodeSortKey;
-        sortWordCursor1[1] = (uint32_t)packetOrLinkNode;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
-        readNode = readNode + 1;
+        pass2WriteCursor = *(uint32_t **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        *bucketSlot = *bucketSlot + 0x10;
+        *pass2WriteCursor = nodeSortKey;
+        pass2WriteCursor[1] = (uint32_t)packetOrNode;
+        remainingOrBucketCount--;
+        readNode++;
       } while (remainingOrBucketCount != 0);
+      /* pass 3: key bits 16..23, primaryNodes -> radixScratchPool */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor2, bucketLoopOrVertexBase != 0;
-          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primaryNodes, bucketCountdownOrPacket != 0;
+          bucketCountdownOrPacket--) {
         *bucketWordCursor = 0;
-        bucketWordCursor = bucketWordCursor + 1;
+        bucketWordCursor++;
       }
       do {
-        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff0000) >> 0xe));
-        *bucketWordPtr = *bucketWordPtr + 1;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
-        nodeCursor = nodeCursor + 1;
+        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff0000) >> 14));
+        *bucketSlot = *bucketSlot + 1;
+        remainingOrBucketCount--;
+        nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketLoopOrVertexBase = 0x100;
+      bucketCountdownOrPacket = 0x100;
       bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
-      primitiveQueueNodeCursor1 = primitiveQueueNodeCursor4;
+      pass3BucketStart = scratchNodes;
       do {
         remainingOrBucketCount = *bucketWordCursor;
-        *bucketWordCursor = (uint32_t)primitiveQueueNodeCursor1;
-        bucketWordCursor = bucketWordCursor + -1;
-        primitiveQueueNodeCursor1 = primitiveQueueNodeCursor1 + remainingOrBucketCount;
-        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        *bucketWordCursor = (uint32_t)pass3BucketStart;
+        bucketWordCursor--;
+        pass3BucketStart = pass3BucketStart + remainingOrBucketCount;
+        bucketCountdownOrPacket--;
         remainingOrBucketCount = remainingNodeCount;
-        primitiveQueueNodeCursor3 = primitiveQueueNodeCursor2;
-      } while (bucketLoopOrVertexBase != 0);
+        pass3ReadNode = primaryNodes;
+      } while (bucketCountdownOrPacket != 0);
       do {
-        nodeSortKey = primitiveQueueNodeCursor3->sortKey;
-        packetOrLinkNode = primitiveQueueNodeCursor3->packet;
-        primitiveQueueNodeCursor3 = primitiveQueueNodeCursor3 + 1;
-        bucketIndexOrOffset = (nodeSortKey & 0xff0000) >> 0xe;
+        nodeSortKey = pass3ReadNode->sortKey;
+        packetOrNode = pass3ReadNode->packet;
+        pass3ReadNode++;
+        bucketIndexOrOffset = (nodeSortKey & 0xff0000) >> 14;
         bucketWriteCursor = *(uint32_t **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        *bucketWordPtr = *bucketWordPtr + 0x10;
+        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        *bucketSlot = *bucketSlot + 0x10;
         *bucketWriteCursor = nodeSortKey;
-        bucketWriteCursor[1] = (uint32_t)packetOrLinkNode;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
+        bucketWriteCursor[1] = (uint32_t)packetOrNode;
+        remainingOrBucketCount--;
       } while (remainingOrBucketCount != 0);
+      /* pass 4: key bits 24..31, back to primaryNodes */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketLoopOrVertexBase = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primitiveQueueNodeCursor4, bucketLoopOrVertexBase != 0;
-          bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1) {
+      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = scratchNodes, bucketCountdownOrPacket != 0;
+          bucketCountdownOrPacket--) {
         *bucketWordCursor = 0;
-        bucketWordCursor = bucketWordCursor + 1;
+        bucketWordCursor++;
       }
       do {
-        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff000000) >> 0x16)
-                        );
-        *bucketWordPtr = *bucketWordPtr + 1;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
-        nodeCursor = nodeCursor + 1;
+        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff000000) >> 22));
+        *bucketSlot = *bucketSlot + 1;
+        remainingOrBucketCount--;
+        nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketLoopOrVertexBase = 0x100;
-      sortWordCursor2 = g_PrimitiveRadixBucketWords + 0xff;
+      bucketCountdownOrPacket = 0x100;
+      pass4BucketCursor = g_PrimitiveRadixBucketWords + 0xff;
       do {
-        remainingOrBucketCount = *sortWordCursor2;
-        *sortWordCursor2 = (uint32_t)primitiveQueueNodeCursor2;
-        sortWordCursor2 = sortWordCursor2 + -1;
-        primitiveQueueNodeCursor2 = primitiveQueueNodeCursor2 + remainingOrBucketCount;
-        bucketLoopOrVertexBase = bucketLoopOrVertexBase + -1;
+        remainingOrBucketCount = *pass4BucketCursor;
+        *pass4BucketCursor = (uint32_t)primaryNodes;
+        pass4BucketCursor--;
+        primaryNodes = primaryNodes + remainingOrBucketCount;
+        bucketCountdownOrPacket--;
         remainingOrBucketCount = remainingNodeCount;
-      } while (bucketLoopOrVertexBase != 0);
+      } while (bucketCountdownOrPacket != 0);
       do {
-        nodeSortKey = primitiveQueueNodeCursor4->sortKey;
-        packetOrLinkNode = primitiveQueueNodeCursor4->packet;
-        primitiveQueueNodeCursor4 = primitiveQueueNodeCursor4 + 1;
-        bucketIndexOrOffset = (nodeSortKey & 0xff000000) >> 0x16;
+        nodeSortKey = scratchNodes->sortKey;
+        packetOrNode = scratchNodes->packet;
+        scratchNodes++;
+        bucketIndexOrOffset = (nodeSortKey & 0xff000000) >> 22;
         bucketWriteCursor = *(uint32_t **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketWordPtr = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        *bucketWordPtr = *bucketWordPtr + 0x10;
+        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        *bucketSlot = *bucketSlot + 0x10;
         *bucketWriteCursor = nodeSortKey;
-        bucketWriteCursor[1] = (uint32_t)packetOrLinkNode;
-        remainingOrBucketCount = remainingOrBucketCount - 1;
+        bucketWriteCursor[1] = (uint32_t)packetOrNode;
+        remainingOrBucketCount--;
       } while (remainingOrBucketCount != 0);
     }
-    packetOrLinkNode = (GraphicsPrimitivePacket *)queue->primaryNodes;
-    queue->traversalCursor = (GraphicsPrimitiveQueueNode *)packetOrLinkNode;
-    primitivePacketCursor3 = (GraphicsPrimitivePacket *)0xffffffff;
-    previousLinkNode = (GraphicsPrimitivePacket *)0xffffffff;
-    primitivePacketCursor4 = (GraphicsPrimitivePacket *)(queue + 1);
-    nextLinkNode = (GraphicsPrimitivePacket *)(queue + 1);
+    /* Link the sorted primaryNodes in order. Ghidra types the nodes as packets here: vertices[0].backendCoord0
+       is node->next (+0x08), backendCoord1 node->previous (+0x0C), vertices[0].screenY node->packet (+0x04),
+       and &vertices[0].depth (+0x10) the following node; (queue + 1) is primaryNodes + 1. */
+    packetOrNode = (GraphicsPrimitivePacket *)queue->primaryNodes;
+    queue->traversalCursor = (GraphicsPrimitiveQueueNode *)packetOrNode;
+    previousNodeMmx = (GraphicsPrimitivePacket *)0xffffffff;
+    previousNode = (GraphicsPrimitivePacket *)0xffffffff;
+    nextNodeMmx = (GraphicsPrimitivePacket *)(queue + 1);
+    nextNode = (GraphicsPrimitivePacket *)(queue + 1);
     if (halveVertexRgb == GRAPHICS_STATE_DISABLED) {
       do {
-        primitivePacketCursor2 = packetOrLinkNode;
-        primitivePacketCursor2->vertices[0].backendCoord1 =
-             (GraphicsPrimitiveBackendCoordinate)previousLinkNode;
-        primitivePacketCursor2->vertices[0].backendCoord0 =
-             (GraphicsPrimitiveBackendCoordinate)nextLinkNode;
-        remainingNodeCount = remainingNodeCount - 1;
-        previousLinkNode = primitivePacketCursor2;
-        packetOrLinkNode = nextLinkNode;
-        nextLinkNode = (GraphicsPrimitivePacket *)&nextLinkNode->vertices[0].depth;
+        linkNode = packetOrNode;
+        linkNode->vertices[0].backendCoord1 =
+             (GraphicsPrimitiveBackendCoordinate)previousNode;
+        linkNode->vertices[0].backendCoord0 =
+             (GraphicsPrimitiveBackendCoordinate)nextNode;
+        remainingNodeCount--;
+        previousNode = linkNode;
+        packetOrNode = nextNode;
+        nextNode = (GraphicsPrimitivePacket *)&nextNode->vertices[0].depth;
       } while (remainingNodeCount != 0);
     }
     else {
       do {
-        primitivePacketCursor2 = packetOrLinkNode;
-        primitivePacketCursor2->vertices[0].backendCoord1 =
-             (GraphicsPrimitiveBackendCoordinate)primitivePacketCursor3;
-        primitivePacketCursor2->vertices[0].backendCoord0 =
-             (GraphicsPrimitiveBackendCoordinate)primitivePacketCursor4;
-        bucketLoopOrVertexBase = primitivePacketCursor2->vertices[0].screenY;
-        mm0PackedValue0 =
-             paddusb((*(uint32_t *)(bucketLoopOrVertexBase + 0x1c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint32_t *)(bucketLoopOrVertexBase + 0x1c) & g_VertexColorAlphaPreserveMaskMMX);
-        mm1PackedValue0 =
-             paddusb((*(uint32_t *)(bucketLoopOrVertexBase + 0x3c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint32_t *)(bucketLoopOrVertexBase + 0x3c) & g_VertexColorAlphaPreserveMaskMMX);
-        mm2PackedValue0 =
-             paddusb((*(uint32_t *)(bucketLoopOrVertexBase + 0x5c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint32_t *)(bucketLoopOrVertexBase + 0x5c) & g_VertexColorAlphaPreserveMaskMMX);
-        *(int *)(bucketLoopOrVertexBase + 0x1c) = (int)mm0PackedValue0;
-        *(int *)(bucketLoopOrVertexBase + 0x3c) = (int)mm1PackedValue0;
-        *(int *)(bucketLoopOrVertexBase + 0x5c) = (int)mm2PackedValue0;
-        remainingNodeCount = remainingNodeCount - 1;
-        primitivePacketCursor3 = primitivePacketCursor2;
-        packetOrLinkNode = primitivePacketCursor4;
-        primitivePacketCursor4 =
-             (GraphicsPrimitivePacket *)&primitivePacketCursor4->vertices[0].depth;
+        linkNode = packetOrNode;
+        linkNode->vertices[0].backendCoord1 =
+             (GraphicsPrimitiveBackendCoordinate)previousNodeMmx;
+        linkNode->vertices[0].backendCoord0 =
+             (GraphicsPrimitiveBackendCoordinate)nextNodeMmx;
+        /* the node's packet; +0x1C/+0x3C/+0x5C are the three vertices' diffuseColor */
+        bucketCountdownOrPacket = linkNode->vertices[0].screenY;
+        vertex0HalvedColor =
+             paddusb((*(uint32_t *)(bucketCountdownOrPacket + 0x1c) & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     *(uint32_t *)(bucketCountdownOrPacket + 0x1c) & g_VertexColorAlphaPreserveMaskMMX);
+        vertex1HalvedColor =
+             paddusb((*(uint32_t *)(bucketCountdownOrPacket + 0x3c) & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     *(uint32_t *)(bucketCountdownOrPacket + 0x3c) & g_VertexColorAlphaPreserveMaskMMX);
+        vertex2HalvedColor =
+             paddusb((*(uint32_t *)(bucketCountdownOrPacket + 0x5c) & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     *(uint32_t *)(bucketCountdownOrPacket + 0x5c) & g_VertexColorAlphaPreserveMaskMMX);
+        *(int *)(bucketCountdownOrPacket + 0x1c) = (int)vertex0HalvedColor;
+        *(int *)(bucketCountdownOrPacket + 0x3c) = (int)vertex1HalvedColor;
+        *(int *)(bucketCountdownOrPacket + 0x5c) = (int)vertex2HalvedColor;
+        remainingNodeCount--;
+        previousNodeMmx = linkNode;
+        packetOrNode = nextNodeMmx;
+        nextNodeMmx =
+             (GraphicsPrimitivePacket *)&nextNodeMmx->vertices[0].depth;
       } while (remainingNodeCount != 0);
     }
-    primitivePacketCursor2->vertices[0].backendCoord0 = -1;
+    linkNode->vertices[0].backendCoord0 = -1; /* last node: next = GRAPHICS_PRIMITIVE_QUEUE_END_NODE */
   }
   return;
 }
@@ -291,9 +304,10 @@ StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCap
 
 
 /* Address: 0x004D0A40.
-   Ownership: graphics/render/primitives.
-   Purpose: Initializes the global variable-length queue: primaryNodes follow the 0x20-byte header,
-   radixScratchPool follows primaryNodes, and packetPool follows the scratch nodes.
+   Empties the global primitive queue (g_PrimitiveQueueStorage) for a new frame and lays out its pool:
+   primaryNodes right after the 0x20-byte header, then radixScratchPool, then the packets, each part sized for
+   the capacity given to GraphicsPrimitiveQueue_AllocateGlobalPool. Never fails (CF clear); returns the queue.
+   Called by the frontend 3D views (ui/frontend/runtime.c) and the offscreen model renderer.
 */
 PrimitiveQueueResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_ResetGlobal(void)
@@ -301,11 +315,11 @@ GraphicsPrimitiveQueue_ResetGlobal(void)
 {
   GraphicsPrimitiveQueue *globalQueue;
   PrimitiveQueueResult resetResult;
-  GraphicsPrimitiveQueue *queueStorage;
   uint32_t poolCapacity;
   
   poolCapacity = g_PrimitiveQueuePoolCapacity;
   globalQueue = g_PrimitiveQueueStorage;
+  /* capacity is stored through the global again, as in the original */
   g_PrimitiveQueueStorage->capacity = g_PrimitiveQueuePoolCapacity;
   globalQueue->count = 0;
   globalQueue->radixScratchPool = globalQueue->primaryNodes + poolCapacity;
@@ -318,8 +332,7 @@ GraphicsPrimitiveQueue_ResetGlobal(void)
 
 
 /* Address: 0x004D0A70.
-   Ownership: graphics/render/primitives.
-   Purpose: Frees a primitive queue allocation.
+   Frees a primitive queue allocation. No caller or table reference to this function is known.
 */
 void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue)
 
@@ -330,8 +343,8 @@ void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *
 
 
 /* Address: 0x004D0A90.
-   Ownership: graphics/render/primitives.
-   Purpose: Returns queue->count.
+   Returns the number of packets queued in queue. Used by FrontendModelPointerContext_RenderWorldViewQueuesClipped
+   (ui/frontend/runtime.c) after each drawn pass.
 */
 uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
 
@@ -396,10 +409,11 @@ GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
 
 
 /* Address: 0x004D0B20.
-   Ownership: graphics/render/primitives.
-   Purpose: Allocates the next packet and stores its pointer in primaryNodes[count].packet. ABI: CF clear means
-   success. CF set means failure or end of iteration. No individual bit meaning is promoted beyond the established
-   mask role. Typed parameters: p0 renderFlags→GraphicsRenderFlagMask_V338.
+   Appends a triangle packet for the model renderer: copies screen position, backend coordinates and depth of
+   the three projected vertices and the texture coordinates from triangle, and sets renderFlags. The colours,
+   material and texture are filled in afterwards by GraphicsPrimitiveQueue_SetVertexColors/SetMaterial. Returns
+   true (CF set) when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
+   ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model.c).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GraphicsPrimitiveQueue_AppendTriangle
@@ -408,52 +422,52 @@ GraphicsPrimitiveQueue_AppendTriangle
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitiveScreenCoordinate vertexScreenY;
-  GraphicsPrimitiveBackendCoordinate vertexBackendCoord1;
+  GraphicsPrimitiveScreenCoordinate vertex1Or2ScreenY;
+  GraphicsPrimitiveBackendCoordinate vertex1Or2BackendCoord1;
   GraphicsPrimitiveTextureCoordinateFixed vertex1TextureV;
   GraphicsPrimitiveTextureCoordinateFixed vertex2TextureV;
   GraphicsPrimitivePacket *destinationPacket;
   uint32_t destinationPacketIndex;
-  GraphicsPrimitiveScreenCoordinate copiedScreenY;
-  GraphicsPrimitiveBackendCoordinate copiedBackendCoordinate1;
+  GraphicsPrimitiveScreenCoordinate vertex0ScreenY;
+  GraphicsPrimitiveBackendCoordinate vertex0BackendCoord1;
   GraphicsPrimitiveDepthFixed vertex1Depth;
   GraphicsPrimitiveDepthFixed vertex2Depth;
-  GraphicsPrimitiveTextureCoordinateFixed vertex1TextureCoordinate;
-  GraphicsPrimitiveTextureCoordinateFixed vertex2TextureCoordinate;
+  GraphicsPrimitiveTextureCoordinateFixed vertex1TextureU;
+  GraphicsPrimitiveTextureCoordinateFixed vertex2TextureU;
   
   destinationPacketIndex = queue->count;
   if (destinationPacketIndex + 1 < queue->capacity) {
     queue->count = destinationPacketIndex + 1;
     destinationPacket = queue->packetPool + destinationPacketIndex;
     queue->primaryNodes[destinationPacketIndex].packet = destinationPacket;
-    copiedScreenY = vertex0->screenY;
+    vertex0ScreenY = vertex0->screenY;
     destinationPacket->vertices[0].screenX = vertex0->screenX;
-    destinationPacket->vertices[0].screenY = copiedScreenY;
-    vertexScreenY = vertex1->screenY;
+    destinationPacket->vertices[0].screenY = vertex0ScreenY;
+    vertex1Or2ScreenY = vertex1->screenY;
     destinationPacket->vertices[1].screenX = vertex1->screenX;
-    destinationPacket->vertices[1].screenY = vertexScreenY;
-    vertexScreenY = vertex2->screenY;
+    destinationPacket->vertices[1].screenY = vertex1Or2ScreenY;
+    vertex1Or2ScreenY = vertex2->screenY;
     destinationPacket->vertices[2].screenX = vertex2->screenX;
-    destinationPacket->vertices[2].screenY = vertexScreenY;
-    copiedBackendCoordinate1 = vertex0->backendCoord1;
+    destinationPacket->vertices[2].screenY = vertex1Or2ScreenY;
+    vertex0BackendCoord1 = vertex0->backendCoord1;
     destinationPacket->vertices[0].backendCoord0 = vertex0->backendCoord0;
-    destinationPacket->vertices[0].backendCoord1 = copiedBackendCoordinate1;
-    vertexBackendCoord1 = vertex1->backendCoord1;
+    destinationPacket->vertices[0].backendCoord1 = vertex0BackendCoord1;
+    vertex1Or2BackendCoord1 = vertex1->backendCoord1;
     destinationPacket->vertices[1].backendCoord0 = vertex1->backendCoord0;
-    destinationPacket->vertices[1].backendCoord1 = vertexBackendCoord1;
-    vertexBackendCoord1 = vertex2->backendCoord1;
+    destinationPacket->vertices[1].backendCoord1 = vertex1Or2BackendCoord1;
+    vertex1Or2BackendCoord1 = vertex2->backendCoord1;
     destinationPacket->vertices[2].backendCoord0 = vertex2->backendCoord0;
-    destinationPacket->vertices[2].backendCoord1 = vertexBackendCoord1;
+    destinationPacket->vertices[2].backendCoord1 = vertex1Or2BackendCoord1;
     vertex1Depth = vertex1->depth;
     vertex2Depth = vertex2->depth;
     destinationPacket->vertices[0].depth = vertex0->depth;
     destinationPacket->vertices[1].depth = vertex1Depth;
     destinationPacket->vertices[2].depth = vertex2Depth;
-    vertex1TextureCoordinate = triangle->textureU1;
-    vertex2TextureCoordinate = triangle->textureU2;
+    vertex1TextureU = triangle->textureU1;
+    vertex2TextureU = triangle->textureU2;
     destinationPacket->vertices[0].textureU = triangle->textureU0;
-    destinationPacket->vertices[1].textureU = vertex1TextureCoordinate;
-    destinationPacket->vertices[2].textureU = vertex2TextureCoordinate;
+    destinationPacket->vertices[1].textureU = vertex1TextureU;
+    destinationPacket->vertices[2].textureU = vertex2TextureU;
     vertex1TextureV = triangle->textureV1;
     vertex2TextureV = triangle->textureV2;
     destinationPacket->vertices[0].textureV = triangle->textureV0;
@@ -467,9 +481,9 @@ GraphicsPrimitiveQueue_AppendTriangle
 
 
 /* Address: 0x004D0C80.
-   Ownership: graphics/render/primitives.
-   Purpose: Writes three diffuse colors to the most recently appended packet and adjusts shading/alpha handler
-   bits.
+   Sets the three vertex colours of the packet appended last. When not all three colours are fully opaque
+   (alpha 0xFF) and the packet's blend mode is opaque (0) or 4, the blend mode becomes 6 (the XOR clears the
+   old mode). Called by the model renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPrimitiveQueue_SetVertexColors
@@ -486,9 +500,9 @@ GraphicsPrimitiveQueue_SetVertexColors
   packetPool[queuedPacketCount - 1].vertices[0].diffuseColor = vertex0Color;
   packetPool[queuedPacketCount - 1].vertices[1].diffuseColor = vertex1Color;
   packetPool[queuedPacketCount - 1].vertices[2].diffuseColor = vertex2Color;
-  existingBlendModeFlags = packetPool[queuedPacketCount - 1].renderFlags & 0x7000;
+  existingBlendModeFlags = packetPool[queuedPacketCount - 1].renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK;
   if (((vertex0Color & vertex1Color & vertex2Color & 0xff000000) != 0xff000000) &&
-     ((existingBlendModeFlags == 0x4000 || (existingBlendModeFlags == 0)))) {
+     ((existingBlendModeFlags == 0x4000 || (existingBlendModeFlags == GRAPHICS_PRIMITIVE_BLEND_OPAQUE)))) {
     packetPool[queuedPacketCount - 1].renderFlags =
          packetPool[queuedPacketCount - 1].renderFlags ^ existingBlendModeFlags ^ 0x6000;
   }
@@ -497,9 +511,9 @@ GraphicsPrimitiveQueue_SetVertexColors
 
 
 /* Address: 0x004D0D00.
-   Ownership: graphics/render/primitives.
-   Purpose: Writes modulationColor and an optional GraphicsTextureSetEntry pointer to the most recently appended
-   packet.
+   Sets the modulation colour of the packet appended last and, when textureEntry is not NULL, its texture
+   (marking the packet GRAPHICS_PRIMITIVE_FLAG_TEXTURED); otherwise the texture is cleared. Called by the model
+   renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPrimitiveQueue_SetMaterial
@@ -513,10 +527,10 @@ GraphicsPrimitiveQueue_SetMaterial
   queuedPacketCount = queue->count;
   packetPool = queue->packetPool;
   packetPool[queuedPacketCount - 1].modulationColor = modulationColor;
-  packetPool[queuedPacketCount - 1].textureEntry = (GraphicsTextureSetEntry *)0x0;
-  if (textureEntry != (GraphicsTextureSetEntry *)0x0) {
+  packetPool[queuedPacketCount - 1].textureEntry = NULL;
+  if (textureEntry != NULL) {
     packetPool[queuedPacketCount - 1].renderFlags =
-         packetPool[queuedPacketCount - 1].renderFlags | 0x10000;
+         packetPool[queuedPacketCount - 1].renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
     packetPool[queuedPacketCount - 1].textureEntry = textureEntry;
   }
   return;
@@ -524,8 +538,8 @@ GraphicsPrimitiveQueue_SetMaterial
 
 
 /* Address: 0x004D0D50.
-   Ownership: graphics/render/primitives.
-   Purpose: Offsets all three texture-coordinate pairs in the most recently appended packet.
+   Adds (deltaU, deltaV) to the texture coordinates of all three vertices of the packet appended last, for
+   scrolling textures. Called by ModelRender_SubmitTriangle (graphics/render/model.c).
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPrimitiveQueue_OffsetTextureCoordinates
@@ -534,17 +548,17 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinateSlot;
-  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinateCursor;
+  GraphicsPrimitiveTextureCoordinateFixed *vertex0TextureUSlot;
   uint32_t queuedPacketCount;
   GraphicsPrimitivePacket *packetPool;
-  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinateField;
+  GraphicsPrimitiveTextureCoordinateFixed *vertex1TextureUSlot;
   
   queuedPacketCount = queue->count;
   packetPool = queue->packetPool;
-  textureCoordinateCursor = &packetPool[queuedPacketCount - 1].vertices[0].textureU;
-  *textureCoordinateCursor = *textureCoordinateCursor + deltaU;
-  textureCoordinateField = &packetPool[queuedPacketCount - 1].vertices[1].textureU;
-  *textureCoordinateField = *textureCoordinateField + deltaU;
+  vertex0TextureUSlot = &packetPool[queuedPacketCount - 1].vertices[0].textureU;
+  *vertex0TextureUSlot = *vertex0TextureUSlot + deltaU;
+  vertex1TextureUSlot = &packetPool[queuedPacketCount - 1].vertices[1].textureU;
+  *vertex1TextureUSlot = *vertex1TextureUSlot + deltaU;
   textureCoordinateSlot = &packetPool[queuedPacketCount - 1].vertices[2].textureU;
   *textureCoordinateSlot = *textureCoordinateSlot + deltaU;
   textureCoordinateSlot = &packetPool[queuedPacketCount - 1].vertices[0].textureV;
@@ -558,12 +572,17 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
 
 
 /* Address: 0x004D0DA0.
-   Ownership: graphics/render/primitives.
-   Purpose: Handles graphics primitive queue append terrain textured triangle.
+   Terrain counterpart of GraphicsPrimitiveQueue_AppendTexturedTriangleRegs for the second projected surface:
+   appends a packet from the terrain vertices' second screen/depth block (+0x2C..+0x3C), the per-vertex colours
+   (masked with g_UiCommandModeGColorVariantLimit for vertices whose +0x4C is negative) and the texture
+   coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2, texture index, palette entry). Blend mode 6; textured
+   with g_TerrainPrimaryTextureSet when the index is in range, modulated by g_TerrainPrimaryPalette. Returns the
+   packet, CF set when the queue is full. Called by TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
+   (world/terrain/projection.c).
 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
-          (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
@@ -590,6 +609,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
     primitiveQueue->count = packetIndexOrCoordinate + 1;
     newPacket = primitiveQueue->packetPool + packetIndexOrCoordinate;
     primitiveQueue->primaryNodes[packetIndexOrCoordinate].packet = newPacket;
+    /* the vertices are terrain vertices; the GraphicsProjectedVertexSource field names do not apply */
     sourceScreenX = vertex0Projected->screenX;
     if ((int)vertex0Projected[1].texturedPacketAttributes[2] < 0) {
       vertex0DiffuseColor = vertex0DiffuseColor & g_UiCommandModeGColorVariantLimit;
@@ -626,28 +646,28 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
     newPacket->vertices[2].backendCoord0 = vertex2Projected->screenY;
     newPacket->vertices[2].backendCoord1 = sourceBackendCoord1;
     newPacket->vertices[2].depth = sourceDepth;
-    packetIndexOrCoordinate = textureAndMaterialIndices[2];
-    textureCoordinate = textureAndMaterialIndices[4];
-    newPacket->vertices[0].textureU = *textureAndMaterialIndices;
+    packetIndexOrCoordinate = terrainPacketRecord[2];
+    textureCoordinate = terrainPacketRecord[4];
+    newPacket->vertices[0].textureU = *terrainPacketRecord;
     newPacket->vertices[1].textureU = packetIndexOrCoordinate;
     newPacket->vertices[2].textureU = textureCoordinate;
-    packetIndexOrCoordinate = textureAndMaterialIndices[3];
-    textureCoordinate = textureAndMaterialIndices[5];
-    newPacket->vertices[0].textureV = textureAndMaterialIndices[1];
+    packetIndexOrCoordinate = terrainPacketRecord[3];
+    textureCoordinate = terrainPacketRecord[5];
+    newPacket->vertices[0].textureV = terrainPacketRecord[1];
     newPacket->vertices[1].textureV = packetIndexOrCoordinate;
     newPacket->vertices[2].textureV = textureCoordinate;
     paletteModulationColor = 0;
-    if (g_TerrainPrimaryPalette != (GraphicsPaletteAsset *)0x0) {
-      paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[textureAndMaterialIndices[7]].
+    if (g_TerrainPrimaryPalette != NULL) {
+      paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[terrainPacketRecord[7]].
               alternateModulationColorArgb;
     }
     newPacket->renderFlags = 0x6000;
     newPacket->modulationColor = paletteModulationColor;
     terrainTextureSet = g_TerrainPrimaryTextureSet;
-    textureEntryIndex = textureAndMaterialIndices[6];
-    newPacket->textureEntry = (GraphicsTextureSetEntry *)0x0;
-    if ((terrainTextureSet != (GraphicsTextureSet *)0x0) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
-      newPacket->renderFlags = newPacket->renderFlags | 0x10000;
+    textureEntryIndex = terrainPacketRecord[6];
+    newPacket->textureEntry = NULL;
+    if ((terrainTextureSet != NULL) && (textureEntryIndex < terrainTextureSet->subresourceCount)) {
+      newPacket->renderFlags = newPacket->renderFlags | GRAPHICS_PRIMITIVE_FLAG_TEXTURED;
       newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
     }
     successResult.noPacket = false;
@@ -656,24 +676,22 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
   }
   failureResult.noPacket = true;
   /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
-  failureResult.packet = (GraphicsPrimitivePacket *)0;
+  failureResult.packet = NULL;
   return failureResult;
 }
 
 
 /* Address: 0x004D0F20.
-   Ownership: graphics/render/primitives.
-   Purpose: Reserves one 0x80-byte primitive packet, copies three projected vertices and texture coordinates,
-   resolves the texture and palette references, and returns the packet with carry clear or reports a full queue
-   through carry. Typed parameters: p3 vertex2DiffuseColor→PackedArgb32, p4 vertex1DiffuseColor→PackedArgb32, p5
-   vertex0DiffuseColor→PackedArgb32. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Typed parameters: p6 vertex2Projected→GraphicsProjectedVertexSource *, p7
-   vertex1Projected→GraphicsProjectedVertexSource *, p8 vertex0Projected→GraphicsProjectedVertexSource *.
+   Appends a textured terrain triangle: copies each terrain vertex's screen position, backend coordinates and
+   depth (+0x0C..+0x1C) and its colour, the texture coordinates of terrainPacketRecord (u0,v0,u1,v1,u2,v2,
+   texture-set index, palette entry), the modulation colour from g_TerrainSecondaryPalette, the first texture
+   of g_TerrainMaterialTextureSets[index] and the render flags g_UiCommandModeGColorVariantFlags. Returns the
+   packet, CF set when the queue is full. Called by TerrainProjectedQuad_QueueAsTwoTrianglesRegs and
+   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-          (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
@@ -686,7 +704,7 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
   uint32_t packetAttribute;
   GraphicsTextureSet *materialTextureSet;
   PackedArgb32 paletteModulationColor;
-  uint32_t *vertexFieldWriteCursor;
+  uint32_t *packetDwords;
   PrimitivePacketResult successResult;
   PrimitivePacketResult failureResult;
   
@@ -694,61 +712,63 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
   packetIndexOrAttribute = primitiveQueue->count;
   if (packetIndexOrAttribute + 1 < primitiveQueue->capacity) {
     primitiveQueue->count = packetIndexOrAttribute + 1;
-    vertexFieldWriteCursor = (uint32_t *)(primitiveQueue->packetPool + packetIndexOrAttribute);
-    primitiveQueue->primaryNodes[packetIndexOrAttribute].packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
+    packetDwords = (uint32_t *)(primitiveQueue->packetPool + packetIndexOrAttribute);
+    primitiveQueue->primaryNodes[packetIndexOrAttribute].packet = (GraphicsPrimitivePacket *)packetDwords;
+    /* packet dwords: 0..7 vertex 0 (screenX, screenY, backendCoord0, backendCoord1, depth, textureU, textureV,
+       diffuseColor), 8..15 vertex 1, 16..23 vertex 2, 24 modulationColor, 25 textureEntry, 26 renderFlags */
     packetIndexOrAttribute = vertex0Projected->texturedPacketAttributes[1];
-    *vertexFieldWriteCursor = vertex0Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[1] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[7] = vertex0DiffuseColor;
+    *packetDwords = vertex0Projected->texturedPacketAttributes[0];
+    packetDwords[1] = packetIndexOrAttribute;
+    packetDwords[7] = vertex0DiffuseColor;
     packetIndexOrAttribute = vertex0Projected->texturedPacketAttributes[3];
     packetAttribute = vertex0Projected->texturedPacketAttributes[4];
-    vertexFieldWriteCursor[2] = vertex0Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[3] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[4] = packetAttribute;
+    packetDwords[2] = vertex0Projected->texturedPacketAttributes[2];
+    packetDwords[3] = packetIndexOrAttribute;
+    packetDwords[4] = packetAttribute;
     packetIndexOrAttribute = vertex1Projected->texturedPacketAttributes[1];
-    vertexFieldWriteCursor[8] = vertex1Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[9] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[0xf] = vertex1DiffuseColor;
+    packetDwords[8] = vertex1Projected->texturedPacketAttributes[0];
+    packetDwords[9] = packetIndexOrAttribute;
+    packetDwords[0xf] = vertex1DiffuseColor;
     packetIndexOrAttribute = vertex1Projected->texturedPacketAttributes[3];
     packetAttribute = vertex1Projected->texturedPacketAttributes[4];
-    vertexFieldWriteCursor[10] = vertex1Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[0xb] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[0xc] = packetAttribute;
+    packetDwords[10] = vertex1Projected->texturedPacketAttributes[2];
+    packetDwords[0xb] = packetIndexOrAttribute;
+    packetDwords[0xc] = packetAttribute;
     packetIndexOrAttribute = vertex2Projected->texturedPacketAttributes[1];
-    vertexFieldWriteCursor[0x10] = vertex2Projected->texturedPacketAttributes[0];
-    vertexFieldWriteCursor[0x11] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[0x17] = vertex2DiffuseColor;
+    packetDwords[0x10] = vertex2Projected->texturedPacketAttributes[0];
+    packetDwords[0x11] = packetIndexOrAttribute;
+    packetDwords[0x17] = vertex2DiffuseColor;
     packetIndexOrAttribute = vertex2Projected->texturedPacketAttributes[3];
     packetAttribute = vertex2Projected->texturedPacketAttributes[4];
-    vertexFieldWriteCursor[0x12] = vertex2Projected->texturedPacketAttributes[2];
-    vertexFieldWriteCursor[0x13] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[0x14] = packetAttribute;
-    packetIndexOrAttribute = textureAndMaterialIndices[2];
-    packetAttribute = textureAndMaterialIndices[4];
-    vertexFieldWriteCursor[5] = *textureAndMaterialIndices;
-    vertexFieldWriteCursor[0xd] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[0x15] = packetAttribute;
-    packetIndexOrAttribute = textureAndMaterialIndices[3];
-    packetAttribute = textureAndMaterialIndices[5];
-    vertexFieldWriteCursor[6] = textureAndMaterialIndices[1];
-    vertexFieldWriteCursor[0xe] = packetIndexOrAttribute;
-    vertexFieldWriteCursor[0x16] = packetAttribute;
+    packetDwords[0x12] = vertex2Projected->texturedPacketAttributes[2];
+    packetDwords[0x13] = packetIndexOrAttribute;
+    packetDwords[0x14] = packetAttribute;
+    packetIndexOrAttribute = terrainPacketRecord[2];
+    packetAttribute = terrainPacketRecord[4];
+    packetDwords[5] = *terrainPacketRecord;
+    packetDwords[0xd] = packetIndexOrAttribute;
+    packetDwords[0x15] = packetAttribute;
+    packetIndexOrAttribute = terrainPacketRecord[3];
+    packetAttribute = terrainPacketRecord[5];
+    packetDwords[6] = terrainPacketRecord[1];
+    packetDwords[0xe] = packetIndexOrAttribute;
+    packetDwords[0x16] = packetAttribute;
     paletteModulationColor = 0;
-    if (g_TerrainSecondaryPalette != (GraphicsPaletteAsset *)0x0) {
-      paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[textureAndMaterialIndices[7]].
+    if (g_TerrainSecondaryPalette != NULL) {
+      paletteModulationColor = g_TerrainSecondaryPalette->paletteEntries[terrainPacketRecord[7]].
               alternateModulationColorArgb;
     }
-    vertexFieldWriteCursor[0x18] = paletteModulationColor;
-    materialTextureSet = g_TerrainMaterialTextureSets[textureAndMaterialIndices[6]];
-    vertexFieldWriteCursor[0x1a] = g_UiCommandModeGColorVariantFlags;
-    vertexFieldWriteCursor[0x19] = (uint32_t)materialTextureSet->entries;
+    packetDwords[0x18] = paletteModulationColor;
+    materialTextureSet = g_TerrainMaterialTextureSets[terrainPacketRecord[6]];
+    packetDwords[0x1a] = g_UiCommandModeGColorVariantFlags;
+    packetDwords[0x19] = (uint32_t)materialTextureSet->entries;
     successResult.noPacket = false;
-    successResult.packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
+    successResult.packet = (GraphicsPrimitivePacket *)packetDwords;
     return successResult;
   }
   failureResult.noPacket = true;
   /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
-  failureResult.packet = (GraphicsPrimitivePacket *)0;
+  failureResult.packet = NULL;
   return failureResult;
 }
 

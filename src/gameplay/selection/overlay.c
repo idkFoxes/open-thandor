@@ -283,10 +283,10 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
 
 
 /* Address: 0x0052F0C0.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay render selected army metrics.
-   Cross-module calls: ModelProjectedBounds_AccumulateHierarchyRecursive [graphics/render/model],
-   SelectionPanel_RenderArmyRuntimeMetrics [gameplay/selection/runtime].
+   Draws the metric bars (SelectionPanel_RenderArmyRuntimeMetrics) over every selected entity whose model node
+   carries flag 4, or flag 8 without 0x10, at the screen bounds of its projected model hierarchy; entities whose
+   bounds come out empty are skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when
+   context flag 0x400 is set.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_RenderSelectedArmyMetrics
@@ -298,16 +298,16 @@ SelectionOverlay_RenderSelectedArmyMetrics
   int remainingSlots;
   GameEntityRuntime **selectionSlotCursor;
   
-  remainingSlots = 0x20;
+  remainingSlots = SELECTION_ENTRY_CAPACITY;
   selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if ((*selectionSlotCursor != (GameEntityRuntime *)0x0) &&
+    if ((*selectionSlotCursor != NULL) &&
        ((modelNode = ((*selectionSlotCursor)->common).ownership.modelNode, (modelNode->runtimeFlags & 4) != 0 ||
         (((modelNode->runtimeFlags & 0x10) == 0 && ((modelNode->runtimeFlags & 8) != 0)))))) {
-      g_ModelProjectedBoundsPixels.minX = 0x10000;
-      g_ModelProjectedBoundsPixels.minY = 0x10000;
-      g_ModelProjectedBoundsPixels.maxX = -0x10000;
-      g_ModelProjectedBoundsPixels.maxY = -0x10000;
+      g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
+      g_ModelProjectedBoundsPixels.minY = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
+      g_ModelProjectedBoundsPixels.maxX = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
+      g_ModelProjectedBoundsPixels.maxY = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
       ModelProjectedBounds_AccumulateHierarchyRecursive(&g_ModelProjectedBoundsPixels,modelNode);
       if ((g_ModelProjectedBoundsPixels.minX < g_ModelProjectedBoundsPixels.maxX) &&
          (g_ModelProjectedBoundsPixels.minY < g_ModelProjectedBoundsPixels.maxY)) {
@@ -318,18 +318,18 @@ SelectionOverlay_RenderSelectedArmyMetrics
                    (RuntimeModelFactionPrefix10 *)*selectionSlotCursor); /* EDX: the entity (lost local) */
       }
     }
-    selectionSlotCursor = selectionSlotCursor + 1;
-    remainingSlots = remainingSlots + -1;
+    selectionSlotCursor++;
+    remainingSlots--;
   } while (remainingSlots != 0);
   return;
 }
 
 
 /* Address: 0x0052F1B0.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay render army metrics for entity.
-   Cross-module calls: ModelProjectedBounds_AccumulateHierarchyRecursive [graphics/render/model],
-   SelectionPanel_RenderArmyRuntimeMetrics [gameplay/selection/runtime].
+   Draws the metric bars of one entity like SelectionOverlay_RenderSelectedArmyMetrics, but with the info-panel
+   texture and data (g_InfoPanelTextureSource/g_InfoPanelData) swapped in for the call. Called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped for its selectedOverlayEntity when that entity is in
+   the selection info.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_RenderArmyMetricsForEntity
@@ -344,13 +344,14 @@ SelectionOverlay_RenderArmyMetricsForEntity
   modelNode = (entity->common).ownership.modelNode;
   if (((modelNode->runtimeFlags & 4) != 0) ||
      (((modelNode->runtimeFlags & 0x10) == 0 && ((modelNode->runtimeFlags & 8) != 0)))) {
-    g_ModelProjectedBoundsPixels.minX = 0x10000;
-    g_ModelProjectedBoundsPixels.minY = 0x10000;
-    g_ModelProjectedBoundsPixels.maxX = -0x10000;
-    g_ModelProjectedBoundsPixels.maxY = -0x10000;
+    g_ModelProjectedBoundsPixels.minX = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
+    g_ModelProjectedBoundsPixels.minY = SELECTION_OVERLAY_EMPTY_BOUNDS_MIN;
+    g_ModelProjectedBoundsPixels.maxX = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
+    g_ModelProjectedBoundsPixels.maxY = SELECTION_OVERLAY_EMPTY_BOUNDS_MAX;
     ModelProjectedBounds_AccumulateHierarchyRecursive(&g_ModelProjectedBoundsPixels,modelNode);
     savedPanelData = g_SelectionPanelData;
     savedTextureSource = g_SelectionPanelTextureSource;
+    /* no-op write-back from the decompilation; the original saves both only inside the if below */
     g_SelectionPanelTextureSource = savedTextureSource;
     g_SelectionPanelData = savedPanelData;
     if ((g_ModelProjectedBoundsPixels.minX < g_ModelProjectedBoundsPixels.maxX) &&
@@ -371,73 +372,75 @@ SelectionOverlay_RenderArmyMetricsForEntity
 
 
 /* Address: 0x0052F2A0.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay draw bounds frame.
+   Draws a frame around the screen rectangle spanned by corners A and B (either order; nothing when it is empty in
+   either direction): four corner pieces outside the rectangle and the four edges tiled between them. Called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x80 is set (the drag-selection
+   rectangle, WORLD_RUNTIME_FLAG_DRAG_SELECTING in the in-game world view).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawBoundsFrame
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate frameCoordinate0A,
-          UiPixelCoordinate frameCoordinate1A,UiPixelCoordinate frameCoordinate0B,
-          UiPixelCoordinate frameCoordinate1B)
+          UiPixelCoordinate clipRight,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
+          UiPixelCoordinate cornerBY,UiPixelCoordinate cornerBX)
 
 {
   int edgeX;
   int edgeY;
-  UiPixelCoordinate originalCoordinate0B;
-  UiPixelCoordinate originalCoordinate1B;
+  UiPixelCoordinate originalCornerBY;
+  UiPixelCoordinate originalCornerBX;
   uint32_t cornerWidth;
   bool accessFailed;
   TextureSizeResult cornerSize;
   
-  originalCoordinate1B = frameCoordinate1B;
-  originalCoordinate0B = frameCoordinate0B;
-  if (frameCoordinate1A <= frameCoordinate1B) {
-    if (frameCoordinate1B == frameCoordinate1A) {
+  /* order the corners: A becomes bottom-right (maximum), B top-left (minimum) */
+  originalCornerBX = cornerBX;
+  originalCornerBY = cornerBY;
+  if (cornerAX <= cornerBX) {
+    if (cornerBX == cornerAX) {
       return;
     }
-    frameCoordinate1B = frameCoordinate1A;
-    frameCoordinate1A = originalCoordinate1B;
+    cornerBX = cornerAX;
+    cornerAX = originalCornerBX;
   }
-  if (frameCoordinate0A <= frameCoordinate0B) {
-    if (frameCoordinate0B == frameCoordinate0A) {
+  if (cornerAY <= cornerBY) {
+    if (cornerBY == cornerAY) {
       return;
     }
-    frameCoordinate0B = frameCoordinate0A;
-    frameCoordinate0A = originalCoordinate0B;
+    cornerBY = cornerAY;
+    cornerAY = originalCornerBY;
   }
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
-    cornerSize = g_GraphicsTextureSourceGetLogicalSize(0xa4,g_SelectionPanelTextureSource);
+    cornerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_FRAME_TOP_LEFT,g_SelectionPanelTextureSource);
     cornerWidth = cornerSize.logicalWidthPixels;
-    edgeX = frameCoordinate1B - cornerWidth;
-    edgeY = frameCoordinate0B - cornerSize.logicalHeightPixels;
+    edgeX = cornerBX - cornerWidth;
+    edgeY = cornerBY - cornerSize.logicalHeightPixels;
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,edgeY,edgeX,0xa4,g_SelectionPanelTextureSource,
-               g_FramebufferAccess);
-    g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,edgeY,frameCoordinate1A,0xa6,
+              (clipTop,clipLeft,clipBottom,clipRight,edgeY,edgeX,SELECTION_OVERLAY_FRAME_TOP_LEFT,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,edgeX,0xa9,
+              (clipTop,clipLeft,clipBottom,clipRight,edgeY,cornerAX,SELECTION_OVERLAY_FRAME_TOP_RIGHT,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,frameCoordinate1A,0xab,
+              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,edgeX,SELECTION_OVERLAY_FRAME_BOTTOM_LEFT,
+               g_SelectionPanelTextureSource,g_FramebufferAccess);
+    g_SelectionPanelBlitOpaque
+              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,cornerAX,SELECTION_OVERLAY_FRAME_BOTTOM_RIGHT,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     edgeX = edgeX + cornerWidth;
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,frameCoordinate1A,edgeY,edgeX,0xa5,
-               g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,cornerAX,edgeY,edgeX,
+               SELECTION_OVERLAY_FRAME_TOP,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,frameCoordinate1A,frameCoordinate0A
-               ,edgeX,0xaa,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,cornerAX,cornerAY,edgeX,
+               SELECTION_OVERLAY_FRAME_BOTTOM,g_SelectionPanelTextureSource,g_FramebufferAccess);
     edgeY = edgeY + cornerSize.logicalHeightPixels;
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,edgeY,
-               edgeX - cornerWidth,0xa7,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,GRAPHICS_TILED_BLIT_ONE_TILE,edgeY,
+               edgeX - cornerWidth,SELECTION_OVERLAY_FRAME_LEFT,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,frameCoordinate0A,-0x80000000,edgeY,
-               frameCoordinate1A,0xa8,g_SelectionPanelTextureSource,g_FramebufferAccess);
+              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,GRAPHICS_TILED_BLIT_ONE_TILE,edgeY,
+               cornerAX,SELECTION_OVERLAY_FRAME_RIGHT,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
   return;
@@ -445,10 +448,11 @@ SelectionOverlay_DrawBoundsFrame
 
 
 /* Address: 0x0052F490.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay draw marker adfor field grid terrain points.
-   Cross-module calls: FieldGrid_GetNearestTerrainPoint [world/terrain/grid], FixedTransform_ApplyPoint
-   [core/math/fixed], Graphics_ProjectViewPoint [graphics/core/runtime].
+   Draws the SELECTION_OVERLAY_MARKER_GRID_POINT marker centred on the screen position of each of markerPointCount
+   grid coordinate pairs: each pair is converted to a world point, snapped to the nearest terrain point and
+   projected; points off the field or not beyond the near plane are skipped. Called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped with its terrainMarkerCoordinatePairs170 when context
+   flag 0x200000 is set.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
@@ -457,8 +461,8 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
           FieldGridAsset *fieldGrid)
 
 {
-  int64_t packedCoordinate1;
-  int64_t packedCoordinate0;
+  int64_t worldXProduct;
+  int64_t worldYProduct;
   int screenX;
   int screenY;
   bool accessFailed;
@@ -473,11 +477,14 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       do {
-        packedCoordinate1 = (int64_t)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * 0x901;
-        packedCoordinate0 = (int64_t)gridCoordinatePairs[1] * -1999;
+        /* pair (a, b) -> world point: x = (2a + b) * 0x901 / 2^13, y = -b * 1999 / 2^12 (SHRD of the 64-bit
+           products); 0x901 and 1999 are about one cell width 0x900 and 0x900 * sqrt(3) / 2, so the pairs look
+           like triangular-lattice coordinates in Q12 */
+        worldXProduct = (int64_t)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * 0x901;
+        worldYProduct = (int64_t)gridCoordinatePairs[1] * -1999;
         terrainPoint = FieldGrid_GetNearestTerrainPoint
-                          ((int)((uint64_t)packedCoordinate0 >> 0x20) << 0x14 | (uint32_t)packedCoordinate0 >> 0xc,
-                           (int)((uint64_t)packedCoordinate1 >> 0x20) << 0x13 | (uint32_t)packedCoordinate1 >> 0xd,fieldGrid);
+                          ((int)((uint64_t)worldYProduct >> 32) << 20 | (uint32_t)worldYProduct >> 12,
+                           (int)((uint64_t)worldXProduct >> 32) << 19 | (uint32_t)worldXProduct >> 13,fieldGrid);
         if (!terrainPoint.outOfBounds) {
           g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = terrainPoint.worldXQ12;
           g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = terrainPoint.worldYQ12;
@@ -486,14 +493,15 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
                     (&g_GraphicsTransformInputScratchVec3,
                      (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,
                      &g_ViewProjectionMatrixFixed);
-          if (0x10 < g_GraphicsTransformInputScratchVec3.z) {
+          if (0x10 < g_GraphicsTransformInputScratchVec3.z) { /* in front of the near plane */
             projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
-            screenX = projectedPoint.projectedX >> 0xc;
-            screenY = projectedPoint.projectedY >> 0xc;
-            blitTextureId = 0xad;
+            screenX = projectedPoint.projectedX >> 12;
+            screenY = projectedPoint.projectedY >> 12;
+            blitTextureId = SELECTION_OVERLAY_MARKER_GRID_POINT;
             blitTextureSource = g_SelectionPanelTextureSource;
             blitFramebuffer = g_FramebufferAccess;
-            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xad,g_SelectionPanelTextureSource);
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_GRID_POINT,
+                                                               g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
@@ -501,7 +509,7 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
           }
         }
         gridCoordinatePairs = gridCoordinatePairs + 2;
-        markerPointCount = markerPointCount + -1;
+        markerPointCount--;
       } while (markerPointCount != 0);
       g_GraphicsFramebufferEndAccess();
     }
@@ -511,17 +519,17 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
 
 
 /* Address: 0x0052F5A0.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay draw marker acfor world surface point.
-   Cross-module calls: FieldGrid_GetNearestTerrainPoint [world/terrain/grid], FieldGrid_GetNearestTopSurfacePoint
-   [world/terrain/grid], FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
-   [graphics/core/runtime].
+   Draws the SELECTION_OVERLAY_MARKER_WORLD_POINT marker centred on the projected nearest terrain point (or top
+   surface point when useTopSurface is nonzero) of a world position; nothing when it is off the field. Called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped with the point in its callbackArgumentEC/E8 when
+   context flag 0x100000 is set and callbackArgumentF0 is not WORLD_POINTER_NO_HIT; useTopSurface is set when the
+   high byte of g_UiCommandModeGColorVariantLimit is nonzero.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerACForWorldSurfacePoint
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,int useTopSurface,Q12 worldCoordinate0Q12,
-          Q12 worldCoordinate1Q12,FieldGridAsset *fieldGrid)
+          UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
+          FieldGridAsset *fieldGrid)
 
 {
   uint32_t pointX;
@@ -534,7 +542,7 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
   TerrainPointResult terrainPoint;
   
   if (useTopSurface == 0) {
-    terrainPoint = FieldGrid_GetNearestTerrainPoint(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
+    terrainPoint = FieldGrid_GetNearestTerrainPoint(worldYQ12,worldXQ12,fieldGrid);
     pointZ = terrainPoint.terrainHeightQ12;
     pointY = terrainPoint.worldYQ12;
     pointX = terrainPoint.worldXQ12;
@@ -543,7 +551,7 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
     }
   }
   else {
-    topSurfacePoint = FieldGrid_GetNearestTopSurfacePoint(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
+    topSurfacePoint = FieldGrid_GetNearestTopSurfacePoint(worldYQ12,worldXQ12,fieldGrid);
     pointZ = topSurfacePoint.worldZQ12;
     pointY = topSurfacePoint.worldYQ12;
     pointX = topSurfacePoint.worldXQ12;
@@ -559,14 +567,15 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
              (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,&g_ViewProjectionMatrixFixed)
   ;
   projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformInputScratchVec3);
-  accessFailed = g_GraphicsFramebufferBeginAccess(); /* Ghidra passed stale register values (worldCoordinate0Q12, worldCoordinate1Q12, fieldGrid); the callee takes none */
+  accessFailed = g_GraphicsFramebufferBeginAccess(); /* Ghidra passed stale register values (worldYQ12, worldXQ12, fieldGrid); the callee takes none */
   if (!accessFailed) {
-    markerSize = g_GraphicsTextureSourceGetLogicalSize(0xac,g_SelectionPanelTextureSource);
+    markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_WORLD_POINT,
+                                                       g_SelectionPanelTextureSource);
     g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,
-               (projectedPoint.projectedY >> 0xc) - ((int)markerSize.logicalHeightPixels >> 1),
-               (projectedPoint.projectedX >> 0xc) - ((int)markerSize.logicalWidthPixels >> 1),0xac,
-               g_SelectionPanelTextureSource,g_FramebufferAccess);
+               (projectedPoint.projectedY >> 12) - ((int)markerSize.logicalHeightPixels >> 1),
+               (projectedPoint.projectedX >> 12) - ((int)markerSize.logicalWidthPixels >> 1),
+               SELECTION_OVERLAY_MARKER_WORLD_POINT,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
   return;
@@ -574,8 +583,10 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
 
 
 /* Address: 0x0052F680.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay draw marker aefor visible projected grid vertices.
+   Draws the SELECTION_OVERLAY_MARKER_GRID_VERTEX marker at the projected position of every fourth field cell in
+   both directions (rows and columns 1, 5, 9, ...), using the cells' projected point B instead of A
+   when the high byte of g_UiCommandModeGColorVariantLimit is nonzero; cells whose point A was not projected are
+   skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x800000 is set.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
@@ -604,30 +615,32 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
     gridColumns = fieldGrid->gridWidth;
     columnCount = gridColumns >> 2;
     rowsRemaining = fieldGrid->gridHeight >> 2;
+    /* &fieldGrid->cells[gridColumns + 1]: row 1, column 1 (0x200-byte header, then 0x80-byte cells) */
     vertexCursor = fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 + gridColumns * 0x80 + -0x28;
     columnsRemaining = columnCount;
     rowStart = vertexCursor;
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
-      coordinateOffset = 0x20;
+      coordinateOffset = 0x20; /* projectedPointB (+0x2C) instead of projectedPointA (+0x0C) */
     }
     do {
       do {
-        if ((*(uint32_t *)(vertexCursor + 0x50) & 0x200000) == 0) {
-          screenX = *(int *)(vertexCursor + coordinateOffset + 0xc) >> 0xc;
-          screenY = *(int *)(vertexCursor + coordinateOffset + 0x10) >> 0xc;
-          blitTextureId = 0xae;
+        if ((*(uint32_t *)(vertexCursor + 0x50) & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) {
+          screenX = *(int *)(vertexCursor + coordinateOffset + 0xc) >> 12;
+          screenY = *(int *)(vertexCursor + coordinateOffset + 0x10) >> 12;
+          blitTextureId = SELECTION_OVERLAY_MARKER_GRID_VERTEX;
           blitTextureSource = g_SelectionPanelTextureSource;
           blitFramebuffer = g_FramebufferAccess;
-          markerSize = g_GraphicsTextureSourceGetLogicalSize(0xae,g_SelectionPanelTextureSource);
+          markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_GRID_VERTEX,
+                                                             g_SelectionPanelTextureSource);
           g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,
                      screenY - ((int)markerSize.logicalHeightPixels >> 1),
                      screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
         }
-        vertexCursor = vertexCursor + 0x200;
+        vertexCursor = vertexCursor + 0x200; /* four cells on */
         columnsRemaining = columnsRemaining - 1;
-      } while (-1 < (int)columnsRemaining);
-      vertexCursor = rowStart + gridColumns * 0x200;
+      } while (-1 < (int)columnsRemaining); /* gridWidth / 4 + 1 cells per row */
+      vertexCursor = rowStart + gridColumns * 0x200; /* four rows on */
       rowsRemaining = rowsRemaining - 1;
       columnsRemaining = columnCount;
       rowStart = vertexCursor;
@@ -639,8 +652,10 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
 
 
 /* Address: 0x0052F780.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay draw marker afb0 for projected vertex state flags.
+   Marks the field cells excluded from the fluid simulation: SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED and/or
+   SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED at the cell's projected point B, skipping cells whose point B was
+   not projected. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x1000000
+   is set.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
@@ -675,13 +690,14 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
     rowStartCell = cellCursor;
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & 0x4000000) == 0) &&
+        if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_B_NOT_PROJECTED) == 0) &&
            ((cellCursor->flagsAndMaterial &
             (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) != 0)) {
-          screenX = *(int *)(cellCursor->runtime0C_3F + 0x20) >> 0xc;
-          screenY = *(int *)(cellCursor->runtime0C_3F + 0x24) >> 0xc;
-          sourceTextureId = 0xb0;
-          receiverTextureId = 0xaf;
+          /* projectedPointB (cell +0x2C) */
+          screenX = *(int *)(cellCursor->runtime0C_3F + 0x20) >> 12;
+          screenY = *(int *)(cellCursor->runtime0C_3F + 0x24) >> 12;
+          sourceTextureId = SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED;
+          receiverTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;
           sourceTextureSource = g_SelectionPanelTextureSource;
           sourceFramebuffer = g_FramebufferAccess;
           if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) != 0) {
@@ -689,7 +705,8 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
             receiverFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
             savedScreenX = screenX;
-            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xaf,g_SelectionPanelTextureSource);
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED,
+                                                               g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
@@ -698,7 +715,8 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
             screenX = savedScreenX;
           }
           if ((cellCursor->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) != 0) {
-            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xb0,g_SelectionPanelTextureSource);
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED,
+                                                               g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
@@ -720,13 +738,16 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
 
 
 /* Address: 0x0052F8C0.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay draw marker b1 b2 for projected vertex mask1800.
+   Marks the field cells that support Xenite or Tritium: SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE when the cell
+   supports the resource selectedResourceIndex picks (0 Xenite, 1 Tritium), SELECTION_OVERLAY_MARKER_OTHER_RESOURCE
+   when it supports the other one, at the cell's projected point A. Called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped with the low byte of its overlayMarkerStateB4 when
+   context flag 0x2000000 is set.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,uint8_t markerBitIndex,FieldGridAsset *fieldGrid)
+          UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension gridColumns;
@@ -735,7 +756,7 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
   int screenY;
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
-  FieldCellPackedFlagsAndMaterial markerFlagMask;
+  FieldCellPackedFlagsAndMaterial selectedResourceFlag;
   bool accessFailed;
   TextureSizeResult markerSize;
   uint32_t flaggedTextureId;
@@ -748,7 +769,7 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
   SoftwareFramebufferAccess *otherFramebuffer;
   FieldGridCell *rowStartCell;
   
-  markerFlagMask = 0x800 << (markerBitIndex & 0x1f);
+  selectedResourceFlag = FIELD_CELL_XENITE_SUPPORT << (selectedResourceIndex & 0x1f);
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     gridColumns = fieldGrid->gridWidth;
@@ -758,20 +779,22 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
     rowStartCell = cellCursor;
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & 0x200000) == 0) &&
+        if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) &&
            ((cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
-          screenX = *(int *)cellCursor->runtime0C_3F >> 0xc;
-          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 0xc;
-          otherTextureId = 0xb2;
-          flaggedTextureId = 0xb1;
+          /* projectedPointA (cell +0x0C) */
+          screenX = *(int *)cellCursor->runtime0C_3F >> 12;
+          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 12;
+          otherTextureId = SELECTION_OVERLAY_MARKER_OTHER_RESOURCE;
+          flaggedTextureId = SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE;
           otherTextureSource = g_SelectionPanelTextureSource;
           otherFramebuffer = g_FramebufferAccess;
-          if ((cellCursor->flagsAndMaterial & markerFlagMask) != 0) {
+          if ((cellCursor->flagsAndMaterial & selectedResourceFlag) != 0) {
             flaggedTextureSource = g_SelectionPanelTextureSource;
             flaggedFramebuffer = g_FramebufferAccess;
             savedScreenY = screenY;
             savedScreenX = screenX;
-            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xb1,g_SelectionPanelTextureSource);
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE,
+                                                               g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
@@ -779,9 +802,10 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
             screenY = savedScreenY;
             screenX = savedScreenX;
           }
-          if ((cellCursor->flagsAndMaterial & (markerFlagMask ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0)
+          if ((cellCursor->flagsAndMaterial & (selectedResourceFlag ^ FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)) != 0)
           {
-            markerSize = g_GraphicsTextureSourceGetLogicalSize(0xb2,g_SelectionPanelTextureSource);
+            markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_OTHER_RESOURCE,
+                                                               g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
                       (clipTop,clipLeft,clipBottom,clipRight,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
@@ -803,8 +827,10 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
 
 
 /* Address: 0x0052FA20.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Handles selection overlay draw marker affor projected vertex flag8000.
+   Marks the field cells with FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15 with the
+   SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED marker at their projected point A. Called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x4000 and g_UiCommandRuntimeFlags
+   bit 0x40 are set and a field grid is attached.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
@@ -835,13 +861,15 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
     do {
       do {
         if (((cellCursor->flagsAndMaterial & FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15) != 0) &&
-           ((cellCursor->flagsAndMaterial & 0x200000) == 0)) {
-          screenX = *(int *)cellCursor->runtime0C_3F >> 0xc;
-          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 0xc;
-          blitTextureId = 0xaf;
+           ((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0)) {
+          /* projectedPointA (cell +0x0C) */
+          screenX = *(int *)cellCursor->runtime0C_3F >> 12;
+          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 12;
+          blitTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;
           blitTextureSource = g_SelectionPanelTextureSource;
           blitFramebuffer = g_FramebufferAccess;
-          markerSize = g_GraphicsTextureSourceGetLogicalSize(0xaf,g_SelectionPanelTextureSource);
+          markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED,
+                                                             g_SelectionPanelTextureSource);
           g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,
                      screenY - ((int)markerSize.logicalHeightPixels >> 1),
@@ -862,111 +890,96 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
 
 
 /* Address: 0x00560020.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Binary entry is anchored by g_RuntimeRebaseCallbackTable5[0]@00563754. Typed parameters: p0
-   selectionIndex→SelectionMarkerIndex_V342, p1 valueC→SelectionMarkerCoordinateValue32_V342, p2
-   valueB→SelectionMarkerCoordinateValue32_V342, p3 valueA→SelectionMarkerCoordinateValue32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_ApplyType16MarkerCoordinates [gameplay/selection/runtime].
+   Pointer-mode handler 3 (g_InGamePointerModeHandlers[3]; networked games queue it as a command
+   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 3 (lanes 1 and 2) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType3
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (3,valueC,valueB,valueA,
-             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+            (3,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 
 
 /* Address: 0x00560050.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Binary entry is anchored by g_RuntimeRebaseCallbackTable5[1]@00563754. Typed parameters: p0
-   selectionIndex→SelectionMarkerIndex_V342, p1 valueC→SelectionMarkerCoordinateValue32_V342, p2
-   valueB→SelectionMarkerCoordinateValue32_V342, p3 valueA→SelectionMarkerCoordinateValue32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_ApplyType16MarkerCoordinates [gameplay/selection/runtime].
+   Pointer-mode handler 4 (g_InGamePointerModeHandlers[4]; networked games queue it as a command
+   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 4 (lane 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType4
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (4,valueC,valueB,valueA,
-             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+            (4,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 
 
 /* Address: 0x00560080.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Binary entry is anchored by g_RuntimeRebaseCallbackTable5[2]@00563754. Typed parameters: p0
-   selectionIndex→SelectionMarkerIndex_V342, p1 valueC→SelectionMarkerCoordinateValue32_V342, p2
-   valueB→SelectionMarkerCoordinateValue32_V342, p3 valueA→SelectionMarkerCoordinateValue32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_ApplyType16MarkerCoordinates [gameplay/selection/runtime].
+   Pointer-mode handler 5 (g_InGamePointerModeHandlers[5]; networked games queue it as a command
+   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 5 (lanes 1 and 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType5
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (5,valueC,valueB,valueA,
-             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+            (5,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 
 
 /* Address: 0x005600B0.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Binary entry is anchored by g_RuntimeRebaseCallbackTable5[3]@00563754. Typed parameters: p0
-   selectionIndex→SelectionMarkerIndex_V342, p1 valueC→SelectionMarkerCoordinateValue32_V342, p2
-   valueB→SelectionMarkerCoordinateValue32_V342, p3 valueA→SelectionMarkerCoordinateValue32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_ApplyType16MarkerCoordinates [gameplay/selection/runtime].
+   Pointer-mode handler 6 (g_InGamePointerModeHandlers[6]; networked games queue it as a command
+   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 6 (lanes 2 and 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType6
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (6,valueC,valueB,valueA,
-             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+            (6,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 
 
 /* Address: 0x005600E0.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Binary entry is anchored by g_RuntimeRebaseCallbackTable5[4]@00563754. Typed parameters: p0
-   selectionIndex→SelectionMarkerIndex_V342, p1 valueC→SelectionMarkerCoordinateValue32_V342, p2
-   valueB→SelectionMarkerCoordinateValue32_V342, p3 valueA→SelectionMarkerCoordinateValue32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_ApplyType16MarkerCoordinates [gameplay/selection/runtime].
+   Pointer-mode handler 7 (g_InGamePointerModeHandlers[7]; networked games queue it as a command
+   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 7 (lanes 1, 2 and 4) on the player's
+   selection, which stores the pointer point and heading as the marker target of those linked-child lanes
+   in every selected class-0x16 army.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType7
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (7,valueC,valueB,valueA,
-             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+            (7,heading,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 

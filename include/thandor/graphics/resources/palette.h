@@ -12,6 +12,15 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/resources/palette. */
+
+/* Palette texture sources (GraphicsPaletteTextureSource_*): the palette banks start after the 0x200-byte
+   header, each 256 entries of 8 bytes (colour, second dword). */
+#define GRAPHICS_PALETTE_BANKS_OFFSET 0x200
+#define GRAPHICS_PALETTE_BANK_BYTES 0x800
+#define GRAPHICS_PALETTE_BANK_ENTRIES 0x100
+/* GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices marks an entry unused by setting the low three
+   bits of its blue, green and red bytes (the colours only use the upper five bits of each channel). */
+#define GRAPHICS_PALETTE_ENTRY_UNUSED_MARK 0x70707
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004AE520 */

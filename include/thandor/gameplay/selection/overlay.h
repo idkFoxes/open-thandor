@@ -21,6 +21,26 @@
 /* Capacities of g_InGameOwnedEntityTransientEffectMarkers and g_InGameCommandTargetTransientEffectMarkers. */
 #define OVERLAY_OWNED_MARKER_CAPACITY 32
 #define OVERLAY_COMMAND_TARGET_MARKER_CAPACITY 128
+/* Subresources of g_SelectionPanelTextureSource drawn by the SelectionOverlay_* functions: the eight pieces of
+   the bounds frame and the map-view markers. */
+#define SELECTION_OVERLAY_FRAME_TOP_LEFT 0xA4
+#define SELECTION_OVERLAY_FRAME_TOP 0xA5
+#define SELECTION_OVERLAY_FRAME_TOP_RIGHT 0xA6
+#define SELECTION_OVERLAY_FRAME_LEFT 0xA7
+#define SELECTION_OVERLAY_FRAME_RIGHT 0xA8
+#define SELECTION_OVERLAY_FRAME_BOTTOM_LEFT 0xA9
+#define SELECTION_OVERLAY_FRAME_BOTTOM 0xAA
+#define SELECTION_OVERLAY_FRAME_BOTTOM_RIGHT 0xAB
+#define SELECTION_OVERLAY_MARKER_WORLD_POINT 0xAC
+#define SELECTION_OVERLAY_MARKER_GRID_POINT 0xAD
+#define SELECTION_OVERLAY_MARKER_GRID_VERTEX 0xAE
+#define SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED 0xAF /* also the FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15 marker */
+#define SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED 0xB0
+#define SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE 0xB1
+#define SELECTION_OVERLAY_MARKER_OTHER_RESOURCE 0xB2
+/* Initial g_ModelProjectedBoundsPixels: an empty (inverted) rectangle for ModelProjectedBounds_AccumulateHierarchyRecursive. */
+#define SELECTION_OVERLAY_EMPTY_BOUNDS_MIN 0x10000
+#define SELECTION_OVERLAY_EMPTY_BOUNDS_MAX (-0x10000)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00568300 */
@@ -44,9 +64,8 @@ SelectionOverlay_RenderArmyMetricsForEntity
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawBoundsFrame
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate frameCoordinate0A,
-          UiPixelCoordinate frameCoordinate1A,UiPixelCoordinate frameCoordinate0B,
-          UiPixelCoordinate frameCoordinate1B);
+          UiPixelCoordinate clipRight,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
+          UiPixelCoordinate cornerBY,UiPixelCoordinate cornerBX);
 
 /* 0x0052F490 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -59,8 +78,8 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerACForWorldSurfacePoint
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,int useTopSurface,Q12 worldCoordinate0Q12,
-          Q12 worldCoordinate1Q12,FieldGridAsset *fieldGrid);
+          UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
+          FieldGridAsset *fieldGrid);
 
 /* 0x0052F680 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -78,7 +97,7 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,uint8_t markerBitIndex,FieldGridAsset *fieldGrid);
+          UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid);
 
 /* 0x0052FA20 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -89,32 +108,32 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
 /* 0x00560020 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType3
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x00560050 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType4
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x00560080 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType5
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x005600B0 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType6
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x005600E0 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionMarkerCoordinates_ApplyType7
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
+          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x00568210 */
 void __thandor_void_preserve_eax_ecx_edx

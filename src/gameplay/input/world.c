@@ -820,12 +820,16 @@ InGameWorldInput_ReleasePointerCapture:
 
 
 /* Address: 0x0056F230.
-   Ownership: gameplay/input/world.
-   Purpose: Handles in game camera command dispatch by code and modifier flags carry-flag result.
-   Cross-module calls: WorldRuntime_SetPosition60AndDistanceFromPosition80 [world/runtime/core],
-   WorldRuntime_SetMotionParameters6CThrough78Clamped [world/runtime/core],
-   WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface [world/runtime/core], WorldRuntime_CommitScalar7CFrom8C
-   [world/runtime/core].
+   Camera key commands of the world view while the interaction subsystem is active (game paused): installed as
+   the world view's dispatchCommandCallback by the activating path of
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState (0x005609F0), in place of
+   InGameUiRuntime_DispatchCommandByCodeAndModifierFlags. The first g_InGameCameraCommandDispatchRecords16 record
+   with this key and a matching modifier selects the command:
+     1..7      move the camera to level camera bookmark n
+     Alt+1..7  store the current camera as bookmark n
+     Alt+S     toggle WORLD_RUNTIME_FLAG_SHADING_ENABLED
+     Ctrl+C    toggle WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA
+   The original returns CF set when no record matches and CF clear after a command.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCameraCommand_DispatchByCodeAndModifierFlags
@@ -852,7 +856,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
   bookmark2PackedAngles = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
   bookmark1PackedAngles = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
   /* First record with this key whose modifier requirement matches: a record without required modifiers only
-     matches when none of the 0x3C modifiers is held. The key-code 0 record terminates the table. */
+     matches when neither Ctrl nor Alt is held (Shift is ignored). The key-code 0 record terminates the table. */
   nextRecord = &g_InGameCameraCommandDispatchRecords16;
   while( true ) {
     currentRecord = nextRecord;
@@ -863,17 +867,18 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
     }
     nextRecord = (InGameCameraCommandDispatchTable *)(currentRecord->records + 1);
     if (recordKeyCode != commandCode) continue;
-    if ((requiredModifiers == 0) ? ((modifierFlags & 0x3c) == 0) : ((modifierFlags & requiredModifiers) != 0))
+    if ((requiredModifiers == 0) ? ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0)
+                                 : ((modifierFlags & requiredModifiers) != 0))
     break;
   }
   /* The original jumps to the record's continuation address; the cases are those addresses. */
   switch(currentRecord->records[0].continuationEntryAddress) {
-  case 0x56f360:
+  case 0x56f360: /* 1..7: recall bookmark n */
     WorldRuntime_SetPosition60AndDistanceFromPosition80
               (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,
                g_LevelCameraBookmark1PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)bookmark1PackedAngles >> 0x10,bookmark1PackedAngles & 0xffff,g_LevelCameraBookmark1PositionMagnitudeQ12,
+              (2,(int)bookmark1PackedAngles >> 16,bookmark1PackedAngles & 0xffff,g_LevelCameraBookmark1PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -883,7 +888,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark2PositionZQ12,g_LevelCameraBookmark2PositionYQ12,
                g_LevelCameraBookmark2PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)bookmark2PackedAngles >> 0x10,bookmark2PackedAngles & 0xffff,g_LevelCameraBookmark2PositionMagnitudeQ12,
+              (2,(int)bookmark2PackedAngles >> 16,bookmark2PackedAngles & 0xffff,g_LevelCameraBookmark2PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -893,7 +898,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark3PositionZQ12,g_LevelCameraBookmark3PositionYQ12,
                g_LevelCameraBookmark3PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)bookmark3PackedAngles >> 0x10,bookmark3PackedAngles & 0xffff,g_LevelCameraBookmark3PositionMagnitudeQ12,
+              (2,(int)bookmark3PackedAngles >> 16,bookmark3PackedAngles & 0xffff,g_LevelCameraBookmark3PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -903,7 +908,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark4PositionZQ12,g_LevelCameraBookmark4PositionYQ12,
                g_LevelCameraBookmark4PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)bookmark4PackedAngles >> 0x10,bookmark4PackedAngles & 0xffff,g_LevelCameraBookmark4PositionMagnitudeQ12,
+              (2,(int)bookmark4PackedAngles >> 16,bookmark4PackedAngles & 0xffff,g_LevelCameraBookmark4PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -913,7 +918,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark5PositionZQ12,g_LevelCameraBookmark5PositionYQ12,
                g_LevelCameraBookmark5PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)bookmark5PackedAngles >> 0x10,bookmark5PackedAngles & 0xffff,g_LevelCameraBookmark5PositionMagnitudeQ12,
+              (2,(int)bookmark5PackedAngles >> 16,bookmark5PackedAngles & 0xffff,g_LevelCameraBookmark5PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -923,7 +928,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark6PositionZQ12,g_LevelCameraBookmark6PositionYQ12,
                g_LevelCameraBookmark6PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)bookmark6PackedAngles >> 0x10,bookmark6PackedAngles & 0xffff,g_LevelCameraBookmark6PositionMagnitudeQ12,
+              (2,(int)bookmark6PackedAngles >> 16,bookmark6PackedAngles & 0xffff,g_LevelCameraBookmark6PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
@@ -933,18 +938,18 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark7PositionZQ12,g_LevelCameraBookmark7PositionYQ12,
                g_LevelCameraBookmark7PositionXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,(int)bookmark7PackedAngles >> 0x10,bookmark7PackedAngles & 0xffff,g_LevelCameraBookmark7PositionMagnitudeQ12,
+              (2,(int)bookmark7PackedAngles >> 16,bookmark7PackedAngles & 0xffff,g_LevelCameraBookmark7PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
     WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
     break;
-  case 0x56f590:
+  case 0x56f590: /* Alt+1..7: store the camera as bookmark n (heading low word, pitch high word) */
     g_LevelCameraBookmark1PositionXQ12 = (worldRuntime->motion).positionXQ12;
     g_LevelCameraBookmark1PositionYQ12 = (worldRuntime->motion).positionYQ12;
     g_LevelCameraBookmark1PositionZQ12 = (worldRuntime->motion).positionZQ12;
     g_LevelCameraBookmark1PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
     g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 0x10 | (worldRuntime->motion).headingAngle;
+         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
     break;
   case 0x56f5e0:
     g_LevelCameraBookmark2PositionXQ12 = (worldRuntime->motion).positionXQ12;
@@ -952,7 +957,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
     g_LevelCameraBookmark2PositionZQ12 = (worldRuntime->motion).positionZQ12;
     g_LevelCameraBookmark2PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
     g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 0x10 | (worldRuntime->motion).headingAngle;
+         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
     break;
   case 0x56f630:
     g_LevelCameraBookmark3PositionXQ12 = (worldRuntime->motion).positionXQ12;
@@ -960,7 +965,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
     g_LevelCameraBookmark3PositionZQ12 = (worldRuntime->motion).positionZQ12;
     g_LevelCameraBookmark3PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
     g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 0x10 | (worldRuntime->motion).headingAngle;
+         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
     break;
   case 0x56f680:
     g_LevelCameraBookmark4PositionXQ12 = (worldRuntime->motion).positionXQ12;
@@ -968,7 +973,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
     g_LevelCameraBookmark4PositionZQ12 = (worldRuntime->motion).positionZQ12;
     g_LevelCameraBookmark4PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
     g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 0x10 | (worldRuntime->motion).headingAngle;
+         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
     break;
   case 0x56f6d0:
     g_LevelCameraBookmark5PositionXQ12 = (worldRuntime->motion).positionXQ12;
@@ -976,7 +981,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
     g_LevelCameraBookmark5PositionZQ12 = (worldRuntime->motion).positionZQ12;
     g_LevelCameraBookmark5PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
     g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 0x10 | (worldRuntime->motion).headingAngle;
+         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
     break;
   case 0x56f720:
     g_LevelCameraBookmark6PositionXQ12 = (worldRuntime->motion).positionXQ12;
@@ -984,7 +989,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
     g_LevelCameraBookmark6PositionZQ12 = (worldRuntime->motion).positionZQ12;
     g_LevelCameraBookmark6PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
     g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 0x10 | (worldRuntime->motion).headingAngle;
+         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
     break;
   case 0x56f770:
     g_LevelCameraBookmark7PositionXQ12 = (worldRuntime->motion).positionXQ12;
@@ -992,13 +997,13 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
     g_LevelCameraBookmark7PositionZQ12 = (worldRuntime->motion).positionZQ12;
     g_LevelCameraBookmark7PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
     g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 0x10 | (worldRuntime->motion).headingAngle;
+         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
     break;
-  case 0x56f7d0:
-    worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ 0x20000;
+  case 0x56f7d0: /* Alt+S */
+    worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_SHADING_ENABLED;
     break;
-  case 0x56f7e0:
-    worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ 0x40000;
+  case 0x56f7e0: /* Ctrl+C */
+    worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA;
   }
   return;
 }

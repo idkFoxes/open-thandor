@@ -70,9 +70,9 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
 
 
 /* Address: 0x004168B0.
-   Ownership: graphics/core/runtime.
-   Purpose: Sets g_CursorFrameIndex when frameIndex is below g_CursorFrameCount. EAX is the engine code 0x2D on
-   both paths. CF clear means success; CF set means the index was out of range.
+   Selects the software cursor frame (GRAPHICS_CURSOR_FRAME_*) that the cursor timer animates and draws.
+   An index at or above g_CursorFrameCount is rejected with CF set. EAX holds FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE
+   on both paths. Installed in g_GraphicsCursorSetFrame (image slot 0x00416848).
 */
 CursorFrameResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
@@ -80,25 +80,26 @@ GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 {
   CursorFrameResult successResult;
   CursorFrameResult failureResult;
-  
+
   if (frameIndex < g_CursorFrameCount) {
     g_CursorFrameIndex = frameIndex;
-    successResult.errorCode = 0x2d;
+    successResult.errorCode = FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
     successResult.failed = false;
     return successResult;
   }
   failureResult.failed = true;
-  failureResult.errorCode = 0x2d;
+  failureResult.errorCode = FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE;
   return failureResult;
 }
 
 
 /* Address: 0x004168E0.
-   Ownership: graphics/core/runtime.
-   Purpose: Consumes one GraphicsCursorInputEvent from the 256-entry ring. CF clear means an event was consumed; CF
-   set means the ring was empty. The function publishes button state, cursor position, wheel delta, and release
-   clocks. A press within 16 clock units and within plus/minus four pixels of the previous press sets bit 31 in
-   g_CursorButtonState.
+   Takes the next mouse event from the 256-entry ring the mouse input code fills (CF set when it is empty)
+   and publishes it: button state, cursor position and wheel delta go to the g_Cursor* globals, a release stores
+   its clock per button, a press its position as the last click. Installed in g_GraphicsCursorConsumeEvent
+   (image slot 0x00416850). In the original a press less than 16 clock ticks after the release of the same
+   button and within +-4 pixels of the last click also sets bit 31 (double click) in the returned button state
+   (EBX; g_CursorButtonState keeps the raw value); this C does not compute that bit.
 */
 CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void)
 
@@ -107,7 +108,6 @@ CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputE
   uint32_t nextReadIndex;
   CursorEventResult eventResult;
   CursorEventResult emptyResult;
-  GraphicsCursorEventType eventType;
   GraphicsCursorClockValue eventClock;
   uint32_t eventIndex;
   uint32_t leftReleaseClock;
@@ -120,7 +120,7 @@ CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputE
     emptyResult.queueEmpty = true;
     return emptyResult;
   }
-  if (0xff < nextReadIndex) {
+  if (255 < nextReadIndex) { /* wrap around the ring */
     nextReadIndex = 0;
   }
   g_CursorInputReadIndex = nextReadIndex;
@@ -193,12 +193,9 @@ Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
 
 
 /* Address: 0x00486490.
-   Ownership: graphics/core/runtime.
-   Purpose: Stores four integer bounds as 20.12 fixed-point values. The callee writes them in reverse stack order
-   into minX, minY, maxX, and maxY. Typed parameters: p0 maxY→GraphicsScreenCoordinate_V307, p1
-   maxX→GraphicsScreenCoordinate_V307, p2 minY→GraphicsScreenCoordinate_V307, p3
-   minX→GraphicsScreenCoordinate_V307. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Sets the screen rectangle projected geometry is clipped against, converted from pixels to Q12 (20.12 fixed
+   point). First step of a scene setup, before the view parameters and the viewport (called by
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped and GraphicsOffscreen_RenderModelListToTextureSource).
 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetProjectionClipRect
@@ -210,130 +207,130 @@ Graphics_SetProjectionClipRect
   g_ProjectionClipRect.minY = minY << 0xc;
   g_ProjectionClipRect.maxX = maxX << 0xc;
   g_ProjectionClipRect.maxY = maxY << 0xc;
-  return;
 }
 
 
 /* Address: 0x004864D0.
-   Ownership: graphics/core/runtime.
-   Purpose: Copies the seven-value camera/projection parameter block, builds the primary orientation and camera
-   matrices, and computes two projection factors.
-   Cross-module calls: FixedTransform_BuildRotationBasis [core/math/fixed], FixedTransform_Compose
-   [core/math/fixed], FixedMath_Atan2Angle16 [core/math/fixed], FixedMath_SinCosQ28 [core/math/fixed].
+   Sets up the camera for the next scene: stores the eye position (Q12 world coordinates), projection scale and
+   view angles, builds the view rotation, the camera matrix (identity rotation, translation to the eye) and
+   their composition g_ViewProjectionMatrixFixed, and stores the sin/cos pairs of the view azimuth plus and minus
+   the half view angle atan2(1 << (12 - projectionShift), projectionScale).
+   The azimuth/elevation names follow FixedMath_DirectionFromAnglesScaledRegs, which
+   Graphics_RebuildFrustumPlanes feeds with the same two angles.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetViewProjectionParameters
-          (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewAngle1,
-          GraphicsViewAngle16 viewAngle0,GraphicsProjectionScale projectionScale,
+          (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewElevationAngle,
+          GraphicsViewAngle16 viewAzimuthAngle,GraphicsProjectionScale projectionScale,
           GraphicsWorldCoordinateQ12 originZ,GraphicsWorldCoordinateQ12 originY,
           GraphicsWorldCoordinateQ12 originX)
 
 {
-  uint32_t projectionAngle16;
-  
+  uint32_t halfViewAngle16;
+
   g_ViewOriginFixed.x = originX;
   g_ViewOriginFixed.y = originY;
   g_ViewOriginFixed.z = originZ;
   g_ProjectionScaleFixed = projectionScale;
-  g_ViewAngle0 = viewAngle0;
-  g_ViewAngle1 = viewAngle1;
+  g_ViewAngle0 = viewAzimuthAngle;
+  g_ViewAngle1 = viewElevationAngle;
   FixedTransform_BuildRotationBasis
-            (&g_ViewRotationMatrixFixed,0x4000 - viewAngle0 & 0xffff,viewAngle1,0xc000);
+            (&g_ViewRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - viewAzimuthAngle & 0xffff,viewElevationAngle,
+             FIXED_ANGLE16_THREE_QUARTER_TURN);
   g_ViewRotationMatrixFixed.translation.x = 0;
   g_ViewRotationMatrixFixed.translation.y = 0;
   g_ViewRotationMatrixFixed.translation.z = 0;
   g_CameraTransformMatrixFixed.translation.x = -originX;
   g_CameraTransformMatrixFixed.translation.y = -originY;
   g_CameraTransformMatrixFixed.translation.z = -originZ;
-  g_CameraTransformMatrixFixed.basisRow0[0] = 0x10000000;
+  g_CameraTransformMatrixFixed.basisRow0[0] = Q28_ONE;
   g_CameraTransformMatrixFixed.basisRow0[1] = 0;
   g_CameraTransformMatrixFixed.basisRow0[2] = 0;
   g_CameraTransformMatrixFixed.basisRow1[0] = 0;
-  g_CameraTransformMatrixFixed.basisRow1[1] = 0x10000000;
+  g_CameraTransformMatrixFixed.basisRow1[1] = Q28_ONE;
   g_CameraTransformMatrixFixed.basisRow1[2] = 0;
   g_CameraTransformMatrixFixed.basisRow2[0] = 0;
   g_CameraTransformMatrixFixed.basisRow2[1] = 0;
-  g_CameraTransformMatrixFixed.basisRow2[2] = 0x10000000;
+  g_CameraTransformMatrixFixed.basisRow2[2] = Q28_ONE;
   FixedTransform_Compose
             (&g_ViewProjectionMatrixFixed,&g_CameraTransformMatrixFixed,&g_ViewRotationMatrixFixed);
   g_ProjectionShift = projectionShift;
-  projectionAngle16 =
+  halfViewAngle16 =
        FixedMath_Atan2Angle16(1 << (0xcU - (char)projectionShift & 0x1f),projectionScale);
   g_ProjectionAngleFactors[0] =
-       THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed, FixedMath_SinCosQ28(projectionAngle16 + viewAngle0 & 0xffff));
-  g_ProjectionAngleFactors[1] = THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed, FixedMath_SinCosQ28(viewAngle0 - projectionAngle16 & 0xffff));
-  return;
+       THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed,
+                       FixedMath_SinCosQ28(halfViewAngle16 + viewAzimuthAngle & 0xffff));
+  g_ProjectionAngleFactors[1] =
+       THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed,
+                       FixedMath_SinCosQ28(viewAzimuthAngle - halfViewAngle16 & 0xffff));
 }
 
 
 /* Address: 0x00486640.
-   Ownership: graphics/core/runtime.
-   Purpose: Calculates the fixed-point projection center and the signed 64-bit perspective numerator from four
-   viewport bounds. Typed parameters: p0 bound0→GraphicsScreenCoordinate_V307, p1
-   bound1→GraphicsScreenCoordinate_V307, p2 bound2→GraphicsScreenCoordinate_V307, p3
-   bound3→GraphicsScreenCoordinate_V307. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Maps the view onto a screen rectangle in pixels: the projection centre
+   is the rectangle's midpoint in Q12, and the perspective numerator that Graphics_ProjectViewPoint divides by z
+   is width * projection scale, shifted by g_ProjectionShift - 1 and widened to a signed 64-bit value << 12.
+   Must follow Graphics_SetViewProjectionParameters, whose scale and shift it reads.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetProjectionViewport
-          (GraphicsScreenCoordinate bound0,GraphicsScreenCoordinate bound1,
-          GraphicsScreenCoordinate bound2,GraphicsScreenCoordinate bound3)
+          (GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
+          GraphicsScreenCoordinate top,GraphicsScreenCoordinate left)
 
 {
   int projectionShiftDelta;
   int64_t projectionScaleProduct;
   uint8_t rightShiftAmount;
-  
-  g_ProjectionCenterFixed.component0 = (bound3 + bound1) * 0x800;
-  g_ProjectionCenterFixed.component1 = (bound2 + bound0) * 0x800;
+
+  /* (a + b) * 0x800 = the midpoint (a + b) / 2 in Q12 */
+  g_ProjectionCenterFixed.component0 = (left + right) * 0x800;
+  g_ProjectionCenterFixed.component1 = (top + bottom) * 0x800;
   projectionShiftDelta = g_ProjectionShift - 1;
-  projectionScaleProduct = (int64_t)(bound1 - bound3) * (int64_t)(int)g_ProjectionScaleFixed;
+  projectionScaleProduct = (int64_t)(right - left) * (int64_t)(int)g_ProjectionScaleFixed;
   g_ProjectionScaleProduct = (uint32_t)projectionScaleProduct;
   if (projectionShiftDelta != 0) {
     if (projectionShiftDelta < 0) {
       rightShiftAmount = -(uint8_t)projectionShiftDelta & 0x1f;
       g_ProjectionScaleProduct =
            g_ProjectionScaleProduct >> rightShiftAmount |
-           (int)((uint64_t)projectionScaleProduct >> 0x20) << 0x20 - rightShiftAmount;
+           (int)((uint64_t)projectionScaleProduct >> 0x20) << (0x20 - rightShiftAmount);
     }
     else {
       g_ProjectionScaleProduct = g_ProjectionScaleProduct << ((uint8_t)projectionShiftDelta & 0x1f);
     }
   }
+  /* 64-bit numerator = sign-extended product << 12 */
   g_ProjectionNumerator.low = g_ProjectionScaleProduct << 0xc;
   g_ProjectionNumerator.high = (int)g_ProjectionScaleProduct >> 0x14;
-  return;
 }
 
 
 /* Address: 0x004866C0.
-   Ownership: graphics/core/runtime.
-   Purpose: Stores two auxiliary engine angles and rebuilds the secondary fixed-point rotation matrix. Kept
-   distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed
-   parameters: p0 angle1→AngleTurn32, p1 angle0→AngleTurn32. Calling convention, storage, body bytes, control flow,
-   and executable data remain unchanged.
-   Cross-module calls: FixedMath_WriteDirectionQ28 [core/math/fixed], FixedTransform_BuildRotationBasis
-   [core/math/fixed].
+   Sets the scene's second direction (elevation/azimuth): stores the angles, their unit direction
+   g_AuxiliaryForwardDirectionFixed and a rotation built like the view rotation. The model renderer transforms the
+   direction into each model's space and passes it to ModelRender_ComputeVertexIntensity* as the light direction;
+   the rotation is used by the generated-texture shading code.
 */
 void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetAuxiliaryOrientation(AngleTurn32 angle1,AngleTurn32 angle0)
+Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
-  g_AuxiliaryOrientation.component0 = angle0;
-  g_AuxiliaryOrientation.component1 = angle1;
-  FixedMath_WriteDirectionQ28(&g_AuxiliaryForwardDirectionFixed,angle1,angle0);
+  g_AuxiliaryOrientation.component0 = azimuthAngle;
+  g_AuxiliaryOrientation.component1 = elevationAngle;
+  FixedMath_WriteDirectionQ28(&g_AuxiliaryForwardDirectionFixed,elevationAngle,azimuthAngle);
   FixedTransform_BuildRotationBasis
-            (&g_AuxiliaryRotationMatrixFixed,0x4000 - angle0 & 0xffff,angle1,0xc000);
+            (&g_AuxiliaryRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - azimuthAngle & 0xffff,elevationAngle,
+             FIXED_ANGLE16_THREE_QUARTER_TURN);
   g_AuxiliaryRotationMatrixFixed.translation.x = 0;
   g_AuxiliaryRotationMatrixFixed.translation.y = 0;
   g_AuxiliaryRotationMatrixFixed.translation.z = 0;
-  return;
 }
 
 
 /* Address: 0x00486730.
-   Ownership: graphics/core/runtime.
-   Purpose: Copies eight scene-bound values. Exact axis ordering remains unresolved.
+   Stores the eight per-scene values in g_SceneBoundsFixed. Despite the name, bound4..bound7 are packed ARGB
+   colours: the model renderer passes bound5/bound4 and bound7/bound6 as the scene colour pairs of
+   ModelRender_ComputeVertexIntensityDefaultPath and ...ScaledPath. No reader of bound0..bound3 is known.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetSceneBounds
@@ -351,29 +348,26 @@ Graphics_SetSceneBounds
   g_SceneBoundsFixed.bound5 = bound5;
   g_SceneBoundsFixed.bound6 = bound6;
   g_SceneBoundsFixed.bound7 = bound7;
-  return;
 }
 
 
 /* Address: 0x00486790.
-   Ownership: graphics/core/runtime.
-   Purpose: Sets the primitive queue used by the scene/mesh submission code.
+   Selects the primitive queue the model renderer appends its triangles to (g_ActivePrimitiveQueue); the scene
+   setup calls it with the queue freshly reset by GraphicsPrimitiveQueue_ResetGlobal.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
 
 {
   g_ActivePrimitiveQueue = queue;
-  return;
 }
 
 
 /* Address: 0x004867B0.
-   Ownership: graphics/core/runtime.
-   Purpose: Builds four fixed-point corner rays from the current projection parameters, derives four side-plane
-   normals with cross products, and normalizes them.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_WriteDirectionScaled
-   [core/math/fixed], FixedVec3_CrossQ12 [core/math/fixed], FixedVec3_NormalizeQ28 [core/math/fixed].
+   Rebuilds the four side planes of the view frustum from the current view angles, projection scale and shift
+   (call after Graphics_SetViewProjectionParameters). Two edge rays are forward + / - a sideways vector of length
+   1 << (12 - shift), two are forward + / - an up/down vector of that length; the plane normals are cross products of neighbouring
+   rays, normalised to Q28 in g_FrustumPlaneNormalFixed_0[0..3].
 */
 void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
 
@@ -381,10 +375,10 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
   uint32_t forwardX;
   uint32_t forwardY;
   uint32_t forwardZ;
-  uint32_t cornerAzimuthAngle16;
   uint32_t sideAzimuthAngle16;
+  uint32_t edgeAzimuthAngle16;
   int scale;
-  uint32_t elevationAngle;
+  uint32_t upElevationAngle16;
   FixedDirection viewDirection;
   uint32_t viewElevationAngle16;
   uint32_t viewAzimuthAngle16;
@@ -396,25 +390,29 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
   forwardZ = viewDirection.z;
   forwardY = viewDirection.y;
   forwardX = viewDirection.x;
-  cornerAzimuthAngle16 = viewAzimuthAngle16 + 0x4000 & 0xffff;
-  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0,0,cornerAzimuthAngle16,scale);
-  sideAzimuthAngle16 = cornerAzimuthAngle16 - 0x8000 & 0xffff;
-  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 1,0,sideAzimuthAngle16,scale);
+  /* rays 0 and 1: horizontal vectors of length scale, a quarter turn to either side */
+  sideAzimuthAngle16 = viewAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff;
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0,0,sideAzimuthAngle16,scale);
+  edgeAzimuthAngle16 = sideAzimuthAngle16 - FIXED_ANGLE16_HALF_TURN & 0xffff;
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 1,0,edgeAzimuthAngle16,scale);
   g_FrustumCornerRayFixed_0[0].x = g_FrustumCornerRayFixed_0[0].x + forwardX;
   g_FrustumCornerRayFixed_0[0].y = g_FrustumCornerRayFixed_0[0].y + forwardY;
   g_FrustumCornerRayFixed_0[0].z = g_FrustumCornerRayFixed_0[0].z + forwardZ;
   g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x + forwardX;
   g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y + forwardY;
   g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z + forwardZ;
-  sideAzimuthAngle16 = sideAzimuthAngle16 + 0x4000 & 0xffff;
-  elevationAngle = viewElevationAngle16 + 0x4000 & 0xffff;
-  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 2,elevationAngle,sideAzimuthAngle16,scale);
+  /* rays 2 and 3: up and down (elevation + / - a quarter turn) at the view azimuth again */
+  edgeAzimuthAngle16 = edgeAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff;
+  upElevationAngle16 = viewElevationAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff;
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 2,upElevationAngle16,edgeAzimuthAngle16,scale);
   FixedMath_WriteDirectionScaled
-            (g_FrustumCornerRayFixed_0 + 3,elevationAngle - 0x8000 & 0xffff,sideAzimuthAngle16,scale);
+            (g_FrustumCornerRayFixed_0 + 3,upElevationAngle16 - FIXED_ANGLE16_HALF_TURN & 0xffff,edgeAzimuthAngle16,
+             scale);
   FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0,g_FrustumCornerRayFixed_0,
                      g_FrustumCornerRayFixed_0 + 2);
   FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0 + 1,g_FrustumCornerRayFixed_0 + 2,
                      g_FrustumCornerRayFixed_0 + 1);
+  /* ray 1 back to the pure sideways vector, rays 2 and 3 tilted forward */
   g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x - forwardX;
   g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y - forwardY;
   g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z - forwardZ;
@@ -432,34 +430,28 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
   FixedVec3_NormalizeQ28(g_FrustumPlaneNormalFixed_0 + 1,g_FrustumPlaneNormalFixed_0 + 1);
   FixedVec3_NormalizeQ28(g_FrustumPlaneNormalFixed_0 + 2,g_FrustumPlaneNormalFixed_0 + 2);
   FixedVec3_NormalizeQ28(g_FrustumPlaneNormalFixed_0 + 3,g_FrustumPlaneNormalFixed_0 + 3);
-  return;
 }
 
 
 /* Address: 0x004A9100.
-   Ownership: graphics/core/runtime.
-   Purpose: Default no-op callback stored at 004A8ED4 before graphics backend initialization installs
+   Initial value of g_GraphicsBackendRefreshActiveAdapter (image slot 0x004A8ED4), which MainWindowProc calls on
+   WM_ACTIVATEAPP deactivation: does nothing until Graphics_Init installs
    GraphicsBackend_RefreshActiveAdapterIfReady.
 */
 void GraphicsBackend_RefreshActiveAdapterNoOp(void)
 
 {
-  return;
 }
 
 /* Address: 0x004BCFE0.
-   Ownership: graphics/core/runtime.
-   Purpose: Passes the fixed transform stored at object offset 0x10 to the shared Euler-angle extractor and returns
-   the packed register results. Typed parameters: p0 graphicsObject→GraphicsObjectAddress32_V345. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: FixedTransform_ExtractEulerAnglesRegs [core/math/fixed].
+   Returns the Euler angles (FixedTransform_ExtractEulerAnglesRegs, EAX/ECX/EDX) of the object's world transform
+   at +0x10. Part of an object-transform helper family (0x004BCFE0-0x004BD0B0) that nothing in the executable
+   calls; it is only listed in g_ThandorFunctionMap.
 */
 FixedEulerAnglesEaxEcxEdx12
 GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsObject)
 
 {
-  FixedEulerPairEdxEax8 eulerAnglePair;
   FixedEulerAnglesEaxEcxEdx12 eulerAngles;
   
   eulerAngles = FixedTransform_ExtractEulerAnglesRegs((GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
@@ -468,11 +460,9 @@ GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsO
 
 
 /* Address: 0x004BD000.
-   Ownership: graphics/core/runtime.
-   Purpose: Handles graphics object convert world direction angles to local angles register result.
-   Cross-module calls: FixedTransform_InvertRigidQ28 [core/math/fixed], FixedMath_WriteDirectionQ28
-   [core/math/fixed], FixedTransform_ApplyPoint [core/math/fixed], FixedMath_VectorToAnglesVec3Regs
-   [core/math/fixed].
+   Converts a world direction (elevation/azimuth) into the object's local frame: inverts the object's world
+   transform at +0x10 into the shared scratch matrix, applies it to the direction's unit vector and returns the
+   resulting angles. No caller in the executable (only in g_ThandorFunctionMap).
 */
 FixedElevationAzimuth __thandor_preserve_eax
 GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
@@ -494,44 +484,48 @@ GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
 
 
 /* Address: 0x004BD050.
-   Ownership: graphics/core/runtime.
-   Purpose: Handles graphics object set translation direction packed angles and scale.
+   Sets the object's offset from its parent in polar form: the distance at +0x40 and the 16-bit elevation and
+   azimuth packed into +0x44 (elevation in the high word), which GraphicsObject_RebuildTransformHierarchyRecursive
+   turns into the translation with FixedMath_DirectionFromAnglesScaledRegs. No caller in the executable (only in
+   g_ThandorFunctionMap).
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
-          (AngleTurn16Stored32 directionAngle0Stored16,AngleTurn16Stored32 directionAngle1Stored16,
-          FixedMathScale32 translationScale,GraphicsObjectAddress32 graphicsObjectAddress)
+          (AngleTurn16Stored32 elevationAngle16,AngleTurn16Stored32 azimuthAngle16,
+          FixedMathScale32 distance,GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
-  *(FixedMathScale32 *)(graphicsObjectAddress + 0x40) = translationScale;
+  *(FixedMathScale32 *)(graphicsObjectAddress + 0x40) = distance;
   *(AngleTurn16Stored32 *)(graphicsObjectAddress + 0x44) =
-       directionAngle1Stored16 | directionAngle0Stored16 << 0x10;
-  return;
+       azimuthAngle16 | elevationAngle16 << 0x10;
 }
 
 
 /* Address: 0x004BD080.
-   Ownership: graphics/core/runtime.
-   Purpose: Handles graphics object set rotation euler angles packed.
+   Sets the object's local rotation: the azimuth at +0x48 and the 16-bit roll and elevation packed into +0x4C
+   (roll in the high word), which GraphicsObject_RebuildTransformHierarchyRecursive passes to
+   FixedTransform_BuildRotationBasis (the angle names follow that function's parameters). No caller in the
+   executable (only in g_ThandorFunctionMap).
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_SetRotationEulerAnglesPacked
-          (AngleTurn32 rotationAngle2,AngleTurn16Stored32 rotationAngle0Stored16,
-          AngleTurn16Stored32 rotationAngle1Stored16,GraphicsObjectAddress32 graphicsObjectAddress)
+          (AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
+          AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
-  *(AngleTurn32 *)(graphicsObjectAddress + 0x48) = rotationAngle2;
+  *(AngleTurn32 *)(graphicsObjectAddress + 0x48) = azimuthAngle;
   *(AngleTurn16Stored32 *)(graphicsObjectAddress + 0x4c) =
-       rotationAngle1Stored16 | rotationAngle0Stored16 << 0x10;
-  return;
+       elevationAngle16 | rollAngle16 << 0x10;
 }
 
 
 /* Address: 0x004BD0B0.
-   Ownership: graphics/core/runtime.
-   Purpose: Handles graphics object rebuild transform hierarchy recursive.
-   Cross-module calls: FixedTransform_BuildRotationBasis [core/math/fixed], FixedMath_DirectionFromAnglesScaledRegs
-   [core/math/fixed], FixedTransform_Compose [core/math/fixed].
+   Rebuilds the world transform at +0x10 from the packed rotation (+0x48/+0x4C) and polar translation
+   (+0x40/+0x44): a root object (no parent at +0x64) gets the local transform directly, a child gets it composed
+   with the parent's world transform; then the children are rebuilt recursively. No caller in the executable
+   besides itself (only in g_ThandorFunctionMap).
+   As in the original, the child loop takes its count from this object (+0x0C) but reads the child pointers from
+   the parent's list at +0x78 (EBX = parent), so a root object with children would read from address 0x78.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress)
@@ -542,8 +536,10 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
   GraphicsFixedMatrix3x4 *output;
   FixedDirection translationDirection;
   
+  /* a child builds its local transform in the scratch matrix shared with
+     GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs */
   output = (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0);
-  parentObjectOrCursor = *(int *)(graphicsObjectAddress + 100);
+  parentObjectOrCursor = *(int *)(graphicsObjectAddress + 0x64);
   if (parentObjectOrCursor == 0) {
     output = (GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10);
   }
@@ -564,11 +560,10 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
               ((GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10),output,
                (GraphicsFixedMatrix3x4 *)(parentObjectOrCursor + 0x10));
   }
-  for (; remainingChildCount != 0; remainingChildCount = remainingChildCount + -1) {
+  for (; remainingChildCount != 0; remainingChildCount--) {
     GraphicsObject_RebuildTransformHierarchyRecursive(*(GraphicsObjectAddress32 *)(parentObjectOrCursor + 0x78));
     parentObjectOrCursor = parentObjectOrCursor + 4;
   }
-  return;
 }
 
 

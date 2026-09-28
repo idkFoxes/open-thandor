@@ -14,6 +14,10 @@
 /* Submodule: gameplay/faction/relations. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Records in a player's marked-cell list (SelectionPlayerRuntimeBlock.pairRecords80_807F[4096]); the
+   PlayerPairList_* functions ignore a list whose count has reached this value. */
+#define PLAYER_PAIR_LIST_CAPACITY 4096
+
 /* 0x0053C010 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRelations_UpdateAllPairsForFaction
@@ -22,14 +26,14 @@ GameFactionRelations_UpdateAllPairsForFaction
 /* 0x00560E30 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue endKey,
-          SelectionPlayerPairValue pairValue,SelectionPlayerPairValue startKey);
+          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+          SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12);
 
 /* 0x00560E70 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue endKey,
-          SelectionPlayerPairValue pairValue,SelectionPlayerPairValue startKey);
+          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+          SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12);
 
 /* 0x0053C3D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -68,13 +72,13 @@ GameFactionRelations_MaybeResetPairState
 /* 0x00560EB0 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertUnique
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
-          SelectionPlayerPairValue pairKey);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
+          SelectionPlayerPairValue worldXQ12);
 
 /* 0x00560F50 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveFirstMatch
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
-          SelectionPlayerPairValue pairKey);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
+          SelectionPlayerPairValue worldXQ12);
 
 #endif /* THANDOR_GAMEPLAY_FACTION_RELATIONS_H */

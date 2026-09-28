@@ -4844,7 +4844,7 @@ InGameUiCommand_UpdateInteractionByMode
         InGameCommandQueue_AppendLocalPlayerCommand(0x2f20,0,rowOrDeltaValue,payloadDword04);
         return;
       }
-      SelectionPlayerRuntime_ReissuePrimarySelectionPosition
+      SelectionPlayerRuntime_MovePrimarySelectionBy
                 (g_LocalPlayerRuntimeId,0,rowOrDeltaValue,payloadDword04);
       return;
     }
@@ -4857,7 +4857,7 @@ InGameUiCommand_UpdateInteractionByMode
       InGameCommandQueue_AppendLocalPlayerCommand(0x30f0,0,0,workValue << 6);
       return;
     }
-    SelectionPlayerRuntime_AdvancePrimarySelectionCycle(g_LocalPlayerRuntimeId,0,0,workValue << 6);
+    SelectionPlayerRuntime_RotatePrimarySelectionBy(g_LocalPlayerRuntimeId,0,0,workValue << 6);
     return;
   case 5:
     if (pointerRegionCode == 0x7fffffff) {

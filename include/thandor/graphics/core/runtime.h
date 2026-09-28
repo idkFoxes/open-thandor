@@ -56,20 +56,20 @@ Graphics_SetProjectionClipRect
 /* 0x004864D0 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetViewProjectionParameters
-          (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewAngle1,
-          GraphicsViewAngle16 viewAngle0,GraphicsProjectionScale projectionScale,
+          (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewElevationAngle,
+          GraphicsViewAngle16 viewAzimuthAngle,GraphicsProjectionScale projectionScale,
           GraphicsWorldCoordinateQ12 originZ,GraphicsWorldCoordinateQ12 originY,
           GraphicsWorldCoordinateQ12 originX);
 
 /* 0x00486640 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetProjectionViewport
-          (GraphicsScreenCoordinate bound0,GraphicsScreenCoordinate bound1,
-          GraphicsScreenCoordinate bound2,GraphicsScreenCoordinate bound3);
+          (GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
+          GraphicsScreenCoordinate top,GraphicsScreenCoordinate left);
 
 /* 0x004866C0 */
 void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetAuxiliaryOrientation(AngleTurn32 angle1,AngleTurn32 angle0);
+Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x00486730 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -102,14 +102,14 @@ GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
 /* 0x004BD050 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
-          (AngleTurn16Stored32 directionAngle0Stored16,AngleTurn16Stored32 directionAngle1Stored16,
-          FixedMathScale32 translationScale,GraphicsObjectAddress32 graphicsObjectAddress);
+          (AngleTurn16Stored32 elevationAngle16,AngleTurn16Stored32 azimuthAngle16,
+          FixedMathScale32 distance,GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x004BD080 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_SetRotationEulerAnglesPacked
-          (AngleTurn32 rotationAngle2,AngleTurn16Stored32 rotationAngle0Stored16,
-          AngleTurn16Stored32 rotationAngle1Stored16,GraphicsObjectAddress32 graphicsObjectAddress);
+          (AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
+          AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x004BD0B0 */
 void __thandor_void_preserve_eax_ecx_edx

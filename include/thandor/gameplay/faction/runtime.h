@@ -92,13 +92,13 @@ GameFactionRuntime_RegisterArmyAssetPointers
 /* 0x00560160 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
-          (uint32_t reservedDword0,FactionArmyAssetCount requestedCount,
+          (uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount requestedCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
 
 /* 0x00560400 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedDword04,PckArmyAssetIdCatalog armyAssetId,
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex);
 
 /* 0x00560620 */
@@ -110,32 +110,32 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
 /* 0x005606A0 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
-          (uint32_t unusedSaleArgument0,uint32_t unusedSaleArgument1,PckArmyAssetIdCatalog armyAssetId,
+          (uint32_t unusedPlayerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex);
 
 /* 0x00561F80 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_ResolveAndStoreState8094
-          (PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 lookupValue0,
-          PlayerStateLookupValue1 lookupValue1,RuntimeToken lookupToken);
+          (PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
+          PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId);
 
 /* 0x00561FF0 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8090
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
-          PlayerState8090Value stateValue);
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlayerState8090Value placementFactionIndex);
 
 /* 0x00562020 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8094
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
-          PlayerState8094Value stateValue);
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlayerState8094Value armyToken);
 
 /* 0x005622C0 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_ClearState8094
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
-          uint32_t reservedZero2);
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          uint32_t unusedZero2);
 
 /* 0x00565590 */
 void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecords(void);

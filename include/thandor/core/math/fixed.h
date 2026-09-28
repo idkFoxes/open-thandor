@@ -25,6 +25,7 @@
 #define FIXED_ANGLE16_EIGHTH_TURN 0x2000
 #define FIXED_ANGLE16_QUARTER_TURN 0x4000
 #define FIXED_ANGLE16_HALF_TURN 0x8000
+#define FIXED_ANGLE16_THREE_QUARTER_TURN 0xC000
 #define FIXED_ANGLE16_FULL_TURN 0x10000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

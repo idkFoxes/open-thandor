@@ -11,12 +11,11 @@
 /* Implementation ownership: graphics/resources/palette. */
 
 /* Address: 0x004AE520.
-   Ownership: graphics/resources/palette.
-   Purpose: Handles graphics palette texture source optimize palette banks and remap indices.
-   Local calls: GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank,
-   GraphicsPaletteTextureSource_CountCombinedUsedColors,
-   GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources,
-   GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources.
+   Shrinks the palette banks of a palette texture source in place: marks every entry unused, clears the mark
+   on each entry a subresource pixel references, removes banks without a used colour, folds duplicate colours
+   within a bank, merges bank pairs whose used colours fit into one bank and finally packs the used entries of
+   every bank to its front (zeroing the rest), remapping the pixel indices at each step. CF set (true) when the
+   source has no palette bank or no subresource. No caller or table reference is known (converter/editor code left in the game).
 */
 bool __thandor_cf_preserve_ecx_edx
 GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase)
@@ -38,56 +37,62 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
   bool emptyBankFound;
   bool banksMerged;
 
+  /* +0xB0 subresource count, +0xB4 palette bank count, +0xB8 subresource table offset; the banks start at
+     GRAPHICS_PALETTE_BANKS_OFFSET, entries are 8 bytes (colour, second dword) */
   remainingCount = *(int *)(textureSourceBase + 0xb4) << 8;
   if (remainingCount != 0) {
-    entryCursor = (uint32_t *)(textureSourceBase + 0x200);
+    /* mark every entry unused; fully transparent colours become plain black */
+    entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
     do {
       if ((*entryCursor & 0xff000000) == 0) {
-        indexOrColor = 0x70707;
+        indexOrColor = GRAPHICS_PALETTE_ENTRY_UNUSED_MARK;
       }
       else {
-        indexOrColor = *entryCursor | 0x70707;
+        indexOrColor = *entryCursor | GRAPHICS_PALETTE_ENTRY_UNUSED_MARK;
       }
       *entryCursor = indexOrColor;
       entryCursor = entryCursor + 2;
-      remainingCount = remainingCount + -1;
+      remainingCount--;
     } while (remainingCount != 0);
     remainingCount = *(int *)(textureSourceBase + 0xb0);
     cursorOrBankIndex = textureSourceBase + *(int *)(textureSourceBase + 0xb8);
     if (remainingCount != 0) {
+      /* clear the mark on every entry a pixel uses (subresource entry: +8 bank or -1, +0xC pixel offset,
+         +0x18/+0x1C width/height, see GraphicsTextureSourceEntry) */
       do {
         subresourceBank = *(int *)(cursorOrBankIndex + 8);
         remainingPixels = *(int *)(cursorOrBankIndex + 0x18) * *(int *)(cursorOrBankIndex + 0x1c);
         if (subresourceBank != -1) {
           pixelCursor = (uint8_t *)(*(int *)(cursorOrBankIndex + 0xc) + textureSourceBase);
-          for (; remainingPixels != 0; remainingPixels = remainingPixels + -1) {
-            entryCursor = (uint32_t *)(textureSourceBase + 0x200 + subresourceBank * 0x800 + (uint32_t)*pixelCursor * 8);
-            *entryCursor = *entryCursor & 0xfff8f8f8;
-            pixelCursor = pixelCursor + 1;
+          for (; remainingPixels != 0; remainingPixels--) {
+            entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET + subresourceBank * GRAPHICS_PALETTE_BANK_BYTES + (uint32_t)*pixelCursor * 8);
+            *entryCursor = *entryCursor & 0xfff8f8f8; /* ~GRAPHICS_PALETTE_ENTRY_UNUSED_MARK */
+            pixelCursor++;
           }
         }
         cursorOrBankIndex = cursorOrBankIndex + 0x20;
-        remainingCount = remainingCount + -1;
+        remainingCount--;
       } while (remainingCount != 0);
+      /* count the used colours of each bank (at most 0x200 banks, the size of g_GraphicsPaletteBankSlots) */
       bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
       indexOrColor = *(uint32_t *)(textureSourceBase + 0xb4);
-      entryCursor = (uint32_t *)(textureSourceBase + 0x200);
+      entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
       if (0x200 < indexOrColor) {
         indexOrColor = 0x200;
       }
       do {
-        cursorOrBankIndex = 0x100;
+        cursorOrBankIndex = GRAPHICS_PALETTE_BANK_ENTRIES;
         remainingCount = 0;
         do {
-          if ((*entryCursor & 0x70707) == 0) {
-            remainingCount = remainingCount + 1;
+          if ((*entryCursor & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
+            remainingCount++;
           }
           entryCursor = entryCursor + 2;
-          cursorOrBankIndex = cursorOrBankIndex + -1;
+          cursorOrBankIndex--;
         } while (cursorOrBankIndex != 0);
         *bankSlotCursor = remainingCount;
-        bankSlotCursor = bankSlotCursor + 1;
-        indexOrColor = indexOrColor - 1;
+        bankSlotCursor++;
+        indexOrColor--;
       } while (indexOrColor != 0);
       /* Remove every bank without a used color, rescanning from the first bank after each removal. */
       for (;;) {
@@ -100,17 +105,19 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
             emptyBankFound = true;
             break;
           }
-          bankSlotCursor = bankSlotCursor + 1;
-          cursorOrBankIndex = cursorOrBankIndex + 1;
-          remainingCount = remainingCount + -1;
+          bankSlotCursor++;
+          cursorOrBankIndex++;
+          remainingCount--;
         } while (remainingCount != 0);
         if (!emptyBankFound) break;
         GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
                   (cursorOrBankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
       }
+      /* fold duplicates inside each bank: pixels using a later copy of a used colour move to the first one,
+         and the copy is marked unused */
       cursorOrBankIndex = 0;
       remainingCount = *(int *)(textureSourceBase + 0xb4);
-      entryCursor = (uint32_t *)(textureSourceBase + 0x200);
+      entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
       do {
         indexOrColor = 0;
         bankCursor = entryCursor;
@@ -119,23 +126,23 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
           secondIndex = indexOrColor + 1;
           entryCursor = entryCursor + 2;
           scanOrBankStart = entryCursor;
-          if ((colorOrCombinedCount & 0x70707) == 0) {
+          if ((colorOrCombinedCount & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
             do {
               if (colorOrCombinedCount == *scanOrBankStart) {
                 GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
                           (secondIndex,indexOrColor,cursorOrBankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase)
                 ;
-                *scanOrBankStart = *scanOrBankStart | 0x70707;
+                *scanOrBankStart = *scanOrBankStart | GRAPHICS_PALETTE_ENTRY_UNUSED_MARK;
               }
-              secondIndex = secondIndex + 1;
+              secondIndex++;
               scanOrBankStart = scanOrBankStart + 2;
-            } while (secondIndex < 0x100);
+            } while (secondIndex < GRAPHICS_PALETTE_BANK_ENTRIES);
           }
-          indexOrColor = indexOrColor + 1;
+          indexOrColor++;
         } while (indexOrColor < 0xff);
-        cursorOrBankIndex = cursorOrBankIndex + 1;
-        entryCursor = bankCursor + 0x200;
-        remainingCount = remainingCount + -1;
+        cursorOrBankIndex++;
+        entryCursor = bankCursor + 0x200; /* next bank: 0x200 dwords */
+        remainingCount--;
       } while (remainingCount != 0);
       /* Merge bank pairs whose combined used colors fit into 256 entries; after a merge, retry the same first
          bank against the remaining ones. */
@@ -147,22 +154,23 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
         do {
           colorOrCombinedCount = GraphicsPaletteTextureSource_CountCombinedUsedColors
                             (secondIndex,indexOrColor,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
-          if (colorOrCombinedCount < 0x101) {
+          if (colorOrCombinedCount < GRAPHICS_PALETTE_BANK_ENTRIES + 1) {
             GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
                       (secondIndex,indexOrColor,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
             banksMerged = true;
             break;
           }
-          secondIndex = secondIndex + 1;
+          secondIndex++;
         } while (secondIndex < *(uint32_t *)(textureSourceBase + 0xb4));
         if (!banksMerged) {
-          indexOrColor = indexOrColor + 1;
+          indexOrColor++;
           if (*(uint32_t *)(textureSourceBase + 0xb4) <= indexOrColor) break;
         }
       }
+      /* pack the used entries of each bank to its front and zero the colours of the rest */
       bankIndex = 0;
       remainingCount = *(int *)(textureSourceBase + 0xb4);
-      entryCursor = (uint32_t *)(textureSourceBase + 0x200);
+      entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
       do {
         secondIndex = 0;
         indexOrColor = 0;
@@ -173,22 +181,22 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
           colorOrCombinedCount = *entryCursor;
           *bankCursor = colorOrCombinedCount;
           entryCursor = entryCursor + 2;
-          if ((colorOrCombinedCount & 0x70707) == 0) {
+          if ((colorOrCombinedCount & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
             GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
                       (indexOrColor,secondIndex,bankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase)
             ;
             bankCursor = bankCursor + 2;
-            secondIndex = secondIndex + 1;
+            secondIndex++;
           }
-          indexOrColor = indexOrColor + 1;
-        } while (indexOrColor < 0x100);
-        for (cursorOrBankIndex = indexOrColor - secondIndex; cursorOrBankIndex != 0; cursorOrBankIndex = cursorOrBankIndex + -1) {
+          indexOrColor++;
+        } while (indexOrColor < GRAPHICS_PALETTE_BANK_ENTRIES);
+        for (cursorOrBankIndex = indexOrColor - secondIndex; cursorOrBankIndex != 0; cursorOrBankIndex--) {
           *bankCursor = 0;
           bankCursor = bankCursor + 2;
         }
-        bankIndex = bankIndex + 1;
+        bankIndex++;
         entryCursor = scanOrBankStart + 0x200;
-        remainingCount = remainingCount + -1;
+        remainingCount--;
       } while (remainingCount != 0);
       return false;
     }
@@ -198,9 +206,9 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
 
 
 /* Address: 0x004AD800.
-   Ownership: graphics/resources/palette.
-   Purpose: Validates the 'pal' signature, then returns paletteBankCount in ECX. ABI: CF clear means success; CF
-   set means invalid input.
+   In the original: checks the 'pal' signature and returns paletteBankCount in ECX with CF clear, CF set for a
+   wrong signature. The C body is empty (the register result has no C form here); no caller or table reference
+   is known.
 */
 void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset)
 
@@ -209,18 +217,16 @@ void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset)
 }
 
 /* Address: 0x004AD820.
-   Ownership: graphics/resources/palette.
-   Purpose: Loads one pal asset through Package_LoadEntry, validates it through g_GraphicsPaletteAssetValidate, and
-   returns the package-backed allocation. The first two parameters are the ECX/EDX package-loader context; their
-   higher-level meanings remain unresolved. ABI: CF clear means success. CF set means loading or validation failed.
-   Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
+   Loads a 'pal' palette asset from pathUtf16 (Package_LoadEntry) and validates it through
+   g_GraphicsPaletteAssetValidate; an invalid asset is released again. CF set with the load or validation error.
+   Installed as g_GraphicsPaletteAssetLoadPackage (used by the army graphics and frontend palette loaders).
 */
 PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
 
 {
   GraphicsPaletteAsset *loadedPaletteAsset;
-  GraphicsPaletteAsset *validatedPaletteAsset;
+  GraphicsPaletteAsset *validateErrorOrAsset;
   PackageLoadResult loadResult;
   PaletteAssetResult validateResult;
   
@@ -228,12 +234,12 @@ GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
   loadedPaletteAsset = loadResult.bufferOrError;
   if (!loadResult.failed) {
     validateResult = g_GraphicsPaletteAssetValidate(loadedPaletteAsset);
-    validatedPaletteAsset = validateResult.paletteAsset;
+    validateErrorOrAsset = validateResult.paletteAsset;
     if (!validateResult.failed) {
       return validateResult;
     }
     Resource_Release(loadedPaletteAsset);
-    loadedPaletteAsset = validatedPaletteAsset;
+    loadedPaletteAsset = validateErrorOrAsset;
   }
   validateResult.failed = true;
   validateResult.paletteAsset = loadedPaletteAsset;
@@ -242,11 +248,9 @@ GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
 
 
 /* Address: 0x004AD860.
-   Ownership: graphics/resources/palette.
-   Purpose: Resolves the owning allocation through g_GraphicsPaletteAssetResolveAllocationBase, then releases it
-   through Resource_Release. Use for assets returned by GraphicsPaletteAsset_LoadPackage. Graphics palette
-   lifecycle callback.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Releases a palette asset loaded by GraphicsPaletteAsset_LoadPackage: resolves its allocation through
+   g_GraphicsPaletteAssetResolveAllocationBase and hands it to Resource_Release. Installed as
+   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
@@ -261,10 +265,9 @@ GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
 
 
 /* Address: 0x004AD880.
-   Ownership: graphics/resources/palette.
-   Purpose: Allocates paletteAsset->allocationSizeBytes, copies the complete allocation with rep movsd, validates
-   the clone, and returns an independently owned heap allocation. ABI: CF clear means success. CF set means
-   allocation or validation failed. Graphics palette lifecycle callback.
+   Makes an independently owned heap copy of a palette asset (allocationSizeBytes, copied dword by dword) and
+   validates it; an invalid copy is freed again and the free result returned. Installed as
+   g_GraphicsPaletteAssetLifecycleCallbacks3.clone.
 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteAsset)
 
@@ -281,7 +284,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   clonedAsset = (GraphicsPaletteAsset *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     destinationCursor = clonedAsset;
-    for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount = sizeOrDwordCount - 1) {
+    for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount--) {
       destinationCursor->magic = paletteAsset->magic;
       paletteAsset = (GraphicsPaletteAsset *)&paletteAsset->allocationSizeBytes;
       destinationCursor = (GraphicsPaletteAsset *)&destinationCursor->allocationSizeBytes;
@@ -298,27 +301,25 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
 
 
 /* Address: 0x004AD8D0.
-   Ownership: graphics/resources/palette.
-   Purpose: Resolves the owning allocation through g_GraphicsPaletteAssetResolveAllocationBase, then frees it
-   through g_MemoryApi.free. Use for assets returned by GraphicsPaletteAsset_Clone. Graphics palette lifecycle
-   callback.
+   Frees a palette asset made by GraphicsPaletteAsset_Clone: resolves its allocation through
+   g_GraphicsPaletteAssetResolveAllocationBase and frees it with g_MemoryApi.free. Installed as
+   g_GraphicsPaletteAssetLifecycleCallbacks3.releaseClone.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
 
 {
-  GraphicsPaletteAsset *memory;
+  GraphicsPaletteAsset *allocation;
   
-  memory = g_GraphicsPaletteAssetResolveAllocationBase(paletteAsset);
-  g_MemoryApi.free(memory);
+  allocation = g_GraphicsPaletteAssetResolveAllocationBase(paletteAsset);
+  g_MemoryApi.free(allocation);
   return;
 }
 
 
 /* Address: 0x004AD8F0.
-   Ownership: graphics/resources/palette.
-   Purpose: Validates magic == 0x006C6170. On success returns the input pointer with CF clear. On failure returns
-   engine error code 0x35 in EAX with CF set.
+   Accepts paletteAsset when it starts with the 'pal' signature (CF clear, pointer returned), otherwise CF set
+   with FATAL_ERROR_PALETTE_ASSET_INVALID. Installed as g_GraphicsPaletteAssetValidate.
 */
 PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
@@ -333,15 +334,14 @@ GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
     return successResult;
   }
   failureResult.failed = true;
-  failureResult.paletteAsset = (GraphicsPaletteAsset *)0x35;
+  failureResult.paletteAsset = (GraphicsPaletteAsset *)FATAL_ERROR_PALETTE_ASSET_INVALID;
   return failureResult;
 }
 
 
 /* Address: 0x004AD920.
-   Ownership: graphics/resources/palette.
-   Purpose: Returns the allocation pointer that owns a pal asset. The current implementation is an identity
-   function, but both release services route through this slot.
+   Returns the allocation that owns a palette asset, which is the asset itself; both release callbacks go
+   through this slot. Installed as g_GraphicsPaletteAssetResolveAllocationBase.
 */
 GraphicsPaletteAsset * __thandor_eax_preserve_ecx_edx
 GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset)
@@ -352,8 +352,11 @@ GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset)
 
 
 /* Address: 0x004AE7E0.
-   Ownership: graphics/resources/palette.
-   Purpose: Handles graphics palette texture source combine assets and rebase offsets.
+   Builds a new palette texture source from baseAsset followed by appendedAsset: one header (base's, with the
+   size and the bank and subresource counts summed), base banks, appended banks, base subresource entries,
+   appended entries, base pixel data, appended pixel data. Pixel offsets of both entry sets and the bank index
+   of appended entries are rebased. CF set with the arena error when the allocation fails.
+   No caller or table reference is known (converter/editor code left in the game).
 */
 PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
@@ -377,7 +380,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
   ArenaAllocResult allocResult;
   PaletteTextureSourceResult result;
   
-  bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - 0x200;
+  bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - GRAPHICS_PALETTE_BANKS_OFFSET;
   allocResult = g_MemoryApi.alloc(bytes);
   result.paletteSource = (GraphicsPaletteTextureSourceAsset *)allocResult.payloadOrError;
   if (allocResult.failed) {
@@ -386,23 +389,28 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
   }
   sourceCursor = baseAsset;
   destinationCursor = result.paletteSource;
-  for (headerCountOrBaseBanks = 0x80; headerCountOrBaseBanks != 0; headerCountOrBaseBanks = headerCountOrBaseBanks + -1) {
+  for (headerCountOrBaseBanks = 0x80; headerCountOrBaseBanks != 0; headerCountOrBaseBanks--) {
     destinationCursor->magic = sourceCursor->magic;
     sourceCursor = (GraphicsPaletteTextureSourceAsset *)&sourceCursor->allocationSizeBytes;
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
+  /* After the header copy destinationCursor is result + 0x200 and destinationCursor[-1] (0x208 bytes back)
+     views the header 8 bytes off: [-1].reserved0C is allocationSizeBytes, [-1].subresourceTableOffset the
+     subresource count (+0xB0), [-1].reservedBC_1FF the bank count (+0xB4) and +4 into it the subresource table
+     offset (+0xB8). Inside the entry loops [-1].reservedBC_1FF + 0x134/+0x138 are the palette bank index and
+     pixel offset (+8/+0xC) of the entry just copied. */
   appendedBankCount = appendedAsset->paletteBankCount;
   appendedSubresourceCount = appendedAsset->subresourceCount;
   destinationCursor[-1].reserved0C = bytes;
   *(GraphicsPaletteBankCount *)destinationCursor[-1].reservedBC_1FF =
        *(int *)destinationCursor[-1].reservedBC_1FF + appendedBankCount;
   destinationCursor[-1].subresourceTableOffset = destinationCursor[-1].subresourceTableOffset + appendedSubresourceCount;
-  appendedPaletteBytesOrCount = appendedBankCount * 0x800;
+  appendedPaletteBytesOrCount = appendedBankCount * GRAPHICS_PALETTE_BANK_BYTES;
   *(int *)(destinationCursor[-1].reservedBC_1FF + 4) = *(int *)(destinationCursor[-1].reservedBC_1FF + 4) + appendedPaletteBytesOrCount;
   headerCountOrBaseBanks = *(int *)sourceCursor[-1].reservedBC_1FF;
   remainingDwords = headerCountOrBaseBanks << 9;
   if (remainingDwords != 0) {
-    for (; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (; remainingDwords != 0; remainingDwords--) {
       destinationCursor->magic = sourceCursor->magic;
       sourceCursor = (GraphicsPaletteTextureSourceAsset *)&sourceCursor->allocationSizeBytes;
       destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
@@ -411,7 +419,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
   paletteEntryCursor = appendedAsset->paletteEntries;
   remainingDwords = appendedAsset->paletteBankCount << 9;
   if (remainingDwords != 0) {
-    for (; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (; remainingDwords != 0; remainingDwords--) {
       destinationCursor->magic = paletteEntryCursor->argb8888;
       paletteEntryCursor = (GraphicsTexturePaletteEntry *)&paletteEntryCursor->framebufferPixel;
       destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
@@ -421,35 +429,35 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
   remainingBaseSubresources = baseAsset->subresourceCount;
   byteSourceCursor = baseAsset->reserved10_AF + (baseAsset->subresourceTableOffset - 0x10);
   do {
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = 8; remainingDwords != 0; remainingDwords--) {
       destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
       byteSourceCursor = byteSourceCursor + 4;
       destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
     *(GraphicsAssetSubresourceCount *)(destinationCursor[-1].reservedBC_1FF + 0x138) =
          *(int *)(destinationCursor[-1].reservedBC_1FF + 0x138) + appendedPaletteBytesOrCount + appendedSubresourceCount * 0x20;
-    remainingBaseSubresources = remainingBaseSubresources - 1;
+    remainingBaseSubresources--;
   } while (remainingBaseSubresources != 0);
   byteSourceCursor = appendedAsset->reserved10_AF + (appendedAsset->subresourceTableOffset - 0x10);
   appendedSubresourceCount = appendedAsset->subresourceCount;
   do {
-    for (appendedPaletteBytesOrCount = 8; appendedPaletteBytesOrCount != 0; appendedPaletteBytesOrCount = appendedPaletteBytesOrCount + -1) {
+    for (appendedPaletteBytesOrCount = 8; appendedPaletteBytesOrCount != 0; appendedPaletteBytesOrCount--) {
       destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
       byteSourceCursor = byteSourceCursor + 4;
       destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
     *(GraphicsAssetAllocationByteSize *)(destinationCursor[-1].reservedBC_1FF + 0x138) =
-         *(int *)(destinationCursor[-1].reservedBC_1FF + 0x138) + (baseAllocationSize - 0x200);
-    if (-1 < *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134)) {
+         *(int *)(destinationCursor[-1].reservedBC_1FF + 0x138) + (baseAllocationSize - GRAPHICS_PALETTE_BANKS_OFFSET);
+    if (-1 < *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134)) { /* entries without a bank keep -1 */
       *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134) =
            *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134) + headerCountOrBaseBanks;
     }
-    appendedSubresourceCount = appendedSubresourceCount - 1;
+    appendedSubresourceCount--;
   } while (appendedSubresourceCount != 0);
   byteSourceCursor = baseAsset->reserved10_AF +
             baseAsset->subresourceCount * 0x20 + baseAsset->subresourceTableOffset + -0x10;
   for (tailDwordCount = (baseAsset->allocationSizeBytes - baseAsset->subresourceTableOffset) +
-               baseAsset->subresourceCount * -0x20 >> 2; tailDwordCount != 0; tailDwordCount = tailDwordCount - 1) {
+               baseAsset->subresourceCount * -0x20 >> 2; tailDwordCount != 0; tailDwordCount--) {
     destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
     byteSourceCursor = byteSourceCursor + 4;
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
@@ -457,7 +465,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
   byteSourceCursor = appendedAsset->reserved10_AF +
             appendedAsset->subresourceCount * 0x20 + appendedAsset->subresourceTableOffset + -0x10;
   for (tailDwordCount = (appendedAsset->allocationSizeBytes - appendedAsset->subresourceTableOffset) +
-               appendedAsset->subresourceCount * -0x20 >> 2; tailDwordCount != 0; tailDwordCount = tailDwordCount - 1) {
+               appendedAsset->subresourceCount * -0x20 >> 2; tailDwordCount != 0; tailDwordCount--) {
     destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
     byteSourceCursor = byteSourceCursor + 4;
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
@@ -467,9 +475,10 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
 
 
 /* Address: 0x004AE3F0.
-   Ownership: graphics/resources/palette.
-   Purpose: Handles graphics palette texture source merge palette bank and remap subresources.
-   Local calls: GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources.
+   Moves the used colours of bank sourcePaletteBank into bank destinationPaletteBank (reusing identical colours,
+   otherwise taking free entries), rewrites the pixels of every subresource that used the source bank to the
+   destination bank and its new indices, then removes the source bank. Called by
+   GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices once the pair is known to fit.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
@@ -488,31 +497,31 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
   uint32_t *destinationEntry;
   uint8_t *pixelCursor;
   
-  sourceEntry = (uint32_t *)((int)textureSource + sourcePaletteBank * 0x800 + 0x200);
-  destinationBankEntries = (uint32_t *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
+  sourceEntry = (uint32_t *)((int)textureSource + sourcePaletteBank * GRAPHICS_PALETTE_BANK_BYTES + GRAPHICS_PALETTE_BANKS_OFFSET);
+  destinationBankEntries = (uint32_t *)((int)textureSource + destinationPaletteBank * GRAPHICS_PALETTE_BANK_BYTES + GRAPHICS_PALETTE_BANKS_OFFSET);
   /* Build g_GraphicsPaletteRemapBytes: every used source color (marker bits 0x70707 clear) maps to an identical
      destination color, or else is copied into the first free destination entry (marker bits set). When the
      destination bank is full, that remap byte is left unchanged. */
-  for (sourceColorIndex = 0; sourceColorIndex < 0x100; sourceColorIndex = sourceColorIndex + 1) {
+  for (sourceColorIndex = 0; sourceColorIndex < GRAPHICS_PALETTE_BANK_ENTRIES; sourceColorIndex++) {
     packedColor = *sourceEntry;
-    if ((packedColor & 0x70707) == 0) {
+    if ((packedColor & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
       destinationEntry = destinationBankEntries;
-      for (destinationColorIndex = 0; destinationColorIndex < 0x100;
-          destinationColorIndex = destinationColorIndex + 1) {
+      for (destinationColorIndex = 0; destinationColorIndex < GRAPHICS_PALETTE_BANK_ENTRIES;
+          destinationColorIndex++) {
         if (packedColor == *destinationEntry) break;
         destinationEntry = destinationEntry + 2;
       }
-      if (destinationColorIndex < 0x100) {
+      if (destinationColorIndex < GRAPHICS_PALETTE_BANK_ENTRIES) {
         *(char *)(sourceColorIndex + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)destinationColorIndex;
       }
       else {
         destinationEntry = destinationBankEntries;
-        for (destinationColorIndex = 0; destinationColorIndex < 0x100;
-            destinationColorIndex = destinationColorIndex + 1) {
-          if ((*destinationEntry & 0x70707) != 0) break;
+        for (destinationColorIndex = 0; destinationColorIndex < GRAPHICS_PALETTE_BANK_ENTRIES;
+            destinationColorIndex++) {
+          if ((*destinationEntry & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) != 0) break;
           destinationEntry = destinationEntry + 2;
         }
-        if (destinationColorIndex < 0x100) {
+        if (destinationColorIndex < GRAPHICS_PALETTE_BANK_ENTRIES) {
           *destinationEntry = packedColor;
           destinationEntry[1] = sourceEntry[1];
           *(char *)(sourceColorIndex + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)destinationColorIndex;
@@ -521,24 +530,25 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
     }
     sourceEntry = sourceEntry + 2;
   }
+  /* subresourceEntry walks GraphicsTextureSourceEntry records in uint16 steps: +4 paletteIndex, +6 dataOffset,
+     +0xC/+0xE pixelWidth/pixelHeight, +0x10 the next entry */
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
   subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   do {
-    if (sourcePaletteBank == *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
-      *(GraphicsPaletteIndex *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName =
-           destinationPaletteBank;
+    if (sourcePaletteBank == *(int *)(subresourceEntry + 4)) {
+      *(GraphicsPaletteIndex *)(subresourceEntry + 4) = destinationPaletteBank;
       pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                 *(int *)(subresourceEntry + 6) + -0x28;
       remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
       do {
         *pixelCursor = *(uint8_t *)(*pixelCursor + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
-        pixelCursor = pixelCursor + 1;
-        remainingPixels = remainingPixels + -1;
+        pixelCursor++;
+        remainingPixels--;
       } while (remainingPixels != 0);
     }
     subresourceEntry = subresourceEntry + 0x10;
-    remainingSubresources = remainingSubresources - 1;
+    remainingSubresources--;
   } while (remainingSubresources != 0);
   GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources(sourcePaletteBank,textureSource);
   return;
@@ -546,8 +556,9 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
 
 
 /* Address: 0x004AE2E0.
-   Ownership: graphics/resources/palette.
-   Purpose: Handles graphics palette texture source remap color index for palette bank.
+   Replaces colour index oldColorIndex by newColorIndex in the pixels of every subresource that uses palette
+   bank paletteBank (nothing to do when both are equal). Called by
+   GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
@@ -560,12 +571,14 @@ GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
   uint16_t *subresourceEntry;
   uint8_t *pixelCursor;
   
+  /* subresourceEntry walks GraphicsTextureSourceEntry records in uint16 steps: +4 paletteIndex, +6 dataOffset,
+     +0xC/+0xE pixelWidth/pixelHeight, +0x10 the next entry */
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
   subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   if (newColorIndex != oldColorIndex) {
     do {
-      if (paletteBank == *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
+      if (paletteBank == *(int *)(subresourceEntry + 4)) {
         pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                  *(int *)(subresourceEntry + 6) + -0x28;
         remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
@@ -573,12 +586,12 @@ GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
           if ((uint8_t)oldColorIndex == *pixelCursor) {
             *pixelCursor = (uint8_t)newColorIndex;
           }
-          pixelCursor = pixelCursor + 1;
-          remainingPixels = remainingPixels + -1;
+          pixelCursor++;
+          remainingPixels--;
         } while (remainingPixels != 0);
       }
       subresourceEntry = subresourceEntry + 0x10;
-      remainingSubresources = remainingSubresources - 1;
+      remainingSubresources--;
     } while (remainingSubresources != 0);
   }
   return;
@@ -586,8 +599,9 @@ GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
 
 
 /* Address: 0x004AE370.
-   Ownership: graphics/resources/palette.
-   Purpose: Handles graphics palette texture source count combined used colors.
+   Returns how many entries one bank would need to hold the used colours of both destinationPaletteBank and
+   candidatePaletteBank (colours present in both counted once). Called by
+   GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices to find bank pairs that can be merged.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 GraphicsPaletteTextureSource_CountCombinedUsedColors
@@ -602,43 +616,45 @@ GraphicsPaletteTextureSource_CountCombinedUsedColors
   uint32_t *candidateEntry;
   uint32_t *candidateBankCursor;
   
-  destinationEntry = (uint32_t *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
-  candidateBankCursor = (uint32_t *)((int)textureSource + candidatePaletteBank * 0x800 + 0x200);
+  destinationEntry = (uint32_t *)((int)textureSource + destinationPaletteBank * GRAPHICS_PALETTE_BANK_BYTES + GRAPHICS_PALETTE_BANKS_OFFSET);
+  candidateBankCursor = (uint32_t *)((int)textureSource + candidatePaletteBank * GRAPHICS_PALETTE_BANK_BYTES + GRAPHICS_PALETTE_BANKS_OFFSET);
   usedColorCount = 0;
   /* Used destination colors that the candidate bank does not contain as well... */
-  remainingEntries = 0x100;
+  remainingEntries = GRAPHICS_PALETTE_BANK_ENTRIES;
   do {
-    if ((*destinationEntry & 0x70707) == 0) {
-      remainingCandidateEntries = 0x100;
+    if ((*destinationEntry & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
+      remainingCandidateEntries = GRAPHICS_PALETTE_BANK_ENTRIES;
       candidateEntry = candidateBankCursor;
       do {
         if (*destinationEntry == *candidateEntry) break;
         candidateEntry = candidateEntry + 2;
-        remainingCandidateEntries = remainingCandidateEntries + -1;
+        remainingCandidateEntries--;
       } while (remainingCandidateEntries != 0);
       if (remainingCandidateEntries == 0) {
-        usedColorCount = usedColorCount + 1;
+        usedColorCount++;
       }
     }
     destinationEntry = destinationEntry + 2;
-    remainingEntries = remainingEntries + -1;
+    remainingEntries--;
   } while (remainingEntries != 0);
   /* ...plus every used candidate color. */
-  remainingEntries = 0x100;
+  remainingEntries = GRAPHICS_PALETTE_BANK_ENTRIES;
   do {
-    if ((*candidateBankCursor & 0x70707) == 0) {
-      usedColorCount = usedColorCount + 1;
+    if ((*candidateBankCursor & GRAPHICS_PALETTE_ENTRY_UNUSED_MARK) == 0) {
+      usedColorCount++;
     }
     candidateBankCursor = candidateBankCursor + 2;
-    remainingEntries = remainingEntries + -1;
+    remainingEntries--;
   } while (remainingEntries != 0);
   return usedColorCount;
 }
 
 
 /* Address: 0x004AE230.
-   Ownership: graphics/resources/palette.
-   Purpose: Handles graphics palette texture source remove palette bank and rebase subresources.
+   Deletes palette bank paletteIndex: moves everything behind it 0x800 bytes down, lowers the bank count, the
+   subresource table offset, the allocation size and every subresource's pixel offset accordingly, renumbers
+   the subresources of later banks and drops the bank's slot from g_GraphicsPaletteBankSlots. Called by the
+   palette optimiser (GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices/MergePaletteBank...).
 */
 void __thandor_void_preserve_eax_ecx
 GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
@@ -650,47 +666,47 @@ GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
   AssetAllocationSizeBytes *allocationSizeField;
   uint32_t remainingDwords;
   int bankOffsetOrCount;
-  uint32_t *copyCursor;
+  uint32_t *bankSourceOrSlotDestination;
   uint16_t *subresourceEntry;
   uint32_t *sourceDwordCursor;
-  uint32_t *destinationDwordCursor;
+  uint32_t *bankDestinationCursor;
   AssetSubresourceCount remainingSubresources;
   
-  bankOffsetOrCount = paletteIndex * 0x800 + 0x200;
-  destinationDwordCursor = (uint32_t *)((int)textureSource + bankOffsetOrCount);
-  copyCursor = (uint32_t *)(paletteIndex * 0x800 + 0xa00 + (int)textureSource);
-  remainingDwords = ((textureSource->common).allocationSizeBytes - 0x800) - bankOffsetOrCount >> 2;
+  bankOffsetOrCount = paletteIndex * GRAPHICS_PALETTE_BANK_BYTES + GRAPHICS_PALETTE_BANKS_OFFSET;
+  bankDestinationCursor = (uint32_t *)((int)textureSource + bankOffsetOrCount);
+  bankSourceOrSlotDestination = (uint32_t *)(paletteIndex * GRAPHICS_PALETTE_BANK_BYTES + 0xa00 + (int)textureSource); /* the next bank */
+  remainingDwords = ((textureSource->common).allocationSizeBytes - GRAPHICS_PALETTE_BANK_BYTES) - bankOffsetOrCount >> 2;
   if (remainingDwords != 0) {
-    for (; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
-      *destinationDwordCursor = *copyCursor;
-      copyCursor = copyCursor + 1;
-      destinationDwordCursor = destinationDwordCursor + 1;
+    for (; remainingDwords != 0; remainingDwords--) {
+      *bankDestinationCursor = *bankSourceOrSlotDestination;
+      bankSourceOrSlotDestination++;
+      bankDestinationCursor++;
     }
   }
   paletteBankCountField = &(textureSource->tableDescriptor).paletteBankCount;
   *paletteBankCountField = *paletteBankCountField - 1;
   subresourceTableOffsetField = &(textureSource->tableDescriptor).subresourceTableOffset;
-  *subresourceTableOffsetField = *subresourceTableOffsetField - 0x800;
+  *subresourceTableOffsetField = *subresourceTableOffsetField - GRAPHICS_PALETTE_BANK_BYTES;
   allocationSizeField = &(textureSource->common).allocationSizeBytes;
-  *allocationSizeField = *allocationSizeField - 0x800;
+  *allocationSizeField = *allocationSizeField - GRAPHICS_PALETTE_BANK_BYTES;
   subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
-  for (remainingSubresources = (textureSource->tableDescriptor).subresourceCount; remainingSubresources != 0; remainingSubresources = remainingSubresources - 1) {
-    *(int *)(subresourceEntry + 6) = *(int *)(subresourceEntry + 6) + -0x800;
-    if (paletteIndex < *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
-      *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName =
-           *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName + -1;
+  for (remainingSubresources = (textureSource->tableDescriptor).subresourceCount; remainingSubresources != 0; remainingSubresources--) {
+    /* GraphicsTextureSourceEntry in uint16 steps: +6 dataOffset, +4 paletteIndex */
+    *(int *)(subresourceEntry + 6) = *(int *)(subresourceEntry + 6) - GRAPHICS_PALETTE_BANK_BYTES;
+    if (paletteIndex < *(int *)(subresourceEntry + 4)) {
+      *(int *)(subresourceEntry + 4) = *(int *)(subresourceEntry + 4) - 1;
     }
     subresourceEntry = subresourceEntry + 0x10;
   }
-  copyCursor = (uint32_t *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0));
+  bankSourceOrSlotDestination = (uint32_t *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0));
   sourceDwordCursor = (uint32_t *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0x4));
-  bankOffsetOrCount = 0x1ff - paletteIndex;
+  bankOffsetOrCount = 0x1ff - paletteIndex; /* slots behind it in the 0x200-slot table */
   if (bankOffsetOrCount != 0) {
-    for (; bankOffsetOrCount != 0; bankOffsetOrCount = bankOffsetOrCount + -1) {
-      *copyCursor = *sourceDwordCursor;
-      sourceDwordCursor = sourceDwordCursor + 1;
-      copyCursor = copyCursor + 1;
+    for (; bankOffsetOrCount != 0; bankOffsetOrCount--) {
+      *bankSourceOrSlotDestination = *sourceDwordCursor;
+      sourceDwordCursor++;
+      bankSourceOrSlotDestination++;
     }
   }
   return;

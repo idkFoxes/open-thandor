@@ -12,6 +12,17 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/backend/direct3d. */
+
+/* Stage numbers the Direct3DRenderer_Set* functions leave in g_PackageLastErrorPath (as decimal text) together
+   with FATAL_ERROR_DIRECT3D_SETUP when a SetRenderState call fails */
+#define DIRECT3D_RENDER_STATE_STAGE_ANTIALIAS 100
+#define DIRECT3D_RENDER_STATE_STAGE_TEXTURE_MAG 110
+#define DIRECT3D_RENDER_STATE_STAGE_TEXTURE_MIN 111
+#define DIRECT3D_RENDER_STATE_STAGE_TEXTURE_PERSPECTIVE 120
+/* The primitive handlers rescale converted fixed-point values by adding n * this to the bits of a nonzero
+   float (THANDOR_FLOAT_ADD_EXPONENT_BITS), which multiplies it by 2^n: -12 for the screen coordinates, -20 for
+   depth and texture coordinates, +20 (untextured) or +18 (textured) for rhw */
+#define DIRECT3D_FLOAT_EXPONENT_STEP 0x800000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00578270 */

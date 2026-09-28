@@ -22,6 +22,9 @@
 #define WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA 0x40000
 #define WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY 0x800
 #define WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY 0x1000000
+/* Mirrors PERSISTENT_SETTING_SHADING_ENABLED (session start and the in-game shading option); also toggled by
+   Alt+S in InGameCameraCommand_DispatchByCodeAndModifierFlags. */
+#define WORLD_RUNTIME_FLAG_SHADING_ENABLED 0x20000
 /* WorldOwnerListNode100.runtimeFlags bit: the node is linked into its world's owner list. */
 #define WORLD_OWNER_NODE_LINKED 0x80000000
 /* Height returned by the WorldRuntime_Interpolate*HeightOrSentinel functions when no field grid is attached. */

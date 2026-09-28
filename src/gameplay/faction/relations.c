@@ -55,43 +55,36 @@ GameFactionRelations_UpdateAllPairsForFaction
 
 
 /* Address: 0x00560E30.
-   Ownership: gameplay/faction/relations.
-   Purpose: Iterates a 0x1000-spaced key range and inserts each key/value pair through PlayerPairList_InsertUnique.
-   Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset
-   identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes,
-   control flow, and executable data remain unchanged. Typed parameters: p4 pairValue→SelectionPlayerPairValue.
-   Local calls: PlayerPairList_InsertUnique.
+   Adds one row of field cells (world X from firstWorldXQ12 to lastWorldXQ12 inclusive, one cell apart, at
+   worldYQ12) to the player's marked-cell list. Called per row by the in-game command UI when an area is dragged
+   out in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D00 instead).
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue endKey,
-          SelectionPlayerPairValue pairValue,SelectionPlayerPairValue startKey)
+          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+          SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12)
 
 {
-  for (; (int)startKey <= (int)endKey; startKey = startKey + 0x1000) {
-    PlayerPairList_InsertUnique(playerRuntimeId,0,pairValue,startKey);
+  for (; (int)firstWorldXQ12 <= (int)lastWorldXQ12; firstWorldXQ12 = firstWorldXQ12 + FIELD_GRID_CELL_Q12) {
+    PlayerPairList_InsertUnique(playerRuntimeId,0,worldYQ12,firstWorldXQ12);
   }
   return;
 }
 
 
 /* Address: 0x00560E70.
-   Ownership: gameplay/faction/relations.
-   Purpose: Iterates a 0x1000-spaced key range and removes each key/value pair through
-   PlayerPairList_RemoveFirstMatch. Kept distinct from frontend slot indices, faction runtime indices, network
-   endpoint identity, and PCK asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling
-   convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p4
-   pairValue→SelectionPlayerPairValue.
-   Local calls: PlayerPairList_RemoveFirstMatch.
+   Counterpart of PlayerPairList_InsertRange: removes one row of field cells (world X from firstWorldXQ12 to
+   lastWorldXQ12 inclusive, at worldYQ12) from the player's marked-cell list. Called per row by the in-game
+   command UI in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D40 instead).
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue endKey,
-          SelectionPlayerPairValue pairValue,SelectionPlayerPairValue startKey)
+          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+          SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12)
 
 {
-  for (; (int)startKey <= (int)endKey; startKey = startKey + 0x1000) {
-    PlayerPairList_RemoveFirstMatch(playerRuntimeId,0,pairValue,startKey);
+  for (; (int)firstWorldXQ12 <= (int)lastWorldXQ12; firstWorldXQ12 = firstWorldXQ12 + FIELD_GRID_CELL_Q12) {
+    PlayerPairList_RemoveFirstMatch(playerRuntimeId,0,worldYQ12,firstWorldXQ12);
   }
   return;
 }
@@ -429,17 +422,14 @@ GameFactionRelations_MaybeResetPairState
 
 
 /* Address: 0x00560EB0.
-   Ownership: gameplay/faction/relations.
-   Purpose: Inserts one unique two-dword pair into the per-player pair list and increments the local-player
-   visible-count field. Kept distinct from frontend slot indices, faction runtime indices, network endpoint
-   identity, and PCK asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p4
-   pairValue→SelectionPlayerPairValue.
+   Appends the field cell (worldXQ12, worldYQ12) to the player's marked-cell list unless it is already listed or
+   the list is full (PLAYER_PAIR_LIST_CAPACITY). For the local player the in-game root's count at +0xBA4 (its
+   records pointer at +0xBA0 aliases this list) is raised too. Called by PlayerPairList_InsertRange.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertUnique
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
-          SelectionPlayerPairValue pairKey)
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
+          SelectionPlayerPairValue worldXQ12)
 
 {
   SelectionPlayerPairRecord *pairRecordCursor;
@@ -452,19 +442,19 @@ PlayerPairList_InsertUnique
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   recordsRemaining = playerRuntimeBlock->activePairCount8084;
   pairRecordCursor = playerRuntimeBlock->pairRecords80_807F;
-  if (recordsRemaining < 0x1000) {
-    for (; recordsRemaining != 0; recordsRemaining = recordsRemaining - 1) {
-      if ((pairKey == pairRecordCursor->pairKey) && (pairValue == pairRecordCursor->pairValue)) {
+  if (recordsRemaining < PLAYER_PAIR_LIST_CAPACITY) {
+    for (; recordsRemaining != 0; recordsRemaining--) {
+      if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
         return;
       }
-      pairRecordCursor = pairRecordCursor + 1;
+      pairRecordCursor++;
     }
     appendRecordIndex = playerRuntimeBlock->activePairCount8084;
-    playerRuntimeBlock->activePairCount8084 = playerRuntimeBlock->activePairCount8084 + 1;
-    playerRuntimeBlock->pairRecords80_807F[appendRecordIndex].pairKey = pairKey;
-    playerRuntimeBlock->pairRecords80_807F[appendRecordIndex].pairValue = pairValue;
+    playerRuntimeBlock->activePairCount8084++;
+    playerRuntimeBlock->pairRecords80_807F[appendRecordIndex].pairKey = worldXQ12;
+    playerRuntimeBlock->pairRecords80_807F[appendRecordIndex].pairValue = worldYQ12;
     if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-      inGameRuntimeRoot->localPlayerPairCount0BA4 = inGameRuntimeRoot->localPlayerPairCount0BA4 + 1;
+      inGameRuntimeRoot->localPlayerPairCount0BA4++;
     }
   }
   return;
@@ -472,17 +462,14 @@ PlayerPairList_InsertUnique
 
 
 /* Address: 0x00560F50.
-   Ownership: gameplay/faction/relations.
-   Purpose: Removes the first matching two-dword pair from the per-player pair list and decrements the local-player
-   visible-count field. Kept distinct from frontend slot indices, faction runtime indices, network endpoint
-   identity, and PCK asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p4
-   pairValue→SelectionPlayerPairValue.
+   Removes the field cell (worldXQ12, worldYQ12) from the player's marked-cell list, moving the later records
+   down so the order is kept, and lowers the in-game root's count at +0xBA4 for the local player. A list at
+   PLAYER_PAIR_LIST_CAPACITY or above is left untouched. Called by PlayerPairList_RemoveRange.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveFirstMatch
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
-          SelectionPlayerPairValue pairKey)
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
+          SelectionPlayerPairValue worldXQ12)
 
 {
   int trailingDwordsToMove;
@@ -496,26 +483,26 @@ PlayerPairList_RemoveFirstMatch
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   recordsRemaining = playerRuntimeBlock->activePairCount8084;
   pairRecordCursor = playerRuntimeBlock->pairRecords80_807F;
-  if (recordsRemaining < 0x1000) {
-    for (; recordsRemaining != 0; recordsRemaining = recordsRemaining - 1) {
-      if ((pairKey == pairRecordCursor->pairKey) && (pairValue == pairRecordCursor->pairValue)) {
+  if (recordsRemaining < PLAYER_PAIR_LIST_CAPACITY) {
+    for (; recordsRemaining != 0; recordsRemaining--) {
+      if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
         copySourceCursor = pairRecordCursor + 1;
-        trailingDwordsToMove = recordsRemaining * 2 + -2;
-        playerRuntimeBlock->activePairCount8084 = playerRuntimeBlock->activePairCount8084 - 1;
+        /* the records behind the match move down one dword at a time (REP MOVSD in the original) */
+        trailingDwordsToMove = recordsRemaining * 2 - 2;
+        playerRuntimeBlock->activePairCount8084--;
         if (trailingDwordsToMove != 0) {
-          for (; trailingDwordsToMove != 0; trailingDwordsToMove = trailingDwordsToMove + -1) {
+          for (; trailingDwordsToMove != 0; trailingDwordsToMove--) {
             pairRecordCursor->pairKey = copySourceCursor->pairKey;
             copySourceCursor = (SelectionPlayerPairRecord *)&copySourceCursor->pairValue;
             pairRecordCursor = (SelectionPlayerPairRecord *)&pairRecordCursor->pairValue;
           }
         }
         if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-          inGameRuntimeRoot->localPlayerPairCount0BA4 =
-               inGameRuntimeRoot->localPlayerPairCount0BA4 - 1;
+          inGameRuntimeRoot->localPlayerPairCount0BA4--;
         }
         return;
       }
-      pairRecordCursor = pairRecordCursor + 1;
+      pairRecordCursor++;
     }
   }
   return;

@@ -11616,8 +11616,8 @@ struct ShotRangeLimitResult {
 };
 
 struct SelectionPanelAdvanceEaxEdx8 {
-    UiPixelCoordinate nextDrawY; // EAX next vertical layout coordinate
-    UiPixelCoordinate nextDrawX; // EDX next horizontal layout coordinate
+    UiPixelCoordinate nextX; // EAX horizontal coordinate after the cell (origin + offset + width unless suppressed)
+    UiPixelCoordinate nextY; // EDX vertical coordinate after the cell (origin + offset + height unless suppressed)
 };
 
 struct GeneratedTextureSampleWorkRecord18 {

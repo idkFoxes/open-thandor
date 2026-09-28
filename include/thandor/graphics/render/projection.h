@@ -18,8 +18,8 @@
 OffscreenRenderResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
-          GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputWidth,
-          GraphicsPixelDimension outputHeight,ModelRuntimeCount modelCount,
+          GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputHeight,
+          GraphicsPixelDimension outputWidth,ModelRuntimeCount modelCount,
           ModelRuntimeNode **modelNodes);
 
 /* 0x0050A6A0 */

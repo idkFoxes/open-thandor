@@ -434,91 +434,91 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
 
 
 /* Address: 0x00514510.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Updates the target faction's primary or secondary impact-alert anchor from the linked model position,
-   refreshes the exact 0x96 cooldown, and emits notification 0x12C or 0x12D when the world runtime identity matches
-   the impacted entity.
-   Cross-module calls: InGameNotificationQueue_InsertPriorityRecord [ui/ingame/runtime].
+   "Under attack" alert for the faction owning a hit army (called by ShotRuntime_ApplyArmyHitRelationAndNotifications
+   when a shot opens hostilities): moves the faction's primary or secondary alert anchor (chosen by definition
+   dword +0x18) to the hit model and restarts its 150-tick cooldown. The alert movie 300 / 301 is only queued when
+   the cooldown had fallen below 50 and the hit is more than 12 world units from the old anchor or the cooldown had
+   run out, and only when the shown faction owns the hit model, so a sustained attack does not repeat the alert.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
           (ArmyRuntimeSlot *targetArmyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
-  int *ownerDefinitionRecord;
+  int *ownershipRecord; /* [0] definition, [1] model, [2] runtime link (+0xC owning faction) */
   int ownerFactionIndex;
-  int linkedModelAddress;
+  int hitModelAddress;
   FactionAnchorCooldownTicks previousCooldown;
   GraphicsWorldCoordinateQ12 anchorX;
   int distanceYOrLinkRecord;
   int distanceX;
-  
-  ownerDefinitionRecord = (targetArmyRuntime->linkedEntityRuntime->common).ownership.definitionOrClassRecord;
+
+  ownershipRecord = (targetArmyRuntime->linkedEntityRuntime->common).ownership.definitionOrClassRecord;
   ownerFactionIndex = (targetArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
-  linkedModelAddress = ownerDefinitionRecord[1];
-  if (*(int *)(*ownerDefinitionRecord + 0x18) == 0) {
+  hitModelAddress = ownershipRecord[1];
+  if (*(int *)(*ownershipRecord + 0x18) == 0) {
     previousCooldown = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorCooldown;
-    distanceYOrLinkRecord = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 - *(int *)(linkedModelAddress + 0x94);
+    distanceYOrLinkRecord = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 - *(int *)(hitModelAddress + 0x94);
     if (distanceYOrLinkRecord < 0) {
       distanceYOrLinkRecord = -distanceYOrLinkRecord;
     }
-    distanceX = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorXQ12 - *(int *)(linkedModelAddress + 0x98);
+    distanceX = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorXQ12 - *(int *)(hitModelAddress + 0x98);
     if (distanceX < 0) {
       distanceX = -distanceX;
     }
-    g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorCooldown = 0x96;
-    if (((int)previousCooldown < 0x32) && ((0xc000 < distanceYOrLinkRecord + distanceX || (previousCooldown == 0)))) {
-      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
-      distanceYOrLinkRecord = ownerDefinitionRecord[2];
+    g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorCooldown = 150;
+    /* 0xC000 = 12.0 world units (Q12), measured as |dy| + |dx| */
+    if (((int)previousCooldown < 50) && ((0xc000 < distanceYOrLinkRecord + distanceX || (previousCooldown == 0)))) {
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x98);
+      distanceYOrLinkRecord = ownershipRecord[2];
       g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+           *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x94);
       g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorXQ12 = anchorX;
       if (worldRuntime->activeFactionRuntimeIndex == *(int *)(distanceYOrLinkRecord + 0xc)) {
         InGameNotificationQueue_InsertPriorityRecord
                   (FACTION_IMPACT_ANCHOR,0,(worldRuntime->motion).pitchAngle,
-                   (worldRuntime->motion).headingAngle,*(Q12 *)(ownerDefinitionRecord[1] + 0x98),
-                   *(Q12 *)(ownerDefinitionRecord[1] + 0x94),8,300);
+                   (worldRuntime->motion).headingAngle,*(Q12 *)(ownershipRecord[1] + 0x98),
+                   *(Q12 *)(ownershipRecord[1] + 0x94),8,300);
       }
     }
     else {
-      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x98);
       g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+           *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x94);
       g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorXQ12 = anchorX;
     }
   }
   else {
     previousCooldown = g_GameFactionRuntimeImage.records[ownerFactionIndex].anchorCooldown0;
-    distanceYOrLinkRecord = g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorYQ12 - *(int *)(linkedModelAddress + 0x94);
+    distanceYOrLinkRecord = g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorYQ12 - *(int *)(hitModelAddress + 0x94);
     if (distanceYOrLinkRecord < 0) {
       distanceYOrLinkRecord = -distanceYOrLinkRecord;
     }
-    distanceX = g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorXQ12 - *(int *)(linkedModelAddress + 0x98);
+    distanceX = g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorXQ12 - *(int *)(hitModelAddress + 0x98);
     if (distanceX < 0) {
       distanceX = -distanceX;
     }
-    g_GameFactionRuntimeImage.records[ownerFactionIndex].anchorCooldown0 = 0x96;
-    if (((int)previousCooldown < 0x32) && ((0xc000 < distanceYOrLinkRecord + distanceX || (previousCooldown == 0)))) {
-      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
-      distanceYOrLinkRecord = ownerDefinitionRecord[2];
+    g_GameFactionRuntimeImage.records[ownerFactionIndex].anchorCooldown0 = 150;
+    if (((int)previousCooldown < 50) && ((0xc000 < distanceYOrLinkRecord + distanceX || (previousCooldown == 0)))) {
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x98);
+      distanceYOrLinkRecord = ownershipRecord[2];
       g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+           *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x94);
       g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorXQ12 = anchorX;
       if (worldRuntime->activeFactionRuntimeIndex == *(int *)(distanceYOrLinkRecord + 0xc)) {
         InGameNotificationQueue_InsertPriorityRecord
                   (FACTION_IMPACT_ANCHOR,0,(worldRuntime->motion).pitchAngle,
-                   (worldRuntime->motion).headingAngle,*(Q12 *)(ownerDefinitionRecord[1] + 0x98),
-                   *(Q12 *)(ownerDefinitionRecord[1] + 0x94),7,0x12d);
+                   (worldRuntime->motion).headingAngle,*(Q12 *)(ownershipRecord[1] + 0x98),
+                   *(Q12 *)(ownershipRecord[1] + 0x94),7,301);
       }
     }
     else {
-      anchorX = *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x98);
+      anchorX = *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x98);
       g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorYQ12 =
-           *(GraphicsWorldCoordinateQ12 *)(linkedModelAddress + 0x94);
+           *(GraphicsWorldCoordinateQ12 *)(hitModelAddress + 0x94);
       g_GameFactionRuntimeImage.records[ownerFactionIndex].secondaryAnchorXQ12 = anchorX;
     }
   }
-  return;
 }
 
 
@@ -618,9 +618,9 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
 
 
 /* Address: 0x00514900.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Scans the selected faction's eight fixed runtime groups, each containing up to 32 pointers, and returns
-   the one-based group index with carry clear or the original runtime pointer with carry set.
+   Finds which of its faction's eight runtime groups (32 member slots each) holds runtimeEntry, for the group
+   selection commands in gameplay/selection/runtime. Returns the one-based group number with CF clear, or
+   runtimeEntry itself with CF set when it is in no group.
 */
 RuntimeGroupIndexResult __thandor_eax_cf_preserve_ecx_edx
 GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEntry)
@@ -633,18 +633,18 @@ GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEnt
   bool found;
   RuntimeGroupIndexResult notFoundResult;
   RuntimeGroupIndexResult foundResult;
-  
+
   groupNumber = 0;
   nextSlotCursor = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
   do {
-    slotsRemaining = 0x20;
-    groupNumber = groupNumber + 1;
-    found = groupNumber == 0;
+    slotsRemaining = 32;
+    groupNumber++;
+    found = groupNumber == 0; /* the ZF of the original INC; never true */
     slotCursor = nextSlotCursor;
     do {
       nextSlotCursor = slotCursor;
       if (slotsRemaining == 0) break;
-      slotsRemaining = slotsRemaining + -1;
+      slotsRemaining--;
       nextSlotCursor = slotCursor + 1;
       found = (ArmyRuntimeSlot *)runtimeEntry == *slotCursor;
       slotCursor = nextSlotCursor;
@@ -741,9 +741,10 @@ GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRunt
 
 
 /* Address: 0x0051C680.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Resolves the active command target to EAX/ECX/EDX Q12 coordinates and reports failure through CF. The
-   ordinary return remains void because the three-register result is not a C scalar return.
+   Where an entity's current command should take it, for the movement code in gameplay/army/movement: target flag
+   1 aims at a target entity (its model position, raised by definition dword +0x50; class 0x15 aims at its first
+   child node), flag 2 at a fixed world position. A target entity that the owner's faction can no longer see is
+   dropped (entity and flags cleared). The position comes back in EAX/ECX/EDX, CF set when there is none.
 */
 WorldPositionResult
 GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
@@ -772,7 +773,8 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
   }
   else {
     commandTargetEntity = (targetState->common).commandTarget.targetEntity;
-    if (commandTargetEntity != (GameEntityRuntime *)0x0) {
+    if (commandTargetEntity != NULL) {
+      /* two bits per faction; the upper one = the target is visible to that faction */
       visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 0x1f);
       targetDefinitionRecord = (commandTargetEntity->common).ownership.definitionOrClassRecord;
       if ((*(uint32_t *)((commandTargetEntity->common).damageState.reserved0C_23 + 0x10) & visibilityMask) != 0) {
@@ -787,7 +789,7 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
         position.unresolved = false;
         return position;
       }
-      (targetState->common).commandTarget.targetEntity = (GameEntityRuntime *)0x0;
+      (targetState->common).commandTarget.targetEntity = NULL;
       (targetState->common).commandTarget.targetFlags = 0;
     }
   }
@@ -796,13 +798,13 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
 
 
 /* Address: 0x0052A4D0.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Applies impact damage and state to one GameEntityRuntime, updates attached model/runtime state, and
-   records the verified source/target faction relation counters. The function preserves the normal return registers
-   and returns with RET 0x10. Typed parameters: p2 impactValue→ImpactDamageValue32_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: ArmyRuntime_ApplyDamageAndPropagateToParent [gameplay/army/combat].
+   Applies impactValue to an entity's integrity (called twice per hit by ArmyRuntime_ApplyImpactDamageToRuntimeAndParent;
+   a negative value repairs and goes to the entity its runtime link points at). A destroyed entity passes the
+   overkill on to its parent model's army, or, without a parent, is turned to the impact angle (definition class 0
+   without +0x278) and counted in the score counters: a loss for its faction, a kill for sourceFactionIndex (the
+   heavier counters D/F instead of C/E for classes handled by ArmyRuntime_ClassCommandHandlerGroupA). Repair beyond
+   the definition maximum (+0x60) is clamped and the excess handed to the first linked army that is not at full
+   integrity.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
@@ -818,10 +820,9 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
   int maxIntegrityOrClassOrCount;
   int integrityDeltaOrFaction;
   ModelRuntimeNode *modelOrParentNode;
-  
+
   if (impactValue < 0) {
-    targetEntityRuntime = *(GameEntityRuntime **)(targetEntityRuntime->common).ownership.runtimeLink
-    ;
+    targetEntityRuntime = *(GameEntityRuntime **)(targetEntityRuntime->common).ownership.runtimeLink;
   }
   (targetEntityRuntime->common).pathingAndImpactState.impactReaction.state08 = 0;
   (targetEntityRuntime->common).pathingAndImpactState.impactReaction.reactionCode09 = 2;
@@ -832,6 +833,7 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
     integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
     integrityDeltaOrFaction = *integrityField;
     *integrityField = *integrityField - impactValue;
+    /* JLE after the SUB: the entity is destroyed */
     if (*integrityField == 0 || SBORROW4(integrityDeltaOrFaction,impactValue) != *integrityField < 0) {
       modelOrParentNode = (targetEntityRuntime->common).ownership.modelNode;
       integrityDeltaOrFaction = (targetEntityRuntime->common).damageState.remainingIntegrity;
@@ -841,16 +843,16 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
       (targetEntityRuntime->common).damageState.counterOrTerminalReference.terminalEntity =
            targetEntityRuntime;
       (targetEntityRuntime->common).damageState.remainingIntegrity = 0;
-      if (modelOrParentNode == (ModelRuntimeNode *)0x0) {
+      if (modelOrParentNode == NULL) {
         definitionRecord = (targetEntityRuntime->common).ownership.definitionOrClassRecord;
         if ((*(int *)((int)definitionRecord + 0x4c) == 0) && (*(int *)((int)definitionRecord + 0x278) == 0)) {
           (((targetEntityRuntime->common).ownership.modelNode)->modelPayload).worldRotationAngle0 =
                impactAngle;
         }
         if (impactValue != 0) {
+          /* the original has a stray JZ after IMUL faction,0x740 here (ZF undefined after IMUL); see the report */
           integrityDeltaOrFaction = *(int *)((int)(targetEntityRuntime->common).ownership.runtimeLink + 0xc);
-          maxIntegrityOrClassOrCount = *(int *)((int)(targetEntityRuntime->common).ownership.definitionOrClassRecord +
-                          0x4c);
+          maxIntegrityOrClassOrCount = *(int *)((int)(targetEntityRuntime->common).ownership.definitionOrClassRecord + 0x4c);
           relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterC;
           *relationCounter = *relationCounter + 1;
           relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
@@ -862,27 +864,30 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
             relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterF;
             *relationCounter = *relationCounter + 1;
             relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterC;
-            *relationCounter = *relationCounter + -1;
+            *relationCounter = *relationCounter - 1;
             relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
-            *relationCounter = *relationCounter + -1;
+            *relationCounter = *relationCounter - 1;
           }
         }
       }
       else {
-        ArmyRuntime_ApplyDamageAndPropagateToParent(-integrityDeltaOrFaction,(modelOrParentNode->runtimePayload).armyRuntime)
-        ;
+        /* the overkill goes on to the parent's army */
+        ArmyRuntime_ApplyDamageAndPropagateToParent(-integrityDeltaOrFaction,(modelOrParentNode->runtimePayload).armyRuntime);
       }
     }
     else {
       integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
       integrityDeltaOrFaction = maxIntegrityOrClassOrCount - *integrityField;
       if (integrityDeltaOrFaction == 0 || maxIntegrityOrClassOrCount < *integrityField) {
+        /* repaired to or beyond the maximum: clamp, the (negative) excess repairs a linked army */
         integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
         *integrityField = *integrityField + integrityDeltaOrFaction;
+        /* dword +0x0C counts the linked armies here, a table at +0x140 with a stride of 0x20 */
         armyRuntime = (targetEntityRuntime->classPayload).impactOwnerLinks.primaryImpactArmyRuntime;
         maxIntegrityOrClassOrCount = (targetEntityRuntime->common).ownership.ownerIndex;
-        for (; maxIntegrityOrClassOrCount != 0; maxIntegrityOrClassOrCount = maxIntegrityOrClassOrCount + -1) {
-          if ((armyRuntime != (ArmyRuntimeSlot *)0x0) &&
+        for (; maxIntegrityOrClassOrCount != 0; maxIntegrityOrClassOrCount--) {
+          /* +0x3C remaining integrity against the definition maximum +0x60: not at full integrity */
+          if ((armyRuntime != NULL) &&
              ((ModelRuntimeSlot *)armyRuntime->actionVector2Q12 !=
               (((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classLinkState).
               modelLinkOrState60.modelRuntime)) {
@@ -897,7 +902,6 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
       }
     }
   }
-  return;
 }
 
 
@@ -936,18 +940,14 @@ GameFactionRuntime_RegisterArmyAssetPointers
 
 
 /* Address: 0x00560160.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Removes requested matching army-asset pointers from a faction queue, cancels remaining matching runtime
-   entries, and refunds their full stored asset value. ArmyAssetId is preserved through candidate, queue, refund,
-   transfer, and sale paths; cost and eligibility semantics remain those proved by the live consumers and PCK
-   records. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-
-   backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains. Typed parameters: p3
-   requestedCount→FactionArmyAssetCount_V304. Nearby but non-identical semantic domains were explicitly deferred.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
+   In-game command INGAME_COMMAND_CANCEL_QUEUED_ARMY (the cancel click on a build button of the in-game catalog,
+   the reverse of GameFactionRuntime_RegisterArmyAssetPointers): cancels up to requestedCount orders of an army
+   record. Waiting orders are taken out of the faction's production queue first (without a refund); what is left is cancelled in the faction's producing structures (class 0x0B, 0x16 or 0x0D, chosen by the
+   army's flags 0x10 / 0x08), which stop production and refund the full price to the faction's xenite.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
-          (uint32_t reservedDword0,FactionArmyAssetCount requestedCount,
+          (uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount requestedCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
@@ -961,34 +961,35 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   int readIndexOrClassId;
   WorldOwnerListNode100 *ownerNode;
   ArmyAssetLookupResult resolvedAsset;
-  
+
   resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   armyDefinition = resolvedAsset.recordOrError;
   if (!resolvedAsset.notFound) {
     recordOffset = factionIndex * 0x740;
     readIndexOrClassId = 0;
     writeIndex = 0;
-    for (assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; assetsRemaining != 0
-        ; assetsRemaining = assetsRemaining - 1) {
+    /* compact the queue (secondaryArmyAssetPointersOrIds, record +0xE0), dropping the first matching entries */
+    for (assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; assetsRemaining != 0;
+        assetsRemaining--) {
       while ((armyDefinition == *(ArmyAssetRecordPrefix **)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4) &&
              (0 < (int)requestedCount))) {
-        readIndexOrClassId = readIndexOrClassId + 1;
+        readIndexOrClassId++;
         secondaryCount = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
         *secondaryCount = *secondaryCount - 1;
-        requestedCount = requestedCount - 1;
-        assetsRemaining = assetsRemaining - 1;
+        requestedCount--;
+        assetsRemaining--;
         if (assetsRemaining == 0)
-        goto 
-        GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCancellation;
+        goto cancelInStructures;
       }
       *(uint32_t *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + writeIndex * 4) = *(uint32_t *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4);
-      readIndexOrClassId = readIndexOrClassId + 1;
-      writeIndex = writeIndex + 1;
+      readIndexOrClassId++;
+      writeIndex++;
     }
-GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCancellation:
+cancelInStructures:
     if (requestedCount != 0) {
       ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      if (ownerNode != (WorldOwnerListNode100 *)0x0) {
+      if (ownerNode != NULL) {
+        /* the structure class that produces this army */
         readIndexOrClassId = 0xb;
         if (((armyDefinition[1].selectionDetailTemplateVariantIndex & 0x10) == 0) &&
            (readIndexOrClassId = 0x16, (armyDefinition[1].selectionDetailTemplateVariantIndex & 8) == 0)) {
@@ -999,6 +1000,8 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
             modelPayload = ownerNode->runtimePayload;
             if ((factionIndex == *(int *)(modelPayload[2] + 0xc)) && (readIndexOrClassId == *(int *)(*modelPayload + 0x4c)))
             {
+              /* payload [0x18] = army in production; stopping clears it with its state word and flag 0x100 of
+                 [0x3B] and takes its share [0x1D] back out of [0x3D] */
               if (readIndexOrClassId == 0xd) {
                 if ((((*(uint32_t *)(*modelPayload + 0xc4) &
                       armyDefinition[1].selectionDetailTemplateVariantIndex) != 0) &&
@@ -1007,11 +1010,11 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
                   refundAmount = armyDefinition[2].registryId;
                   modelPayload[0x1d] = 0;
                   modelPayload[0x2e] = 0;
-                  modelPayload[0x3b] = modelPayload[0x3b] & 0xfffffeff;
+                  modelPayload[0x3b] = modelPayload[0x3b] & ~0x100u;
                   modelPayload[0x18] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
-                  requestedCount = requestedCount - 1;
+                  requestedCount--;
                   if (requestedCount == 0) {
                     return;
                   }
@@ -1023,11 +1026,11 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
                   refundAmount = armyDefinition[2].registryId;
                   modelPayload[0x1d] = 0;
                   modelPayload[0x2e] = 0;
-                  modelPayload[0x3b] = modelPayload[0x3b] & 0xfffffeff;
+                  modelPayload[0x3b] = modelPayload[0x3b] & ~0x100u;
                   modelPayload[0x18] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
-                  requestedCount = requestedCount - 1;
+                  requestedCount--;
                   if (requestedCount == 0) {
                     return;
                   }
@@ -1038,11 +1041,11 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
                 refundAmount = armyDefinition[2].registryId;
                 modelPayload[0x1d] = 0;
                 modelPayload[0x2b] = 0;
-                modelPayload[0x3b] = modelPayload[0x3b] & 0xfffffeff;
+                modelPayload[0x3b] = modelPayload[0x3b] & ~0x100u;
                 modelPayload[0x18] = 0;
                 g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                      g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
-                requestedCount = requestedCount - 1;
+                requestedCount--;
                 if (requestedCount == 0) {
                   return;
                 }
@@ -1050,27 +1053,23 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
             }
           }
           ownerNode = ownerNode->nextNode;
-        } while (ownerNode != (WorldOwnerListNode100 *)0x0);
+        } while (ownerNode != NULL);
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x00560400.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Removes one army-asset pointer from the faction array, stores it in the player pending-transfer slot,
-   compacts the array, and refreshes the local grid state. ArmyAssetId is preserved through candidate, queue,
-   refund, transfer, and sale paths; cost and eligibility semantics remain those proved by the live consumers and
-   PCK records. ArmyAssetId remains the PCK-backed asset identity; transfer, queue, and refund operations do not
-   collapse these domains.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog], UiCommandSpriteVariantA_RebuildGrid
-   [ui/ingame/commands].
+   In-game command INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT (clicking a finished army in the in-game catalog):
+   takes the first entry of the army record out of the faction's primary army-asset list (record +0x1E0) and
+   stages it in the player's pending slot (+0x8098) for placement on the map. When the faction is the one shown
+   the command sprite grid is rebuilt, and for the local player the placement cursor is armed. If the faction
+   has no such entry the pending slot is cleared again.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedDword04,PckArmyAssetIdCatalog armyAssetId,
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex)
 
 {
@@ -1081,7 +1080,7 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
   int byteOffsetOrActiveFaction;
   FactionArmyAssetCount assetsRemaining;
   ArmyAssetLookupResult resolvedAsset;
-  
+
   resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   armyDefinition = resolvedAsset.recordOrError;
   if (!resolvedAsset.notFound) {
@@ -1089,10 +1088,11 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     byteOffsetOrActiveFaction = factionIndex * 0x740;
     assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
     playerBlock->pendingSelectionEntityOffset8098 = (uint32_t)armyDefinition;
-    for (; assetsRemaining != 0; assetsRemaining = assetsRemaining - 1) {
+    for (; assetsRemaining != 0; assetsRemaining--) {
       if (armyDefinition ==
           *(ArmyAssetRecordPrefix **)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
+        /* close the gap */
         do {
           *(uint32_t *)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
@@ -1100,8 +1100,8 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
                 ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
           runtimeRoot = g_InGameRuntimeRoot;
-          byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
-          assetsRemaining = assetsRemaining - 1;
+          byteOffsetOrActiveFaction += 4;
+          assetsRemaining--;
         } while (assetsRemaining != 0);
         byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
         primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
@@ -1113,16 +1113,15 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
         if (playerRuntimeId != g_LocalPlayerRuntimeId) {
           return;
         }
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x20;
+        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
         g_InGamePendingPlacementArmyAsset = (int32_t)armyDefinition;
-        g_InGamePlacementSurfaceHeightQ12OrSentinel = 0x7fffffff;
+        g_InGamePlacementSurfaceHeightQ12OrSentinel = 0x7fffffff; /* no surface picked yet */
         return;
       }
-      byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
+      byteOffsetOrActiveFaction += 4;
     }
     playerBlock->pendingSelectionEntityOffset8098 = 0;
   }
-  return;
 }
 
 
@@ -1169,36 +1168,32 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
 
 
 /* Address: 0x005606A0.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Removes one army-asset pointer from the faction array, refunds seven eighths of its stored value,
-   compacts the array, and refreshes the local grid state. ArmyAssetId is preserved through candidate, queue,
-   refund, transfer, and sale paths; cost and eligibility semantics remain those proved by the live consumers and
-   PCK records. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and
-   PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog], UiCommandSpriteVariantA_RebuildGrid
-   [ui/ingame/commands].
+   In-game command INGAME_COMMAND_SELL_ARMY (the sell click on a finished army in the in-game catalog): takes the
+   first entry of the army record out of the faction's primary army-asset list (record +0x1E0) and credits 7/8 of
+   its price to the faction's xenite. The command sprite grid is rebuilt when the faction is the one shown.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
-          (uint32_t unusedSaleArgument0,uint32_t unusedSaleArgument1,PckArmyAssetIdCatalog armyAssetId,
+          (uint32_t unusedPlayerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex)
 
 {
   FactionArmyAssetCount *primaryCount;
-  PckArmyAssetIdCatalog storedValue;
+  PckArmyAssetIdCatalog price;
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   int byteOffsetOrActiveFaction;
   FactionArmyAssetCount assetsRemaining;
   ArmyAssetLookupResult resolvedAsset;
-  
+
   resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   if (!resolvedAsset.notFound) {
     byteOffsetOrActiveFaction = factionIndex * 0x740;
     for (assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount; assetsRemaining != 0;
-        assetsRemaining = assetsRemaining - 1) {
+        assetsRemaining--) {
       if (resolvedAsset.recordOrError ==
           *(ArmyAssetRecordPrefix **)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
+        /* close the gap */
         do {
           *(uint32_t *)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
@@ -1206,109 +1201,95 @@ GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
                 ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
           runtimeRoot = g_InGameRuntimeRoot;
-          byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
-          assetsRemaining = assetsRemaining - 1;
+          byteOffsetOrActiveFaction += 4;
+          assetsRemaining--;
         } while (assetsRemaining != 0);
-        storedValue = resolvedAsset.recordOrError[2].registryId;
+        price = resolvedAsset.recordOrError[2].registryId;
         byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
         primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
         *primaryCount = *primaryCount - 1;
         g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
              g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 +
-             ((int)(storedValue * 7) >> 3);
+             ((int)(price * 7) >> 3);
         if (byteOffsetOrActiveFaction != factionIndex) {
           return;
         }
         UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)runtimeRoot);
         return;
       }
-      byteOffsetOrActiveFaction = byteOffsetOrActiveFaction + 4;
+      byteOffsetOrActiveFaction += 4;
     }
   }
-  return;
 }
 
 
 /* Address: 0x00561F80.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Resolves a runtime value through the existing lookup helper and stores the resulting relative token at
-   player-runtime offset 0x8094, or zero on failure. Kept distinct from frontend slot indices, faction runtime
-   indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p2
-   playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged. Typed parameters: p5 lookupToken→RuntimeToken.
-   Cross-module calls: ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime].
+   In-game command INGAME_COMMAND_PLACEMENT_CREATE_ARMY (map click while placing an army in command mode 3/4, from
+   InGameUiCommand_BeginInteractionByMode): creates army armyAssetId at the clicked position for the faction set
+   by PlayerRuntime_SetState8090 and keeps it as the player's placed army (+0x8094, as an offset from
+   g_ArmyRuntimeRebaseBaseMinusOne), or 0 when it could not be created.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_ResolveAndStoreState8094
-          (PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 lookupValue0,
-          PlayerStateLookupValue1 lookupValue1,RuntimeToken lookupToken)
+          (PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
+          PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId)
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
   ArmyRuntimeCreateResult createdRuntime;
-  
+
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   createdRuntime = ArmyRuntime_CreateInstanceFromAsset
-                    (4,0,lookupValue0,lookupValue1,playerBlock->constructionLookupState8090,lookupToken,
+                    (4,0,worldXQ12,worldYQ12,playerBlock->constructionLookupState8090,armyAssetId,
                      &g_InGameRuntimeRoot->worldRuntime0A30);
   if (!createdRuntime.failed) {
     playerBlock->primarySelectionEntityOffset8094 = createdRuntime.armyRuntimeOrError - (int)g_ArmyRuntimeRebaseBaseMinusOne;
     return;
   }
   playerBlock->primarySelectionEntityOffset8094 = 0;
-  return;
 }
 
 
 /* Address: 0x00561FF0.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Stores the caller-provided value at per-player runtime offset 0x8090. Kept distinct from frontend slot
-   indices, faction runtime indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p2
-   playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged. Typed parameters: p5 stateValue→PlayerState8090Value_V344.
+   In-game command INGAME_COMMAND_PLACEMENT_SET_FACTION (from InGameUiCommand_BeginInteractionByMode, before
+   INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (+0x8090) that the player's next placed army belongs to.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8090
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
-          PlayerState8090Value stateValue)
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlayerState8090Value placementFactionIndex)
 
 {
-  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->constructionLookupState8090 = stateValue;
-  return;
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->constructionLookupState8090 = placementFactionIndex;
 }
 
 
 /* Address: 0x00562020.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Stores the caller-provided value at per-player runtime offset 0x8094. Kept distinct from frontend slot
-   indices, faction runtime indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p2
-   playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged. Typed parameters: p5 stateValue→PlayerState8094Value_V344.
+   In-game command INGAME_COMMAND_PLACEMENT_SET_ARMY (clicking an existing army in placement sub-mode 2, from
+   InGameUiCommand_BeginInteractionByMode): makes it the player's placed army (+0x8094); armyToken is its offset from
+   g_ArmyRuntimeRebaseBaseMinusOne.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8094
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
-          PlayerState8094Value stateValue)
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          PlayerState8094Value armyToken)
 
 {
-  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094 =
-       stateValue;
-  return;
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094 = armyToken;
 }
 
 
 /* Address: 0x005622C0.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Clears per-player runtime offset 0x8094.
+   In-game command INGAME_COMMAND_PLACEMENT_CLEAR_ARMY (end of a placement interaction, from
+   InGameUiCommand_EndInteractionByMode): forgets the player's placed army (+0x8094).
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_ClearState8094
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
-          uint32_t reservedZero2)
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+          uint32_t unusedZero2)
 
 {
   g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094 = 0;
-  return;
 }
 
 

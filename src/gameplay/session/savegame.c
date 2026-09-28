@@ -11,12 +11,11 @@
 /* Implementation ownership: gameplay/session/savegame. */
 
 /* Address: 0x0056C030.
-   Ownership: gameplay/session/savegame.
-   Purpose: Recovered action-table target INGAME_PAGE12[15] (0x120F).
-   Local calls: InGameSaveGame_SaveSelectedOrTypedName.
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], UiNode_GetRoot [ui/core/runtime], UiNodeList_UnsuppressActionId [ui/controls/lists].
+   Row handler of the in-game save list (action INGAME_ACTION_SAVE_GAME_SELECT, g_InGameUiActionHandlersPage12
+   slot 15). Shows the name edit only for the trailing "new savegame" row. A confirmed (double-clicked) existing
+   save is overwritten at once; a plain selection shows the save's description (see InGameSaveGamePage_RebuildCatalog)
+   and enables Delete, while the new row shows the empty description, disables Delete and enables Save only for a
+   valid typed name.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
@@ -34,7 +33,7 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
   ListSelectionResult selectionResult;
   TextResolveResult descriptionText;
   TextResolveResult fieldText;
-  
+
   saveNameEntryStack =
        (UiPageStackControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEntryStack);
   descriptionBox =
@@ -54,7 +53,8 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
   }
   else {
     UiPageStack_SetActiveIndex((uint32_t)(selectedIndex == lastRowIndex),saveNameEntryStack);
-    descriptionBox->text = (uint16_t *)0x215d;
+    /* the text box holds a text id here, not a string */
+    descriptionBox->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
     if (selectedIndex != lastRowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = *(TextResourceId *)((int)selectedRowRecord + 0x70);
@@ -63,45 +63,39 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
         descriptionBox->text = (uint16_t *)resourceId;
       }
       else {
-        descriptionText = TextResource_Resolve(0x215e);
+        descriptionText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
         fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x70));
         *fieldText.text = 0x8000;
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,descriptionText.text);
         fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x90));
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,descriptionText.text);
-        descriptionBox->text = (uint16_t *)0x215e;
+        descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
       }
       firstNode = UiNode_GetRoot(&saveNameEntryStack->base);
-      UiNodeList_UnsuppressActionId(0x1219,firstNode);
-      goto InGameUiAction120F_Handler_UnsuppressAction1210AndReturn;
+      UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,firstNode);
+      goto enableSave;
     }
   }
   firstNode = UiNode_GetRoot(&catalogList->base);
-  UiNodeList_SuppressActionId(0x1219,firstNode);
+  UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,firstNode);
   if ((((UiTextEditControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEdit))->
        editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
-    UiNodeList_SuppressActionId(0x1210,firstNode);
+    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
     return;
   }
-InGameUiAction120F_Handler_UnsuppressAction1210AndReturn:
-  UiNodeList_UnsuppressActionId(0x1210,firstNode);
-  return;
+enableSave:
+  UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
 }
 
 
 /* Address: 0x0056C190.
-   Ownership: gameplay/session/savegame.
-   Purpose: Binary entry is anchored by g_UiActionPage12InitializedHandlers[25]@005625B8. Queued UI action handler
-   for INGAME_PAGE12[25] (0x1219). Return datatype is preserved for non-queue direct callers. Typed parameters: p0
-   saveGamePageControl→InGameSaveGamePageControlAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: InGameSaveGamePage_RebuildCatalog.
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
-   WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode [core/text/path].
+   Delete button of the in-game save page (action INGAME_ACTION_SAVE_GAME_DELETE, g_InGameUiActionHandlersPage12
+   slot 25): deletes save\<name>.sve of the selected save list row (not the trailing "new savegame" row) and
+   rebuilds the page with InGameSaveGamePage_RebuildCatalog. A failed delete is reported, not fatal.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
-          (InGameSaveGamePageControlAddress32 saveGamePageControl)
+          (InGameSaveGamePageControlAddress32 deleteButton)
 
 {
   uint16_t *leaf;
@@ -109,26 +103,27 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
   StatusResult deleteResult;
   ListSelectionResult selectionResult;
 
-  g_GraphicsCursorSetFrame(6);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
+  /* deleteButton + 0xF0 = saveGameList; +0x140 / +0x144 are its rowSlots / rowCount */
   selectionResult = UiPointerList_GetSelectedIndexVariantB
-                    ((UiPointerListControl *)(saveGamePageControl + 0xf0));
+                    ((UiPointerListControl *)(deleteButton + 0xf0));
   rowOrdinal = selectionResult.rowIndex + 1;
-  if (rowOrdinal != *(int *)(saveGamePageControl + 0x144)) {
-    leaf = *(uint16_t **)(*(int *)(saveGamePageControl + 0x140) + -4 + rowOrdinal * 4);
+  if (rowOrdinal != *(int *)(deleteButton + 0x144)) {
+    leaf = *(uint16_t **)(*(int *)(deleteButton + 0x140) - 4 + rowOrdinal * 4);
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     /* the fatal-error dispatch reads EAX and CF of the delete (0x0056C20B) */
     deleteResult = (*(StatusResult (*)(uint32_t,uint16_t *))g_FileSystemDelete)
                              (0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(deleteResult.valueOrError,deleteResult.failed);
-    InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(saveGamePageControl + -0x760));
+    /* deleteButton - 0x760 = gameMenuSaveButton, the node RebuildCatalog expects */
+    InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(deleteButton - 0x760));
   }
-  return;
 }
 
 
@@ -270,12 +265,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
 
 
 /* Address: 0x0056C230.
-   Ownership: gameplay/session/savegame.
-   Purpose: Recovered action-table target INGAME_PAGE12[16] (0x1210).
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
-   WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode [core/text/path],
-   InGameUiAction1210_ResourceRegistrationHelper [ui/ingame/runtime], UiSelectableControl_SetSelected
-   [ui/controls/lists], InGameSettingsPage_ToggleAndSynchronizeControls [ui/ingame/settings].
+   Save button of the in-game save page (action INGAME_ACTION_SAVE_GAME_SAVE, g_InGameUiActionHandlersPage12
+   slot 16; also called by InGameSaveGameList_SelectAndRefreshDetail for a double-clicked row): writes the game to
+   save\<name>.sve, named by the typed name for the trailing "new savegame" row or by the selected save's file
+   name (overwriting it), reports a failed save and closes the in-game menu.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
 
@@ -287,8 +280,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   uint8_t saveStatus;
   ListSelectionResult selectionResult;
   uint32_t saveCarry;
-  
-  g_GraphicsCursorSetFrame(6);
+
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
   selectionResult = UiPointerList_GetSelectedIndexVariantB(saveList);
   errorOrValue = selectionResult.rowIndex + 1;
@@ -304,19 +297,20 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
              (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-  WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
   /* The error check below uses the save routine's CF, not the extension helper's. */
   saveStatus = InGameUiAction1210_ResourceRegistrationHelper
                     (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
                      &g_ScenarioCatalogPathScratchUtf16);
   saveCarry = (uint32_t)(saveStatus & 1);
-  g_GraphicsCursorSetFrame(0);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
+  /* The original passes the save routine's EAX (kept across the cursor call with PUSHFD/PUSH EAX) as the error
+     code; the helper's prototype exposes only CF, so the row ordinal stands in for it here. */
   FatalError_ReportIfFailed(errorOrValue,(saveCarry & 1) != 0);
   UiSelectableControl_SetSelected
             (0,(UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls
             ((UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
-  return;
 }
 
 

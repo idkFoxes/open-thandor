@@ -13,78 +13,79 @@
 /* Implementation ownership: graphics/backend/software. */
 
 /* Address: 0x00519320.
-   Ownership: graphics/backend/software.
-   Purpose: Handles software mask buffer advance pattern by percent tick.
-   Local calls: SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31, SoftwareMaskBuffer_Clear,
-   SoftwareMaskBuffer_ApplyCircularRegionBit, SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit,
-   SoftwareMaskBuffer_ApplyHorizontalBandBit, SoftwareMaskBuffer_SetAllPixelsBit.
+   One tick of the credits screen's reveal mask (called from the frontend tick in ui/frontend/scenario.c while
+   the credits page is open): pixels already revealed brighten by 0x1F, and the tick's position in a 100-tick
+   cycle grows one of the reveal shapes (circles, diagonal wipes, horizontal bands, or everything), step by
+   step. At the start of each cycle the mask is cleared and the two pattern counters (capped at 13) advance.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  uint32_t phaseTicks;
+  uint32_t cycleTicks;
   int previousTick;
-  uint32_t radiusStep;
+  uint32_t shapeStep;
   UiBooleanState32 reverseRows;
   TextureSizeResult logicalSize;
   
   previousTick = maskRuntime->tickCounter;
-  maskRuntime->tickCounter = maskRuntime->tickCounter + 1;
-  if (maskRuntime->maskPixels != (uint8_t *)0x0) {
+  maskRuntime->tickCounter++;
+  if (maskRuntime->maskPixels != NULL) {
     SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(maskRuntime);
-    phaseTicks = previousTick + 0x14;
-    radiusStep = phaseTicks % 100;
-    if (radiusStep == 0) {
+    cycleTicks = previousTick + 20;
+    shapeStep = cycleTicks % 100;
+    if (shapeStep == 0) {
       if (maskRuntime->patternState58 != 0) {
-        maskRuntime->patternState54 = maskRuntime->patternState54 + 1;
+        maskRuntime->patternState54++;
       }
-      maskRuntime->patternState58 = maskRuntime->patternState58 + 1;
+      maskRuntime->patternState58++;
       SoftwareMaskBuffer_Clear(maskRuntime);
-      if (0xd < maskRuntime->patternState54) {
-        maskRuntime->patternState54 = 0xd;
+      if (13 < maskRuntime->patternState54) {
+        maskRuntime->patternState54 = 13;
       }
-      if (0xd < maskRuntime->patternState58) {
-        maskRuntime->patternState58 = 0xd;
+      if (13 < maskRuntime->patternState58) {
+        maskRuntime->patternState58 = 13;
       }
     }
     else {
-      switch(phaseTicks / 100) {
+      /* the shape of this cycle; centres are (y, x) in mask pixels */
+      switch(cycleTicks / 100) {
       case 1:
-        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0x50,0xa0,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,80,160,shapeStep,maskRuntime);
         break;
       case 2:
         logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
         SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
-                  (logicalSize.logicalWidthPixels + logicalSize.logicalHeightPixels,radiusStep,maskRuntime);
+                  (logicalSize.logicalWidthPixels + logicalSize.logicalHeightPixels,shapeStep,maskRuntime);
         break;
       case 3:
       case 7:
-        SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit(0,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit(0,shapeStep,maskRuntime);
         break;
       case 4:
       case 9:
+        /* any nonzero height selects the reversed band order */
         logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
         reverseRows = logicalSize.logicalHeightPixels;
-        SoftwareMaskBuffer_ApplyHorizontalBandBit(reverseRows,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyHorizontalBandBit(reverseRows,shapeStep,maskRuntime);
         break;
       case 5:
-        SoftwareMaskBuffer_ApplyHorizontalBandBit(0,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyHorizontalBandBit(0,shapeStep,maskRuntime);
         break;
       case 6:
-        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0x118,0xa0,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,280,160,shapeStep,maskRuntime);
         break;
       case 8:
-        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0x20,0x140,radiusStep,maskRuntime);
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,32,320,shapeStep,maskRuntime);
         break;
       case 10:
-      case 0xd:
-        SoftwareMaskBuffer_ApplyCircularRegionBit(0,0xb4,0x140,radiusStep,maskRuntime);
+      case 13:
+        SoftwareMaskBuffer_ApplyCircularRegionBit(0,180,320,shapeStep,maskRuntime);
         break;
-      case 0xb:
-        SoftwareMaskBuffer_ApplyCircularRegionBit(1,0xb4,0x140,radiusStep,maskRuntime);
+      case 11:
+        SoftwareMaskBuffer_ApplyCircularRegionBit(1,180,320,shapeStep,maskRuntime);
         break;
-      case 0xc:
+      case 12:
         SoftwareMaskBuffer_SetAllPixelsBit(maskRuntime);
       }
     }
@@ -174,14 +175,10 @@ SoftwareRenderer_DrawQueueNon16Bit
 
 
 /* Address: 0x004D1640.
-   Ownership: graphics/backend/software.
-   Purpose: Uses clip minima of zero, stores an explicit target base, and dispatches through
-   g_SoftwareRasterHandlersAuxiliary. Typed parameters: p0 clipMaxY→GraphicsScreenCoordinate_V307, p1
-   clipMaxX→GraphicsScreenCoordinate_V307. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: SoftwareRenderer_PrepareTrianglePacket.
-   Cross-module calls: GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
-   [graphics/render/primitives].
+   Queue renderer for an off-screen 32-bit target (GraphicsOffscreen_RenderModelListToTextureSource): like
+   SoftwareRenderer_DrawQueue16Bit, but it draws into targetBase, whose rows are clipMaxX pixels long, through
+   g_SoftwareRasterHandlersAuxiliary with clip minima of 0. Textured packets whose texture is subresource 99 or
+   113 of its source are skipped (which textures these are is not known).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareRenderer_DrawQueueAuxiliary
@@ -190,20 +187,20 @@ SoftwareRenderer_DrawQueueAuxiliary
 
 {
   GraphicsPrimitivePacket *packet;
-  GraphicsPrimitivePacket *currentPacket;
   PrimitivePacketResult queueCursor;
-  uint32_t textureSubresourceIndex;
   
   g_SoftwareAuxiliaryTargetBase = targetBase;
   queueCursor = GraphicsPrimitiveQueue_Begin(queue);
   while (packet = queueCursor.packet, !queueCursor.noPacket) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
-    if (((packet->renderFlags & 0x10000) == 0) ||
+    if (((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) == 0) ||
        ((packet->textureEntry->subresourceIndex != 99 &&
-        (packet->textureEntry->subresourceIndex != 0x71)))) {
-      (**(code **)((int)g_SoftwareRasterHandlersAuxiliary + ((packet->renderFlags & 0x3f000) >> 10))
-      )(clipMaxY,clipMaxX,0,0,packet);
-      g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
+        (packet->textureEntry->subresourceIndex != 113)))) {
+      /* handler index * 4 = byte offset into the handler table */
+      (**(code **)((int)g_SoftwareRasterHandlersAuxiliary +
+                   ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
+                (clipMaxY,clipMaxX,0,0,packet);
+      g_PrimitiveDrawCallCount++;
     }
     queueCursor = GraphicsPrimitiveQueue_Next(queue);
   }
@@ -234,8 +231,8 @@ SoftwareRenderer_DrawPrimitiveQueueBridge
 
 
 /* Address: 0x00486050.
-   Ownership: graphics/backend/software.
-   Purpose: Archived body is CLC; RET and is referenced from software graphics dispatch storage at 00485820.
+   Software backend of g_GraphicsBeginScene (slot 0x00485820): the software renderer needs no scene setup, so it
+   only reports success (CLC; RET).
 */
 void SoftwareGraphicsDispatch_SuccessNoOp(void)
 
@@ -244,8 +241,7 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void)
 }
 
 /* Address: 0x00486060.
-   Ownership: graphics/backend/software.
-   Purpose: Archived body is RET and is referenced from software graphics dispatch storage at 00485824.
+   Software backend of g_GraphicsEndScene (slot 0x00485824): nothing to finish (a bare RET).
 */
 void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void)
 
@@ -255,14 +251,15 @@ void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void)
 
 
 /* Address: 0x004A8F80.
-   Ownership: graphics/backend/software.
-   Purpose: Allocates the 0xC00 SoftwarePixelPackTables block when needed, rebuilds it through
-   g_SoftwareBuildPixelPackTables, and derives the runtime MMX pack/unpack constants from
-   g_SoftwarePixelFormatConfig. ABI: CF clear means success. CF set means failure.
+   Initial g_GraphicsSetDisplayMode hook (slot 0x004A8ED0) of the software pixel format: allocates the
+   SoftwarePixelPackTables once, rebuilds them through g_SoftwareBuildPixelPackTables with the current colour
+   scale/bias, and derives the MMX pack/unpack constants (g_SoftwarePixelMmxConstants) of the 16-bit rasterizer
+   and blits from g_SoftwarePixelFormatConfig. The mode arguments are not used. CF set when the allocation fails;
+   on success EAX holds the blue unpack scale, the last value the original computed.
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 SoftwarePixelFormat_BaseDisplayModeHook
-          (uint32_t modeArg0,uint32_t modeArg1,FrontendDisplayDimensionPixels height,
+          (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width)
 
 {
@@ -276,8 +273,8 @@ SoftwarePixelFormat_BaseDisplayModeHook
   DisplayModeResult failureResult;
   
   packTables = g_SoftwarePixelPackTables;
-  if (g_SoftwarePixelPackTables == (SoftwarePixelPackTables *)0x0) {
-    tableAllocation = g_MemoryApi.alloc(0xc00);
+  if (g_SoftwarePixelPackTables == NULL) {
+    tableAllocation = g_MemoryApi.alloc(0xc00); /* sizeof(SoftwarePixelPackTables): 3 x 256 dwords */
     packTables = (SoftwarePixelPackTables *)tableAllocation.payloadOrError;
     if (tableAllocation.failed) {
       failureResult.valueOrError = tableAllocation.payloadOrError;
@@ -290,7 +287,8 @@ SoftwarePixelFormat_BaseDisplayModeHook
   redBits = (uint8_t)g_SoftwarePixelFormatConfig.redBitCount;
   greenBits = (uint8_t)g_SoftwarePixelFormatConfig.greenBitCount;
   blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
-  blueUnpackScale = 1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits & 0x1f);
+  /* unpack scale 1 << (16 - shift - bits) moves a channel to the top of a 16-bit lane */
+  blueUnpackScale = 1 << (((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits) & 0x1f);
   hookResult.failed = false;
   hookResult.valueOrError = blueUnpackScale;
   g_SoftwarePixelMmxConstants.packedPixelMasks.red =
@@ -301,17 +299,19 @@ SoftwarePixelFormat_BaseDisplayModeHook
        (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.blueMask;
   g_SoftwarePixelMmxConstants.unpackScales.red =
        (SoftwareColorLaneFixed16)
-       (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.redShift) - redBits & 0x1f));
+       (1 << (((16 - (char)g_SoftwarePixelFormatConfig.redShift) - redBits) & 0x1f));
   g_SoftwarePixelMmxConstants.unpackScales.green =
        (SoftwareColorLaneFixed16)
-       (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits & 0x1f));
+       (1 << (((16 - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits) & 0x1f));
   g_SoftwarePixelMmxConstants.unpackScales.blue = (SoftwareColorLaneFixed16)blueUnpackScale;
+  /* quantize mask: the channel's top `bits` bits of a Q12 lane */
   g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
-       (SoftwareColorLaneFixed16)((1 << (redBits & 0x1f)) + -1 << (0xc - redBits & 0x1f));
+       (SoftwareColorLaneFixed16)(((1 << (redBits & 0x1f)) - 1) << ((12 - redBits) & 0x1f));
   g_SoftwarePixelMmxConstants.quantizeMasksQ12.green =
-       (SoftwareColorLaneFixed16)((1 << (greenBits & 0x1f)) + -1 << (0xc - greenBits & 0x1f));
+       (SoftwareColorLaneFixed16)(((1 << (greenBits & 0x1f)) - 1) << ((12 - greenBits) & 0x1f));
   g_SoftwarePixelMmxConstants.quantizeMasksQ12.blue =
-       (SoftwareColorLaneFixed16)((1 << (blueBits & 0x1f)) + -1 << (0xc - blueBits & 0x1f));
+       (SoftwareColorLaneFixed16)(((1 << (blueBits & 0x1f)) - 1) << ((12 - blueBits) & 0x1f));
+  /* PMADDWD weight 1 << (bits + shift - 4) moves the quantized lane to its place in the pixel */
   g_SoftwarePixelMmxConstants.packWeights.red =
        (SoftwareColorLaneFixed16)
        (1 << ((redBits + (char)g_SoftwarePixelFormatConfig.redShift) - 4 & 0x1f));
@@ -326,9 +326,10 @@ SoftwarePixelFormat_BaseDisplayModeHook
 
 
 /* Address: 0x004A9110.
-   Ownership: graphics/backend/software.
-   Purpose: Allocates 0x10 + width * height * bytesPerPixel bytes, stores the inline framebuffer header, points
-   pixels at header + 0x10, and zeroes the complete pixel area. ABI: CF clear means success. CF set means failure.
+   g_SoftwareFramebufferCreate (slot 0x004A8ED8): creates an in-memory framebuffer of width x height pixels in one
+   allocation, the 0x10-byte SoftwareFramebufferAccess header (width, height, bytesPerPixel, pixels) followed by
+   the pixels, which are zeroed. Used for the off-screen buffers of the display setup (platform/input/devices.c).
+   CF set with the allocation error on failure.
 */
 SoftwareFramebufferResult __thandor_eax_cf_preserve_ecx_edx
 SoftwareFramebuffer_Create
@@ -336,23 +337,25 @@ SoftwareFramebuffer_Create
           GraphicsPixelDimension width)
 
 {
-  GraphicsPixelDimension *headerCursor;
-  uint32_t pixelBytesOrWordsLeft;
+  GraphicsPixelDimension *cursor;
+  uint32_t pixelBytesOrDwordsLeft;
   ArenaAllocResult frameAllocation;
   SoftwareFramebufferResult createResult;
-  
-  pixelBytesOrWordsLeft = width * height * bytesPerPixel;
-  frameAllocation = g_MemoryApi.alloc(pixelBytesOrWordsLeft + 0x10);
-  headerCursor = (GraphicsPixelDimension *)frameAllocation.payloadOrError;
+
+  pixelBytesOrDwordsLeft = width * height * bytesPerPixel;
+  frameAllocation = g_MemoryApi.alloc(pixelBytesOrDwordsLeft + 0x10);
+  cursor = (GraphicsPixelDimension *)frameAllocation.payloadOrError;
   if (!frameAllocation.failed) {
-    headerCursor[2] = bytesPerPixel;
-    *headerCursor = width;
-    headerCursor[1] = height;
-    headerCursor[3] = (GraphicsPixelDimension)(headerCursor + 4);
-    headerCursor = headerCursor + 4;
-    for (pixelBytesOrWordsLeft = pixelBytesOrWordsLeft >> 2; pixelBytesOrWordsLeft != 0; pixelBytesOrWordsLeft = pixelBytesOrWordsLeft - 1) {
-      *headerCursor = 0;
-      headerCursor = headerCursor + 1;
+    /* header: width, height, bytesPerPixel, pixels (right behind the header) */
+    cursor[2] = bytesPerPixel;
+    *cursor = width;
+    cursor[1] = height;
+    cursor[3] = (GraphicsPixelDimension)(cursor + 4);
+    cursor = cursor + 4;
+    /* whole dwords only; the original also leaves up to 3 trailing bytes as allocated */
+    for (pixelBytesOrDwordsLeft = pixelBytesOrDwordsLeft >> 2; pixelBytesOrDwordsLeft != 0; pixelBytesOrDwordsLeft--) {
+      *cursor = 0;
+      cursor++;
     }
     frameAllocation = THANDOR_BITCAST(uint64_t, ArenaAllocResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, frameAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
@@ -363,8 +366,8 @@ SoftwareFramebuffer_Create
 
 
 /* Address: 0x004A9160.
-   Ownership: graphics/backend/software.
-   Purpose: Frees one inline SoftwareFramebufferAccess allocation.
+   g_SoftwareFramebufferDestroy (slot 0x004A8EDC): frees a framebuffer made by SoftwareFramebuffer_Create
+   (header and pixels are one allocation).
 */
 void __thandor_preserve_eax SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
 
@@ -375,9 +378,11 @@ void __thandor_preserve_eax SoftwareFramebuffer_Destroy(SoftwareFramebufferAcces
 
 
 /* Address: 0x004A9180.
-   Ownership: graphics/backend/software.
-   Purpose: Builds the blue, green, and red 256-entry framebuffer packing tables from a signed Q16 linear color
-   scale and bias.
+   g_SoftwareBuildPixelPackTables (slot 0x004A8EE8): rebuilds the blue, green and red tables that turn an 8-bit
+   channel into its bits of a framebuffer pixel, applying the display settings' colour scale (contrast) and bias
+   (brightness), both Q16: value = 64 + (channel - 64) * scale + bias, clamped to 0..255. Called by the
+   display-mode hook and by the display settings dialog (ui/controls/misc.c), which is why it also stores the two
+   values in g_SoftwareColorScaleQ16/g_SoftwareColorBiasQ16.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwarePixelFormat_BuildChannelPackTables
@@ -391,28 +396,32 @@ SoftwarePixelFormat_BuildChannelPackTables
   channelIndex = 0;
   packTableCursor = g_SoftwarePixelPackTables;
   do {
-    transformedChannelValueQ16 = (channelIndex - 0x40) * colorScaleQ16 + 0x400000 + colorBiasQ16;
+    /* 0x400000 = 64.0 in Q16, the pivot of the scale */
+    transformedChannelValueQ16 = (channelIndex - 64) * colorScaleQ16 + 0x400000 + colorBiasQ16;
     if ((int)transformedChannelValueQ16 < 0) {
       transformedChannelValueQ16 = 0;
     }
     else if (0xffffff < transformedChannelValueQ16) {
+      /* 255.0; the original clamps to 0xFF0000, not 0xFFFFFF */
       transformedChannelValueQ16 = 0xff0000;
     }
+    /* keep the channel's top `bits` bits of the Q16 value (a byte in bits 16..23) and shift them into place */
     packTableCursor->blue[0] =
          (transformedChannelValueQ16 >>
-         (0x18U - (char)g_SoftwarePixelFormatConfig.blueBitCount & 0x1f)) <<
+         ((24U - (char)g_SoftwarePixelFormatConfig.blueBitCount) & 0x1f)) <<
          ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & 0x1f);
     packTableCursor->green[0] =
          (transformedChannelValueQ16 >>
-         (0x18U - (char)g_SoftwarePixelFormatConfig.greenBitCount & 0x1f)) <<
+         ((24U - (char)g_SoftwarePixelFormatConfig.greenBitCount) & 0x1f)) <<
          ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & 0x1f);
     packTableCursor->red[0] =
          (transformedChannelValueQ16 >>
-         (0x18U - (char)g_SoftwarePixelFormatConfig.redBitCount & 0x1f)) <<
+         ((24U - (char)g_SoftwarePixelFormatConfig.redBitCount) & 0x1f)) <<
          ((uint8_t)g_SoftwarePixelFormatConfig.redShift & 0x1f);
-    channelIndex = channelIndex + 1;
+    channelIndex++;
+    /* next entry of all three tables */
     packTableCursor = (SoftwarePixelPackTables *)(packTableCursor->blue + 1);
-  } while (channelIndex < 0x100);
+  } while (channelIndex < 256);
   g_SoftwareColorBiasQ16 = colorBiasQ16;
   g_SoftwareColorScaleQ16 = colorScaleQ16;
   return;
@@ -1329,11 +1338,11 @@ SoftwareFramebuffer_FillRectArgb32
 
 
 /* Address: 0x004AD410.
-   Ownership: graphics/backend/software.
-   Purpose: Copies a rectangle beginning at sourceX/sourceY in source into destination beginning at (0,0). source
-   and destination must have identical bytesPerPixel. destination must initially be at least copyWidth by
-   copyHeight. The source coordinates are clipped against source bounds. Negative source coordinates shift the
-   destination start so relative alignment is preserved.
+   g_GraphicsFramebufferCopyRegionToOrigin (slot 0x004A8F34): copies the copyWidth x copyHeight rectangle at
+   (sourceX, sourceY) of source to the top-left corner of destination. Nothing is copied unless both have the
+   same pixel size and destination is at least copyWidth x copyHeight. The rectangle is clipped to source; a
+   negative source coordinate moves the destination start instead, so the copy stays aligned. Rows are copied in
+   dwords when their byte length allows.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareFramebuffer_CopyRegionToOrigin
@@ -1391,14 +1400,14 @@ SoftwareFramebuffer_CopyRegionToOrigin
       sourceRowStartOrDestCursor = sourceRow;
       if ((rowBytes & 3) != 0) {
         do {
-          for (; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
+          for (; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
             *destRow = *sourceRow;
-            sourceRow = sourceRow + 1;
-            destRow = destRow + 1;
+            sourceRow++;
+            destRow++;
           }
           sourceRow = sourceRowStartOrDestCursor + sourceStrideBytes;
           destRow = destRowStartOrSourceCursor + sourceOffsetOrDestStride;
-          copyHeight = copyHeight - 1;
+          copyHeight--;
           bytesOrWordsLeft = rowBytes;
           destRowStartOrSourceCursor = destRow;
           sourceRowStartOrDestCursor = sourceRow;
@@ -1408,14 +1417,15 @@ SoftwareFramebuffer_CopyRegionToOrigin
       do {
         destRowStartOrSourceCursor = sourceRow;
         sourceRowStartOrDestCursor = destRow;
-        for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
+        /* here the two cursors swap roles: destRowStartOrSourceCursor reads, sourceRowStartOrDestCursor writes */
+        for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
           *(uint32_t *)sourceRowStartOrDestCursor = *(uint32_t *)destRowStartOrSourceCursor;
           destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
           sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
         }
         sourceRow = sourceRow + sourceStrideBytes;
         destRow = destRow + sourceOffsetOrDestStride;
-        copyHeight = copyHeight - 1;
+        copyHeight--;
       } while (copyHeight != 0);
     }
   }
@@ -1424,11 +1434,11 @@ SoftwareFramebuffer_CopyRegionToOrigin
 
 
 /* Address: 0x004AD520.
-   Ownership: graphics/backend/software.
-   Purpose: Copies a rectangle beginning at source (0,0) into destination beginning at destinationX/destinationY.
-   source and destination must have identical bytesPerPixel. source must initially be at least copyWidth by
-   copyHeight. The destination coordinates are clipped against destination bounds. Negative destination coordinates
-   shift the source start so relative alignment is preserved.
+   g_GraphicsFramebufferCopyOriginToRegion (slot 0x004A8F38), the reverse of SoftwareFramebuffer_CopyRegionToOrigin:
+   copies the copyWidth x copyHeight rectangle at the top-left corner of source to (destinationX, destinationY) of
+   destination. Nothing is copied unless both have the same pixel size and source is at least copyWidth x
+   copyHeight. The rectangle is clipped to destination; a negative destination coordinate moves the source start
+   instead. Rows are copied in dwords when their byte length allows.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareFramebuffer_CopyOriginToRegion
@@ -1486,14 +1496,14 @@ SoftwareFramebuffer_CopyOriginToRegion
       sourceRowStartOrDestCursor = sourceRow;
       if ((rowBytes & 3) != 0) {
         do {
-          for (; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
+          for (; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
             *destRow = *sourceRow;
-            sourceRow = sourceRow + 1;
-            destRow = destRow + 1;
+            sourceRow++;
+            destRow++;
           }
           destRow = destRowStartOrSourceCursor + destStrideBytes;
           sourceRow = sourceRowStartOrDestCursor + destOffsetOrSourceStride;
-          copyHeight = copyHeight - 1;
+          copyHeight--;
           bytesOrWordsLeft = rowBytes;
           destRowStartOrSourceCursor = destRow;
           sourceRowStartOrDestCursor = sourceRow;
@@ -1503,14 +1513,15 @@ SoftwareFramebuffer_CopyOriginToRegion
       do {
         destRowStartOrSourceCursor = sourceRow;
         sourceRowStartOrDestCursor = destRow;
-        for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
+        /* here the two cursors swap roles: destRowStartOrSourceCursor reads, sourceRowStartOrDestCursor writes */
+        for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft--) {
           *(uint32_t *)sourceRowStartOrDestCursor = *(uint32_t *)destRowStartOrSourceCursor;
           destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
           sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
         }
         destRow = destRow + destStrideBytes;
         sourceRow = sourceRow + destOffsetOrSourceStride;
-        copyHeight = copyHeight - 1;
+        copyHeight--;
       } while (copyHeight != 0);
     }
   }
@@ -1518,12 +1529,8 @@ SoftwareFramebuffer_CopyOriginToRegion
 }
 
 
-/* Address: 0x004D1710.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 16: textured, Gouraud-shaded, depth-tested, opaque triangle.
-   The nearest texel (paletted or direct colour, wrapped) is modulated by the interpolated colour; the
-   pixel and its depth are written when the depth test passes.
-*/
+/* Span of the textured opaque modes 16/24: the nearest texel (paletted or direct colour, wrapped) modulated by
+   the interpolated colour; pixel and depth are written where the depth test passes. */
 static void Raster16_SpanTexturedOpaque(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -1538,6 +1545,11 @@ static void Raster16_SpanTexturedOpaque(RasterSpan *span)
     }
 }
 
+/* Address: 0x004D1710.
+   g_SoftwareRasterHandlers16Bit entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque triangle
+   on the 16-bit framebuffer (see Raster16_SpanTexturedOpaque). Handler ABI and the rasterizer as a whole:
+   docs/software_raster.md.
+*/
 void SoftwareRaster16_Mode16
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1554,11 +1566,6 @@ void SoftwareRaster16_Mode16
   }
 }
 
-/* Address: 0x004D2990.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 22: byte-identical to mode 20 (textured, Gouraud-shaded,
-   alpha-blended, alpha-tested depth write); see Raster16_DrawTexturedAlphaTested.
-*/
 /* Texel modulated by the span colour: the Q4 source colour of the textured modes. */
 static RasterColor Raster16_TexturedSource(const RasterSpan *span)
 {
@@ -1601,6 +1608,10 @@ static void Raster16_DrawTexturedAlphaTested(RasterShading shading, GraphicsScre
     }
 }
 
+/* Address: 0x004D2990.
+   g_SoftwareRasterHandlers16Bit entry 22 (render mode 22): byte-identical to mode 20 in the original: textured,
+   Gouraud-shaded, alpha-blended, with the alpha-tested depth write (Raster16_DrawTexturedAlphaTested).
+*/
 void SoftwareRaster16_Mode22
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1609,12 +1620,8 @@ void SoftwareRaster16_Mode22
   Raster16_DrawTexturedAlphaTested(RASTER_SHADE_GOURAUD, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* Address: 0x004D3E90.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 17 (also table indices 48, 49, 52, 54): textured,
-   Gouraud-shaded, depth-tested, alpha-blended triangle. The modulated texel is blended with the
-   framebuffer by its alpha (g_SoftwareBlendAlphaFactors); the depth buffer is not written.
-*/
+/* Span of the textured alpha-blended modes 17/25: the modulated texel is blended with the framebuffer by its
+   alpha (g_SoftwareBlendAlphaFactors); the depth buffer is not written. */
 static void Raster16_SpanTexturedAlphaBlend(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -1629,6 +1636,10 @@ static void Raster16_SpanTexturedAlphaBlend(RasterSpan *span)
     }
 }
 
+/* Address: 0x004D3E90.
+   g_SoftwareRasterHandlers16Bit entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded,
+   depth-tested, alpha-blended triangle without depth write (Raster16_SpanTexturedAlphaBlend).
+*/
 void SoftwareRaster16_Mode17
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1645,12 +1656,8 @@ void SoftwareRaster16_Mode17
   }
 }
 
-/* Address: 0x004D5310.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 18 (also table index 50): textured, Gouraud-shaded,
-   depth-tested, additive triangle. The modulated texel is added to the framebuffer with
-   saturation; the depth buffer is not written.
-*/
+/* Span of the textured additive modes 18/26: the modulated texel is added to the framebuffer with saturation;
+   the depth buffer is not written. */
 static void Raster16_SpanTexturedAdd(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -1665,6 +1672,10 @@ static void Raster16_SpanTexturedAdd(RasterSpan *span)
     }
 }
 
+/* Address: 0x004D5310.
+   g_SoftwareRasterHandlers16Bit entries 18 and 50 (render mode 18): textured, Gouraud-shaded, depth-tested,
+   additive triangle without depth write (Raster16_SpanTexturedAdd).
+*/
 void SoftwareRaster16_Mode18
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1682,10 +1693,8 @@ void SoftwareRaster16_Mode18
 }
 
 /* Address: 0x004D6690.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 20 (byte-identical to mode 22): textured, Gouraud-shaded,
-   depth-tested, alpha-blended triangle like mode 17, which also writes the depth where the
-   modulated alpha is >= 128.
+   g_SoftwareRasterHandlers16Bit entry 20 (render mode 20): textured, Gouraud-shaded, depth-tested, alpha-blended
+   triangle like mode 17 that also writes the depth where the modulated alpha is >= 128. Byte-identical to mode 22.
 */
 void SoftwareRaster16_Mode20
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1696,8 +1705,7 @@ void SoftwareRaster16_Mode20
 }
 
 /* Address: 0x004D7B90.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 24: textured, flat-shaded (colour of v0), depth-tested,
+   g_SoftwareRasterHandlers16Bit entry 24 (render mode 24): textured, flat-shaded (colour of v0), depth-tested,
    opaque triangle. Same pixel operation as mode 16.
 */
 void SoftwareRaster16_Mode24
@@ -1717,9 +1725,8 @@ void SoftwareRaster16_Mode24
 }
 
 /* Address: 0x004D8A90.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 30: byte-identical to mode 28 (textured, flat-shaded,
-   alpha-blended, alpha-tested depth write); see Raster16_DrawTexturedAlphaTested.
+   g_SoftwareRasterHandlers16Bit entry 30 (render mode 30): byte-identical to mode 28 in the original: textured,
+   flat-shaded, alpha-blended, with the alpha-tested depth write (Raster16_DrawTexturedAlphaTested).
 */
 void SoftwareRaster16_Mode30
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1730,9 +1737,8 @@ void SoftwareRaster16_Mode30
 }
 
 /* Address: 0x004D9C10.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 25 (also table indices 56, 57, 60, 62): textured,
-   flat-shaded (colour of v0), depth-tested, alpha-blended triangle. Same pixel operation as mode 17.
+   g_SoftwareRasterHandlers16Bit entries 25 and 56, 57, 60, 62 (render mode 25): textured, flat-shaded (colour of
+   v0), depth-tested, alpha-blended triangle. Same pixel operation as mode 17.
 */
 void SoftwareRaster16_Mode25
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1751,8 +1757,7 @@ void SoftwareRaster16_Mode25
 }
 
 /* Address: 0x004DAD10.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 26 (also table index 58): textured, flat-shaded,
+   g_SoftwareRasterHandlers16Bit entries 26 and 58 (render mode 26): textured, flat-shaded (colour of v0),
    depth-tested, additive triangle. Same pixel operation as mode 18.
 */
 void SoftwareRaster16_Mode26
@@ -1772,9 +1777,8 @@ void SoftwareRaster16_Mode26
 }
 
 /* Address: 0x004DBD10.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 28 (byte-identical to mode 30): textured, flat-shaded,
-   depth-tested, alpha-blended triangle with the alpha-tested depth write of mode 20.
+   g_SoftwareRasterHandlers16Bit entry 28 (render mode 28): textured, flat-shaded, depth-tested, alpha-blended
+   triangle with the alpha-tested depth write of mode 20. Byte-identical to mode 30.
 */
 void SoftwareRaster16_Mode28
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1784,12 +1788,8 @@ void SoftwareRaster16_Mode28
   Raster16_DrawTexturedAlphaTested(RASTER_SHADE_FLAT, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* Address: 0x004DCE90.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 0: Gouraud-shaded, depth-tested, opaque triangle. A pixel is
-   written (and its depth stored) when the interpolated depth is <= the depth buffer. Handler ABI: see
-   docs/software_raster.md (five stack arguments, ret 0x14; the draw queue passes the prepared packet).
-*/
+/* Span of the untextured opaque modes 0/8: a pixel is written, and its depth stored, where the interpolated
+   depth is <= the depth buffer. */
 static void Raster16_SpanShadedOpaque(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -1801,6 +1801,11 @@ static void Raster16_SpanShadedOpaque(RasterSpan *span)
     }
 }
 
+/* Address: 0x004DCE90.
+   g_SoftwareRasterHandlers16Bit entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle on the
+   16-bit framebuffer (Raster16_SpanShadedOpaque). Handler ABI: docs/software_raster.md (five stack arguments, ret
+   0x14; the draw queue passes the prepared packet).
+*/
 void SoftwareRaster16_Mode00
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1849,11 +1854,9 @@ static void Raster16_DrawAlphaBlendDepth(RasterShading shading, GraphicsScreenCo
 }
 
 /* Address: 0x004DD700.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 6: Gouraud-shaded, depth-tested, alpha-blended triangle
-   that also writes depth where the interpolated alpha is >= 128. Byte-identical to mode 4 in the
-   original, which tests a stale MM2 instead of the alpha (see docs/software_raster.md, "Stale MM2");
-   the C keeps the alpha rule.
+   g_SoftwareRasterHandlers16Bit entry 6 (render mode 6): Gouraud-shaded, depth-tested, alpha-blended triangle that
+   also writes depth where the interpolated alpha is >= 128. Byte-identical to mode 4 in the original, which tests
+   a stale MM2 instead of the alpha (docs/software_raster.md, "Stale MM2"); the C keeps the alpha rule.
 */
 void SoftwareRaster16_Mode06
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1863,12 +1866,8 @@ void SoftwareRaster16_Mode06
   Raster16_DrawAlphaBlendDepth(RASTER_SHADE_GOURAUD, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* Address: 0x004DE0C0.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 1 (also table indices 32, 33, 36, 38): Gouraud-shaded,
-   depth-tested, alpha-blended triangle. Visible pixels are blended with the framebuffer by the
-   interpolated vertex alpha (g_SoftwareBlendAlphaFactors); the depth buffer is not written.
-*/
+/* Span of the untextured alpha-blended modes 1/9: visible pixels are blended with the framebuffer by the
+   interpolated vertex alpha (g_SoftwareBlendAlphaFactors); the depth buffer is not written. */
 static void Raster16_SpanShadedAlphaBlend(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -1883,6 +1882,10 @@ static void Raster16_SpanShadedAlphaBlend(RasterSpan *span)
     }
 }
 
+/* Address: 0x004DE0C0.
+   g_SoftwareRasterHandlers16Bit entries 1 and 32, 33, 36, 38 (render mode 1): Gouraud-shaded, depth-tested,
+   alpha-blended triangle without depth write (Raster16_SpanShadedAlphaBlend).
+*/
 void SoftwareRaster16_Mode01
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1897,12 +1900,8 @@ void SoftwareRaster16_Mode01
   }
 }
 
-/* Address: 0x004DEA40.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 2 (also table index 34): Gouraud-shaded, depth-tested,
-   additive triangle. Visible pixels get the interpolated colour added with saturation; the depth
-   buffer is not written.
-*/
+/* Span of the untextured additive modes 2/10: visible pixels get the interpolated colour added with
+   saturation; the depth buffer is not written. */
 static void Raster16_SpanShadedAdd(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -1917,6 +1916,10 @@ static void Raster16_SpanShadedAdd(RasterSpan *span)
     }
 }
 
+/* Address: 0x004DEA40.
+   g_SoftwareRasterHandlers16Bit entries 2 and 34 (render mode 2): Gouraud-shaded, depth-tested, additive triangle
+   without depth write (Raster16_SpanShadedAdd).
+*/
 void SoftwareRaster16_Mode02
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -1932,8 +1935,7 @@ void SoftwareRaster16_Mode02
 }
 
 /* Address: 0x004DF2F0.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 4: same as mode 6 (see SoftwareRaster16_Mode06).
+   g_SoftwareRasterHandlers16Bit entry 4 (render mode 4): same as mode 6 (see SoftwareRaster16_Mode06).
 */
 void SoftwareRaster16_Mode04
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1944,8 +1946,7 @@ void SoftwareRaster16_Mode04
 }
 
 /* Address: 0x004DFCB0.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 8: flat-shaded (colour of v0), depth-tested, opaque
+   g_SoftwareRasterHandlers16Bit entry 8 (render mode 8): flat-shaded (colour of v0), depth-tested, opaque
    triangle. Same pixel operation as mode 0 with a constant colour.
 */
 void SoftwareRaster16_Mode08
@@ -1963,8 +1964,7 @@ void SoftwareRaster16_Mode08
 }
 
 /* Address: 0x004E0250.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 14: flat-shaded version of mode 6 (colour of v0).
+   g_SoftwareRasterHandlers16Bit entry 14 (render mode 14): flat-shaded version of mode 6 (colour of v0).
    Byte-identical to mode 12 in the original; same stale-MM2 note as mode 6.
 */
 void SoftwareRaster16_Mode14
@@ -1976,10 +1976,9 @@ void SoftwareRaster16_Mode14
 }
 
 /* Address: 0x004E0940.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 9 (also table indices 40, 41, 44, 46): flat-shaded (colour of
-   v0), depth-tested, alpha-blended triangle. Same pixel operation as mode 1 with a constant colour; the
-   depth buffer is not written.
+   g_SoftwareRasterHandlers16Bit entries 9 and 40, 41, 44, 46 (render mode 9): flat-shaded (colour of v0),
+   depth-tested, alpha-blended triangle. Same pixel operation as mode 1 with a constant colour; the depth buffer is
+   not written.
 */
 void SoftwareRaster16_Mode09
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -1996,10 +1995,8 @@ void SoftwareRaster16_Mode09
 }
 
 /* Address: 0x004E0FF0.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 10 (also table index 42): flat-shaded (colour of v0),
-   depth-tested, additive triangle. Same pixel operation as mode 2 with a constant colour; the depth
-   buffer is not written.
+   g_SoftwareRasterHandlers16Bit entries 10 and 42 (render mode 10): flat-shaded (colour of v0), depth-tested,
+   additive triangle. Same pixel operation as mode 2 with a constant colour; the depth buffer is not written.
 */
 void SoftwareRaster16_Mode10
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2016,8 +2013,7 @@ void SoftwareRaster16_Mode10
 }
 
 /* Address: 0x004E15D0.
-   Ownership: graphics/backend/software.
-   Purpose: 16-bit framebuffer, render mode 12: same as mode 14 (see SoftwareRaster16_Mode14).
+   g_SoftwareRasterHandlers16Bit entry 12 (render mode 12): same as mode 14 (see SoftwareRaster16_Mode14).
 */
 void SoftwareRaster16_Mode12
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2027,12 +2023,8 @@ void SoftwareRaster16_Mode12
   Raster16_DrawAlphaBlendDepth(RASTER_SHADE_FLAT, clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* Address: 0x004E1CC0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 16: textured, Gouraud-shaded, depth-tested, opaque triangle
-   (see SoftwareRaster16_Mode16). The nearest texel is modulated by the interpolated colour; the pixel and
-   its depth are written when the depth test passes.
-*/
+/* 32-bit span of the textured opaque modes 16/24 (Non16 family): the nearest texel modulated by the
+   interpolated colour; pixel and depth are written where the depth test passes. */
 static void Raster32_SpanTexturedOpaque(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2065,6 +2057,10 @@ static void RasterNon16_DrawTextured(GraphicsScreenCoordinate clipMaxY, Graphics
   }
 }
 
+/* Address: 0x004E1CC0.
+   g_SoftwareRasterHandlersNon16Bit entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque
+   triangle on the 32-bit framebuffer (see SoftwareRaster16_Mode16).
+*/
 void SoftwareRasterNon16_Mode16
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2074,13 +2070,9 @@ void SoftwareRasterNon16_Mode16
                            Raster32_SpanTexturedOpaque);
 }
 
-/* Address: 0x004E2E00.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render modes 20 and 22 (byte-identical in the original): textured,
-   Gouraud-shaded, depth-tested, alpha-blended triangle with an alpha-tested depth write. Visible pixels
-   are blended with the framebuffer by the modulated texel alpha; the depth is written only when that
-   alpha lane, as an unsigned word, is >= 0x800 (alpha >= 128, or a negative lane).
-*/
+/* Span of the Non16 modes 20/22/28/30: visible pixels are blended with the framebuffer by the modulated
+   texel alpha; the depth is written only when that alpha lane, as an unsigned word, is >= 0x800 (alpha >= 128,
+   or a negative lane). */
 static void Raster32_SpanTexturedAlphaTested(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2099,6 +2091,11 @@ static void Raster32_SpanTexturedAlphaTested(RasterSpan *span)
     }
 }
 
+/* Address: 0x004E2E00.
+   g_SoftwareRasterHandlersNon16Bit entry 22 (render mode 22): textured, Gouraud-shaded, depth-tested,
+   alpha-blended triangle with the alpha-tested depth write (Raster32_SpanTexturedAlphaTested). Byte-identical to
+   mode 20 in the original.
+*/
 void SoftwareRasterNon16_Mode22
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2108,12 +2105,8 @@ void SoftwareRasterNon16_Mode22
                            Raster32_SpanTexturedAlphaTested);
 }
 
-/* Address: 0x004E4180.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 17 (also table indices 48, 49, 52, 54): textured,
-   Gouraud-shaded, depth-tested, alpha-blended triangle. Visible pixels are blended with the framebuffer
-   by the modulated texel alpha; the depth buffer is not written.
-*/
+/* Span of the Non16 modes 17/25: visible pixels are blended with the framebuffer by the modulated texel
+   alpha; the depth buffer is not written. */
 static void Raster32_SpanTexturedAlphaBlend(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2128,6 +2121,10 @@ static void Raster32_SpanTexturedAlphaBlend(RasterSpan *span)
     }
 }
 
+/* Address: 0x004E4180.
+   g_SoftwareRasterHandlersNon16Bit entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded,
+   depth-tested, alpha-blended triangle without depth write (Raster32_SpanTexturedAlphaBlend).
+*/
 void SoftwareRasterNon16_Mode17
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2137,12 +2134,8 @@ void SoftwareRasterNon16_Mode17
                            Raster32_SpanTexturedAlphaBlend);
 }
 
-/* Address: 0x004E5440.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 18 (also table index 50): textured, Gouraud-shaded,
-   depth-tested, additive triangle. Visible pixels get the modulated texel added with saturation; the
-   depth buffer is not written.
-*/
+/* Span of the Non16 modes 18/26: visible pixels get the modulated texel added with saturation; the depth
+   buffer is not written. */
 static void Raster32_SpanTexturedAdd(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2157,6 +2150,10 @@ static void Raster32_SpanTexturedAdd(RasterSpan *span)
     }
 }
 
+/* Address: 0x004E5440.
+   g_SoftwareRasterHandlersNon16Bit entries 18 and 50 (render mode 18): textured, Gouraud-shaded, depth-tested,
+   additive triangle without depth write (Raster32_SpanTexturedAdd).
+*/
 void SoftwareRasterNon16_Mode18
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2167,8 +2164,8 @@ void SoftwareRasterNon16_Mode18
 }
 
 /* Address: 0x004E65C0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 20: byte-identical to mode 22 (see SoftwareRasterNon16_Mode22).
+   g_SoftwareRasterHandlersNon16Bit entry 20 (render mode 20): byte-identical to mode 22 (see
+   SoftwareRasterNon16_Mode22).
 */
 void SoftwareRasterNon16_Mode20
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2180,8 +2177,7 @@ void SoftwareRasterNon16_Mode20
 }
 
 /* Address: 0x004E7940.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 24: textured, flat-shaded (colour of v0), depth-tested,
+   g_SoftwareRasterHandlersNon16Bit entry 24 (render mode 24): textured, flat-shaded (colour of v0), depth-tested,
    opaque triangle. Same pixel operation as mode 16.
 */
 void SoftwareRasterNon16_Mode24
@@ -2194,10 +2190,9 @@ void SoftwareRasterNon16_Mode24
 }
 
 /* Address: 0x004E86D0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render modes 28 and 30 (byte-identical in the original): textured,
-   flat-shaded (colour of v0), depth-tested, alpha-blended triangle with an alpha-tested depth write.
-   Same pixel operation as modes 20/22.
+   g_SoftwareRasterHandlersNon16Bit entry 30 (render mode 30): textured, flat-shaded (colour of v0), depth-tested,
+   alpha-blended triangle with the alpha-tested depth write of modes 20/22. Byte-identical to mode 28 in the
+   original.
 */
 void SoftwareRasterNon16_Mode30
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2209,9 +2204,8 @@ void SoftwareRasterNon16_Mode30
 }
 
 /* Address: 0x004E96D0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 25 (also table indices 56, 57, 60, 62): textured, flat-shaded
-   (colour of v0), depth-tested, alpha-blended triangle. Same pixel operation as mode 17.
+   g_SoftwareRasterHandlersNon16Bit entries 25 and 56, 57, 60, 62 (render mode 25): textured, flat-shaded (colour
+   of v0), depth-tested, alpha-blended triangle. Same pixel operation as mode 17.
 */
 void SoftwareRasterNon16_Mode25
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2223,8 +2217,7 @@ void SoftwareRasterNon16_Mode25
 }
 
 /* Address: 0x004EA610.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 26 (also table index 58): textured, flat-shaded (colour of v0),
+   g_SoftwareRasterHandlersNon16Bit entries 26 and 58 (render mode 26): textured, flat-shaded (colour of v0),
    depth-tested, additive triangle. Same pixel operation as mode 18.
 */
 void SoftwareRasterNon16_Mode26
@@ -2237,8 +2230,8 @@ void SoftwareRasterNon16_Mode26
 }
 
 /* Address: 0x004EB3E0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 28: byte-identical to mode 30 (see SoftwareRasterNon16_Mode30).
+   g_SoftwareRasterHandlersNon16Bit entry 28 (render mode 28): byte-identical to mode 30 (see
+   SoftwareRasterNon16_Mode30).
 */
 void SoftwareRasterNon16_Mode28
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2249,11 +2242,8 @@ void SoftwareRasterNon16_Mode28
                            Raster32_SpanTexturedAlphaTested);
 }
 
-/* Address: 0x004EC3E0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 0: Gouraud-shaded, depth-tested, opaque triangle (see
-   SoftwareRaster16_Mode00).
-*/
+/* 32-bit span of the untextured opaque modes (Non16 0/8, Aux 0/8): pixel and depth are written where the
+   depth test passes. */
 static void Raster32_SpanShadedOpaque(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2267,6 +2257,10 @@ static void Raster32_SpanShadedOpaque(RasterSpan *span)
     }
 }
 
+/* Address: 0x004EC3E0.
+   g_SoftwareRasterHandlersNon16Bit entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle on the
+   32-bit framebuffer (see SoftwareRaster16_Mode00).
+*/
 void SoftwareRasterNon16_Mode00
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2281,13 +2275,9 @@ void SoftwareRasterNon16_Mode00
   }
 }
 
-/* Address: 0x004ECB90 (Mode06) and 0x004EE4A0 (Mode04), byte-identical.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render modes 4 and 6: Gouraud-shaded, depth-tested, alpha-blended
-   triangle (like SoftwareRasterNon16_Mode01) that also writes the depth of pixels whose source alpha
-   is >= 128 (Raster_AlphaWritesDepth). The original tests a stale MM2 instead, which it never
-   loads in these modes (see docs/software_raster.md); the C rule is deliberate.
-*/
+/* Span of the Non16 modes 4/6/12/14: alpha blend like mode 1 that also writes the depth of pixels whose
+   source alpha is >= 128 (Raster_AlphaWritesDepth). The original tests a stale MM2 instead, which it never
+   loads in these modes (see docs/software_raster.md); the C rule is deliberate. */
 static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2305,6 +2295,8 @@ static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
     }
 }
 
+/* Modes 4 and 6 (0x004EE4A0 and 0x004ECB90, byte-identical in the original): Gouraud-shaded with
+   Raster32_SpanShadedAlphaBlendDepth. */
 static void RasterNon16_DrawShadedAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
                                                   GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
                                                   GraphicsPrimitivePacket *packet)
@@ -2318,7 +2310,11 @@ static void RasterNon16_DrawShadedAlphaBlendDepth(GraphicsScreenCoordinate clipM
   }
 }
 
-/* Render mode 6: see RasterNon16_DrawShadedAlphaBlendDepth. */
+/* Address: 0x004ECB90.
+   g_SoftwareRasterHandlersNon16Bit entry 6 (render mode 6): Gouraud-shaded, depth-tested, alpha-blended triangle
+   (like mode 1) that also writes depth where the source alpha is >= 128; see
+   RasterNon16_DrawShadedAlphaBlendDepth.
+*/
 void SoftwareRasterNon16_Mode06
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2327,12 +2323,8 @@ void SoftwareRasterNon16_Mode06
   RasterNon16_DrawShadedAlphaBlendDepth(clipMaxY, clipMaxX, clipMinY, clipMinX, packet);
 }
 
-/* Address: 0x004ED440.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 1 (also table indices 32, 33, 36, 38): Gouraud-shaded,
-   depth-tested, alpha-blended triangle; the depth buffer is not written (see
-   SoftwareRaster16_Mode01).
-*/
+/* Span of the Non16 modes 1/9: blend with the framebuffer by the interpolated alpha; the depth buffer is
+   not written. */
 static void Raster32_SpanShadedAlphaBlend(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2347,6 +2339,10 @@ static void Raster32_SpanShadedAlphaBlend(RasterSpan *span)
     }
 }
 
+/* Address: 0x004ED440.
+   g_SoftwareRasterHandlersNon16Bit entries 1 and 32, 33, 36, 38 (render mode 1): Gouraud-shaded, depth-tested,
+   alpha-blended triangle; the depth buffer is not written (see SoftwareRaster16_Mode01).
+*/
 void SoftwareRasterNon16_Mode01
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2361,11 +2357,8 @@ void SoftwareRasterNon16_Mode01
   }
 }
 
-/* Address: 0x004EDCB0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 2 (also table index 34): Gouraud-shaded, depth-tested,
-   additive triangle; the depth buffer is not written (see SoftwareRaster16_Mode02).
-*/
+/* Span of the Non16 modes 2/10: the interpolated colour is added with saturation; the depth buffer is not
+   written. */
 static void Raster32_SpanShadedAdd(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2380,6 +2373,10 @@ static void Raster32_SpanShadedAdd(RasterSpan *span)
     }
 }
 
+/* Address: 0x004EDCB0.
+   g_SoftwareRasterHandlersNon16Bit entries 2 and 34 (render mode 2): Gouraud-shaded, depth-tested, additive
+   triangle; the depth buffer is not written (see SoftwareRaster16_Mode02).
+*/
 void SoftwareRasterNon16_Mode02
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2395,8 +2392,7 @@ void SoftwareRasterNon16_Mode02
 }
 
 /* Address: 0x004EE4A0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 4: byte-identical to mode 6, see
+   g_SoftwareRasterHandlersNon16Bit entry 4 (render mode 4): byte-identical to mode 6, see
    RasterNon16_DrawShadedAlphaBlendDepth.
 */
 void SoftwareRasterNon16_Mode04
@@ -2408,8 +2404,7 @@ void SoftwareRasterNon16_Mode04
 }
 
 /* Address: 0x004EED50.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 8: flat-shaded (v0's colour), depth-tested, opaque
+   g_SoftwareRasterHandlersNon16Bit entry 8 (render mode 8): flat-shaded (v0's colour), depth-tested, opaque
    triangle (flat version of SoftwareRasterNon16_Mode00).
 */
 void SoftwareRasterNon16_Mode08
@@ -2426,12 +2421,8 @@ void SoftwareRasterNon16_Mode08
   }
 }
 
-/* Address: 0x004EF230 (Mode14) and 0x004F02D0 (Mode12), byte-identical.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render modes 12 and 14: flat-shaded (v0's colour) version of modes
-   4/6: alpha-blended, depth written when the source alpha is >= 128 (the original's stale-MM2 test
-   is replaced as in RasterNon16_DrawShadedAlphaBlendDepth).
-*/
+/* Modes 12 and 14 (0x004F02D0 and 0x004EF230, byte-identical in the original): the flat-shaded (v0's
+   colour) version of RasterNon16_DrawShadedAlphaBlendDepth, with the same replacement of the stale-MM2 test. */
 static void RasterNon16_DrawFlatAlphaBlendDepth(GraphicsScreenCoordinate clipMaxY, GraphicsScreenCoordinate clipMaxX,
                                                 GraphicsScreenCoordinate clipMinY, GraphicsScreenCoordinate clipMinX,
                                                 GraphicsPrimitivePacket *packet)
@@ -2445,7 +2436,10 @@ static void RasterNon16_DrawFlatAlphaBlendDepth(GraphicsScreenCoordinate clipMax
   }
 }
 
-/* Render mode 14: see RasterNon16_DrawFlatAlphaBlendDepth. */
+/* Address: 0x004EF230.
+   g_SoftwareRasterHandlersNon16Bit entry 14 (render mode 14): flat-shaded version of modes 4/6: alpha-blended,
+   depth written where the source alpha is >= 128; see RasterNon16_DrawFlatAlphaBlendDepth.
+*/
 void SoftwareRasterNon16_Mode14
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2455,9 +2449,8 @@ void SoftwareRasterNon16_Mode14
 }
 
 /* Address: 0x004EF810.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 9 (also table indices 40, 41, 44, 46): flat-shaded (v0's
-   colour), depth-tested, alpha-blended triangle; the depth buffer is not written (flat version of
+   g_SoftwareRasterHandlersNon16Bit entries 9 and 40, 41, 44, 46 (render mode 9): flat-shaded (v0's colour),
+   depth-tested, alpha-blended triangle; the depth buffer is not written (flat version of
    SoftwareRasterNon16_Mode01).
 */
 void SoftwareRasterNon16_Mode09
@@ -2475,10 +2468,8 @@ void SoftwareRasterNon16_Mode09
 }
 
 /* Address: 0x004EFDB0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 10 (also table index 42): flat-shaded (v0's colour),
-   depth-tested, additive triangle; the depth buffer is not written (flat version of
-   SoftwareRasterNon16_Mode02).
+   g_SoftwareRasterHandlersNon16Bit entries 10 and 42 (render mode 10): flat-shaded (v0's colour), depth-tested,
+   additive triangle; the depth buffer is not written (flat version of SoftwareRasterNon16_Mode02).
 */
 void SoftwareRasterNon16_Mode10
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2495,8 +2486,7 @@ void SoftwareRasterNon16_Mode10
 }
 
 /* Address: 0x004F02D0.
-   Ownership: graphics/backend/software.
-   Purpose: 32-bit framebuffer, render mode 12: byte-identical to mode 14, see
+   g_SoftwareRasterHandlersNon16Bit entry 12 (render mode 12): byte-identical to mode 14, see
    RasterNon16_DrawFlatAlphaBlendDepth.
 */
 void SoftwareRasterNon16_Mode12
@@ -2591,9 +2581,8 @@ static void RasterAux_DrawTexturedTriangle(GraphicsScreenCoordinate clipMaxY, Gr
 }
 
 /* Address: 0x004F08B0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 16: textured, Gouraud-shaded, depth-tested, opaque
-   triangle (see SoftwareRaster16_Mode16).
+   g_SoftwareRasterHandlersAuxiliary entry 16 (render mode 16): textured, Gouraud-shaded, depth-tested, opaque
+   triangle into the off-screen target of SoftwareRenderer_DrawQueueAuxiliary (see SoftwareRaster16_Mode16).
 */
 void SoftwareRasterAux_Mode16
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2605,8 +2594,7 @@ void SoftwareRasterAux_Mode16
 }
 
 /* Address: 0x004F19E0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 22, byte-identical to mode 20 (see
+   g_SoftwareRasterHandlersAuxiliary entry 22 (render mode 22): byte-identical to mode 20 (see
    SoftwareRasterAux_Mode20).
 */
 void SoftwareRasterAux_Mode22
@@ -2619,9 +2607,8 @@ void SoftwareRasterAux_Mode22
 }
 
 /* Address: 0x004F2BD0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 17: textured, Gouraud-shaded, depth-tested triangle
-   without depth write. Unlike the framebuffer families there is no alpha blend: the pixel is
+   g_SoftwareRasterHandlersAuxiliary entries 17 and 48, 49, 52, 54 (render mode 17): textured, Gouraud-shaded,
+   depth-tested triangle without depth write. Unlike the framebuffer families there is no alpha blend: the pixel is
    overwritten.
 */
 void SoftwareRasterAux_Mode17
@@ -2634,9 +2621,8 @@ void SoftwareRasterAux_Mode17
 }
 
 /* Address: 0x004F3D40.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 18, byte-identical to mode 17 (no additive blend in
-   this family; see SoftwareRasterAux_Mode17).
+   g_SoftwareRasterHandlersAuxiliary entries 18 and 50 (render mode 18): byte-identical to mode 17 (no additive
+   blend in this family; see SoftwareRasterAux_Mode17).
 */
 void SoftwareRasterAux_Mode18
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2648,8 +2634,7 @@ void SoftwareRasterAux_Mode18
 }
 
 /* Address: 0x004F4EB0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 20: textured, Gouraud-shaded, depth-tested triangle.
+   g_SoftwareRasterHandlersAuxiliary entry 20 (render mode 20): textured, Gouraud-shaded, depth-tested triangle.
    The pixel is overwritten; the depth is written only for spans whose U prestep is >= 0x800 (see
    RasterAux_SpanTexturedPrestepDepth). Also used for mode 22.
 */
@@ -2663,8 +2648,7 @@ void SoftwareRasterAux_Mode20
 }
 
 /* Address: 0x004F60A0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 24: flat-shaded version of mode 16 (textured,
+   g_SoftwareRasterHandlersAuxiliary entry 24 (render mode 24): flat-shaded version of mode 16 (textured,
    depth-tested, opaque).
 */
 void SoftwareRasterAux_Mode24
@@ -2677,8 +2661,7 @@ void SoftwareRasterAux_Mode24
 }
 
 /* Address: 0x004F6E20.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 30, byte-identical to mode 28 (see
+   g_SoftwareRasterHandlersAuxiliary entry 30 (render mode 30): byte-identical to mode 28 (see
    SoftwareRasterAux_Mode28).
 */
 void SoftwareRasterAux_Mode30
@@ -2691,9 +2674,8 @@ void SoftwareRasterAux_Mode30
 }
 
 /* Address: 0x004F7C70.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 25: flat-shaded version of mode 17 (textured,
-   depth-tested, pixel overwritten, no depth write).
+   g_SoftwareRasterHandlersAuxiliary entries 25 and 56, 57, 60, 62 (render mode 25): flat-shaded version of mode 17
+   (textured, depth-tested, pixel overwritten, no depth write).
 */
 void SoftwareRasterAux_Mode25
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2705,8 +2687,7 @@ void SoftwareRasterAux_Mode25
 }
 
 /* Address: 0x004F8A30.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 26, byte-identical to mode 25 (see
+   g_SoftwareRasterHandlersAuxiliary entries 26 and 58 (render mode 26): byte-identical to mode 25 (see
    SoftwareRasterAux_Mode25).
 */
 void SoftwareRasterAux_Mode26
@@ -2719,10 +2700,8 @@ void SoftwareRasterAux_Mode26
 }
 
 /* Address: 0x004F97F0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 28: flat-shaded version of mode 20 (textured,
-   depth-tested, pixel overwritten, depth written for spans whose U prestep is >= 0x800). Also used
-   for mode 30.
+   g_SoftwareRasterHandlersAuxiliary entry 28 (render mode 28): flat-shaded version of mode 20 (textured,
+   depth-tested, pixel overwritten, depth written for spans whose U prestep is >= 0x800). Also used for mode 30.
 */
 void SoftwareRasterAux_Mode28
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2734,10 +2713,9 @@ void SoftwareRasterAux_Mode28
 }
 
 /* Address: 0x004FA640.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target (SoftwareRenderer_DrawQueueAuxiliary), render mode 0: Gouraud-shaded,
-   depth-tested, opaque triangle (see SoftwareRaster16_Mode00). Target and depth rows are clipMaxX
-   pixels long.
+   g_SoftwareRasterHandlersAuxiliary entry 0 (render mode 0): Gouraud-shaded, depth-tested, opaque triangle into
+   the off-screen target of SoftwareRenderer_DrawQueueAuxiliary (see SoftwareRaster16_Mode00). Target and depth
+   rows are clipMaxX pixels long.
 */
 void SoftwareRasterAux_Mode00
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2752,13 +2730,6 @@ void SoftwareRasterAux_Mode00
     Raster_WalkTriangle(&target, packet, &edges, &gradients, NULL, Raster32_SpanShadedOpaque);
   }
 }
-
-/* Address: 0x004FADD0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 6 (byte-identical to mode 4): Gouraud-shaded,
-   depth-tested, opaque colour write. The depth buffer is written only by pixels that pass
-   Raster_AlphaWritesDepth (the original's stale-MM2 test, see software_raster.h).
-*/
 
 /* Draws an untextured triangle into the auxiliary target with the given span function. The Aux
    modes 1..14 differ only in shading and span. */
@@ -2778,7 +2749,8 @@ static __forceinline void RasterAux_DrawUntextured(GraphicsScreenCoordinate clip
   }
 }
 
-/* Opaque shaded write; the depth buffer is written only where the alpha rule allows it. */
+/* Span of the Aux modes 4/6/12/14: opaque shaded write; the depth buffer is written only where the
+   alpha rule allows it (Raster_AlphaWritesDepth, the C replacement of the original's stale-MM2 test). */
 static void Raster32_SpanShadedOpaqueAlphaDepth(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2795,6 +2767,11 @@ static void Raster32_SpanShadedOpaqueAlphaDepth(RasterSpan *span)
     }
 }
 
+/* Address: 0x004FADD0.
+   g_SoftwareRasterHandlersAuxiliary entry 6 (render mode 6): Gouraud-shaded, depth-tested, opaque colour write;
+   the depth is written only by pixels that pass Raster_AlphaWritesDepth (the original tests a stale MM2 instead,
+   see docs/software_raster.md). Byte-identical to mode 4.
+*/
 void SoftwareRasterAux_Mode06
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2804,12 +2781,8 @@ void SoftwareRasterAux_Mode06
                            Raster32_SpanShadedOpaqueAlphaDepth);
 }
 
-/* Address: 0x004FB5A0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 1 (also table indices 32, 33, 36, 38; byte-identical to
-   mode 2): Gouraud-shaded, depth-tested colour write without depth write. Unlike the framebuffer
-   families there is no blending: the original loads the destination pixel but never uses it.
-*/
+/* Span of the Aux modes 1/2/9/10: depth-tested colour write without depth write. Unlike the framebuffer
+   families there is no blending: the original loads the destination pixel but never uses it. */
 static void Raster32_SpanShadedWrite(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
@@ -2822,6 +2795,10 @@ static void Raster32_SpanShadedWrite(RasterSpan *span)
     }
 }
 
+/* Address: 0x004FB5A0.
+   g_SoftwareRasterHandlersAuxiliary entries 1 and 32, 33, 36, 38 (render mode 1): Gouraud-shaded, depth-tested
+   colour write without depth write (Raster32_SpanShadedWrite). Byte-identical to mode 2.
+*/
 void SoftwareRasterAux_Mode01
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
                GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
@@ -2832,9 +2809,8 @@ void SoftwareRasterAux_Mode01
 }
 
 /* Address: 0x004FBD70.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 2 (also table index 34): same code as
-   SoftwareRasterAux_Mode01 (no additive blend in this family).
+   g_SoftwareRasterHandlersAuxiliary entries 2 and 34 (render mode 2): same code as SoftwareRasterAux_Mode01 (no
+   additive blend in this family).
 */
 void SoftwareRasterAux_Mode02
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2846,8 +2822,7 @@ void SoftwareRasterAux_Mode02
 }
 
 /* Address: 0x004FC540.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 4: same code as SoftwareRasterAux_Mode06.
+   g_SoftwareRasterHandlersAuxiliary entry 4 (render mode 4): same code as SoftwareRasterAux_Mode06.
 */
 void SoftwareRasterAux_Mode04
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2859,8 +2834,7 @@ void SoftwareRasterAux_Mode04
 }
 
 /* Address: 0x004FCD10.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 8: flat-shaded version of SoftwareRasterAux_Mode00
+   g_SoftwareRasterHandlersAuxiliary entry 8 (render mode 8): flat-shaded version of SoftwareRasterAux_Mode00
    (depth-tested, opaque, writes depth).
 */
 void SoftwareRasterAux_Mode08
@@ -2873,9 +2847,8 @@ void SoftwareRasterAux_Mode08
 }
 
 /* Address: 0x004FD1E0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 14 (byte-identical to mode 12): flat-shaded version of
-   SoftwareRasterAux_Mode06 (opaque colour write, depth written by the alpha rule).
+   g_SoftwareRasterHandlersAuxiliary entry 14 (render mode 14): flat-shaded version of SoftwareRasterAux_Mode06
+   (opaque colour write, depth written by the alpha rule). Byte-identical to mode 12.
 */
 void SoftwareRasterAux_Mode14
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2887,9 +2860,8 @@ void SoftwareRasterAux_Mode14
 }
 
 /* Address: 0x004FD6F0.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 9 (also table indices 40, 41, 44, 46; byte-identical to
-   mode 10): flat-shaded version of SoftwareRasterAux_Mode01 (colour write, no depth write).
+   g_SoftwareRasterHandlersAuxiliary entries 9 and 40, 41, 44, 46 (render mode 9): flat-shaded version of
+   SoftwareRasterAux_Mode01 (colour write, no depth write). Byte-identical to mode 10.
 */
 void SoftwareRasterAux_Mode09
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2901,9 +2873,7 @@ void SoftwareRasterAux_Mode09
 }
 
 /* Address: 0x004FDC00.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 10 (also table index 42): same code as
-   SoftwareRasterAux_Mode09.
+   g_SoftwareRasterHandlersAuxiliary entries 10 and 42 (render mode 10): same code as SoftwareRasterAux_Mode09.
 */
 void SoftwareRasterAux_Mode10
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -2915,8 +2885,7 @@ void SoftwareRasterAux_Mode10
 }
 
 /* Address: 0x004FE110.
-   Ownership: graphics/backend/software.
-   Purpose: auxiliary 32-bit target, render mode 12: same code as SoftwareRasterAux_Mode14.
+   g_SoftwareRasterHandlersAuxiliary entry 12 (render mode 12): same code as SoftwareRasterAux_Mode14.
 */
 void SoftwareRasterAux_Mode12
                (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
@@ -3087,10 +3056,10 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
 }
 
 /* Address: 0x00518CE0.
-   Ownership: graphics/backend/software.
-   Purpose: Draws the cross-fade of two 8-bit subresources of a texture source, scaled to
+   Draws the cross-fade of two 8-bit subresources of a texture source, scaled to
    destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software
-   framebuffer (16 or 32 bit), as grey levels. Used by UiSoftwareTexturePreviewControl.
+   framebuffer (16 or 32 bit), as grey levels. Called by
+   UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren (ui/controls/text.c).
    1. blendedSourcePixels = per-pixel cross-fade of B (sourceSubresourceIndexB) to A through the
       factor image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte).
    2. g_SoftwarePixelIntensityToNativeColorLut256 is rebuilt for the current pixel format.
@@ -3259,9 +3228,8 @@ SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 
 
 /* Address: 0x00519270.
-   Ownership: graphics/backend/software.
-   Purpose: Adds 0x1F to every nonzero byte of the software mask, saturating at 0xFF (PCMPEQB / PAND / PXOR /
-   PADDUSB); zero bytes stay zero. The mask size is taken from g_GraphicsTextureSourceGetLogicalSize, and the
+   Called by SoftwareMaskBuffer_AdvancePatternByPercentTick once per tick: adds 0x1F to every nonzero byte of
+   the software mask, saturating at 0xFF (PCMPEQB / PAND / PXOR / PADDUSB); zero bytes stay zero. The mask size is taken from g_GraphicsTextureSourceGetLogicalSize, and the
    buffer is processed in 32-byte blocks, width * height >> 5 of them (the remainder is left alone). Quirk kept:
    the block counter is a do-while loop, so fewer than 32 pixels means 2^32 blocks. Nothing happens when
    maskPixels is NULL. ABI: all registers are preserved.
@@ -3293,12 +3261,10 @@ SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *mas
 
 
 /* Address: 0x00519500.
-   Ownership: graphics/backend/software.
-   Purpose: Typed parameters: p3 centerY→GraphicsScreenCoordinate_V307, p4 centerX→GraphicsScreenCoordinate_V307.
-   Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged. Typed parameters: p2 invertSelection→UiBooleanState32_V342. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged. Typed parameters: p5 radiusStep→SoftwareMaskRadiusStep_V344.
+   Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of every mask pixel inside the circle
+   of radius radiusStep * 28 around (centerX, centerY), i.e. a circle growing with the step. With invertSelection
+   the radius is (width + height) - radiusStep * 28 (at least 0) and the pixels outside it are set, a shrinking
+   hole. Distances are compared squared and unsigned.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_ApplyCircularRegionBit
@@ -3319,9 +3285,9 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;
   maskWidth = logicalSize.logicalWidthPixels;
-  radiusPixels = radiusStep * 0x1c;
+  radiusPixels = radiusStep * 28;
   maskCursor = maskRuntime->maskPixels;
-  if ((invertSelection != 0) && (radiusPixels = radiusStep * -0x1c + maskWidth + rowsRemaining, radiusPixels < 0)) {
+  if ((invertSelection != 0) && (radiusPixels = radiusStep * -28 + maskWidth + rowsRemaining, radiusPixels < 0)) {
     radiusPixels = 0;
   }
   columnX = 0;
@@ -3333,13 +3299,13 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
         if ((columnX - centerX) * (columnX - centerX) + rowDistanceSquared <= (uint32_t)(radiusPixels * radiusPixels)) {
           *maskCursor = *maskCursor | 1;
         }
-        columnX = columnX + 1;
-        maskCursor = maskCursor + 1;
+        columnX++;
+        maskCursor++;
       } while (columnX < maskWidth);
-      rowY = rowY + 1;
+      rowY++;
       columnX = 0;
       rowDistanceSquared = (rowY - centerY) * (rowY - centerY);
-      rowsRemaining = rowsRemaining - 1;
+      rowsRemaining--;
     } while (rowsRemaining != 0);
     return;
   }
@@ -3348,26 +3314,22 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
       if ((uint32_t)(radiusPixels * radiusPixels) <= (columnX - centerX) * (columnX - centerX) + rowDistanceSquared) {
         *maskCursor = *maskCursor | 1;
       }
-      columnX = columnX + 1;
-      maskCursor = maskCursor + 1;
+      columnX++;
+      maskCursor++;
     } while (columnX < maskWidth);
-    rowY = rowY + 1;
+    rowY++;
     columnX = 0;
     rowDistanceSquared = (rowY - centerY) * (rowY - centerY);
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
   } while (rowsRemaining != 0);
   return;
 }
 
 
 /* Address: 0x005195D0.
-   Ownership: graphics/backend/software.
-   Purpose: Sets bit zero on one side of a diagonal half-plane threshold across the complete mask, with the
-   direction selected by the inversion flag. Typed parameters: p2 invertSelection→UiBooleanState32_V342. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged. Typed parameters: p3 thresholdStep→SoftwareMaskThresholdStep_V344. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: a diagonal wipe. Sets bit 0 of every mask pixel
+   with x + y < thresholdStep * 40 (from the top-left corner), or with invertSelection every pixel with
+   x + y > (width + height) - thresholdStep * 40 (from the bottom-right corner).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
@@ -3387,11 +3349,12 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
   rowsRemaining = logicalSize.logicalHeightPixels;
   maskWidth = logicalSize.logicalWidthPixels;
-  thresholdSum = thresholdStep * 0x28;
+  thresholdSum = thresholdStep * 40;
   maskCursor = maskRuntime->maskPixels;
   if (invertSelection != 0) {
-    thresholdSum = thresholdStep * -0x28 + maskWidth + rowsRemaining;
+    thresholdSum = thresholdStep * -40 + maskWidth + rowsRemaining;
   }
+  /* diagonalSum is x + y of the current pixel */
   rowY = 0;
   columnsRemaining = maskWidth;
   diagonalSum = 0;
@@ -3401,12 +3364,12 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
         if (diagonalSum < thresholdSum) {
           *maskCursor = *maskCursor | 1;
         }
-        maskCursor = maskCursor + 1;
-        columnsRemaining = columnsRemaining - 1;
-        diagonalSum = diagonalSum + 1;
+        maskCursor++;
+        columnsRemaining--;
+        diagonalSum++;
       } while (columnsRemaining != 0);
-      rowY = rowY + 1;
-      rowsRemaining = rowsRemaining - 1;
+      rowY++;
+      rowsRemaining--;
       columnsRemaining = maskWidth;
       diagonalSum = rowY;
     } while (rowsRemaining != 0);
@@ -3417,12 +3380,12 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
       if (thresholdSum < diagonalSum) {
         *maskCursor = *maskCursor | 1;
       }
-      maskCursor = maskCursor + 1;
-      columnsRemaining = columnsRemaining - 1;
-      diagonalSum = diagonalSum + 1;
+      maskCursor++;
+      columnsRemaining--;
+      diagonalSum++;
     } while (columnsRemaining != 0);
-    rowY = rowY + 1;
-    rowsRemaining = rowsRemaining - 1;
+    rowY++;
+    rowsRemaining--;
     columnsRemaining = maskWidth;
     diagonalSum = rowY;
   } while (rowsRemaining != 0);
@@ -3431,11 +3394,9 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
 
 
 /* Address: 0x00519670.
-   Ownership: graphics/backend/software.
-   Purpose: Sets bit zero for every pixel in the complete software mask buffer using its logical texture
-   dimensions. Typed parameters: p2 maskControl→SoftwareMaskRuntimeAddress32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Last reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of every mask pixel, 16 bytes
+   per step (width * height >> 4 steps; the remainder is left alone). Quirk kept: a mask of fewer than 16 pixels
+   makes the do-while counter wrap to 2^32 steps.
 */
 void __thandor_preserve_eax_edx
 SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
@@ -3443,7 +3404,6 @@ SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
 {
   uint32_t maskBlocksRemaining;
   uint32_t *maskWordCursor;
-  uint64_t maskLogicalSizePair;
   TextureSizeResult logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
@@ -3455,19 +3415,17 @@ SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
     maskWordCursor[2] = maskWordCursor[2] | 0x1010101;
     maskWordCursor[3] = maskWordCursor[3] | 0x1010101;
     maskWordCursor = maskWordCursor + 4;
-    maskBlocksRemaining = maskBlocksRemaining - 1;
+    maskBlocksRemaining--;
   } while (maskBlocksRemaining != 0);
   return;
 }
 
 
 /* Address: 0x005196C0.
-   Ownership: graphics/backend/software.
-   Purpose: Sets bit zero in one 15-row horizontal band selected from 25 positions, with forward or reverse row
-   ordering chosen by the direction flag. Typed parameters: p3 bandIndex→TerrainGridMaskIndex_V304. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged. Typed parameters: p2
-   reverseRows→UiBooleanState32_V342.
+   Reveal shape of SoftwareMaskBuffer_AdvancePatternByPercentTick: sets bit 0 of one horizontal band of 15 rows,
+   band bandIndex - 1 from the top, or with reverseRows band 24 - bandIndex (from the bottom of 25 bands).
+   bandIndex above 24, and bandIndex 0 top-down, set nothing. The band is filled in 16-byte steps
+   (width * 15 >> 4 of them).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_ApplyHorizontalBandBit
@@ -3481,16 +3439,16 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
   TextureSizeResult logicalSize;
   
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskRuntime->textureSource);
-  if ((uint32_t)bandIndex < 0x19) {
-    bandBytesOrBlocksLeft = logicalSize.logicalWidthPixels * 0xf;
+  if ((uint32_t)bandIndex < 25) {
+    bandBytesOrBlocksLeft = logicalSize.logicalWidthPixels * 15;
     if (reverseRows == 0) {
-      bandRow = bandIndex + -1;
+      bandRow = bandIndex - 1;
       if (bandRow < 0) {
         return;
       }
     }
     else {
-      bandRow = 0x18 - bandIndex;
+      bandRow = 24 - bandIndex;
     }
     maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + bandRow * bandBytesOrBlocksLeft);
     bandBytesOrBlocksLeft = bandBytesOrBlocksLeft >> 4;
@@ -3500,7 +3458,7 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
       maskWordCursor[2] = maskWordCursor[2] | 0x1010101;
       maskWordCursor[3] = maskWordCursor[3] | 0x1010101;
       maskWordCursor = maskWordCursor + 4;
-      bandBytesOrBlocksLeft = bandBytesOrBlocksLeft - 1;
+      bandBytesOrBlocksLeft--;
     } while (bandBytesOrBlocksLeft != 0);
   }
   return;

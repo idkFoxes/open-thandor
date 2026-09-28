@@ -14,8 +14,8 @@ digraph thandor {
   "PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries" [label="0x0055FFA0\nPlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries"];
   "InGameSelection_ApplyType16MarkerCoordinatesVariant1" [label="0x0055FFC0\nInGameSelection_ApplyType16MarkerCoordinatesVariant1"];
   "InGameSelection_ApplyType16MarkerCoordinatesVariant2" [label="0x0055FFF0\nInGameSelection_ApplyType16MarkerCoordinatesVariant2"];
-  "SelectionPlayerRuntime_ReissuePrimarySelectionPosition" [label="0x00562050\nSelectionPlayerRuntime_ReissuePrimarySelectionPosition"];
-  "SelectionPlayerRuntime_AdvancePrimarySelectionCycle" [label="0x00562220\nSelectionPlayerRuntime_AdvancePrimarySelectionCycle"];
+  "SelectionPlayerRuntime_MovePrimarySelectionBy" [label="0x00562050\nSelectionPlayerRuntime_MovePrimarySelectionBy"];
+  "SelectionPlayerRuntime_RotatePrimarySelectionBy" [label="0x00562220\nSelectionPlayerRuntime_RotatePrimarySelectionBy"];
   "SelectionInfoPanel_InitResources" [label="0x0052CEE0\nSelectionInfoPanel_InitResources"];
   "SelectionInfoPanel_ShutdownResources" [label="0x0052D0F0\nSelectionInfoPanel_ShutdownResources"];
   "SelectionPlayerBlocks_RemovePointer" [label="0x0052FB20\nSelectionPlayerBlocks_RemovePointer"];
@@ -77,8 +77,8 @@ digraph thandor {
   "PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries" -> "SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries";
   "InGameSelection_ApplyType16MarkerCoordinatesVariant1" -> "SelectionPointerArray_ApplyType16MarkerCoordinates";
   "InGameSelection_ApplyType16MarkerCoordinatesVariant2" -> "SelectionPointerArray_ApplyType16MarkerCoordinates";
-  "SelectionPlayerRuntime_ReissuePrimarySelectionPosition" -> "SelectionPointerArray_Contains";
-  "SelectionPlayerRuntime_AdvancePrimarySelectionCycle" -> "SelectionPointerArray_Contains";
+  "SelectionPlayerRuntime_MovePrimarySelectionBy" -> "SelectionPointerArray_Contains";
+  "SelectionPlayerRuntime_RotatePrimarySelectionBy" -> "SelectionPointerArray_Contains";
   "SelectionPointerArray_ApplyPositionCommandVariantB" -> "SelectionPointerArray_IsSpatialSpreadTooLarge";
   "SelectionPointerArray_ApplyPositionCommandVariantB" -> "SelectionPointerArray_Clear32";
   "SelectionRuntime_ResetMovementPruneAndRecenterEntries" -> "SelectionPointerArray_RecenterOffsetsAroundAveragePosition";

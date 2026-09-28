@@ -729,6 +729,10 @@
 #ifndef D3DCLEAR_ZBUFFER
 #define D3DCLEAR_ZBUFFER 0x00000002
 #endif
+/* D3DCOLORMODEL (d3dtypes.h): D3DDEVICEDESC.dcmColorModel (Direct3D_PrimitiveHandler_*) */
+#ifndef D3DCOLOR_RGB
+#define D3DCOLOR_RGB 2
+#endif
 
 /* 3dfx Glide 3 (glide.h): grGet/grGetString selectors and GrScreenResolution_t values (Glide3_InitAndEnumerate) */
 #ifndef GR_NUM_BOARDS

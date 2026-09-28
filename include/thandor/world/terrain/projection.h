@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/terrain/projection. */
+
+/* FieldGridCell.flagsAndMaterial bits of TerrainProjectedVertex_TransformProjectAndShadeVariantA (a field cell is
+   also its TerrainProjectedVertexWorkRecord): set when point A (projectedPointA, the terrain point) or point B
+   (projectedPointB, the offset secondary point) is not beyond the near plane and got no screen position. */
+#define TERRAIN_VERTEX_POINT_A_NOT_PROJECTED 0x200000
+#define TERRAIN_VERTEX_POINT_B_NOT_PROJECTED 0x4000000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00506CD0 */

@@ -18,6 +18,16 @@
 #define MODEL_RUNTIME_FLAG_APPLY_SCALE 0x800 /* ModelRender_PrepareProjectedVertex scales every vertex by
                                                 modelScaleQ12 */
 #endif
+/* Model triangle renderFlags (triangle record +0x34), read by ModelRender_SubmitTriangle*,
+   ModelRender_PrepareProjectedVertex* */
+#define MODEL_TRIANGLE_PALETTE_BANK_MASK 0x1FF /* material colour: index into the node's palette asset */
+#define MODEL_TRIANGLE_UNLIT 0x200 /* vertices take the node tint instead of lighting */
+#define MODEL_TRIANGLE_DOUBLE_SIDED 0x400 /* drawn without the back-face test */
+#define MODEL_TRIANGLE_LIGHTING_SCALED 0x800 /* lit by ModelRender_ComputeVertexIntensityScaledPath */
+#define MODEL_TRIANGLE_FLAT_SHADED 0x8000 /* lit with the triangle normal; never reuses a cached vertex colour */
+#define MODEL_TRIANGLE_VERTEX_CACHE_FLAGS 0x8E00 /* the bits a projected vertex's cached colour was computed for */
+/* Marker in a mesh vertex's projected X (+0x30): not transformed and projected yet for this draw */
+#define MODEL_VERTEX_NOT_PROJECTED ((int)0x80000000)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BDC90 */
@@ -38,7 +48,7 @@ ModelProjectedBounds_AccumulateHierarchyRecursive
 /* 0x004BD4B0 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_PrepareProjectedVertex
-          (ModelRuntimeNode *modelNode,ModelMeshGroupAddress32 meshGroup,GraphicsFixedVec3 *vertex);
+          (ModelRuntimeNode *modelNode,ModelMeshGroupAddress32 triangle,GraphicsFixedVec3 *vertex);
 
 /* 0x004BD9B0 */
 void __thandor_void_preserve_eax_ecx_edx

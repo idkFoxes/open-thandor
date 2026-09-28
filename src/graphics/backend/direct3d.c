@@ -10,20 +10,22 @@
 
 /* Implementation ownership: graphics/backend/direct3d. */
 
-/* MOVD mm,color; PUNPCKLBW mm,mm; PSRLW mm,4: each color byte b (B,G,R,A from low to high)
+/* No address: C model of the inline MMX sequence the untextured primitive handlers use to modulate colors.
+   MOVD mm,color; PUNPCKLBW mm,mm; PSRLW mm,4: each color byte b (B,G,R,A from low to high)
    becomes the 16-bit lane (b << 8 | b) >> 4. */
 static __inline uint64_t Direct3D_MmxUnpackColorWords(PackedArgb32 color)
 {
   ThandorMmx lanes;
   int lane;
 
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     lanes.uw[lane] = (uint16_t)((((color >> (lane * 8)) & 0xff) * 0x101) >> 4);
   }
   return lanes.q;
 }
 
-/* PACKUSWB mm,mm; MOVD color,mm: each signed 16-bit lane saturated to 0..0xff and packed back into
+/* No address: C model of the inline MMX pack after PMULHW in the untextured primitive handlers.
+   PACKUSWB mm,mm; MOVD color,mm: each signed 16-bit lane saturated to 0..0xff and packed back into
    the B,G,R,A bytes of a D3D color. */
 static __inline PackedArgb32 Direct3D_MmxPackColorWords(uint64_t words)
 {
@@ -34,7 +36,7 @@ static __inline PackedArgb32 Direct3D_MmxPackColorWords(uint64_t words)
 
   lanes.q = words;
   color = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     value = lanes.sw[lane];
     color = color | ((PackedArgb32)(value < 0 ? 0 : (value > 0xff ? 0xff : value)) << (lane * 8));
   }
@@ -238,8 +240,10 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
 
 
 /* Address: 0x0057A450.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Handles direct3 drenderer set antialias mode.
+   Sets D3DRENDERSTATE_ANTIALIAS on the live device and remembers the mode in g_Direct3DAntialiasMode, which the
+   device setup (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources) applies again after a mode change.
+   Returns the mode (CF clear), or FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage number in
+   g_PackageLastErrorPath. No caller or table slot in the executable or image data references it.
 */
 RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
@@ -248,7 +252,7 @@ Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
   int32_t direct3DResult;
   RenderStateApplyResult successResult;
   RenderStateApplyResult failureResult;
-  
+
   direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,antialiasMode);
   if (direct3DResult == 0) {
@@ -257,16 +261,19 @@ Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
     successResult.appliedValueOrError = antialiasMode;
     return successResult;
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,DIRECT3D_RENDER_STATE_STAGE_ANTIALIAS,
+                          g_PackageLastErrorPath);
   failureResult.failed = true;
-  failureResult.appliedValueOrError = 0x1d;
+  failureResult.appliedValueOrError = FATAL_ERROR_DIRECT3D_SETUP;
   return failureResult;
 }
 
 
 /* Address: 0x0057A4C0.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Handles direct3 drenderer set texture filter mode.
+   Sets the same filter mode for D3DRENDERSTATE_TEXTUREMAG and D3DRENDERSTATE_TEXTUREMIN and remembers it in
+   g_Direct3DTextureFilterMode for the device setup to reapply. Returns the mode (CF clear), or
+   FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage of the failed call in g_PackageLastErrorPath. No caller or
+   table slot in the executable or image data references it.
 */
 RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
@@ -275,13 +282,13 @@ Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
   int32_t direct3DResult;
   RenderStateApplyResult successResult;
   RenderStateApplyResult failureResult;
-  int32_t errorCode;
-  
-  errorCode = 0x6e;
+  int32_t failedStage;
+
+  failedStage = DIRECT3D_RENDER_STATE_STAGE_TEXTURE_MAG;
   direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAG,textureFilterMode);
   if (direct3DResult == 0) {
-    errorCode = 0x6f;
+    failedStage = DIRECT3D_RENDER_STATE_STAGE_TEXTURE_MIN;
     direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,textureFilterMode);
     if (direct3DResult == 0) {
@@ -291,16 +298,17 @@ Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
       return successResult;
     }
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,errorCode,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
   failureResult.failed = true;
-  failureResult.appliedValueOrError = 0x1d;
+  failureResult.appliedValueOrError = FATAL_ERROR_DIRECT3D_SETUP;
   return failureResult;
 }
 
 
 /* Address: 0x0057A550.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Handles direct3 drenderer set texture perspective enabled.
+   Sets D3DRENDERSTATE_TEXTUREPERSPECTIVE and remembers the value in g_Direct3DTexturePerspectiveEnabled for the
+   device setup to reapply. Returns the value (CF clear), or FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage
+   number in g_PackageLastErrorPath. No caller or table slot in the executable or image data references it.
 */
 RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled)
@@ -309,7 +317,7 @@ Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled
   int32_t direct3DResult;
   RenderStateApplyResult successResult;
   RenderStateApplyResult failureResult;
-  
+
   direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,texturePerspectiveEnabled);
   if (direct3DResult == 0) {
@@ -318,25 +326,25 @@ Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled
     successResult.appliedValueOrError = texturePerspectiveEnabled;
     return successResult;
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x78,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,DIRECT3D_RENDER_STATE_STAGE_TEXTURE_PERSPECTIVE,
+                          g_PackageLastErrorPath);
   failureResult.failed = true;
-  failureResult.appliedValueOrError = 0x1d;
+  failureResult.appliedValueOrError = FATAL_ERROR_DIRECT3D_SETUP;
   return failureResult;
 }
 
 
 /* Address: 0x0057CCB0.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate primitive handler using render-state preset 0: ONE/ZERO, alpha blending disabled,
-   Z-write enabled. Multiplies each vertex diffuse color by packet->modulationColor through MMX, converts
-   screen/depth values into g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second vertex into
-   slot four when g_ImmediateVertexCount is four, and binds texture handle zero.
+   Fills g_ImmediateTLVertices for one untextured opaque packet (render-state preset 0: Z-write on, alpha
+   blending off; only those two states are applied, the blend factors are left as they are). Vertex colors are
+   modulated by packet->modulationColor with MMX, texture coordinates are zeroed, the second vertex is copied
+   into slot 3 for a four-vertex fan, and any bound texture is unbound. Graphics_DrawPrimitiveQueue calls it
+   through g_GraphicsDispatchTable.primitive slots 0, 4, 8 and 12.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
-  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 packetModulationColor;
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
@@ -347,34 +355,33 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
-                         g_PrimitiveRenderStatePresets[0].zWriteEnable);
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
+               g_PrimitiveRenderStatePresets[0].zWriteEnable);
   }
   if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[0].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[0].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
-                           g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
+                 g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                            (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
+        g_Direct3DDevice2->lpVtbl->SetRenderState
+                  (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
@@ -400,22 +407,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -430,33 +437,35 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
@@ -464,24 +473,23 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057CF20.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate primitive handler using render-state preset 2: SRCALPHA/INVSRCALPHA, alpha blending
-   enabled, Z-write disabled. Multiplies each vertex diffuse color by packet->modulationColor through MMX, converts
-   screen/depth values into g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second vertex into
-   slot four when g_ImmediateVertexCount is four, and binds texture handle zero.
+   Fills g_ImmediateTLVertices for one untextured translucent packet (render-state preset 2: SRCALPHA/INVSRCALPHA,
+   alpha blending on, Z-write off). Vertex colors are modulated by packet->modulationColor with MMX, texture
+   coordinates are zeroed, the second vertex is copied into slot 3 for a four-vertex fan, and any bound texture
+   is unbound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive slots 1, 9, 32, 33,
+   36, 38, 40, 41, 44 and 46.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
-  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 packetModulationColor;
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
@@ -492,50 +500,48 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
-                         g_PrimitiveRenderStatePresets[2].zWriteEnable);
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
+               g_PrimitiveRenderStatePresets[2].zWriteEnable);
   }
   if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[2].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[2].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
-                           g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
+                 g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                            (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
+        g_Direct3DDevice2->lpVtbl->SetRenderState
+                  (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[2].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[2].sourceBlend;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
-                         g_PrimitiveRenderStatePresets[2].sourceBlend);
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
+               g_PrimitiveRenderStatePresets[2].sourceBlend);
   }
   if (g_PrimitiveRenderStatePresets[2].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[2].destinationBlend
-    ;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
-                         g_PrimitiveRenderStatePresets[2].destinationBlend);
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[2].destinationBlend;
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
+               g_PrimitiveRenderStatePresets[2].destinationBlend);
   }
   packetModulationColor = packet->modulationColor;
   vertex0Diffuse = packet->vertices[0].diffuseColor;
@@ -559,22 +565,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -589,33 +595,35 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
@@ -623,25 +631,23 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057D1D0.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate primitive handler using render-state preset 3: SRCALPHA/INVSRCALPHA, alpha blending
-   enabled, Z-write enabled; kept distinct from preset 1 because the executable uses separate table families.
-   Multiplies each vertex diffuse color by packet->modulationColor through MMX, converts screen/depth values into
-   g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second vertex into slot four when
-   g_ImmediateVertexCount is four, and binds texture handle zero.
+   Fills g_ImmediateTLVertices for one untextured translucent packet that still writes depth (render-state
+   preset 3: SRCALPHA/INVSRCALPHA, alpha blending on, Z-write on; same values as preset 1, which only the textured
+   handlers use). Colors are modulated with MMX, texture coordinates zeroed, the second vertex copied into slot 3
+   for a four-vertex fan, and any bound texture is unbound. Graphics_DrawPrimitiveQueue calls it through
+   g_GraphicsDispatchTable.primitive slots 6 and 14.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
-  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 packetModulationColor;
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
@@ -652,50 +658,48 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
-                         g_PrimitiveRenderStatePresets[3].zWriteEnable);
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
+               g_PrimitiveRenderStatePresets[3].zWriteEnable);
   }
   if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[3].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[3].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
-                           g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
+                 g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                            (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
+        g_Direct3DDevice2->lpVtbl->SetRenderState
+                  (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[3].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[3].sourceBlend;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
-                         g_PrimitiveRenderStatePresets[3].sourceBlend);
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
+               g_PrimitiveRenderStatePresets[3].sourceBlend);
   }
   if (g_PrimitiveRenderStatePresets[3].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[3].destinationBlend
-    ;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
-                         g_PrimitiveRenderStatePresets[3].destinationBlend);
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[3].destinationBlend;
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
+               g_PrimitiveRenderStatePresets[3].destinationBlend);
   }
   packetModulationColor = packet->modulationColor;
   vertex0Diffuse = packet->vertices[0].diffuseColor;
@@ -719,22 +723,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -749,33 +753,35 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
@@ -783,24 +789,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057D480.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate primitive handler using render-state preset 4: ONE/ONE additive blending, alpha
-   blending enabled, Z-write disabled. Multiplies each vertex diffuse color by packet->modulationColor through MMX,
-   converts screen/depth values into g_ImmediateTLVertices, zeroes texture coordinates, duplicates the second
-   vertex into slot four when g_ImmediateVertexCount is four, and binds texture handle zero.
+   Fills g_ImmediateTLVertices for one untextured additive packet (render-state preset 4: ONE/ONE, alpha blending
+   on, Z-write off). Colors are modulated by packet->modulationColor with MMX, texture coordinates zeroed, the
+   second vertex copied into slot 3 for a four-vertex fan, and any bound texture is unbound.
+   Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive slots 2, 10, 34 and 42.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
-  long direct3DResult; /* Ghidra: _sVar19, HRESULT folded into the x87/MMX register image */
   PackedArgb32 packetModulationColor;
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
@@ -811,50 +815,48 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
-                         g_PrimitiveRenderStatePresets[4].zWriteEnable);
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
+               g_PrimitiveRenderStatePresets[4].zWriteEnable);
   }
   if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[4].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[4].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
     }
     else {
-      direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                          (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
-                           g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
+      g_Direct3DDevice2->lpVtbl->SetRenderState
+                (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
+                 g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
-        direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                            (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
+        g_Direct3DDevice2->lpVtbl->SetRenderState
+                  (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
     }
   }
   if (g_PrimitiveRenderStatePresets[4].sourceBlend != g_PrimitiveRenderStateCache.sourceBlend) {
     g_PrimitiveRenderStateCache.sourceBlend = g_PrimitiveRenderStatePresets[4].sourceBlend;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
-                         g_PrimitiveRenderStatePresets[4].sourceBlend);
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
+               g_PrimitiveRenderStatePresets[4].sourceBlend);
   }
   if (g_PrimitiveRenderStatePresets[4].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[4].destinationBlend
-    ;
-    direct3DResult = g_Direct3DDevice2->lpVtbl->SetRenderState
-                        (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
-                         g_PrimitiveRenderStatePresets[4].destinationBlend);
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[4].destinationBlend;
+    g_Direct3DDevice2->lpVtbl->SetRenderState
+              (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
+               g_PrimitiveRenderStatePresets[4].destinationBlend);
   }
   packetModulationColor = packet->modulationColor;
   vertex0Diffuse = packet->vertices[0].diffuseColor;
@@ -878,22 +880,22 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].tu = 0.0;
   g_ImmediateTLVertices[0].tv = 0.0;
@@ -908,33 +910,35 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
     }
   }
   if (g_BoundTextureHandle != 0) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
@@ -942,20 +946,18 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057D730.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate textured primitive handler using render-state preset 0: ONE/ZERO, alpha blending
-   disabled, Z-write enabled. Copies vertex diffuse colors, normalizes U/V to the larger texture log2 dimension,
-   converts screen/depth values into g_ImmediateTLVertices, duplicates the second vertex into slot four when
-   requested, updates texture->lastUsedCounter from g_TextureUseSerial, lazily creates a missing device texture,
-   and binds its D3DTEXTUREHANDLE.
-   Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
+   Fills g_ImmediateTLVertices for one textured opaque packet (render-state preset 0: ONE/ZERO, alpha blending
+   off, Z-write on). U/V are shifted down so both are relative to the texture's larger log2 dimension, the second
+   vertex is copied into slot 3 for a four-vertex fan, and the texture is marked used, recreated on the device if
+   it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive
+   slots 16 and 24.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
@@ -984,8 +986,7 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[0].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[0].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[0].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
@@ -995,10 +996,11 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[0].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
         g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1012,8 +1014,7 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[0].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[0].destinationBlend
-    ;
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[0].destinationBlend;
     g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[0].destinationBlend);
@@ -1031,22 +1032,22 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   textureWidthLog2 = packet->textureEntry->widthLog2;
   textureHeightLog2 = packet->textureEntry->heightLog2;
@@ -1075,22 +1076,22 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1099,28 +1100,28 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
@@ -1128,17 +1129,19 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   }
   texture = packetTextureEntry->texture;
   deviceTextureHandle = 0;
-  if (texture != (GraphicsTextureResource *)0x0) {
+  if (texture != NULL) {
     deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
-    g_TextureUseSerial = g_TextureUseSerial + 1;
+    g_TextureUseSerial++;
     if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
-      g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
+      g_TextureDeviceReloadCount++;
       deviceTextureHandle = texture->textureHandle;
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
@@ -1146,20 +1149,18 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057DA50.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate textured primitive handler using render-state preset 1: SRCALPHA/INVSRCALPHA, alpha
-   blending enabled, Z-write enabled. Copies vertex diffuse colors, normalizes U/V to the larger texture log2
-   dimension, converts screen/depth values into g_ImmediateTLVertices, duplicates the second vertex into slot four
-   when requested, updates texture->lastUsedCounter from g_TextureUseSerial, lazily creates a missing device
-   texture, and binds its D3DTEXTUREHANDLE.
-   Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
+   Fills g_ImmediateTLVertices for one textured translucent packet that still writes depth (render-state preset 1:
+   SRCALPHA/INVSRCALPHA, alpha blending on, Z-write on). U/V are made relative to the texture's larger log2
+   dimension, the second vertex is copied into slot 3 for a four-vertex fan, and the texture is marked used,
+   recreated on the device if it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it through
+   g_GraphicsDispatchTable.primitive slots 20 and 28.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
@@ -1188,8 +1189,7 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[1].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[1].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[1].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[1].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
@@ -1199,10 +1199,11 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[1].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
         g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1216,8 +1217,7 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[1].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[1].destinationBlend
-    ;
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[1].destinationBlend;
     g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[1].destinationBlend);
@@ -1235,22 +1235,22 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   textureWidthLog2 = packet->textureEntry->widthLog2;
   textureHeightLog2 = packet->textureEntry->heightLog2;
@@ -1279,22 +1279,22 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1303,28 +1303,28 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
@@ -1332,17 +1332,19 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   }
   texture = packetTextureEntry->texture;
   deviceTextureHandle = 0;
-  if (texture != (GraphicsTextureResource *)0x0) {
+  if (texture != NULL) {
     deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
-    g_TextureUseSerial = g_TextureUseSerial + 1;
+    g_TextureUseSerial++;
     if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
-      g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
+      g_TextureDeviceReloadCount++;
       deviceTextureHandle = texture->textureHandle;
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
@@ -1350,20 +1352,18 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057DD70.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate textured primitive handler using render-state preset 2: SRCALPHA/INVSRCALPHA, alpha
-   blending enabled, Z-write disabled. Copies vertex diffuse colors, normalizes U/V to the larger texture log2
-   dimension, converts screen/depth values into g_ImmediateTLVertices, duplicates the second vertex into slot four
-   when requested, updates texture->lastUsedCounter from g_TextureUseSerial, lazily creates a missing device
-   texture, and binds its D3DTEXTUREHANDLE.
-   Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
+   Fills g_ImmediateTLVertices for one textured translucent packet (render-state preset 2: SRCALPHA/INVSRCALPHA,
+   alpha blending on, Z-write off). U/V are made relative to the texture's larger log2 dimension, the second
+   vertex is copied into slot 3 for a four-vertex fan, and the texture is marked used, recreated on the device if
+   it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive
+   slots 17, 25, 48, 49, 52, 54, 56, 57, 60 and 62.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
@@ -1392,8 +1392,7 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[2].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[2].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[2].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
@@ -1403,10 +1402,11 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[2].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
         g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1420,8 +1420,7 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[2].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[2].destinationBlend
-    ;
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[2].destinationBlend;
     g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[2].destinationBlend);
@@ -1439,22 +1438,22 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   textureWidthLog2 = packet->textureEntry->widthLog2;
   textureHeightLog2 = packet->textureEntry->heightLog2;
@@ -1483,22 +1482,22 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1507,28 +1506,28 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
@@ -1536,17 +1535,19 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   texture = packetTextureEntry->texture;
   deviceTextureHandle = 0;
-  if (texture != (GraphicsTextureResource *)0x0) {
+  if (texture != NULL) {
     deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
-    g_TextureUseSerial = g_TextureUseSerial + 1;
+    g_TextureUseSerial++;
     if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
-      g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
+      g_TextureDeviceReloadCount++;
       deviceTextureHandle = texture->textureHandle;
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
@@ -1554,21 +1555,18 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057E090.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate textured primitive handler using render-state preset 3: SRCALPHA/INVSRCALPHA, alpha
-   blending enabled, Z-write enabled; kept distinct from preset 1 because the executable uses separate table
-   families. Copies vertex diffuse colors, normalizes U/V to the larger texture log2 dimension, converts
-   screen/depth values into g_ImmediateTLVertices, duplicates the second vertex into slot four when requested,
-   updates texture->lastUsedCounter from g_TextureUseSerial, lazily creates a missing device texture, and binds its
-   D3DTEXTUREHANDLE.
-   Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
+   Fills g_ImmediateTLVertices for one textured translucent packet that writes depth, using render-state preset 3
+   (same values as preset 1: SRCALPHA/INVSRCALPHA, alpha blending on, Z-write on). U/V are made relative to the
+   texture's larger log2 dimension, the second vertex is copied into slot 3 for a four-vertex fan, and the texture
+   is marked used, recreated on the device if it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it
+   through g_GraphicsDispatchTable.primitive slots 22 and 30.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
@@ -1597,8 +1595,7 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[3].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[3].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[3].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
@@ -1608,10 +1605,11 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[3].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
         g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1625,8 +1623,7 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[3].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[3].destinationBlend
-    ;
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[3].destinationBlend;
     g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[3].destinationBlend);
@@ -1644,22 +1641,22 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   textureWidthLog2 = packet->textureEntry->widthLog2;
   textureHeightLog2 = packet->textureEntry->heightLog2;
@@ -1688,22 +1685,22 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1712,28 +1709,28 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
@@ -1741,17 +1738,19 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   texture = packetTextureEntry->texture;
   deviceTextureHandle = 0;
-  if (texture != (GraphicsTextureResource *)0x0) {
+  if (texture != NULL) {
     deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
-    g_TextureUseSerial = g_TextureUseSerial + 1;
+    g_TextureUseSerial++;
     if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
-      g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
+      g_TextureDeviceReloadCount++;
       deviceTextureHandle = texture->textureHandle;
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
@@ -1759,20 +1758,18 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }
 
 
 /* Address: 0x0057E3B0.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Direct3D immediate textured primitive handler using render-state preset 4: ONE/ONE additive blending,
-   alpha blending enabled, Z-write disabled. Copies vertex diffuse colors, normalizes U/V to the larger texture
-   log2 dimension, converts screen/depth values into g_ImmediateTLVertices, duplicates the second vertex into slot
-   four when requested, updates texture->lastUsedCounter from g_TextureUseSerial, lazily creates a missing device
-   texture, and binds its D3DTEXTUREHANDLE.
-   Cross-module calls: GraphicsTexture_CreateDeviceTexture [graphics/resources/texture].
+   Fills g_ImmediateTLVertices for one textured additive packet (render-state preset 4: ONE/ONE, alpha blending
+   on, Z-write off). U/V are made relative to the texture's larger log2 dimension, the second vertex is copied
+   into slot 3 for a four-vertex fan, and the texture is marked used, recreated on the device if it was evicted,
+   and bound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive slots 18, 26, 50
+   and 58.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
@@ -1801,8 +1798,7 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable !=
       g_PrimitiveRenderStateCache.alphaBlendEnable) {
-    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[4].alphaBlendEnable
-    ;
+    g_PrimitiveRenderStateCache.alphaBlendEnable = g_PrimitiveRenderStatePresets[4].alphaBlendEnable;
     if (g_PrimitiveRenderStatePresets[4].alphaBlendEnable == GRAPHICS_STATE_DISABLED) {
       g_Direct3DDevice2->lpVtbl->SetRenderState
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,0);
@@ -1812,10 +1808,11 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
                 (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                  g_PrimitiveRenderStatePresets[4].alphaBlendEnable);
       deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-      if (((deviceDesc->dwFlags & 1) == 0) || (deviceDesc->dcmColorModel == 2)) {
+      if (((deviceDesc->dwFlags & D3DDD_COLORMODEL) == 0) || (deviceDesc->dcmColorModel == D3DCOLOR_RGB)) {
         deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].softwareDesc;
       }
-      if (((deviceDesc->dpcTriCaps).dwShadeCaps & 0x4000) == 0) {
+      /* without alpha-blended Gouraud shading fall back to stippled alpha */
+      if (((deviceDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) == 0) {
         g_Direct3DDevice2->lpVtbl->SetRenderState
                   (g_Direct3DDevice2,D3DRENDERSTATE_STIPPLEDALPHA,1);
       }
@@ -1829,8 +1826,7 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   if (g_PrimitiveRenderStatePresets[4].destinationBlend !=
       g_PrimitiveRenderStateCache.destinationBlend) {
-    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[4].destinationBlend
-    ;
+    g_PrimitiveRenderStateCache.destinationBlend = g_PrimitiveRenderStatePresets[4].destinationBlend;
     g_Direct3DDevice2->lpVtbl->SetRenderState
               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                g_PrimitiveRenderStatePresets[4].destinationBlend);
@@ -1848,22 +1844,22 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sx = (float)packet->vertices[2].screenX;
   g_ImmediateTLVertices[2].sy = (float)packet->vertices[2].screenY;
   if (g_ImmediateTLVertices[0].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sx != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sx, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sy != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -0x6000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sy, -12 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   textureWidthLog2 = packet->textureEntry->widthLog2;
   textureHeightLog2 = packet->textureEntry->heightLog2;
@@ -1892,22 +1888,22 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].tu = (float)packet->vertices[2].textureU;
   g_ImmediateTLVertices[2].tv = (float)packet->vertices[2].textureV;
   if (g_ImmediateTLVertices[0].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tu != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tu, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].tv != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].tv, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   g_ImmediateTLVertices[0].sz = (float)packet->vertices[0].depth;
   g_ImmediateTLVertices[0].rhw = 1.0 / g_ImmediateTLVertices[0].sz;
@@ -1916,28 +1912,28 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   g_ImmediateTLVertices[2].sz = (float)packet->vertices[2].depth;
   g_ImmediateTLVertices[2].rhw = 1.0 / g_ImmediateTLVertices[2].sz;
   if (g_ImmediateTLVertices[0].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[0].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[0].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[1].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[1].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].sz != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -0xa000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].sz, -20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (g_ImmediateTLVertices[2].rhw != 0.0) {
-    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 0x9000000);
+    THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 18 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
     sourceVertexCursor = g_ImmediateTLVertices + 1;
     destVertexCursor = g_ImmediateTLVertices + 3;
-    for (remainingDwords = 8; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
       destVertexCursor->sx = sourceVertexCursor->sx;
       sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
       destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
@@ -1945,17 +1941,19 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   texture = packetTextureEntry->texture;
   deviceTextureHandle = 0;
-  if (texture != (GraphicsTextureResource *)0x0) {
+  if (texture != NULL) {
     deviceTextureHandle = texture->textureHandle;
     texture->lastUsedCounter = g_TextureUseSerial;
-    g_TextureUseSerial = g_TextureUseSerial + 1;
+    g_TextureUseSerial++;
     if (deviceTextureHandle == 0) {
       GraphicsTexture_CreateDeviceTexture(texture);
-      g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
+      g_TextureDeviceReloadCount++;
       deviceTextureHandle = texture->textureHandle;
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
+    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
+       device pointer instead (kept for stage 1). */
     newBoundTextureHandle = g_Direct3DDevice2;
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
@@ -1963,7 +1961,7 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
     g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
-    g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
+    g_TextureBindStateChangeCount++;
   }
   return;
 }

@@ -20,6 +20,9 @@
 #define GRAPHICS_INTENSITY_CLAMP_MAX_STEP 21
 /* 64 KiB table plus 64 KiB slack so it can be aligned to a 64 KiB boundary */
 #define GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES 0x20000
+/* Generated shadow texture (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): a shadow vertex fades
+   out linearly with its ray distance to the caster and vanishes at 5.0 world units (Q12) */
+#define GRAPHICS_SHADING_SHADOW_FADE_DISTANCE_Q12 0x5000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004CDD40 */
@@ -77,7 +80,7 @@ void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
 
 /* 0x004CD880 */
 void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshGroup);
+GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshRecord);
 
 /* 0x004CD930 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -85,7 +88,7 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *mo
 
 /* 0x004CD9F0 */
 uint32_t
-GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddress32 meshGroup);
+GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddress32 meshRecord);
 
 /* 0x004CDAB0 */
 uint32_t
@@ -94,7 +97,7 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *mode
 /* 0x004CDB80 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
-          (ModelMeshGroupAddress32 meshGroup);
+          (ModelMeshGroupAddress32 meshRecord);
 
 /* 0x004CDC20 */
 void __thandor_void_preserve_eax_ecx_edx

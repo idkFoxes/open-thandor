@@ -93,7 +93,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
 /* 0x004D0DA0 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
-          (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
@@ -103,7 +103,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
 /* 0x004D0F20 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-          (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,

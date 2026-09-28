@@ -1719,142 +1719,150 @@ InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntim
 
 
 /* Address: 0x00532CA0.
-   Ownership: gameplay/session/level.
-   Purpose: Copies the base LEV image, serializes live 0x20-byte placements, writes count/size and seven camera
-   bookmark records, then writes the level asset. RET 4 and CF report status. No executable bytes changed. It
-   serializes placements and the seven camera bookmarks from live world state. It is not the FLD writer.
-   Cross-module calls: Package_LoadEntryIntoBuffer [assets/package/runtime], FileSystem_WriteBufferToPath
-   [platform/filesystem/win32].
+   Editor save of the current level: reloads the level asset (g_LevelEndingMovieSourcePath) into the package
+   scratch buffer, replaces its placement table with one 0x20-byte record per live world model, stores the
+   field region and the seven camera bookmarks and writes the image back to the same path. CF reports failure
+   (load or write error in EAX). Called by InGameUiCommand_SaveFieldAndLevelAssetImages (ui/ingame/runtime.c);
+   the field grid itself is written separately.
 */
 
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView)
 
 {
-  int offsetOrModelRuntime;
+  int placementOffsetOrModelRuntime;
   FactionRuntimeIndex activeFactionIndex;
   WorldOwnerListNode100 *ownerListNode;
   AngleTurn32 modelRotationAngle;
-  uint8_t *source;
+  uint8_t *levelImageBytes;
+  LevelAssetRuntimeImagePrefix370 *levelImage;
   uint32_t bookmarkZ;
   uint32_t bookmarkMagnitude;
   uint32_t bookmarkPackedHeadingPitch;
   uint32_t statusOrFieldValue;
-  LevelPlacedModelRecord20 *objectRecordCursor;
+  LevelPlacedModelRecord20 *placementRecordCursor;
   StatusResult statusResult;
-  
-  statusResult = Package_LoadEntryIntoBuffer(0x800000,g_PackageScratchBuffer,g_LevelEndingMovieSourcePath);
-  source = g_PackageScratchBuffer;
+
+  statusResult = Package_LoadEntryIntoBuffer(PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
+                                             g_LevelEndingMovieSourcePath);
+  levelImageBytes = g_PackageScratchBuffer;
+  levelImage = (LevelAssetRuntimeImagePrefix370 *)levelImageBytes;
   statusOrFieldValue = statusResult.valueOrError;
   if (!statusResult.failed) {
-    offsetOrModelRuntime = *(int *)(g_PackageScratchBuffer + 0xdc);
+    /* the placement table is the last part of the image: the file is cut there and regrown per record */
+    placementOffsetOrModelRuntime =
+         (int)levelImage->header.resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset;
     activeFactionIndex = (saveWorldView->worldRuntime).activeFactionRuntimeIndex;
-    *(int *)(g_PackageScratchBuffer + 4) = offsetOrModelRuntime;
-    source[0xd8] = 0;
-    source[0xd9] = 0;
-    source[0xda] = 0;
-    source[0xdb] = 0;
-    *(FactionRuntimeIndex *)(source + 0x2dc) = activeFactionIndex;
-    objectRecordCursor = (LevelPlacedModelRecord20 *)(source + offsetOrModelRuntime);
+    levelImage->header.common.allocationSizeBytes = placementOffsetOrModelRuntime;
+    /* header.initialArmyPlacementRecordCount = 0 */
+    levelImageBytes[0xd8] = 0;
+    levelImageBytes[0xd9] = 0;
+    levelImageBytes[0xda] = 0;
+    levelImageBytes[0xdb] = 0;
+    /* +0x2DC: the loader adds 7 to this value for faction 7's class/mode, yet the editor stores the index of
+       the faction it plays here */
+    *(FactionRuntimeIndex *)(levelImageBytes + 0x2dc) = activeFactionIndex; /* playerSlots[6].aiClassOrMode */
+    placementRecordCursor = (LevelPlacedModelRecord20 *)(levelImageBytes + placementOffsetOrModelRuntime);
     for (ownerListNode = (saveWorldView->worldRuntime).ownerListHead;
-        ownerListNode != (WorldOwnerListNode100 *)0x0; ownerListNode = ownerListNode->nextNode) {
+        ownerListNode != NULL; ownerListNode = ownerListNode->nextNode) {
       if (ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        *(int *)(source + 0xd8) = *(int *)(source + 0xd8) + 1;
-        *(int *)(source + 4) = *(int *)(source + 4) + 0x20;
-        offsetOrModelRuntime = *(int *)((int)ownerListNode->runtimePayload + 8);
-        objectRecordCursor->meshGroupMask = ownerListNode->worldXQ12;
-        statusOrFieldValue = *(uint32_t *)(offsetOrModelRuntime + 0xa0);
-        objectRecordCursor->modelRuntimeField0C = *(uint32_t *)(offsetOrModelRuntime + 0xc);
-        objectRecordCursor->modelRuntimeFieldA0 = statusOrFieldValue;
+        levelImage->header.initialArmyPlacementRecordCount++;
+        levelImage->header.common.allocationSizeBytes = levelImage->header.common.allocationSizeBytes + 0x20;
+        placementOffsetOrModelRuntime = *(int *)((int)ownerListNode->runtimePayload + 8);
+        /* the record field names are Ghidra's: +0x08/+0x0C hold the node's world X/Y */
+        placementRecordCursor->meshGroupMask = ownerListNode->worldXQ12;
+        statusOrFieldValue = *(uint32_t *)(placementOffsetOrModelRuntime + 0xa0);
+        placementRecordCursor->modelRuntimeField0C = *(uint32_t *)(placementOffsetOrModelRuntime + 0xc);
+        placementRecordCursor->modelRuntimeFieldA0 = statusOrFieldValue;
         modelRotationAngle = ownerListNode->modelLocalRotationAngle2;
-        objectRecordCursor->nodePayloadField0C = ownerListNode->worldYQ12;
-        objectRecordCursor->worldRotationAngle2 = modelRotationAngle;
-        objectRecordCursor->reserved14_1F[0] = 0;
-        objectRecordCursor->reserved14_1F[1] = 0;
-        objectRecordCursor->reserved14_1F[2] = 0;
-        objectRecordCursor->reserved14_1F[3] = 0;
-        objectRecordCursor->reserved14_1F[4] = 0;
-        objectRecordCursor->reserved14_1F[5] = 0;
-        objectRecordCursor->reserved14_1F[6] = 0;
-        objectRecordCursor->reserved14_1F[7] = 0;
-        objectRecordCursor->reserved14_1F[8] = 0;
-        objectRecordCursor->reserved14_1F[9] = 0;
-        objectRecordCursor->reserved14_1F[10] = 0;
-        objectRecordCursor->reserved14_1F[0xb] = 0;
-        objectRecordCursor = objectRecordCursor + 1;
+        placementRecordCursor->nodePayloadField0C = ownerListNode->worldYQ12;
+        placementRecordCursor->worldRotationAngle2 = modelRotationAngle;
+        placementRecordCursor->reserved14_1F[0] = 0;
+        placementRecordCursor->reserved14_1F[1] = 0;
+        placementRecordCursor->reserved14_1F[2] = 0;
+        placementRecordCursor->reserved14_1F[3] = 0;
+        placementRecordCursor->reserved14_1F[4] = 0;
+        placementRecordCursor->reserved14_1F[5] = 0;
+        placementRecordCursor->reserved14_1F[6] = 0;
+        placementRecordCursor->reserved14_1F[7] = 0;
+        placementRecordCursor->reserved14_1F[8] = 0;
+        placementRecordCursor->reserved14_1F[9] = 0;
+        placementRecordCursor->reserved14_1F[10] = 0;
+        placementRecordCursor->reserved14_1F[11] = 0;
+        placementRecordCursor++;
       }
     }
-    *(uint32_t *)(source + 0x2e0) =
+    levelImage->runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16 =
          saveWorldView->fieldRegionOriginWorldXQ12 & 0xffffU |
-         saveWorldView->fieldRegionOriginWorldYQ12 << 0x10;
-    *(WorldFieldDimension *)(source + 0x2f0) =
+         saveWorldView->fieldRegionOriginWorldYQ12 << 16;
+    levelImage->runtimeTail2E0.packedFieldRegionHeightHigh16WidthLow16 =
          (saveWorldView->worldRuntime).fieldRegion.regionWidth & 0xffff |
-         (saveWorldView->worldRuntime).fieldRegion.regionHeight << 0x10;
+         (saveWorldView->worldRuntime).fieldRegion.regionHeight << 16;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark1PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark1PositionZQ12;
     statusOrFieldValue = g_LevelCameraBookmark1PositionYQ12;
-    *(uint32_t *)(source + 0x200) = g_LevelCameraBookmark1PositionXQ12;
-    *(uint32_t *)(source + 0x204) = statusOrFieldValue;
-    *(uint32_t *)(source + 0x208) = bookmarkZ;
-    *(uint32_t *)(source + 0x20c) = bookmarkMagnitude;
-    *(uint32_t *)(source + 0x210) = bookmarkPackedHeadingPitch;
+    levelImage->playerSlots[0].startCameraXQ12 = g_LevelCameraBookmark1PositionXQ12;
+    levelImage->playerSlots[0].startCameraYQ12 = statusOrFieldValue;
+    levelImage->playerSlots[0].startCameraZQ12 = bookmarkZ;
+    levelImage->playerSlots[0].startCameraMagnitudeQ12 = bookmarkMagnitude;
+    levelImage->playerSlots[0].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark2PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark2PositionZQ12;
     statusOrFieldValue = g_LevelCameraBookmark2PositionYQ12;
-    *(uint32_t *)(source + 0x220) = g_LevelCameraBookmark2PositionXQ12;
-    *(uint32_t *)(source + 0x224) = statusOrFieldValue;
-    *(uint32_t *)(source + 0x228) = bookmarkZ;
-    *(uint32_t *)(source + 0x22c) = bookmarkMagnitude;
-    *(uint32_t *)(source + 0x230) = bookmarkPackedHeadingPitch;
+    levelImage->playerSlots[1].startCameraXQ12 = g_LevelCameraBookmark2PositionXQ12;
+    levelImage->playerSlots[1].startCameraYQ12 = statusOrFieldValue;
+    levelImage->playerSlots[1].startCameraZQ12 = bookmarkZ;
+    levelImage->playerSlots[1].startCameraMagnitudeQ12 = bookmarkMagnitude;
+    levelImage->playerSlots[1].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark3PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark3PositionZQ12;
     statusOrFieldValue = g_LevelCameraBookmark3PositionYQ12;
-    *(uint32_t *)(source + 0x240) = g_LevelCameraBookmark3PositionXQ12;
-    *(uint32_t *)(source + 0x244) = statusOrFieldValue;
-    *(uint32_t *)(source + 0x248) = bookmarkZ;
-    *(uint32_t *)(source + 0x24c) = bookmarkMagnitude;
-    *(uint32_t *)(source + 0x250) = bookmarkPackedHeadingPitch;
+    levelImage->playerSlots[2].startCameraXQ12 = g_LevelCameraBookmark3PositionXQ12;
+    levelImage->playerSlots[2].startCameraYQ12 = statusOrFieldValue;
+    levelImage->playerSlots[2].startCameraZQ12 = bookmarkZ;
+    levelImage->playerSlots[2].startCameraMagnitudeQ12 = bookmarkMagnitude;
+    levelImage->playerSlots[2].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark4PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark4PositionZQ12;
     statusOrFieldValue = g_LevelCameraBookmark4PositionYQ12;
-    *(uint32_t *)(source + 0x260) = g_LevelCameraBookmark4PositionXQ12;
-    *(uint32_t *)(source + 0x264) = statusOrFieldValue;
-    *(uint32_t *)(source + 0x268) = bookmarkZ;
-    *(uint32_t *)(source + 0x26c) = bookmarkMagnitude;
-    *(uint32_t *)(source + 0x270) = bookmarkPackedHeadingPitch;
+    levelImage->playerSlots[3].startCameraXQ12 = g_LevelCameraBookmark4PositionXQ12;
+    levelImage->playerSlots[3].startCameraYQ12 = statusOrFieldValue;
+    levelImage->playerSlots[3].startCameraZQ12 = bookmarkZ;
+    levelImage->playerSlots[3].startCameraMagnitudeQ12 = bookmarkMagnitude;
+    levelImage->playerSlots[3].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark5PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark5PositionZQ12;
     statusOrFieldValue = g_LevelCameraBookmark5PositionYQ12;
-    *(uint32_t *)(source + 0x280) = g_LevelCameraBookmark5PositionXQ12;
-    *(uint32_t *)(source + 0x284) = statusOrFieldValue;
-    *(uint32_t *)(source + 0x288) = bookmarkZ;
-    *(uint32_t *)(source + 0x28c) = bookmarkMagnitude;
-    *(uint32_t *)(source + 0x290) = bookmarkPackedHeadingPitch;
+    levelImage->playerSlots[4].startCameraXQ12 = g_LevelCameraBookmark5PositionXQ12;
+    levelImage->playerSlots[4].startCameraYQ12 = statusOrFieldValue;
+    levelImage->playerSlots[4].startCameraZQ12 = bookmarkZ;
+    levelImage->playerSlots[4].startCameraMagnitudeQ12 = bookmarkMagnitude;
+    levelImage->playerSlots[4].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark6PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark6PositionZQ12;
     statusOrFieldValue = g_LevelCameraBookmark6PositionYQ12;
-    *(uint32_t *)(source + 0x2a0) = g_LevelCameraBookmark6PositionXQ12;
-    *(uint32_t *)(source + 0x2a4) = statusOrFieldValue;
-    *(uint32_t *)(source + 0x2a8) = bookmarkZ;
-    *(uint32_t *)(source + 0x2ac) = bookmarkMagnitude;
-    *(uint32_t *)(source + 0x2b0) = bookmarkPackedHeadingPitch;
+    levelImage->playerSlots[5].startCameraXQ12 = g_LevelCameraBookmark6PositionXQ12;
+    levelImage->playerSlots[5].startCameraYQ12 = statusOrFieldValue;
+    levelImage->playerSlots[5].startCameraZQ12 = bookmarkZ;
+    levelImage->playerSlots[5].startCameraMagnitudeQ12 = bookmarkMagnitude;
+    levelImage->playerSlots[5].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark7PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark7PositionZQ12;
     statusOrFieldValue = g_LevelCameraBookmark7PositionYQ12;
-    *(uint32_t *)(source + 0x2c0) = g_LevelCameraBookmark7PositionXQ12;
-    *(uint32_t *)(source + 0x2c4) = statusOrFieldValue;
-    *(uint32_t *)(source + 0x2c8) = bookmarkZ;
-    *(uint32_t *)(source + 0x2cc) = bookmarkMagnitude;
-    *(uint32_t *)(source + 0x2d0) = bookmarkPackedHeadingPitch;
+    levelImage->playerSlots[6].startCameraXQ12 = g_LevelCameraBookmark7PositionXQ12;
+    levelImage->playerSlots[6].startCameraYQ12 = statusOrFieldValue;
+    levelImage->playerSlots[6].startCameraZQ12 = bookmarkZ;
+    levelImage->playerSlots[6].startCameraMagnitudeQ12 = bookmarkMagnitude;
+    levelImage->playerSlots[6].packedHeadingLow16PitchHigh16 = bookmarkPackedHeadingPitch;
     statusResult = FileSystem_WriteBufferToPath
-                      (*(FileIoByteCount *)(source + 4),source,g_LevelEndingMovieSourcePath);
+                      (levelImage->header.common.allocationSizeBytes,levelImageBytes,g_LevelEndingMovieSourcePath);
     statusOrFieldValue = statusResult.valueOrError;
     if (!statusResult.failed) {
       return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(StatusResult, uint64_t, statusResult) & 0xFFFFFFFFFFull) & 0xffffffff));

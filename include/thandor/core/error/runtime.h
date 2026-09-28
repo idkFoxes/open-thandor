@@ -85,6 +85,7 @@
                                                registered (the id is left in g_PackageLastErrorPath) */
 #define FATAL_ERROR_SPRITE_ASSET_INVALID 0x36 /* SpriteAsset_RegisterAndRelocatePointers: not an 'spr' asset of
                                                  converter version 0x20007 */
+#define FATAL_ERROR_PALETTE_ASSET_INVALID 0x35 /* GraphicsPaletteAsset_Validate: not a 'pal' asset */
 /* ROM registry (assets/rom/runtime) */
 #define FATAL_ERROR_ROM_REGISTRY_FULL 0x3B /* RomAssetRecord_RegisterAndRelocate: all 256 slots are taken; the
                                               path "engine\zentrale.rom" is left in g_PackageLastErrorPath */
@@ -130,6 +131,8 @@
                                                FncModule_GetExportByIndex: the export index is out of range */
 /* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */
 #define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F
+/* GraphicsCursor_SetFrameIndex: the frame index is not below g_CursorFrameCount (EAX holds it on success too) */
+#define FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE 0x2D
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

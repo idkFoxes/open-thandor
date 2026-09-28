@@ -60,7 +60,7 @@ void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void);
 /* 0x004A8F80 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 SoftwarePixelFormat_BaseDisplayModeHook
-          (uint32_t modeArg0,uint32_t modeArg1,FrontendDisplayDimensionPixels height,
+          (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width);
 
 /* 0x004A9110 */

@@ -17,6 +17,10 @@
    (GraphicsTexture_RegisterSlot, GraphicsTexture_RebuildAllStagingTextures, GraphicsTextureSet_Destroy). */
 #define GRAPHICS_TEXTURE_SLOT_CAPACITY 4096
 
+/* repeatEndY/repeatEndX value of the tiled blits (GraphicsTextureSource_BlitTiled*): repeat along that axis
+   for exactly one tile extent from the tile origin. */
+#define GRAPHICS_TILED_BLIT_ONE_TILE (-0x80000000)
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0057E970 */

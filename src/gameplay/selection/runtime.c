@@ -11,23 +11,13 @@
 /* Implementation ownership: gameplay/selection/runtime. */
 
 /* Address: 0x0052E350.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Begins framebuffer access and composes the complete army and model-runtime selection panel from
-   hierarchy metrics, status flags, icons, number cells, bars, and segmented indicators before ending access. Typed
-   parameters: p2 clipTop→UiPixelCoordinate_V297, p3 clipLeft→UiPixelCoordinate_V297, p4
-   clipBottom→UiPixelCoordinate_V297, p5 clipRight→UiPixelCoordinate_V297. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p6 panelBottom→UiPixelCoordinate_V297, p7 panelRight→UiPixelCoordinate_V297, p8
-   panelTop→UiPixelCoordinate_V297, p9 panelLeft→UiPixelCoordinate_V297. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs, SelectionPanel_DrawIconCellAndAdvanceRegs,
-   SelectionPanel_DrawNumberCellAndAdvanceRegs, SelectionPanel_DrawProportionalCappedBar,
-   SelectionPanel_DrawSolidCappedBar, SelectionPanel_DrawSegmentedCappedBar, SelectionPanel_DrawForwardCappedBar.
-   Cross-module calls: ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs [world/model/runtime],
-   GameFactionRuntime_FindRuntimeGroupIndex [gameplay/faction/runtime],
-   ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime], ArmyRuntime_QueryMetric6CAndDefinitionC4Regs
-   [gameplay/army/runtime].
+   Draws the metric frame of one selected entity around its projected screen bounds (panelTop..panelBottom,
+   panelLeft..panelRight): four corner cells (hierarchy meter, group number), a bar along the top and bottom edge
+   and bars or segment rows on the left and right edge, all from the SELECTION_PANEL_CELL_* layout. What the bars
+   show depends on the entity kind (runtimeLinkOrKind08) and its definition class; entities of other factions
+   only get the empty frame. Called by SelectionOverlay_RenderSelectedArmyMetrics,
+   SelectionOverlay_RenderArmyMetricsForEntity (gameplay/selection/overlay.c) and
+   UiArmyMetricsPanel_DrawTextureMetricsAndChildren (ui/controls/text.c).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_RenderArmyRuntimeMetrics
@@ -42,9 +32,6 @@ SelectionPanel_RenderArmyRuntimeMetrics
   ArmyCommandGeneration maximumValue;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   uint32_t runtimeKindOrValue;
-  SelectionPanelSegmentCount totalSegmentCount;
-  SelectionPanelSegmentCount totalSegmentCount_00;
-  SelectionPanelSegmentCount totalSegmentCount_01;
   int activeMetricMaximum;
   int workingValue;
   int capacityOrMetric;
@@ -68,6 +55,8 @@ SelectionPanel_RenderArmyRuntimeMetrics
   runtimeKindOrValue = runtimeEntry->runtimeLinkOrKind08;
   armyRuntime = runtimeEntry->modelRuntime;
   if (runtimeEntry->factionIndex == (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
+    /* kinds 1-3 and class-0x16 entities of a higher kind get special bars; every other case (including a
+       special case whose condition fails) ends in the generic frame after this block */
     if (runtimeKindOrValue != 0) {
       if (runtimeKindOrValue == 1) {
         if (((armyRuntime->classState).classStateB8 == 1) &&
@@ -78,43 +67,43 @@ SelectionPanel_RenderArmyRuntimeMetrics
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,0x12);
+                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
-                     topLeftAdvance.nextDrawY,(armyRuntime->classLinkState).classState68,
-                     (armyRuntime->classLinkState).classState64,0x16);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                     topLeftAdvance.nextX,(armyRuntime->classLinkState).classState68,
+                     (armyRuntime->classLinkState).classState64,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
-                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
-                     0x19);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,5);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                     panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
-                     panelRight,6);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                     panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
           goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
         }
       }
       else if (runtimeKindOrValue < 3) {
         childModelRuntime = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
                  childModelRuntimeOrSavedOffset00;
-        if (((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != (ModelRuntimeSlot *)0x0)) &&
+        if (((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != NULL)) &&
            ((childDefinitionAddress = (childModelRuntime->definitionOrSavedId).savedIdOrOffset, *(int *)(childDefinitionAddress + 0x4c) == 5 ||
             (((*(int *)(childDefinitionAddress + 0x4c) == 6 || (*(int *)(childDefinitionAddress + 0x4c) == 7)) ||
              (*(int *)(childDefinitionAddress + 0x4c) == 8)))))) {
@@ -124,61 +113,63 @@ SelectionPanel_RenderArmyRuntimeMetrics
           activeMetricMaximum = (int)(activeTotalMetrics >> 0x20);
           if (activeMetricMaximum == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
             topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                                activeMetricMaximum,(UiNumericValue32)activeTotalMetrics,0x12);
+                                activeMetricMaximum,(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
-                     topLeftAdvance.nextDrawY,capacityOrMetric,capacityOrMetric - workingValue,0x16);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                     topLeftAdvance.nextX,capacityOrMetric,capacityOrMetric - workingValue,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
-                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
-                     0x19);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,5);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                     panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
-                     panelRight,6);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                     panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
           goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
         }
       }
       else if (runtimeKindOrValue == 3) {
         childModelRuntime = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
                  childModelRuntimeOrSavedOffset00;
-        if ((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != (ModelRuntimeSlot *)0x0)) {
+        if ((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != NULL)) {
           armyRuntime = (ModelRuntimeSlot *)(childModelRuntime->definitionOrSavedId).savedIdOrOffset;
           runtimeKindOrValue = 0xffffffff;
           workingValue = 7;
           if (armyRuntime->definitionValue9C_4C == 9) {
+            /* unsigned minimum of the child's eight dwords at +0x60..+0x7C, then at least classState80 (signed) */
             do {
-              if (*(uint32_t *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 + -0x24) < runtimeKindOrValue) {
-                runtimeKindOrValue = *(uint32_t *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 + -0x24);
+              if (*(uint32_t *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 - 0x24) < runtimeKindOrValue) {
+                runtimeKindOrValue = *(uint32_t *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 - 0x24);
               }
-              workingValue = workingValue + -1;
+              workingValue--;
             } while (-1 < workingValue);
             if ((int)runtimeKindOrValue < (int)(childModelRuntime->classLinkState).classState80) {
               runtimeKindOrValue = (childModelRuntime->classLinkState).classState80;
             }
+            /* top bar: maximumValue minus the positive part of that clamped minimum */
             workingValue = 0;
             maximumValue = *(ArmyCommandGeneration *)
                             ((ArmyRuntimeMovementControlState *)armyRuntime->reserved10_37 + 4);
@@ -189,41 +180,41 @@ SelectionPanel_RenderArmyRuntimeMetrics
             capacityOrMetric = (int)(activeTotalMetrics >> 0x20);
             if (capacityOrMetric == 0) {
               topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
+                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
             }
             else {
               topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,capacityOrMetric,
-                                  (UiNumericValue32)activeTotalMetrics,0x12);
+                                  (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
             }
             groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
             if (groupIndexResult.notFound) {
               topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
             }
             else {
               topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                  groupIndexResult.runtimeGroupIndex,0xb);
+                                  groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
             }
             bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
             bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
-                       topLeftAdvance.nextDrawY,maximumValue,workingValue + maximumValue,0x16);
+                      (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                       topLeftAdvance.nextX,maximumValue,workingValue + maximumValue,SELECTION_PANEL_CELL_TOP_BAR);
             scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
-                       bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
-                       0x19);
+                      (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                       bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                       SELECTION_PANEL_CELL_BOTTOM_BAR);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                       panelLeft,5);
+                      (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                       panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
-                       panelRight,6);
+                      (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                       panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
             goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
           }
         }
@@ -236,128 +227,128 @@ SelectionPanel_RenderArmyRuntimeMetrics
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
-                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,0x12);
+                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
-                     topLeftAdvance.nextDrawY,(armyRuntime->classLinkState).classState68,
-                     (armyRuntime->classLinkState).classState64,0x16);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                     topLeftAdvance.nextX,(armyRuntime->classLinkState).classState68,
+                     (armyRuntime->classLinkState).classState64,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
-                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
-                     0x19);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,0xf);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,SELECTION_PANEL_CELL_LEFT_SEGMENTS);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
-                     panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                     panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         else if (((armyRuntime->classState).classStateEC & 0xc0) == 0) {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           workingValue = (int)(activeTotalMetrics >> 0x20);
           if (workingValue == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
             topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
-                                (UiNumericValue32)activeTotalMetrics,0x12);
+                                (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawForwardCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
-                     topLeftAdvance.nextDrawY,4);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                     topLeftAdvance.nextX,SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
-                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
-                     0x19);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,0xf);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,SELECTION_PANEL_CELL_LEFT_SEGMENTS);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
-                     panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                     panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         else {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           workingValue = (int)(activeTotalMetrics >> 0x20);
           if (workingValue == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
             topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
-                                (UiNumericValue32)activeTotalMetrics,0x12);
+                                (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                                groupIndexResult.runtimeGroupIndex,0xb);
+                                groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,
-                     topLeftAdvance.nextDrawY,*(uint32_t *)(armyRuntime->reserved100_117 + 4),
-                     *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),0x16);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                     topLeftAdvance.nextX,*(uint32_t *)(armyRuntime->reserved100_117 + 4),
+                     *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,
-                     bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
-                     0x19);
+                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,0xf);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,SELECTION_PANEL_CELL_LEFT_SEGMENTS);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
-                     panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
+                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                     panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
       }
@@ -367,103 +358,103 @@ SelectionPanel_RenderArmyRuntimeMetrics
       workingValue = (int)(activeTotalMetrics >> 0x20);
       if (workingValue == 0) {
         topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
       }
       else {
         topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
-                            (UiNumericValue32)activeTotalMetrics,0x12);
+                            (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
       groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
       if (groupIndexResult.notFound) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
         topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                            groupIndexResult.runtimeGroupIndex,0xb);
+                            groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
       bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
       bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
       SelectionPanel_DrawForwardCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,topLeftAdvance.nextDrawY,4)
-      ;
+                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
+                 SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
       scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,bottomLeftAdvance.nextDrawY
-                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,0x19);
+                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
+                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,panelLeft,5
-                );
+                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
+                 SELECTION_PANEL_CELL_LEFT_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,panelRight,
-                 6);
+                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
+                 SELECTION_PANEL_CELL_RIGHT_BAR);
     }
     else {
       activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
       workingValue = (int)(activeTotalMetrics >> 0x20);
       if (workingValue == 0) {
         topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
       }
       else {
         topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
-                            (UiNumericValue32)activeTotalMetrics,0x12);
+                            (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
       groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
       if (groupIndexResult.notFound) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
         topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
-                            groupIndexResult.runtimeGroupIndex,0xb);
+                            groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
       bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
       bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,topLeftAdvance.nextDrawY,
+                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
                  *(uint32_t *)(armyRuntime->reserved100_117 + 4),
-                 *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),0x16);
+                 *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),SELECTION_PANEL_CELL_TOP_BAR);
       scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,bottomLeftAdvance.nextDrawY
-                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,0x19);
+                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
+                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,panelLeft,5
-                );
+                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
+                 SELECTION_PANEL_CELL_LEFT_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,panelRight,
-                 6);
+                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
+                 SELECTION_PANEL_CELL_RIGHT_BAR);
     }
   }
   else {
     topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,0);
+                       (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
     topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
+                       (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
     bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,2);
+                       (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
     bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,3);
+                       (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
     SelectionPanel_DrawForwardCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextDrawY,topLeftAdvance.nextDrawY,4);
+              (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
     scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
     SelectionPanel_DrawProportionalCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextDrawY,bottomLeftAdvance.nextDrawY,
-               (UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,0x19);
+              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX,
+               (UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,panelLeft,5);
+              (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,panelRight,6)
-    ;
+              (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
+               SELECTION_PANEL_CELL_RIGHT_BAR);
   }
 SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
   g_GraphicsFramebufferEndAccess();
@@ -679,117 +670,112 @@ PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
 
 
 /* Address: 0x0055FFC0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles in game selection apply type16 marker coordinates variant1.
-   Local calls: SelectionPointerArray_ApplyType16MarkerCoordinates.
+   Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in gameplay/input/world.c when the
+   modifier mask (no modifier = 7, Shift = 1) and the attachment variant mask leave 1; networked as command code
+   0xE90): stores the pointed world point and preview heading as marker lane 1 of every class-0x16 entity in
+   the player's selection (SelectionPointerArray_ApplyType16MarkerCoordinates).
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSelection_ApplyType16MarkerCoordinatesVariant1
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
+          (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (1,valueC,valueB,valueA,
-             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+            (1,heading16,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   return;
 }
 
 
 /* Address: 0x0055FFF0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles in game selection apply type16 marker coordinates variant2.
-   Local calls: SelectionPointerArray_ApplyType16MarkerCoordinates.
+   Pointer-mode handler for lane 2 (g_InGamePointerModeHandlers[2]: modifier mask & attachment variant mask
+   == 2, Alt = 2; networked as command code 0xEC0): like InGameSelection_ApplyType16MarkerCoordinatesVariant1, for marker lane 2.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSelection_ApplyType16MarkerCoordinatesVariant2
-          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA)
+          (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
   SelectionPointerArray_ApplyType16MarkerCoordinates
-            (2,valueC,valueB,valueA,
-             &g_SelectionPlayerRuntimeBlockPointers[selectionIndex]->selection);
+            (2,heading16,worldXQ12,worldYQ12,
+             &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   return;
 }
 
 
 /* Address: 0x00562050.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Resolves the selected player primary entity, reapplies its current position to the entity and command-
-   state coordinate fields, invokes the type-specific position callback, and refreshes dependent selection state.
-   Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset
-   identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes,
-   control flow, and executable data remain unchanged.
-   Local calls: SelectionPointerArray_Contains.
-   Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
-   ModelNodeRuntime_UpdateDepthBinMasks [world/model/hierarchy].
+   In-game command handler 0x2F20: moves the player's primary selected model (block +0x8094, rebased offset, 0 =
+   none) by a pointer-drag delta, writes the new point into its path and tracked coordinates and the model
+   transform, and lets the definition's placement contact kind (+0x278) set its height before the transforms and
+   depth bins are rebuilt. Sent by InGameUiCommand_UpdateInteractionByMode (ui/ingame/runtime.c) while the
+   pointer drags with bit 0x4 of g_CursorButtonState set.
 */
 void __thandor_void_preserve_eax_ecx_edx
-SelectionPlayerRuntime_ReissuePrimarySelectionPosition
+SelectionPlayerRuntime_MovePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12)
 
 {
   uint32_t primaryEntityOffset;
   ModelRuntimeNode *modelNode;
-  int classRecordAddress;
+  int definitionAddress;
   int placementContactKind;
-  int worldYQ12;
+  int newWorldXQ12;
   GameEntityRuntime *target;
-  int worldXQ12;
+  int newWorldYQ12;
   WorldRuntimeContext *worldRuntime;
-  
+
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
   if (primaryEntityOffset != 0) {
     target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    /* the result is ignored: the primary entity is moved whether or not it is still selected */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     modelNode = (target->common).ownership.modelNode;
-    worldYQ12 = deltaXQ12 + (modelNode->worldTransform).translation.x;
-    worldXQ12 = deltaYQ12 + (modelNode->worldTransform).translation.y;
-    classRecordAddress = *(int *)(target->common).ownership.definitionOrClassRecord;
-    (target->common).pathCoordinate0Q12 = worldYQ12;
-    (target->common).pathCoordinate1Q12 = worldXQ12;
-    (target->common).trackedCoordinate0Q12 = worldYQ12;
-    (target->common).trackedCoordinate1Q12 = worldXQ12;
-    (target->common).damageState.trackedCoordinate0Q12 = worldYQ12;
-    (target->common).damageState.trackedCoordinate1Q12 = worldXQ12;
-    (modelNode->worldTransform).translation.x = worldYQ12;
-    placementContactKind = *(int *)(classRecordAddress + 0x278);
-    (modelNode->worldTransform).translation.y = worldXQ12;
-    if (placementContactKind == 3) {
+    newWorldXQ12 = deltaXQ12 + (modelNode->worldTransform).translation.x;
+    newWorldYQ12 = deltaYQ12 + (modelNode->worldTransform).translation.y;
+    definitionAddress = *(int *)(target->common).ownership.definitionOrClassRecord;
+    (target->common).pathCoordinate0Q12 = newWorldXQ12;
+    (target->common).pathCoordinate1Q12 = newWorldYQ12;
+    (target->common).trackedCoordinate0Q12 = newWorldXQ12;
+    (target->common).trackedCoordinate1Q12 = newWorldYQ12;
+    (target->common).damageState.trackedCoordinate0Q12 = newWorldXQ12;
+    (target->common).damageState.trackedCoordinate1Q12 = newWorldYQ12;
+    (modelNode->worldTransform).translation.x = newWorldXQ12;
+    placementContactKind = *(int *)(definitionAddress + 0x278);
+    (modelNode->worldTransform).translation.y = newWorldYQ12;
+    if (placementContactKind == ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION) {
       ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = 0x7fffffff;
     }
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
-              (*(Q12 *)(classRecordAddress + 0x54),worldXQ12,worldYQ12,modelNode,worldRuntime);
+              (*(Q12 *)(definitionAddress + 0x54),newWorldYQ12,newWorldXQ12,modelNode,worldRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
-    ModelNodeRuntime_UpdateDepthBinMasks(*(DepthIntervalRadius32 *)(classRecordAddress + 0xdc),modelNode);
+    ModelNodeRuntime_UpdateDepthBinMasks(*(DepthIntervalRadius32 *)(definitionAddress + 0xdc),modelNode);
   }
   return;
 }
 
 
 /* Address: 0x00562220.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK
-   asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body
-   bytes, control flow, and executable data remain unchanged.
-   Local calls: SelectionPointerArray_Contains.
-   Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
+   In-game command handler 0x30F0: turns the player's primary selected model (block +0x8094) by angleDelta
+   (16-bit angle, wraps) and rebuilds its transforms. Sent by InGameUiCommand_UpdateInteractionByMode
+   (ui/ingame/runtime.c) with the horizontal pointer drag * 64.
 */
 void __thandor_void_preserve_eax_ecx_edx
-SelectionPlayerRuntime_AdvancePrimarySelectionCycle
+SelectionPlayerRuntime_RotatePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta)
 
 {
   uint32_t primaryEntityOffset;
   ModelRuntimeNode *modelNodeRuntime;
   GameEntityRuntime *target;
-  
+
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
   if (primaryEntityOffset != 0) {
     target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
+    /* the result is ignored, as in SelectionPlayerRuntime_MovePrimarySelectionBy */
     SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     modelNodeRuntime = (target->common).ownership.modelNode;
@@ -1576,11 +1562,9 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
 }
 
 /* Address: 0x00561000.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Clears the selected player terrain-edit state field and clears the matching local root field when the
-   selected player is the local player. Kept distinct from frontend slot indices, faction runtime indices, network
-   endpoint identity, and PCK asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling
-   convention, storage, body bytes, control flow, and executable data remain unchanged.
+   In-game command handler 0x1ED0: empties the player's marked-cell list (the field cells collected by
+   PlayerPairList_InsertRange) and, for the local player, the in-game root's copy of its count (+0xBA4). Sent by
+   InGameUiCommand_BeginInteractionByMode and InGameUiCommand_ResetInteractionByMode (ui/ingame/runtime.c).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerRuntime_ClearTerrainEditSelectionState
@@ -1600,29 +1584,28 @@ SelectionPlayerRuntime_ClearTerrainEditSelectionState
 
 
 /* Address: 0x00571020.
-   Ownership: gameplay/selection/runtime.
-   Purpose: CF=0 reports an existing pair and CF=1 reports absence. Archived binary body 00571020-0057108B; EAX,
-   ECX, and EDX are preserved or incidental caller state rather than synthetic parameters or normal returns.
+   Tells whether the field cell (worldXQ12, worldYQ12) is in the player's marked-cell list (see
+   PlayerPairList_InsertUnique): CF clear (false) when listed, CF set (true) when not. Used by the FieldGrid cell
+   updates in world/terrain/grid.c.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SelectionPlayerPairList_ContainsPair
-          (SelectionPlayerPairValue pairValue,SelectionPlayerPairKey pairKey,
+          (SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId)
 
 {
   uint32_t pairRecordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
-  
-  pairRecordsRemaining = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084
-  ;
+
+  pairRecordsRemaining = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
   pairRecordCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
   while( true ) {
     if (pairRecordsRemaining == 0) {
       return true;
     }
-    if ((pairKey == pairRecordCursor->pairKey) && (pairValue == pairRecordCursor->pairValue)) break;
-    pairRecordCursor = pairRecordCursor + 1;
-    pairRecordsRemaining = pairRecordsRemaining - 1;
+    if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) break;
+    pairRecordCursor++;
+    pairRecordsRemaining--;
   }
   return false;
 }
@@ -1855,8 +1838,10 @@ SelectionPointerArray_ApplyPositionCommand
 
 
 /* Address: 0x0052D150.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws the recovered horizontal number/text capped selection bar.
+   Draws a horizontal capped bar from spanStartCoordinate to spanEndCoordinate at row fixedCoordinate with a rich
+   text label inside: start cap (base sprite), fill (+1), end cap (+2), text left/right border (+3/+5) and text
+   background (+4). The label is placed at the start, the end or the centre (SELECTION_PANEL_CELL_FLAG_ALIGN_*)
+   and left out when the span is too short. No caller was found in src/ or src/generated/image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_DrawHorizontalNumberTextCappedBar
@@ -1886,9 +1871,12 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
   textExtent = RichTextCommandStream_MeasureRegs(g_SelectionPanelNumberTextStyle,commandStream);
   panelData = g_SelectionPanelData;
   textWidth = textExtent.widthPixels;
-  cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  rowCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                           SELECTION_PANEL_CELL_FLAGS);
+  rowCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                             SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                  SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   textLeftBorderSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   textRightBorderSubresource = baseSubresource + 5;
@@ -1907,7 +1895,7 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
               (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,innerCursor,rowCoordinate,
+              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,innerCursor,rowCoordinate,
                spanStartCoordinate + leftCapWidth,baseSubresource + 1,g_SelectionPanelTextureSource,
                g_FramebufferAccess);
   }
@@ -1921,11 +1909,11 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
     g_SelectionPanelBlitOpaque
               (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,rightCapStart,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
-    if ((*cellFlags & 0x100) == 0) {
-      if ((*cellFlags & 0x200) == 0) {
+    if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_START) == 0) {
+      if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_END) == 0) {
         segmentCursor = ((int)(rightCapStart - requiredEnd) >> 1) + innerCursor;
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
+                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
@@ -1934,19 +1922,22 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
         segmentCursor = segmentCursor + pieceSize.logicalWidthPixels;
         innerCursor = textWidth + segmentCursor;
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,innerCursor,rowCoordinate,segmentCursor,baseSubresource + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,innerCursor,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
+        /* in this cell the X offset field shifts the text vertically */
+        rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                                 SELECTION_PANEL_CELL_OFFSET_X);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
                    commandStream,rowCoordinate,segmentCursor);
-        rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
+        rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                                 SELECTION_PANEL_CELL_OFFSET_X);
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 5,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 5,g_SelectionPanelTextureSource);
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,
+                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,
                    innerCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                    g_FramebufferAccess);
       }
@@ -1958,20 +1949,22 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         segmentCursor = rightCapStart - textWidth;
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,segmentCursor,baseSubresource + 4,
+                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
+        rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                                 SELECTION_PANEL_CELL_OFFSET_X);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
                    commandStream,rowCoordinate,segmentCursor);
-        rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
+        rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                                 SELECTION_PANEL_CELL_OFFSET_X);
         pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
         segmentCursor = segmentCursor - pieceSize.logicalWidthPixels;
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
+                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
       }
     }
@@ -1983,19 +1976,21 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
       innerCursor = innerCursor + pieceSize.logicalWidthPixels;
       segmentCursor = textWidth + innerCursor;
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 4,
+                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
-      rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
+      rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                               SELECTION_PANEL_CELL_OFFSET_X);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,commandStream
-                 ,rowCoordinate,innerCursor);
-      rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * 0x10 + 0xc);
+                (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,commandStream,
+                 rowCoordinate,innerCursor);
+      rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                               SELECTION_PANEL_CELL_OFFSET_X);
       g_SelectionPanelBlitOpaque
                 (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,textRightBorderSubresource,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       pieceSize = g_GraphicsTextureSourceGetLogicalSize(textRightBorderSubresource,g_SelectionPanelTextureSource);
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,rightCapStart,rowCoordinate,
+                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,
                  segmentCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                  g_FramebufferAccess);
     }
@@ -2004,47 +1999,45 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
 }
 
 /* Address: 0x0052D600.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Formats a signed number, measures and draws it centered over the selected panel-cell sprite, and
-   returns the next layout coordinates while respecting horizontal and vertical suppression flags. Typed
-   parameters: p4 drawX→UiPixelCoordinate_V297, p5 drawY→UiPixelCoordinate_V297, p7
-   cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p6
-   value→SelectionPanelNumericValue32_V343. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext],
-   RichTextCommandStream_DrawSingleLine [assets/text/richtext].
+   Draws a number cell: the cell's sprite at (originY, originX) plus the cell offsets, with value formatted as
+   signed decimal text centred on it. Returns the coordinates after the cell (see SelectionPanelAdvanceEaxEdx8;
+   SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_* keep an axis at the origin plus offset). Called by
+   SelectionPanel_RenderArmyRuntimeMetrics for the group number.
 */
 SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 SelectionPanel_DrawNumberCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex)
 
 {
   uint32_t cellFlags;
   void *panelData;
   uint32_t subresourceOrWidth;
-  int cellDrawX;
+  int cellY;
   uint32_t spriteHeight;
-  int cellDrawY;
+  int cellX;
   uint32_t *cellFlagsPtr;
   RichTextExtentRegs textExtent;
   SelectionPanelAdvanceEaxEdx8 cellAdvance;
   TextureSizeResult spriteSize;
-  
+
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,0xf,1,value,
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16);
   textExtent = RichTextCommandStream_MeasureRegs
                     (g_SelectionPanelNumberTextStyle,(uint16_t *)&g_SelectionPanelNumberScratchUtf16);
   panelData = g_SelectionPanelData;
-  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  cellDrawY = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  cellDrawX = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                              SELECTION_PANEL_CELL_FLAGS);
+  cellX = originX + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                             SELECTION_PANEL_CELL_OFFSET_X);
+  cellY = originY + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                             SELECTION_PANEL_CELL_OFFSET_Y);
+  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                     SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,subresourceOrWidth,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
@@ -2052,34 +2045,32 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16,
-             ((int)(spriteHeight - textExtent.heightPixels) >> 1) + cellDrawX,
-             ((int)(subresourceOrWidth - textExtent.widthPixels) >> 1) + cellDrawY);
+             ((int)(spriteHeight - textExtent.heightPixels) >> 1) + cellY,
+             ((int)(subresourceOrWidth - textExtent.widthPixels) >> 1) + cellX);
   cellFlags = *cellFlagsPtr;
-  if ((cellFlags & 4) != 0) {
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
     subresourceOrWidth = 0;
   }
-  if ((cellFlags & 8) != 0) {
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y) != 0) {
     spriteHeight = 0;
   }
-  cellAdvance.nextDrawY = subresourceOrWidth + *(int *)((int)panelData + cellIndex * 0x10 + 0xc) + drawY;
-  cellAdvance.nextDrawX = spriteHeight + *(int *)((int)panelData + cellIndex * 0x10 + 0x10) + drawX;
+  cellAdvance.nextX = subresourceOrWidth + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                                   SELECTION_PANEL_CELL_OFFSET_X) + originX;
+  cellAdvance.nextY = spriteHeight + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                             SELECTION_PANEL_CELL_OFFSET_Y) + originY;
   return cellAdvance;
 }
 
 
 /* Address: 0x0052D6F0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws the selected panel icon cell and returns the next layout coordinates while respecting the
-   verified horizontal and vertical suppression flags. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1
-   clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p4
-   drawX→UiPixelCoordinate_V297, p5 drawY→UiPixelCoordinate_V297, p6 cellIndex→SelectionPanelCellIndex_V342.
-   Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Draws an icon cell: the cell's sprite at (originY, originX) plus the cell offsets. Returns the coordinates
+   after the cell (see SelectionPanel_DrawNumberCellAndAdvanceRegs). Called by
+   SelectionPanel_RenderArmyRuntimeMetrics for the frame corners.
 */
 SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 SelectionPanel_DrawIconCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelCellIndex cellIndex)
 
 {
@@ -2090,45 +2081,47 @@ SelectionPanel_DrawIconCellAndAdvanceRegs
   uint32_t *cellFlagsPtr;
   SelectionPanelAdvanceEaxEdx8 cellAdvance;
   TextureSizeResult spriteSize;
-  
+
   panelData = g_SelectionPanelData;
-  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                              SELECTION_PANEL_CELL_FLAGS);
+  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                     SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,
-             drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10),
-             drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc),subresourceOrWidth,
+             originY + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                SELECTION_PANEL_CELL_OFFSET_Y),
+             originX + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                SELECTION_PANEL_CELL_OFFSET_X),subresourceOrWidth,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
   subresourceOrWidth = spriteSize.logicalWidthPixels;
   cellFlags = *cellFlagsPtr;
-  if ((cellFlags & 4) != 0) {
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
     subresourceOrWidth = 0;
   }
-  if ((cellFlags & 8) != 0) {
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y) != 0) {
     spriteHeight = 0;
   }
-  cellAdvance.nextDrawY = subresourceOrWidth + *(int *)((int)panelData + cellIndex * 0x10 + 0xc) + drawY;
-  cellAdvance.nextDrawX = spriteHeight + *(int *)((int)panelData + cellIndex * 0x10 + 0x10) + drawX;
+  cellAdvance.nextX = subresourceOrWidth + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                                   SELECTION_PANEL_CELL_OFFSET_X) + originX;
+  cellAdvance.nextY = spriteHeight + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                             SELECTION_PANEL_CELL_OFFSET_Y) + originY;
   return cellAdvance;
 }
 
 
 /* Address: 0x0052D770.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Clamps the current and maximum values, chooses the stepped meter subresource frame, draws the base and
-   meter frame, and returns the next layout coordinates. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1
-   clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p4
-   drawX→UiPixelCoordinate_V297, p5 drawY→UiPixelCoordinate_V297, p6 maximumValue→UiNumericValue32_V308, p7
-   currentValue→UiNumericValue32_V308, p8 cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Draws a meter cell: the cell's base sprite at (originY, originX) plus the cell offsets and over it frame
+   1..17 of the meter (currentValue clamped to 0..maximumValue, rounded to sixteenths; 17 when maximumValue is
+   0). Returns the coordinates after the cell (see SelectionPanel_DrawNumberCellAndAdvanceRegs). Called by
+   SelectionPanel_RenderArmyRuntimeMetrics for the hierarchy meter.
 */
 SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex)
 
@@ -2137,14 +2130,14 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
   uint32_t cellFlags;
   void *panelData;
   int meterFrame;
-  int cellDrawY;
+  int cellX;
   uint32_t subresourceOrWidth;
-  int cellDrawX;
+  int cellY;
   uint32_t spriteHeight;
   uint32_t *cellFlagsPtr;
   SelectionPanelAdvanceEaxEdx8 cellAdvance;
   TextureSizeResult spriteSize;
-  
+
   panelData = g_SelectionPanelData;
   if (currentValue < 0) {
     currentValue = 0;
@@ -2153,48 +2146,52 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
     currentValue = maximumValue;
   }
   if (maximumValue == 0) {
-    meterFrame = 0x11;
+    meterFrame = 17;
   }
   else {
-    meterFrame = ((uint32_t)(currentValue * 0x20 + maximumValue) / (uint32_t)maximumValue >> 1) + 1;
+    /* round(16 * current / maximum) + 1 */
+    meterFrame = ((uint32_t)(currentValue * 32 + maximumValue) / (uint32_t)maximumValue >> 1) + 1;
   }
-  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  baseSubresource = *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
-  cellDrawY = drawY + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  cellDrawX = drawX + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellFlagsPtr = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                              SELECTION_PANEL_CELL_FLAGS);
+  baseSubresource = *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                             SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
+  cellX = originX + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                             SELECTION_PANEL_CELL_OFFSET_X);
+  cellY = originY + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                             SELECTION_PANEL_CELL_OFFSET_Y);
+  subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                     SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,subresourceOrWidth,g_SelectionPanelTextureSource,
+            (clipTop,clipLeft,clipBottom,clipRight,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,cellDrawX,cellDrawY,meterFrame + baseSubresource,
+            (clipTop,clipLeft,clipBottom,clipRight,cellY,cellX,meterFrame + baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
   subresourceOrWidth = spriteSize.logicalWidthPixels;
   cellFlags = *cellFlagsPtr;
-  if ((cellFlags & 4) != 0) {
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_X) != 0) {
     subresourceOrWidth = 0;
   }
-  if ((cellFlags & 8) != 0) {
+  if ((cellFlags & SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_Y) != 0) {
     spriteHeight = 0;
   }
-  cellAdvance.nextDrawY = subresourceOrWidth + *(int *)((int)panelData + cellIndex * 0x10 + 0xc) + drawY;
-  cellAdvance.nextDrawX = spriteHeight + *(int *)((int)panelData + cellIndex * 0x10 + 0x10) + drawX;
+  cellAdvance.nextX = subresourceOrWidth + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                                   SELECTION_PANEL_CELL_OFFSET_X) + originX;
+  cellAdvance.nextY = spriteHeight + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
+                                             SELECTION_PANEL_CELL_OFFSET_Y) + originY;
   return cellAdvance;
 }
 
 
 /* Address: 0x0052D850.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws left and right cap sprites, clamps current against maximum, rounds the proportional interior
-   width and six-step fill frame, and draws the two interior bar spans. Typed parameters: p2
-   clipTop→UiPixelCoordinate_V297, p3 clipLeft→UiPixelCoordinate_V297, p4 clipBottom→UiPixelCoordinate_V297, p5
-   clipRight→UiPixelCoordinate_V297, p7 barEndCoordinate→UiPixelCoordinate_V297, p8
-   barStartCoordinate→UiPixelCoordinate_V297, p9 maximumValue→UiNumericValue32_V308, p10
-   currentValue→UiNumericValue32_V308, p11 cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Draws a horizontal value bar in row fixedCoordinate: start cap (base sprite) at barStartCoordinate, end cap
+   (+2) ending at barEndCoordinate, and between them a filled part of rounded currentValue / maximumValue of the
+   width (currentValue clamped to 0..maximumValue) in fill colour +3..+9 (by rounded sixths of the value, full
+   when maximumValue is 0), the rest in the plain fill (+1). Called by SelectionPanel_RenderArmyRuntimeMetrics
+   for the top and bottom edge.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_DrawProportionalCappedBar
@@ -2214,8 +2211,8 @@ SelectionPanel_DrawProportionalCappedBar
   int fixedDrawCoordinate;
   TextureSizeResult capSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
@@ -2233,10 +2230,11 @@ SelectionPanel_DrawProportionalCappedBar
   else if (maximumValue < currentValue) {
     currentValue = maximumValue;
   }
+  /* filled length and fill frame are rounded to the nearest integer (remainder * 2 > maximum rounds up) */
   if ((maximumValue != 0) &&
      (interiorSpan64 = (int64_t)filledSpan, filledSpan = (int)((interiorSpan64 * currentValue) / (int64_t)maximumValue),
      maximumValue < (int)((interiorSpan64 * currentValue) % (int64_t)maximumValue) * 2)) {
-    filledSpan = filledSpan + 1;
+    filledSpan++;
   }
   if (maximumValue == 0) {
     fillFrame = 6;
@@ -2244,22 +2242,23 @@ SelectionPanel_DrawProportionalCappedBar
   else {
     fillFrame = (int)(((int64_t)currentValue * 6) / (int64_t)maximumValue);
     if (maximumValue < (int)(((int64_t)currentValue * 6) % (int64_t)maximumValue) * 2) {
-      fillFrame = fillFrame + 1;
+      fillFrame++;
     }
   }
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,filledSpan + interiorStart,fixedDrawCoordinate,interiorStart,
+            (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,filledSpan + interiorStart,fixedDrawCoordinate,interiorStart,
              fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,endCapCoordinate,fixedDrawCoordinate,filledSpan + interiorStart,baseSubresource + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,filledSpan + interiorStart,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
 
 
 /* Address: 0x0052D9A0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws the recovered vertical proportional capped selection bar.
+   Vertical counterpart of SelectionPanel_DrawProportionalCappedBar: caps at barStartCoordinate and
+   barEndCoordinate in column fixedCoordinate, the filled part grows upwards from the end cap. No caller was found
+   in src/ or src/generated/image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_DrawVerticalProportionalCappedBar
@@ -2279,8 +2278,8 @@ SelectionPanel_DrawVerticalProportionalCappedBar
   int fixedDrawCoordinate;
   TextureSizeResult capSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
@@ -2298,10 +2297,11 @@ SelectionPanel_DrawVerticalProportionalCappedBar
   else if (maximumValue < currentValue) {
     currentValue = maximumValue;
   }
+  /* filled length and fill frame are rounded to the nearest integer (remainder * 2 > maximum rounds up) */
   if ((maximumValue != 0) &&
      (interiorSpan64 = (int64_t)filledSpan, filledSpan = (int)((interiorSpan64 * currentValue) / (int64_t)maximumValue),
      maximumValue < (int)((interiorSpan64 * currentValue) % (int64_t)maximumValue) * 2)) {
-    filledSpan = filledSpan + 1;
+    filledSpan++;
   }
   if (maximumValue == 0) {
     fillFrame = 6;
@@ -2309,26 +2309,22 @@ SelectionPanel_DrawVerticalProportionalCappedBar
   else {
     fillFrame = (int)(((int64_t)currentValue * 6) / (int64_t)maximumValue);
     if (maximumValue < (int)(((int64_t)currentValue * 6) % (int64_t)maximumValue) * 2) {
-      fillFrame = fillFrame + 1;
+      fillFrame++;
     }
   }
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,endCapCoordinate - filledSpan,fixedDrawCoordinate,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate - filledSpan,fixedDrawCoordinate,
              fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate - filledSpan,-0x80000000,interiorStart,fixedDrawCoordinate,baseSubresource + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate - filledSpan,GRAPHICS_TILED_BLIT_ONE_TILE,interiorStart,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
 
 /* Address: 0x0052DAF0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws the two cap sprites and fills the span between them with the verified middle bar subresource.
-   Typed parameters: p2 clipTop→UiPixelCoordinate_V297, p3 clipLeft→UiPixelCoordinate_V297, p4
-   clipBottom→UiPixelCoordinate_V297, p5 clipRight→UiPixelCoordinate_V297, p7
-   barEndCoordinate→UiPixelCoordinate_V297, p8 barStartCoordinate→UiPixelCoordinate_V297, p9
-   cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Draws a horizontal bar without a value in row fixedCoordinate: start cap (base sprite) at barStartCoordinate,
+   end cap (+2) ending at barEndCoordinate and the plain fill (+1) between them. Called by
+   SelectionPanel_RenderArmyRuntimeMetrics for the top edge when there is no value to show.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_DrawForwardCappedBar
@@ -2344,8 +2340,8 @@ SelectionPanel_DrawForwardCappedBar
   TextureSizeResult startCapSize;
   TextureSizeResult endCapSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
@@ -2356,7 +2352,7 @@ SelectionPanel_DrawForwardCappedBar
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,endCapCoordinate,fixedDrawCoordinate,
+            (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,
              barStartCoordinate + startCapSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   return;
@@ -2364,13 +2360,9 @@ SelectionPanel_DrawForwardCappedBar
 
 
 /* Address: 0x0052DBC0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws the selected left and right cap sprites and fills the complete interior span with the verified
-   middle bar subresource. Typed parameters: p2 clipTop→UiPixelCoordinate_V297, p3 clipLeft→UiPixelCoordinate_V297,
-   p4 clipBottom→UiPixelCoordinate_V297, p5 clipRight→UiPixelCoordinate_V297, p6
-   barEndCoordinate→UiPixelCoordinate_V297, p7 barStartCoordinate→UiPixelCoordinate_V297, p9
-   cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Vertical counterpart of SelectionPanel_DrawForwardCappedBar: start cap (base sprite) at barStartCoordinate,
+   end cap (+2) ending at barEndCoordinate and the plain fill (+1) between them, in column fixedCoordinate.
+   Called by SelectionPanel_RenderArmyRuntimeMetrics for the left and right edge.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_DrawSolidCappedBar
@@ -2386,8 +2378,8 @@ SelectionPanel_DrawSolidCappedBar
   TextureSizeResult startCapSize;
   TextureSizeResult endCapSize;
   
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
@@ -2398,7 +2390,7 @@ SelectionPanel_DrawSolidCappedBar
             (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,
+            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
              barStartCoordinate + startCapSize.logicalHeightPixels,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
@@ -2406,8 +2398,11 @@ SelectionPanel_DrawSolidCappedBar
 
 
 /* Address: 0x0052DC90.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws the recovered horizontal segmented capped selection bar.
+   Horizontal counterpart of SelectionPanel_DrawSegmentedCappedBar: caps at spanStartCoordinate and
+   spanEndCoordinate in row fixedCoordinate, filledSegmentCount full segments (+4), with
+   SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS the rest of totalSegmentCount as empty segments (+3), aligned
+   by SELECTION_PANEL_CELL_FLAG_ALIGN_*, and the plain fill (+1) around them; only the fill when the segments do
+   not fit. No caller was found in src/ or src/generated/image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_DrawHorizontalSegmentedCappedBar
@@ -2425,9 +2420,9 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
   uint32_t *cellFlags;
   TextureSizeResult spriteSize;
   
-  cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0x10);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_FLAGS);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_Y);
+  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource,
@@ -2440,31 +2435,31 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   segmentsEnd = filledSegmentCount;
-  if ((*cellFlags & 0x400) != 0) {
+  if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
     segmentsEnd = totalSegmentCount;
   }
   segmentsEnd = spriteSize.logicalWidthPixels * segmentsEnd + interiorStart;
   if (spanEndCoordinate < segmentsEnd) {
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
+              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
-  else if ((*cellFlags & 0x100) == 0) {
-    if ((*cellFlags & 0x200) == 0) {
+  else if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_START) == 0) {
+    if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_END) == 0) {
       spanStartCoordinate = (spanEndCoordinate - segmentsEnd >> 1) + interiorStart;
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanStartCoordinate,fixedDrawCoordinate,interiorStart,
+                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanStartCoordinate,fixedDrawCoordinate,interiorStart,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
       spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
-      for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+      for (; filledSegmentCount != 0; filledSegmentCount--) {
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
-        totalSegmentCount = totalSegmentCount + -1;
+        totalSegmentCount--;
       }
-      if ((*cellFlags & 0x400) != 0) {
-        for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+      if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
+        for (; totalSegmentCount != 0; totalSegmentCount--) {
           g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
@@ -2472,20 +2467,20 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,
+                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,
                  spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
     else {
       spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
-      for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+      for (; filledSegmentCount != 0; filledSegmentCount--) {
         spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        totalSegmentCount = totalSegmentCount + -1;
+        totalSegmentCount--;
       }
-      if ((*cellFlags & 0x400) != 0) {
-        for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+      if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
+        for (; totalSegmentCount != 0; totalSegmentCount--) {
           spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
           g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 3,
@@ -2493,22 +2488,22 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
+                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
   }
   else {
     spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
     spanStartCoordinate = interiorStart;
-    for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+    for (; filledSegmentCount != 0; filledSegmentCount--) {
       g_SelectionPanelBlitOpaque
                 (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
-      totalSegmentCount = totalSegmentCount + -1;
+      totalSegmentCount--;
     }
-    if ((*cellFlags & 0x400) != 0) {
-      for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+    if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
+      for (; totalSegmentCount != 0; totalSegmentCount--) {
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
@@ -2516,23 +2511,18 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
       }
     }
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,spanEndCoordinate,fixedDrawCoordinate,
+              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,
                spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   return;
 }
 
 /* Address: 0x0052DFF0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Draws a capped segmented bar, emits optional marker and segment sprites according to the panel flags
-   and counts, and fills the remaining span. Typed parameters: p2 clipTop→UiPixelCoordinate_V297, p3
-   clipLeft→UiPixelCoordinate_V297, p4 clipBottom→UiPixelCoordinate_V297, p5 clipRight→UiPixelCoordinate_V297, p6
-   barEndCoordinate→UiPixelCoordinate_V297, p7 barStartCoordinate→UiPixelCoordinate_V297, p11
-   cellIndex→SelectionPanelCellIndex_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p9
-   totalSegmentCount→SelectionPanelSegmentCount_V343, p10 filledSegmentCount→SelectionPanelSegmentCount_V343.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Draws a vertical segment row in column fixedCoordinate: caps at barStartCoordinate and barEndCoordinate,
+   filledSegmentCount full segments (+4) and, with SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS, the rest of
+   totalSegmentCount as empty segments (+3), stacked from the top (ALIGN_START), from the bottom (ALIGN_END) or
+   upwards from the centre, with the plain fill (+1) around them; only the fill when the segments do not fit.
+   Called by SelectionPanel_RenderArmyRuntimeMetrics for the left and right edge of class-0x16 entities.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPanel_DrawSegmentedCappedBar
@@ -2550,9 +2540,9 @@ SelectionPanel_DrawSegmentedCappedBar
   uint32_t *cellFlags;
   TextureSizeResult spriteSize;
   
-  cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 4);
-  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * 0x10 + 0xc);
-  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * 0x10 + 8);
+  cellFlags = (uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_FLAGS);
+  fixedDrawCoordinate = fixedCoordinate + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_OFFSET_X);
+  baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
             (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
@@ -2565,31 +2555,31 @@ SelectionPanel_DrawSegmentedCappedBar
              g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   segmentsEnd = filledSegmentCount;
-  if ((*cellFlags & 0x400) != 0) {
+  if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
     segmentsEnd = totalSegmentCount;
   }
   segmentsEnd = spriteSize.logicalHeightPixels * segmentsEnd + barStartCoordinate;
   if (endCapCoordinate < segmentsEnd) {
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barStartCoordinate,fixedDrawCoordinate,
+              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barStartCoordinate,fixedDrawCoordinate,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
-  else if ((*cellFlags & 0x100) == 0) {
-    if ((*cellFlags & 0x200) == 0) {
+  else if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_START) == 0) {
+    if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_END) == 0) {
       barEndCoordinate = endCapCoordinate - (endCapCoordinate - segmentsEnd >> 1);
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barEndCoordinate,fixedDrawCoordinate,
+                (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barEndCoordinate,fixedDrawCoordinate,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
       spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
-      for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+      for (; filledSegmentCount != 0; filledSegmentCount--) {
         barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        totalSegmentCount = totalSegmentCount + -1;
+        totalSegmentCount--;
       }
-      if ((*cellFlags & 0x400) != 0) {
-        for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+      if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
+        for (; totalSegmentCount != 0; totalSegmentCount--) {
           barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
           g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
@@ -2597,22 +2587,22 @@ SelectionPanel_DrawSegmentedCappedBar
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
+                (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
                  barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
     else {
       spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
       barEndCoordinate = endCapCoordinate;
-      for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+      for (; filledSegmentCount != 0; filledSegmentCount--) {
         barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
-        totalSegmentCount = totalSegmentCount + -1;
+        totalSegmentCount--;
       }
-      if ((*cellFlags & 0x400) != 0) {
-        for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+      if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
+        for (; totalSegmentCount != 0; totalSegmentCount--) {
           barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
           g_SelectionPanelBlitOpaque
                     (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
@@ -2620,22 +2610,22 @@ SelectionPanel_DrawSegmentedCappedBar
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,-0x80000000,
+                (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
                  barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
   }
   else {
     spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
-    for (; filledSegmentCount != 0; filledSegmentCount = filledSegmentCount + -1) {
+    for (; filledSegmentCount != 0; filledSegmentCount--) {
       g_SelectionPanelBlitOpaque
                 (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
-      totalSegmentCount = totalSegmentCount + -1;
+      totalSegmentCount--;
     }
-    if ((*cellFlags & 0x400) != 0) {
-      for (; totalSegmentCount != 0; totalSegmentCount = totalSegmentCount + -1) {
+    if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
+      for (; totalSegmentCount != 0; totalSegmentCount--) {
         g_SelectionPanelBlitOpaque
                   (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
@@ -2643,7 +2633,7 @@ SelectionPanel_DrawSegmentedCappedBar
       }
     }
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,-0x80000000,barStartCoordinate,fixedDrawCoordinate,
+              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barStartCoordinate,fixedDrawCoordinate,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   return;
@@ -2883,9 +2873,9 @@ SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray
 
 
 /* Address: 0x0052FD90.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans one exact 32-entry pointer array for target. CF clear means found, CF set means absent, and EAX
-   is preserved.
+   Tells whether target is one of the 32 entries of a selection array: CF clear (false) when found, CF set (true)
+   when not. Used by FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.c); the primary-selection
+   move/rotate handlers call it and ignore the result.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
@@ -2894,7 +2884,7 @@ SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32
   int entryIndex;
 
   /* REPNE SCASD over the 32 entries: CF clear when target was found. */
-  for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     if (array->entries[entryIndex] == target) {
       return false;
     }
@@ -2961,36 +2951,36 @@ SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection
 
 
 /* Address: 0x00530650.
-   Ownership: gameplay/selection/runtime.
-   Purpose: For each nonnull entry in the fixed 32-entry array whose nested type is 0x16, scans the exact 13-dword
-   marker-source region, packs matches for three global marker IDs into three bytes, and conditionally writes
-   marker bytes plus coordinate triples at +0xB8 through +0xD8 according to lane mask bits 1, 2, and 4. EAX is
-   preserved. Typed parameters: p1 valueC→SelectionMarkerCoordinateValue32_V342, p2
-   valueB→SelectionMarkerCoordinateValue32_V342, p3 valueA→SelectionMarkerCoordinateValue32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged. Typed parameters: p0 laneMask→SelectionMarkerLaneMask_V343.
+   For every selected entity whose definition class is 0x16, counts how often each of the three lane asset ids
+   (g_ArmyLinkedChildAssetIdSlot0/1/2, i.e. g_InGamePointerModePreviewArmyIds[1], [2] and [4]) occurs among the
+   13 child asset ids at model runtime +0x78..+0xA8. For every lane bit set in laneMask (1, 2, 4) it stores that
+   lane's count byte (+0xDC + lane) and the point (worldYQ12, worldXQ12, heading16) at +0xB8 + lane * 0xC.
+   Called by the pointer-mode handlers InGameSelection_ApplyType16MarkerCoordinatesVariant1/2 and
+   SelectionMarkerCoordinates_ApplyType3..7.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyType16MarkerCoordinates
-          (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 valueC,
-          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA,
+          (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 heading16,
+          SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12,
           SelectionPointerArray32 *selection)
 
 {
-  int *classRecord;
+  int *modelRuntime;
   int markerSourceId;
   int entriesRemaining;
   int packedMarkerMatches;
   int markerSlotIndex;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
-    if ((*(int **)selection != (int *)0x0) &&
-       (classRecord = (int *)**(int **)selection, *(int *)(*classRecord + 0x4c) == 0x16)) {
+    /* entry -> model runtime (dword 0) -> definition record (dword 0, class id at +0x4C) */
+    if ((*(int **)selection != NULL) &&
+       (modelRuntime = (int *)**(int **)selection, *(int *)(*modelRuntime + 0x4c) == 0x16)) {
       markerSlotIndex = 0xc;
+      /* one match counter per byte: lane 1 in bits 0-7, lane 2 in bits 8-15, lane 4 in bits 16-23 */
       packedMarkerMatches = 0;
       do {
-        markerSourceId = classRecord[markerSlotIndex + 0x1e];
+        markerSourceId = modelRuntime[markerSlotIndex + 0x1e];
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot0) {
           packedMarkerMatches = packedMarkerMatches + 1;
         }
@@ -3000,29 +2990,29 @@ SelectionPointerArray_ApplyType16MarkerCoordinates
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot2) {
           packedMarkerMatches = packedMarkerMatches + 0x10000;
         }
-        markerSlotIndex = markerSlotIndex + -1;
+        markerSlotIndex--;
       } while (-1 < markerSlotIndex);
       if ((laneMask & 1) != 0) {
-        *(char *)(classRecord + 0x37) = (char)packedMarkerMatches;
-        classRecord[0x2e] = valueA;
-        classRecord[0x2f] = valueB;
-        classRecord[0x30] = valueC;
+        *(char *)(modelRuntime + 0x37) = (char)packedMarkerMatches;
+        modelRuntime[0x2e] = worldYQ12;
+        modelRuntime[0x2f] = worldXQ12;
+        modelRuntime[0x30] = heading16;
       }
       if ((laneMask & 2) != 0) {
-        *(char *)((int)classRecord + 0xdd) = (char)((uint32_t)packedMarkerMatches >> 8);
-        classRecord[0x31] = valueA;
-        classRecord[0x32] = valueB;
-        classRecord[0x33] = valueC;
+        *(char *)((int)modelRuntime + 0xdd) = (char)((uint32_t)packedMarkerMatches >> 8);
+        modelRuntime[0x31] = worldYQ12;
+        modelRuntime[0x32] = worldXQ12;
+        modelRuntime[0x33] = heading16;
       }
       if ((laneMask & 4) != 0) {
-        *(char *)((int)classRecord + 0xde) = (char)((uint32_t)packedMarkerMatches >> 0x10);
-        classRecord[0x34] = valueA;
-        classRecord[0x35] = valueB;
-        classRecord[0x36] = valueC;
+        *(char *)((int)modelRuntime + 0xde) = (char)((uint32_t)packedMarkerMatches >> 16);
+        modelRuntime[0x34] = worldYQ12;
+        modelRuntime[0x35] = worldXQ12;
+        modelRuntime[0x36] = heading16;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   return;
 }

@@ -12,7 +12,8 @@
 /* Implementation ownership: graphics/render/model. */
 
 
-/* MMX lane helpers for the rewritten lighting routines (Intel SDM semantics). */
+/* MMX lane helpers for the rewritten lighting routines (Intel SDM semantics). These are C helpers, not
+   functions of the original executable. */
 
 /* movd + punpcklbw mm,mm + psrlw mm,shift: each byte b becomes the word (b * 0x101) >> shift. */
 static void ModelLighting_UnpackBytes(uint32_t packed, int shift, short lanes[4])
@@ -90,15 +91,11 @@ static __inline PackedArgb32 ModelLighting_PackUnsignedMmx(uint64_t lanes)
 
 
 /* Address: 0x004BDC90.
-   Ownership: graphics/render/model.
-   Purpose: Applies optional view-facing rotations, draws every enabled mesh group, and restores the model
-   transform and position fields afterward. Typed parameters: p2 facingThresholdQ12→Q12. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged. Typed parameters: p3
-   meshGroup→ModelMeshGroupAddress32_V345.
-   Local calls: ModelRender_SubmitMeshTriangles.
-   Cross-module calls: ModelNodeRuntime_BuildViewFacingRotation [world/model/hierarchy],
-   ModelNodeRuntime_BuildBillboardRotation [world/model/hierarchy].
+   Draws the chosen level-of-detail mesh group of a model node (from ModelRuntime_CullAndRenderHierarchyRecursive).
+   Group flag 1 turns the node towards the viewer and flag 2 makes it a billboard; the node's rotation angles and
+   world transform are saved before and restored afterwards, so the turn only lasts for this draw. Every mesh
+   whose mask (mesh +4) shares a bit with the node's meshGroupMask is submitted; facingThresholdQ12 is the
+   back-face limit ModelRender_SubmitTriangle compares against (the caller derives it from radius / distance).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_DrawMeshGroupsWithTemporaryTransform
@@ -123,7 +120,8 @@ ModelRender_DrawMeshGroupsWithTemporaryTransform
   GraphicsWorldCoordinateQ12 savedTranslationZ;
   int remainingMeshCount;
   int *meshRecord;
-  
+
+  /* mesh group: +4 mesh count, +0xC flags, meshes from +0x20 (mesh [0] = byte size, [1] = group mask) */
   groupFlagsOrMask = *(uint32_t *)(meshGroup + 0xc);
   remainingMeshCount = *(int *)(meshGroup + 4);
   savedRotationAngle0 = (modelNode->modelPayload).worldRotationAngle0;
@@ -149,7 +147,7 @@ ModelRender_DrawMeshGroupsWithTemporaryTransform
   }
   meshRecord = (int *)(meshGroup + 0x20);
   groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
-  for (; remainingMeshCount != 0; remainingMeshCount = remainingMeshCount + -1) {
+  for (; remainingMeshCount != 0; remainingMeshCount--) {
     if ((meshRecord[1] & groupFlagsOrMask) != 0) {
       ModelRender_SubmitMeshTriangles
                 (facingThresholdQ12,(ModelMeshGroupAddress32)meshRecord,modelNode);
@@ -171,16 +169,14 @@ ModelRender_DrawMeshGroupsWithTemporaryTransform
   (modelNode->modelPayload).worldRotationAngle2 = savedRotationAngle2;
   (modelNode->modelPayload).worldRotationAngle1 = savedRotationAngle1;
   (modelNode->modelPayload).worldRotationAngle0 = savedRotationAngle0;
-  return;
 }
 
 
 /* Address: 0x004BE1F0.
-   Ownership: graphics/render/model.
-   Purpose: Handles model render draw mesh groups alternate path.
-   Local calls: ModelRender_SubmitMeshTrianglesAlternatePath.
-   Cross-module calls: ModelNodeRuntime_BuildViewFacingRotation [world/model/hierarchy],
-   ModelNodeRuntime_BuildBillboardRotation [world/model/hierarchy].
+   The same mesh group draw for the alternate model renderer (ModelRuntime_RenderHierarchyRecursiveAlternatePath,
+   chosen by the world views with FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY), without restoring
+   the node transform and without a back-face limit: applies the facing / billboard rotation of group flags 1 / 2
+   and submits every mesh that matches the node's meshGroupMask.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_DrawMeshGroupsAlternatePath
@@ -190,7 +186,7 @@ ModelRender_DrawMeshGroupsAlternatePath
   uint32_t groupFlagsOrMask;
   int remainingMeshCount;
   int *meshRecord;
-  
+
   groupFlagsOrMask = *(uint32_t *)(meshGroup + 0xc);
   remainingMeshCount = *(int *)(meshGroup + 4);
   if ((groupFlagsOrMask & 1) != 0) {
@@ -201,20 +197,18 @@ ModelRender_DrawMeshGroupsAlternatePath
   }
   meshRecord = (int *)(meshGroup + 0x20);
   groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
-  for (; remainingMeshCount != 0; remainingMeshCount = remainingMeshCount + -1) {
+  for (; remainingMeshCount != 0; remainingMeshCount--) {
     if ((meshRecord[1] & groupFlagsOrMask) != 0) {
       ModelRender_SubmitMeshTrianglesAlternatePath((ModelMeshGroupAddress32)meshRecord,modelNode);
     }
     meshRecord = (int *)((int)meshRecord + *meshRecord);
   }
-  return;
 }
 
 
 /* Address: 0x0050A5C0.
-   Ownership: graphics/render/model.
-   Purpose: Handles model projected bounds accumulate hierarchy recursive.
-   Local calls: ModelProjectedBounds_AccumulateNode.
+   Grows bounds by the projected bounding boxes of a model node and all its descendants, for the selection frame
+   of SelectionOverlay_RenderSelectedArmyMetrics and the other overlay code in gameplay/selection/overlay.
 */
 void __thandor_void_preserve_eax_ecx
 ModelProjectedBounds_AccumulateHierarchyRecursive
@@ -222,35 +216,33 @@ ModelProjectedBounds_AccumulateHierarchyRecursive
 
 {
   uint32_t remainingChildCount;
-  
+
   ModelProjectedBounds_AccumulateNode(bounds,modelNode);
-  for (remainingChildCount = modelNode->childCount; remainingChildCount != 0; remainingChildCount = remainingChildCount - 1) {
-    if (modelNode->childNodes[0] != (ModelRuntimeNode *)0x0) {
+  for (remainingChildCount = modelNode->childCount; remainingChildCount != 0; remainingChildCount--) {
+    if (modelNode->childNodes[0] != NULL) {
       ModelProjectedBounds_AccumulateHierarchyRecursive(bounds,modelNode->childNodes[0]);
     }
+    /* moves the node pointer by one dword, so childNodes[0] reads the next child slot */
     modelNode = (ModelRuntimeNode *)&(modelNode->common).nextNode;
   }
-  return;
 }
 
 
 /* Address: 0x004BD4B0.
-   Ownership: graphics/render/model.
-   Purpose: Transforms and projects one model vertex on demand, caches screen coordinates and render flags, and
-   computes the vertex intensity through the normal or alternate lighting path. THE per-instance draw-scale
-   application: when node runtimeFlags (+0x4C) & 0x800, each vertex component is (v * modelScaleQ12(+0xC0)) >> 12
-   before view transform + projection. No 0x3E8/milli constant exists in the mesh stamp path. Typed parameters: p2
-   modelNode→ModelRuntimeNode *. Calling convention, complete VariableStorage serialization, function bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ModelRender_ComputeVertexIntensityDefaultPath, ModelRender_ComputeVertexIntensityScaledPath.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
-   [graphics/core/runtime].
+   Transforms and projects one mesh vertex for ModelRender_SubmitTriangle the first time a triangle of this draw
+   uses it (projected X = MODEL_VERTEX_NOT_PROJECTED); the node's depth bias and, with
+   MODEL_RUNTIME_FLAG_APPLY_SCALE, its draw scale ((v * modelScaleQ12) >> 12) are applied only for the projection.
+   It then computes the vertex colour (+0x2C) for the triangle's lighting flags: the node tint when unlit, else
+   the default or scaled lighting path with the vertex or (flat shaded) triangle normal. The colour is reused
+   while the next triangle has the same MODEL_TRIANGLE_VERTEX_CACHE_FLAGS and is not flat shaded.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_PrepareProjectedVertex
-          (ModelRuntimeNode *modelNode,ModelMeshGroupAddress32 meshGroup,GraphicsFixedVec3 *vertex)
+          (ModelRuntimeNode *modelNode,ModelMeshGroupAddress32 triangle,GraphicsFixedVec3 *vertex)
 
 {
+  /* vertex: [0] local position, +0x10 normal, +0x1C packed colour, +0x20 view position, +0x2C lit colour,
+     +0x30/+0x34 projected X/Y, +0x38 the flags the lit colour was computed for */
   uint32_t triangleRenderFlags;
   int64_t scaledCoordinateProduct;
   PackedArgb32 vertexColor;
@@ -261,20 +253,22 @@ ModelRender_PrepareProjectedVertex
   int64_t scaledVertexCoordinateProduct;
   GraphicsWorldCoordinateQ12 savedVertexZQ12;
   GraphicsWorldCoordinateQ12 savedVertexYQ12;
-  
-  triangleRenderFlags = *(uint32_t *)(meshGroup + 0x34);
-  if (vertex[4].x == -0x80000000) {
+
+  triangleRenderFlags = *(uint32_t *)(triangle + 0x34);
+  if (vertex[4].x == MODEL_VERTEX_NOT_PROJECTED) {
     savedVertexXQ12 = vertex->x;
     savedVertexYQ12 = vertex->y;
     savedVertexZQ12 = vertex->z;
     depthBiasHalf = (uint32_t)modelNode->renderDepthBiasOrState >> 1;
+    /* half the depth bias for z == 0, the full bias for z > 0 */
     if (-1 < vertex->z) {
       if (vertex->z != 0) {
         vertex->z = vertex->z + depthBiasHalf;
       }
       vertex->z = vertex->z + depthBiasHalf;
     }
-    if ((modelNode->runtimeFlags & 0x800) != 0) {
+    if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
+      /* 64-bit product >> 12 (IMUL + SHRD) */
       scaledVertexCoordinateProduct = (int64_t)vertex->x * (int64_t)modelNode->modelScaleQ12;
       vertex->x = (int)((uint64_t)scaledVertexCoordinateProduct >> 0x20) << 0x14 |
                   (uint32_t)scaledVertexCoordinateProduct >> 0xc;
@@ -287,27 +281,27 @@ ModelRender_PrepareProjectedVertex
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
     projectedScreenCoordinatePair =
-         THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8, Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z))
-    ;
+         THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8, Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z));
     vertex->z = savedVertexZQ12;
     vertex->y = savedVertexYQ12;
     vertex->x = savedVertexXQ12;
     vertex[4].x = (int)projectedScreenCoordinatePair;
     vertex[4].y = (int)(projectedScreenCoordinatePair >> 0x20);
   }
-  else if (((triangleRenderFlags & 0x8e00) == vertex[4].z) && ((triangleRenderFlags & 0x8000) == 0)) {
+  else if (((triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS) == vertex[4].z) &&
+          ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) == 0)) {
     return;
   }
-  vertex[4].z = triangleRenderFlags & 0x8e00;
+  vertex[4].z = triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS;
   vertexColor = modelNode->tintArgb;
   surfaceNormalQ12 = (GraphicsFixedVec3 *)&vertex[1].y;
-  if ((triangleRenderFlags & 0x200) != 0) {
+  if ((triangleRenderFlags & MODEL_TRIANGLE_UNLIT) != 0) {
     vertex[3].z = vertexColor;
     return;
   }
-  if ((triangleRenderFlags & 0x800) == 0) {
-    if ((triangleRenderFlags & 0x8000) != 0) {
-      surfaceNormalQ12 = (GraphicsFixedVec3 *)(meshGroup + 0x24);
+  if ((triangleRenderFlags & MODEL_TRIANGLE_LIGHTING_SCALED) == 0) {
+    if ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) != 0) {
+      surfaceNormalQ12 = (GraphicsFixedVec3 *)(triangle + 0x24); /* the triangle's plane normal */
     }
     vertexColor = ModelRender_ComputeVertexIntensityDefaultPath
                       (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelDistanceAttenuationMmx,0),g_SceneBoundsFixed.bound5,
@@ -317,24 +311,23 @@ ModelRender_PrepareProjectedVertex
     vertex[3].z = vertexColor;
     return;
   }
+  /* the scaled path gets the vertex position as its normal (LEA EDX,[ESI] at 0x004BD636) */
   vertexColor = ModelRender_ComputeVertexIntensityScaledPath
                     (vertex[2].y,&vertex[2].z,
                      ((modelNode->modelPayload).modelResource)->lightingScaleQ12,
                      g_SceneBoundsFixed.bound7,g_SceneBoundsFixed.bound6,
                      (GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,vertexColor,vertex);
   vertex[3].z = vertexColor;
-  return;
 }
 
 
 /* Address: 0x004BD9B0.
-   Ownership: graphics/render/model.
-   Purpose: Performs facing and viewport tests, prepares projected vertices, appends one triangle to the primitive
-   queue, selects texture and material state, and applies configured texture-coordinate offsets.
-   Local calls: ModelRender_ComputeFacingDotQ12, ModelRender_PrepareProjectedVertex.
-   Cross-module calls: GraphicsPrimitiveQueue_AppendTriangle [graphics/render/primitives],
-   GraphicsPrimitiveQueue_SetVertexColors [graphics/render/primitives], GraphicsPrimitiveQueue_SetMaterial
-   [graphics/render/primitives], GraphicsPrimitiveQueue_OffsetTextureCoordinates [graphics/render/primitives].
+   Submits one mesh triangle of ModelRender_SubmitMeshTriangles: skips it when it faces away (facing dot not
+   below facingThresholdQ12, unless MODEL_TRIANGLE_DOUBLE_SIDED), projects and lights its three vertices, drops it
+   when all three lie beyond the same edge of g_ProjectionClipRect, and otherwise appends it to the active
+   primitive queue with its vertex colours, texture (node texture set, subresource + node base index) and palette
+   material colour (MODEL_TRIANGLE_PALETTE_BANK_MASK, 0xFFFFFFFF without one). Node flag 0x80 scrolls the
+   texture coordinates of the node's one or (flag 0x400) two animated subresources.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_SubmitTriangle
@@ -351,9 +344,9 @@ ModelRender_SubmitTriangle
   uint32_t paletteBankIndex;
   bool appendFailed;
   GraphicsTextureSetEntry *textureEntry;
-  
+
   facingDotQ12 = ModelRender_ComputeFacingDotQ12(triangle);
-  if (((triangle->renderFlags & 0x400) != 0) || (facingDotQ12 < facingThresholdQ12)) {
+  if (((triangle->renderFlags & MODEL_TRIANGLE_DOUBLE_SIDED) != 0) || (facingDotQ12 < facingThresholdQ12)) {
     firstVertex = triangle->vertex0;
     secondVertex = triangle->vertex1;
     thirdVertex = triangle->vertex2;
@@ -383,15 +376,16 @@ ModelRender_SubmitTriangle
                     (triangle->vertex2->vertexColorArgb,triangle->vertex1->vertexColorArgb,
                      triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
           nodeTextureSet = (modelNode->modelPayload).textureSet;
-          textureEntry = (GraphicsTextureSetEntry *)0x0;
-          if ((nodeTextureSet != (GraphicsTextureSet *)0x0) &&
+          textureEntry = NULL;
+          if ((nodeTextureSet != NULL) &&
              (triangle->subresourceIndex < nodeTextureSet->subresourceCount)) {
             textureEntry = nodeTextureSet->entries +
                            triangle->subresourceIndex + modelNode->textureSubresourceBaseIndex;
           }
           nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
-          if ((nodePaletteAsset == (GraphicsPaletteAsset *)0x0) ||
-             (paletteBankIndex = triangle->renderFlags & 0x1ff, nodePaletteAsset->paletteBankCount <= paletteBankIndex)) {
+          if ((nodePaletteAsset == NULL) ||
+             (paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_MASK,
+              nodePaletteAsset->paletteBankCount <= paletteBankIndex)) {
             GraphicsPrimitiveQueue_SetMaterial(0xffffffff,textureEntry,g_ActivePrimitiveQueue);
             triangleSubresource = triangle->subresourceIndex;
             if ((modelNode->runtimeFlags & 0x80) != 0) {
@@ -431,17 +425,13 @@ ModelRender_SubmitTriangle
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x004BDC20.
-   Ownership: graphics/render/model.
-   Purpose: Prepares model-local view directions, invalidates cached projected vertices, and submits every triangle
-   in one mesh record. Typed parameters: p3 meshGroup→ModelMeshGroupAddress32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: ModelRender_PrepareViewDirections, ModelRender_SubmitTriangle.
+   Draws one mesh of ModelRender_DrawMeshGroupsWithTemporaryTransform: prepares the model-space view directions,
+   marks the mesh's vertices (count at mesh +8) as not projected for this draw, then submits its triangles
+   (count at +0xC, stored after the vertices) through ModelRender_SubmitTriangle.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_SubmitMeshTriangles
@@ -450,26 +440,24 @@ ModelRender_SubmitMeshTriangles
 {
   int remainingCount;
   GraphicsTriangleInput *recordCursor;
-  
+
   remainingCount = *(int *)(meshGroup + 8);
   ModelRender_PrepareViewDirections(modelNode);
   recordCursor = (GraphicsTriangleInput *)(meshGroup + 0x20);
-  for (; remainingCount != 0; remainingCount = remainingCount + -1) {
-    recordCursor->subresourceIndex = 0x80000000;
+  for (; remainingCount != 0; remainingCount--) {
+    recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }
-  for (remainingCount = *(int *)(meshGroup + 0xc); remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = *(int *)(meshGroup + 0xc); remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangle(facingThresholdQ12,recordCursor,modelNode);
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }
-  return;
 }
 
 
 /* Address: 0x004BE180.
-   Ownership: graphics/render/model.
-   Purpose: Handles model render submit mesh triangles alternate path.
-   Local calls: ModelRender_PrepareViewDirections, ModelRender_SubmitTriangleAlternatePath.
+   Draws one mesh of ModelRender_DrawMeshGroupsAlternatePath: the same as ModelRender_SubmitMeshTriangles, but
+   through ModelRender_SubmitTriangleAlternatePath.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_SubmitMeshTrianglesAlternatePath
@@ -478,28 +466,27 @@ ModelRender_SubmitMeshTrianglesAlternatePath
 {
   int remainingCount;
   GraphicsTriangleInput *recordCursor;
-  
+
   remainingCount = *(int *)(meshGroup + 8);
   ModelRender_PrepareViewDirections(modelNode);
   recordCursor = (GraphicsTriangleInput *)(meshGroup + 0x20);
-  for (; remainingCount != 0; remainingCount = remainingCount + -1) {
-    recordCursor->subresourceIndex = 0x80000000;
+  for (; remainingCount != 0; remainingCount--) {
+    recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }
-  for (remainingCount = *(int *)(meshGroup + 0xc); remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = *(int *)(meshGroup + 0xc); remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangleAlternatePath(recordCursor,modelNode);
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }
-  return;
 }
 
 
 /* Address: 0x004BD6B0.
-   Ownership: graphics/render/model.
-   Purpose: Handles model render prepare projected vertex alternate path.
-   Local calls: ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
-   [graphics/core/runtime].
+   Vertex preparation of the alternate model renderer (ModelRender_SubmitTriangleAlternatePath): transforms and
+   projects the vertex once per draw, but rejects it (CF set, projected X = 0x7FFFFFFF) when it lies in front of
+   the near plane (view z < g_ProjectionScaleFixed). The colour is lit per vertex by nearby lights
+   (ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath), or white with the tint's alpha when unlit,
+   and cached like in ModelRender_PrepareProjectedVertex.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ModelRender_PrepareProjectedVertexAlternatePath
@@ -511,9 +498,9 @@ ModelRender_PrepareProjectedVertexAlternatePath
   PackedArgb32 vertexColor;
   GraphicsFixedVec3 *surfaceNormalQ12;
   GraphicsProjectedPointPair projectedPoint;
-  
+
   triangleRenderFlags = triangle->renderFlags;
-  if (vertex[4].x == -0x80000000) {
+  if (vertex[4].x == MODEL_VERTEX_NOT_PROJECTED) {
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
@@ -530,15 +517,16 @@ ModelRender_PrepareProjectedVertexAlternatePath
       /* Already marked as behind the near plane (the original re-stores the same marker). */
       return true;
     }
-    if (((triangleRenderFlags & 0x8e00) == vertex[4].z) && ((triangleRenderFlags & 0x8000) == 0)) {
+    if (((triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS) == vertex[4].z) &&
+        ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) == 0)) {
       return false;
     }
   }
   materialPackedColor = modelNode->tintArgb;
-  vertex[4].z = triangleRenderFlags & 0x8e00;
-  if ((triangleRenderFlags & 0x200) == 0) {
+  vertex[4].z = triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS;
+  if ((triangleRenderFlags & MODEL_TRIANGLE_UNLIT) == 0) {
     surfaceNormalQ12 = (GraphicsFixedVec3 *)&vertex[1].y;
-    if ((triangleRenderFlags & 0x8000) != 0) {
+    if ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) != 0) {
       surfaceNormalQ12 = (GraphicsFixedVec3 *)&triangle->planeNormalXQ12;
     }
     vertexColor = ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
@@ -553,12 +541,10 @@ ModelRender_PrepareProjectedVertexAlternatePath
 
 
 /* Address: 0x004BDFB0.
-   Ownership: graphics/render/model.
-   Purpose: Handles model render submit triangle alternate path.
-   Local calls: ModelRender_PrepareProjectedVertexAlternatePath.
-   Cross-module calls: GraphicsPrimitiveQueue_AppendTriangle [graphics/render/primitives],
-   GraphicsPrimitiveQueue_SetVertexColors [graphics/render/primitives], GraphicsPrimitiveQueue_SetMaterial
-   [graphics/render/primitives].
+   Triangle submission of the alternate model renderer (from ModelRender_SubmitMeshTrianglesAlternatePath):
+   no back-face test; the triangle is dropped when a vertex lies in front of the near plane or all three lie
+   beyond the same edge of g_ProjectionClipRect. Otherwise it is queued with its vertex colours, texture and the
+   palette's alternate modulation colour (0 without one).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
@@ -572,7 +558,7 @@ ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRun
   uint32_t subresourceOrPaletteBank;
   bool rejected;
   GraphicsTextureSetEntry *textureEntry;
-  
+
   firstVertex = triangle->vertex0;
   secondVertex = triangle->vertex1;
   thirdVertex = triangle->vertex2;
@@ -606,12 +592,14 @@ ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRun
                          triangle->vertex0->vertexColorArgb,g_ActivePrimitiveQueue);
               nodeTextureSet = (modelNode->modelPayload).textureSet;
               subresourceOrPaletteBank = triangle->subresourceIndex;
-              textureEntry = (GraphicsTextureSetEntry *)0x0;
+              textureEntry = NULL;
+              /* unlike ModelRender_SubmitTriangle there is no NULL check of the texture set */
               if ((subresourceOrPaletteBank != 0xffffffff) && (subresourceOrPaletteBank < nodeTextureSet->subresourceCount)) {
                 textureEntry = nodeTextureSet->entries + subresourceOrPaletteBank + modelNode->textureSubresourceBaseIndex;
               }
               nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
-              if ((nodePaletteAsset != (GraphicsPaletteAsset *)0x0) &&
+              /* the original masks with 0xFFFF01FF here (0x1FF in ModelRender_SubmitTriangle) */
+              if ((nodePaletteAsset != NULL) &&
                  (subresourceOrPaletteBank = triangle->renderFlags & 0xffff01ff, subresourceOrPaletteBank < nodePaletteAsset->paletteBankCount)) {
                 GraphicsPrimitiveQueue_SetMaterial
                           (nodePaletteAsset->paletteEntries[subresourceOrPaletteBank].alternateModulationColorArgb,textureEntry,
@@ -625,15 +613,13 @@ ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRun
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x0050A4A0.
-   Ownership: graphics/render/model.
-   Purpose: Handles model projected bounds accumulate node.
-   Local calls: ModelProjectedBounds_ExpandWithCurrentScratchPoint.
-   Cross-module calls: FixedTransform_Compose [core/math/fixed].
+   Grows bounds by the screen projection of the eight corners of a model node's local bounding box (for
+   ModelProjectedBounds_AccumulateHierarchyRecursive). Nodes without a bounding radius or with
+   MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST are skipped.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
@@ -642,7 +628,7 @@ ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRunt
   ModelResourceHitTestAndRenderView210 *resource;
   GraphicsWorldCoordinateQ12 boundsX0Q12;
   GraphicsWorldCoordinateQ12 boundsX1Q12;
-  
+
   resource = (modelNode->modelPayload).modelResource;
   if ((resource->boundingRadiusQ12 != 0) &&
      ((resource->hitTestFlags20C & MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST) == 0)) {
@@ -674,21 +660,19 @@ ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRunt
     g_GraphicsTransformInputScratchVec3.x = boundsX1Q12;
     ModelProjectedBounds_ExpandWithCurrentScratchPoint(bounds);
   }
-  return;
 }
 
 
 /* Address: 0x004BD7E0.
-   Ownership: graphics/render/model.
-   Purpose: Returns the Q12 dot product between a triangle direction vector and the prepared view direction.
-   Cross-module calls: FixedVec3_DotQ12 [core/math/fixed].
+   Back-face measure of a triangle for ModelRender_SubmitTriangle: the Q12 dot product of its plane normal
+   (+0x24) with the model-space view direction from ModelRender_PrepareViewDirections.
 */
 int32_t __thandor_eax_preserve_ecx_edx
 ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
 
 {
   int32_t facingDotQ12;
-  
+
   facingDotQ12 = FixedVec3_DotQ12((GraphicsFixedVec3 *)&triangle->planeNormalXQ12,
                                   (GraphicsFixedVec3 *)&g_ModelViewDirectionLocal);
   return facingDotQ12;
@@ -696,14 +680,11 @@ ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
 
 
 /* Address: 0x004CC710.
-   Ownership: graphics/render/model.
-   Purpose: Computes the default model-vertex intensity from the prepared direction, bounds, material inputs, and
-   fixed lighting vectors, then clamps and returns the resulting intensity value. Typed parameters: p2
-   vertexPackedColor→PackedArgb32, p8 materialPackedColor→PackedArgb32. Nearby but non-identical semantic domains
-   were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged. Typed parameters: p5 scenePackedColor0→PackedArgb32, p6
-   scenePackedColor1→PackedArgb32.
-   Cross-module calls: FixedVec3_DotQ12 [core/math/fixed].
+   Lit colour of a mesh vertex for ModelRender_PrepareProjectedVertex, in MMX word lanes: the directional light
+   (scenePackedColor1, weighted by the attenuation table entry for dot(lightDirection, normal) >> 21) plus a quarter
+   of the ambient colour scenePackedColor0, times materialPackedColor (the node tint); then every nearby light of
+   g_GraphicsShadingNearbyRecords whose sphere contains the vertex adds its colour weighted by
+   g_PackedLightingLookupTable[((r^2 - d^2) >> 5) / (r^2 >> 12)]; the sum is modulated by the vertex's own colour.
 */
 PackedArgb32
 ModelRender_ComputeVertexIntensityDefaultPath
@@ -723,66 +704,65 @@ ModelRender_ComputeVertexIntensityDefaultPath
   uint32_t radiusOrSquareLow;
   GraphicsShadingRecordCount remainingRecords;
   uint32_t remainderLowOrDivisor;
-  GraphicsShadingRuntimeRecord *shadingRecord1;
-  uint64_t mm0PackedValue0;
+  GraphicsShadingRuntimeRecord *shadingRecord;
+  uint64_t directionalLanes;
   uint64_t accumulatedLanes;
-  uint64_t mm4PackedValue0;
-  
+  uint64_t lightLanes;
+
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
-  mm0PackedValue0 =
+  directionalLanes =
        pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
               *(uint64_t *)(distanceAttenuationTable + (lightFacingDotQ12 >> 0x15) * 8));
-  shadingRecord1 = g_GraphicsShadingNearbyRecords;
-  accumulatedLanes = pmulhw(ModelLighting_AddWordsMmx(mm0PackedValue0,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
+  shadingRecord = g_GraphicsShadingNearbyRecords;
+  accumulatedLanes = pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
                             ModelLighting_UnpackBytesMmx(materialPackedColor,2));
-  for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords = remainingRecords - 1) {
-    if (shadingRecord1->targetRadiusQ12 != 0) {
-      radiusOrSquareLow = (uint32_t)shadingRecord1->squaredRadiusQ24;
-      remainderHigh = *vertexPositionQ12 - shadingRecord1->worldXQ12;
+  for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords--) {
+    if (shadingRecord->targetRadiusQ12 != 0) {
+      /* r^2 - dx^2 - dy^2 - dz^2 in 64 bits; the light reaches the vertex while it stays >= 0 */
+      radiusOrSquareLow = (uint32_t)shadingRecord->squaredRadiusQ24;
+      remainderHigh = *vertexPositionQ12 - shadingRecord->worldXQ12;
       axisDistanceSquared = (int64_t)remainderHigh * (int64_t)remainderHigh;
       squareOrRemainderLow = (uint32_t)axisDistanceSquared;
       remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
-      remainderHigh = (*(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) -
+      remainderHigh = (*(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) -
                (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
       if (-1 < remainderHigh) {
-        axisDelta = vertexPositionQ12[1] - shadingRecord1->worldYQ12;
+        axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
         radiusOrSquareLow = (uint32_t)axisDistanceSquared;
         squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
         remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
         if (-1 < remainderHigh) {
-          axisDelta = vertexPositionQ12[2] - shadingRecord1->worldZQ12;
+          axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
           radiusOrSquareLow = (uint32_t)axisDistanceSquared;
           remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
           if (-1 < remainderHigh) {
-            lightPackedColor = shadingRecord1->packedColorRgbActive;
-            remainderLowOrDivisor = *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) << 0x14 |
-                     (uint32_t)shadingRecord1->squaredRadiusQ24 >> 0xc;
+            lightPackedColor = shadingRecord->packedColorRgbActive;
+            /* divisor r^2 >> 12 (SHRD) */
+            remainderLowOrDivisor = *(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) << 0x14 |
+                     (uint32_t)shadingRecord->squaredRadiusQ24 >> 0xc;
             if (remainderLowOrDivisor != 0) {
-              mm4PackedValue0 =
+              lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor]);
+                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | (squareOrRemainderLow - radiusOrSquareLow) >> 5) / remainderLowOrDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
-              accumulatedLanes = paddusb(accumulatedLanes,mm4PackedValue0);
+              accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
           }
         }
       }
     }
-    shadingRecord1 = shadingRecord1 + 1;
+    shadingRecord = shadingRecord + 1;
   }
   accumulatedLanes = pmulhw(accumulatedLanes,ModelLighting_UnpackBytesMmx(vertexPackedColor,2));
   return ModelLighting_PackUnsignedMmx(accumulatedLanes);
 }
 
 /* Address: 0x004CC820.
-   Ownership: graphics/render/model.
-   Purpose: Storage remains one signed 32-bit word. Typed parameters: p4 lightingScaleQ12→Q12. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p2
-   vertexPackedColor→PackedArgb32, p8 materialPackedColor→PackedArgb32. Nearby but non-identical semantic domains
-   were explicitly deferred.
-   Cross-module calls: FixedVec3_DotQ12 [core/math/fixed].
+   The same vertex lighting as ModelRender_ComputeVertexIntensityDefaultPath for MODEL_TRIANGLE_LIGHTING_SCALED
+   triangles: the directional weight comes from g_ModelLightingScaleMmxMultiplierTable, indexed by the facing dot
+   divided by the model resource's lightingScaleQ12 (>> 9).
 */
 PackedArgb32
 ModelRender_ComputeVertexIntensityScaledPath
@@ -801,67 +781,69 @@ ModelRender_ComputeVertexIntensityScaledPath
   uint32_t radiusOrSquareLow;
   GraphicsShadingRecordCount remainingRecords;
   uint32_t remainderLowOrDivisor;
-  GraphicsShadingRuntimeRecord *shadingRecord1;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
+  GraphicsShadingRuntimeRecord *shadingRecord;
+  uint64_t directionalLanes;
+  uint64_t accumulatedLanes;
   uint64_t resultLanes;
-  uint64_t mm4PackedValue0;
-  
+  uint64_t lightLanes;
+
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
-  mm0PackedValue0 =
+  directionalLanes =
        pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
               *(uint64_t *)
                (&g_ModelLightingScaleMmxMultiplierTable + (lightFacingDotQ12 / lightingScaleQ12 >> 9) * 8));
-  shadingRecord1 = g_GraphicsShadingNearbyRecords;
-  mm0PackedValue1 =
-       pmulhw(ModelLighting_AddWordsMmx(mm0PackedValue0,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
+  shadingRecord = g_GraphicsShadingNearbyRecords;
+  accumulatedLanes =
+       pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
               ModelLighting_UnpackBytesMmx(materialPackedColor,2));
-  for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords = remainingRecords - 1) {
-    if (shadingRecord1->targetRadiusQ12 != 0) {
-      radiusOrSquareLow = (uint32_t)shadingRecord1->squaredRadiusQ24;
-      remainderHigh = *vertexPositionQ12 - shadingRecord1->worldXQ12;
+  for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords--) {
+    if (shadingRecord->targetRadiusQ12 != 0) {
+      /* r^2 - dx^2 - dy^2 - dz^2 in 64 bits; the light reaches the vertex while it stays >= 0 */
+      radiusOrSquareLow = (uint32_t)shadingRecord->squaredRadiusQ24;
+      remainderHigh = *vertexPositionQ12 - shadingRecord->worldXQ12;
       axisDistanceSquared = (int64_t)remainderHigh * (int64_t)remainderHigh;
       squareOrRemainderLow = (uint32_t)axisDistanceSquared;
       remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
-      remainderHigh = (*(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) -
+      remainderHigh = (*(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) -
                (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
       if (-1 < remainderHigh) {
-        axisDelta = vertexPositionQ12[1] - shadingRecord1->worldYQ12;
+        axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
         radiusOrSquareLow = (uint32_t)axisDistanceSquared;
         squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
         remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
         if (-1 < remainderHigh) {
-          axisDelta = vertexPositionQ12[2] - shadingRecord1->worldZQ12;
+          axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
           radiusOrSquareLow = (uint32_t)axisDistanceSquared;
           remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
           if (-1 < remainderHigh) {
-            lightPackedColor = shadingRecord1->packedColorRgbActive;
-            remainderLowOrDivisor = *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) << 0x14 |
-                     (uint32_t)shadingRecord1->squaredRadiusQ24 >> 0xc;
+            lightPackedColor = shadingRecord->packedColorRgbActive;
+            /* divisor r^2 >> 12 (SHRD) */
+            remainderLowOrDivisor = *(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) << 0x14 |
+                     (uint32_t)shadingRecord->squaredRadiusQ24 >> 0xc;
             if (remainderLowOrDivisor != 0) {
-              mm4PackedValue0 =
+              lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor]);
+                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | (squareOrRemainderLow - radiusOrSquareLow) >> 5) / remainderLowOrDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
-              mm0PackedValue1 = paddusb(mm0PackedValue1,mm4PackedValue0);
+              accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
           }
         }
       }
     }
-    shadingRecord1 = shadingRecord1 + 1;
+    shadingRecord = shadingRecord + 1;
   }
-  resultLanes = pmulhw(mm0PackedValue1,ModelLighting_UnpackBytesMmx(vertexPackedColor,2));
+  resultLanes = pmulhw(accumulatedLanes,ModelLighting_UnpackBytesMmx(vertexPackedColor,2));
   return ModelLighting_PackUnsignedMmx(resultLanes);
 }
 
 /* Address: 0x004CC940.
-   Ownership: graphics/render/model.
-   Purpose: Handles model render compute nearby light packed vertex color alternate path.
-   Cross-module calls: FixedTransform_ApplyDirection [core/math/fixed], FixedVec3_NormalizeQ28 [core/math/fixed],
-   FixedVec3_DotQ12 [core/math/fixed].
+   Vertex colour of the alternate model renderer (ModelRender_PrepareProjectedVertexAlternatePath): ambient
+   scenePackedColor0 times the material colour, plus every nearby light whose sphere contains the vertex, weighted
+   by g_PackedLightingLookupTable at (9 * r^2 / (8 * d^2 + r^2)) scaled by the facing of the view-space normal
+   towards the light; the sum is modulated by the vertex's own colour.
 */
 PackedArgb32
 ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
@@ -885,8 +867,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
   ModelLighting_UnpackBytes(scenePackedColor0,3,color);
   ModelLighting_UnpackBytes(materialPackedColor,3,lanes);
   ModelLighting_MulHigh(color,lanes);
-  for (remaining = g_GraphicsShadingNearbyRecordCount; remaining != 0; remaining = remaining - 1,
-       record = record + 1) {
+  for (remaining = g_GraphicsShadingNearbyRecordCount; remaining != 0; remaining--, record++) {
     int64_t distanceSquared;
     int64_t radiusSquared;
     uint32_t divisor;
@@ -938,10 +919,9 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
 
 
 /* Address: 0x0050A430.
-   Ownership: graphics/render/model.
-   Purpose: Handles model projected bounds expand with current scratch point.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
-   [graphics/core/runtime].
+   Transforms the point in g_GraphicsTransformInputScratchVec3 with g_GraphicsTransformScratchMatrix3x4 and, when
+   it lies beyond the near plane, grows bounds by its projected pixel position (Q12 >> 12). Used by
+   ModelProjectedBounds_AccumulateNode for each bounding-box corner.
 */
 void __thandor_preserve_eax_edx
 ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *bounds)
@@ -950,7 +930,7 @@ ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *b
   int pixelX;
   int pixelY;
   GraphicsProjectedPointPair projectedPoint;
-  
+
   FixedTransform_ApplyPoint
             (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
              &g_GraphicsTransformScratchMatrix3x4);
@@ -971,16 +951,14 @@ ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *b
       bounds->maxY = pixelY;
     }
   }
-  return;
 }
 
 
 /* Address: 0x004BD800.
-   Ownership: graphics/render/model.
-   Purpose: Composes the model and view transforms, derives the camera-facing direction, and transforms the primary
-   and auxiliary directions into model-local space.
-   Cross-module calls: FixedTransform_Compose [core/math/fixed], FixedMath_VectorToAngles3Regs [core/math/fixed],
-   FixedMath_WriteDirectionQ28 [core/math/fixed], FixedTransform_ApplyTransposeDirection [core/math/fixed].
+   Per-mesh setup of ModelRender_SubmitMeshTriangles and ModelRender_SubmitMeshTrianglesAlternatePath: composes
+   the node's world transform with the view projection into g_ModelViewCompositeTransform, and brings the
+   direction from the viewer to the node (for the back-face test) and the auxiliary forward direction (for the
+   lighting) into model space.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
@@ -991,7 +969,7 @@ ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
   int nodeWorldZ;
   GraphicsFixedMatrix3x4 *transformA;
   FixedVectorAngles viewAngles;
-  
+
   nodeWorldX = (modelNodeRuntime->worldTransform).translation.x;
   nodeWorldY = (modelNodeRuntime->worldTransform).translation.y;
   nodeWorldZ = (modelNodeRuntime->worldTransform).translation.z;
@@ -1009,6 +987,5 @@ ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
   FixedTransform_ApplyTransposeDirection
             ((GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,transformA,
              &g_AuxiliaryForwardDirectionFixed);
-  return;
 }
 
