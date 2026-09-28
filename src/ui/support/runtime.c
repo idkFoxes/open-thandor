@@ -273,8 +273,8 @@ PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourc
 
 /* Address: 0x0050F1A0.
    Swaps two entries of the recent-text history, for the sort in RecentTextHistory_SortAndBuildPointerList:
-   their serials and their whole 256-byte text slots (in 32 steps of two dwords; the LOCK pairs are the
-   original's XCHG instructions).
+   their serials and their whole 256-byte text slots (in 32 steps of two dwords, swapped with XCHG as in the
+   original: the history is rebuilt on the main thread and on the timer thread, FrontendSession_PeriodicTick).
 */
 void __thandor_void_preserve_eax_ecx_edx
 RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
@@ -295,14 +295,8 @@ RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex
   dwordPairsRemaining = 32;
   do {
     secondHighDword = secondSlotDwords[1];
-    LOCK();
-    serialOrFirstLowDword = *firstSlotDwords;
-    *firstSlotDwords = *secondSlotDwords;
-    UNLOCK();
-    LOCK();
-    firstHighDword = firstSlotDwords[1];
-    firstSlotDwords[1] = secondHighDword;
-    UNLOCK();
+    serialOrFirstLowDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords,*secondSlotDwords);
+    firstHighDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords + 1,secondHighDword);
     *secondSlotDwords = serialOrFirstLowDword;
     secondSlotDwords[1] = firstHighDword;
     firstSlotDwords = firstSlotDwords + 2;

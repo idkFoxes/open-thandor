@@ -56,11 +56,8 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
     return;
   }
   /* try-lock: the original swaps 1 into the access state (XCHG) and only draws when it was 0 */
-  previousAccessState = g_GraphicsBackendAccessState;
   if (g_CursorSourceAsset != NULL) {
-    LOCK();
-    g_GraphicsBackendAccessState = 1;
-    UNLOCK();
+    previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
     if (previousAccessState == 0) {
       g_MouseEventsProcessed = 0;
       GraphicsCursor_RestoreAfterPresent(g_PrimarySurface3);

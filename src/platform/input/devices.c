@@ -343,11 +343,9 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
   uint32_t errorAttempts;
   int processedCount;
   
-  wasBusyOrEventIndex = g_MousePollBusy;
   processedCount = 0;
-  LOCK();
-  g_MousePollBusy = 1;
-  UNLOCK();
+  /* XCHG: the timer callback and the main thread (UiPointer_DispatchPendingEvents) both come here */
+  wasBusyOrEventIndex = THANDOR_ATOMIC_EXCHANGE(&g_MousePollBusy,1);
   errorAttempts = 0;
   if (wasBusyOrEventIndex == 0) {
     /* read buffered events until the buffer is empty or 16 errors occurred */

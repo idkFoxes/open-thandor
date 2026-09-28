@@ -535,7 +535,6 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
     RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText.text);
     InGameRecentTextHistory_InsertAndRebuild8(shutdownText.text);
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
-    previousLocalPlayerId = g_LocalPlayerRuntimeId;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     do {
       if ((playerRecord->factionAssignment).readyOrWaitState == 0) {
@@ -548,11 +547,9 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
           InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
         }
         playerRecord = g_FrontendPlayerRuntimeBlocks;
-        previousLocalPlayerId = g_LocalPlayerRuntimeId;
         g_FrontendPlayerRuntimeBlockCount = 1;
-        LOCK();
-        g_LocalPlayerRuntimeId = 0;
-        UNLOCK();
+        /* XCHG: the timer thread reads the id (InGameCommandQueue_AppendLocalPlayerCommand) */
+        previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
         (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = 0;
         g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
         (playerRecord->playerName).textUtf16[0] = 0;
@@ -565,9 +562,7 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
       playersRemaining--;
     } while (playersRemaining != 0);
     g_FrontendPlayerRuntimeBlockCount = 1;
-    LOCK();
-    g_LocalPlayerRuntimeId = 0;
-    UNLOCK();
+    previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
     (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = 0;
     g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
     (firstPlayerRecord->playerName).textUtf16[0] = 0;

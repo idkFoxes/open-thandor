@@ -108,6 +108,15 @@ layout, so every use needs a real handler table before it can run. TODO
 #define LOCK() ((void)0)
 #define UNLOCK() ((void)0)
 
+/*
+THANDOR_ATOMIC_EXCHANGE(ptr, value): the original's XCHG with memory (implicitly locked) on a 32-bit
+location shared with the WinMM timer thread (TimerSystem_RegisterPeriodic callbacks): stores value and
+returns the previous contents as uint32_t, in one atomic step. Compiles to XCHG. Sites whose memory only
+one thread touches keep Ghidra's LOCK()/UNLOCK() plus a plain load and store.
+*/
+#define THANDOR_ATOMIC_EXCHANGE(ptr, value) \
+    ((uint32_t)_InterlockedExchange((volatile long *)(ptr), (long)(uintptr_t)(value)))
+
 /* ROUND(x): x87 FRNDINT in the default round-to-nearest-even mode. */
 #define ROUND(x) rint(x)
 

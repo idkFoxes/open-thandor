@@ -392,10 +392,7 @@ Glide3_DrawPrimitiveQueue
   uint32_t widthLog2OrFlags;
   PrimitivePacketResult packetResult;
   
-  previousAccessState = g_GraphicsBackendAccessState;
-  LOCK();
-  g_GraphicsBackendAccessState = 1;
-  UNLOCK();
+  previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
     packetResult = GraphicsPrimitiveQueue_Begin(queue);
     while (currentPacket = packetResult.packet, !packetResult.noPacket) {
@@ -682,52 +679,29 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   int32_t drawX;
   int32_t drawY;
   
-  drawY = g_CursorCurrentDrawY;
-  drawX = g_CursorCurrentDrawX;
-  visibilityTokenOrAccessState = g_CursorCurrentVisibilityToken;
-  savedBackground = g_CursorSavedBackground;
-  LOCK();
-  g_CursorSavedBackground = g_CursorAlternateSavedBackground;
-  UNLOCK();
-  LOCK();
-  g_CursorCurrentVisibilityToken = g_CursorAlternateVisibilityToken;
-  UNLOCK();
-  LOCK();
-  g_CursorCurrentDrawX = g_CursorAlternateDrawX;
-  UNLOCK();
-  LOCK();
-  g_CursorCurrentDrawY = g_CursorAlternateDrawY;
-  UNLOCK();
+  savedBackground = (SoftwareFramebufferAccess *)(uintptr_t)
+       THANDOR_ATOMIC_EXCHANGE(&g_CursorSavedBackground,g_CursorAlternateSavedBackground);
+  visibilityTokenOrAccessState =
+       (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentVisibilityToken,g_CursorAlternateVisibilityToken);
+  drawX = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawX,g_CursorAlternateDrawX);
+  drawY = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawY,g_CursorAlternateDrawY);
   g_CursorAlternateSavedBackground = savedBackground;
   g_CursorAlternateVisibilityToken = visibilityTokenOrAccessState;
   g_CursorAlternateDrawX = drawX;
   g_CursorAlternateDrawY = drawY;
   Glide3_Cursor_ComposeBeforePresent(GLIDE_CURSOR_PRESENT_SENTINEL);
-  visibilityTokenOrAccessState = g_GraphicsBackendAccessState;
-  LOCK();
-  g_GraphicsBackendAccessState = 1;
-  UNLOCK();
+  visibilityTokenOrAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (visibilityTokenOrAccessState == 0) {
     g_GrFinish();
     g_GrBufferSwap(1); /* swap interval: one vertical retrace */
     g_GraphicsBackendAccessState--;
   }
-  drawY = g_CursorCurrentDrawY;
-  drawX = g_CursorCurrentDrawX;
-  visibilityTokenOrAccessState = g_CursorCurrentVisibilityToken;
-  savedBackground = g_CursorSavedBackground;
-  LOCK();
-  g_CursorSavedBackground = g_CursorAlternateSavedBackground;
-  UNLOCK();
-  LOCK();
-  g_CursorCurrentVisibilityToken = g_CursorAlternateVisibilityToken;
-  UNLOCK();
-  LOCK();
-  g_CursorCurrentDrawX = g_CursorAlternateDrawX;
-  UNLOCK();
-  LOCK();
-  g_CursorCurrentDrawY = g_CursorAlternateDrawY;
-  UNLOCK();
+  savedBackground = (SoftwareFramebufferAccess *)(uintptr_t)
+       THANDOR_ATOMIC_EXCHANGE(&g_CursorSavedBackground,g_CursorAlternateSavedBackground);
+  visibilityTokenOrAccessState =
+       (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentVisibilityToken,g_CursorAlternateVisibilityToken);
+  drawX = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawX,g_CursorAlternateDrawX);
+  drawY = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawY,g_CursorAlternateDrawY);
   g_CursorAlternateSavedBackground = savedBackground;
   g_CursorAlternateVisibilityToken = visibilityTokenOrAccessState;
   g_CursorAlternateDrawX = drawX;
@@ -3900,10 +3874,7 @@ bool __thandor_cf_preserve_eax_ecx_edx Glide3_Framebuffer_BeginAccess(void)
   int secondaryLfbLockSucceeded;
   int32_t previousAccessState;
   
-  previousAccessState = g_GraphicsBackendAccessState;
-  LOCK();
-  g_GraphicsBackendAccessState = 1;
-  UNLOCK();
+  previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
     g_GrFinish();
     lfbLockSucceeded = g_GrLfbLock(GR_LFB_WRITE_ONLY | GR_LFB_NOIDLE,GR_BUFFER_BACKBUFFER,GR_LFBWRITEMODE_565,

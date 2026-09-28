@@ -1296,11 +1296,8 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFron
 {
   int previousFlag;
 
-  /* an XCHG in the original; spelled out as a plain read and write here */
-  previousFlag = g_FrontendTransferResponsePending;
-  LOCK();
-  g_FrontendTransferResponsePending = 0;
-  UNLOCK();
+  /* XCHG in the original: the flag is set and consumed on both the main and the timer thread */
+  previousFlag = (int)THANDOR_ATOMIC_EXCHANGE(&g_FrontendTransferResponsePending,0);
   return previousFlag == 0;
 }
 
@@ -1419,11 +1416,8 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlag(voi
 {
   int previousFlag;
 
-  /* an XCHG in the original; spelled out as a plain read and write here */
-  previousFlag = g_FrontendTransferResponsePending;
-  LOCK();
-  g_FrontendTransferResponsePending = 0;
-  UNLOCK();
+  /* XCHG in the original: the flag is set and consumed on both the main and the timer thread */
+  previousFlag = (int)THANDOR_ATOMIC_EXCHANGE(&g_FrontendTransferResponsePending,0);
   return previousFlag == 0;
 }
 

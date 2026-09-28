@@ -254,11 +254,9 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
 {
   NetworkSocketHandle32 socket;
 
-  socket = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != INVALID_SOCKET) {
-    LOCK();
-    g_NetworkFallbackSocket = INVALID_SOCKET;
-    UNLOCK();
+    /* XCHG: the timer thread sends and receives on this socket */
+    socket = (NetworkSocketHandle32)THANDOR_ATOMIC_EXCHANGE(&g_NetworkFallbackSocket,INVALID_SOCKET);
     g_WinSock_closesocket(socket);
   }
   return;
@@ -512,11 +510,9 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallbackUdp_CloseSocket(void)
 {
   NetworkSocketHandle32 socket;
   
-  socket = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != 0xffffffff) {
-    LOCK();
-    g_NetworkFallbackSocket = 0xffffffff;
-    UNLOCK();
+    /* XCHG: the timer thread sends and receives on this socket */
+    socket = (NetworkSocketHandle32)THANDOR_ATOMIC_EXCHANGE(&g_NetworkFallbackSocket,0xffffffff);
     g_Ws2_32_closesocket(socket);
   }
   return;

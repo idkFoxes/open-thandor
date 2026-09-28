@@ -55,11 +55,8 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   int restoreResult;
 
   g_ThandorFrameHeartbeat++;
-  previousAccessState = g_GraphicsBackendAccessState;
   /* XCHG in the original: take the backend lock and learn whether it was already held */
-  LOCK();
-  g_GraphicsBackendAccessState = 1;
-  UNLOCK();
+  previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
   if (previousAccessState == 0) {
     if (framebuffer == &g_DisplayFramebufferAccess) {
       adapterDeviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
@@ -87,22 +84,12 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
       else {
         /* Direct3D flip chain: the back buffer becomes visible, so swap in the cursor state saved for it
            (XCHG in the original, 0x005797C7, which reads the current state only here, under the lock) */
-        savedCursorDrawY = g_CursorCurrentDrawY;
-        savedCursorDrawX = g_CursorCurrentDrawX;
-        savedVisibilityToken = g_CursorCurrentVisibilityToken;
-        savedCursorBackground = g_CursorSavedBackground;
-        LOCK();
-        g_CursorSavedBackground = g_CursorAlternateSavedBackground;
-        UNLOCK();
-        LOCK();
-        g_CursorCurrentVisibilityToken = g_CursorAlternateVisibilityToken;
-        UNLOCK();
-        LOCK();
-        g_CursorCurrentDrawX = g_CursorAlternateDrawX;
-        UNLOCK();
-        LOCK();
-        g_CursorCurrentDrawY = g_CursorAlternateDrawY;
-        UNLOCK();
+        savedCursorBackground = (SoftwareFramebufferAccess *)(uintptr_t)
+             THANDOR_ATOMIC_EXCHANGE(&g_CursorSavedBackground,g_CursorAlternateSavedBackground);
+        savedVisibilityToken =
+             (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentVisibilityToken,g_CursorAlternateVisibilityToken);
+        savedCursorDrawX = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawX,g_CursorAlternateDrawX);
+        savedCursorDrawY = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawY,g_CursorAlternateDrawY);
         g_CursorAlternateSavedBackground = savedCursorBackground;
         g_CursorAlternateVisibilityToken = savedVisibilityToken;
         g_CursorAlternateDrawX = savedCursorDrawX;
@@ -115,24 +102,14 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
         }
         if (restoreResult == 0) {
           surfaceResult = g_PrimarySurface3->lpVtbl->Flip(g_PrimarySurface3,NULL,DDFLIP_WAIT);
-          savedCursorDrawY = g_CursorCurrentDrawY;
-          savedCursorDrawX = g_CursorCurrentDrawX;
-          savedVisibilityToken = g_CursorCurrentVisibilityToken;
-          savedCursorBackground = g_CursorSavedBackground;
           if (surfaceResult != 0) {
             /* the flip failed: swap the cursor state back */
-            LOCK();
-            g_CursorSavedBackground = g_CursorAlternateSavedBackground;
-            UNLOCK();
-            LOCK();
-            g_CursorCurrentVisibilityToken = g_CursorAlternateVisibilityToken;
-            UNLOCK();
-            LOCK();
-            g_CursorCurrentDrawX = g_CursorAlternateDrawX;
-            UNLOCK();
-            LOCK();
-            g_CursorCurrentDrawY = g_CursorAlternateDrawY;
-            UNLOCK();
+            savedCursorBackground = (SoftwareFramebufferAccess *)(uintptr_t)
+                 THANDOR_ATOMIC_EXCHANGE(&g_CursorSavedBackground,g_CursorAlternateSavedBackground);
+            savedVisibilityToken =
+                 (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentVisibilityToken,g_CursorAlternateVisibilityToken);
+            savedCursorDrawX = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawX,g_CursorAlternateDrawX);
+            savedCursorDrawY = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_CursorCurrentDrawY,g_CursorAlternateDrawY);
             g_CursorAlternateSavedBackground = savedCursorBackground;
             g_CursorAlternateVisibilityToken = savedVisibilityToken;
             g_CursorAlternateDrawX = savedCursorDrawX;

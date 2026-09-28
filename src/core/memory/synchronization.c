@@ -23,10 +23,8 @@ void __thandor_void_preserve_eax_ecx_edx SpinLock_Acquire(RuntimeSpinLockValue *
 
   previousLockValue = lockValue;
   while (previousLockValue != NULL) {
-    LOCK();
-    previousLockValue = (RuntimeSpinLockValue *)*lockValue;
-    *lockValue = SPIN_LOCK_LOCKED;
-    UNLOCK();
+    previousLockValue =
+         (RuntimeSpinLockValue *)(uintptr_t)THANDOR_ATOMIC_EXCHANGE(lockValue,SPIN_LOCK_LOCKED);
   }
   return;
 }
@@ -44,10 +42,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SpinLock_TryAcquireFlags(RuntimeSpinLockV
   RuntimeSpinLockValue previousLockValue;
 
   if (lockValue != NULL) {
-    LOCK();
-    previousLockValue = *lockValue;
-    *lockValue = SPIN_LOCK_LOCKED;
-    UNLOCK();
+    previousLockValue = (RuntimeSpinLockValue)THANDOR_ATOMIC_EXCHANGE(lockValue,SPIN_LOCK_LOCKED);
     if (previousLockValue != SPIN_LOCK_UNLOCKED) {
       return true;
     }

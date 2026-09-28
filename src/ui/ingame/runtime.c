@@ -3336,10 +3336,6 @@ InGameNotificationQueue_InsertPriorityRecord
           InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId)
 
 {
-  Q12 *secondaryCoordinateSlot;
-  AngleTurn32 *orientationAngleSlot;
-  uint32_t *payloadDwordSlot;
-  InGameNotificationPayloadKind *payloadKindSlot;
   InGameNotificationPayloadKind carriedPayloadKind;
   uint32_t carriedReserved10;
   uint32_t carriedOrientationValue;
@@ -3371,43 +3367,20 @@ InGameNotificationQueue_InsertPriorityRecord
     secondaryWorldCoordinateQ12_04 = carriedSecondaryCoordinate;
     primaryWorldCoordinateQ12_00 = carriedPrimaryCoordinate;
     if (queueSlot->priority04 < priority) {
-      LOCK();
-      displacedMovieId = queueSlot->notificationMovieId00;
-      queueSlot->notificationMovieId00 = notificationMovieId;
-      UNLOCK();
-      LOCK();
-      displacedPriority = queueSlot->priority04;
-      queueSlot->priority04 = priority;
-      UNLOCK();
-      LOCK();
-      primaryWorldCoordinateQ12_00 = (queueSlot->payload08).primaryWorldCoordinateQ12_00;
-      (queueSlot->payload08).primaryWorldCoordinateQ12_00 = carriedPrimaryCoordinate;
-      UNLOCK();
-      LOCK();
-      secondaryCoordinateSlot = &(queueSlot->payload08).secondaryWorldCoordinateQ12_04;
-      secondaryWorldCoordinateQ12_04 = *secondaryCoordinateSlot;
-      *secondaryCoordinateSlot = carriedSecondaryCoordinate;
-      UNLOCK();
-      LOCK();
-      orientationAngleSlot = &(queueSlot->payload08).primaryOrientationAngle08;
-      primaryOrientationAngle08 = *orientationAngleSlot;
-      *orientationAngleSlot = carriedOrientationAngle;
-      UNLOCK();
-      LOCK();
-      payloadDwordSlot = &(queueSlot->payload08).orientationOrPresentationValue0C;
-      orientationOrPresentationValue0C = *payloadDwordSlot;
-      *payloadDwordSlot = carriedOrientationValue;
-      UNLOCK();
-      LOCK();
-      payloadDwordSlot = &(queueSlot->payload08).reserved10;
-      payloadReserved10 = *payloadDwordSlot;
-      *payloadDwordSlot = carriedReserved10;
-      UNLOCK();
-      LOCK();
-      payloadKindSlot = &(queueSlot->payload08).payloadKind14;
-      payloadKind = *payloadKindSlot;
-      *payloadKindSlot = carriedPayloadKind;
-      UNLOCK();
+      /* XCHG per dword: InGameRuntime_ProcessQueuedSessionNotificationTimer pops the queue on the timer thread */
+      displacedMovieId = THANDOR_ATOMIC_EXCHANGE(&queueSlot->notificationMovieId00,notificationMovieId);
+      displacedPriority = THANDOR_ATOMIC_EXCHANGE(&queueSlot->priority04,priority);
+      primaryWorldCoordinateQ12_00 =
+           (Q12)THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload08).primaryWorldCoordinateQ12_00,carriedPrimaryCoordinate);
+      secondaryWorldCoordinateQ12_04 =
+           (Q12)THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload08).secondaryWorldCoordinateQ12_04,carriedSecondaryCoordinate);
+      primaryOrientationAngle08 =
+           THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload08).primaryOrientationAngle08,carriedOrientationAngle);
+      orientationOrPresentationValue0C =
+           THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload08).orientationOrPresentationValue0C,carriedOrientationValue);
+      payloadReserved10 = THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload08).reserved10,carriedReserved10);
+      payloadKind = (InGameNotificationPayloadKind)
+           THANDOR_ATOMIC_EXCHANGE(&(queueSlot->payload08).payloadKind14,carriedPayloadKind);
     }
     queueSlot++;
     remainingSlots--;
