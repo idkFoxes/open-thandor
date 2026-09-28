@@ -1,3 +1,7 @@
+Update:
+
+Thanks to Crankerer we have a compilable state on another branch: https://github.com/idkFoxes/open-thandor/tree/build/msvc-x86
+
 # Thandor: The Invasion
 
 Got this game back then and cant forget it, so I am also working on a decompilation to fix some things, replace AI, change graphics api, fix sound and so on.
