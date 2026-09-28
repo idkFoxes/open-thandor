@@ -274,8 +274,8 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       frameAccumulatorOrDistance = armyRaycast.nearestDistanceQ12;
       /* hits on target classes and materials without an impact effect do not stop the shot */
       if ((armyRaycast.hit) &&
-         (targetClassIndex = *(int *)(((((nearestArmyHit.nearestModelNode)->runtimePayload).modelRuntime)->
-                               definitionOrSavedId).savedIdOrOffset + 0x5c),
+         (targetClassIndex = ((((nearestArmyHit.nearestModelNode)->runtimePayload).modelRuntime)->
+                               definitionOrSavedId).runtimeDefinition->targetClassIndex5C,
          ((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
          [targetClassIndex] == NULL)) {
         frameAccumulatorOrDistance = MODEL_RAYCAST_NO_HIT_DISTANCE;
@@ -408,8 +408,8 @@ HandleNearestArmyHitAndContinueMotion:
       frameCountDistanceOrAge = armyRaycast.nearestDistanceQ12;
       /* hits on target classes and materials without an impact effect do not stop the shot */
       if ((armyRaycast.hit) &&
-         (targetClassIndex = *(int *)(((((nearestArmyHit.nearestModelNode)->runtimePayload).modelRuntime)->
-                               definitionOrSavedId).savedIdOrOffset + 0x5c),
+         (targetClassIndex = ((((nearestArmyHit.nearestModelNode)->runtimePayload).modelRuntime)->
+                               definitionOrSavedId).runtimeDefinition->targetClassIndex5C,
          ((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
          [targetClassIndex] == NULL)) {
         frameCountDistanceOrAge = MODEL_RAYCAST_NO_HIT_DISTANCE;
@@ -544,16 +544,18 @@ HandleNearestArmyHitAndTerminateProjectile:
         /* guided shot: turn towards the target, at most guidanceTurnLimitAngle16 per tick and axis */
         if ((shotDefinition->guidanceTurnLimitAngle16 != 0) && (targetStateRecord != NULL)) {
           workingValue = targetStateRecord[1];
-          if (*(int *)(*targetStateRecord + 0x4c) == 0x15) {
-            workingValue = *(int *)(workingValue + 0xcc);
+          if (((ModelRuntimeSlot *)targetStateRecord)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0x15) {
+            workingValue = (int)((ModelRuntimeNode *)workingValue)->childNodes[0];
           }
           modelNodeRuntime = (shotRuntime->modelNodeOrSavedOffset).modelNode;
           targetAngles = FixedMath_VectorToAngles3Regs
-                             ((*(int *)(*targetStateRecord + 0x50) + *(int *)(workingValue + 0x9c)) -
+                             ((((ModelRuntimeSlot *)targetStateRecord)->definitionOrSavedId.runtimeDefinition->
+                               aimHeightOffsetQ12 +
+                              ((ModelRuntimeNode *)workingValue)->worldTransform.translation.z) -
                               (modelNodeRuntime->worldTransform).translation.z,
-                              *(int *)(workingValue + 0x98) -
+                              ((ModelRuntimeNode *)workingValue)->worldTransform.translation.y -
                               (modelNodeRuntime->worldTransform).translation.y,
-                              *(int *)(workingValue + 0x94) -
+                              ((ModelRuntimeNode *)workingValue)->worldTransform.translation.x -
                               (modelNodeRuntime->worldTransform).translation.x);
           elevationTurnDeltaAngle16 =
                targetAngles.elevationAngle - (modelNodeRuntime->modelPayload).worldRotationAngle1;
@@ -630,9 +632,12 @@ HandleNearestArmyHitAndTerminateProjectile:
           if ((int)(modelNodeRuntime->modelPayload).worldRotationAngle1 < 0) {
             nodeShadingRecord = modelNodeRuntime->shadingRecord;
             if ((shotRuntime->runtimeStateOrSavedOffset).runtimeState != 0) {
-              workingValue = *(int *)((shotRuntime->runtimeStateOrSavedOffset).runtimeState + 4);
-              targetDeltaX = *(int *)(workingValue + 0x94) - (modelNodeRuntime->worldTransform).translation.x;
-              workingValue = *(int *)(workingValue + 0x98) - (modelNodeRuntime->worldTransform).translation.y;
+              workingValue = (int)((ModelRuntimeSlot *)(shotRuntime->runtimeStateOrSavedOffset).runtimeStatePointer)->
+                             rootModelNodeOrSavedOffset.modelNode;
+              targetDeltaX = ((ModelRuntimeNode *)workingValue)->worldTransform.translation.x -
+                             (modelNodeRuntime->worldTransform).translation.x;
+              workingValue = ((ModelRuntimeNode *)workingValue)->worldTransform.translation.y -
+                             (modelNodeRuntime->worldTransform).translation.y;
               translationPtr = &(modelNodeRuntime->worldTransform).translation;
               translationPtr->x = translationPtr->x + targetDeltaX;
               translationAxisPtr = &(modelNodeRuntime->worldTransform).translation.y;
@@ -670,10 +675,13 @@ UnlinkExpiredOrOrphanedProjectileAndReturn:
                 (shotRuntime->modelNodeOrSavedOffset).modelNode = NULL;
                 return;
               }
-              workingValue = *(int *)((shotRuntime->runtimeStateOrSavedOffset).runtimeState + 4);
+              workingValue = (int)((ModelRuntimeSlot *)(shotRuntime->runtimeStateOrSavedOffset).runtimeStatePointer)->
+                             rootModelNodeOrSavedOffset.modelNode;
               nodeShadingRecord = modelNodeRuntime->shadingRecord;
-              targetDeltaX = *(int *)(workingValue + 0x94) - (modelNodeRuntime->worldTransform).translation.x;
-              workingValue = *(int *)(workingValue + 0x98) - (modelNodeRuntime->worldTransform).translation.y;
+              targetDeltaX = ((ModelRuntimeNode *)workingValue)->worldTransform.translation.x -
+                             (modelNodeRuntime->worldTransform).translation.x;
+              workingValue = ((ModelRuntimeNode *)workingValue)->worldTransform.translation.y -
+                             (modelNodeRuntime->worldTransform).translation.y;
               translationPtr = &(modelNodeRuntime->worldTransform).translation;
               translationPtr->x = translationPtr->x + targetDeltaX;
               translationAxisPtr = &(modelNodeRuntime->worldTransform).translation.y;

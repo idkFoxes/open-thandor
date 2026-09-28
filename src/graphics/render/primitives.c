@@ -251,20 +251,20 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
              (GraphicsPrimitiveBackendCoordinate)previousNodeMmx;
         linkNode->vertices[0].backendCoord0 =
              (GraphicsPrimitiveBackendCoordinate)nextNodeMmx;
-        /* the node's packet; +0x1C/+0x3C/+0x5C are the three vertices' diffuseColor */
+        /* the node's packet */
         bucketCountdownOrPacket = linkNode->vertices[0].screenY;
         vertex0HalvedColor =
-             paddusb((*(uint32_t *)(bucketCountdownOrPacket + 0x1c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint32_t *)(bucketCountdownOrPacket + 0x1c) & g_VertexColorAlphaPreserveMaskMMX);
+             paddusb((((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[0].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[0].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
         vertex1HalvedColor =
-             paddusb((*(uint32_t *)(bucketCountdownOrPacket + 0x3c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint32_t *)(bucketCountdownOrPacket + 0x3c) & g_VertexColorAlphaPreserveMaskMMX);
+             paddusb((((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[1].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[1].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
         vertex2HalvedColor =
-             paddusb((*(uint32_t *)(bucketCountdownOrPacket + 0x5c) & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     *(uint32_t *)(bucketCountdownOrPacket + 0x5c) & g_VertexColorAlphaPreserveMaskMMX);
-        *(int *)(bucketCountdownOrPacket + 0x1c) = (int)vertex0HalvedColor;
-        *(int *)(bucketCountdownOrPacket + 0x3c) = (int)vertex1HalvedColor;
-        *(int *)(bucketCountdownOrPacket + 0x5c) = (int)vertex2HalvedColor;
+             paddusb((((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[2].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[2].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
+        ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[0].diffuseColor = (int)vertex0HalvedColor;
+        ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[1].diffuseColor = (int)vertex1HalvedColor;
+        ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[2].diffuseColor = (int)vertex2HalvedColor;
         remainingNodeCount--;
         previousNodeMmx = linkNode;
         packetOrNode = nextNodeMmx;
@@ -596,41 +596,41 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
     primitiveQueue->count = packetIndexOrCoordinate + 1;
     newPacket = primitiveQueue->packetPool + packetIndexOrCoordinate;
     primitiveQueue->primaryNodes[packetIndexOrCoordinate].packet = newPacket;
-    /* the vertices are terrain vertices; the GraphicsProjectedVertexSource field names do not apply */
-    sourceScreenX = vertex0Projected->screenX;
-    if ((int)vertex0Projected[1].texturedPacketAttributes[2] < 0) {
+    /* the vertices are TerrainProjectedVertexWorkRecords (passed with the GraphicsProjectedVertexSource type) */
+    sourceScreenX = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->projectedPointB.projectedY;
+    if (((TerrainProjectedVertexWorkRecord *)vertex0Projected)->secondaryProjectionDepthQ12 < 0) {
       vertex0DiffuseColor = vertex0DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    newPacket->vertices[0].screenX = vertex0Projected->vertexColorArgb;
+    newPacket->vertices[0].screenX = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->projectedPointB.projectedX;
     newPacket->vertices[0].screenY = sourceScreenX;
     newPacket->vertices[0].diffuseColor = vertex0DiffuseColor;
-    sourceBackendCoord1 = *(GraphicsPrimitiveBackendCoordinate *)vertex0Projected[1].reserved00_0B;
-    sourceDepth = *(GraphicsPrimitiveDepthFixed *)(vertex0Projected[1].reserved00_0B + 4);
-    newPacket->vertices[0].backendCoord0 = vertex0Projected->screenY;
+    sourceBackendCoord1 = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->viewPointB.y;
+    sourceDepth = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->viewPointB.z;
+    newPacket->vertices[0].backendCoord0 = ((TerrainProjectedVertexWorkRecord *)vertex0Projected)->viewPointB.x;
     newPacket->vertices[0].backendCoord1 = sourceBackendCoord1;
     newPacket->vertices[0].depth = sourceDepth;
-    sourceScreenX = vertex1Projected->screenX;
-    if ((int)vertex1Projected[1].texturedPacketAttributes[2] < 0) {
+    sourceScreenX = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->projectedPointB.projectedY;
+    if (((TerrainProjectedVertexWorkRecord *)vertex1Projected)->secondaryProjectionDepthQ12 < 0) {
       vertex1DiffuseColor = vertex1DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    newPacket->vertices[1].screenX = vertex1Projected->vertexColorArgb;
+    newPacket->vertices[1].screenX = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->projectedPointB.projectedX;
     newPacket->vertices[1].screenY = sourceScreenX;
     newPacket->vertices[1].diffuseColor = vertex1DiffuseColor;
-    sourceBackendCoord1 = *(GraphicsPrimitiveBackendCoordinate *)vertex1Projected[1].reserved00_0B;
-    sourceDepth = *(GraphicsPrimitiveDepthFixed *)(vertex1Projected[1].reserved00_0B + 4);
-    newPacket->vertices[1].backendCoord0 = vertex1Projected->screenY;
+    sourceBackendCoord1 = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->viewPointB.y;
+    sourceDepth = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->viewPointB.z;
+    newPacket->vertices[1].backendCoord0 = ((TerrainProjectedVertexWorkRecord *)vertex1Projected)->viewPointB.x;
     newPacket->vertices[1].backendCoord1 = sourceBackendCoord1;
     newPacket->vertices[1].depth = sourceDepth;
-    sourceScreenX = vertex2Projected->screenX;
-    if ((int)vertex2Projected[1].texturedPacketAttributes[2] < 0) {
+    sourceScreenX = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->projectedPointB.projectedY;
+    if (((TerrainProjectedVertexWorkRecord *)vertex2Projected)->secondaryProjectionDepthQ12 < 0) {
       vertex2DiffuseColor = vertex2DiffuseColor & g_UiCommandModeGColorVariantLimit;
     }
-    newPacket->vertices[2].screenX = vertex2Projected->vertexColorArgb;
+    newPacket->vertices[2].screenX = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->projectedPointB.projectedX;
     newPacket->vertices[2].screenY = sourceScreenX;
     newPacket->vertices[2].diffuseColor = vertex2DiffuseColor;
-    sourceBackendCoord1 = *(GraphicsPrimitiveBackendCoordinate *)vertex2Projected[1].reserved00_0B;
-    sourceDepth = *(GraphicsPrimitiveDepthFixed *)(vertex2Projected[1].reserved00_0B + 4);
-    newPacket->vertices[2].backendCoord0 = vertex2Projected->screenY;
+    sourceBackendCoord1 = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->viewPointB.y;
+    sourceDepth = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->viewPointB.z;
+    newPacket->vertices[2].backendCoord0 = ((TerrainProjectedVertexWorkRecord *)vertex2Projected)->viewPointB.x;
     newPacket->vertices[2].backendCoord1 = sourceBackendCoord1;
     newPacket->vertices[2].depth = sourceDepth;
     packetIndexOrCoordinate = terrainPacketRecord[2];

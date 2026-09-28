@@ -804,7 +804,8 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
   
   if (modelRuntime != NULL) {
     childrenRemaining = modelRuntime[3];
-    if ((*(int *)(*modelRuntime + 0x4c) == 0xd) && (targetRuntimeId == modelRuntime[0x1b])) {
+    if ((((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0xd) &&
+       (targetRuntimeId == modelRuntime[0x1b])) {
       modelRuntime[0x1b] = 0;
     }
     for (; childrenRemaining != 0; childrenRemaining--) {
@@ -837,11 +838,11 @@ void ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(WorldRuntimeContext 
    slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
 static int ModelRuntimeHierarchy_SumArmourFrom(uint8_t *node)
 {
-  int sum = *(int *)(node + 0x3c);
-  int childCount = *(int *)(node + 0xc);
+  int sum = ((ModelRuntimeSlot *)node)->definitionValue60_3C;
+  int childCount = ((ModelRuntimeSlot *)node)->attachmentCount0C;
   int i;
   for (i = 0; i < childCount; i++) {
-    uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
+    uint8_t *child = (uint8_t *)((ModelRuntimeSlot *)node)->attachments140[i].childModelRuntimeOrSavedOffset00;
     if (child != NULL) {
       sum = sum + ModelRuntimeHierarchy_SumArmourFrom(child);
     }
@@ -855,12 +856,12 @@ static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node)
 {
   int childCount;
   int childIndex;
-  if ((*(uint32_t *)(node + 0xec) & 8) == 0) {
-    *(uint32_t *)(node + 0xec) = *(uint32_t *)(node + 0xec) | 0x418;
+  if ((((ModelRuntimeSlot *)node)->classState.classStateEC & 8) == 0) {
+    ((ModelRuntimeSlot *)node)->classState.classStateEC = ((ModelRuntimeSlot *)node)->classState.classStateEC | 0x418;
   }
-  childCount = *(int *)(node + 0xc);
+  childCount = ((ModelRuntimeSlot *)node)->attachmentCount0C;
   for (childIndex = 0; childIndex < childCount; childIndex++) {
-    uint8_t *child = *(uint8_t **)(node + 0x140 + childIndex * 0x20);
+    uint8_t *child = (uint8_t *)((ModelRuntimeSlot *)node)->attachments140[childIndex].childModelRuntimeOrSavedOffset00;
     if (child != NULL) {
       ModelRuntimeHierarchy_ApplyFlags418From(child);
     }
@@ -903,11 +904,13 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   definitionAssetBase = definitionNode->spriteAssetReference.savedId;
   childIndex = 0;
   for (; childCountRemaining != 0; childCountRemaining--) {
-    /* sprite asset +0xE4: offset of the attachment transform records, +0xE8: their count */
     attachmentTransformCursor =
          (ModelAttachmentTransformRecord *)
-         (definitionAssetBase + *(int *)(definitionAssetBase + 0xe4));
-    for (transformRecordsRemaining = *(int *)(definitionAssetBase + 0xe8); transformRecordsRemaining != 0;
+         (definitionAssetBase +
+         ((ModelResourceHitTestAndRenderView210 *)definitionAssetBase)->packedLookupTableRelativeOffset);
+    for (transformRecordsRemaining =
+             ((ModelResourceHitTestAndRenderView210 *)definitionAssetBase)->packedLookupTableEntryCount;
+        transformRecordsRemaining != 0;
         transformRecordsRemaining--) {
       /* packedKindAndSelector: kind in bits 0..3, child slot index above */
       attachmentKind = attachmentTransformCursor->packedKindAndSelector & 0xf;
@@ -1005,13 +1008,13 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   definitionOrChildrenRemaining = (modelRuntime->definitionOrSavedId).savedIdOrOffset;
   newNode->tintArgb = 0xffffffff;
   /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
-  if ((*(uint32_t *)(definitionOrChildrenRemaining + 0x68) & 0x10) != 0) {
+  if ((((ModelDefinitionRuntimeSemanticView280 *)definitionOrChildrenRemaining)->runtimeValue68 & 0x10) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x10;
   }
-  if ((*(uint32_t *)(definitionOrChildrenRemaining + 0x68) & 0x20) != 0) {
+  if ((((ModelDefinitionRuntimeSemanticView280 *)definitionOrChildrenRemaining)->runtimeValue68 & 0x20) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x200;
   }
-  if ((*(uint32_t *)(definitionOrChildrenRemaining + 0x68) & 0x40) == 0) {
+  if ((((ModelDefinitionRuntimeSemanticView280 *)definitionOrChildrenRemaining)->runtimeValue68 & 0x40) == 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x100;
   }
   resourceView = (definitionNode->spriteAssetReference).modelResource;
@@ -1057,10 +1060,10 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
             modelRuntime->attachments140[attachmentKindOrSlot].parentModelNodeOrSavedOffset08 = newNode;
             childDefinitionOffset = definitionNode->childSerializedOffsets[childIndex];
             modelRuntime->attachments140[attachmentKindOrSlot].childModelRuntimeOrSavedOffset00 = NULL;
-            rotationAngleA = *(AngleTurn32 *)(childDefinitionOffset + 8);
-            rotationAngleB = *(AngleTurn32 *)(childDefinitionOffset + 0xc);
+            rotationAngleA = ((MdlSerializedNodeHeader38 *)childDefinitionOffset)->localRotationAngle0;
+            rotationAngleB = ((MdlSerializedNodeHeader38 *)childDefinitionOffset)->localRotationAngle1;
             modelRuntime->attachments140[attachmentKindOrSlot].childLocalRotationAngle2 =
-                 *(AngleTurn32 *)(childDefinitionOffset + 0x10);
+                 ((MdlSerializedNodeHeader38 *)childDefinitionOffset)->localRotationAngle2;
             modelRuntime->attachments140[attachmentKindOrSlot].childLocalRotationAngle1 = rotationAngleB;
             modelRuntime->attachments140[attachmentKindOrSlot].childLocalRotationAngle0 = rotationAngleA;
           }
@@ -1145,32 +1148,34 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   linkedRuntime = modelRuntime[1];
   /* flag 1 at +0xEC selects the definition's alternative value at +0x1A4 */
   if ((modelRuntime[0x3b] & 1U) == 0) {
-    metricValue = *(uint32_t *)(definitionArmyOrRemaining + 0x48);
+    metricValue = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue48;
   }
   else {
-    metricValue = *(uint32_t *)(definitionArmyOrRemaining + 0x1a4);
+    metricValue = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue1A4;
   }
-  if (*(uint32_t *)(armyOrCategoryIndex + 0x90) < *(uint32_t *)(definitionArmyOrRemaining + 0x27c)) {
-    *(uint32_t *)(armyOrCategoryIndex + 0x90) = *(uint32_t *)(definitionArmyOrRemaining + 0x27c);
+  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 < ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue27C) {
+    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue27C;
   }
-  if (*(uint32_t *)(armyOrCategoryIndex + 0x44) < metricValue) {
-    *(uint32_t *)(armyOrCategoryIndex + 0x44) = metricValue;
+  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState44 < metricValue) {
+    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState44 = metricValue;
   }
-  metricValue = (*(int *)(linkedRuntime + 0x9c) - *(int *)(*(int *)(armyOrCategoryIndex + 4) + 0x9c)) + *(int *)(definitionArmyOrRemaining + 0x70);
-  if (*(uint32_t *)(armyOrCategoryIndex + 0x48) < metricValue) {
-    *(uint32_t *)(armyOrCategoryIndex + 0x48) = metricValue;
+  metricValue = (((ModelRuntimeNode *)linkedRuntime)->worldTransform.translation.z -
+                ((ArmyRuntimeSlot *)armyOrCategoryIndex)->modelNodeRuntime->worldTransform.translation.z) +
+                ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue70;
+  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState48 < metricValue) {
+    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState48 = metricValue;
   }
-  /* the model's shot definition (+0x2C), used when +0x30 is non-zero */
-  definition = *(ShotDefinition **)(definitionArmyOrRemaining + 0x2c);
-  if (*(int *)(definitionArmyOrRemaining + 0x30) != 0) {
+  /* the model's shot definition, used when runtimeValue30 is non-zero */
+  definition = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->shotDefinitionReference2C.definition;
+  if (((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue30 != 0) {
     selectionRange = ShotDefinition_ComputeSelectionRange(definition);
     definitionArmyOrRemaining = modelRuntime[2];
     armyOrCategoryIndex = 7;
-    if (*(int *)(definitionArmyOrRemaining + 0x4c) < (int)selectionRange) {
-      *(uint32_t *)(definitionArmyOrRemaining + 0x4c) = selectionRange;
+    if ((int)((ArmyRuntimeSlot *)definitionArmyOrRemaining)->runtimeState4C < (int)selectionRange) {
+      ((ArmyRuntimeSlot *)definitionArmyOrRemaining)->runtimeState4C = selectionRange;
     }
     do {
-      categoryDamageSlot = (int *)(definitionArmyOrRemaining + 0x100 + armyOrCategoryIndex * 4);
+      categoryDamageSlot = &((ArmyRuntimeSlot *)definitionArmyOrRemaining)->targetClassCounters100[armyOrCategoryIndex];
       *categoryDamageSlot = *categoryDamageSlot + definition->targetClassImpactDamageQ12[armyOrCategoryIndex];
       armyOrCategoryIndex--;
     } while (-1 < armyOrCategoryIndex);
@@ -1214,7 +1219,7 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
     }
     /* steps the cursor by one 0x20-byte attachments140[] entry */
     attachmentDescriptorCursor =
-         (ModelRuntimeSlot *)(attachmentDescriptorCursor->reserved10_37 + 0x10);
+         (ModelRuntimeSlot *)((uint8_t *)attachmentDescriptorCursor + sizeof(ModelRuntimeAttachmentDescriptor));
   }
   /* EAX = the scale ratio, EDX = 0x1000 */
   return (uint64_t)0x1000 << 32 |
@@ -1222,7 +1227,7 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
                              (int64_t)accumulatedHierarchyScaleQ12) /
                             (int64_t)
                             (scaleSampleCount *
-                            *(int *)(modelRuntime->definitionOrSavedId.savedIdOrOffset + 0x60)));
+                            (int)modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeValue60));
 }
 
 
@@ -1247,7 +1252,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
   if (((modelRuntime->classState).classStateEC & 1) == 0) {
     activeMetricTotal = totalMetric;
   }
-  if ((*(uint32_t *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x68) & 0x80) != 0) {
+  if (((modelRuntime->definitionOrSavedId).runtimeDefinition->runtimeValue68 & 0x80) != 0) {
     for (; attachmentsRemaining != 0; attachmentsRemaining--) {
       currentChildModelRuntime = modelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
       if (currentChildModelRuntime != NULL) {
@@ -1258,7 +1263,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
         totalMetric = totalMetric + childMetric;
       }
       /* steps the cursor by one 0x20-byte attachments140[] entry */
-      modelRuntime = (ModelRuntimeSlot *)(modelRuntime->reserved10_37 + 0x10);
+      modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
     }
   }
   return (uint64_t)totalMetric << 0x20 | (uint64_t)activeMetricTotal; /* EDX = total, EAX = active */
@@ -1539,7 +1544,9 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   variantCursorOrRemaining = *modelRuntime;
   variantsRemaining = 6;
   do {
-    modelDefinitionId = *(PckModelDefinitionIdCatalog *)(variantCursorOrRemaining + 0x238);
+    /* the cursor steps 4 bytes per variant, so element 0 is the current variant */
+    modelDefinitionId =
+         ((ModelDefinitionRuntimeSemanticView280 *)variantCursorOrRemaining)->variantModelDefinitionIds238[0];
     /* ModelDefinition_IsFactionTechnologyUnlocked returns true (CF set) when the variant is NOT unlocked */
     if ((modelDefinitionId != 0) &&
        (variantLocked = ModelDefinition_IsFactionTechnologyUnlocked
@@ -1550,8 +1557,9 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
       variantCursorOrRemaining = *modelRuntime;
       *modelRuntime = (int)lookupResult.modelDefinition;
       modelRuntime[0xf] =
-           (int)(((int64_t)modelRuntime[0xf] * (int64_t)(int)lookupResult.modelDefinition[8].byteSize) /
-                (int64_t)*(int *)(variantCursorOrRemaining + 0x60));
+           (int)(((int64_t)modelRuntime[0xf] *
+                 (int64_t)(int)((ModelDefinitionRuntimeSemanticView280 *)lookupResult.modelDefinition)->runtimeValue60) /
+                (int64_t)(int)((ModelDefinitionRuntimeSemanticView280 *)variantCursorOrRemaining)->runtimeValue60);
       ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)modelRuntime[2]);
       break;
     }

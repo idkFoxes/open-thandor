@@ -272,8 +272,8 @@ uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
    The arena's free (g_MemoryApi.free): marks the block free and merges it with a free following block,
    then merges a free preceding block with it. NULL is accepted; a payload whose header is not marked
    allocated returns ARENA_HEAP_FAILURE_SENTINEL_0x13 with CF set.
-   The block header is accessed as dwords below the payload: -0x20 payloadSize, -0x1C stateMagic,
-   -0x18 next, -0x14 previous (see ArenaBlockHeader).
+   The ArenaBlockHeader lies directly below the payload; the neighbour headers are also read as dword
+   arrays ([0] payloadSize, [1] stateMagic, [2] next, [3] previous).
 */
 ArenaFreeResult ArenaHeap_Free(void *memory)
 
@@ -288,31 +288,31 @@ ArenaFreeResult ArenaHeap_Free(void *memory)
 
   if (memory != NULL) {
     freedBlockHeader = (int *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
-    if (*(int *)((int)memory - 0x1c) != ARENA_BLOCK_ALLOCATED) {
+    if (((ArenaBlockHeader *)memory)[-1].stateMagic != ARENA_BLOCK_ALLOCATED) {
       corruptBlockResult.failed = true;
       corruptBlockResult.valueOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
       return corruptBlockResult;
     }
-    *(uint32_t *)((int)memory - 0x1c) = ARENA_BLOCK_FREE;
+    ((ArenaBlockHeader *)memory)[-1].stateMagic = ARENA_BLOCK_FREE;
     /* merge the following block ([2] = next, [3] = previous) */
-    adjacentFreeBlock = *(int **)((int)memory - 0x18);
+    adjacentFreeBlock = (int *)((ArenaBlockHeader *)memory - 1)->next;
     if ((adjacentFreeBlock != (int *)ARENA_BLOCK_LIST_END) && (adjacentFreeBlock[1] == (int)ARENA_BLOCK_FREE)) {
       *freedBlockHeader = *freedBlockHeader + *adjacentFreeBlock + ARENA_BLOCK_HEADER_BYTES;
       nextBlockAddress = adjacentFreeBlock[2];
-      *(int *)((int)memory - 0x18) = nextBlockAddress;
+      ((ArenaBlockHeader *)memory)[-1].next = (ArenaBlockHeader *)nextBlockAddress;
       if (nextBlockAddress != -1) {
-        *(int **)(nextBlockAddress + 0xc) = freedBlockHeader;
+        ((ArenaBlockHeader *)nextBlockAddress)->previous = (ArenaBlockHeader *)freedBlockHeader;
       }
     }
     /* merge into the preceding block */
-    previousAdjacentBlockHeader = *(int **)((int)memory - 0x14);
+    previousAdjacentBlockHeader = (int *)((ArenaBlockHeader *)memory)[-1].previous;
     if ((previousAdjacentBlockHeader != (int *)ARENA_BLOCK_LIST_END) &&
        (previousAdjacentBlockHeader[1] == (int)ARENA_BLOCK_FREE)) {
       *previousAdjacentBlockHeader = *previousAdjacentBlockHeader + *freedBlockHeader + ARENA_BLOCK_HEADER_BYTES;
-      mergedNextBlockAddress = *(int *)((int)memory - 0x18);
+      mergedNextBlockAddress = (int)((ArenaBlockHeader *)memory)[-1].next;
       previousAdjacentBlockHeader[2] = mergedNextBlockAddress;
       if (mergedNextBlockAddress != -1) {
-        *(int **)(mergedNextBlockAddress + 0xc) = previousAdjacentBlockHeader;
+        ((ArenaBlockHeader *)mergedNextBlockAddress)->previous = (ArenaBlockHeader *)previousAdjacentBlockHeader;
       }
     }
   }
@@ -394,15 +394,15 @@ ArenaShrinkResult ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *me
   /* header dwords: [0] payloadSize, [1] stateMagic, [2] next, [3] previous (see ArenaBlockHeader) */
   blockHeader = (uint32_t *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
   alignedBytes = newSize + ARENA_BLOCK_ALIGNMENT_MASK & ~ARENA_BLOCK_ALIGNMENT_MASK;
-  if ((*(int *)((int)memory - 0x1c) == ARENA_BLOCK_ALLOCATED) && (alignedBytes <= *blockHeader)) {
+  if ((((ArenaBlockHeader *)memory)[-1].stateMagic == ARENA_BLOCK_ALLOCATED) && (alignedBytes <= *blockHeader)) {
     thresholdOrSplitBlock = (int *)(alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES);
     if (thresholdOrSplitBlock < (int *)*blockHeader) {
       originalPayloadSize = *blockHeader;
       *blockHeader = alignedBytes;
       splitPayloadSize = originalPayloadSize - (alignedBytes + ARENA_BLOCK_HEADER_BYTES);
-      followingBlock = *(int **)((int)memory - 0x18);
+      followingBlock = (int *)((ArenaBlockHeader *)memory)[-1].next;
       thresholdOrSplitBlock = (int *)(alignedBytes + ARENA_BLOCK_HEADER_BYTES + (int)blockHeader);
-      *(int **)((int)memory - 0x18) = thresholdOrSplitBlock;
+      ((ArenaBlockHeader *)memory)[-1].next = (ArenaBlockHeader *)thresholdOrSplitBlock;
       thresholdOrSplitBlock[1] = (int)ARENA_BLOCK_FREE;
       *thresholdOrSplitBlock = splitPayloadSize;
       thresholdOrSplitBlock[3] = (int)blockHeader;
@@ -413,7 +413,7 @@ ArenaShrinkResult ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *me
         thresholdOrSplitBlock[2] = followingNextAddress;
         *thresholdOrSplitBlock = splitPayloadSize + followingPayloadSize + ARENA_BLOCK_HEADER_BYTES;
         if (followingNextAddress != -1) {
-          *(int **)(followingNextAddress + 0xc) = thresholdOrSplitBlock;
+          ((ArenaBlockHeader *)followingNextAddress)->previous = (ArenaBlockHeader *)thresholdOrSplitBlock;
         }
       }
     }

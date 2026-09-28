@@ -531,26 +531,24 @@ void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntime
       case RESOURCE_DOMAIN_ARMY_RUNTIME:
         /* textureSet holds the army graphics binding index until here */
         payloadSlot = (ArmyRuntimeSlot *)
-                     ((int)&payloadSlot->modelRuntimeOrSavedOffset + g_ModelRuntimeRebaseDelta);
+                     ((int)payloadSlot + g_ModelRuntimeRebaseDelta);
         selectedPalette = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].paletteAsset;
         registrationRecord->textureSet = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].textureSet;
         registrationRecord->paletteAsset = selectedPalette;
         break;
       case RESOURCE_DOMAIN_SHOT_RUNTIME:
         payloadSlot = (ArmyRuntimeSlot *)
-                     (g_ShotRuntimeRebaseBaseMinusOne + (int)&payloadSlot->modelRuntimeOrSavedOffset)
-        ;
+                     (g_ShotRuntimeRebaseBaseMinusOne + (int)payloadSlot);
         registrationRecord->textureSet = g_ShotTextureSet;
         registrationRecord->paletteAsset = selectedPalette;
         break;
       case RESOURCE_DOMAIN_EFFECT_RUNTIME:
         payloadSlot = (ArmyRuntimeSlot *)
-                     (g_EffectRuntimeRebaseBaseMinusOne +
-                     (int)&payloadSlot->modelRuntimeOrSavedOffset);
+                     (g_EffectRuntimeRebaseBaseMinusOne + (int)payloadSlot);
         selectedTextureSet = g_EffectTextureSet;
         selectedPalette = g_EffectPalette;
         /* effects flagged 2 in their model runtime use the army graphics of binding 0 */
-        if ((*(uint32_t *)(((payloadSlot->modelRuntimeOrSavedOffset).modelRuntime)->reserved10_37 + 0x20)
+        if ((((payloadSlot->modelRuntimeOrSavedOffset).modelRuntime)->runtimeFlags30
             & 2) != 0) {
           selectedTextureSet = g_ArmyGraphicsBindings[0].textureSet;
           selectedPalette = g_ArmyGraphicsBindings[0].paletteAsset;
@@ -647,13 +645,13 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     break;
   case 0x567200: /* Ctrl+Alt+X, cheat: +1000 Xenite (xeniteCurrentQ4 += 0x3E80) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
-      *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740) += 0x3e80;
+      g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex].xeniteCurrentQ4 += 0x3e80;
     }
     break;
   case 0x567230: /* Ctrl+Alt+E, cheat: +100 energy supply and capacity (record +0x20 and +0x24, Q4) */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
-      *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x20) += 0x640;
-      *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x24) += 0x640;
+      g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex].baselineEnergySupplyQ4 += 0x640;
+      g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex].energyGenerationCapacityQ4 += 0x640;
     }
     break;
   case 0x567270: /* Enter: open the chat line */
@@ -665,11 +663,11 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
       SelectableGroupNodeResult visible;
       int i;
       for (i = 0; i < 0x18; i++) {
-        INGAME_UI_FIELD(rt,chatInputTextEdit,0x6c + i * 4,uint32_t) = 0;
+        ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,chatInputTextEdit))->textBuffer)[i] = 0;
       }
       visible = UiSelectableGroup_NoneVisibleSelected(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
                                                     INGAME_UI(rt,messageRecipientPlayersTab));
-      (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(uint32_t *)((uint8_t *)visible.node + 0x50) & 0xff) * 4))
+      (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (((UiSelectableControl *)visible.node)->actionId & 0xff) * 4))
                 (visible.node);
     }
     UiKeyboardFocus_Set(INGAME_UI(rt,chatInputTextEdit));
@@ -685,10 +683,10 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     toggle = (UiSelectableControl *)(target == 0x567460 ? INGAME_UI(rt,missionObjectivesButton) :
                                                      INGAME_UI(rt,inGameMenuButton));
     UiSelectableControl_SetSelected(1,toggle);
-    if (((*(uint32_t *)((uint8_t *)toggle + 0x4c) & 0x200) != 0) &&
-        (*(uint32_t *)((uint8_t *)toggle + 0x70) != 0)) {
+    if (((toggle->stateFlags & 0x200) != 0) &&
+        (((UiSpriteButtonControl *)toggle)->activationSoundId != 0)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,
-                            *(DirectSoundVoiceSet **)((uint8_t *)toggle + 0x70));
+                            (DirectSoundVoiceSet *)((UiSpriteButtonControl *)toggle)->activationSoundId);
     }
     if (target == 0x567460) {
       InGameUiAction101F_Handler((UiNodeBase *)toggle);
@@ -726,11 +724,11 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
     ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionStart = 0;
     ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionEnd = 0;
     for (i = 0; i < 0x18; i++) {
-      INGAME_UI_FIELD(rt,messageTextEdit,0x6c + i * 4,uint32_t) = 0;
+      ((uint32_t *)((InGameCommandTextEditControlCC *)INGAME_UI(rt,messageTextEdit))->textBuffer)[i] = 0;
     }
     visible = UiSelectableGroup_NoneVisibleSelected(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
                                                     INGAME_UI(rt,messageRecipientPlayersTab));
-    (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(uint32_t *)((uint8_t *)visible.node + 0x50) & 0xff) * 4))
+    (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (((UiSelectableControl *)visible.node)->actionId & 0xff) * 4))
               (visible.node);
     g_KeyboardFlushEvents();
     break;
@@ -1021,7 +1019,7 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePr
     *sessionNameClearCursor = 0;
     sessionNameClearCursor++;
   }
-  resolvedTitle = TextResource_Resolve(titleTextIndex + 0x2230);
+  resolvedTitle = TextResource_Resolve(titleTextIndex + TEXT_ID_LEVEL_TITLE_BASE);
   titleSource = resolvedTitle.text;
   sessionNameCursor = &g_InGameSessionNameScratchUtf16;
   countOrPlayerId = 0x1f;
@@ -1261,10 +1259,10 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePr
                           Movie_Close();
                           g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
                           /* Lost load: the original reads the first of five level intro
-                             notification movies from conditionStorage+0x324. */
+                             notification movies from the level image. */
                           notificationMovieId =
-                               *(InGameNotificationMovieId *)
-                                ((uint8_t *)g_InGameLevelRuntimeGlobalBlock.conditionStorage + 0x324);
+                               g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+                               introNotificationMovieId;
                           g_TimerRegisterPeriodic
                                     (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
                           if (notificationMovieId != 0) {
@@ -1839,7 +1837,7 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
           worldNode != NULL; worldNode = worldNode->nextNode) {
         if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
            (scheduledCondition->conditions[0].payload.operands[0] ==
-            *(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc)))
+            ((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
@@ -1848,9 +1846,9 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
           worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
-             [*(int *)(*(int *)worldNode->runtimePayload + 0x4c)] ==
+             [((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C] ==
              ArmyRuntime_ClassCommandHandlerGroupA)) &&
-           (*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
+           (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
             scheduledCondition->conditions[0].payload.operands[0]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
@@ -1859,9 +1857,9 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
           worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (modelRecord = *(int *)((int)worldNode->runtimePayload + 8),
-            scheduledCondition->conditions[0].payload.operands[0] == *(uint32_t *)(modelRecord + 0xc))) &&
-           (*(uint32_t *)(modelRecord + 0xa0) == scheduledCondition->conditions[0].payload.operands[2]))
+            (modelRecord = (int)((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
+            scheduledCondition->conditions[0].payload.operands[0] == ((ArmyRuntimeSlot *)modelRecord)->factionIndex)) &&
+           (((ArmyRuntimeSlot *)modelRecord)->armyAssetId == scheduledCondition->conditions[0].payload.operands[2]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
@@ -1902,9 +1900,9 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
           worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
+            (((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex ==
              scheduledCondition->conditions[0].payload.operands[0])) &&
-           ((*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xa0) ==
+           ((((ModelRuntimeSlot *)worldNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->armyAssetId ==
              scheduledCondition->conditions[0].payload.operands[2] && (operandValue = operandValue - 1, operandValue == 0))))
         goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
       }
@@ -1945,7 +1943,7 @@ void InGameConditionRuntime_UpdateScheduledRecords(void)
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
           worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (operandValue = *(uint32_t *)(*(int *)worldNode->runtimePayload + 0x4c),
+            (operandValue = ((ModelRuntimeSlot *)worldNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C,
             g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[operandValue] !=
             ArmyRuntime_ClassCommandHandlerGroupA)) &&
            (operandValue == scheduledCondition->conditions[0].payload.operands[0]))
@@ -1955,7 +1953,7 @@ InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied:
       scheduledCondition->conditions[0].statusAndKind.kind = scheduledCondition->conditions[0].statusAndKind.kind | 1;
       break;
     case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
-      byteCursor = (uint8_t *)((int)&scheduledCondition->conditions[0].statusAndKind.kind + 1);
+      byteCursor = &scheduledCondition->conditions[0].statusAndKind.kindAndExpression[1];
       kindOrExpressionValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
       while( true ) {
         while( true ) {
@@ -2024,7 +2022,8 @@ InGameScheduledCondition_AdvanceToNextRecord:
               if (worldNode != NULL) {
                 do {
                   if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-                     (modelRuntime = *(int **)((int)worldNode->runtimePayload + 8),
+                     (modelRuntime = (int *)((ModelRuntimeSlot *)worldNode->runtimePayload)->
+                                     ownerArmyRuntimeOrSavedOffset.armyRuntime,
                      cellsLeftOrFaction == modelRuntime[3])) {
                     ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,modelRuntime);
                   }
@@ -2057,12 +2056,12 @@ InGameScheduledCondition_AdvanceToNextRecord:
                           (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
                         g_InGameRuntimeRoot->observedRelationTransitionFlags4D54 =
                              g_InGameRuntimeRoot->observedRelationTransitionFlags4D54 | 8;
-                        *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x10a4) =
-                             *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x10a4) | 8;
-                        *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x2970) =
-                             *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x2970) | 8;
-                        *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x3f3c) =
-                             *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x3f3c) | 8;
+                        INGAME_UI(relationRoot,buildCatalogPanel)->nodeFlags =
+                             INGAME_UI(relationRoot,buildCatalogPanel)->nodeFlags | 8;
+                        INGAME_UI(relationRoot,specialBuildCatalogPanel)->nodeFlags =
+                             INGAME_UI(relationRoot,specialBuildCatalogPanel)->nodeFlags | 8;
+                        INGAME_UI(relationRoot,armyStockPanel)->nodeFlags =
+                             INGAME_UI(relationRoot,armyStockPanel)->nodeFlags | 8;
                       }
                       return;
                     }
@@ -2238,17 +2237,22 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             valueOrFactionIndex = counterOrValue * 2 * (*entryCursor >> 0x18) *
                     g_GameFactionRuntimeImage.records[factionOrDemand].terrainContributionScaleQ8 >> 0xf;
             entryCountOrValue = entryCursor[1];
-            runtimeOrStatCursor = (int *)(resourceOffsetOrValue + THANDOR_ADDR(g_GameFactionRuntimeImage,0x8) + factionOrDemand * 0x740);
+            /* the Xenite fields of the faction record, or the Tritium ones (resourceOffsetOrValue 0x10) */
+            runtimeOrStatCursor = (int *)(resourceOffsetOrValue +
+                                  (uintptr_t)&g_GameFactionRuntimeImage.records[0].xeniteExtractionRateQ4PerTick +
+                                  factionOrDemand * 0x740);
             *runtimeOrStatCursor = *runtimeOrStatCursor + valueOrFactionIndex;
             tickContribution = valueOrFactionIndex * g_InGameSimulationStepTicks;
-            totalAccumulator = g_GameFactionRuntimeImage.records[factionOrDemand].reserved78_87 + resourceOffsetOrValue + -0x78;
+            totalAccumulator = (uint8_t *)&g_GameFactionRuntimeImage.records[factionOrDemand].xeniteCurrentQ4 + resourceOffsetOrValue;
             *(int *)totalAccumulator = *(int *)totalAccumulator + tickContribution;
-            runtimeOrStatCursor = (int *)(resourceOffsetOrValue + THANDOR_ADDR(g_GameFactionRuntimeImage,0xc) + factionOrDemand * 0x740);
+            runtimeOrStatCursor = (int *)(resourceOffsetOrValue +
+                                  (uintptr_t)&g_GameFactionRuntimeImage.records[0].xeniteExtractedTotalQ4 +
+                                  factionOrDemand * 0x740);
             *runtimeOrStatCursor = *runtimeOrStatCursor + tickContribution;
             if ((entryCountOrValue != 0) &&
-               (rebasedModel = entryCountOrValue + g_ModelRuntimeRebaseDelta, *(int *)(rebasedModel + 4) != 0)) {
+               (rebasedModel = entryCountOrValue + g_ModelRuntimeRebaseDelta, ((ModelRuntimeSlot *)rebasedModel)->rootModelNodeOrSavedOffset.raw != 0)) {
               /* the extracting model shows its current yield */
-              *(int *)(rebasedModel + 0x60) = tickContribution;
+              ((ModelRuntimeSlot *)rebasedModel)->classLinkState.modelLinkOrState60.signedScalarState = tickContribution;
             }
             entryCursor = entryCursor + 2;
             remainingRegionEntries--;
@@ -2288,8 +2292,8 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
        (runtimeOrStatCursor = worldNode->runtimePayload, (runtimeOrStatCursor[0x3b] & 0x10U) == 0)) {
       if (runtimeOrStatCursor[0x3d] != 0) {
         if (0xff < entryCountOrValue) continue;
-        valueOrFactionIndex = *(uint32_t *)(runtimeOrStatCursor[2] + 0xc);
-        counterOrValue = *(int *)(*runtimeOrStatCursor + 0x4c);
+        valueOrFactionIndex = ((ArmyRuntimeSlot *)runtimeOrStatCursor[2])->factionIndex;
+        counterOrValue = ((ModelDefinitionRuntimeSemanticView280 *)*runtimeOrStatCursor)->runtimeClassId4C;
         *entryCursor = (uint32_t)runtimeOrStatCursor;
         entryCursor[1] = valueOrFactionIndex;
         valueOrFactionIndex = runtimeOrStatCursor[0x3d];
@@ -2299,12 +2303,12 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         entryCursor = entryCursor + 4;
       }
       counterOrValue = runtimeOrStatCursor[3];
-      if ((entryCountOrValue < 0x100) && ((*(uint32_t *)(*runtimeOrStatCursor + 0x68) & 0x80) != 0)) {
+      if ((entryCountOrValue < 0x100) && ((((ModelDefinitionRuntimeSemanticView280 *)*runtimeOrStatCursor)->runtimeValue68 & 0x80) != 0)) {
         for (; counterOrValue != 0; counterOrValue--) {
           attachedRuntime = (int *)runtimeOrStatCursor[0x50];
           if (((attachedRuntime != NULL) && (attachedRuntime[0x3d] != 0)) && (entryCountOrValue < 0x100)) {
-            valueOrFactionIndex = *(uint32_t *)(attachedRuntime[2] + 0xc);
-            cellCountOrValue = *(int *)(*attachedRuntime + 0x4c);
+            valueOrFactionIndex = ((ArmyRuntimeSlot *)attachedRuntime[2])->factionIndex;
+            cellCountOrValue = ((ModelDefinitionRuntimeSemanticView280 *)*attachedRuntime)->runtimeClassId4C;
             *entryCursor = (uint32_t)attachedRuntime;
             entryCursor[1] = valueOrFactionIndex;
             valueOrFactionIndex = attachedRuntime[0x3d];
@@ -2370,9 +2374,10 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
       entryCursor = g_TerrainRegionCollectionEntries;
       counterOrValue = 0;
       factionOrDemand = 0;
-      /* fixed demand: 1 energy (0x10 Q4) per army asset, 5 (0x50) when its +0x74 field is set */
+      /* fixed demand: 1 energy (0x10 Q4) per army asset, 5 (0x50) when its definitionClassValue74 is set */
       for (remainingArmyAssets = reverseFactionRecord->primaryArmyAssetCount; remainingArmyAssets != 0; remainingArmyAssets--) {
-        if (*(int *)(reverseFactionRecord->primaryArmyAssetPointersOrIds[counterOrValue] + 0x74) == 0) {
+        if (((ArmyAssetRuntimeSemanticView80 *)reverseFactionRecord->primaryArmyAssetPointersOrIds[counterOrValue])->
+            definitionClassValue74 == 0) {
           factionOrDemand = factionOrDemand + 0x10;
         }
         else {
@@ -2398,7 +2403,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         if (valueOrFactionIndex == entryCursor[1]) {
           supplyOrSwapValue = *entryCursor;
           if (remainingEnergy < factionOrDemand) {
-            sortBaseOrFlags = (uint32_t *)(supplyOrSwapValue + 0xec);
+            sortBaseOrFlags = &((ModelRuntimeSlot *)supplyOrSwapValue)->classState.classStateEC;
             *sortBaseOrFlags = *sortBaseOrFlags | 1;
             reverseFactionRecord->unpoweredEnergyDemandQ4 =
                  reverseFactionRecord->unpoweredEnergyDemandQ4 + factionOrDemand;
@@ -2407,7 +2412,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             remainingEnergy = remainingEnergy - factionOrDemand;
             reverseFactionRecord->suppliedEnergyDemandQ4 =
                  reverseFactionRecord->suppliedEnergyDemandQ4 + factionOrDemand;
-            sortBaseOrFlags = (uint32_t *)(supplyOrSwapValue + 0xec);
+            sortBaseOrFlags = &((ModelRuntimeSlot *)supplyOrSwapValue)->classState.classStateEC;
             *sortBaseOrFlags = *sortBaseOrFlags & 0xfffffffe;
           }
         }
@@ -2459,9 +2464,9 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
     } while (valueOrFactionIndex != 0);
   }
   /* 4. every 128 steps: stat table row simulationTick / 128 (0x1000 rows of 7 factions x 2 dwords), the two
-     metrics at record +0x88/+0x8C clamped at zero */
+     metrics combinedProgressScore/activeArmyContribution clamped at zero */
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 0x78) == 0) {
-    counterOrValue = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+    counterOrValue = (int)&g_GameFactionRuntimeImage.records[1];
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
     if (g_GameFactionRuntimeImage.tail.simulationTick >> 7 < 0x1000) {
       entryCountOrValue = 1;
@@ -2469,8 +2474,8 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
                        (int)g_GameStatTableImage);
       do {
         GameFactionRuntime_RecomputeProgressAndScoreMetrics(entryCountOrValue,worldRuntime);
-        cellCountOrValue = *(int *)(counterOrValue + 0x88);
-        resourceOffsetOrValue = *(int *)(counterOrValue + 0x8c);
+        cellCountOrValue = ((GameFactionRuntimeRecord *)counterOrValue)->combinedProgressScore;
+        resourceOffsetOrValue = ((GameFactionRuntimeRecord *)counterOrValue)->activeArmyContribution;
         if (cellCountOrValue < 0) {
           cellCountOrValue = 0;
         }
@@ -2480,7 +2485,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         *runtimeOrStatCursor = cellCountOrValue;
         runtimeOrStatCursor[1] = resourceOffsetOrValue;
         entryCountOrValue++;
-        counterOrValue = counterOrValue + 0x740;
+        counterOrValue = counterOrValue + sizeof(GameFactionRuntimeRecord);
         runtimeOrStatCursor = runtimeOrStatCursor + 2;
       } while (entryCountOrValue < 8);
     }
@@ -2531,7 +2536,7 @@ void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
   g_InGameTemplateWorldViewInfoTextResourceId =
-       INGAME_UI_FIELD(inGameRoot,worldViewCyclingInfoText,0x54,int32_t);
+       (TextResourceId)((UiSingleLineTextControl *)INGAME_UI(inGameRoot,worldViewCyclingInfoText))->text;
   g_FrontendTemplateStatusTextResourceId = g_InGameTemplateWorldViewInfoTextResourceId;
   return;
 }
@@ -2747,8 +2752,9 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
           modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
         if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
           modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).savedIdOrOffset;
-          g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(modelDefinition + 0x278)]
-                    (*(Q12 *)(modelDefinition + 0x54),(modelNode->worldTransform).translation.y,
+          g_ArmyPlacementContactKindDispatchTable.callbacks
+          [((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->placementContactKindIndex278]
+                    (((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->placementHeightOffsetQ12,(modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,modelNode,
                      &inGameRoot->worldRuntime0A30);
           ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);

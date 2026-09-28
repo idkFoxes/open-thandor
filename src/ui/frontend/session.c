@@ -49,12 +49,12 @@ void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
   Movie_Close();
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(source,frontendViewModeStack));
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
-            (FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *));
-  g_MemoryApi.free(FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *));
-  g_MemoryApi.free(FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *));
-  FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *) = NULL;
-  FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *) = NULL;
-  FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *) = NULL;
+            (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource);
+  g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels);
+  g_MemoryApi.free(((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels);
+  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->textureSource = NULL;
+  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendFactorPixels = NULL;
+  ((UiSoftwareTexturePreviewControl *)FRONTEND_UI(source,moviePlaybackView))->blendedSourcePixels = NULL;
   g_CursorVisibilityToken++;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
@@ -175,7 +175,7 @@ void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unuse
           GameSpeedPercent gameSpeedPercent)
 
 {
-  FRONTEND_UI_FIELD(g_FrontendRootNode,gameSpeedSlider,0x58,GameSpeedPercent) = gameSpeedPercent;
+  ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,gameSpeedSlider))->value = gameSpeedPercent;
   return;
 }
 
@@ -190,7 +190,8 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_QUIT_CONFIRM,
                              (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) |= FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
 }
 
@@ -211,11 +212,11 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   FrontendUiImage *frontendUi;
 
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
-  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x5784);
+  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,clientLobbyLeaveButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
@@ -550,7 +551,7 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
   Movie_Close();
   /* percent * 0x28F5C >> 16 = percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint32_t)(FRONTEND_UI_FIELD(frontendRootAddress,gameSpeedSlider,0x58,int) * 0x28f5c) >> 16;
+       (uint32_t)(((UiRangeSliderControl *)FRONTEND_UI(frontendRootAddress,gameSpeedSlider))->value * 0x28f5c) >> 16;
   displayFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
@@ -572,7 +573,8 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
 
   frontendRootAddress = g_FrontendRootNode;
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-  FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint32_t) &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+  ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRootAddress,menuRoomModelView))->contextFlags &=
+         ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(romActionIndex);
   return;
 }

@@ -53,17 +53,18 @@ StatusResult ResourceRegistration_OpenSource(void *packagePath)
   header[0xd] = 0;
   header[0xe] = 1;
   header[0xf] = 0;
-  /* three time/date pairs (+0x10..+0x27) all set to now; the time goes to the lower dword of each pair */
+  /* three date/time pairs all set to now; as in GlideCapture the time goes to the dateValue fields (the lower
+     dword of each pair) and the date to the timeValue fields */
   packedTimeOrDate = g_LocaleGetPackedCurrentTime();
-  *(uint32_t *)(header + 0x10) = packedTimeOrDate;
-  *(uint32_t *)(header + 0x18) = packedTimeOrDate;
-  *(uint32_t *)(header + 0x20) = packedTimeOrDate;
+  ((PckArchiveHeader *)header)->dateValue0 = packedTimeOrDate;
+  ((PckArchiveHeader *)header)->dateValue1 = packedTimeOrDate;
+  ((PckArchiveHeader *)header)->dateValue2 = packedTimeOrDate;
   packedTimeOrDate = g_LocaleGetPackedCurrentDate();
-  *(uint32_t *)(header + 0x14) = packedTimeOrDate;
-  *(uint32_t *)(header + 0x1c) = packedTimeOrDate;
-  *(uint32_t *)(header + 0x24) = packedTimeOrDate;
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(header + 0x30)); /* producerName */
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(header + 0x70)); /* sourceName */
+  ((PckArchiveHeader *)header)->timeValue0 = packedTimeOrDate;
+  ((PckArchiveHeader *)header)->timeValue1 = packedTimeOrDate;
+  ((PckArchiveHeader *)header)->timeValue2 = packedTimeOrDate;
+  g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->producerName);
+  g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->sourceName);
   header[0x100] = 0;
   /* +0xB0 entryCount = 0 */
   header[0xb0] = 0;
@@ -244,7 +245,7 @@ ResourceRegistration_SelectDomainPair
     rebasedOffset = recordCursor->auxiliarySavedIdOrOffset;
     secondaryOffsetOrNestedCount = recordCursor->nestedCountC8;
     if (rebasedOffset != 0) {
-      rebasedOffset = rebasedOffset - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1);
+      rebasedOffset = rebasedOffset - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1); /* 1-based offset, 0 = none */
     }
     recordCursor->auxiliarySavedIdOrOffset = rebasedOffset;
     nestedOffsetCursor = recordCursor;
@@ -260,11 +261,13 @@ ResourceRegistration_SelectDomainPair
                     
     switch(recordCursor->domainIndex) {
     case RESOURCE_DOMAIN_ARMY_RUNTIME:
-      /* the payload's +8 is the army definition; its +0xC is the saved texture set id */
-      clearCountOrArmyDefinition = *(int *)(rebasedOffset + 8);
+      /* the payload is a model runtime: the faction of its owner army is saved as the texture set
+         (army graphics binding) index */
+      clearCountOrArmyDefinition =
+           (int)((ModelRuntimeSlot *)rebasedOffset)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       recordCursor->paletteAssetSavedIdOrOffset = 0;
       rebasedOffset = rebasedOffset - g_ModelRuntimeRebaseDelta;
-      recordCursor->textureSetSavedIdOrOffset = *(uint32_t *)(clearCountOrArmyDefinition + 0xc);
+      recordCursor->textureSetSavedIdOrOffset = ((ArmyRuntimeSlot *)clearCountOrArmyDefinition)->factionIndex;
       break;
     case RESOURCE_DOMAIN_SHOT_RUNTIME:
       rebasedOffset = rebasedOffset - (int)g_ShotRuntimeRebaseBaseMinusOne;
@@ -277,8 +280,9 @@ ResourceRegistration_SelectDomainPair
       recordCursor->paletteAssetSavedIdOrOffset = 0;
     }
     recordCursor->runtimePayloadSavedOffset = rebasedOffset;
-    /* the sprite asset pointer is replaced by the id stored at +0xB8 of the asset */
-    recordCursor->spriteAssetSavedIdOrOffset = *(uint32_t *)(recordCursor->spriteAssetSavedIdOrOffset + 0xb8);
+    /* the sprite asset pointer is replaced by the asset's registry id */
+    recordCursor->spriteAssetSavedIdOrOffset =
+         ((SpriteAssetHeader *)recordCursor->spriteAssetSavedIdOrOffset)->registryHeader.registryId;
     recordCursor = recordCursor + 1;
     recordsRemainingOrCount--;
   } while (recordsRemainingOrCount != 0);
@@ -494,13 +498,13 @@ void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage 
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets
           [runtimeImage->levelRuntimeRecordIndex50 - 1];
   cameraOrientation = WorldRuntime_GetVector1Regs((WorldRuntimeContext *)runtimeImage);
-  *(UQ12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraMagnitudeQ12 + playerSlotByteOffset) =
+  *(UQ12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraMagnitudeQ12 + playerSlotByteOffset) =
        cameraOrientation.magnitudeQ12;
-  *(AngleTurn32 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].packedHeadingLow16PitchHigh16 + playerSlotByteOffset)
+  *(AngleTurn32 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].packedHeadingLow16PitchHigh16 + playerSlotByteOffset)
        = cameraOrientation.headingAngle & 0xffff | cameraOrientation.pitchAngle << 16;
   cameraPosition = WorldRuntime_GetVector0Regs((WorldRuntimeContext *)runtimeImage);
-  *(Q12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraXQ12 + playerSlotByteOffset) = cameraPosition.xQ12;
-  *(Q12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraYQ12 + playerSlotByteOffset) = cameraPosition.yQ12;
-  *(Q12 *)((int)&(levelConditionStorage->levelImage).playerSlots[0].startCameraZQ12 + playerSlotByteOffset) = cameraPosition.zQ12;
+  *(Q12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraXQ12 + playerSlotByteOffset) = cameraPosition.xQ12;
+  *(Q12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraYQ12 + playerSlotByteOffset) = cameraPosition.yQ12;
+  *(Q12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraZQ12 + playerSlotByteOffset) = cameraPosition.zQ12;
 }
 

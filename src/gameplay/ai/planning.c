@@ -82,18 +82,22 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
       if (ownerNode != NULL) {
         do {
           if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-            /* runtimePayload is the ModelRuntimeSlot: +0 its definition (+0x5C = pressure channel), +8 a
-               state block with the owning faction at +0x0C and a faction mask at +0x50 (bit 3 + 2 * (f - 1)
-               for faction f). */
-            factionIndexOrScratch = *(int *)((int)ownerNode->runtimePayload + 8);
-            if (*(int *)(factionIndexOrScratch + 0xc) != 0) {
-              remainingFactionsOrPressureValue = *(int *)(*(int *)ownerNode->runtimePayload + 0x5c);
+            /* runtimePayload is the ModelRuntimeSlot: its definition's target class is the pressure channel;
+               the owner army holds the owning faction and a faction mask at +0x50 (bit 3 + 2 * (f - 1) for
+               faction f). */
+            factionIndexOrScratch =
+                 (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+            if (((ArmyRuntimeSlot *)factionIndexOrScratch)->factionIndex != 0) {
+              remainingFactionsOrPressureValue =
+                   ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->
+                   targetClassIndex5C;
               nextChannelOrFactionBit = 8;
               channelOrFactionIndex = 1;
               pressureTargetRecord = g_GameFactionRuntimeImage.records;
               do {
                 pressureTargetRecord++;
-                if (((*(uint32_t *)(factionIndexOrScratch + 0x50) & nextChannelOrFactionBit) != 0) && (channelOrFactionIndex != *(uint32_t *)(factionIndexOrScratch + 0xc))) {
+                if (((((ArmyRuntimeSlot *)factionIndexOrScratch)->terrainOccupancyMask0 & nextChannelOrFactionBit) != 0) &&
+                   (channelOrFactionIndex != (uint32_t)((ArmyRuntimeSlot *)factionIndexOrScratch)->factionIndex)) {
                   pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] =
                        pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] + 0x100;
                 }
@@ -171,23 +175,23 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
       armyAssetRecord = (ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor;
       if ((armyAssetRecord != NULL) &&
          ((armyAssetRecord->flags14 & 1) != 0)) { /* bit 0: asset enabled */
-        /* AiLinkedDefinitionListView layout: +8 child list count, +0xC/+0x10 child lists, +0x20 eight ids */
+        /* the asset's root node is an AiLinkedDefinitionListView */
         assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer;
-        if ((((candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x20)) &&
-             (((candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x24) &&
-               (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x28))) &&
-              (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x2c))))) &&
-            (((candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x30) &&
-              (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x34))) &&
-             (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x38))))) &&
-           (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x3c))) {
+        if ((((candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]) &&
+             (((candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[1] &&
+               (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[2])) &&
+              (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[3])))) &&
+            (((candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[4] &&
+              (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[5])) &&
+             (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[6])))) &&
+           (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[7])) {
           /* despite its name the check returns true (CF set) while the technology is still locked */
           technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
                             (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                             *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x20));
+                             ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]);
           if (((technologyLocked) ||
-              (nestedLinkedDefinitions = *(AiLinkedDefinitionListView **)(assetDefinitionListAddress + 0xc),
-              *(int *)(assetDefinitionListAddress + 8) == 0)) ||
+              (nestedLinkedDefinitions = (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address,
+              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount == 0)) ||
              ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[0] &&
                 ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[1] &&
                    (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[2])) &&
@@ -196,8 +200,8 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                   (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[5])))))) &&
                ((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[6] &&
                 (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[7])))) &&
-              ((secondNestedLinkedDefinitions = *(AiLinkedDefinitionListView **)(assetDefinitionListAddress + 0x10),
-               *(uint32_t *)(assetDefinitionListAddress + 8) < 2 ||
+              ((secondNestedLinkedDefinitions = (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address,
+               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount < 2 ||
                (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[0] &&
                  (candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[1])) &&
                 (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[2] &&
@@ -998,7 +1002,7 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
         if ((entitySlot != NULL) && ((entitySlot[0x3b] & 0x89U) == 0)) {
           technologySlotIndex = 0x1c;
           do {
-            if (technologyIndex == *(RuntimeToken *)(*entitySlot + 0x1c4 + technologySlotIndex * 4)) {
+            if (technologyIndex == ((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->researchTechnologyIds1C4[technologySlotIndex]) {
               return false;
             }
             technologySlotIndex--;
@@ -1020,9 +1024,9 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
           remainingGuard = countOrClassMask & 0xee;
           while (remainingGuard != 0) {
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-            if (((entitySlot != NULL) && (*(int *)(*entitySlot + 0x4c) == MODEL_RUNTIME_CLASS_13)) &&
+            if (((entitySlot != NULL) && (((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13)) &&
                (((entitySlot[0x3b] & 0xc9U) == 0 &&
-                (((*(uint32_t *)(*entitySlot + 0xc4) & countOrClassMask & 0xee) != 0 && (entitySlot[0x2e] == 0)))))) {
+                (((((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->classParameterC4 & countOrClassMask & 0xee) != 0 && (entitySlot[0x2e] == 0)))))) {
               return false;
             }
             workspaceEntry++;
@@ -1033,7 +1037,7 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
         else {
           do {
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-            if (((entitySlot != NULL) && (*(int *)(*entitySlot + 0x4c) == MODEL_RUNTIME_CLASS_22)) &&
+            if (((entitySlot != NULL) && (((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->runtimeClassId4C == MODEL_RUNTIME_CLASS_22)) &&
                (((entitySlot[0x3b] & 0xc9U) == 0 && (entitySlot[0x2b] == 0)))) {
               return false;
             }
@@ -1045,7 +1049,7 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
       else {
         do {
           entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-          if ((((entitySlot != NULL) && (*(int *)(*entitySlot + 0x4c) == MODEL_RUNTIME_CLASS_11)) &&
+          if ((((entitySlot != NULL) && (((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->runtimeClassId4C == MODEL_RUNTIME_CLASS_11)) &&
               ((entitySlot[0x3b] & 0xc9U) == 0)) && (entitySlot[0x2e] == 0)) {
             return false;
           }
@@ -1085,8 +1089,8 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
         technologySlotIndex = 0x1c;
         do {
           if (technologyIndex ==
-              *(RuntimeToken *)
-               ((int)(entity->common).ownership.definitionOrClassRecord + technologySlotIndex * 4 + 0x1c4)) {
+              ((ModelDefinitionRuntimeSemanticView280 *)(entity->common).ownership.definitionOrClassRecord)->
+              researchTechnologyIds1C4[technologySlotIndex]) {
             Technology_ApplyRecordToEntity(technologyIndex,entity);
             workspaceEntry->runtimeSlotAddressOrZero = 0;
             return;
@@ -1577,10 +1581,11 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   if ((!armyAssetLookup.notFound) && (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0)
      ) {
     modelDefinitionLookup = ModelDefinitionRegistry_FindByIdWithError
-                       (*(PckModelDefinitionIdCatalog *)
-                         ((armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer + 0x20));
+                       (((AiLinkedDefinitionListView *)(armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer)->
+                        definitionIds[0]);
     if (!modelDefinitionLookup.notFound) {
-      radiusMetric = modelDefinitionLookup.modelDefinition[0x12].flags;
+      radiusMetric =
+           ((ModelDefinitionRuntimeSemanticView280 *)modelDefinitionLookup.modelDefinition)->placementRadiusOrClearanceDC;
       if (g_AiWorkspace10Count != 0) {
         bestScore = 0x7fffffff;
         remainingCells = g_AiWorkspace10Count;

@@ -20,6 +20,17 @@
 #define FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET 0x3c
 #define FRONTEND_ROM_ACTION_ENTRY_SIZE 0x200
 #define FRONTEND_ROM_ACTION_KEYFRAME_SIZE 0x20
+/* One 0x200-byte entry of the frontend ROM action table (FrontendRomActionTable_ExecuteRecord; Ghidra also
+   views it as RomAssetRecordPrefix[]: record[2].recordId = +0x20, record[3] = +0x24..+0x2F). */
+typedef struct FrontendRomActionEntry {
+    uint8_t unknown00_1F[0x20];
+    int32_t pageAction;                  /* +0x20 FRONTEND_PAGE_ACTION_*, negative closes the menu-room view */
+    uint32_t keyframeCount;              /* +0x24 */
+    RomRecordId targetRecordId;          /* +0x28 */
+    uint32_t activationSoundIndex;       /* +0x2C into g_FrontendMenuSoundVoiceSetTable100, 0 = none */
+    uint8_t unknown30_3F[0x10];
+    WorldMotionSplineKeyframe keyframes[14]; /* +0x40 camera flight; keyframe 0 is the current camera */
+} FrontendRomActionEntry;
 /* Elapsed-tick value beyond every flight's last keyframe time: ends the flight on the next frame. */
 #define FRONTEND_ROM_TRANSITION_SKIP_TICKS 0x10000000
 /* Record id (dword) inside each ROM record table entry (RomRecordTable_FindRecordById/FindIndexById). */

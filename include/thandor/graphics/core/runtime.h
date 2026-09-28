@@ -13,6 +13,22 @@
 
 /* Submodule: graphics/core/runtime. */
 
+/* A node of the graphics-object transform hierarchy (GraphicsObject_* in graphics/core/runtime.c, which take
+   it as a GraphicsObjectAddress32). Only the fields those functions touch are named; the size is not known. */
+typedef struct GraphicsObject {
+    uint8_t unknown00_0B[12];
+    int childCount;                                /* +0x0C */
+    GraphicsFixedMatrix3x4 worldTransform;         /* +0x10 */
+    FixedMathScale32 translationDistance;          /* +0x40 */
+    uint32_t translationAnglesPacked;              /* +0x44 azimuth (low word) | elevation << 16 */
+    AngleTurn32 rotationAzimuth;                   /* +0x48 */
+    uint32_t rotationAnglesPacked;                 /* +0x4C elevation (low word) | roll << 16 */
+    uint8_t unknown50_63[20];
+    GraphicsObjectAddress32 parentObject;          /* +0x64, 0 for a root object */
+    uint8_t unknown68_77[16];
+    GraphicsObjectAddress32 childObjects[1];       /* +0x78 */
+} GraphicsObject;
+
 /* GraphicsAdapterRecord.adapterGuid.Data1 of the 3dfx Glide adapter (Glide3_InitAndEnumerate); DirectDraw
    adapters carry their real GUID, the primary display driver an all-zero one (passed as NULL). */
 #define GRAPHICS_ADAPTER_GUID_GLIDE 1

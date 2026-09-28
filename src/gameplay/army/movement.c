@@ -562,9 +562,9 @@ void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
             /* the muzzle point is the first serialized child of the model point source */
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
-                       *(MdlSerializedNodeHeader38 **)
-                        (weaponDefinition->modelPointSource64->childSerializedOffsets[0] + 0x18),worldRuntime)
-            ;
+                       (MdlSerializedNodeHeader38 *)
+                       ((MdlSerializedNodeHeader38 *)weaponDefinition->modelPointSource64->childSerializedOffsets[0])->
+                       childSerializedOffsets[0],worldRuntime);
           }
         }
       }
@@ -740,8 +740,11 @@ void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
             }
             ModelRuntime_EmitProjectilesFromAttachmentPoints
                       (targetReference,aimWorldZ,aimWorldY,aimWorldX,weaponDefinition->shotDefinition,partNode,
+                       /* countdownOrPointOffset (0 or 4) selects the muzzle node's first or second child */
                        *(MdlSerializedNodeHeader38 **)
-                        (countdownOrPointOffset + weaponDefinition->modelPointSource64->childSerializedOffsets[0] + 0x18),
+                        (countdownOrPointOffset +
+                        (int)((MdlSerializedNodeHeader38 *)weaponDefinition->modelPointSource64->
+                                                           childSerializedOffsets[0])->childSerializedOffsets),
                        worldRuntime);
           }
         }
@@ -1111,7 +1114,7 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
       /* start the child-part animation and play the sound whose index is at definition +0x274 */
       classStateWord = &(modelRuntime->classState).classStateB8;
       *classStateWord = *classStateWord | 1;
-      turnVelocityOrIndex = *(uint32_t *)(movementDefinition->reserved26C_277 + 8);
+      turnVelocityOrIndex = ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->soundSlotIndex274;
       if ((turnVelocityOrIndex != 0) &&
          ((turnVelocityOrIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)))) {
         voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[turnVelocityOrIndex];
@@ -1365,13 +1368,13 @@ ArmyMovementBanking_FinalizeBankingEffectsAndTransforms:
 
 /* Helper for ArmyRuntime_ResetMovementStateFromModel (no original address: the original walks the tree
    iteratively with an explicit stack). Clears state bits 0x218 of a model runtime and of all its children
-   (child count at +0x0C, child pointers at +0x140 + 32*i, null slots skipped). */
+   (the attached child model runtimes, null slots skipped). */
 static void ArmyRuntime_ClearModelTreeFlags218(uint8_t *node)
 {
   int childIndex;
-  *(uint32_t *)(node + 0xec) = *(uint32_t *)(node + 0xec) & 0xfffffde7;
-  for (childIndex = 0; childIndex < *(int *)(node + 0xc); childIndex++) {
-    uint8_t *child = *(uint8_t **)(node + 0x140 + childIndex * 0x20);
+  ((ModelRuntimeSlot *)node)->classState.classStateEC = ((ModelRuntimeSlot *)node)->classState.classStateEC & 0xfffffde7;
+  for (childIndex = 0; childIndex < (int)((ModelRuntimeSlot *)node)->attachmentCount0C; childIndex++) {
+    uint8_t *child = (uint8_t *)((ModelRuntimeSlot *)node)->attachments140[childIndex].childModelRuntimeOrSavedOffset00;
     if (child != NULL) {
       ArmyRuntime_ClearModelTreeFlags218(child);
     }
@@ -1996,8 +1999,8 @@ void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,
                             (rootNode->worldTransform).translation.y,
                             ((int)lateralSinCos + armyRuntime->runtimeState94) -
                             (rootNode->worldTransform).translation.x);
-  /* definition +0xC0: stride length */
-  reachOrSideAngle = footXOrLength + *(int *)((int)movementDefinition + 0xc0);
+  /* classParameterC0: stride length */
+  reachOrSideAngle = footXOrLength + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
   if (reachOrSideAngle < (uint32_t)routeDistanceQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrSideAngle);
     aheadXOrFootZ = (int)headingSinCos + (rootNode->worldTransform).translation.x;
@@ -2074,8 +2077,8 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact_ComputeStepFromContact:
   footXOrLength = FixedMath_Length3(aheadXOrFootZ - armyRuntime->definitionClassValue88,
                             footXOrLength - armyRuntime->definitionClassValue80,
                             armyRuntime->runtimeState90 - armyRuntime->movementTarget0Q12);
-  aheadXOrFootZ = footXOrLength + *(int *)((int)movementDefinition + 0xc4) * 2;
-  aheadYOrStride = *(int *)((int)movementDefinition + 0xc0);
+  aheadXOrFootZ = footXOrLength + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC4 * 2;
+  aheadYOrStride = ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
   if (aheadXOrFootZ != 0) {
     (armyRuntime->articulatedContact).fallbackPosition1Q12 =
@@ -2126,8 +2129,8 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
                             (rootNode->worldTransform).translation.y,
                             ((int)lateralSinCos + armyRuntime->runtimeState90) -
                             (rootNode->worldTransform).translation.x);
-  /* definition +0xC0: stride length */
-  reachOrSideAngle = footXOrLength + *(int *)((int)movementDefinition + 0xc0);
+  /* classParameterC0: stride length */
+  reachOrSideAngle = footXOrLength + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
   if (reachOrSideAngle < (uint32_t)routeDistanceQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrSideAngle);
     aheadXOrFootY = (int)headingSinCos + (rootNode->worldTransform).translation.x;
@@ -2203,8 +2206,8 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact_ComputeStepFromContact:
   footXOrLength = FixedMath_Length3(footXOrLength - armyRuntime->runtimeState8C,
                             aheadXOrFootY - armyRuntime->definitionClassValue84,
                             armyRuntime->runtimeState94 - armyRuntime->movementTarget1Q12);
-  aheadXOrFootY = footXOrLength + *(int *)((int)movementDefinition + 0xc4) * 2;
-  aheadYOrStride = *(int *)((int)movementDefinition + 0xc0);
+  aheadXOrFootY = footXOrLength + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC4 * 2;
+  aheadYOrStride = ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
   if (aheadXOrFootY != 0) {
     (armyRuntime->articulatedContact).fallbackPosition1Q12 =
@@ -2662,7 +2665,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
        ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) +
        articulatedRuntime->definitionClassValue80;
   blendProduct = (int64_t)
-           (int)((((int)((0x1000 - leftBlendQ12) * *(int *)((int)articulatedRuntime->definitionOrAsset + 0xc4)) >> 10)
+           (int)((((int)((0x1000 - leftBlendQ12) * ((ModelDefinitionRuntimeSemanticView280 *)articulatedRuntime->definitionOrAsset)->classParameterC4) >> 10)
                  + articulatedRuntime->articulatedHeightOrStateA0) - articulatedRuntime->definitionClassValue88) *
            (int64_t)(int)leftBlendQ12;
   (leftNode->worldTransform).translation.z =
@@ -2712,7 +2715,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
        ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) +
        articulatedRuntime->definitionClassValue84;
   blendProduct = (int64_t)
-           (int)((((int)((0x1000 - rightBlendQ12) * *(int *)((int)articulatedRuntime->definitionOrAsset + 0xc4)) >> 10)
+           (int)((((int)((0x1000 - rightBlendQ12) * ((ModelDefinitionRuntimeSemanticView280 *)articulatedRuntime->definitionOrAsset)->classParameterC4) >> 10)
                  + articulatedRuntime->runtimeStateA4) - articulatedRuntime->runtimeState8C) * (int64_t)(int)rightBlendQ12;
   (rightNode->worldTransform).translation.z =
        ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) + articulatedRuntime->runtimeState8C;
@@ -2769,7 +2772,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   (modelNodeRuntime->worldTransform).translation.x = leftXOrAngle + rightXOrTargetY >> 1;
   (modelNodeRuntime->worldTransform).translation.y = leftYOrElevation + rightNodeY >> 1;
   (modelNodeRuntime->worldTransform).translation.z =
-       (heightOrRightTargetX + rightNodeZ >> 1) + *(int *)((int)movementDefinition + 0x54);
+       (heightOrRightTargetX + rightNodeZ >> 1) + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->placementHeightOffsetQ12;
   rightContactZ = (rightNode->worldTransform).translation.z;
   rightContactY = (rightNode->worldTransform).translation.y;
   rightContactX = (rightNode->worldTransform).translation.x;
@@ -2999,8 +3002,8 @@ void ArmyArticulatedRuntime_InitializeLeftTerrainContact
                                 armyRuntime->runtimeState98 - armyRuntime->definitionClassValue80,
                                 armyRuntime->runtimeState90 - armyRuntime->movementTarget0Q12);
       /* definition +0xC4: lift height, +0xC0: stride length */
-      travelPlusLift = footTravel + *(int *)((int)movementDefinition + 0xc4) * 4;
-      strideLength = *(int *)((int)movementDefinition + 0xc0);
+      travelPlusLift = footTravel + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC4 * 4;
+      strideLength = ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
       (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
       if (travelPlusLift != 0) {
         (armyRuntime->articulatedContact).fallbackPosition1Q12 =
@@ -3053,8 +3056,8 @@ void ArmyArticulatedRuntime_InitializeRightTerrainContact
                                 armyRuntime->articulatedCoordinateOrState9C -
                                 armyRuntime->definitionClassValue84,
                                 armyRuntime->runtimeState94 - armyRuntime->movementTarget1Q12);
-      travelPlusLift = footTravel + *(int *)((int)movementDefinition + 0xc4) * 4;
-      strideLength = *(int *)((int)movementDefinition + 0xc0);
+      travelPlusLift = footTravel + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC4 * 4;
+      strideLength = ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
       (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
       if (travelPlusLift != 0) {
         (armyRuntime->articulatedContact).fallbackPosition1Q12 =
@@ -3151,8 +3154,8 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     footXOrLength = FixedMath_Length3(pointXOrSegment - armyRuntime->definitionClassValue88,
                               footYOrZ - armyRuntime->definitionClassValue80,
                               footXOrLength - armyRuntime->movementTarget0Q12);
-    pointXOrSegment = footXOrLength + *(int *)((int)movementDefinition + 0xc4) * 4;
-    pointYOrStride = *(int *)((int)movementDefinition + 0xc0);
+    pointXOrSegment = footXOrLength + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC4 * 4;
+    pointYOrStride = ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
     (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
     if (pointXOrSegment != 0) {
       (armyRuntime->articulatedContact).fallbackPosition1Q12 =
@@ -3209,8 +3212,8 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     footXOrLength = FixedMath_Length3(footYOrZ - armyRuntime->runtimeState8C,
                               pointXOrSegment - armyRuntime->definitionClassValue84,
                               footXOrLength - armyRuntime->movementTarget1Q12);
-    pointXOrSegment = footXOrLength + *(int *)((int)movementDefinition + 0xc4) * 4;
-    pointYOrStride = *(int *)((int)movementDefinition + 0xc0);
+    pointXOrSegment = footXOrLength + ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC4 * 4;
+    pointYOrStride = ((ModelDefinitionRuntimeSemanticView280 *)movementDefinition)->classParameterC0;
     (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
     if (pointXOrSegment != 0) {
       (armyRuntime->articulatedContact).fallbackPosition1Q12 =

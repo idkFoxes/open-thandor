@@ -480,7 +480,7 @@ GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsO
 {
   FixedEulerAnglesEaxEcxEdx12 eulerAngles;
   
-  eulerAngles = FixedTransform_ExtractEulerAnglesRegs((GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
+  eulerAngles = FixedTransform_ExtractEulerAnglesRegs(&((GraphicsObject *)graphicsObject)->worldTransform);
   return eulerAngles;
 }
 
@@ -498,7 +498,7 @@ FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesReg
   FixedElevationAzimuth localAngles;
   
   FixedTransform_InvertRigidQ28
-            ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0),(GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
+            ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0),&((GraphicsObject *)graphicsObject)->worldTransform);
   FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),elevationAngle,azimuthAngle);
   FixedTransform_ApplyPoint
             ((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0),(GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),
@@ -519,8 +519,8 @@ void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
           FixedMathScale32 distance,GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
-  *(FixedMathScale32 *)(graphicsObjectAddress + 0x40) = distance;
-  *(AngleTurn16Stored32 *)(graphicsObjectAddress + 0x44) =
+  ((GraphicsObject *)graphicsObjectAddress)->translationDistance = distance;
+  ((GraphicsObject *)graphicsObjectAddress)->translationAnglesPacked =
        azimuthAngle16 | elevationAngle16 << 0x10;
 }
 
@@ -535,8 +535,8 @@ void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleT
           AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
-  *(AngleTurn32 *)(graphicsObjectAddress + 0x48) = azimuthAngle;
-  *(AngleTurn16Stored32 *)(graphicsObjectAddress + 0x4c) =
+  ((GraphicsObject *)graphicsObjectAddress)->rotationAzimuth = azimuthAngle;
+  ((GraphicsObject *)graphicsObjectAddress)->rotationAnglesPacked =
        elevationAngle16 | rollAngle16 << 0x10;
 }
 
@@ -560,29 +560,30 @@ void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 g
   /* a child builds its local transform in the scratch matrix shared with
      GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs */
   output = (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0);
-  parentObjectOrCursor = *(int *)(graphicsObjectAddress + 0x64);
+  parentObjectOrCursor = ((GraphicsObject *)graphicsObjectAddress)->parentObject;
   if (parentObjectOrCursor == 0) {
-    output = (GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10);
+    output = &((GraphicsObject *)graphicsObjectAddress)->worldTransform;
   }
   FixedTransform_BuildRotationBasis
-            (output,(int)*(uint32_t *)(graphicsObjectAddress + 0x4c) >> 0x10,
-             *(uint32_t *)(graphicsObjectAddress + 0x4c) & 0xffff,
-             *(AngleTurn32 *)(graphicsObjectAddress + 0x48));
+            (output,(int)((GraphicsObject *)graphicsObjectAddress)->rotationAnglesPacked >> 0x10,
+             ((GraphicsObject *)graphicsObjectAddress)->rotationAnglesPacked & 0xffff,
+             ((GraphicsObject *)graphicsObjectAddress)->rotationAzimuth);
   translationDirection = FixedMath_DirectionFromAnglesScaledRegs
-                    ((int)*(uint32_t *)(graphicsObjectAddress + 0x44) >> 0x10,
-                     *(uint32_t *)(graphicsObjectAddress + 0x44) & 0xffff,
-                     *(FixedMathScale32 *)(graphicsObjectAddress + 0x40));
+                    ((int)((GraphicsObject *)graphicsObjectAddress)->translationAnglesPacked >> 0x10,
+                     ((GraphicsObject *)graphicsObjectAddress)->translationAnglesPacked & 0xffff,
+                     ((GraphicsObject *)graphicsObjectAddress)->translationDistance);
   (output->translation).x = translationDirection.x;
   (output->translation).y = translationDirection.y;
   (output->translation).z = translationDirection.z;
-  remainingChildCount = *(int *)(graphicsObjectAddress + 0xc);
+  remainingChildCount = ((GraphicsObject *)graphicsObjectAddress)->childCount;
   if (parentObjectOrCursor != 0) {
     FixedTransform_Compose
-              ((GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10),output,
-               (GraphicsFixedMatrix3x4 *)(parentObjectOrCursor + 0x10));
+              (&((GraphicsObject *)graphicsObjectAddress)->worldTransform,output,
+               &((GraphicsObject *)parentObjectOrCursor)->worldTransform);
   }
   for (; remainingChildCount != 0; remainingChildCount--) {
-    GraphicsObject_RebuildTransformHierarchyRecursive(*(GraphicsObjectAddress32 *)(parentObjectOrCursor + 0x78));
+    /* the cursor advances 4 bytes per child: childObjects[i] of the parent */
+    GraphicsObject_RebuildTransformHierarchyRecursive(((GraphicsObject *)parentObjectOrCursor)->childObjects[0]);
     parentObjectOrCursor = parentObjectOrCursor + 4;
   }
 }

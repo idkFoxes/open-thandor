@@ -393,12 +393,14 @@ static void ModelRuntimePool_ReleaseDefinitionNodeResources(uint32_t resourceRec
   uint32_t childrenRemaining;
   int childIndex;
 
-  childrenRemaining = *(uint32_t *)(resourceRecord + 0x14);
-  if (((*(uint32_t *)(resourceRecord + 4) & 0xf) == 0) && (*(int *)(resourceRecord + 0x34) != 0)) {
-    Resource_Release(*(void **)(resourceRecord + 0x30));
+  childrenRemaining = ((MdlSerializedNodeHeader38 *)resourceRecord)->childCount;
+  if (((((MdlSerializedNodeHeader38 *)resourceRecord)->nodeFlags & 0xf) == 0) &&
+     (((MdlSerializedNodeHeader38 *)resourceRecord)->ownedNestedResourcePresent != 0)) {
+    Resource_Release(((MdlSerializedNodeHeader38 *)resourceRecord)->spriteAssetReference.spriteAsset);
   }
   for (childIndex = 0; childrenRemaining != 0; childIndex++) {
-    ModelRuntimePool_ReleaseDefinitionNodeResources(*(uint32_t *)(resourceRecord + 0x18 + childIndex * 4));
+    ModelRuntimePool_ReleaseDefinitionNodeResources
+              (((MdlSerializedNodeHeader38 *)resourceRecord)->childSerializedOffsets[childIndex]);
     childrenRemaining--;
   }
   return;
@@ -483,7 +485,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     }
     modelRuntime->linkedModelRuntimeSavedOffset = (uint32_t)linkedModelOffset;
     (modelRuntime->classState).linkedArmyRuntimeSavedOffset = offsetClassOrCount;
-    offsetClassOrCount = (modelRuntime->definitionReferenceOrSavedId).definition[6].flags; /* runtime class, +0x4C */
+    offsetClassOrCount = (modelRuntime->definitionReferenceOrSavedId).runtimeDefinition->runtimeClassId4C;
     modelRuntime->definitionReferenceOrSavedId =
          THANDOR_BITCAST(PckModelDefinitionIdCatalog, ModelDefinitionReferenceOrSavedId4, ((modelRuntime->definitionReferenceOrSavedId).definition)->definitionId);
     g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[offsetClassOrCount]
@@ -501,7 +503,8 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
       attachmentCursor->attachments140[0].childModelRuntimeSavedOffset00 = childRuntimeOffset;
       attachmentCursor->attachments140[0].parentModelNodeSavedOffset08 = parentNodeOffset;
       /* next attachment descriptor: 0x20 bytes on */
-      attachmentCursor = (ModelRuntimeSlotUnrebaseSemanticView200 *)(attachmentCursor->reserved10_37 + 0x10);
+      attachmentCursor = (ModelRuntimeSlotUnrebaseSemanticView200 *)
+                         ((uint8_t *)attachmentCursor + sizeof(ModelRuntimeAttachmentDescriptor));
     }
     modelRuntime++;
     slotsRemaining--;
@@ -546,15 +549,14 @@ void ModelRuntimePool_RebaseAfterLoad(void)
       (modelRuntime->rootModelNodeOrSavedOffset).modelNode =
            (ModelRuntimeNode *)
            (g_RuntimeObjectRebaseBaseMinusOne +
-           (int)(&((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->modelPayload + -1) + 0x30)
-      ;
+           (int)(modelRuntime->rootModelNodeOrSavedOffset).modelNode);
       (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime = ownerOrLinkedArmy;
       ownerOrLinkedArmy = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime;
       linkedRuntimeOrCursor = NULL;
       if ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != NULL) {
         linkedRuntimeOrCursor = (ModelRuntimeSlot *)
-                     (((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime)->reserved10_37
-                     + g_ModelRuntimeRebaseDelta + -0x10);
+                     ((uint8_t *)(modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime +
+                     g_ModelRuntimeRebaseDelta);
       }
       rebasedLinkedArmy = NULL;
       if (ownerOrLinkedArmy != NULL) {
@@ -571,7 +573,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
         if ((registeredDefinition != NULL) &&
            ((modelRuntime->definitionOrSavedId).definition ==
             (ModelDefinitionRecordPrefix *)registeredDefinition->definitionId)) {
-          classIndexOrCount = registeredDefinition[6].flags; /* the definition's runtime class */
+          classIndexOrCount = ((ModelDefinitionRuntimeSemanticView280 *)registeredDefinition)->runtimeClassId4C;
           (modelRuntime->definitionOrSavedId).definition = registeredDefinition;
           g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair[classIndexOrCount]
                     (modelRuntime);
@@ -584,26 +586,26 @@ void ModelRuntimePool_RebaseAfterLoad(void)
               rebasedChildRuntime = NULL;
               if (savedChildRuntime != NULL) {
                 rebasedChildRuntime = (ModelRuntimeSlot *)
-                             (savedChildRuntime->reserved10_37 + g_ModelRuntimeRebaseDelta + -0x10);
+                             ((uint8_t *)savedChildRuntime + g_ModelRuntimeRebaseDelta);
               }
               rebasedParentNode = NULL;
               if (savedParentNode != NULL) {
                 rebasedParentNode = (ModelRuntimeNode *)
                              (g_RuntimeObjectRebaseBaseMinusOne +
-                             (int)(&savedParentNode->modelPayload + -1) + 0x30);
+                             (int)savedParentNode);
               }
               linkedRuntimeOrCursor->attachments140[0].childModelRuntimeOrSavedOffset00 = rebasedChildRuntime;
               linkedRuntimeOrCursor->attachments140[0].parentModelNodeOrSavedOffset08 = rebasedParentNode;
               /* next attachment descriptor: 0x20 bytes on */
-              linkedRuntimeOrCursor = (ModelRuntimeSlot *)(linkedRuntimeOrCursor->reserved10_37 + 0x10);
+              linkedRuntimeOrCursor = (ModelRuntimeSlot *)
+                                      ((uint8_t *)linkedRuntimeOrCursor + sizeof(ModelRuntimeAttachmentDescriptor));
               classIndexOrCount--;
             } while (classIndexOrCount != 0);
-            /* the definition's serialized root node header is at +100 (0x64) */
             modelRuntime->attachmentCount0C = 0;
             ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                       (modelRuntime,modelRuntime,
-                       *(MdlSerializedNodeHeader38 **)
-                        ((modelRuntime->definitionOrSavedId).savedIdOrOffset + 100));
+                       (MdlSerializedNodeHeader38 *)
+                       (modelRuntime->definitionOrSavedId).runtimeDefinition->serializedNodeOffsetOrPointer64);
           }
           break;
         }
@@ -650,7 +652,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
 
   modelDefinition =
        (ModelDefinitionRecordPrefix *)modelRuntime->definitionOrSavedId.savedIdOrOffset;
-  classIndexOrCount = modelDefinition[6].flags; /* the definition's class index (+0x4C) */
+  classIndexOrCount = ((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->runtimeClassId4C;
   FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[classIndexOrCount]
             (modelDefinition,modelRuntime);
@@ -661,7 +663,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
       ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,childRuntime);
     }
     /* steps the cursor by one 0x20-byte attachments140[] entry */
-    attachmentCursor = (ModelRuntimeSlot *)(attachmentCursor->reserved10_37 + 0x10);
+    attachmentCursor = (ModelRuntimeSlot *)((uint8_t *)attachmentCursor + sizeof(ModelRuntimeAttachmentDescriptor));
   }
   rootModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
   entityRuntime = (GameEntityRuntime *)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
@@ -681,11 +683,13 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
       entityRuntime->common.ownership.definitionOrClassRecord = NULL;
       UNLOCK();
       ownerDefinition = *ownerRecord;
-      if (((ownerRecord[0x3b] & 0x20U) == 0) && (*(int *)(ownerDefinition + 0x74) != -1)) {
+      if (((ownerRecord[0x3b] & 0x20U) == 0) &&
+         (((ModelDefinitionRuntimeSemanticView280 *)ownerDefinition)->destroyedReplacementArmyAssetId74 != -1)) {
         /* the third parameter of ArmyRuntime_CreateInstanceFromAsset takes y, as at its other callers */
         ArmyRuntime_CreateInstanceFromAsset
-                  (0,orientationAngle,translationY,translationX,0,*(PckArmyAssetIdCatalog *)(ownerDefinition + 0x74)
-                   ,worldRuntime);
+                  (0,orientationAngle,translationY,translationX,0,
+                   ((ModelDefinitionRuntimeSemanticView280 *)ownerDefinition)->destroyedReplacementArmyAssetId74,
+                   worldRuntime);
       }
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
     }
@@ -696,7 +700,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
       if (attachmentCursor->attachments140[0].childModelRuntimeOrSavedOffset00 == modelRuntime) {
         attachmentCursor->attachments140[0].childModelRuntimeOrSavedOffset00 = NULL;
       }
-      attachmentCursor = (ModelRuntimeSlot *)(attachmentCursor->reserved10_37 + 0x10);
+      attachmentCursor = (ModelRuntimeSlot *)((uint8_t *)attachmentCursor + sizeof(ModelRuntimeAttachmentDescriptor));
     }
     ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)entityRuntime);
   }
@@ -726,8 +730,11 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
   /* sprite asset: +0xE4 offset of the point records, +0xE8 their count */
   modelPointTableBase = (definitionNode->spriteAssetReference).savedId;
   localPointRecord =
-       (ModelPackedPointRecord *)(modelPointTableBase + *(int *)(modelPointTableBase + 0xe4));
-  for (modelPointRecordsRemaining = *(int *)(modelPointTableBase + 0xe8);
+       (ModelPackedPointRecord *)
+       (modelPointTableBase +
+       ((ModelResourceHitTestAndRenderView210 *)modelPointTableBase)->packedLookupTableRelativeOffset);
+  for (modelPointRecordsRemaining =
+           ((ModelResourceHitTestAndRenderView210 *)modelPointTableBase)->packedLookupTableEntryCount;
       modelPointRecordsRemaining != 0; modelPointRecordsRemaining--)
   {
     if ((localPointRecord->packedLookupKey & 0xf) == 2) {
@@ -880,9 +887,8 @@ ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
           modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 0x2000;
         }
       }
-      /* definition[6].flags: the class index at definition +0x4C */
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
-        [modelRuntime->definitionOrSavedId.definition[6].flags])
+        [modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C])
                 (modelRuntime->definitionOrSavedId.definition,modelRuntime);
       createResult.failed = false;
       createResult.modelNode = (ModelRuntimeNode *)modelRuntime;

@@ -500,18 +500,18 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                     ((FieldGridAsset *)
                                      (levelImage->header).pathOffsets.levelPathOffset,worldRuntime);
                           MoviePlayback_AdvanceScheduledFrameAndTick();
-                          countOrPackedValue = *(uint32_t *)((int)&levelImage->playerSlots[0].
+                          countOrPackedValue = *(uint32_t *)((uint8_t *)&levelImage->playerSlots[0].
                                                   packedHeadingLow16PitchHigh16 + playerSlotByteOffset);
                           WorldRuntime_SetPosition60AndDistanceFromPosition80
-                                    (*(Q12 *)((int)&levelImage->playerSlots[0].startCameraZQ12 +
+                                    (*(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraZQ12 +
                                              playerSlotByteOffset),
-                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraYQ12 +
+                                     *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraYQ12 +
                                              playerSlotByteOffset),
-                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraXQ12 +
+                                     *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraXQ12 +
                                              playerSlotByteOffset),worldRuntime);
                           WorldRuntime_SetMotionParameters6CThrough78Clamped
                                     (2,(int)countOrPackedValue >> 0x10,countOrPackedValue & 0xffff,
-                                     *(UQ12 *)((int)&levelImage->playerSlots[0].
+                                     *(UQ12 *)((uint8_t *)&levelImage->playerSlots[0].
                                                      startCameraMagnitudeQ12 + playerSlotByteOffset),worldRuntime);
                           countOrPackedValue = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
                           WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -532,15 +532,14 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                           MoviePlayback_AdvanceScheduledFrameAndTick();
                           for (; remainingRecordCount != 0; remainingRecordCount--) {
                             if (g_GameFactionRuntimeImage.tail.factionLifecycleStates
-                                [*(PckArmyAssetIdCatalog *)(pathOrPlacementCursor + 2)] ==
+                                [((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->factionIndex] ==
                                 FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
                               armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
-                                                 (6,*(PckArmyAssetIdCatalog *)(pathOrPlacementCursor + 8),
-                                                  *(PckArmyAssetIdCatalog *)(pathOrPlacementCursor + 6),
-                                                  *(Q12 *)((AssetProducerSourceNames *)(pathOrPlacementCursor + 4)
-                                                          )->producerName,
-                                                  *(PckArmyAssetIdCatalog *)(pathOrPlacementCursor + 2),
-                                                  *(PckArmyAssetIdCatalog *)pathOrPlacementCursor,worldRuntime);
+                                                 (6,((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->orientationAngle,
+                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->worldXQ12,
+                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->worldYQ12,
+                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->factionIndex,
+                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->armyAssetId,worldRuntime);
                               resultOrPointer = (void *)armyCreateResult.armyRuntimeOrError;
                               if (armyCreateResult.failed)
                               goto 
@@ -777,20 +776,21 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                       nextClass0EArmyDefinition = class0EArmyDefinition;
                                       nextClass0BArmyDefinition = class0BArmyDefinition;
                                       if ((registryArmyDefinition != NULL) &&
-                                         ((registryArmyDefinition[1].selectionDetailTemplateVariantIndex &
+                                         ((((ArmyAssetRuntimeSemanticView80 *)registryArmyDefinition)->flags14 &
                                           1) != 0)) {
                                         modelLookupResult = ModelDefinitionRegistry_FindByIdWithError
-                                                           (*(PckModelDefinitionIdCatalog *)
-                                                             (registryArmyDefinition->
-                                                              rootNodeOffsetOrPointer + 0x20));
-                                        modelFlagsOrSoundIndex = modelLookupResult.modelDefinition[6].flags;
+                                                           (((ArmyModelTreeNode *)registryArmyDefinition->
+                                                             rootNodeOffsetOrPointer)->linkedDefinitionIds[0]);
+                                        modelFlagsOrSoundIndex = ((ModelDefinitionRuntimeSemanticView280 *)modelLookupResult.modelDefinition)->
+                                                                 runtimeClassId4C;
                                         nextClass0BArmyDefinition = registryArmyDefinition;
                                         if (((modelFlagsOrSoundIndex != 0xb) &&
                                             ((nextClass10ArmyDefinition = registryArmyDefinition,
                                              nextClass0BArmyDefinition = class0BArmyDefinition, modelFlagsOrSoundIndex != 0x10 &&
                                              (nextClass10ArmyDefinition = class10ArmyDefinition, modelFlagsOrSoundIndex == 0xe)))) &&
                                            (nextClass0EArmyDefinition = registryArmyDefinition,
-                                           modelLookupResult.modelDefinition[0x10].byteSize == 0)) {
+                                           ((ModelDefinitionRuntimeSemanticView280 *)modelLookupResult.modelDefinition)->
+                                           classParameterC0 == 0)) {
                                           nextClass0EArmyDefinition = class0EArmyDefinition;
                                           class0ENoExtraArmyDefinition = registryArmyDefinition;
                                         }
@@ -811,11 +811,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                           do {
                                             if ((ownerListNode->ownerClassId ==
                                                  WORLD_OWNER_RUNTIME_MODEL) &&
-                                               (countOrPackedValue == *(uint32_t *)(*(int *)((int)ownerListNode->
-                                                                                 runtimePayload + 8)
-                                                                  + 0xc))) {
-                                              counterOrClassId = *(int *)(*(int *)ownerListNode->runtimePayload +
-                                                              0x4c);
+                                               (countOrPackedValue ==
+                                                ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->
+                                                ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) {
+                                              counterOrClassId = ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->
+                                                                 definitionOrSavedId.runtimeDefinition->runtimeClassId4C;
                                               if (counterOrClassId == 0x12) {
                                                 flagsOrRelationMask = flagsOrRelationMask | 2;
                                               }
@@ -942,10 +942,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                   soundLoopWorldRuntime = soundLoopWorldRuntimeCopy;
                                   /* advance by one directory record (soundDirectoryRecordSizeBytes) */
                                   soundDirectoryPathCursor =
-                                       (uint16_t *)((int)soundDirectoryPathCursor +
-                                               (int)&(((InGameLevelConditionStorageView800 *)
-                                                      soundDirectoryRecordSizeBytes)->levelImage).
-                                                     header);
+                                       (uint16_t *)((int)soundDirectoryPathCursor + (int)soundDirectoryRecordSizeBytes);
                                   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
                                 } while( true );
                               }
@@ -1272,18 +1269,18 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                      (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid
                                      ,worldRuntime);
                           MoviePlayback_AdvanceScheduledFrameAndTick();
-                          countOrPackedValue = *(uint32_t *)((int)&levelImage->playerSlots[0].
+                          countOrPackedValue = *(uint32_t *)((uint8_t *)&levelImage->playerSlots[0].
                                                   packedHeadingLow16PitchHigh16 + playerSlotByteOffset);
                           WorldRuntime_SetPosition60AndDistanceFromPosition80
-                                    (*(Q12 *)((int)&levelImage->playerSlots[0].startCameraZQ12 +
+                                    (*(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraZQ12 +
                                              playerSlotByteOffset),
-                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraYQ12 +
+                                     *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraYQ12 +
                                              playerSlotByteOffset),
-                                     *(Q12 *)((int)&levelImage->playerSlots[0].startCameraXQ12 +
+                                     *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraXQ12 +
                                              playerSlotByteOffset),worldRuntime);
                           WorldRuntime_SetMotionParameters6CThrough78Clamped
                                     (2,(int)countOrPackedValue >> 0x10,countOrPackedValue & 0xffff,
-                                     *(UQ12 *)((int)&levelImage->playerSlots[0].
+                                     *(UQ12 *)((uint8_t *)&levelImage->playerSlots[0].
                                                      startCameraMagnitudeQ12 + playerSlotByteOffset),worldRuntime);
                           countOrPackedValue = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
                           WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -1617,10 +1614,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                               /* advance by one directory record (soundDirectoryRecordSizeBytes) */
                                               soundDirectoryPathCursor =
                                                    (uint16_t *)((int)soundDirectoryPathCursor +
-                                                           (int)&(((
-                                                  InGameLevelConditionStorageView800 *)
-                                                  soundDirectoryRecordSizeBytes)->levelImage).header
-                                                  );
+                                                                (int)soundDirectoryRecordSizeBytes);
                                               levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.
                                                        conditionStorage;
                                             } while( true );
@@ -1749,25 +1743,26 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
          (int)levelImage->header.resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset;
     activeFactionIndex = (saveWorldView->worldRuntime).activeFactionRuntimeIndex;
     levelImage->header.common.allocationSizeBytes = placementOffsetOrModelRuntime;
-    /* header.initialArmyPlacementRecordCount = 0 */
-    levelImageBytes[0xd8] = 0;
-    levelImageBytes[0xd9] = 0;
-    levelImageBytes[0xda] = 0;
-    levelImageBytes[0xdb] = 0;
-    /* +0x2DC: the loader adds 7 to this value for faction 7's class/mode, yet the editor stores the index of
-       the faction it plays here */
-    *(FactionRuntimeIndex *)(levelImageBytes + 0x2dc) = activeFactionIndex; /* playerSlots[6].aiClassOrMode */
+    /* header.initialArmyPlacementRecordCount = 0, byte by byte */
+    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[0] = 0;
+    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[1] = 0;
+    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[2] = 0;
+    ((uint8_t *)&levelImage->header.initialArmyPlacementRecordCount)[3] = 0;
+    /* the loader adds 7 to this value for faction 7's class/mode, yet the editor stores the index of the
+       faction it plays here */
+    levelImage->playerSlots[6].aiClassOrMode = activeFactionIndex;
     placementRecordCursor = (LevelPlacedModelRecord20 *)(levelImageBytes + placementOffsetOrModelRuntime);
     for (ownerListNode = (saveWorldView->worldRuntime).ownerListHead;
         ownerListNode != NULL; ownerListNode = ownerListNode->nextNode) {
       if (ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         levelImage->header.initialArmyPlacementRecordCount++;
         levelImage->header.common.allocationSizeBytes = levelImage->header.common.allocationSizeBytes + 0x20;
-        placementOffsetOrModelRuntime = *(int *)((int)ownerListNode->runtimePayload + 8);
+        placementOffsetOrModelRuntime =
+             (int)((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         /* the record field names are Ghidra's: +0x08/+0x0C hold the node's world X/Y */
         placementRecordCursor->meshGroupMask = ownerListNode->worldXQ12;
-        statusOrFieldValue = *(uint32_t *)(placementOffsetOrModelRuntime + 0xa0);
-        placementRecordCursor->modelRuntimeField0C = *(uint32_t *)(placementOffsetOrModelRuntime + 0xc);
+        statusOrFieldValue = ((ArmyRuntimeSlot *)placementOffsetOrModelRuntime)->armyAssetId;
+        placementRecordCursor->modelRuntimeField0C = ((ArmyRuntimeSlot *)placementOffsetOrModelRuntime)->factionIndex;
         placementRecordCursor->modelRuntimeFieldA0 = statusOrFieldValue;
         modelRotationAngle = ownerListNode->modelLocalRotationAngle2;
         placementRecordCursor->nodePayloadField0C = ownerListNode->worldYQ12;

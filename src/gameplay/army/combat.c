@@ -160,7 +160,9 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
           attachmentNodeHeader = weaponDefinitionView->modelPointSource64;
           nodeRuntimeFlags = &currentNode->runtimeFlags;
           *nodeRuntimeFlags = *nodeRuntimeFlags | 1;
-          attachmentNodeHeader = *(MdlSerializedNodeHeader38 **)(attachmentNodeHeader->childSerializedOffsets[0] + 0x18);
+          attachmentNodeHeader = (MdlSerializedNodeHeader38 *)
+                                 ((MdlSerializedNodeHeader38 *)attachmentNodeHeader->childSerializedOffsets[0])->
+                                 childSerializedOffsets[0];
           attachmentSelectorOrdinal = 0;
           do {
             if (modelRuntime->attachmentReloadTicks[attachmentSelectorOrdinal] == 0) {
@@ -220,7 +222,7 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
   /* byte offset of the faction record's xeniteCurrentQ4 / xeniteStorageLimitQ4 pair, or with +0x10 of
      tritiumCurrentQ4 / tritiumStorageLimitQ4 (reserved78_87 - 0x78 is the record start) */
   factionRecordByteOffset = modelRuntime->ownerArmyRuntime->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
-  if (*(int *)classDefinition->reserved0C0_0DB == 1) {
+  if (classDefinition->classParameterC0 == 1) {
     factionRecordByteOffset = factionRecordByteOffset + 0x10;
   }
   rootModelNodeRuntime = modelRuntime->rootModelNode;
@@ -463,16 +465,16 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   
   originNode = armyRuntime->modelNodeRuntime;
   ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
-  /* the army's weapon definition: minimum / maximum elevation at +0x24 / +0x28, ShotDefinition at +0x2C.
-     ShotDefinition dwords: [0] trajectoryMode, [3] launchSpeedQ12, [0x34] projectileLifetimeTicks (+0xD0),
+  /* the army's weapon definition (the "army" is the weapon's model runtime, whose first dword is the
+     ArmyWeaponDefinitionView68). ShotDefinition dwords: [0] trajectoryMode, [3] launchSpeedQ12, [0x34] projectileLifetimeTicks (+0xD0),
      [0x37] ballisticDivisorQ12 (+0xDC), [0x9C] trajectoryRampDurationTicks (+0x270),
      [0xA4] guidanceTurnLimitAngle16 (+0x290) */
   weaponDefinition = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   deltaXOrScaledLength = targetWorldXQ12 - (originNode->worldTransform).translation.x;
-  minAngleOwnerOrDistance = *(int *)(weaponDefinition->reserved10_37 + 0x14);
-  maxAngleOrRange = *(int *)(weaponDefinition->reserved10_37 + 0x18);
+  minAngleOwnerOrDistance = ((ArmyWeaponDefinitionView68 *)weaponDefinition)->minimumPitchAngle24;
+  maxAngleOrRange = ((ArmyWeaponDefinitionView68 *)weaponDefinition)->maximumPitchAngle28;
   deltaYOrSpeedSquared = targetWorldYQ12 - (originNode->worldTransform).translation.y;
-  shotDefinitionWords = *(int **)(weaponDefinition->reserved10_37 + 0x1c);
+  shotDefinitionWords = (int *)((ArmyWeaponDefinitionView68 *)weaponDefinition)->shotDefinition;
   deltaZ = targetWorldZQ12 - (originNode->worldTransform).translation.z;
   if (*shotDefinitionWords == 1) {
     horizontalVector = FixedMath_Vector2AngleAndLengthRegs(deltaYOrSpeedSquared,deltaXOrScaledLength);
@@ -586,7 +588,8 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   ownOrTargetEntity = (armyRuntime->linkedEntityRuntime->common).commandTarget.targetEntity;
   if (ownOrTargetEntity != NULL) {
     angleOrDistance = (int)(angleOrDistance * 2 -
-                 *(int *)(*(int *)(ownOrTargetEntity->common).ownership.definitionOrClassRecord + 0xdc)
+                 ((ModelRuntimeSlot *)(ownOrTargetEntity->common).ownership.definitionOrClassRecord)->
+                 definitionOrSavedId.runtimeDefinition->placementRadiusOrClearanceDC
                  ) >> 1;
   }
   if (shotDefinitionWords[3] * ((shotDefinitionWords[0x9c] * -0xaaa >> 0xc) + shotDefinitionWords[0x34] - 1) < (int)angleOrDistance) {
@@ -676,10 +679,11 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Arm
     return;
   }
   definitionOrRandom = (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset;
-  if (*(int *)(definitionOrRandom + 0x60) < 1) {
+  if ((int)((ModelDefinitionRuntimeSemanticView280 *)definitionOrRandom)->runtimeValue60 < 1) {
     return;
   }
-  if (*(int *)(definitionOrRandom + 0x250) <= (armyRuntime->actionVector2Q12 * 100) / *(int *)(definitionOrRandom + 0x60)) {
+  if (((ModelDefinitionRuntimeSemanticView280 *)definitionOrRandom)->damageEffectHealthPercent250 <=
+      (armyRuntime->actionVector2Q12 * 100) / (int)((ModelDefinitionRuntimeSemanticView280 *)definitionOrRandom)->runtimeValue60) {
     return;
   }
   if (0 < armyRuntime->selectionMetric3) {
@@ -687,12 +691,12 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Arm
     return;
   }
   randomOffset = 0;
-  if (*(int *)(definitionOrRandom + 0x25c) != 0) {
+  if (((ModelDefinitionRuntimeSemanticView280 *)definitionOrRandom)->damageEffectRandomTicks25C != 0) {
     randomOrPointX = g_RandomGeneratorState.next();
-    randomOffset = randomOrPointX % *(uint32_t *)(definitionOrRandom + 0x25c);
+    randomOffset = randomOrPointX % ((ModelDefinitionRuntimeSemanticView280 *)definitionOrRandom)->damageEffectRandomTicks25C;
   }
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
-  armyRuntime->selectionMetric3 = randomOffset + *(int *)(definitionOrRandom + 0x258);
+  armyRuntime->selectionMetric3 = randomOffset + ((ModelDefinitionRuntimeSemanticView280 *)definitionOrRandom)->damageEffectIntervalTicks258;
   lookupResult = ModelLookupTable_ContainsPackedKey
                     (armyRuntime->selectionMetric4,3,(modelNodeRuntime->modelPayload).modelResource)
   ;
@@ -717,7 +721,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Arm
     randomOrPointX = transformedPoint.xQ12;
     armyRuntime->selectionMetric4++;
   }
-  effectDefinition = *(EffectDefinition **)(definitionOrRandom + 0x254);
+  effectDefinition = ((ModelDefinitionRuntimeSemanticView280 *)definitionOrRandom)->effectDefinitionReference254.definition;
   definitionOrRandom = g_RandomGeneratorState.next();
   randomOffset = definitionOrRandom & 0xffff;
   randomValue = g_RandomGeneratorState.next();

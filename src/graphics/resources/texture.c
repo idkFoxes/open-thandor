@@ -262,15 +262,9 @@ TextureSizeResult GraphicsTextureSource_GetLogicalSizeRegs
      (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
     subresourceTableOffset = (sourceAsset->tableDescriptor).subresourceTableOffset;
     successResult.logicalHeightPixels =
-         *(uint32_t *)
-          ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-          subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + subresourceTableOffset +
-          (GFX_SUBRESOURCE_LOGICAL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
+         ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + subresourceTableOffset))->logicalHeight;
     successResult.logicalWidthPixels =
-         *(uint32_t *)
-          ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-          subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + subresourceTableOffset +
-          (GFX_SUBRESOURCE_LOGICAL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
+         ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + subresourceTableOffset))->logicalWidth;
     successResult.failed = false;
     return successResult;
   }
@@ -305,43 +299,29 @@ bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,Graph
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
       tableOffset = (sourceAsset->tableDescriptor).subresourceTableOffset;
       recordOffset = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE;
-      recordField = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-               recordOffset + tableOffset + (GFX_SUBRESOURCE_ORIGIN_X - GFX_ASSET_ANCHOR28_OFFSET);
+      recordField = (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->originX;
       localXOrPixelIndex = (queryX - drawX) - *(int *)recordField;
       if ((((*(int *)recordField <= queryX - drawX) &&
-           (recordField = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                     recordOffset + tableOffset + (GFX_SUBRESOURCE_ORIGIN_Y - GFX_ASSET_ANCHOR28_OFFSET),
+           (recordField = (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->originY,
            localY = (queryY - drawY) - *(int *)recordField,
            *(int *)recordField <= queryY - drawY)) &&
-          (localXOrPixelIndex < *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                           recordOffset + tableOffset + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET)))) &&
-         (localY < *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffset + tableOffset + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET)))) {
-        paletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffset + tableOffset + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET));
-        localXOrPixelIndex = localY * *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffset + tableOffset + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET)) +
+          (localXOrPixelIndex < (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->pixelWidth)) &&
+         (localY < (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->pixelHeight)) {
+        paletteIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->paletteIndex;
+        localXOrPixelIndex = localY * ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->pixelWidth +
                              localXOrPixelIndex;
         /* opaque = any alpha bit set in the ARGB8888 pixel (direct) or palette entry (paletted, 8 bytes each in
            the 256-entry bank at asset + 0x200 + paletteIndex * 0x800) */
         if (paletteIndex == -1) {
           if (0xffffff <
               *(uint32_t *)(localXOrPixelIndex * 4 +
-                        *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffset + tableOffset + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET)) +
+                        (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->dataOffset +
                         (int)sourceAsset)) {
             return true;
           }
         }
         else if (0xffffff <
-                 *(uint32_t *)(sourceAsset[paletteIndex * 4 + 1].common.buildMetadata.
-                           assetRelativeAddressAnchor28 +
-                          (uint32_t)*(uint8_t *)(localXOrPixelIndex + *(int *)((sourceAsset->common).buildMetadata.
-                                                           assetRelativeAddressAnchor28 +
-                                                          recordOffset + tableOffset +
-                                                          (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET)) +
-                                                 (int)sourceAsset)
-                          * 8 - GFX_ASSET_ANCHOR28_OFFSET)) {
+                 ((GraphicsPaletteTextureSourceAsset *)sourceAsset)->paletteEntries[paletteIndex * 0x100 + (uint32_t)*(uint8_t *)(localXOrPixelIndex + (int)((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + recordOffset + tableOffset))->dataOffset + (int)sourceAsset)].argb8888) {
           return true;
         }
       }
@@ -701,10 +681,8 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
     return failureResult;
   }
   offsetOrColumnCount = entryIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset;
-  sourceWidthOrTableBytes = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   offsetOrColumnCount + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-  rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                      offsetOrColumnCount + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
+  sourceWidthOrTableBytes = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->pixelWidth;
+  rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->pixelHeight;
   largestBlock = g_MemoryApi.allocLargestFreeBlock();
   largestBlockSize = largestBlock.blockSizeOrSentinel;
   decomposedAsset.assetOrError = (GraphicsTextureSourceAsset *)largestBlock.allocationOrError;
@@ -721,13 +699,11 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
     copySourceOrError = (GraphicsTextureSourceAsset *)&(copySourceOrError->common).allocationSizeBytes;
     copyDestination = (GraphicsTextureSourceAsset *)&(copyDestination->common).allocationSizeBytes;
   }
-  paletteIndexOrCount = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   offsetOrColumnCount + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET));
+  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->paletteIndex;
   copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
   remainingBytesOrCount = largestBlockSize - GFX_ASSET_HEADER_SIZE;
   if (remainingBytesOrCount != 0 && GFX_ASSET_HEADER_SIZE - 1 < (int)largestBlockSize) {
-    offsetOrColumnCount = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                     offsetOrColumnCount + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET));
+    offsetOrColumnCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->dataOffset;
     /* the new asset is stamped with the current time and date and this computer's name */
     packedDateTime = g_LocaleGetPackedCurrentTime();
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue1 = packedDateTime;
@@ -737,8 +713,7 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.timeValue2 = packedDateTime;
     g_LocaleCopyDefaultComputerLabelUtf16
               (((decomposedAsset.assetOrError)->common).buildMetadata.names.sourceName);
-    entryOrByteCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + offsetOrColumnCount -
-                        GFX_ASSET_ANCHOR28_OFFSET;
+    entryOrByteCursor = (uint8_t *)sourceAsset + offsetOrColumnCount;
     if (paletteIndexOrCount == -1) {
       /* direct ARGB8888 pixels: no palette, the new subresource table follows the header */
       ((decomposedAsset.assetOrError)->tableDescriptor).paletteBankCount = 0;
@@ -815,8 +790,7 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
               }
               /* new record: logical width = the run of non-background pixels in this row, logical height = the
                  run in this column, palette index -1; the stored pixels start as the whole block */
-              entryOrByteCursor = decomposedAsset.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                        entryOffsetOrRows - GFX_ASSET_ANCHOR28_OFFSET;
+              entryOrByteCursor = (uint8_t *)decomposedAsset.assetOrError + GFX_ASSET_HEADER_SIZE + entryOffsetOrRows;
               *(uint32_t *)entryOrByteCursor = (uint32_t)((int)probeCursor - (int)scanCursor) >> 2;
               entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT] = 0;
               entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 1] = 0;
@@ -831,15 +805,15 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
               paletteIndexOrCount = rowsRemaining;
               rowCursor = scanCursor;
               do {
-                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT) + 1;
+                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight + 1;
                 rowCursor = rowCursor + sourceWidthOrTableBytes;
                 paletteIndexOrCount--;
                 matchedOrEdgeTransparent = true;
                 if (paletteIndexOrCount == 0) break;
                 matchedOrEdgeTransparent = backgroundColorOrCount == *rowCursor;
               } while (!matchedOrEdgeTransparent);
-              *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) = *(uint32_t *)entryOrByteCursor;
-              *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT);
+              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = *(uint32_t *)entryOrByteCursor;
+              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
               /* trim top rows, bottom rows, left and right columns that are all edge colour, but only when the
                  edge colour is transparent (alpha 0); the origin records how much was cut at the top/left */
               rowCursor = scanCursor;
@@ -854,16 +828,16 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
                 } while (matchedOrEdgeTransparent);
                 if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto TrueColorTrimBottomRows;
                 rowCursor = rowCursor + sourceWidthOrTableBytes;
-                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) + 1;
-                entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY + 1;
+                entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                 *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
                 matchedOrEdgeTransparent = *(uint32_t *)entryCounterField == 0;
               } while (!matchedOrEdgeTransparent);
               rowCursor = rowCursor + -sourceWidthOrTableBytes;
-              *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) - 1;
-              *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) + 1;
+              (uint32_t)((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY - 1;
+              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
 TrueColorTrimBottomRows:
-              probeCursor = (uint32_t *)((int)rowCursor + sourceWidthOrTableBytes * 4 * *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT));
+              probeCursor = (uint32_t *)((int)rowCursor + sourceWidthOrTableBytes * 4 * ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight);
               do {
                 probeCursor = probeCursor + -sourceWidthOrTableBytes;
                 matchedOrEdgeTransparent = probeCursor == NULL;
@@ -876,12 +850,12 @@ TrueColorTrimBottomRows:
                   trimProbe++;
                 } while (matchedOrEdgeTransparent);
                 if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto TrueColorTrimLeftColumns;
-                entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                 *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
               } while (*(uint32_t *)entryCounterField != 0);
-              *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) + 1;
+              ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
 TrueColorTrimLeftColumns:
-              pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+              pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
               regionStart = rowCursor;
               probeCursor = rowCursor;
               if ((scanCountOrEdgeColor & 0xff000000) == 0) {
@@ -893,23 +867,23 @@ TrueColorTrimLeftColumns:
                     pixelCountOrCounter--;
                     probeCursor = regionStart;
                   } while (pixelCountOrCounter != 0);
-                  *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) + 1;
+                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX + 1;
                   rowCursor = regionStart + 1;
-                  pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
-                  entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH);
+                  pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
+                  entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
                   *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
                   probeCursor = rowCursor;
                 } while (*(uint32_t *)entryCounterField != 0);
-                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) - 1;
-                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) + 1;
+                (uint32_t)((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX - 1;
+                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
               }
 TrueColorTrimRightColumns:
               rowCursor = regionStart;
-              pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+              pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
               probeCursor = (uint32_t *)((int)regionStart +
-                                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) +
-                                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) +
-                                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) + *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) + -4);
+                                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth +
+                                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth +
+                                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + -4);
               regionStart = probeCursor;
               if ((scanCountOrEdgeColor & 0xff000000) == 0) {
                 do {
@@ -918,18 +892,18 @@ TrueColorTrimRightColumns:
                     probeCursor = probeCursor + sourceWidthOrTableBytes;
                     pixelCountOrCounter--;
                   } while (pixelCountOrCounter != 0);
-                  pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                  pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                   probeCursor = regionStart - 1;
-                  entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH);
+                  entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
                   *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
                   regionStart = probeCursor;
                 } while (*(uint32_t *)entryCounterField != 0);
-                *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) + 1;
+                ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
               }
 TrueColorPackRegion:
               /* copy the trimmed pixels in front of the packed ones, then clear the whole block to background */
-              pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
-              paletteIndexOrCount = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) * pixelCountOrCounter;
+              pixelCountOrCounter = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
+              paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth * pixelCountOrCounter;
               freeBytesAfterPacked = remainingBytesOrCount + paletteIndexOrCount * -4;
               if (freeBytesAfterPacked == 0 || remainingBytesOrCount < paletteIndexOrCount * 4) {
                 copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
@@ -938,8 +912,8 @@ TrueColorPackRegion:
               packedPixelCursor = packedPixelCursor + -paletteIndexOrCount;
               packedPixelBytes = packedPixelBytes + paletteIndexOrCount * 4;
               regionWidth = *(uint32_t *)entryOrByteCursor;
-              fillRows = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT);
-              regionCopyWidth = *(uint32_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH);
+              fillRows = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
+              regionCopyWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
               copyRemaining = regionCopyWidth;
               probeCursor = packedPixelCursor;
               trimProbe = rowCursor;
@@ -980,8 +954,7 @@ TrueColorPackRegion:
           sourceWidthOrTableBytes = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount * GFX_SUBRESOURCE_RECORD_SIZE;
           backgroundColorOrCount = packedPixelBytes >> 2;
           ((decomposedAsset.assetOrError)->common).allocationSizeBytes = packedPixelBytes + sourceWidthOrTableBytes + GFX_ASSET_HEADER_SIZE;
-          entryOrByteCursor = decomposedAsset.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                    sourceWidthOrTableBytes - GFX_ASSET_ANCHOR28_OFFSET;
+          entryOrByteCursor = (uint8_t *)decomposedAsset.assetOrError + GFX_ASSET_HEADER_SIZE + sourceWidthOrTableBytes;
           for (; backgroundColorOrCount != 0; backgroundColorOrCount--) {
             *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
             packedPixelCursor++;
@@ -1055,12 +1028,10 @@ TrueColorPackRegion:
               entryOrByteCursor++;
               probeByteCursor++;
             }
-            matchedOrEdgeTransparent = (*(uint32_t *)(decomposedAsset.assetOrError[1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint32_t)edgeIndex * 8 - GFX_ASSET_ANCHOR28_OFFSET) & 0xff000000
+            matchedOrEdgeTransparent = (((GraphicsPaletteTextureSourceAsset *)decomposedAsset.assetOrError)->paletteEntries[(uint32_t)edgeIndex].argb8888 & 0xff000000
                      ) == 0;
             /* the edge colour's entry in the new palette always loses its alpha, i.e. becomes transparent */
-            entryOrByteCursor = decomposedAsset.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                      (uint32_t)edgeIndex * 8 - GFX_ASSET_ANCHOR28_OFFSET;
+            entryOrByteCursor = (uint8_t *)&((GraphicsPaletteTextureSourceAsset *)decomposedAsset.assetOrError)->paletteEntries[(uint32_t)edgeIndex];
             *(uint32_t *)entryOrByteCursor = *(uint32_t *)entryOrByteCursor & 0xffffff;
             /* packed sprites are padded to whole dwords */
             packedPixelCursor = (uint32_t *)((uint32_t)scanByteCursor & 0xfffffffc);
@@ -1104,8 +1075,8 @@ TrueColorPackRegion:
                   if (bytesMatched) {
                     probeByteCursor--;
                   }
-                  entryOrByteCursor = decomposedAsset.assetOrError[5].common.buildMetadata.assetRelativeAddressAnchor28
-                            + entryOffsetOrRows - GFX_ASSET_ANCHOR28_OFFSET;
+                  /* [5]: GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE bytes in (the table follows the one bank) */
+                  entryOrByteCursor = (uint8_t *)&decomposedAsset.assetOrError[5] + entryOffsetOrRows;
                   *(int *)entryOrByteCursor = (int)probeByteCursor - (int)scanByteCursor;
                   entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT] = 0;
                   entryOrByteCursor[GFX_SUBRESOURCE_LOGICAL_HEIGHT + 1] = 0;
@@ -1120,15 +1091,15 @@ TrueColorPackRegion:
                   paletteIndexOrCount = rowsRemaining;
                   probeByteCursor = scanByteCursor;
                   do {
-                    *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT) + 1;
+                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight + 1;
                     probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
                     paletteIndexOrCount--;
                     bytesMatched = true;
                     if (paletteIndexOrCount == 0) break;
                     bytesMatched = backgroundIndex == *probeByteCursor;
                   } while (!bytesMatched);
-                  *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) = *(int *)entryOrByteCursor;
-                  *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT);
+                  (int)((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = *(int *)entryOrByteCursor;
+                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
                   probeByteCursor = scanByteCursor;
                   do {
                     paletteIndexOrCount = *(int *)entryOrByteCursor;
@@ -1141,16 +1112,16 @@ TrueColorPackRegion:
                     } while (bytesMatched);
                     if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimBottomRows;
                     probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
-                    *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) + 1;
-                    entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY + 1;
+                    entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                     *(int *)entryCounterField = *(int *)entryCounterField - 1;
                     bytesMatched = *(int *)entryCounterField == 0;
                   } while (!bytesMatched);
                   probeByteCursor = probeByteCursor + -sourceWidthOrTableBytes;
-                  *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_Y) - 1;
-                  *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) + 1;
+                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originY - 1;
+                  (int)((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
 PalettedTrimBottomRows:
-                  trimByteCursor = probeByteCursor + sourceWidthOrTableBytes * *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                  trimByteCursor = probeByteCursor + sourceWidthOrTableBytes * ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                   do {
                     trimByteCursor = trimByteCursor + -sourceWidthOrTableBytes;
                     bytesMatched = trimByteCursor == NULL;
@@ -1163,12 +1134,12 @@ PalettedTrimBottomRows:
                       trimByteProbe++;
                     } while (bytesMatched);
                     if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimLeftColumns;
-                    entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                    entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                     *(int *)entryCounterField = *(int *)entryCounterField - 1;
                   } while (*(int *)entryCounterField != 0);
-                  *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT) + 1;
+                  ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight + 1;
 PalettedTrimLeftColumns:
-                  paletteIndexOrCount = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                   regionStart = (uint32_t *)probeByteCursor;
                   scanCursor = (uint32_t *)probeByteCursor;
                   if (matchedOrEdgeTransparent) {
@@ -1180,20 +1151,20 @@ PalettedTrimLeftColumns:
                         paletteIndexOrCount--;
                         scanCursor = regionStart;
                       } while (paletteIndexOrCount != 0);
-                      *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) + 1;
+                      ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX + 1;
                       probeByteCursor = (uint8_t *)((int)regionStart + 1);
-                      paletteIndexOrCount = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
-                      entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH);
+                      paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
+                      entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
                       *(int *)entryCounterField = *(int *)entryCounterField - 1;
                       scanCursor = (uint32_t *)probeByteCursor;
                     } while (*(int *)entryCounterField != 0);
-                    *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_ORIGIN_X) - 1;
-                    *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) + 1;
+                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->originX - 1;
+                    (int)((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
                   }
 PalettedTrimRightColumns:
                   scanCursor = regionStart;
-                  paletteIndexOrCount = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
-                  probeByteCursor = (uint8_t *)((int)regionStart + *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) + -1);
+                  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
+                  probeByteCursor = (uint8_t *)((int)regionStart + ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + -1);
                   regionStart = (uint32_t *)probeByteCursor;
                   if (matchedOrEdgeTransparent) {
                     do {
@@ -1202,17 +1173,17 @@ PalettedTrimRightColumns:
                         probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
                         paletteIndexOrCount--;
                       } while (paletteIndexOrCount != 0);
-                      paletteIndexOrCount = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
+                      paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
                       probeByteCursor = (uint8_t *)((int)regionStart + -1);
-                      entryCounterField = (uint16_t *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH);
+                      entryCounterField = (uint16_t *)&((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
                       *(int *)entryCounterField = *(int *)entryCounterField - 1;
                       regionStart = (uint32_t *)probeByteCursor;
                     } while (*(int *)entryCounterField != 0);
-                    *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) + 1;
+                    ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth + 1;
                   }
 PalettedPackRegion:
-                  paletteIndexOrCount = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_HEIGHT);
-                  backgroundColorOrCount = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH) * paletteIndexOrCount + 3U & 0xfffffffc;
+                  paletteIndexOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelHeight;
+                  backgroundColorOrCount = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth * paletteIndexOrCount + 3U & 0xfffffffc;
                   freeBytesAfterPacked = remainingBytesOrCount - backgroundColorOrCount;
                   if (freeBytesAfterPacked == 0 || remainingBytesOrCount < (int)backgroundColorOrCount) {
                     copySourceOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_GENERAL_FAILURE;
@@ -1221,8 +1192,8 @@ PalettedPackRegion:
                   packedPixelCursor = (uint32_t *)((int)packedPixelCursor + -backgroundColorOrCount);
                   packedPixelBytes = packedPixelBytes + backgroundColorOrCount;
                   remainingBytesOrCount = *(int *)entryOrByteCursor;
-                  entryOffsetOrRows = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_LOGICAL_HEIGHT);
-                  regionCopyBytes = *(int *)(entryOrByteCursor + GFX_SUBRESOURCE_PIXEL_WIDTH);
+                  entryOffsetOrRows = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->logicalHeight;
+                  regionCopyBytes = ((GraphicsTextureSourceEntry *)entryOrByteCursor)->pixelWidth;
                   copyBytesRemaining = regionCopyBytes;
                   entryOrByteCursor = (uint8_t *)packedPixelCursor;
                   rowCursor = scanCursor;
@@ -1263,8 +1234,7 @@ PalettedPackRegion:
               backgroundColorOrCount = packedPixelBytes >> 2;
               ((decomposedAsset.assetOrError)->common).allocationSizeBytes =
                    packedPixelBytes + sourceWidthOrTableBytes + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE);
-              entryOrByteCursor = decomposedAsset.assetOrError[5].common.buildMetadata.assetRelativeAddressAnchor28 +
-                        sourceWidthOrTableBytes - GFX_ASSET_ANCHOR28_OFFSET;
+              entryOrByteCursor = (uint8_t *)decomposedAsset.assetOrError + (GFX_ASSET_HEADER_SIZE + GFX_PALETTE_BANK_SIZE) + sourceWidthOrTableBytes;
               for (; backgroundColorOrCount != 0; backgroundColorOrCount--) {
                 *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
                 packedPixelCursor = (uint32_t *)((int)packedPixelCursor + 4);
@@ -1474,10 +1444,9 @@ GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *source
     entryCount = (sourceAsset->tableDescriptor).subresourceCount;
     if ((entryCount != 0) && (entryCount <= 0xfff)) {
       firstSubresourceRecord =
-           (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-           ((sourceAsset->tableDescriptor).subresourceTableOffset - GFX_ASSET_ANCHOR28_OFFSET);
-      logicalSize.logicalWidthPixels = *(uint32_t *)(firstSubresourceRecord + GFX_SUBRESOURCE_LOGICAL_WIDTH);
-      logicalSize.logicalHeightPixels = *(uint32_t *)(firstSubresourceRecord + GFX_SUBRESOURCE_LOGICAL_HEIGHT);
+           (uint8_t *)sourceAsset + (sourceAsset->tableDescriptor).subresourceTableOffset;
+      logicalSize.logicalWidthPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalWidth;
+      logicalSize.logicalHeightPixels = ((GraphicsTextureSourceEntry *)firstSubresourceRecord)->logicalHeight;
       logicalSize.failed = false;
     }
   }
@@ -1557,16 +1526,12 @@ void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
       destinationPitch = g_SurfaceDesc.lPitch;
       if (hresult == 0) {
         offsetOrGreenTopBit = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset;
-        paletteIndexOrCounter = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                         offsetOrGreenTopBit + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET));
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
-        offsetOrGreenTopBit = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET));
+        paletteIndexOrCounter = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->paletteIndex;
+        sourceWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->pixelWidth;
+        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->pixelHeight;
+        offsetOrGreenTopBit = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->dataOffset;
         if (paletteIndexOrCounter < 0) {
-          sourcePixel = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + offsetOrGreenTopBit - GFX_ASSET_ANCHOR28_OFFSET
+          sourcePixel = (uint8_t *)sourceAsset + offsetOrGreenTopBit
           ;
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             paletteIndexOrCounter = sourceWidth;
@@ -1727,7 +1692,7 @@ void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
           }
         }
         else {
-          sourcePixel = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + offsetOrGreenTopBit - GFX_ASSET_ANCHOR28_OFFSET
+          sourcePixel = (uint8_t *)sourceAsset + offsetOrGreenTopBit
           ;
           paletteBank = sourceAsset + paletteIndexOrCounter * 4 + 1;
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
@@ -1840,8 +1805,7 @@ void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 17) {
                 do {
                   do {
-                    maskOrArgb = *(uint32_t *)((paletteBank->common).buildMetadata.
-                                      assetRelativeAddressAnchor28 + (uint32_t)*sourcePixel * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    maskOrArgb = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*sourcePixel].argb8888;
                     *destinationWord = (uint16_t)(((maskOrArgb & 0xff000000) >> ((uint8_t)alphaShiftRight & 0x1f)) <<
                                        ((uint8_t)alphaShiftLeft & 0x1f)) |
                                (uint16_t)(((maskOrArgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
@@ -1866,8 +1830,7 @@ void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    maskOrArgb = *(uint32_t *)((paletteBank->common).buildMetadata.
-                                      assetRelativeAddressAnchor28 + (uint32_t)*sourcePixel * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    maskOrArgb = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*sourcePixel].argb8888;
                     *destinationDword = ((maskOrArgb & 0xff000000) >> ((uint8_t)alphaShiftRight & 0x1f)) <<
                                ((uint8_t)alphaShiftLeft & 0x1f) |
                                ((maskOrArgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
@@ -1986,14 +1949,10 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
         offsetOrRemaining = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset;
         savedPitch = g_SurfaceDesc.lPitch;
         savedSurfaceBits = g_SurfaceDesc.lpSurface;
-        paletteIndexOrCounter = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                         offsetOrRemaining + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET));
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            offsetOrRemaining + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            offsetOrRemaining + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
-        offsetOrRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                         offsetOrRemaining + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET));
+        paletteIndexOrCounter = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrRemaining))->paletteIndex;
+        sourceWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrRemaining))->pixelWidth;
+        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrRemaining))->pixelHeight;
+        offsetOrRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrRemaining))->dataOffset;
         if (paletteIndexOrCounter < 0) {
           sourceTexel = (AssetProducerSourceNames *)
                     ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -2192,8 +2151,7 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
           }
         }
         else {
-          byteCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                    offsetOrRemaining - GFX_ASSET_ANCHOR28_OFFSET;
+          byteCursor = (uint8_t *)sourceAsset + offsetOrRemaining;
           paletteBank = sourceAsset + paletteIndexOrCounter * 4 + 1;
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             paletteIndexOrCounter = sourceWidth;
@@ -2309,18 +2267,10 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 17) {
                 do {
                   do {
-                    topLeftTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    topRightTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    bottomLeftTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    bottomRightTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    topLeftTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*byteCursor].argb8888;
+                    topRightTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[1]].argb8888;
+                    bottomLeftTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth]].argb8888;
+                    bottomRightTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 1]].argb8888;
                     averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
                                           TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
                     averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
@@ -2359,18 +2309,10 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    topLeftTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    topRightTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    bottomLeftTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    bottomRightTexel = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    topLeftTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*byteCursor].argb8888;
+                    topRightTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[1]].argb8888;
+                    bottomLeftTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth]].argb8888;
+                    bottomRightTexel = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 1]].argb8888;
                     averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
                                           TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
                     averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
@@ -2521,8 +2463,7 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                              offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
         rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                             offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
-        offsetOrGreenTopBit = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET));
+        offsetOrGreenTopBit = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->dataOffset;
         if (paletteIndexOrCounter < 0) {
           sourceTexel = (uint16_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                             offsetOrGreenTopBit - GFX_ASSET_ANCHOR28_OFFSET);
@@ -3043,34 +2984,16 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                     texel06 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel07 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[sourceWidth + 3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    texel07 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 3]].argb8888;
                     byteCursor = byteCursor + sourceWidth * 2;
-                    texel08 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel09 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel10 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel11 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel12 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel13 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel14 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel15 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint32_t)byteCursor[sourceWidth + 3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    texel08 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*byteCursor].argb8888;
+                    texel09 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[1]].argb8888;
+                    texel10 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth]].argb8888;
+                    texel11 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 1]].argb8888;
+                    texel12 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[2]].argb8888;
+                    texel13 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[3]].argb8888;
+                    texel14 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 2]].argb8888;
+                    texel15 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 3]].argb8888;
                     averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
                                           TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
                                           TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
@@ -3191,13 +3114,9 @@ void GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
       destinationPitch = g_SurfaceDesc.lPitch;
       if (hresult == 0) {
         offsetOrColumnsRemaining = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset;
-        restoreResultOrMaskWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
-        maskCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET)) - GFX_ASSET_ANCHOR28_OFFSET;
+        restoreResultOrMaskWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelWidth;
+        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelHeight;
+        maskCursor = (uint8_t *)sourceAsset + ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->dataOffset;
         if (((restoreResultOrMaskWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) &&
            (destinationFormat->dwRGBBitCount != 8)) {
           offsetOrColumnsRemaining = 31;
@@ -3304,13 +3223,9 @@ void GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
       destinationPitch = g_SurfaceDesc.lPitch;
       if (hresult == 0) {
         offsetOrColumnsRemaining = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset;
-        restoreResultOrMaskWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                         offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
-        maskCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET)) - GFX_ASSET_ANCHOR28_OFFSET;
+        restoreResultOrMaskWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelWidth;
+        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelHeight;
+        maskCursor = (uint8_t *)sourceAsset + ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->dataOffset;
         if (((restoreResultOrMaskWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) &&
            (destinationFormat->dwRGBBitCount != 8)) {
           offsetOrColumnsRemaining = 31;
@@ -3432,13 +3347,9 @@ void GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
       destinationPitch = g_SurfaceDesc.lPitch;
       if (hresult == 0) {
         offsetOrColumnsRemaining = subresourceIndex * GFX_SUBRESOURCE_RECORD_SIZE + (sourceAsset->tableDescriptor).subresourceTableOffset;
-        restoreResultOrMaskWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                         offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
-        maskCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          offsetOrColumnsRemaining + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET)) - GFX_ASSET_ANCHOR28_OFFSET;
+        restoreResultOrMaskWidth = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelWidth;
+        rowsRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->pixelHeight;
+        maskCursor = (uint8_t *)sourceAsset + ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnsRemaining))->dataOffset;
         if (((restoreResultOrMaskWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) &&
            (destinationFormat->dwRGBBitCount != 8)) {
           offsetOrColumnsRemaining = 31;
@@ -3721,29 +3632,29 @@ TextureSetResult GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset 
       entryFieldCursor = &metadataOrError->formatVersion;
       metadataOrError->magic = (GraphicsPaletteTextureAssetMagic)convertedSource;
       metadataOrError->allocationSizeBytes = entriesRemaining;
-      sourceEntry = convertedSource->reserved10_AF + (convertedSource->subresourceTableOffset - 0x10);
+      sourceEntry = (uint8_t *)convertedSource + convertedSource->subresourceTableOffset;
       entryIndex = 0;
       while( true ) {
         /* BSR of pixelWidth (source entry +0x18); the original leaves the register undefined for 0 */
         widthLog2 = 0x1f;
-        if (*(uint32_t *)(sourceEntry + 0x18) != 0) {
-          for (; *(uint32_t *)(sourceEntry + 0x18) >> widthLog2 == 0; widthLog2--) {
+        if (((GraphicsTextureSourceEntry *)sourceEntry)->pixelWidth != 0) {
+          for (; ((GraphicsTextureSourceEntry *)sourceEntry)->pixelWidth >> widthLog2 == 0; widthLog2--) {
           }
         }
         *entryFieldCursor = 0;
         entryFieldCursor[5] = entryIndex;
         entryFieldCursor[1] = widthLog2;
-        if (1 << ((uint8_t)widthLog2 & 0x1f) != *(int *)(sourceEntry + 0x18)) break;
+        if (1 << ((uint8_t)widthLog2 & 0x1f) != ((GraphicsTextureSourceEntry *)sourceEntry)->pixelWidth) break;
         entryFieldCursor[3] = (GraphicsPaletteTextureFormatVersion)convertedSource;
         /* BSR of pixelHeight (source entry +0x1C) */
         heightLog2 = 0x1f;
-        if (*(uint32_t *)(sourceEntry + 0x1c) != 0) {
-          for (; *(uint32_t *)(sourceEntry + 0x1c) >> heightLog2 == 0; heightLog2--) {
+        if (((GraphicsTextureSourceEntry *)sourceEntry)->pixelHeight != 0) {
+          for (; ((GraphicsTextureSourceEntry *)sourceEntry)->pixelHeight >> heightLog2 == 0; heightLog2--) {
           }
         }
         entryFieldCursor[4] = (GraphicsPaletteTextureFormatVersion)sourceEntry;
         entryFieldCursor[2] = heightLog2;
-        if (1 << ((uint8_t)heightLog2 & 0x1f) != *(int *)(sourceEntry + 0x1c)) break;
+        if (1 << ((uint8_t)heightLog2 & 0x1f) != ((GraphicsTextureSourceEntry *)sourceEntry)->pixelHeight) break;
         entryFieldCursor = entryFieldCursor + 8;
         sourceEntry = sourceEntry + 0x20;
         entryIndex++;
@@ -3880,20 +3791,15 @@ GraphicsTexture_SelectPixelFormat
   uint8_t *pixelCursor;
   int paletteIndexOrCount;
   
-  /* byte offset of the image's GraphicsTextureSourceEntry; the anchor below lies at byte 0x28, hence the
-     corrections: -0x20 = paletteIndex (+8), -0x1C = dataOffset (+0xC), -0x10/-0xC = pixelWidth/pixelHeight */
+  /* byte offset of the image's GraphicsTextureSourceEntry */
   entryOffset = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-  paletteIndexOrCount =*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffset + -0x20)
+  paletteIndexOrCount =((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->paletteIndex
   ;
   if (paletteIndexOrCount < 0) {
     /* no palette: scan the ARGB pixels */
-    pixelCursor= (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-             *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                     entryOffset + -0x1c) + -0x28;
-    paletteIndexOrCount = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                    entryOffset + -0x10) *
-            *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffset + -0xc
-                    );
+    pixelCursor= (uint8_t *)sourceAsset + ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->dataOffset;
+    paletteIndexOrCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->pixelWidth *
+            ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + entryOffset))->pixelHeight;
     do {
       if (*(uint32_t *)pixelCursor < 0xff000000) { /* alpha below 0xFF */
         return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);

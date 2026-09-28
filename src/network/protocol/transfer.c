@@ -289,8 +289,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       }
       playerRecord = g_FrontendPlayerRuntimeBlocks +
                (packet->packet20002PlayerDescriptor).playerDescriptorPayload[2];
-      /* playerRecord->playerRuntimeId (+0x14), addressed from the name field like the original */
-      *(uint32_t *)((int)(&playerRecord->playerName - 1) + 0x24) =
+      playerRecord->playerRuntimeId =
            (packet->packet20002PlayerDescriptor).playerDescriptorPayload[4];
       nameSourceCursor = &(packet->genericTransferPacket).commands[2].payloadDword08;
       nameDestinationCursor = &playerRecord->playerName;
@@ -301,7 +300,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       }
       UiPointerList_InitializeColumnLayout
                 (playerOrCommandCount,(void **)&g_FrontendPlayerListRows,
-                 (UiPointerListControl *)(frontendRuntime + 0x5874));
+                 (UiPointerListControl *)FRONTEND_UI(frontendRuntime,clientLobbyPlayerList));
     }
     g_SessionTransferTimeoutTicks = 0x40;
     /* the host starts the session: this many player snapshots follow */
@@ -309,7 +308,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       g_FrontendPlayerRuntimeBlockCount = 0;
       g_FrontendExpectedPlayerRuntimeBlockCount =
            (packet->packet10009SnapshotChunkRequest).reserved10;
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(frontendRuntime + 0x508));
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(frontendRuntime,frontendPageStack));
       FrontendState_DispatchCode(1);
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_CLIENT_STARTING;
       FrontendTransfer_SendQueued10011AndOptional10004();
@@ -646,8 +645,8 @@ bool UiTransfer_SendPlayerDescriptorPacket20002(void)
    (0x20002: new player-list row, lowest free player id, join ack 0x10003), stores a player's capability
    heartbeat (0x10006), and collects each player's next command (0x10011), broadcasting the non-empty ones
    as one lobby command batch that the host then executes itself.
-   frontendRuntime +0x563C/+0x5640 are the row slots and row count of the lobby's player list
-   (a UiPointerListControl), +0x5140 the player limit.
+   The lobby's player list is the frontend's hostLobbyPlayerList, the player limit the value of
+   maxPlayersSlider.
 */
 void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
@@ -676,7 +675,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     if ((((packet->packet10000Handshake).protocolMagic2931 == FRONTEND_PROTOCOL_MAGIC) &&
         (((packet->packet10000Handshake).header.sequenceToken & FRONTEND_SEQUENCE_TOKEN_HIGH_MASK) ==
          FRONTEND_SEQUENCE_TOKEN_HIGH_WORD)) &&
-       (*(uint32_t *)(frontendRuntime + 0x5640) < *(uint32_t *)(frontendRuntime + 0x5140))) {
+       (((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount < (uint32_t)((UiRangeSliderControl *)FRONTEND_UI(frontendRuntime,maxPlayersSlider))->value)) {
       g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
     }
     textResolveResult = TextResource_Resolve(0x211a);
@@ -685,7 +684,9 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
               (0x28,g_FrontendPacket50001Buffer.sessionTitleUtf16,textResolveResult.text);
     textResolveResult = TextResource_Resolve(0x211b);
     resolvedText = textResolveResult.text;
-    RichTextCommandStream_PatchPayloadBySelector(0,(void *)(rootNodeOrCount + 0x50c0),resolvedText);
+    /* the game name typed into gameNameEdit */
+    RichTextCommandStream_PatchPayloadBySelector
+              (0,((UiTextEditControl *)FRONTEND_UI(rootNodeOrCount,gameNameEdit))->textPrefix6C,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
     RichTextCommandStream_CopyExpanded
               (0x58,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
@@ -701,7 +702,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     return;
   }
   if (((packet->packet10000Handshake).header.packedTypeAndUnitCount != FRONTEND_PACKET_20002) ||
-     (*(uint32_t *)(frontendRuntime + 0x5140) <= *(uint32_t *)(frontendRuntime + 0x5640))) {
+     ((uint32_t)((UiRangeSliderControl *)FRONTEND_UI(frontendRuntime,maxPlayersSlider))->value <= ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount)) {
     if ((packet->packet10000Handshake).header.packedTypeAndUnitCount !=
         FRONTEND_PACKET_10006_CAPABILITY_HEARTBEAT) {
       if ((packet->packet10000Handshake).header.packedTypeAndUnitCount != FRONTEND_PACKET_10011) {
@@ -782,7 +783,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
       }
       return;
     }
-    rootNodeOrCount = *(int *)(frontendRuntime + 0x5640);
+    rootNodeOrCount = (int)((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     while (((packet->packet10000Handshake).header.sequenceToken != playerRecord->peerSequenceToken ||
            (senderEndpoint->ipv4AddressNetworkOrder != (playerRecord->endpoint).ipv4AddressNetworkOrder))
@@ -797,23 +798,23 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     heartbeatValue = (packet->packet50001SessionAdvertisement).joinAvailableFlag;
     playerRecord->capabilityFlags = countFlagsOrId;
     playerRecord->heartbeatExpiryTicks = heartbeatValue;
-    playerRecord->reserved78_7F[0] = 0;
-    playerRecord->reserved78_7F[1] = 0;
-    playerRecord->reserved78_7F[2] = 0;
-    playerRecord->reserved78_7F[3] = 0;
+    playerRecord->capabilityLabelUtf16[0] = 0;
+    playerRecord->capabilityLabelUtf16[1] = 0;
+    playerRecord->capabilityLabelUtf16[2] = 0;
+    playerRecord->capabilityLabelUtf16[3] = 0;
     if ((countFlagsOrId & FRONTEND_CAPABILITY_CD) != 0) {
       /* L"CD" */
-      playerRecord->reserved78_7F[0] = 'C';
-      playerRecord->reserved78_7F[1] = 0;
-      playerRecord->reserved78_7F[2] = 'D';
-      playerRecord->reserved78_7F[3] = 0;
+      playerRecord->capabilityLabelUtf16[0] = 'C';
+      playerRecord->capabilityLabelUtf16[1] = 0;
+      playerRecord->capabilityLabelUtf16[2] = 'D';
+      playerRecord->capabilityLabelUtf16[3] = 0;
     }
     FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction();
     return;
   }
   joiningPlayerRecordDwordCursor =
-       *(uint32_t **)(*(int *)(frontendRuntime + 0x563c) + *(int *)(frontendRuntime + 0x5640) * 4);
-  *(int *)(frontendRuntime + 0x5640) = *(int *)(frontendRuntime + 0x5640) + 1;
+       (uint32_t *)((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowSlots[((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount];
+  ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount = ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount + 1;
   /* the new row: the 0x40-byte descriptor packet followed by the sender's 0x10-byte endpoint */
   for (rootNodeOrCount = 0x10; rootNodeOrCount != 0; rootNodeOrCount--) {
     *joiningPlayerRecordDwordCursor = (packet->packet10000Handshake).header.packedTypeAndUnitCount;
@@ -859,7 +860,7 @@ FrontendTransfer_InitializeJoiningPlayerWithFreeId:
   }
   *(uint16_t *)((int)joiningPlayerRecordDwordCursor + -0x12) = 0;
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,*(int32_t *)(frontendRuntime + 0x5640),
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount,
              (uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
   g_FrontendPacket10003Buffer.networkTickInterval = g_SessionNetworkTickInterval;
   g_FrontendPacket10003Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10003_JOIN_ACK;
@@ -894,7 +895,7 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRu
   FrontendCommandPacketRecord *batchCursor;
   
   roundRobinOrTextLength = g_FrontendHostPublishRoundRobinCounter;
-  playerOrCommandCount = *(uint32_t *)(frontendRuntime + 0x5640);
+  playerOrCommandCount = ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount;
   peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
   remainingCount = playerOrCommandCount - 1;
   if (remainingCount != 0 && 0 < (int)playerOrCommandCount) {
@@ -1192,7 +1193,6 @@ void UiTransferMailbox_RandomizeSequenceToken(void)
    appends one (at most 0x20 sessions); the join ack (0x10003) from the selected host takes over the assigned
    player id and network tick interval, switches to the host-lobby page and FRONTEND_NETWORK_STATE_JOINED and
    marks this machine as a network client.
-   frontendRuntime +0x4BBC is the session list's row count.
 */
 void FrontendTransfer_HandleSessionListAndJoinAckPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
@@ -1204,7 +1204,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
   uint32_t *sessionDiscoveryRecordDwordCursor;
   uint32_t *playerRowCursor;
   
-  remainingCount = *(int *)(frontendRuntime + 0x4bbc);
+  remainingCount = (int)((UiPointerListControl *)FRONTEND_UI(frontendRuntime,sessionList))->rowCount;
   if ((packet->packet10000Handshake).header.packedTypeAndUnitCount ==
       FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT) {
     sessionDiscoveryRecordDwordCursor = (uint32_t *)g_FrontendSessionDiscoveryRecords;
@@ -1217,13 +1217,14 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
           (((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor)->senderEndpoint).
           ipv4AddressNetworkOrder)) break;
       sessionRowCursor++;
-      sessionDiscoveryRecordDwordCursor = (uint32_t *)((int)sessionDiscoveryRecordDwordCursor + 0xb0);
+      sessionDiscoveryRecordDwordCursor =
+           (uint32_t *)((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor + 1);
     }
     /* Update the known session in place, or append it while the list has fewer than 0x20 rows. */
-    if ((remainingCount != 0) || (*(uint32_t *)(frontendRuntime + 0x4bbc) < 0x20)) {
+    if ((remainingCount != 0) || (((UiPointerListControl *)FRONTEND_UI(frontendRuntime,sessionList))->rowCount < 0x20)) {
       if (remainingCount == 0) {
         *sessionRowCursor = (FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor;
-        *(int *)(frontendRuntime + 0x4bbc) = *(int *)(frontendRuntime + 0x4bbc) + 1;
+        ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,sessionList))->rowCount = ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,sessionList))->rowCount + 1;
       }
       /* the packet's first dword after the header is overwritten with 0x20 before it is stored */
       (packet->packet10000Handshake).protocolMagic2931 = 0x20;
@@ -1244,7 +1245,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
         sessionDiscoveryRecordDwordCursor++;
       }
       UiPointerList_RefreshSelectionAndQueueAction
-                ((UiPointerListControl *)(frontendRuntime + 0x4b68));
+                ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,sessionList));
     }
   }
   else if ((((packet->packet10000Handshake).header.packedTypeAndUnitCount ==
@@ -1254,7 +1255,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
            senderEndpoint->ipv4AddressNetworkOrder)) {
     g_LocalPlayerRuntimeId = (packet->packet10000Handshake).protocolMagic2931;
     g_SessionNetworkTickInterval = (packet->packet50001SessionAdvertisement).joinAvailableFlag;
-    UiPageStack_SetActiveIndex(4,(UiPageStackControl *)(frontendRuntime + 0x508));
+    UiPageStack_SetActiveIndex(4,(UiPageStackControl *)FRONTEND_UI(frontendRuntime,frontendPageStack));
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_JOINED;
     g_SessionTransferTimeoutTicks = 0x40;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_CLIENT;
@@ -1265,7 +1266,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
     }
     UiPointerList_InitializeColumnLayout
               (0,(void **)&g_FrontendPlayerListRows,
-               (UiPointerListControl *)(frontendRuntime + 0x5874));
+               (UiPointerListControl *)FRONTEND_UI(frontendRuntime,clientLobbyPlayerList));
     return;
   }
   return;

@@ -61,10 +61,12 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
         if ((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
              (ownerNode->worldXQ12 ==
               (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00)) &&
-            (payloadEntityAddress = *(int *)((int)ownerNode->runtimePayload + 8),
+            (payloadEntityAddress =
+                  (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
             ownerNode->worldYQ12 ==
             (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04)) &&
-           ((targetingContext->worldRuntime0A30).activeFactionRuntimeIndex == *(int *)(payloadEntityAddress + 0xc))
+           ((targetingContext->worldRuntime0A30).activeFactionRuntimeIndex ==
+            ((ArmyRuntimeSlot *)payloadEntityAddress)->factionIndex)
            ) {
           modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
           armyToken = (int)ownerNode->runtimePayload - g_ModelRuntimeRebaseDelta;
@@ -173,7 +175,8 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
          (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
         ((int)(candidateHeightQ12 - 0x1000) <= (int)pickedHeightQ12)) &&
        (testResult = GameFactionRuntime_TestCapabilityBitClear
-                          (*(uint32_t *)(*(int *)((int)candidateNode->runtimePayload + 8) + 0xc),
+                          (((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->
+                           factionIndex,
                            ownerIndex), !testResult)) {
       g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags | WORLD_POINTER_STATE_OVER_OWN_ARMY;
       return WORLD_CURSOR_OWN_ARMY;
@@ -330,10 +333,11 @@ void InGameWorldInput_BeginPointerCapture
         else {
           if ((((candidateNode != NULL) &&
                (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
-              (payloadEntityAddress = *(int *)((int)candidateNode->runtimePayload + 8),
+              (payloadEntityAddress =
+                    (int)((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
               (int)(candidateHeightQ12 - 0x1000) <= (int)pickedHeightQ12)) &&
              (testResult = GameFactionRuntime_TestCapabilityBitClear
-                                (*(uint32_t *)(payloadEntityAddress + 0xc),ownerIndex), !testResult)) {
+                                (((ArmyRuntimeSlot *)payloadEntityAddress)->factionIndex,ownerIndex), !testResult)) {
             modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
                 SESSION_NETWORK_ROLE_LOCAL) {
@@ -345,17 +349,17 @@ void InGameWorldInput_BeginPointerCapture
             return;
           }
           g_InGameCommandPointerCaptureX =
-               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 4);
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressX0B90;
           g_InGameCommandPointerCaptureY =
-               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 8);
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressY0B94;
           g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED;
         }
       }
       else {
         g_InGamePlacementPointerCaptureX =
-             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 4);
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressX0B90;
         g_InGamePlacementPointerCaptureY =
-             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 8);
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressY0B94;
       }
     }
     else {
@@ -398,14 +402,15 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
                         (inGameRuntime->activeFactionRuntimeIndex);
       if (testResult) {
         if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) == 0) {
-          /* pointer travel since the press (current position at +0x0C/+0x10, press position at +4/+8) */
-          deltaXOrTripletCount = *(int *)(inGameRuntime[1].interaction.reserved00_47 + 4) -
-                  *(int *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
+          /* pointer travel since the press (the pointer positions are kept in the in-game root) */
+          deltaXOrTripletCount =
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressX0B90 -
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98;
           if ((int)deltaXOrTripletCount < 0) {
             deltaXOrTripletCount = -deltaXOrTripletCount;
           }
-          deltaY = *(int *)(inGameRuntime[1].interaction.reserved00_47 + 8) -
-                  *(int *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
+          deltaY = THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressY0B94 -
+                  THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerY0B9C;
           if ((int)deltaY < 0) {
             deltaY = -deltaY;
           }
@@ -520,16 +525,17 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
         if ((g_CursorButtonState & 4) == 0) {
           /* The original adds the horizontal mouse delta since capture (computed before snapping the
              pointer back) - not the pointer function's return value. */
-          countOrOwnerOrDelta = *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGameCommandPointerCaptureX;
+          countOrOwnerOrDelta =
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98 - g_InGameCommandPointerCaptureX;
           g_PointerSetPosition(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + countOrOwnerOrDelta * 0x40;
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & 0xffff;
         }
         else {
           g_InGameCommandPointerCaptureX =
-               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98;
           g_InGameCommandPointerCaptureY =
-               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerY0B9C;
         }
       }
     }
@@ -537,16 +543,17 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
       if ((g_CursorButtonState & 4) == 0) {
         /* The original adds the horizontal mouse delta since capture (computed before snapping the
            pointer back) - not the pointer function's return value. */
-        countOrOwnerOrDelta = *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGamePlacementPointerCaptureX;
+        countOrOwnerOrDelta =
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98 - g_InGamePlacementPointerCaptureX;
         g_PointerSetPosition(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + countOrOwnerOrDelta * 0x40;
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & 0xffff;
       }
       else {
         g_InGamePlacementPointerCaptureX =
-             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98;
         g_InGamePlacementPointerCaptureY =
-             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerY0B9C;
       }
     }
   }

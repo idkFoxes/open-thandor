@@ -894,20 +894,22 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,modelRuntime);
     /* the entity that owns the model (payload dword 2) */
     linkedRuntimeStateAddress = modelRuntime[2];
-    if (releasedObject== *(void **)(linkedRuntimeStateAddress + 0x98)) {
-      *(uint32_t *)(linkedRuntimeStateAddress + 0x98) = 0;
+    if (releasedObject== (void *)((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->runtimeState98) {
+      ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->runtimeState98 = 0;
     }
-    /* +0x1C is only a live reference while bit 0 of +0x2C is set; bits 0, 2 and 3 are cleared with it */
-    if (((*(uint32_t *)(linkedRuntimeStateAddress + 0x2c) & 1) != 0) &&
-       (releasedObject == *(void **)(linkedRuntimeStateAddress + 0x1c))) {
-      *(uint32_t *)(linkedRuntimeStateAddress + 0x1c) = 0;
-      *(uint32_t *)(linkedRuntimeStateAddress + 0x2c) =
-           *(uint32_t *)(linkedRuntimeStateAddress + 0x2c) & 0xfffffff2;
+    /* the command target is only a live reference while bit 0 of the command mode is set; bits 0, 2 and 3 are
+       cleared with it */
+    if (((((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandModeFlags & 1) != 0) &&
+       (releasedObject == ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandTargetArmyRuntime)) {
+      ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandTargetArmyRuntime = NULL;
+      ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandModeFlags =
+           ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandModeFlags & 0xfffffff2;
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) &&
-          (releasedObject == *(void **)((int)node->runtimePayload + 0x1c))) {
-    *(uint32_t *)((int)node->runtimePayload + 0x1c) = 0;
+          (releasedObject ==
+           ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode)) {
+    ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = NULL;
   }
   return;
 }
@@ -918,7 +920,6 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
    faction: for each such owner-list node whose model has an overlay base (+0x19C of its first payload
    record), the overlay callback of the definition's terrain class runs at the node's position on the field
    grid. The extent is 0x800 << n for definitions of kind 0xE, else unlimited (-1).
-   The definitionRecord[n] indexing below addresses fields of the definition record at fixed offsets.
 */
 void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime)
 
@@ -933,23 +934,27 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   
   if (sourceRuntime != NULL) {
     definitionLookup = ModelDefinitionRegistry_FindByIdWithError
-                      (*(PckModelDefinitionIdCatalog *)(*(int *)((int)sourceRuntime + 0xc) + 0x20));
+                      (((AiLinkedDefinitionListView *)((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->
+                       definitionIds[0]);
     definitionRecord = definitionLookup.modelDefinition;
     if (!definitionLookup.notFound) {
       overlayExtent = 0xffffffff;
       ownerNode = worldRuntime->ownerListHead;
-      overlayBaseOffset = definitionRecord[0x23].flags;
+      overlayBaseOffset = ((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->placementFlags1A8;
       if (ownerNode != NULL) {
-        if (definitionRecord[6].flags == 0xe) {
-          overlayExtent = 0x800 << ((uint8_t)definitionRecord[0x10].byteSize & 0x1f);
+        if (((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->runtimeClassId4C == 0xe) {
+          overlayExtent =
+               0x800 << ((uint8_t)((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->classParameterC0 & 0x1f);
         }
         overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
-                 [definitionRecord[0x34].definitionId];
+                 [((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->placementContactKindIndex278];
         do {
           if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
               (worldRuntime->activeFactionRuntimeIndex ==
-               *(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc))) &&
-             (modelOverlayBase = *(int *)(*(int *)ownerNode->runtimePayload + 0x19c), modelOverlayBase != 0)) {
+               ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) &&
+             (modelOverlayBase =
+                   ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->supportRadius19C,
+             modelOverlayBase != 0)) {
             overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,ownerNode->worldXQ12,
                       worldRuntime->fieldGrid);
           }
@@ -1055,8 +1060,9 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
   int *entityRuntimeWords;
 
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
-    if (detachedObject == *(void **)((int)node->runtimePayload + 0x1c)) {
-      *(uint32_t *)((int)node->runtimePayload + 0x1c) = 0;
+    if (detachedObject ==
+        ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode) {
+      ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = NULL;
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
@@ -1065,14 +1071,14 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
     if (detachedObject == (void *)entityRuntimeWords[0x3c]) {
       entityRuntimeWords[0x3c] = 0;
     }
-    if ((*(int *)(*entityRuntimeWords + 0x4c) == 0x15) &&
+    if ((((ModelRuntimeSlot *)entityRuntimeWords)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0x15) &&
        (detachedObject == (void *)entityRuntimeWords[0x18])) {
       entityRuntimeWords[0x18] = 0;
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
-          (detachedObject == *(void **)((int)node->runtimePayload + 0x14))) {
-    *(uint32_t *)((int)node->runtimePayload + 0x14) = 0;
+          (detachedObject == ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeStatePointer)) {
+    ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeState = 0;
   }
   return;
 }
@@ -1089,15 +1095,16 @@ void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutd
 {
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     ArmyRuntime_DestroyInstanceAndRefreshUi
-              (shutdownContext,*(GameEntityRuntime **)((int)node->runtimePayload + 8));
+              (shutdownContext,
+               (GameEntityRuntime *)((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) {
     node->runtimeFlags = node->runtimeFlags & 0x3fffffff;
-    *(uint32_t *)((int)node->runtimePayload + 0x10) = 0;
+    ((ShotRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
     node->runtimeFlags = node->runtimeFlags & 0x3fffffff;
-    *(uint32_t *)((int)node->runtimePayload + 4) = 0;
+    ((EffectRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
   return;
 }
@@ -1211,8 +1218,12 @@ void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
           Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime)
 
 {
-  *(Q12 *)(worldRuntime[1].interaction.reserved00_47 + 0x1c) = lightAzimuthAngle;
-  *(Q12 *)(worldRuntime[1].interaction.reserved00_47 + 0x20) = lightElevationAngle;
+  /* worldRuntime is the world embedded in the in-game root; the light angles are stored in the root fields
+     named fieldRegionOriginWorldXQ12_0BA8 (azimuth) and fieldRegionOriginWorldYQ12_0BAC (elevation) */
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->fieldRegionOriginWorldXQ12_0BA8 =
+       lightAzimuthAngle;
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->fieldRegionOriginWorldYQ12_0BAC =
+       lightElevationAngle;
   FieldGrid_RecomputeInteriorTriangleNormalAngles(worldRuntime->fieldGrid);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (lightElevationAngle,lightAzimuthAngle,worldRuntime->fieldGrid);

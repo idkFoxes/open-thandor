@@ -120,9 +120,9 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   int remainingMeshCount;
   int *meshRecord;
 
-  /* mesh group: +4 mesh count, +0xC flags, meshes from +0x20 (mesh [0] = byte size, [1] = group mask) */
-  groupFlagsOrMask = *(uint32_t *)(meshGroup + 0xc);
-  remainingMeshCount = *(int *)(meshGroup + 4);
+  /* the meshes follow the ModelMeshGroupHeader (mesh [0] = byte size, [1] = group mask) */
+  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags0C;
+  remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
   savedRotationAngle0 = (modelNode->modelPayload).worldRotationAngle0;
   savedRotationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
   savedRotationAngle2 = (modelNode->modelPayload).worldRotationAngle2;
@@ -144,7 +144,7 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   if ((groupFlagsOrMask & 2) != 0) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
-  meshRecord = (int *)(meshGroup + 0x20);
+  meshRecord = (int *)((ModelMeshGroupHeader *)meshGroup + 1);
   groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
     if ((meshRecord[1] & groupFlagsOrMask) != 0) {
@@ -184,15 +184,15 @@ void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,M
   int remainingMeshCount;
   int *meshRecord;
 
-  groupFlagsOrMask = *(uint32_t *)(meshGroup + 0xc);
-  remainingMeshCount = *(int *)(meshGroup + 4);
+  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags0C;
+  remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
   if ((groupFlagsOrMask & 1) != 0) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
   if ((groupFlagsOrMask & 2) != 0) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
-  meshRecord = (int *)(meshGroup + 0x20);
+  meshRecord = (int *)((ModelMeshGroupHeader *)meshGroup + 1);
   groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
     if ((meshRecord[1] & groupFlagsOrMask) != 0) {
@@ -248,7 +248,7 @@ void ModelRender_PrepareProjectedVertex
   GraphicsWorldCoordinateQ12 savedVertexZQ12;
   GraphicsWorldCoordinateQ12 savedVertexYQ12;
 
-  triangleRenderFlags = *(uint32_t *)(triangle + 0x34);
+  triangleRenderFlags = ((GraphicsTriangleInput *)triangle)->renderFlags;
   if (vertex[4].x == MODEL_VERTEX_NOT_PROJECTED) {
     savedVertexXQ12 = vertex->x;
     savedVertexYQ12 = vertex->y;
@@ -295,7 +295,7 @@ void ModelRender_PrepareProjectedVertex
   }
   if ((triangleRenderFlags & MODEL_TRIANGLE_LIGHTING_SCALED) == 0) {
     if ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) != 0) {
-      surfaceNormalQ12 = (GraphicsFixedVec3 *)(triangle + 0x24); /* the triangle's plane normal */
+      surfaceNormalQ12 = (GraphicsFixedVec3 *)&((GraphicsTriangleInput *)triangle)->planeNormalXQ12; /* the triangle's plane normal */
     }
     vertexColor = ModelRender_ComputeVertexIntensityDefaultPath
                       (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelDistanceAttenuationMmx,0),g_SceneBoundsFixed.bound5,
@@ -422,8 +422,8 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
 
 /* Address: 0x004BDC20.
    Draws one mesh of ModelRender_DrawMeshGroupsWithTemporaryTransform: prepares the model-space view directions,
-   marks the mesh's vertices (count at mesh +8) as not projected for this draw, then submits its triangles
-   (count at +0xC, stored after the vertices) through ModelRender_SubmitTriangle.
+   marks the mesh's vertices as not projected for this draw, then submits its triangles (stored after the
+   vertices) through ModelRender_SubmitTriangle.
 */
 void ModelRender_SubmitMeshTriangles
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
@@ -432,14 +432,14 @@ void ModelRender_SubmitMeshTriangles
   int remainingCount;
   GraphicsTriangleInput *recordCursor;
 
-  remainingCount = *(int *)(meshGroup + 8);
+  remainingCount = ((ModelMeshHeader *)meshGroup)->vertexCount;
   ModelRender_PrepareViewDirections(modelNode);
-  recordCursor = (GraphicsTriangleInput *)(meshGroup + 0x20);
+  recordCursor = (GraphicsTriangleInput *)((ModelMeshHeader *)meshGroup + 1);
   for (; remainingCount != 0; remainingCount--) {
     recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }
-  for (remainingCount = *(int *)(meshGroup + 0xc); remainingCount != 0; remainingCount--) {
+  for (remainingCount = ((ModelMeshHeader *)meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangle(facingThresholdQ12,recordCursor,modelNode);
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }
@@ -456,14 +456,14 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
   int remainingCount;
   GraphicsTriangleInput *recordCursor;
 
-  remainingCount = *(int *)(meshGroup + 8);
+  remainingCount = ((ModelMeshHeader *)meshGroup)->vertexCount;
   ModelRender_PrepareViewDirections(modelNode);
-  recordCursor = (GraphicsTriangleInput *)(meshGroup + 0x20);
+  recordCursor = (GraphicsTriangleInput *)((ModelMeshHeader *)meshGroup + 1);
   for (; remainingCount != 0; remainingCount--) {
     recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }
-  for (remainingCount = *(int *)(meshGroup + 0xc); remainingCount != 0; remainingCount--) {
+  for (remainingCount = ((ModelMeshHeader *)meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangleAlternatePath(recordCursor,modelNode);
     recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
   }

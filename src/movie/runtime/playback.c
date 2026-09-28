@@ -115,10 +115,9 @@ StatusResult Movie_EncodeFlmBufferFromFrameProvider
   frameOrStatus = providerResult.frameOrError;
   if (!providerResult.noFrame) {
     frameCount = 1;
-    /* a frame's pixels: frame + *(frame + *(frame + 0xB8) + 0xC) */
+    /* a frame is a gfx texture source; its pixels are those of the first subresource entry */
     firstFramePixels = (uint32_t *)((int)frameOrStatus +
-                           *(int *)((int)frameOrStatus +
-                                   *(int *)((int)frameOrStatus + 0xb8) + 0xc));
+                           ((GraphicsTextureSourceEntry *)((int)frameOrStatus + ((GraphicsTextureSourceAsset *)frameOrStatus)->tableDescriptor.subresourceTableOffset))->dataOffset);
     byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels);
     outputCursor = (uint32_t *)((int)outputCursor + byteCount);
     firstFrame = frameOrStatus;
@@ -129,8 +128,7 @@ StatusResult Movie_EncodeFlmBufferFromFrameProvider
       frameCount++;
       byteCount = Movie_EncodeFrame4x4Delta
                         (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,
-                         (uint32_t *)(*(int *)((int)frameOrStatus +
-                                          *(int *)((int)frameOrStatus + 0xb8) + 0xc) +
+                         (uint32_t *)(((GraphicsTextureSourceEntry *)((int)frameOrStatus + ((GraphicsTextureSourceAsset *)frameOrStatus)->tableDescriptor.subresourceTableOffset))->dataOffset +
                                  (int)frameOrStatus));
       outputCursor = (uint32_t *)((int)outputCursor + byteCount);
       frameProvider(frameOrStatus); /* release */
@@ -302,7 +300,7 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
     packageEntry = Package_FindEntryAcrossMounts(path);
     if ((!packageEntry.notFound) &&
        (seekResult = g_FileSystemSeek
-                           (FILESYSTEM_SEEK_BEGIN,*(int *)(packageEntry.entry + 0x1ec) + 0x200,
+                           (FILESYSTEM_SEEK_BEGIN,((PckEntryHeader *)packageEntry.entry)->runtimePayloadOffset + 0x200,
                             (void *)packageEntry.fileHandle), !seekResult.failed)) {
       isSharedPackageHandle++;
       handle = (void *)packageEntry.fileHandle;

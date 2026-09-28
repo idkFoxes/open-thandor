@@ -1533,7 +1533,7 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
           return true;
         }
         directory = (uint32_t *)linkedRecord->recordCountOrRowPayload00;
-        if (*(uint16_t *)((int)directory + 2) == ':') break;
+        if (((uint16_t *)directory)[1] == ':') break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
@@ -1658,7 +1658,7 @@ bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeR
           return true;
         }
         directory = (uint32_t *)record->recordCountOrRowPayload00;
-        if (*(uint16_t *)((int)directory + 2) == ':') break;
+        if (((uint16_t *)directory)[1] == ':') break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
@@ -1843,10 +1843,9 @@ SelectableGroupNodeResult UiSelectableGroup_NoneVisibleSelected(UiControlCount c
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
-  /* +0x48 = base.nodeFlags, +0x4C = stateFlags of the UiSelectableControl */
   while ((controlAddress = *(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset),
-         (*(uint32_t *)(controlAddress + 0x48) & UI_NODE_SUPPRESSED) != 0 ||
-         ((*(uint32_t *)(controlAddress + 0x4c) & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0))) {
+         (((UiSelectableControl *)controlAddress)->base.nodeFlags & UI_NODE_SUPPRESSED) != 0 ||
+         ((((UiSelectableControl *)controlAddress)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0))) {
     controlIndex++;
     controlPointerByteOffset = controlPointerByteOffset + 4;
     if (controlCount <= controlIndex) {
@@ -1877,9 +1876,8 @@ SelectableGroupIndexResult UiSelectableGroup_NoneSelected(UiControlCount control
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
-  /* +0x4C = stateFlags of the UiSelectableControl */
   do {
-    if ((*(uint32_t *)(*(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset) + 0x4c) & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (((*(UiSelectableControl **)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset))->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       selectedResult.noneSelected = false;
       selectedResult.selectedIndexOrCount = controlIndex;
       return selectedResult;

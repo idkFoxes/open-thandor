@@ -100,14 +100,15 @@ void SelectionPanel_RenderArmyRuntimeMetrics
         }
       }
       else if (runtimeKindOrValue < 3) {
-        childModelRuntime = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
-                 childModelRuntimeOrSavedOffset00;
+        childModelRuntime = armyRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
         if (((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != NULL)) &&
-           ((childDefinitionAddress = (childModelRuntime->definitionOrSavedId).savedIdOrOffset, *(int *)(childDefinitionAddress + 0x4c) == 5 ||
-            (((*(int *)(childDefinitionAddress + 0x4c) == 6 || (*(int *)(childDefinitionAddress + 0x4c) == 7)) ||
-             (*(int *)(childDefinitionAddress + 0x4c) == 8)))))) {
-          workingValue = *(int *)(childModelRuntime->reserved10_37 + 0x14);
-          capacityOrMetric = *(int *)((childModelRuntime->definitionOrSavedId).savedIdOrOffset + 0x30);
+           ((childDefinitionAddress = (childModelRuntime->definitionOrSavedId).savedIdOrOffset,
+            ((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 5 ||
+            (((((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 6 || (((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 7)) ||
+             (((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 8)))))) {
+          /* a weapon: its reload countdown against the weapon definition's reload ticks */
+          workingValue = ((ModelRuntimeWeaponAimStateView200 *)childModelRuntime)->attachmentReloadCountdownTicks24;
+          capacityOrMetric = ((ModelRuntimeWeaponAimStateView200 *)childModelRuntime)->modelDefinition->attachmentReloadTicks;
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           activeMetricMaximum = (int)(activeTotalMetrics >> 0x20);
           if (activeMetricMaximum == 0) {
@@ -151,17 +152,16 @@ void SelectionPanel_RenderArmyRuntimeMetrics
         }
       }
       else if (runtimeKindOrValue == 3) {
-        childModelRuntime = ((ModelRuntimeAttachmentDescriptor *)(armyRuntime->reserved120_13F + 0x20))->
-                 childModelRuntimeOrSavedOffset00;
+        childModelRuntime = armyRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
         if ((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != NULL)) {
           armyRuntime = (ModelRuntimeSlot *)(childModelRuntime->definitionOrSavedId).savedIdOrOffset;
           runtimeKindOrValue = 0xffffffff;
           workingValue = 7;
           if (armyRuntime->definitionValue9C_4C == 9) {
-            /* unsigned minimum of the child's eight dwords at +0x60..+0x7C, then at least classState80 (signed) */
+            /* unsigned minimum of the child's eight attachment reload ticks, then at least classState80 (signed) */
             do {
-              if (*(uint32_t *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 - 0x24) < runtimeKindOrValue) {
-                runtimeKindOrValue = *(uint32_t *)((childModelRuntime->classState).reserved84_A7 + workingValue * 4 - 0x24);
+              if (((ModelRuntimeWeaponAimStateView200 *)childModelRuntime)->attachmentReloadTicks[workingValue] < runtimeKindOrValue) {
+                runtimeKindOrValue = ((ModelRuntimeWeaponAimStateView200 *)childModelRuntime)->attachmentReloadTicks[workingValue];
               }
               workingValue--;
             } while (-1 < workingValue);
@@ -170,8 +170,8 @@ void SelectionPanel_RenderArmyRuntimeMetrics
             }
             /* top bar: maximumValue minus the positive part of that clamped minimum */
             workingValue = 0;
-            maximumValue = *(ArmyCommandGeneration *)
-                            ((ArmyRuntimeMovementControlState *)armyRuntime->reserved10_37 + 4);
+            /* armyRuntime holds the child's (weapon) definition here */
+            maximumValue = ((ArmyWeaponDefinitionView68 *)armyRuntime)->attachmentReloadTicks;
             if (0 < (int)runtimeKindOrValue) {
               workingValue = -runtimeKindOrValue;
             }
@@ -332,8 +332,8 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
-                     topLeftAdvance.nextX,*(uint32_t *)(armyRuntime->reserved100_117 + 4),
-                     *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),SELECTION_PANEL_CELL_TOP_BAR);
+                     topLeftAdvance.nextX,armyRuntime->researchDurationTicks104,
+                     armyRuntime->researchElapsedTicks108,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
@@ -420,8 +420,8 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                          (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
       SelectionPanel_DrawProportionalCappedBar
                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
-                 *(uint32_t *)(armyRuntime->reserved100_117 + 4),
-                 *(UiNumericValue32 *)(armyRuntime->reserved100_117 + 8),SELECTION_PANEL_CELL_TOP_BAR);
+                 armyRuntime->researchDurationTicks104,
+                 armyRuntime->researchElapsedTicks108,SELECTION_PANEL_CELL_TOP_BAR);
       scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
                 (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
@@ -479,9 +479,11 @@ void InGameSelection_RebuildOwnedClass16Selection
   for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      /* model payload: dword 0 = definition record (class id at +0x4C), dword 2 = entity runtime */
-      entityRuntime = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8);
-      if ((*(int *)(*(int *)ownerNode->runtimePayload + 0x4c) == 0x16) &&
+      /* model payload: the ModelRuntimeSlot; its owner army is the entity */
+      entityRuntime =
+           (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+      if ((((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C ==
+           0x16) &&
          ((entityRuntime->common).ownership.ownerIndex ==
           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primaryEntityOrFactionToken8080))
       {
@@ -728,15 +730,16 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
     (target->common).damageState.trackedCoordinate0Q12 = newWorldXQ12;
     (target->common).damageState.trackedCoordinate1Q12 = newWorldYQ12;
     (modelNode->worldTransform).translation.x = newWorldXQ12;
-    placementContactKind = *(int *)(definitionAddress + 0x278);
+    placementContactKind = ((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->placementContactKindIndex278;
     (modelNode->worldTransform).translation.y = newWorldYQ12;
     if (placementContactKind == ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION) {
       ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = 0x7fffffff;
     }
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
-              (*(Q12 *)(definitionAddress + 0x54),newWorldYQ12,newWorldXQ12,modelNode,worldRuntime);
+              (((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->placementHeightOffsetQ12,newWorldYQ12,newWorldXQ12,modelNode,
+               worldRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
-    ModelNodeRuntime_UpdateDepthBinMasks(*(DepthIntervalRadius32 *)(definitionAddress + 0xdc),modelNode);
+    ModelNodeRuntime_UpdateDepthBinMasks(((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->placementRadiusOrClearanceDC,modelNode);
   }
   return;
 }
@@ -822,213 +825,219 @@ StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySl
           } while (blockCountOrRecordOffset != 0);
           g_SelectionInfoEntitySlots = entitySlots;
           tableOffset = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
-          /* select.gfx: swap the sequence offsets at table +0x110 and +0xF0 (XCHG in the original) */
+          /* select.gfx: swap the data offsets of subresources 0x2E and 0x2D (XCHG in the original) */
           LOCK();
           swappedSelectionDataOffset =
-               *(AssetRelativeOffset *)
-                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x110);
-          *(AssetRelativeOffset *)
-           (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x110) =
-               *(AssetRelativeOffset *)
-                (g_SelectionPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xf0);
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[0x2e].dataOffset;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[0x2e].dataOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[0x2d].dataOffset;
           UNLOCK();
-          *(AssetRelativeOffset *)(loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xf0) =
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].dataOffset =
                swappedSelectionDataOffset;
-          /* info.gfx: rewrite records of several sequences; referencePayloadValue is the first dword of the record
-             the table entry +0xD0 points at */
+          /* info.gfx: rewrite records of several sequences (the records at the dataOffset of subresources
+             0x2C..0x33; their layout is not typed); referencePayloadValue is the first dword of the record of
+             subresource 0x2C */
           loadedResource = g_InfoPanelTextureSource;
           tableOffset = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
           referencePayloadValue =
-               *(uint32_t *)((g_InfoPanelTextureSource->common).buildMetadata.
-                          assetRelativeAddressAnchor28 +
-                         *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF +
-                                 tableOffset + 0xd0) + -0x28);
-          blockCountOrRecordOffset = *(int *)(g_InfoPanelTextureSource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x130);
-          patchBytes = (g_InfoPanelTextureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   blockCountOrRecordOffset + -0x28;
+               *(uint32_t *)((uint8_t *)g_InfoPanelTextureSource +
+                            ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[0x2c].
+                            dataOffset);
+          blockCountOrRecordOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[0x2f].dataOffset;
+          patchBytes = (uint8_t *)g_InfoPanelTextureSource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
                referencePayloadValue;
-          blockCountOrRecordOffset = *(int *)(loadedResource[3].common.buildMetadata.assetRelativeAddressAnchor28 +
-                          (tableOffset - 0x1c));
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          blockCountOrRecordOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x30].dataOffset;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
                referencePayloadValue;
-          blockCountOrRecordOffset = *(int *)(loadedResource[3].common.buildMetadata.assetRelativeAddressAnchor28 + tableOffset + 4);
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          blockCountOrRecordOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x31].dataOffset;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
                referencePayloadValue;
-          *(uint32_t *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x2c) = 4;
-          *(uint32_t *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x14) = 4;
-          *(uint32_t *)((int)loadedResource[3].common.buildMetadata.names.sourceName + tableOffset + 0xc) = 4;
-          *(uint32_t *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x34) = 4;
-          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x100;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x32].pixelHeight = 4;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x32].logicalHeight = 4;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x33].pixelHeight = 4;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x33].logicalHeight = 4;
+          patchBytes =
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].pixelHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xe8;
+          patchBytes =
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].logicalHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x120;
+          patchBytes =
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2e].pixelHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x108;
+          patchBytes =
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2e].logicalHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          blockCountOrRecordOffset = *(int *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x1c);
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          blockCountOrRecordOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x32].dataOffset;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
                referencePayloadValue;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c) =
                referencePayloadValue;
-          blockCountOrRecordOffset = *(int *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x3c);
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28;
+          blockCountOrRecordOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x33].dataOffset;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
                referencePayloadValue;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c) =
                referencePayloadValue;
-          blockCountOrRecordOffset = *(int *)(loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xf0);
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28) =
+          blockCountOrRecordOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].dataOffset;
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset) =
                referencePayloadValue;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18) =
                referencePayloadValue;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          blockCountOrRecordOffset = *(int *)(loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x110);
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x28) =
+          blockCountOrRecordOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2e].dataOffset;
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset) =
                referencePayloadValue;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x20;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x1c;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x18;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          *(uint32_t *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x10) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18) =
                referencePayloadValue;
-          patchBytes = (loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0xc;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
@@ -1236,12 +1245,12 @@ bool SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerInde
   do {
     currentEntry = *selectionEntryCursor;
     if (currentEntry != NULL) {
-      /* classRecord[0] = definition record (class id at +0x4C); classRecord[0x1c] = dword +0x70 */
+      /* classRecord is the ModelRuntimeSlot: [0] its definition; classRecord[0x1c] = dword +0x70 */
       classRecord = (currentEntry->common).ownership.definitionOrClassRecord;
       if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
         return true;
       }
-      if (*(int *)(*classRecord + 0x4c) != 0x16) {
+      if (((ModelRuntimeSlot *)classRecord)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C != 0x16) {
         return true;
       }
       if (classRecord[0x1c] != 0) {
@@ -1283,10 +1292,10 @@ bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
       selectedEntryCount++;
       selectedDefinitionRecordAddress =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (*(int *)(selectedDefinitionRecordAddress + 0x18) != 0) {
+      if (((ModelDefinitionRuntimeSemanticView280 *)selectedDefinitionRecordAddress)->runtimeValue18 != 0) {
         return false;
       }
-      selectedEntryIsClass13 = *(int *)(selectedDefinitionRecordAddress + 0x4c) == 0xd;
+      selectedEntryIsClass13 = ((ModelDefinitionRuntimeSemanticView280 *)selectedDefinitionRecordAddress)->runtimeClassId4C == 0xd;
     }
     selectionEntryCursor++;
     entriesRemaining--;
@@ -1324,7 +1333,8 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   while ((selectedEntity = *selectionEntryCursor, selectedEntity == NULL ||
          (selectedModelNode = (selectedEntity->common).ownership.modelNode,
-         *(int *)(*(int *)(selectedEntity->common).ownership.definitionOrClassRecord + 0x18) == 0)))
+         ((ModelRuntimeSlot *)(selectedEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+         runtimeDefinition->runtimeValue18 == 0)))
   {
     selectionEntryCursor++;
     entriesRemaining--;
@@ -1333,14 +1343,14 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
       selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
       while ((*selectionEntryCursor == NULL ||
              (class13Definition = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord,
-             *(int *)(class13Definition + 0x4c) != 0xd))) {
+             ((ModelDefinitionRuntimeSemanticView280 *)class13Definition)->runtimeClassId4C != 0xd))) {
         selectionEntryCursor++;
         entriesRemaining--;
         if (entriesRemaining == 0) {
           return true;
         }
       }
-      capabilityFlags = *(uint32_t *)(class13Definition + 0xc4);
+      capabilityFlags = ((ModelDefinitionRuntimeSemanticView280 *)class13Definition)->classParameterC4;
       highBandIndex = 3;
       if (((capabilityFlags & 0x80) == 0) && (highBandIndex = 1, (capabilityFlags & 4) == 0)) {
         highBandIndex = 6;
@@ -1524,11 +1534,11 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
     if (*selectionEntryCursor != NULL) {
       currentEntityDefinition =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (*(int *)(currentEntityDefinition + 0x4c) == 0x16) {
+      if (((ModelDefinitionRuntimeSemanticView280 *)currentEntityDefinition)->runtimeClassId4C == 0x16) {
         capabilityMask = capabilityMask | 8;
       }
-      else if (*(int *)(currentEntityDefinition + 0x4c) == 0xd) {
-        capabilityMask = capabilityMask | *(uint32_t *)(currentEntityDefinition + 0xc4);
+      else if (((ModelDefinitionRuntimeSemanticView280 *)currentEntityDefinition)->runtimeClassId4C == 0xd) {
+        capabilityMask = capabilityMask | ((ModelDefinitionRuntimeSemanticView280 *)currentEntityDefinition)->classParameterC4;
       }
     }
     selectionEntryCursor++;
@@ -1639,10 +1649,10 @@ void SelectionPointerArray_ApplyPositionCommandVariantB
       selectedEntryCount++;
       entityDefinitionAddress =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (*(int *)(entityDefinitionAddress + 0x18) != 0) {
+      if (((ModelDefinitionRuntimeSemanticView280 *)entityDefinitionAddress)->runtimeValue18 != 0) {
         return;
       }
-      if (*(int *)(entityDefinitionAddress + 0x4c) == 0xd) {
+      if (((ModelDefinitionRuntimeSemanticView280 *)entityDefinitionAddress)->runtimeClassId4C == 0xd) {
         singleClass13Entry = (int *)*selectionEntryCursor;
       }
     }
@@ -1652,9 +1662,10 @@ void SelectionPointerArray_ApplyPositionCommandVariantB
   if ((selectedEntryCount == 1) &&
      ((GameEntityRuntime *)singleClass13Entry != NULL)) {
     class13Record = (((GameEntityRuntime *)singleClass13Entry)->common).ownership.definitionOrClassRecord;
-    *(Q12 *)((int)class13Record + 0x78) = targetWorldX;
-    *(Q12 *)((int)class13Record + 0x7c) = targetWorldY;
-    *(uint32_t *)((int)class13Record + 0xec) = *(uint32_t *)((int)class13Record + 0xec) | 0x800;
+    ((ModelRuntimeSlot *)class13Record)->classLinkState.classState78 = targetWorldX;
+    ((ModelRuntimeSlot *)class13Record)->classLinkState.classState7C = targetWorldY;
+    ((ModelRuntimeSlot *)class13Record)->classState.classStateEC =
+         ((ModelRuntimeSlot *)class13Record)->classState.classStateEC | 0x800;
     SelectionPointerArray_Clear32(selection);
   }
 }
@@ -1698,7 +1709,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
            ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset &
            0xfffffdff;
       entryModelRuntime = ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)->modelRuntime;
-      if (*(int *)((entryModelRuntime->definitionOrSavedId).savedIdOrOffset + 0x4c) == 0x16) {
+      if ((entryModelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId4C == 0x16) {
         *selectionEntryCursor = NULL;
         (entryModelRuntime->classState).classStateDC = 0;
       }
@@ -1716,10 +1727,10 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
     if (*selectionEntryCursor != NULL) {
       selectedEntryCount++;
       definitionAddress = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (*(int *)(definitionAddress + 0x18) != 0) {
+      if (((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->runtimeValue18 != 0) {
         return;
       }
-      if (*(int *)(definitionAddress + 0x4c) == 0xd) {
+      if (((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->runtimeClassId4C == 0xd) {
         currentEntity = *selectionEntryCursor;
       }
     }
@@ -1729,12 +1740,13 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
   if ((selectedEntryCount == 1) && (currentEntity != NULL)) {
     class13Record = (currentEntity->common).ownership.definitionOrClassRecord;
     modelNodeRuntime = (currentEntity->common).ownership.modelNode;
-    *(uint32_t *)((int)class13Record + 0xec) = *(uint32_t *)((int)class13Record + 0xec) & 0xfffff7ff;
+    ((ModelRuntimeSlot *)class13Record)->classState.classStateEC =
+         ((ModelRuntimeSlot *)class13Record)->classState.classStateEC & 0xfffff7ff;
     lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource);
     if (!lookupEntry.notFound) {
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
-      *(uint32_t *)((int)class13Record + 0x78) = localPoint.xQ12;
-      *(uint32_t *)((int)class13Record + 0x7c) = localPoint.yQ12;
+      ((ModelRuntimeSlot *)class13Record)->classLinkState.classState78 = localPoint.xQ12;
+      ((ModelRuntimeSlot *)class13Record)->classLinkState.classState7C = localPoint.yQ12;
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
     }
   }
@@ -2781,7 +2793,7 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
   int remainingOrEntryAddress;
   GameEntityRuntime **entryCursor;
 
-  /* positionRecord is the entity's model node (+0x04); +0x94/+0x98 are its world translation X/Y */
+  /* positionRecord is the entity's model node */
   averageXQ12 = 0;
   averageYQ12 = 0;
   selectedCountOrRemaining = 0;
@@ -2789,10 +2801,10 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
   entryCursor = selection->entries;
   do {
     if (*entryCursor != NULL) {
-      positionRecord = *(int *)((int)*entryCursor + 4);
+      positionRecord = (int)((*entryCursor)->common).ownership.modelNode;
       selectedCountOrRemaining++;
-      averageXQ12 = averageXQ12 + *(int *)(positionRecord + 0x94);
-      averageYQ12 = averageYQ12 + *(int *)(positionRecord + 0x98);
+      averageXQ12 = averageXQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.x;
+      averageYQ12 = averageYQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.y;
     }
     entryCursor = entryCursor + 1;
     remainingOrEntryAddress--;
@@ -2804,13 +2816,13 @@ void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointer
     do {
       remainingOrEntryAddress = *(int *)selection;
       if (remainingOrEntryAddress != 0) {
-        positionRecord = *(int *)(remainingOrEntryAddress + 4);
-        averageXQ12 = averageXQ12 - *(int *)(positionRecord + 0x94);
-        averageYQ12 = averageYQ12 - *(int *)(positionRecord + 0x98);
-        *(int *)(remainingOrEntryAddress + 0x60) = averageXQ12;
-        *(int *)(remainingOrEntryAddress + 0x64) = averageYQ12;
-        averageXQ12 = averageXQ12 + *(int *)(positionRecord + 0x94);
-        averageYQ12 = averageYQ12 + *(int *)(positionRecord + 0x98);
+        positionRecord = (int)(((GameEntityRuntime *)remainingOrEntryAddress)->common).ownership.modelNode;
+        averageXQ12 = averageXQ12 - ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.x;
+        averageYQ12 = averageYQ12 - ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.y;
+        (((GameEntityRuntime *)remainingOrEntryAddress)->common).selectionOffsetXQ12 = averageXQ12;
+        (((GameEntityRuntime *)remainingOrEntryAddress)->common).selectionOffsetYQ12 = averageYQ12;
+        averageXQ12 = averageXQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.x;
+        averageYQ12 = averageYQ12 + ((ModelRuntimeNode *)positionRecord)->worldTransform.translation.y;
       }
       selection = (SelectionPointerArray32 *)((int)selection + 4);
       selectedCountOrRemaining--;
@@ -2864,24 +2876,24 @@ bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sele
       return false;
     }
   }
-  minOffsetX = *(int *)(firstEntryOrMinOffsetY + 0x60);
-  maxOffsetY = *(int *)(firstEntryOrMinOffsetY + 0x64);
+  minOffsetX = ((GameEntityRuntime *)firstEntryOrMinOffsetY)->common.selectionOffsetXQ12;
+  maxOffsetY = ((GameEntityRuntime *)firstEntryOrMinOffsetY)->common.selectionOffsetYQ12;
   maxOffsetX = minOffsetX;
   firstEntryOrMinOffsetY = maxOffsetY;
   do {
     entryAddress = *(int *)selection;
     if (entryAddress != 0) {
-      if (*(int *)(entryAddress + 0x60) < minOffsetX) {
-        minOffsetX = *(int *)(entryAddress + 0x60);
+      if (((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12 < minOffsetX) {
+        minOffsetX = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12;
       }
-      if (*(int *)(entryAddress + 0x64) < firstEntryOrMinOffsetY) {
-        firstEntryOrMinOffsetY = *(int *)(entryAddress + 0x64);
+      if (((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12 < firstEntryOrMinOffsetY) {
+        firstEntryOrMinOffsetY = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12;
       }
-      if (maxOffsetX < *(int *)(entryAddress + 0x60)) {
-        maxOffsetX = *(int *)(entryAddress + 0x60);
+      if (maxOffsetX < ((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12) {
+        maxOffsetX = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetXQ12;
       }
-      if (maxOffsetY < *(int *)(entryAddress + 0x64)) {
-        maxOffsetY = *(int *)(entryAddress + 0x64);
+      if (maxOffsetY < ((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12) {
+        maxOffsetY = ((GameEntityRuntime *)entryAddress)->common.selectionOffsetYQ12;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
@@ -2917,9 +2929,10 @@ void SelectionPointerArray_ApplyType16MarkerCoordinates
 
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
-    /* entry -> model runtime (dword 0) -> definition record (dword 0, class id at +0x4C) */
+    /* entry -> model runtime (dword 0) -> definition */
     if ((*(int **)selection != NULL) &&
-       (modelRuntime = (int *)**(int **)selection, *(int *)(*modelRuntime + 0x4c) == 0x16)) {
+       (modelRuntime = (int *)**(int **)selection,
+       ((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0x16)) {
       markerSlotIndex = 0xc;
       /* one match counter per byte: lane 1 in bits 0-7, lane 2 in bits 8-15, lane 4 in bits 16-23 */
       packedMarkerMatches = 0;
@@ -2937,19 +2950,22 @@ void SelectionPointerArray_ApplyType16MarkerCoordinates
         markerSlotIndex--;
       } while (-1 < markerSlotIndex);
       if ((laneMask & 1) != 0) {
-        *(char *)(modelRuntime + 0x37) = (char)packedMarkerMatches;
+        /* the three lane match counts are the low bytes of classStateDC (+0xDC..+0xDE) */
+        ((uint8_t *)&((ModelRuntimeSlot *)modelRuntime)->classState.classStateDC)[0] = (char)packedMarkerMatches;
         modelRuntime[0x2e] = worldYQ12;
         modelRuntime[0x2f] = worldXQ12;
         modelRuntime[0x30] = heading16;
       }
       if ((laneMask & 2) != 0) {
-        *(char *)((int)modelRuntime + 0xdd) = (char)((uint32_t)packedMarkerMatches >> 8);
+        ((uint8_t *)&((ModelRuntimeSlot *)modelRuntime)->classState.classStateDC)[1] =
+             (char)((uint32_t)packedMarkerMatches >> 8);
         modelRuntime[0x31] = worldYQ12;
         modelRuntime[0x32] = worldXQ12;
         modelRuntime[0x33] = heading16;
       }
       if ((laneMask & 4) != 0) {
-        *(char *)((int)modelRuntime + 0xde) = (char)((uint32_t)packedMarkerMatches >> 16);
+        ((uint8_t *)&((ModelRuntimeSlot *)modelRuntime)->classState.classStateDC)[2] =
+             (char)((uint32_t)packedMarkerMatches >> 16);
         modelRuntime[0x34] = worldYQ12;
         modelRuntime[0x35] = worldXQ12;
         modelRuntime[0x36] = heading16;

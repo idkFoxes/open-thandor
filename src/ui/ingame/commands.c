@@ -519,10 +519,10 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   playerBlock->pendingSelectionEntityOffset8098 = 0;
   UNLOCK();
   if (pendingEntryOrFactionToken != 0) {
-    /* the pending entry holds the army asset id at +8 */
+    /* the pending entry is the chosen army asset record */
     placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                       (0,headingAngle,worldXQ12,worldYQ12,
-                       *(ArmyPlacementContext *)(pendingEntryOrFactionToken + 8),playerBlock->primaryEntityOrFactionToken8080,
+                       (ArmyPlacementContext)((ArmyAssetRecordPrefix *)pendingEntryOrFactionToken)->registryId,playerBlock->primaryEntityOrFactionToken8080,
                        worldRuntime);
     if (!placementRejected) {
       /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
@@ -530,7 +530,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->primaryEntityOrFactionToken8080,
-                         *(PckArmyAssetIdCatalog *)(pendingEntryOrFactionToken + 8),worldRuntime);
+                         ((ArmyAssetRecordPrefix *)pendingEntryOrFactionToken)->registryId,worldRuntime);
       createdArmySlots = (ArmyRuntimeSlot **)createResult.armyRuntimeOrError;
       if (!createResult.failed) {
         pendingEntryOrFactionToken = playerBlock->primaryEntityOrFactionToken8080;
@@ -660,17 +660,17 @@ void UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node)
     countWidthOrOffset = offsetTable[slotIndex];
     runtimeRecord = *recordCursor;
     if (slotIndex < itemCount) {
-      controlFlags = (uint32_t *)((int)&node->nodeFlags + countWidthOrOffset);
+      controlFlags = (uint32_t *)&THANDOR_UI_AT(node,countWidthOrOffset)->nodeFlags;
       *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       slotTexture = runtimeRecord->textureSource;
     }
     else {
-      controlFlags = (uint32_t *)((int)&node->nodeFlags + countWidthOrOffset);
+      controlFlags = (uint32_t *)&THANDOR_UI_AT(node,countWidthOrOffset)->nodeFlags;
       *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       slotTexture = NULL;
     }
     slotIndex++;
-    ((UiCommandSpriteButtonControl *)((int)node + countWidthOrOffset))->sprite.primaryTextureSource = slotTexture;
+    ((UiCommandSpriteButtonControl *)THANDOR_UI_AT(node,countWidthOrOffset))->sprite.primaryTextureSource = slotTexture;
     recordCursor++;
   } while (slotIndex < 24);
   INGAME_UI(node,armyStockPanel)->vtable->layout(INGAME_UI(node,armyStockPanel));
@@ -1537,7 +1537,7 @@ void InGameCommand150_HandlePlayerDepartureAndOwnership
       for (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
           ownerNode != NULL; ownerNode = ownerNode->nextNode) {
         if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-           (entityRuntime = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8),
+           (entityRuntime = (GameEntityRuntime *)(((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime,
            factionToken == (entityRuntime->common).ownership.ownerIndex)) {
           ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
         }
@@ -1553,20 +1553,20 @@ void InGameCommand150_HandlePlayerDepartureAndOwnership
 
 /* Address: 0x0056D980.
    Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
-   from the world runtime's lighting colours (+0x120 ramp, +0x124 base) with their alpha removed and the secondary
-   colour (+0x12C) made opaque, relights the field grid with the light angles at +0x178/+0x17C, then sets bit 0x1000
+   from the world runtime's lighting colours (lighting.baseColorArgb, rampColorArgb) with their alpha removed and the secondary
+   colour (color12CArgb) made opaque, relights the field grid with the light angles stored in the root, then sets bit 0x1000
    of g_UiCommandModeGColorVariantFlags and the limit 0x7FFFFFFF read by the terrain triangle and marker drawing.
 */
 void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (*(uint32_t *)((int)worldRuntime + 0x12c) | 0xff000000,
-             *(uint32_t *)((int)worldRuntime + 0x124) & 0xffffff,
-             *(uint32_t *)((int)worldRuntime + 0x120) & 0xffffff);
+            (((WorldRuntimeContext *)worldRuntime)->lighting.color12CArgb | 0xff000000,
+             ((WorldRuntimeContext *)worldRuntime)->lighting.rampColorArgb & 0xffffff,
+             ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb & 0xffffff);
   FieldGrid_RecomputeInteriorDirectionalLighting
-            (*(AngleTurn32 *)((int)worldRuntime + 0x17c),*(AngleTurn32 *)((int)worldRuntime + 0x178),
-             *(FieldGridAsset **)((int)worldRuntime + 0x54));
+            (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldYQ12_0BAC,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldXQ12_0BA8,
+             ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags | 0x1000;
   g_UiCommandModeGColorVariantLimit = 0x7fffffff;
   return;
@@ -1682,8 +1682,7 @@ void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *ro
   } while (-1 < controlIndex);
   /* The original pushes all twelve command controls (offsets 11..0) as the variadic list. */
   UiSelectableGroup_SelectExclusive
-            (12,(UiNodeBase *)
-                 ((int)&root->nextSibling + g_UiMappedCommandControlOffsets[absoluteIndex - pageBase]),
+            (12,THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[absoluteIndex - pageBase]),
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[0]),
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[1]),
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[2]),
@@ -1815,19 +1814,19 @@ void UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context)
 /* Address: 0x0056D9F0.
    Terrain colours of every editor mode except smoothing (and of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
    when the editor is switched off): rebuilds the terrain colour ramp from the world runtime's lighting colours
-   (+0x120 ramp, +0x124 base, +0x12C secondary) unchanged, relights the field grid with the light angles at
-   +0x178/+0x17C, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
+   (lighting.baseColorArgb, rampColorArgb, color12CArgb) unchanged, relights the field grid with the light
+   angles stored in the root, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
    counterpart of UiCommandModeG_ApplyMaskedColorVariant.
 */
 void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (*(PackedArgb32 *)((int)worldRuntime + 0x12c),*(PackedArgb32 *)((int)worldRuntime + 0x124),
-             *(PackedArgb32 *)((int)worldRuntime + 0x120));
+            (((WorldRuntimeContext *)worldRuntime)->lighting.color12CArgb,((WorldRuntimeContext *)worldRuntime)->lighting.rampColorArgb,
+             ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb);
   FieldGrid_RecomputeInteriorDirectionalLighting
-            (*(AngleTurn32 *)((int)worldRuntime + 0x17c),*(AngleTurn32 *)((int)worldRuntime + 0x178),
-             *(FieldGridAsset **)((int)worldRuntime + 0x54));
+            (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldYQ12_0BAC,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldXQ12_0BA8,
+             ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags & 0xffffefff;
   g_UiCommandModeGColorVariantLimit = 0xffffff;
   return;

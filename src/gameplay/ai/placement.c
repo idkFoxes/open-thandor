@@ -195,31 +195,32 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
       cellWorldX = currentCell->worldX;
       cellWorldY = currentCell->worldY;
       if (g_AiWorkspace06Count < AI_WORKSPACE06_CAPACITY) {
-        /* same layout as AiScoredSiteWorkspaceEntry: x, y, score, cell */
-        *(Q12 *)siteEntryBytes = cellWorldX;
-        *(Q12 *)(siteEntryBytes + 4) = cellWorldY;
-        *(FieldGridCell **)(siteEntryBytes + 0xc) = currentCell;
-        /* the wrong-base reads (see above): intended were the ki.dat parameters at these offsets */
-        deltaXOrCapTerm = *(int *)(siteEntryBytes + 0xc4);
+        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldXQ12 = cellWorldX;
+        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldYQ12 = cellWorldY;
+        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cell = currentCell;
+        /* the wrong-base reads (see above): the ki.dat parameter layout applied to the new entry's address */
+        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords49_50[0];
         deltaYOrDistanceOrWeight = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         deltaXOrCapTerm = deltaXOrCapTerm - deltaYOrDistanceOrWeight;
         if (deltaXOrCapTerm < 0) {
           deltaXOrCapTerm = 0;
         }
-        deltaYOrDistanceOrWeight = *(int *)(siteEntryBytes + 0xd4);
-        workspace02CapOrScore = *(int *)(siteEntryBytes + 0xd0);
+        deltaYOrDistanceOrWeight = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[1];
+        workspace02CapOrScore = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[0];
         workspace02Distance = AiWorkspace02_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if (workspace02CapOrScore < workspace02Distance) {
           workspace02Distance = workspace02CapOrScore;
         }
-        workspace02CapOrScore = deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance * *(int *)(siteEntryBytes + 0xe0);
-        deltaXOrCapTerm = *(int *)(siteEntryBytes + 0xc8);
+        workspace02CapOrScore =
+             deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance * (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords56_66[0];
+        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords49_50[1];
         deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if (-1 < deltaXOrCapTerm - deltaYOrDistanceOrWeight) {
-          workspace02CapOrScore = workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) * *(int *)(siteEntryBytes + 0xd8);
+          workspace02CapOrScore =
+               workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) * (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[2];
         }
         g_AiWorkspace06Count++;
-        *(int *)(siteEntryBytes + 8) = workspace02CapOrScore;
+        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->score = workspace02CapOrScore;
       }
       return;
     }
@@ -277,10 +278,11 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
   }
   for (; terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200, countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
     runtimeSlot = (int *)workspace00Entry->runtimeSlotAddressOrZero;
-    /* runtimeSlot[0] is the model definition (runtime class at +0x4C), runtimeSlot[1] the model node */
+    /* runtimeSlot is a ModelRuntimeSlot: [0] the model definition, [1] the model node */
     if ((runtimeSlot != NULL) &&
        (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1],
-       *(int *)(*runtimeSlot + 0x4c) == MODEL_RUNTIME_CLASS_13)) {
+       ((ModelRuntimeSlot *)runtimeSlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C ==
+       MODEL_RUNTIME_CLASS_13)) {
       markerLookup = ModelLookupTable_ContainsPackedKey
                          (1,5,(modelNodeRuntime->modelPayload).modelResource);
       if (!markerLookup.notFound) {
@@ -303,13 +305,15 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
         workspace00Entry = g_AiWorkspaceBuffer00_Size0400;
         for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
           if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
-            /* entity + 0x94/0x98: the model node's world x/y */
-            entityOrDeltaY = *(int *)(workspace00Entry->runtimeSlotAddressOrZero + 4);
-            entityDeltaX = *(int *)(entityOrDeltaY + 0x94) - terrainFeatureCell->worldX;
+            entityOrDeltaY =
+                 (int)((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
+            entityDeltaX =
+                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.x - terrainFeatureCell->worldX;
             if (entityDeltaX < 0) {
               entityDeltaX = -entityDeltaX;
             }
-            entityOrDeltaY = *(int *)(entityOrDeltaY + 0x98) - terrainFeatureCell->worldY;
+            entityOrDeltaY =
+                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.y - terrainFeatureCell->worldY;
             if (entityOrDeltaY < 0) {
               entityOrDeltaY = -entityOrDeltaY;
             }
@@ -361,12 +365,15 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
             return;
           }
           if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
-            entityOrDeltaY = *(int *)(workspace00Entry->runtimeSlotAddressOrZero + 4);
-            entityDeltaX = *(int *)(entityOrDeltaY + 0x94) - terrainFeatureCell->worldX;
+            entityOrDeltaY =
+                 (int)((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
+            entityDeltaX =
+                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.x - terrainFeatureCell->worldX;
             if (entityDeltaX < 0) {
               entityDeltaX = -entityDeltaX;
             }
-            entityOrDeltaY = *(int *)(entityOrDeltaY + 0x98) - terrainFeatureCell->worldY;
+            entityOrDeltaY =
+                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.y - terrainFeatureCell->worldY;
             if (entityOrDeltaY < 0) {
               entityOrDeltaY = -entityOrDeltaY;
             }

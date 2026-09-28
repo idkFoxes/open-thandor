@@ -176,7 +176,7 @@ FixedTransform_ApplyEulerRotationToVectorRegs
 
 
 /* Address: 0x004BED10.
-   Moves the vector at vectorState + 0x18 (a model node's local offset) along its own direction:
+   Moves the local translation of the model node at vectorState along its own direction:
    vector -= direction(vector) * directionScale * stepMultiplier. The army movement code uses it for weapon
    attachment nodes with the weapon's backward-step scale and -elapsedTicks, which moves the offset outward
    along its direction.
@@ -189,11 +189,11 @@ void FixedVector_StepBackwardAlongOwnDirection
   FixedDirection stepDirection;
   FixedElevationAzimuth vectorAngles;
 
-  vectorAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)(vectorState + 0x18));
+  vectorAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)&((ModelRuntimeNode *)vectorState)->modelPayload.localTranslationXQ12);
   stepDirection = FixedMath_DirectionFromAnglesScaledRegs(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,directionScale);
-  *(int *)(vectorState + 0x18) = *(int *)(vectorState + 0x18) - stepDirection.x * stepMultiplier;
-  *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - stepDirection.y * stepMultiplier;
-  *(int *)(vectorState + 0x20) = *(int *)(vectorState + 0x20) - stepDirection.z * stepMultiplier;
+  ((ModelRuntimeNode *)vectorState)->modelPayload.localTranslationXQ12 = ((ModelRuntimeNode *)vectorState)->modelPayload.localTranslationXQ12 - stepDirection.x * stepMultiplier;
+  ((ModelRuntimeNode *)vectorState)->modelPayload.localTranslationYQ12 = ((ModelRuntimeNode *)vectorState)->modelPayload.localTranslationYQ12 - stepDirection.y * stepMultiplier;
+  ((ModelRuntimeNode *)vectorState)->modelPayload.localTranslationZQ12 = ((ModelRuntimeNode *)vectorState)->modelPayload.localTranslationZQ12 - stepDirection.z * stepMultiplier;
 }
 
 

@@ -157,7 +157,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
         }
         else {
           /* two bits per faction: how this faction sees the foreign entity */
-          countOrMask = *(uint32_t *)((entityRuntime->common).damageState.reserved0C_23 + 0x10) >>
+          countOrMask = (entityRuntime->common).damageState.factionVisibilityBits1C >>
                    ((char)factionIndex * '\x02' & 0x1fU);
           if (((entityRuntime->common).ownership.ownerIndex != 0) &&
              (testResult = GameFactionRuntime_TestCapabilityBitClear
@@ -168,7 +168,8 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
             if (((countOrMask & 2) == 0) &&
                (((countOrMask & 1) == 0 ||
                 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
-                 [*(int *)(*(int *)(entityRuntime->common).ownership.definitionOrClassRecord + 0x4c)] !=
+                 [((ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+                  runtimeDefinition->runtimeClassId4C] !=
                  ArmyRuntime_ClassCommandHandlerGroupA)))) {
               assetId = (entityRuntime->common).runtimeIdentityOrArmyAssetId;
               if (g_AiWorkspace03Count < 0x200) {
@@ -251,7 +252,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
       primarySlotWords = (int *)primaryEntryCursor->runtimeSlotAddressOrZero;
       if (primarySlotWords != NULL) {
         remainingOrClassRecord = *primarySlotWords;
-        if (*(int *)(remainingOrClassRecord + 0x4c) == 0xb) {
+        if (((ModelDefinitionRuntimeSemanticView280 *)remainingOrClassRecord)->runtimeClassId4C == 0xb) {
           assetId = primarySlotWords[0x18];
           if ((primarySlotWords[0x2e] == 1) && (countOrMask < 0x80)) {
             primaryBuffer[countOrMask].runtimeSlotAddressOrZero = 0;
@@ -259,7 +260,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
             g_AiWorkspace00Count++;
           }
         }
-        else if (*(int *)(remainingOrClassRecord + 0x4c) == 0x16) {
+        else if (((ModelDefinitionRuntimeSemanticView280 *)remainingOrClassRecord)->runtimeClassId4C == 0x16) {
           assetId = primarySlotWords[0x18];
           if ((primarySlotWords[0x2b] == 1) && (widthOrCount < 0x40)) {
             runtimeEntryCursor[widthOrCount].armyRuntime = NULL;
@@ -267,7 +268,8 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
             g_AiWorkspace01Count++;
           }
         }
-        else if (((*(int *)(remainingOrClassRecord + 0x4c) == 0xd) && (assetId = primarySlotWords[0x18], primarySlotWords[0x2e] == 1)) &&
+        else if (((((ModelDefinitionRuntimeSemanticView280 *)remainingOrClassRecord)->runtimeClassId4C == 0xd) &&
+                 (assetId = primarySlotWords[0x18], primarySlotWords[0x2e] == 1)) &&
                 (widthOrCount < 0x40)) {
           runtimeEntryCursor[widthOrCount].armyRuntime = NULL;
           runtimeEntryCursor[widthOrCount].armyAssetId = assetId;
@@ -408,9 +410,9 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   for (widthOrCount = g_AiWorkspace00Count; widthOrCount != 0; widthOrCount--) {
     if ((int *)primaryEntryCursor->runtimeSlotAddressOrZero != NULL) {
       remainingOrClassRecord = *(int *)primaryEntryCursor->runtimeSlotAddressOrZero;
-      rowStrideOrClassId = *(int *)(remainingOrClassRecord + 0x4c);
+      rowStrideOrClassId = ((ModelDefinitionRuntimeSemanticView280 *)remainingOrClassRecord)->runtimeClassId4C;
       if (rowStrideOrClassId == 0xd) {
-        countOrMask = countOrMask | *(uint32_t *)(remainingOrClassRecord + 0xc4);
+        countOrMask = countOrMask | ((ModelDefinitionRuntimeSemanticView280 *)remainingOrClassRecord)->classParameterC4;
       }
       else if (rowStrideOrClassId == 0x16) {
         countOrMask = countOrMask | 8;
@@ -1343,20 +1345,19 @@ bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
     if (workspaceEntriesRemaining == 0) {
       return true;
     }
-    /* raw view of the ArmyRuntimeSlot: [0] is its definition, [1] its model node (translation.x at +0x94,
-       translation.y at +0x98) */
+    /* raw view of the runtime slot: [0] is its definition, [1] its model node */
     workspaceEntryEntityRecord = (int *)workspaceEntryCursor->armyRuntime;
     if (workspaceEntryEntityRecord != NULL) {
-      deltaXAbsQ12 = worldX - *(int *)(workspaceEntryEntityRecord[1] + 0x94);
+      deltaXAbsQ12 = worldX - ((ModelRuntimeNode *)workspaceEntryEntityRecord[1])->worldTransform.translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      deltaYAbsQ12 = worldY - *(int *)(workspaceEntryEntityRecord[1] + 0x98);
+      deltaYAbsQ12 = worldY - ((ModelRuntimeNode *)workspaceEntryEntityRecord[1])->worldTransform.translation.y;
       if (deltaYAbsQ12 < 0) {
         deltaYAbsQ12 = -deltaYAbsQ12;
       }
-      if ((deltaXAbsQ12 < *(int *)(*workspaceEntryEntityRecord + 0x19c)) &&
-         (deltaYAbsQ12 < *(int *)(*workspaceEntryEntityRecord + 0x19c))) {
+      if ((deltaXAbsQ12 < ((ModelDefinitionRuntimeSemanticView280 *)*workspaceEntryEntityRecord)->supportRadius19C) &&
+         (deltaYAbsQ12 < ((ModelDefinitionRuntimeSemanticView280 *)*workspaceEntryEntityRecord)->supportRadius19C)) {
         return false;
       }
     }

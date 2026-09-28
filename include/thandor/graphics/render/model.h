@@ -32,6 +32,26 @@
 #define MODEL_TRIANGLE_VERTEX_CACHE_FLAGS 0x8E00 /* the bits a projected vertex's cached colour was computed for */
 /* Marker in a mesh vertex's projected X (+0x30): not transformed and projected yet for this draw */
 #define MODEL_VERTEX_NOT_PROJECTED ((int)0x80000000)
+
+/* Header of a model mesh group (ModelMeshGroupAddress32 of ModelRender_DrawMeshGroups*); the meshes follow
+   at +0x20, each starting with its byte size and group mask. */
+typedef struct ModelMeshGroupHeader {
+    uint32_t unknown00;
+    int meshCount;           /* +0x04 */
+    uint32_t unknown08;
+    uint32_t groupFlags0C;   /* +0x0C, read into the mask local before the node's meshGroupMask replaces it */
+    uint8_t unknown10_1F[16];
+} ModelMeshGroupHeader;
+/* Header of one mesh of a group (ModelRender_SubmitMeshTriangles*); the vertices follow at +0x20, then the
+   GraphicsTriangleInput records. */
+typedef struct ModelMeshHeader {
+    int byteSize;            /* +0x00 distance to the next mesh */
+    uint32_t groupMask;      /* +0x04 */
+    int vertexCount;         /* +0x08 */
+    int triangleCount;       /* +0x0C */
+    uint32_t flags10;        /* +0x10 bit 0 selects the shadow silhouette pass (graphics/render/shading.c) */
+    uint8_t unknown14_1F[12];
+} ModelMeshHeader;
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BDC90 */

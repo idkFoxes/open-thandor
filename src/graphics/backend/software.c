@@ -615,24 +615,24 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
   uint32_t row;
   uint32_t pair;
 
-  /* only a "gfx" texture source; +0xb0 subresource count, +0xb8 offset of the 0x20-byte entry table */
-  if ((*(uint32_t *)asset != 0x786667) || (subresourceIndex >= *(uint32_t *)(asset + 0xb0))) {
+  /* only a "gfx" texture source; the entry table holds 0x20-byte GraphicsTextureSourceEntry records */
+  if (((uint32_t)((GraphicsTextureSourceAsset *)asset)->common.magic != ASSET_MAGIC_GFX) || (subresourceIndex >= ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceCount)) {
     return;
   }
-  entry = asset + *(uint32_t *)(asset + 0xb8) + subresourceIndex * 0x20;
-  /* framebuffer->bytesPerPixel, entry->paletteIndex (-1: ARGB8888 texels) */
-  if ((*(uint32_t *)((uint8_t *)framebuffer + 8) != 2) || (*(int32_t *)(entry + 8) != -1)) {
+  entry = asset + ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceTableOffset + subresourceIndex * 0x20;
+  /* paletteIndex -1: ARGB8888 texels */
+  if (((uint32_t)framebuffer->bytesPerPixel != 2) || (((GraphicsTextureSourceEntry *)entry)->paletteIndex != -1)) {
     return;
   }
-  pitchPixels = *(uint32_t *)framebuffer;
-  destinationRow = (uint16_t *)*(uint8_t **)((uint8_t *)framebuffer + 0xc) +
+  pitchPixels = framebuffer->width;
+  destinationRow = (uint16_t *)framebuffer->pixels +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = *(uint32_t *)(entry + 0x18); /* entry->pixelWidth */
-  sourceHeight = *(uint32_t *)(entry + 0x1c); /* entry->pixelHeight */
+  sourceWidth = ((GraphicsTextureSourceEntry *)entry)->pixelWidth;
+  sourceHeight = ((GraphicsTextureSourceEntry *)entry)->pixelHeight;
   /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + *(uint32_t *)(entry + 0xc); /* entry->dataOffset */
+  sourceBase = asset + ((GraphicsTextureSourceEntry *)entry)->dataOffset;
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
@@ -717,24 +717,24 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   uint32_t row;
   uint32_t pair;
 
-  /* only a "gfx" texture source; +0xb0 subresource count, +0xb8 offset of the 0x20-byte entry table */
-  if ((*(uint32_t *)asset != 0x786667) || (subresourceIndex >= *(uint32_t *)(asset + 0xb0))) {
+  /* only a "gfx" texture source; the entry table holds 0x20-byte GraphicsTextureSourceEntry records */
+  if (((uint32_t)((GraphicsTextureSourceAsset *)asset)->common.magic != ASSET_MAGIC_GFX) || (subresourceIndex >= ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceCount)) {
     return;
   }
-  entry = asset + *(uint32_t *)(asset + 0xb8) + subresourceIndex * 0x20;
-  /* framebuffer->bytesPerPixel, entry->paletteIndex (-1: ARGB8888 texels) */
-  if ((*(uint32_t *)((uint8_t *)framebuffer + 8) != 4) || (*(int32_t *)(entry + 8) != -1)) {
+  entry = asset + ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceTableOffset + subresourceIndex * 0x20;
+  /* paletteIndex -1: ARGB8888 texels */
+  if (((uint32_t)framebuffer->bytesPerPixel != 4) || (((GraphicsTextureSourceEntry *)entry)->paletteIndex != -1)) {
     return;
   }
-  pitchPixels = *(uint32_t *)framebuffer;
-  destinationRow = (uint32_t *)*(uint8_t **)((uint8_t *)framebuffer + 0xc) +
+  pitchPixels = framebuffer->width;
+  destinationRow = (uint32_t *)framebuffer->pixels +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = *(uint32_t *)(entry + 0x18); /* entry->pixelWidth */
-  sourceHeight = *(uint32_t *)(entry + 0x1c); /* entry->pixelHeight */
+  sourceWidth = ((GraphicsTextureSourceEntry *)entry)->pixelWidth;
+  sourceHeight = ((GraphicsTextureSourceEntry *)entry)->pixelHeight;
   /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + *(uint32_t *)(entry + 0xc); /* entry->dataOffset */
+  sourceBase = asset + ((GraphicsTextureSourceEntry *)entry)->dataOffset;
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {

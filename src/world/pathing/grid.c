@@ -109,9 +109,8 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
   runtimeClassId = modelDefinition->runtimeClassId4C;
   if (overlappedEntity != NULL) {
-    /* +0x4C of the definition record is its ModelRuntimeClassId */
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
-      [*(int *)((int)(overlappedEntity->common).ownership.definitionOrClassRecord + 0x4c)])
+      [((ModelDefinitionRuntimeSemanticView280 *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
               (overlappedEntity);
   }
   armyRuntime = (routeEntityRuntime->common).ownership.runtimeLink;
@@ -186,7 +185,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       /* high-cost cells block the backtrack's straight-line test, unless bit 1 of the runtime record's +0x18
          flags is set */
       callerBlockingMask = g_GridPathHighCostMask;
-      if ((*(uint32_t *)((int)(routeEntityRuntime->common).ownership.runtimeLink + 0x18) & 2) != 0) {
+      if ((((ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink)->movementStateFlags & 2) != 0) {
         callerBlockingMask = 0;
       }
       backtrackResult = GridPathCost_BacktrackBestHexRoute
@@ -226,10 +225,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
   targetWorldXQ12 = fallbackWorldPosition.worldXQ12;
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
-  startColumnOrScratch = *(int *)((int)(routeEntityRuntime->common).ownership.definitionOrClassRecord + 0x4c);
+  startColumnOrScratch = ((ModelDefinitionRuntimeSemanticView280 *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->runtimeClassId4C;
   if (overlappedEntity != NULL) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-      [*(int *)((int)(overlappedEntity->common).ownership.definitionOrClassRecord + 0x4c)])
+      [((ModelDefinitionRuntimeSemanticView280 *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
               (overlappedEntity);
   }
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[startColumnOrScratch](routeEntityRuntime);
@@ -592,8 +591,8 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   if (ownerNode != NULL) {
     do {
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-          (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) != 0)) &&
-         (*(int *)(*(int *)ownerNode->runtimePayload + 0x278) != 1)) {
+          (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0)) &&
+         ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex278 != 1)) {
         wideProductX = (int64_t)ownerNode->worldXQ12 * 0x1c6e9c;
         wideProductY = (int64_t)ownerNode->worldYQ12 * -0x20c8cc;
         scaledRowTerm = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
@@ -628,8 +627,8 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
     ownerNode = worldRuntime->ownerListHead;
     do {
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-          (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) != 0)) &&
-         (*(int *)(*(int *)ownerNode->runtimePayload + 0x278) != 1)) {
+          (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0)) &&
+         ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex278 != 1)) {
         wideProductX = (int64_t)ownerNode->worldXQ12 * 0x1c6e9c;
         wideProductY = (int64_t)ownerNode->worldYQ12 * -0x20c8cc;
         scaledRowTerm = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
@@ -979,9 +978,8 @@ EntityPathing_RebuildOverlappingGroupRoutes
   if (searchRadius < deltaY) {
     searchRadius = deltaY;
   }
-  /* +0xDC of the definition record: the model's clearance radius */
-  searchRadius = searchRadius + *(int *)((int)(routeEntityRuntime->common).ownership.definitionOrClassRecord +
-                          0xdc);
+  /* the definition's clearance radius */
+  searchRadius = searchRadius + (int)((ModelDefinitionRuntimeSemanticView280 *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->placementRadiusOrClearanceDC;
   secondMaskHigh = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldXOrScratch + targetWorldX) >> 1);
   secondMaskLow = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldY + targetWorldY) >> 1);
   entityWorldXOrScratch = 32; /* capacity of g_EntityPathingPriorityPairs */
@@ -994,7 +992,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
       masksOverlap = DepthBinMasks_Overlap
                          (ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear,
                           secondMaskLow,secondMaskHigh);
-      if ((masksOverlap) && (*(int *)((int)candidateRecord + 0x18) != 0)) {
+      if ((masksOverlap) && (((ModelDefinitionRuntimeSemanticView280 *)candidateRecord)->runtimeValue18 != 0)) {
         pairCursor->entity = candidateEntity;
         pairCursor->priority = 0;
         g_EntityPathingPriorityPairCount++;
@@ -1008,18 +1006,18 @@ EntityPathing_RebuildOverlappingGroupRoutes
   if (1 < g_EntityPathingPriorityPairCount) {
     /* priority: 0 when bit 1 of the runtime record's +0x18 flags is set, 1 for another faction (+0x0C),
        2 for the own faction, plus the definition's +0x0C weight when flag bit 0 is clear */
-    entityWorldXOrScratch = *(int *)((int)(routeEntityRuntime->common).ownership.runtimeLink + 0xc);
+    entityWorldXOrScratch = ((ArmyRuntimeSlot *)(routeEntityRuntime->common).ownership.runtimeLink)->factionIndex;
     pairsRemaining = g_EntityPathingPriorityPairCount;
     pairCursor = g_EntityPathingPriorityPairs;
     do {
       candidateRecord = (pairCursor->entity->common).ownership.runtimeLink;
       candidateDefinition = (pairCursor->entity->common).ownership.definitionOrClassRecord;
-      if ((((*(uint32_t *)((int)candidateRecord + 0x18) & 2) == 0) &&
+      if ((((((ArmyRuntimeSlot *)candidateRecord)->movementStateFlags & 2) == 0) &&
           (pairCursor->priority = pairCursor->priority + 1,
-          entityWorldXOrScratch == *(int *)((int)candidateRecord + 0xc))) &&
+          entityWorldXOrScratch == ((ArmyRuntimeSlot *)candidateRecord)->factionIndex)) &&
          (pairCursor->priority = pairCursor->priority + 1,
-         (*(uint32_t *)((int)candidateRecord + 0x18) & 1) == 0)) {
-        pairCursor->priority = pairCursor->priority + *(int *)((int)candidateDefinition + 0xc);
+         (((ArmyRuntimeSlot *)candidateRecord)->movementStateFlags & 1) == 0)) {
+        pairCursor->priority = pairCursor->priority + ((ModelDefinitionRuntimeSemanticView280 *)candidateDefinition)->runtimeValue0C;
       }
       heapBase = g_EntityPathingPriorityPairs;
       pairCursor++;
@@ -1054,9 +1052,8 @@ EntityPathing_RebuildOverlappingGroupRoutes
       influencePair = g_EntityPathingPriorityPairs;
     } while (1 < heapSize);
     do {
-      /* +0x4C of the definition record is its ModelRuntimeClassId */
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [*(int *)((int)(influencePair->entity->common).ownership.definitionOrClassRecord + 0x4c)])
+        [((ModelDefinitionRuntimeSemanticView280 *)(influencePair->entity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
                 (influencePair->entity);
       pairsRemaining--;
       routesRemaining = g_EntityPathingPriorityPairCount;

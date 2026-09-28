@@ -56,17 +56,17 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
     descriptionBox->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
     if (selectedIndex != lastRowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = *(TextResourceId *)((int)selectedRowRecord + 0x70);
+        resourceId = ((ScenarioCatalogSaveRecord *)selectedRowRecord)->localizedStringId70;
         descriptionText = TextResource_Resolve(resourceId);
         *descriptionText.text = 0x8000;
         descriptionBox->text = (uint16_t *)resourceId;
       }
       else {
         descriptionText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
-        fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x70));
+        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->localizedStringId70);
         *fieldText.text = 0x8000;
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,descriptionText.text);
-        fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x90));
+        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->optionalLocalizedStringId90);
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,descriptionText.text);
         descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
       }
@@ -101,12 +101,15 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
   ListSelectionResult selectionResult;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  /* deleteButton + 0xF0 = saveGameList; +0x140 / +0x144 are its rowSlots / rowCount */
   selectionResult = UiPointerList_GetSelectedIndexVariantB
-                    ((UiPointerListControl *)(deleteButton + 0xf0));
+                    ((UiPointerListControl *)
+                     THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList));
   rowOrdinal = selectionResult.rowIndex + 1;
-  if (rowOrdinal != *(int *)(deleteButton + 0x144)) {
-    leaf = *(uint16_t **)(*(int *)(deleteButton + 0x140) - 4 + rowOrdinal * 4);
+  if (rowOrdinal != (int)((UiPointerListControl *)
+                          THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList))->rowCount) {
+    leaf = (uint16_t *)((UiPointerListControl *)
+                        THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList))->
+           rowSlots[rowOrdinal - 1];
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
@@ -197,8 +200,11 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
         g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0x100,handle);
         g_FileSystemReadExact(0x100,destination,handle);
         g_FileSystemClose(closeHandle);
-        destination[0x1c] = destination[0x1c] + 0x2230; /* localizedStringId70: level index -> level title text */
-        destination[0x24] = destination[0x24] + 0x2220; /* optionalLocalizedStringId90 -> text id */
+        /* level index -> level title text, campaign index -> campaign title text */
+        ((ScenarioCatalogSaveRecord *)destination)->localizedStringId70 =
+             ((ScenarioCatalogSaveRecord *)destination)->localizedStringId70 + TEXT_ID_LEVEL_TITLE_BASE;
+        ((ScenarioCatalogSaveRecord *)destination)->optionalLocalizedStringId90 =
+             ((ScenarioCatalogSaveRecord *)destination)->optionalLocalizedStringId90 + TEXT_ID_CAMPAIGN_TITLE_BASE;
       }
       rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
       destination = destination + 0x40;

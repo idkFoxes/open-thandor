@@ -131,7 +131,8 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
         currentModelNode->tintArgb = previewTint;
         recordOrCount = *classRecord;
         ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
-        if (((*(int *)(recordOrCount + 0x4c) == 0xd) && (3 < currentModelNode->childCount)) &&
+        if (((((ModelDefinitionRuntimeSemanticView280 *)recordOrCount)->runtimeClassId4C == 0xd) &&
+            (3 < currentModelNode->childCount)) &&
            (currentModelNode->childNodes[3] != NULL)) {
           /* class-13 armies keep child node 3 opaque */
           childTint = &currentModelNode->childNodes[3]->tintArgb;
@@ -184,14 +185,15 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
       targetDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0149_ETARG0);
       if (!targetDefinition.notFound) {
         /* the markers use scale 0x1000 (1.0 in Q12) except at an army target, which uses the target's own
-           marker scale (class record +0xDC); at most OVERLAY_COMMAND_TARGET_MARKER_CAPACITY markers */
+           marker scale (its definition's placementRadiusOrClearanceDC); at most OVERLAY_COMMAND_TARGET_MARKER_CAPACITY markers */
         recordOrCount = 0x20; /* selection-info slots */
         selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
         do {
           entityRuntime = *selectionSlotCursor;
           if ((entityRuntime != NULL) &&
              (worldRuntime->activeFactionRuntimeIndex == (entityRuntime->common).ownership.ownerIndex)) {
-            if ((*(int *)(*(int *)(entityRuntime->common).ownership.definitionOrClassRecord + 0x18) != 0)
+            if ((((ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
+                 runtimeDefinition->runtimeValue18 != 0)
                && (((entityRuntime->common).commandFlags & 1) != 0)) {
               InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                         (0x1000,(entityRuntime->common).ownership.modelNode,
@@ -230,8 +232,8 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
                 (commandTargetEntity != NULL)) &&
                (currentModelNode = (commandTargetEntity->common).ownership.modelNode,
                InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
-                         (*(Q12 *)(*(int *)(commandTargetEntity->common).ownership.
-                                           definitionOrClassRecord + 0xdc),
+                         (((ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord)->
+                          definitionOrSavedId.runtimeDefinition->placementRadiusOrClearanceDC,
                           (entityRuntime->common).ownership.modelNode,
                           (currentModelNode->worldTransform).translation.y,
                           (currentModelNode->worldTransform).translation.x,targetDefinition.definitionOrError,
@@ -262,7 +264,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
       } while (recordOrCount != 0);
       g_InGameOwnedEntityTransientEffectMarkerCount = 0;
     }
-    commandTargetEffectCursor = (EffectRuntimeSlot **)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
+    commandTargetEffectCursor = g_InGameCommandTargetTransientEffectMarkers;
     indexOrCount = g_InGameCommandTargetTransientEffectMarkerCount;
     if (g_InGameCommandTargetTransientEffectMarkerCount != 0) {
       do {
@@ -983,24 +985,25 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   EffectCreateResult createdEffect;
   
   markerSlotIndex = g_InGameCommandTargetTransientEffectMarkerCount;
-  /* +0x94/+0x98: world translation x/y of a model node (worldTransform.translation) */
-  if ((worldXQ12 != *(int *)((int)sourceWorldNode + 0x94)) ||
-     (worldYQ12 != *(int *)((int)sourceWorldNode + 0x98))) {
-    /* each marker is an EffectRuntimeSlot *, whose model node sits at +4 */
-    markerCursor = (int *)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
+  if ((worldXQ12 != ((ModelRuntimeNode *)sourceWorldNode)->worldTransform.translation.x) ||
+     (worldYQ12 != ((ModelRuntimeNode *)sourceWorldNode)->worldTransform.translation.y)) {
+    /* each marker is an EffectRuntimeSlot * */
+    markerCursor = (int *)g_InGameCommandTargetTransientEffectMarkers;
     for (remainingMarkers = g_InGameCommandTargetTransientEffectMarkerCount; remainingMarkers != 0; remainingMarkers--) {
-      if ((worldXQ12 == *(int *)(*(int *)(*markerCursor + 4) + 0x94)) &&
-         (worldYQ12 == *(int *)(*(int *)(*markerCursor + 4) + 0x98))) {
+      if ((worldXQ12 ==
+           ((EffectRuntimeSlot *)*markerCursor)->modelNodeOrSavedOffset.modelNode->worldTransform.translation.x) &&
+         (worldYQ12 ==
+          ((EffectRuntimeSlot *)*markerCursor)->modelNodeOrSavedOffset.modelNode->worldTransform.translation.y)) {
         return;
       }
       markerCursor++;
     }
     surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
-                      (worldYQ12,worldXQ12,*(FieldGridAsset **)((int)inGameRuntime + 0x54));
+                      (worldYQ12,worldXQ12,((WorldRuntimeContext *)inGameRuntime)->fieldGrid);
     createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        surfaceHeight.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
-    *(EffectRuntimeSlot **)(markerSlotIndex * 4 + THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0)) = createdEffect.effectRuntime;
+    g_InGameCommandTargetTransientEffectMarkers[markerSlotIndex] = createdEffect.effectRuntime;
     markerModelNode = ((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode;
     g_InGameCommandTargetTransientEffectMarkerCount++;
     boundingRadius = markerModelNode->subtreeBoundingRadiusQ12;

@@ -2895,8 +2895,7 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
   g_GraphicsShadingGeneratedTexturePixelCursor =
        (g_GraphicsShadingGeneratedAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
        ((g_GraphicsShadingTextureDimension + 1) * g_GraphicsShadingGridHalfSize >> 1) +
-       *(int *)((g_GraphicsShadingGeneratedAsset->common).buildMetadata.assetRelativeAddressAnchor28
-               + ((g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset - 0x1c))
+       (int)((GraphicsTextureSourceEntry *)((uint8_t *)g_GraphicsShadingGeneratedAsset + (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset))->dataOffset
        - 0x28;
   g_GraphicsShadingGeneratedTextureTileX = 0;
   g_GraphicsShadingGeneratedTextureTileY = 0;
@@ -2909,10 +2908,8 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
   alphaCursor = (g_GraphicsShadingGeneratedAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
            g_GraphicsShadingSubresourceCount * 0x20 + tableOffset - 0x28;
   for (dwordsRemaining = g_GraphicsShadingSubresourceCount *
-               *(int *)((g_GraphicsShadingGeneratedAsset->common).buildMetadata.
-                        assetRelativeAddressAnchor28 + (tableOffset - 0x10)) *
-               *(int *)((g_GraphicsShadingGeneratedAsset->common).buildMetadata.
-                        assetRelativeAddressAnchor28 + (tableOffset - 0xc)) >> 2; dwordsRemaining != 0;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_GraphicsShadingGeneratedAsset + tableOffset))->pixelWidth *
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_GraphicsShadingGeneratedAsset + tableOffset))->pixelHeight >> 2; dwordsRemaining != 0;
       dwordsRemaining--) {
     alphaCursor[0] = 0;
     alphaCursor[1] = 0;
@@ -2978,9 +2975,9 @@ void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
 /* Address: 0x004CD880.
    Shadow silhouette pass for a mesh record whose flag bit 0 (+0x10) is clear, called per mesh record by
    GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear after the blur: projects every vertex into the
-   current shadow tile (quantized to whole texels) and fills every triangle with 0xFF. A mesh record holds the
-   vertex count (+8), triangle count (+0xC) and flags (+0x10), then 0x40-byte vertices (position at +0,
-   projected XY stored at +0x20) followed by 0x40-byte triangles (vertex pointers at +0, +0xC, +0x18).
+   current shadow tile (quantized to whole texels) and fills every triangle with 0xFF. A mesh record is a
+   ModelMeshHeader, then 0x40-byte vertices (position at +0, projected XY stored at +0x20) followed by
+   0x40-byte triangles (GraphicsTriangleInput vertex pointers).
 */
 void GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshRecord)
 
@@ -2989,9 +2986,9 @@ void GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGro
   int triangleCount;
   GraphicsFixedVec3 *recordCursor;
 
-  vertexCount = *(int *)(meshRecord + 8);
-  triangleCount = *(int *)(meshRecord + 0xc);
-  if (((*(uint32_t *)(meshRecord + 0x10) & 1) == 0) &&
+  vertexCount = ((ModelMeshHeader *)meshRecord)->vertexCount;
+  triangleCount = ((ModelMeshHeader *)meshRecord)->triangleCount;
+  if (((((ModelMeshHeader *)meshRecord)->flags10 & 1) == 0) &&
      (recordCursor = (GraphicsFixedVec3 *)(meshRecord + 0x20), vertexCount != 0)) {
     do {
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
@@ -3002,8 +2999,8 @@ void GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGro
     } while (vertexCount != 0);
     for (; triangleCount != 0; triangleCount--) {
       GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                ((GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0x18) + 0x20),
-                 (GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0xc) + 0x20),
+                ((GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex2 + 0x20),
+                 (GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex1 + 0x20),
                  (GraphicsFixedVec2 *)(recordCursor->x + 0x20));
       recordCursor = (GraphicsFixedVec3 *)((int)recordCursor + 0x40);
     }
@@ -3052,12 +3049,12 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNod
   translationComponent = &(modelNode->worldTransform).translation.z;
   *translationComponent = *translationComponent + originZ;
   resourceView = (modelNode->modelPayload).modelResource;
-  /* resource +0xEC: offset of the mesh group (record count at +4, first mesh record at +0x20; each record
-     starts with its own size) */
-  offsetCountOrChildIndex = *(int *)resourceView->reservedEC_1FF;
+  /* the shadow mesh group: a ModelMeshGroupHeader, then the mesh records from +0x20, each starting with its
+     own size */
+  offsetCountOrChildIndex = resourceView->shadowMeshGroupOffsetEC;
   if (offsetCountOrChildIndex != 0) {
     meshRecord = resourceView->reserved00_AF + offsetCountOrChildIndex + 0x20;
-    for (offsetCountOrChildIndex = *(int *)(resourceView->reserved00_AF + offsetCountOrChildIndex + 4); offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
+    for (offsetCountOrChildIndex = ((ModelMeshGroupHeader *)(resourceView->reserved00_AF + offsetCountOrChildIndex))->meshCount; offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
       GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear
                 ((ModelMeshGroupAddress32)meshRecord);
       meshRecord = meshRecord + *(int *)meshRecord;
@@ -3091,9 +3088,9 @@ GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddre
   uint32_t result;
 
   result = 0;
-  vertexCount = *(int *)(meshRecord + 8);
-  triangleCount = *(int *)(meshRecord + 0xc);
-  if (((*(uint32_t *)(meshRecord + 0x10) & 1) != 0) &&
+  vertexCount = ((ModelMeshHeader *)meshRecord)->vertexCount;
+  triangleCount = ((ModelMeshHeader *)meshRecord)->triangleCount;
+  if (((((ModelMeshHeader *)meshRecord)->flags10 & 1) != 0) &&
      (recordCursor = (GraphicsFixedVec3 *)(meshRecord + 0x20), vertexCount != 0)) {
     do {
       result = (uint32_t)&recordCursor[2].z;
@@ -3106,8 +3103,8 @@ GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddre
     if (triangleCount != 0) {
       for (; triangleCount != 0; triangleCount--) {
         GraphicsShadingGeneratedTexture_RasterizeTriangleMask
-                  ((GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0x18) + 0x20),
-                   (GraphicsFixedVec2 *)(*(int *)((int)recordCursor + 0xc) + 0x20),
+                  ((GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex2 + 0x20),
+                   (GraphicsFixedVec2 *)((int)((GraphicsTriangleInput *)recordCursor)->vertex1 + 0x20),
                    (GraphicsFixedVec2 *)(recordCursor->x + 0x20));
         recordCursor = (GraphicsFixedVec3 *)((int)recordCursor + 0x40);
       }
@@ -3163,11 +3160,11 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *mode
   *translationComponent = *translationComponent + originZ;
   result = 0;
   resourceView = (modelNode->modelPayload).modelResource;
-  offsetCountOrChildIndex = *(int *)resourceView->reservedEC_1FF;
+  offsetCountOrChildIndex = resourceView->shadowMeshGroupOffsetEC;
   meshGroupTableOffset = offsetCountOrChildIndex;
   if (offsetCountOrChildIndex != 0) {
     meshRecord = resourceView->reserved00_AF + offsetCountOrChildIndex + 0x20;
-    for (offsetCountOrChildIndex = *(int *)(resourceView->reserved00_AF + offsetCountOrChildIndex + 4); offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
+    for (offsetCountOrChildIndex = ((ModelMeshGroupHeader *)(resourceView->reserved00_AF + offsetCountOrChildIndex))->meshCount; offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
       result = GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set
                          ((ModelMeshGroupAddress32)meshRecord) + meshGroupTableOffset;
       meshRecord = meshRecord + *(int *)meshRecord;
@@ -3200,7 +3197,7 @@ void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelM
   GraphicsFixedVec3 *vertexCursor;
 
   vertexCursor = (GraphicsFixedVec3 *)(meshRecord + 0x20);
-  for (verticesRemaining = *(int *)(meshRecord + 8); verticesRemaining != 0; verticesRemaining--) {
+  for (verticesRemaining = ((ModelMeshHeader *)meshRecord)->vertexCount; verticesRemaining != 0; verticesRemaining--) {
     GraphicsShadingGeneratedTexture_TransformPointXY
               ((GraphicsFixedVec2 *)&vertexCursor[2].z,vertexCursor,
                &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
@@ -3263,10 +3260,10 @@ void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBoun
   translationComponent = &(modelNode->worldTransform).translation.z;
   *translationComponent = *translationComponent + originZ;
   resourceView = (modelNode->modelPayload).modelResource;
-  offsetCountOrChildIndex = *(int *)resourceView->reservedEC_1FF;
+  offsetCountOrChildIndex = resourceView->shadowMeshGroupOffsetEC;
   if (offsetCountOrChildIndex != 0) {
     meshRecord = resourceView->reserved00_AF + offsetCountOrChildIndex + 0x20;
-    for (offsetCountOrChildIndex = *(int *)(resourceView->reserved00_AF + offsetCountOrChildIndex + 4); offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
+    for (offsetCountOrChildIndex = ((ModelMeshGroupHeader *)(resourceView->reserved00_AF + offsetCountOrChildIndex))->meshCount; offsetCountOrChildIndex != 0; offsetCountOrChildIndex--) {
       GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
                 ((ModelMeshGroupAddress32)meshRecord);
       meshRecord = meshRecord + *(int *)meshRecord;
@@ -3553,7 +3550,7 @@ bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode 
   int childIndex;
   bool childLacksGeometry;
   
-  if (*(int *)((modelNode->modelPayload).modelResource)->reservedEC_1FF == 0) {
+  if (((modelNode->modelPayload).modelResource)->shadowMeshGroupOffsetEC == 0) {
     childrenRemaining = modelNode->childCount;
     do {
       decrementedCount = childrenRemaining - 1;

@@ -818,20 +818,15 @@ void TerrainCompositeTexture_FillPlane1(void)
   panelTextureSource = g_InGamePanelTextureSource;
   textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  planePixelCursor = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
-            assetRelativeAddressAnchor28 +
-            (g_TerrainCompositeTexture->sourceEntries[1].dataOffset - 0x28);
-  panelSubresourceIndex = *(int *)((int)g_InGamePanelTextureSource[2].common.buildMetadata.names.sourceName +
-                  (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset + 0x18);
+  planePixelCursor = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
+  panelSubresourceIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)g_InGamePanelTextureSource + (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset))[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
   columnsRemaining = textureWidth;
   do {
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-        materialColorArgb = *(uint32_t *)
-                 (panelTextureSource[panelSubresourceIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK) * 8 + -0x28);
+        materialColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK)].argb8888;
         if (lightingLevelIndex < 0) {
           lightingLevelIndex = 0x70;
         }
@@ -905,11 +900,8 @@ void TerrainCompositeTexture_FillPlane2(void)
   panelTextureSource = g_InGamePanelTextureSource;
   textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  planePixelCursor = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
-            assetRelativeAddressAnchor28 +
-            (g_TerrainCompositeTexture->sourceEntries[2].dataOffset - 0x28);
-  panelSubresourceIndex = *(int *)((int)g_InGamePanelTextureSource[2].common.buildMetadata.names.sourceName +
-                  (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset + 0x18);
+  planePixelCursor = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[2].dataOffset;
+  panelSubresourceIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)g_InGamePanelTextureSource + (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset))[36].paletteIndex;
   fieldCell = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
   columnsRemaining = textureWidth;
   do {
@@ -917,7 +909,7 @@ void TerrainCompositeTexture_FillPlane2(void)
       if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
         if ((fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT) == 0) {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-          soilColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.magic;
+          soilColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + 0x40].argb8888;
           if (lightingLevelIndex < 0) {
             lightingLevelIndex = 0x70;
           }
@@ -934,7 +926,7 @@ void TerrainCompositeTexture_FillPlane2(void)
         }
         else {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-          tritiumColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.buildMetadata.timestamps.dateValue0;
+          tritiumColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + 0x42].argb8888;
           if (lightingLevelIndex < 0) {
             lightingLevelIndex = 0x70;
           }
@@ -952,7 +944,7 @@ void TerrainCompositeTexture_FillPlane2(void)
       }
       else {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-        xeniteColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.formatVersion;
+        xeniteColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + 0x41].argb8888;
         if (lightingLevelIndex < 0) {
           lightingLevelIndex = 0x70;
         }
@@ -1039,12 +1031,9 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   }
   textureWidth = g_TerrainCompositeTexture->sourceEntries[0].pixelWidth;
   textureHeight = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
-  plane0Pixels = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
-            assetRelativeAddressAnchor28 +
-            (g_TerrainCompositeTexture->sourceEntries[0].dataOffset - 0x28);
+  plane0Pixels = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[0].dataOffset;
   cellsRemainingOrRowQ12 = textureWidth * textureHeight;
-  pixelCursor = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
-            assetRelativeAddressAnchor28 + (assetOffset - 0x28);
+  pixelCursor = (uint8_t *)g_TerrainCompositeTexture + assetOffset;
   plane0WriteCursor = plane0Pixels;
   for (counterOrGridColumn = cellsRemainingOrRowQ12; counterOrGridColumn != 0; counterOrGridColumn--) {
     *(uint32_t *)plane0WriteCursor = *(uint32_t *)pixelCursor;
@@ -1055,7 +1044,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   fieldCell = ((inGameRoot->worldRuntime0A30).fieldGrid)->cells;
   pixelCursor = plane0Pixels;
   do {
-    visibilityFlags = fieldCell->runtime60_6B[counterOrGridColumn + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK];
+    visibilityFlags = ((uint8_t *)&fieldCell->occupancyMask)[counterOrGridColumn];
     pixelArgb = (uint32_t)visibilityFlags;
     if ((visibilityFlags & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) == 0) {
       if ((visibilityFlags & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) {
@@ -1078,7 +1067,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
       if ((SCARRY4(cellsRemainingOrRowQ12,0x800) == counterOrGridColumn < 0) &&
          (((gridRow = cellsRemainingOrRowQ12 + 0x800 >> 12, SCARRY4(cellsRemainingOrRowQ12,0x800) == gridRow < 0 &&
            (counterOrGridColumn < (int)textureWidth)) && (gridRow < (int)textureHeight)))) {
-        ownerEntity = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8);
+        ownerEntity = (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         colorVariant = g_GameFactionRuntimeImage.records[(ownerEntity->common).ownership.ownerIndex].
                  factionClassOrMode;
         assetOffset = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
@@ -1087,9 +1076,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
           if (!isSelected) {
             colorVariant = 0;
           }
-          pixelArgb = *(uint32_t *)(g_InGamePanelTextureSource[1].opaqueTablePayloadBC_1FF +
-                           *(int *)((int)panelTextureSource[2].common.buildMetadata.names.sourceName +
-                                   assetOffset + 0x18) * 0x20 + colorVariant * 8 + 0x44);
+          pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[0x20 + ((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
           if (ownerNode->modelTintArgb < 0xff000000) {
             pixelArgb = (pixelArgb & 0xfefefefe) +
                     (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & 0xfefefefe) >> 1;

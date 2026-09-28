@@ -16,14 +16,15 @@
    active factions a visible but inactive row, unused rows are hidden and their faction slot cleared. The players
    are then spread round-robin over the assignable factions (mode "Player"), the local player's play checkbox is
    ticked, and the page's buttons are arranged for a local game, a network host or a client.
-   The row controls are reached through g_FrontendTaskAssignmentControlOffsets; relative to taskRowControls04C
-   (+0x4C) an offset - 4 is the control's nodeFlags, + 0 its state flags and + 8 its text resource id.
+   The row controls are reached through g_FrontendTaskAssignmentControlOffsets, node offsets from the frontend
+   root: mode and colour buttons (UiFramedTextButtonControl), play checkboxes (UiTextButtonControl), row number
+   and participant labels (UiSingleLineTextControl).
 */
 
 void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *frontendRootPage)
 
 {
-  UiNodeFlags *menuRoomContextFlags;
+  FrontendModelPointerContextFlags *menuRoomContextFlags;
   uint32_t rowControlOffset;
   UiNodeVtable *rootVtable;
   int localPlayerRuntimeId;
@@ -31,7 +32,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C
   uint32_t activeCountOffsetOrLocalRow; /* active factions left, then a control offset, then the local row */
   uint32_t rowOrAssignmentIndex;
   uint32_t rowCursor;
-  uint8_t *rowTextIdBytes;
+  UiTextResourceId *rowTextId;
   uint32_t assignableCountOrOffset; /* assignable factions left, then a control offset */
   FrontendPlayerRuntimeRecord *playerRecord;
   TextResolveResult titleText;
@@ -40,8 +41,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_FACTION_SETUP,&frontendRootPage->primaryPageStack);
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    /* compactLayoutControl.nodeFlags is +0x3B4, the menu room view's contextFlags */
-    menuRoomContextFlags = &(frontendRootPage->compactLayoutControl).nodeFlags;
+    menuRoomContextFlags =
+         &((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRootPage,menuRoomModelView))->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
@@ -51,34 +52,29 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C
   rowOrAssignmentIndex = 0;
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & ~FRONTEND_CONTROL_INACTIVE;
-    rowTextIdBytes = frontendRootPage->taskRowControls04C + rowControlOffset + 8;
-    *(uint32_t *)rowTextIdBytes = TEXT_ID_FACTION_MODE_COMPUTER;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
+         ~UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+         ~FRONTEND_CONTROL_INACTIVE;
+    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
+    *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowOrAssignmentIndex + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & ~FRONTEND_CONTROL_INACTIVE;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
+         ~FRONTEND_CONTROL_INACTIVE;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowOrAssignmentIndex + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) &
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
+         ~UI_NODE_SUPPRESSED;
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~(FRONTEND_CONTROL_INACTIVE | UI_SELECTABLE_SELECTED_OR_CHECKED);
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowOrAssignmentIndex + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= 0xffffffbf;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowOrAssignmentIndex + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & ~UI_NODE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     rowCursor = rowOrAssignmentIndex + 1;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= 0xffffffbf;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowOrAssignmentIndex + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     activeCountOffsetOrLocalRow--;
@@ -88,35 +84,32 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C
   /* Further active factions (computer only): mode button active, the rest of the row hidden and inactive. */
   for (; activeCountOffsetOrLocalRow != 0; activeCountOffsetOrLocalRow--) {
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) & ~UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & ~FRONTEND_CONTROL_INACTIVE;
-    rowTextIdBytes = frontendRootPage->taskRowControls04C + assignableCountOrOffset + 8;
-    *(uint32_t *)rowTextIdBytes = TEXT_ID_FACTION_MODE_COMPUTER;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags &=
+         ~UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
+         ~FRONTEND_CONTROL_INACTIVE;
+    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->textResourceId;
+    *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & ~FRONTEND_CONTROL_INACTIVE;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
+         ~FRONTEND_CONTROL_INACTIVE;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) &
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) | FRONTEND_CONTROL_INACTIVE;
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags |=
+         FRONTEND_CONTROL_INACTIVE;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->labelFlags &= 0xffffffbf;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->labelFlags &= 0xffffffbf;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     rowCursor++;
@@ -124,46 +117,42 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C
   /* Unused rows up to 7: everything hidden and inactive, caption "No-one", faction slot cleared. */
   for (; rowCursor < 7; rowCursor++) {
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | FRONTEND_CONTROL_INACTIVE;
-    rowTextIdBytes = frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8;
-    *(uint32_t *)rowTextIdBytes = TEXT_ID_FACTION_MODE_NOBODY;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
+         FRONTEND_CONTROL_INACTIVE;
+    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->textResourceId;
+    *rowTextId = TEXT_ID_FACTION_MODE_NOBODY;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | FRONTEND_CONTROL_INACTIVE;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
+         FRONTEND_CONTROL_INACTIVE;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) &
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | FRONTEND_CONTROL_INACTIVE;
+    ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
+         FRONTEND_CONTROL_INACTIVE;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->labelFlags |= 0x40;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | UI_NODE_SUPPRESSED;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->base.nodeFlags |=
+         UI_NODE_SUPPRESSED;
+    ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->labelFlags |= 0x40;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] = 0;
   }
   /* Colour buttons of rows 7..1 show the faction name of the level's player slot; none is selected. */
   do {
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8) =
-         *(int *)((int)&loadedLevel->playerSlots[0].aiClassOrMode +
-                 g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]) + TEXT_ID_FACTION_NAME_BASE +
-         rowCursor;
-    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) &
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->textResourceId =
+         ((LevelPlayerSlotRecord *)((uint8_t *)loadedLevel->playerSlots +
+                                    g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]))->aiClassOrMode +
+         TEXT_ID_FACTION_NAME_BASE + rowCursor;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     localPlayerRuntimeId = g_LocalPlayerRuntimeId;
     rowCursor--;
@@ -177,10 +166,10 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C
   do {
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex];
     (playerRecord->factionAssignment).factionAssignmentIndex = rowOrAssignmentIndex;
-    rowTextIdBytes = frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 0x4c);
+    rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->textResourceId;
     (playerRecord->factionAssignment).readyOrWaitState = 0;
     (playerRecord->factionAssignment).consensusValue = 0;
-    *(uint32_t *)(rowTextIdBytes + 0x54) = TEXT_ID_FACTION_MODE_PLAYER;
+    *rowTextId = TEXT_ID_FACTION_MODE_PLAYER;
     if (localPlayerRuntimeId == playerRecord->playerRuntimeId) {
       activeCountOffsetOrLocalRow = rowOrAssignmentIndex - 1;
     }
@@ -192,60 +181,47 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C
     remainingPlayerRecords--;
   } while (remainingPlayerRecords != 0);
   /* tick and show the local player's play checkbox */
-  *(uint32_t *)(frontendRootPage->taskRowControls04C +
-           g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) =
-       *(uint32_t *)(frontendRootPage->taskRowControls04C +
-                g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) |
-       UI_SELECTABLE_SELECTED_OR_CHECKED;
-  *(uint32_t *)(frontendRootPage->taskRowControls04C +
-           (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) =
-       *(uint32_t *)(frontendRootPage->taskRowControls04C +
-                (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) &
-       ~UI_NODE_SUPPRESSED;
+  ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
+       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]))
+       ->selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
+  ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
+       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]))
+       ->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
   rootVtable = (frontendRootPage->rootNode).vtable;
-  /* taskPageControlState55C[i] is page offset 0x55C + 4 * i: [0x176]/[0x177] nodeFlags/state flags of
-     factionSetupBackButton, [0x18E]/[0x18F] of factionSetupNextButton, [0x1BE]/[0x1BF] of
-     factionSetupFinishButton, [0x1CC]/[0x1CE] leftOffset/rightOffset of factionRosterTable. */
+  /* frontendRootPage is the frontend root (FrontendUiImage). */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     /* local game: roster left/right offsets 96 (no participant column); Back and Next, no Finish */
-    frontendRootPage->taskPageControlState55C[0x1cc] = 0x60;
-    frontendRootPage->taskPageControlState55C[0x1ce] = 0x60;
-    frontendRootPage->taskPageControlState55C[0x1be] =
-         frontendRootPage->taskPageControlState55C[0x1be] | UI_NODE_SUPPRESSED;
-    frontendRootPage->taskPageControlState55C[0x18e] =
-         frontendRootPage->taskPageControlState55C[0x18e] & ~UI_NODE_SUPPRESSED;
-    frontendRootPage->taskPageControlState55C[0x176] =
-         frontendRootPage->taskPageControlState55C[0x176] & ~UI_NODE_SUPPRESSED;
-    frontendRootPage->taskPageControlState55C[0x177] =
-         frontendRootPage->taskPageControlState55C[0x177] & ~FRONTEND_CONTROL_INACTIVE;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->leftOffset = 0x60;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->rightOffset = 0x60;
+    FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionSetupNextButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionSetupBackButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags &=
+         ~FRONTEND_CONTROL_INACTIVE;
   }
   else {
     /* network game: full-width roster, Finish instead of Next; a client cannot go back */
-    frontendRootPage->taskPageControlState55C[0x1cc] = 0;
-    frontendRootPage->taskPageControlState55C[0x1ce] = 0;
-    frontendRootPage->taskPageControlState55C[0x1be] =
-         frontendRootPage->taskPageControlState55C[0x1be] & ~UI_NODE_SUPPRESSED;
-    frontendRootPage->taskPageControlState55C[0x1bf] =
-         frontendRootPage->taskPageControlState55C[0x1bf] & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-    frontendRootPage->taskPageControlState55C[0x18e] =
-         frontendRootPage->taskPageControlState55C[0x18e] | UI_NODE_SUPPRESSED;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->leftOffset = 0;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->rightOffset = 0;
+    FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+    ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupFinishButton))->selectable.stateFlags &=
+         ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+    FRONTEND_UI(frontendRootPage,factionSetupNextButton)->nodeFlags |= UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) == SESSION_NETWORK_ROLE_LOCAL) {
-      frontendRootPage->taskPageControlState55C[399] =
-           frontendRootPage->taskPageControlState55C[399] | FRONTEND_CONTROL_INACTIVE;
-      frontendRootPage->taskPageControlState55C[0x176] =
-           frontendRootPage->taskPageControlState55C[0x176] | UI_NODE_SUPPRESSED;
-      frontendRootPage->taskPageControlState55C[0x177] =
-           frontendRootPage->taskPageControlState55C[0x177] | FRONTEND_CONTROL_INACTIVE;
+      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupNextButton))->selectable.stateFlags |=
+           FRONTEND_CONTROL_INACTIVE;
+      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->nodeFlags |= UI_NODE_SUPPRESSED;
+      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags |=
+           FRONTEND_CONTROL_INACTIVE;
     }
     else {
-      frontendRootPage->taskPageControlState55C[399] =
-           frontendRootPage->taskPageControlState55C[399] & ~FRONTEND_CONTROL_INACTIVE;
-      frontendRootPage->taskPageControlState55C[0x176] =
-           frontendRootPage->taskPageControlState55C[0x176] & ~UI_NODE_SUPPRESSED;
-      frontendRootPage->taskPageControlState55C[0x177] =
-           frontendRootPage->taskPageControlState55C[0x177] & ~FRONTEND_CONTROL_INACTIVE;
+      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupNextButton))->selectable.stateFlags &=
+           ~FRONTEND_CONTROL_INACTIVE;
+      FRONTEND_UI(frontendRootPage,factionSetupBackButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+      ((UiFramedTextButtonControl *)FRONTEND_UI(frontendRootPage,factionSetupBackButton))->selectable.stateFlags &=
+           ~FRONTEND_CONTROL_INACTIVE;
     }
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
@@ -372,20 +348,20 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   } while (colorBitsCounterOrParentLink != 0);
   g_CursorVisibilityToken++;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
-  /* walk up the parent links (+0x08) to the frontend template root */
-  colorBitsCounterOrParentLink = *(int *)((int)control + 8);
+  /* walk up the parent links to the frontend template root */
+  colorBitsCounterOrParentLink = (int)((UiNodeBase *)control)->parent;
   while (colorBitsCounterOrParentLink != -1) {
-    control = *(void **)((int)control + 8);
-    colorBitsCounterOrParentLink = *(int *)((int)control + 8);
+    control = ((UiNodeBase *)control)->parent;
+    colorBitsCounterOrParentLink = (int)((UiNodeBase *)control)->parent;
   }
   /* the new resolution decides whether the dialog pages cover the menu room */
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(control,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   else {
-    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) & ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(control,menuRoomModelView))->contextFlags &=
+         ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   return;
 }
@@ -629,12 +605,13 @@ void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
 
 {
-  int32_t *menuRoomContextFlags;
+  FrontendModelPointerContextFlags *menuRoomContextFlags;
   uint32_t persistedValue;
 
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    menuRoomContextFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,int32_t);
+    menuRoomContextFlags =
+         &((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
@@ -678,12 +655,12 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   /* source is the frontend template's settings3DButton (+0x2794). */
   FrontendUiImage *frontendUi;
   
-  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x2794);
+  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,settings3DButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_GRAPHICS_SETTINGS,
                              (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
   UiSelectableControl_SetSelected(persistedValue,&source->shadingEnabledControl);
@@ -851,7 +828,7 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
   int32_t shadingGridSize;
-  UiNodeBase *shadingLevelGroup;
+  FrontendShadingLevelGroup *shadingLevelGroup;
   uint32_t shadingDepthQuarter;
   UiNodeBase *selectedControl;
 
@@ -861,32 +838,32 @@ void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   PersistentSettings_Write((PersistentSettingsValue)shadingGridSize,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
   PersistentSettings_Write(shadingDepthQuarter,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   /* The parent is the frontend template's shadingLevelGroup (+0x385C). */
-  shadingLevelGroup = (control->base).parent;
+  shadingLevelGroup = (FrontendShadingLevelGroup *)(control->base).parent;
   if (shadingGridSize == 32) {
-    selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x54) /* shadingLevelGrid32Depth32 */;
+    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[0] /* shadingLevelGrid32Depth32 */;
     if (shadingDepthQuarter == 64 / 4) {
-      selectedControl = THANDOR_UI_AT(shadingLevelGroup,0xbc) /* shadingLevelGrid32Depth64 */;
+      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[1] /* shadingLevelGrid32Depth64 */;
     }
     else if (shadingDepthQuarter == 128 / 4) {
-      selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x124) /* shadingLevelGrid32Depth128 */;
+      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[2] /* shadingLevelGrid32Depth128 */;
     }
   }
   else if (shadingGridSize == 64) {
-    selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x18c) /* shadingLevelGrid64Depth64 */;
+    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[3] /* shadingLevelGrid64Depth64 */;
     if (shadingDepthQuarter == 128 / 4) {
-      selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x1f4) /* shadingLevelGrid64Depth128 */;
+      selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[4] /* shadingLevelGrid64Depth128 */;
     }
   }
   else {
-    selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x25c) /* shadingLevelGrid128Depth128 */;
+    selectedControl = (UiNodeBase *)&shadingLevelGroup->levels[5] /* shadingLevelGrid128Depth128 */;
   }
   UiSelectableGroup_SelectExclusive(6,selectedControl,
-      THANDOR_UI_AT((control->base).parent,0x25c) /* shadingLevelGrid128Depth128 */,
-      THANDOR_UI_AT((control->base).parent,0x1f4) /* shadingLevelGrid64Depth128 */,
-      THANDOR_UI_AT((control->base).parent,0x18c) /* shadingLevelGrid64Depth64 */,
-      THANDOR_UI_AT((control->base).parent,0x124) /* shadingLevelGrid32Depth128 */,
-      THANDOR_UI_AT((control->base).parent,0xbc) /* shadingLevelGrid32Depth64 */,
-      THANDOR_UI_AT((control->base).parent,0x54) /* shadingLevelGrid32Depth32 */);
+      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[5],
+      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[4],
+      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[3],
+      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[2],
+      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[1],
+      (UiNodeBase *)&((FrontendShadingLevelGroup *)(control->base).parent)->levels[0]);
   return;
 }
 
@@ -919,26 +896,26 @@ void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
 {
   PersistentTextureQualityLevel qualityLevel;
   UiNodeBase *selectedQualityControl;
-  UiNodeBase *textureQualityGroup;
-  
+  FrontendTextureQualityGroup *textureQualityGroup;
+
   /* The parent is the frontend template's textureQualityGroup (+0x3C9C). */
-  textureQualityGroup = (control->base).parent;
-  if ((UiSelectableControl *)THANDOR_UI_AT(textureQualityGroup,0x54) /* textureQualityLow */ == control) {
+  textureQualityGroup = (FrontendTextureQualityGroup *)(control->base).parent;
+  if (&textureQualityGroup->low.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = THANDOR_UI_AT(textureQualityGroup,0x54) /* textureQualityLow */;
+    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->low;
   }
-  if ((UiSelectableControl *)THANDOR_UI_AT(textureQualityGroup,0xb4) /* textureQualityMedium */ == control) {
+  if (&textureQualityGroup->medium.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = THANDOR_UI_AT(textureQualityGroup,0xb4) /* textureQualityMedium */;
+    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->medium;
   }
-  if ((UiSelectableControl *)THANDOR_UI_AT(textureQualityGroup,0x114) /* textureQualityHigh */ == control) {
+  if (&textureQualityGroup->high.selectable == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = THANDOR_UI_AT(textureQualityGroup,0x114) /* textureQualityHigh */;
+    selectedQualityControl = (UiNodeBase *)&textureQualityGroup->high;
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
-      THANDOR_UI_AT((control->base).parent,0x114) /* textureQualityHigh */,
-      THANDOR_UI_AT((control->base).parent,0xb4) /* textureQualityMedium */,
-      THANDOR_UI_AT((control->base).parent,0x54) /* textureQualityLow */);
+      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->high,
+      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->medium,
+      (UiNodeBase *)&((FrontendTextureQualityGroup *)(control->base).parent)->low);
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel >> 1;
   g_GraphicsRebuildAllStagingTextures();
@@ -1264,7 +1241,7 @@ void FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
           (FrontendNetworkSettingsControlView250 *networkSettings)
 
 {
-  UiNodeBase **dirtyFlagsSlot;
+  UiListStateFlags *dirtyFlagsSlot;
   UiNodeBase *parentCursor;
   FrontendNetworkSettingsControlView250 *rootNode;
 
@@ -1276,16 +1253,18 @@ void FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
                 (rootNode->commonState).commonPrefix.parent;
     parentCursor = (rootNode->commonState).commonPrefix.parent;
   }
-  if ((((networkSettings->textEditView).textEdit.base.left == 0) ||
-      (*(int *)(*(int *)(networkSettings->textEditView).textEdit.base.bottom + 0x14) == 0)) ||
+  /* networkSettings is the sessionList node (a UiListControl of FrontendSessionDiscoveryRecordB0 rows). */
+  if (((((UiListControl *)networkSettings)->rowCount == 0) ||
+      (((FrontendSessionDiscoveryRecordB0 *)*((UiListControl *)networkSettings)->selectedRowSlot)->advertisement.
+       joinAvailableFlag == 0)) ||
      (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
-    if (((uint32_t)(networkSettings->textEditView).textEdit.base.parent & 4) != 0) {
-      dirtyFlagsSlot = &(networkSettings->textEditView).textEdit.base.parent;
-      *dirtyFlagsSlot = (UiNodeBase *)((uint32_t)*dirtyFlagsSlot & 0xfffffffb);
+    if ((((UiListControl *)networkSettings)->listStateFlags & 4) != 0) {
+      dirtyFlagsSlot = &((UiListControl *)networkSettings)->listStateFlags;
+      *dirtyFlagsSlot = *dirtyFlagsSlot & 0xfffffffb;
       FrontendNetworkSettings_PublishSelectedPlayerDescriptor
                 ((FrontendNetworkSettingsControlView250 *)FRONTEND_UI(rootNode,networkGameJoinButton));
     }
@@ -1611,8 +1590,16 @@ bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSett
   uint32_t *selectedEndpointDwordCursor;
   bool sendCarry;
   
-  g_FrontendSessionToken = *(uint32_t *)(**(int **)(networkSettings->raw + 0x248) + 4);
-  selectedPlayerRecordDwordCursor = (uint32_t *)(**(int **)(networkSettings->raw + 0x248) + 0xa0);
+  /* networkSettings is the frontend template's networkGameJoinButton; the session list is a sibling. */
+  g_FrontendSessionToken =
+       ((FrontendSessionDiscoveryRecordB0 *)
+        *((UiListControl *)FRONTEND_UI((uint8_t *)networkSettings - offsetof(FrontendUiImage,networkGameJoinButton),
+                                       sessionList))->selectedRowSlot)->advertisement.header.sequenceToken;
+  selectedPlayerRecordDwordCursor =
+       (uint32_t *)&((FrontendSessionDiscoveryRecordB0 *)
+                     *((UiListControl *)FRONTEND_UI((uint8_t *)networkSettings -
+                                                    offsetof(FrontendUiImage,networkGameJoinButton),
+                                                    sessionList))->selectedRowSlot)->senderEndpoint;
   selectedEndpointDwordCursor = (uint32_t *)&g_FrontendSelectedNetworkEndpoint;
   for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
     *selectedEndpointDwordCursor = *selectedPlayerRecordDwordCursor;
@@ -1704,7 +1691,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
   modeStack[DISPLAY_MODE_STACK_END + 3] = NULL;
   modeStack[DISPLAY_MODE_STACK_END + 4] = NULL;
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t),
+                    (((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption1))->firstValue,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
@@ -1718,11 +1705,11 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
   }
   /* 0x0054B250 */
-  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t)) {
+  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption1))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    ((FrontendColorDepthBits)FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption2,0x60,struct UiNodeBase *),pendingHeight,pendingWidth
+                    ((FrontendColorDepthBits)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption2))->firstValue,pendingHeight,pendingWidth
                      ,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
@@ -1731,11 +1718,11 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
   }
   /* 0x0054B287 */
-  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption2,0x60,uint32_t)) {
+  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption2))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption2);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,int32_t),pendingHeight,pendingWidth,adapterIndex);
+                    (((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption3))->firstValue,pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
   }
@@ -1743,11 +1730,11 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
   }
   /* 0x0054B2BE */
-  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,uint32_t)) {
+  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption3))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption3);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,uint32_t),pendingHeight,pendingWidth,adapterIndex);
+                    (((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption4))->firstValue,pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
   }
@@ -1755,7 +1742,7 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
   }
   /* 0x0054B2F5 */
-  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,uint32_t)) {
+  if (bitsPerPixel == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayColorDepthOption4))->firstValue) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption4);
   }
   /* 0x0054B304: SelectExclusive(4, top, next 4), then pop 1 + 4 */
@@ -1768,8 +1755,8 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
       modeStack[modeStackTop + 4]);
   modeStackTop = modeStackTop + 5;
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t),adapterIndex);
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->secondValue,
+                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->firstValue,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
   }
@@ -1777,12 +1764,12 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
   }
   /* 0x0054B33B */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption1))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,int32_t),
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->secondValue,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->firstValue,
                      adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
@@ -1791,13 +1778,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
   }
   /* 0x0054B37F */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption2))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,uint32_t),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,uint32_t),adapterIndex);
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->secondValue,
+                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->firstValue,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
   }
@@ -1805,14 +1792,14 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
   }
   /* 0x0054B3C3 */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption3))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,
-                     (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x64,struct UiNodeBase *),
-                     (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x60,struct UiNodeBase *),
+                     (FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->secondValue,
+                     (FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->firstValue,
                      adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
@@ -1821,13 +1808,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
   }
   /* 0x0054B407 */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption4))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,int32_t),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,int32_t),adapterIndex);
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->secondValue,
+                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->firstValue,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
   }
@@ -1835,13 +1822,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
   }
   /* 0x0054B44B */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption5))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,uint32_t),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,uint32_t),adapterIndex);
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->secondValue,
+                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->firstValue,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
   }
@@ -1849,13 +1836,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
   }
   /* 0x0054B48F */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption6))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,(FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x64,struct UiNodeVtable *),
-                     (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x60,struct UiNodeBase *),adapterIndex);
+                    (bitsPerPixel,(FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->secondValue,
+                     (FrontendDisplayDimensionPixels)((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->firstValue,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
   }
@@ -1863,13 +1850,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
   }
   /* 0x0054B4D3 */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption7))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,int32_t),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,int32_t),adapterIndex);
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->secondValue,
+                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->firstValue,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
   }
@@ -1877,13 +1864,13 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
   }
   /* 0x0054B517 */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption8))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,int32_t),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,int32_t),adapterIndex);
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->secondValue,
+                     ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->firstValue,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
   }
@@ -1891,12 +1878,12 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
   }
   /* 0x0054B55B */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption9))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,int32_t),
+                    (bitsPerPixel,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->secondValue,((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->firstValue,
                      adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
@@ -1905,8 +1892,8 @@ void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *fronte
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
   }
   /* 0x0054B59F */
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,uint32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,uint32_t))) {
+  if ((pendingWidth == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->firstValue) &&
+     (pendingHeight == ((UiNumericPairTextButton *)FRONTEND_UI(frontendRoot,displayResolutionOption10))->secondValue)) {
     modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
   }
   /* 0x0054B5B6: SelectExclusive(10, top, next 10), then pop 1 + 10 */

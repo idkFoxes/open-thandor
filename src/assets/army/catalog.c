@@ -315,8 +315,8 @@ bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
   registryLookup = ArmyAssetRegistry_FindById(recordId);
   missingOrDisabled = registryLookup.notFound;
   if (!missingOrDisabled) {
-    /* [1].selectionDetailTemplateVariantIndex is the flags dword +0x14; bit 0 = enabled */
-    missingOrDisabled = (registryLookup.recordOrError[1].selectionDetailTemplateVariantIndex & 1) == 0;
+    /* flags bit 0 = enabled */
+    missingOrDisabled = (((ArmyAssetRuntimeSemanticView80 *)registryLookup.recordOrError)->flags14 & 1) == 0;
   }
   return missingOrDisabled;
 }
@@ -337,26 +337,25 @@ bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
   bool technologyLocked;
   ArmyAssetLookupResult registryLookup;
 
-  /* armyAssetRecord walks the link list in 4-byte steps, so [3].byteSize is the current link at +0x30;
-     on the linked asset [1].selectionDetailTemplateVariantIndex is the flags dword +0x14 (bit 0 = enabled)
-     and [1].rootNodeOffsetOrPointer the model-tree pointer +0x1C */
+  /* armyAssetRecord walks the link list in 4-byte steps, so its linkedArmyAssetIds30[0] is the current
+     link; on the linked asset flags14 bit 0 = enabled */
   linksRemaining = ARMY_ASSET_LINKED_ID_COUNT;
   do {
-    if (armyAssetRecord[3].byteSize != 0) {
-      registryLookup = ArmyAssetRegistry_FindById(armyAssetRecord[3].byteSize);
+    if (((ArmyAssetRuntimeSemanticView80 *)armyAssetRecord)->linkedArmyAssetIds30[0] != 0) {
+      registryLookup = ArmyAssetRegistry_FindById(((ArmyAssetRuntimeSemanticView80 *)armyAssetRecord)->linkedArmyAssetIds30[0]);
       linkedAsset = registryLookup.recordOrError;
-      if ((!registryLookup.notFound) && ((linkedAsset[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
+      if ((!registryLookup.notFound) && ((((ArmyAssetRuntimeSemanticView80 *)linkedAsset)->flags14 & 1) != 0)) {
         technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                           (factionIndex,(ModelDefinitionHierarchyNodeAddress32)linkedAsset);
         if ((!technologyLocked) &&
-           ((linkedAsset[1].rootNodeOffsetOrPointer != 0 &&
-            ((linkedAsset[1].selectionDetailTemplateVariantIndex & requiredDefinitionFlags) != 0)
+           ((((ArmyAssetRuntimeSemanticView80 *)linkedAsset)->selectionDetailValue1C != 0 &&
+            ((((ArmyAssetRuntimeSemanticView80 *)linkedAsset)->flags14 & requiredDefinitionFlags) != 0)
             ))) {
           return true;
         }
       }
     }
-    armyAssetRecord = (ArmyAssetRecordPrefix *)&armyAssetRecord->selectionDetailTemplateVariantIndex;
+    armyAssetRecord = (ArmyAssetRecordPrefix *)((uint32_t *)armyAssetRecord + 1); /* next link id */
     linksRemaining--;
     if (linksRemaining == 0) {
       return false;
@@ -380,22 +379,23 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
   ArmyAssetRecordPrefix **registryCursor;
   ArmyAssetRecordPrefix *registeredRecord;
 
-  /* [2].byteSize is the dword +0x20 of the record: its cached preview texture */
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
   do {
     registeredRecord = *registryCursor;
     if (registeredRecord != NULL) {
-      g_MemoryApi.free((void *)registeredRecord[2].byteSize);
-      registeredRecord[2].byteSize = 0;
+      g_MemoryApi.free((void *)((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20);
+      ((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20 = 0;
     }
     registryCursor++;
     registrySlotsRemaining--;
   } while (registrySlotsRemaining != 0);
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
-  INGAME_UI_FIELD(uiRootAddress,unitPlacementPreviewImage,0x54,uint32_t) = resolvedTexture;
+  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,unitPlacementPreviewImage))->textureSource =
+       (GraphicsTextureSourceAsset *)resolvedTexture;
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
-  INGAME_UI_FIELD(uiRootAddress,objectPlacementPreviewImage,0x54,uint32_t) = resolvedTexture;
+  ((UiImagePanelControl *)INGAME_UI(uiRootAddress,objectPlacementPreviewImage))->textureSource =
+       (GraphicsTextureSourceAsset *)resolvedTexture;
   return;
 }
 
@@ -409,9 +409,9 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  armourSum = *(uint32_t *)((uint8_t *)selected.modelDefinition + 0x60);
-  for (childIndex = 0; childIndex < *(uint32_t *)(node + 8); childIndex++) {
-    uint8_t *child = *(uint8_t **)(node + 0xc + childIndex * 4);
+  armourSum = ((ModelDefinitionRuntimeSemanticView280 *)selected.modelDefinition)->runtimeValue60;
+  for (childIndex = 0; childIndex < ((ArmyModelTreeNode *)node)->childCount; childIndex++) {
+    uint8_t *child = (uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex];
     if (child != NULL) {
       armourSum = armourSum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
     }
@@ -430,7 +430,7 @@ uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  return ArmyAssetHierarchy_SumArmourFrom(factionIndex,*(uint8_t **)(uintptr_t)(definitionNode + 0xc));
+  return ArmyAssetHierarchy_SumArmourFrom(factionIndex,(uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
@@ -444,13 +444,13 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  energySum = *(EnergyDemandQ4 *)((uint8_t *)selected.modelDefinition + 0x18c);
-  childCount = *(uint32_t *)(node + 8);
-  if ((*(uint32_t *)((uint8_t *)selected.modelDefinition + 0x68) & 0x80) == 0) {
+  energySum = ((ModelDefinitionRuntimeSemanticView280 *)selected.modelDefinition)->runtimeValue18C;
+  childCount = ((ArmyModelTreeNode *)node)->childCount;
+  if ((((ModelDefinitionRuntimeSemanticView280 *)selected.modelDefinition)->runtimeValue68 & 0x80) == 0) {
     childCount = 0; /* only definitions with flag 0x80 contribute their children */
   }
   for (childIndex = 0; childIndex < childCount; childIndex++) {
-    energySum = energySum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(uint8_t **)(node + 0xc + childIndex * 4));
+    energySum = energySum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,(uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex]);
   }
   return energySum;
 }
@@ -466,7 +466,7 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  return ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(uint8_t **)(uintptr_t)(definitionNode + 0xc));
+  return ArmyAssetHierarchy_SumEnergyFrom(factionIndex,(uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
@@ -543,7 +543,7 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
   uint32_t error = 0;
   uint32_t childError;
 
-  metrics = ModelDefinitionRegistry_FindBuildMetricTupleById(*(PckModelDefinitionIdCatalog *)(node + 0x20));
+  metrics = ModelDefinitionRegistry_FindBuildMetricTupleById(((ArmyModelTreeNode *)node)->linkedDefinitionIds[0]);
   if (metrics.notFound) {
     error = (uint32_t)metrics.metric0;
   }
@@ -552,9 +552,9 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
     record->relocationValue24 = record->relocationValue24 + metrics.metric1;
     record->relocationValue28 = record->relocationValue28 + metrics.metric2;
   }
-  childCount = *(uint32_t *)(node + 8);
+  childCount = ((ArmyModelTreeNode *)node)->childCount;
   for (childIndex = 0; childIndex < childCount; childIndex++) {
-    uint8_t **child = (uint8_t **)(node + 0xc + childIndex * 4);
+    uint8_t **child = (uint8_t **)&((ArmyModelTreeNode *)node)->children[childIndex];
     *child = *child + (uintptr_t)assetBase;
     childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,*child);
     if (childError != 0) {
@@ -613,7 +613,7 @@ StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRuntimeSemanticView80 
 
 /* Address: 0x00571D90.
    Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
-   cached in the record (dword +0x20, [2].byteSize); on the first request it is rendered in the unit-placement
+   cached in the record (previewTexture20); on the first request it is rendered in the unit-placement
    owner faction's colours (faction 0 for ids from 400 up). Returns 0 for an unknown id or a failed render.
    Called directly by the in-game keyboard dispatch handlers (g_InGameKeyboardDispatchRecords),
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState and
@@ -638,22 +638,22 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
       return 0;
     }
   }
-  if (registeredRecord[2].byteSize == 0) {
+  if (((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20 == 0) {
     factionIndex = g_UiCommandModeGOwnerFactionIndex;
     if (ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID - 1 < armyAssetRegistryId) {
       factionIndex = 0;
     }
     renderResult = ArmyRuntime_RenderPreviewTexture
-                      (*(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
-                       *(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
+                      (INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
+                       INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime0A30);
     if (renderResult.failed) {
       return 0;
     }
-    registeredRecord[2].byteSize = (AssetRecordByteCount)renderResult.previewTexture;
+    ((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20 = (uint32_t)renderResult.previewTexture;
     return (uint32_t)renderResult.previewTexture;
   }
-  return registeredRecord[2].byteSize;
+  return ((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20;
 }
 
 
@@ -707,7 +707,7 @@ uint8_t ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
   while (((candidateAsset = *registryCursor, candidateAsset == NULL ||
           (recordId != candidateAsset->registryId)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
+         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -734,7 +734,7 @@ uint8_t ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId)
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
   while (((candidateAsset = *registryCursor, candidateAsset == NULL ||
           (recordId != candidateAsset->registryId)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
+         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -761,8 +761,8 @@ uint8_t ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
   while ((((candidateAsset = *registryCursor, candidateAsset == NULL ||
            (recordId != candidateAsset->registryId)) ||
-          ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
+          ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
+         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -789,8 +789,8 @@ uint8_t ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId)
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
   while ((((candidateAsset = *registryCursor, candidateAsset == NULL ||
            (recordId != candidateAsset->registryId)) ||
-          ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
+          ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
+         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {

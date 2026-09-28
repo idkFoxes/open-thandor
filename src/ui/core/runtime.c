@@ -62,12 +62,12 @@ void UiRuntime_FormatSignedValues140And144(void *root)
   /* fractionalDigits 3, integerDigitLimit 10; the denominators are 64.0 and 1.0 in Q16 */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,64 << 16,
-             DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,int32_t),
-             &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x7C,uint16_t));
+             ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16,
+             ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorBiasTextUtf16);
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,1 << 16,
-             DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,int32_t),
-             &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,uint16_t));
+             ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16,
+             ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorScaleTextUtf16);
   return;
 }
 
@@ -83,7 +83,7 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
           UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth)
 
 {
-  int32_t *countdownNumberBuffer;
+  uint16_t *countdownNumberBuffer;
   UiRootNode *root;
   int remainingDwords;
   uint32_t *templateCursor;
@@ -102,16 +102,20 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
       templateCursor++;
       copyCursor = (UiRootNode *)&(copyCursor->base).firstChild;
     }
-    countdownNumberBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t);
+    countdownNumberBuffer =
+         ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdownTextUtf16;
     resolvedText = TextResource_Resolve(0x109);
     RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText.text);
     g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,int32_t),
-               (uint16_t *)countdownNumberBuffer);
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,int32_t) = previousWidth;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,int32_t) = previousHeight;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,int32_t) = previousBitsPerPixel;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,int32_t) = previousAdapterIndex;
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
+               ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdown,
+               countdownNumberBuffer);
+    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousWidth = previousWidth;
+    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousHeight = previousHeight;
+    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousBitsPerPixel =
+         previousBitsPerPixel;
+    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousAdapterIndex =
+         previousAdapterIndex;
     UiRootStack_Push(&g_UiFourValueDialogRootCallbacks,root);
     UiRootStack_InvalidateAll();
     return;
@@ -558,14 +562,13 @@ void UiNode_InvalidateRoot(UiNodeBase *node)
 void UiActionQueue_Enqueue(UiActionId actionId,void *source)
 
 {
-  UiActionId *destinationEntry;
-  
+  UiActionQueueEntry *destinationEntry;
+
   if (g_UiActionQueueUsedBytes < UI_ACTION_QUEUE_BYTES) {
-    destinationEntry =
-         (UiActionId *)((int)&g_UiActionQueueEntries->actionId + g_UiActionQueueUsedBytes);
+    destinationEntry = (UiActionQueueEntry *)((uint8_t *)g_UiActionQueueEntries + g_UiActionQueueUsedBytes);
     if (actionId != UI_ACTION_NONE) {
-      *destinationEntry = actionId;
-      destinationEntry[1] = (UiActionId)source;
+      destinationEntry->actionId = actionId;
+      destinationEntry->source = source;
       g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes + 8; /* one entry */
     }
   }

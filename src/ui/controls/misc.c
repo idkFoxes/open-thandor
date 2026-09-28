@@ -22,18 +22,18 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   UiAnchorFractionQ31 colorScaleQ16;
 
   /* the slider values (UiRangeSliderControl.value, +0x58) */
-  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorBiasSlider,0x58,int32_t);
-  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorScaleSlider,0x58,int32_t);
-  if ((colorBiasQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_COLOR_BIAS,uint32_t)) ||
-      (colorScaleQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_COLOR_SCALE,uint32_t))) {
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_COLOR_BIAS,uint32_t) = colorBiasQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_COLOR_SCALE,uint32_t) = colorScaleQ16;
+  colorBiasQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value;
+  colorScaleQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value;
+  if ((colorBiasQ16 != ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16) ||
+      (colorScaleQ16 != ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16)) {
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16 = colorBiasQ16;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16 = colorScaleQ16;
     g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
-              (DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_ADAPTER,uint32_t),
-               (UiNodeBase *)DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_BITS_PER_PIXEL,uint32_t),
-               DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_HEIGHT,int32_t),
-               DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_WIDTH,int32_t),&root->base);
+              (((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedAdapterIndex,
+               (UiNodeBase *)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedBitsPerPixel,
+               ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedHeight,
+               ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedWidth,&root->base);
     UiRuntime_FormatSignedValues140And144(root);
   }
   return;
@@ -44,7 +44,7 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
    Handler of the four colour-depth buttons (actions 0x201..0x204, g_UiDisplayModeSelectionActionHandlers20[1..4])
    of the display settings dialog, despite its name: selects the button's bit depth, keeps the selected
    adapter and resolution and refreshes the available buttons. Each option button keeps its value in the
-   dword 8 bytes before it (sourceNode[-1].layoutHeight). UiDisplayModeAction_UpdateColorDepthSelection is its
+   dword 8 bytes before it (UiDisplayModeOptionPrefix.modeValue). UiDisplayModeAction_UpdateColorDepthSelection is its
    mirror image for the adapter buttons; the two names are swapped.
 */
 void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
@@ -54,10 +54,10 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            ((FrontendDisplayAdapterIndex)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_ADAPTER,struct UiNodeVtable *),
-             (UiNodeBase *)sourceNode[-1].layoutHeight,
-             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_HEIGHT,struct UiNodeBase *),
-             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_WIDTH,struct UiNodeBase *),displaySettingsRoot)
+            ((FrontendDisplayAdapterIndex)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedAdapterIndex,
+             (UiNodeBase *)((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,
+             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedHeight,
+             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedWidth,displaySettingsRoot)
   ;
   return;
 }
@@ -75,9 +75,9 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            ((FrontendDisplayAdapterIndex)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_ADAPTER,struct UiNodeVtable *),
-             DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_BITS_PER_PIXEL,struct UiNodeBase *),
-             sourceNode[-1].layoutWidth,sourceNode[-1].layoutHeight,displaySettingsRoot);
+            ((FrontendDisplayAdapterIndex)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedAdapterIndex,
+             (struct UiNodeBase *)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedBitsPerPixel,
+             ((UiDisplayModeOptionPrefix *)sourceNode)[-1].resolutionHeight,((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,displaySettingsRoot);
   return;
 }
 
@@ -95,9 +95,9 @@ void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            (sourceNode[-1].layoutHeight,DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_BITS_PER_PIXEL,struct UiNodeBase *),
-             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_HEIGHT,struct UiNodeBase *),
-             (FrontendDisplayDimensionPixels)DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_SELECTED_WIDTH,struct UiNodeBase *),displaySettingsRoot)
+            (((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,(struct UiNodeBase *)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedBitsPerPixel,
+             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedHeight,
+             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedWidth,displaySettingsRoot)
   ;
   return;
 }
@@ -122,10 +122,10 @@ void UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourc
   uint32_t modeWidth;
 
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  modeWidth = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_PREVIOUS_WIDTH,int32_t);
-  modeHeight = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_PREVIOUS_HEIGHT,int32_t);
-  bitsPerPixel = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_PREVIOUS_BITS_PER_PIXEL,int32_t);
-  adapterIndex = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_PREVIOUS_ADAPTER,int32_t);
+  modeWidth = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousWidth;
+  modeHeight = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousHeight;
+  bitsPerPixel = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousBitsPerPixel;
+  adapterIndex = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousAdapterIndex;
   UiRootStack_Pop(root);
   g_CursorVisibilityToken--;
   UiFrame_ProcessAndPresentWithLockTransition();
@@ -279,12 +279,12 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   uint32_t pendingHeightOrCurrentWidth;
 
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  pendingWidthOrCurrentHeight = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_WIDTH,int32_t);
-  pendingHeightOrCurrentWidth = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_HEIGHT,int32_t);
-  pendingBitsPerPixel = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_BITS_PER_PIXEL,uint32_t);
+  pendingWidthOrCurrentHeight = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedWidth;
+  pendingHeightOrCurrentWidth = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedHeight;
+  pendingBitsPerPixel = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedBitsPerPixel;
   currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
             g_SoftwarePixelFormatConfig.blueBitCount;
-  pendingAdapterIndex = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_ADAPTER,uint32_t);
+  pendingAdapterIndex = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedAdapterIndex;
   UiRootStack_Pop(root);
   if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) || (pendingBitsPerPixel != currentBitsPerPixel)) ||
      (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
@@ -326,8 +326,8 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   UiNodeBase *displaySettingsRoot;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_ORIGINAL_COLOR_BIAS,int32_t);
-  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,DISPLAY_SETTINGS_ORIGINAL_COLOR_SCALE,int32_t);
+  colorBiasQ16 = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->originalColorBiasQ16;
+  colorScaleQ16 = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->originalColorScaleQ16;
   UiRootStack_Pop((UiRootNode *)sourceNode); /* the button, not the root, as in the original */
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
   return;
@@ -345,12 +345,12 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
   int32_t *stepTicksField;
   int32_t *countdownField;
 
-  stepTicksField = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_STEP_TICKS,int32_t);
+  stepTicksField = &((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->stepTicks;
   *stepTicksField = *stepTicksField - 1;
   if (*stepTicksField == 0) {
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_STEP_TICKS,int32_t) =
+    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->stepTicks =
          UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS;
-    countdownField = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_COUNTDOWN,int32_t);
+    countdownField = &((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdown;
     *countdownField = *countdownField - 1;
     if (*countdownField == 0) {
       UiActionQueue_Enqueue(UI_DISPLAY_MODE_ACTION_REVERT,root);
@@ -358,8 +358,8 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
     else {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                 FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_COUNTDOWN,int32_t),
-                 (uint16_t *)&FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,FOUR_VALUE_DIALOG_NUMBER_BUFFER,int32_t));
+                 ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdown,
+                 ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdownTextUtf16);
     }
   }
   return;
@@ -844,27 +844,27 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
     colorDepthBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
              g_SoftwarePixelFormatConfig.blueBitCount;
     /* applyButton tail: the selected mode tuple and the original one start out equal */
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_WIDTH,int32_t) = g_FramebufferWidth;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_HEIGHT,int32_t) = framebufferHeight;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_BITS_PER_PIXEL,uint32_t) = colorDepthBits;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_ADAPTER,uint32_t) = activeAdapterIndex;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_ORIGINAL_WIDTH,int32_t) = framebufferWidth;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_ORIGINAL_HEIGHT,int32_t) = framebufferHeight;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_ORIGINAL_BITS_PER_PIXEL,uint32_t) = colorDepthBits;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_ORIGINAL_ADAPTER,uint32_t) = activeAdapterIndex;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedWidth = g_FramebufferWidth;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedHeight = framebufferHeight;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedBitsPerPixel = colorDepthBits;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedAdapterIndex = activeAdapterIndex;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalWidth = framebufferWidth;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalHeight = framebufferHeight;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalBitsPerPixel = colorDepthBits;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalAdapterIndex = activeAdapterIndex;
     colorBiasQ16 = g_SoftwareColorBiasQ16;
     colorScaleQ16 = g_SoftwareColorScaleQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_COLOR_BIAS,uint32_t) = g_SoftwareColorBiasQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_SELECTED_COLOR_SCALE,uint32_t) = colorScaleQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_ORIGINAL_COLOR_BIAS,int32_t) = colorBiasQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,DISPLAY_SETTINGS_ORIGINAL_COLOR_SCALE,int32_t) = colorScaleQ16;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16 = g_SoftwareColorBiasQ16;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16 = colorScaleQ16;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorBiasQ16 = colorBiasQ16;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorScaleQ16 = colorScaleQ16;
     ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
     ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
     /* The two readouts show the number buffers kept in the tail of colorBiasValueText. */
     ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->text =
-         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x7C,uint16_t);
+         ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorBiasTextUtf16;
     ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
-         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,uint16_t);
+         ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorScaleTextUtf16;
     UiRuntime_FormatSignedValues140And144(root);
     /* handler page 2 serves the action ids 0x200.. */
     UiActionHandlers_SetPage(2,(UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
@@ -913,11 +913,11 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
     /* Each option button's mode value(s) sit in the dwords just before the button (read back by the
-       action callbacks as sourceNode[-1].layoutHeight / .layoutWidth). */
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption1,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch0;
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption2,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch1;
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption3,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch2;
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption4,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch3;
+       action callbacks as UiDisplayModeOptionPrefix.modeValue / .resolutionHeight). */
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption1))[-1].modeValue = g_UiDisplayModeDistinctValueScratch0;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption2))[-1].modeValue = g_UiDisplayModeDistinctValueScratch1;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption3))[-1].modeValue = g_UiDisplayModeDistinctValueScratch2;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption4))[-1].modeValue = g_UiDisplayModeDistinctValueScratch3;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -998,25 +998,25 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
     /* Resolution buttons: width at -8, height at -0xC. */
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch0 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch1 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch2 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch3 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch4 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption1))[-1].modeValue = g_UiDisplayModeDistinctValueScratch0 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption1))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption2))[-1].modeValue = g_UiDisplayModeDistinctValueScratch1 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption2))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption3))[-1].modeValue = g_UiDisplayModeDistinctValueScratch2 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption3))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption4))[-1].modeValue = g_UiDisplayModeDistinctValueScratch3 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption4))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption5))[-1].modeValue = g_UiDisplayModeDistinctValueScratch4 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption5))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
     insertValueA = g_UiDisplayModeDistinctValueScratch5 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch5 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-0xC,uint32_t) = insertValueA;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption6))[-1].modeValue = g_UiDisplayModeDistinctValueScratch5 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption6))[-1].resolutionHeight = insertValueA;
     lowWordValue = g_UiDisplayModeDistinctValueScratch6 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch6 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-0xC,uint32_t) = lowWordValue;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption7))[-1].modeValue = g_UiDisplayModeDistinctValueScratch6 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption7))[-1].resolutionHeight = lowWordValue;
     lowWordValue = g_UiDisplayModeDistinctValueScratch7 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch7 >> 16;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-0xC,uint32_t) = lowWordValue;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption8))[-1].modeValue = g_UiDisplayModeDistinctValueScratch7 >> 16;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption8))[-1].resolutionHeight = lowWordValue;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -1072,13 +1072,13 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
     /* Adapter buttons: adapter index at -8. */
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption1,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch0;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption2,-8,uint32_t) = adapterOption1Or4;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption3,-8,uint32_t) = adapterOption2;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption1))[-1].modeValue = g_UiDisplayModeDistinctValueScratch0;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption2))[-1].modeValue = adapterOption1Or4;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption3))[-1].modeValue = adapterOption2;
     adapterOption1Or4 = g_UiDisplayModeDistinctValueScratch4;
     copyCountOrRgBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption4,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch3;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption5,-8,uint32_t) = adapterOption1Or4;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption4))[-1].modeValue = g_UiDisplayModeDistinctValueScratch3;
+    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption5))[-1].modeValue = adapterOption1Or4;
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (g_ActiveGraphicsAdapterIndex,
                (UiNodeBase *)(copyCountOrRgBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight
@@ -1155,18 +1155,25 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
   /* Rewritten from the assembly (0x00423D70): every option button is a 0x68-byte node; the dwords
      just before each button hold its mode value(s). The decompiled struct indexing picked wrong
      fields, so no resolution button was ever marked as selected. */
-  static const unsigned depthButtons[4] = {0x280,0x2e8,0x350,0x3b8};
-  static const unsigned sizeButtons[8] = {0x420,0x488,0x4f0,0x558,0x5c0,0x628,0x690,0x6f8};
-  static const unsigned adapterButtons[5] = {0x760,0x7c8,0x830,0x898,0x900};
+  static const unsigned depthButtons[4] = {offsetof(DisplaySettingsUiImage,colorDepthOption1),
+      offsetof(DisplaySettingsUiImage,colorDepthOption2),offsetof(DisplaySettingsUiImage,colorDepthOption3),
+      offsetof(DisplaySettingsUiImage,colorDepthOption4)};
+  static const unsigned sizeButtons[8] = {offsetof(DisplaySettingsUiImage,resolutionOption1),
+      offsetof(DisplaySettingsUiImage,resolutionOption2),offsetof(DisplaySettingsUiImage,resolutionOption3),
+      offsetof(DisplaySettingsUiImage,resolutionOption4),offsetof(DisplaySettingsUiImage,resolutionOption5),
+      offsetof(DisplaySettingsUiImage,resolutionOption6),offsetof(DisplaySettingsUiImage,resolutionOption7),
+      offsetof(DisplaySettingsUiImage,resolutionOption8)};
+  static const unsigned adapterButtons[5] = {offsetof(DisplaySettingsUiImage,adapterOption1),
+      offsetof(DisplaySettingsUiImage,adapterOption2),offsetof(DisplaySettingsUiImage,adapterOption3),
+      offsetof(DisplaySettingsUiImage,adapterOption4),offsetof(DisplaySettingsUiImage,adapterOption5)};
   uint8_t *root = (uint8_t *)displaySettingsRoot;
   uint32_t bitsPerPixel = (uint32_t)(uintptr_t)selectedModeValue;
   void *selected = NULL;
   bool modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
   int i;
 
-#define DISPLAY_MODE_FIELD(offset) (*(uint32_t *)(root + (offset)))
   for (i = 0; i < 4; i++) {
-    uint32_t depth = DISPLAY_MODE_FIELD(depthButtons[i] - 8);
+    uint32_t depth = ((UiDisplayModeOptionPrefix *)(root + depthButtons[i]))[-1].modeValue;
     modeMissing = GraphicsDisplayMode_IsEnumerated(adapterIndex,depth,modeHeight,modeWidth);
     if (modeMissing) {
       UiNodeList_SuppressActionId(UI_DISPLAY_MODE_ACTION_FIRST_COLOR_DEPTH + i,displaySettingsRoot);
@@ -1185,8 +1192,8 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption2),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption1));
   for (i = 0; i < 8; i++) {
-    uint32_t height = DISPLAY_MODE_FIELD(sizeButtons[i] - 0xc);
-    uint32_t width = DISPLAY_MODE_FIELD(sizeButtons[i] - 8);
+    uint32_t height = ((UiDisplayModeOptionPrefix *)(root + sizeButtons[i]))[-1].resolutionHeight;
+    uint32_t width = ((UiDisplayModeOptionPrefix *)(root + sizeButtons[i]))[-1].modeValue;
     modeMissing = GraphicsDisplayMode_IsEnumerated(adapterIndex,bitsPerPixel,height,width);
     if (modeMissing) {
       UiNodeList_SuppressActionId(UI_DISPLAY_MODE_ACTION_FIRST_RESOLUTION + i,displaySettingsRoot);
@@ -1208,7 +1215,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption2),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption1));
   for (i = 0; i < 5; i++) {
-    uint32_t adapter = DISPLAY_MODE_FIELD(adapterButtons[i] - 8);
+    uint32_t adapter = ((UiDisplayModeOptionPrefix *)(root + adapterButtons[i]))[-1].modeValue;
     modeMissing = GraphicsDisplayMode_IsEnumerated(adapter,bitsPerPixel,modeHeight,modeWidth);
     if (modeMissing) {
       UiNodeList_SuppressActionId(UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER + i,displaySettingsRoot);
@@ -1226,21 +1233,23 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption3),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption2),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption1));
-  /* root offsets: applyButton (+0xD4) + DISPLAY_SETTINGS_SELECTED_* / DISPLAY_SETTINGS_ORIGINAL_* */
-  DISPLAY_MODE_FIELD(0x130) = modeWidth;
-  DISPLAY_MODE_FIELD(0x134) = modeHeight;
-  DISPLAY_MODE_FIELD(0x138) = bitsPerPixel;
-  DISPLAY_MODE_FIELD(0x13c) = adapterIndex;
-  if ((modeWidth == DISPLAY_MODE_FIELD(0x148)) && (modeHeight == DISPLAY_MODE_FIELD(0x14c)) &&
-      (bitsPerPixel == DISPLAY_MODE_FIELD(0x150)) && (adapterIndex == DISPLAY_MODE_FIELD(0x154)) &&
-      (DISPLAY_MODE_FIELD(0x140) == DISPLAY_MODE_FIELD(0x158)) &&
-      (DISPLAY_MODE_FIELD(0x144) == DISPLAY_MODE_FIELD(0x15c))) {
+  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedWidth = modeWidth;
+  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedHeight = modeHeight;
+  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedBitsPerPixel = bitsPerPixel;
+  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedAdapterIndex = adapterIndex;
+  if ((modeWidth == (uint32_t)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalWidth) &&
+      (modeHeight == (uint32_t)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalHeight) &&
+      (bitsPerPixel == ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalBitsPerPixel) &&
+      (adapterIndex == ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalAdapterIndex) &&
+      (((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16 ==
+       ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorBiasQ16) &&
+      (((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16 ==
+       ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorScaleQ16)) {
     UiNodeList_SuppressActionId(UI_DISPLAY_MODE_ACTION_APPLY,displaySettingsRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(UI_DISPLAY_MODE_ACTION_APPLY,displaySettingsRoot);
   }
-#undef DISPLAY_MODE_FIELD
   return;
 }
 

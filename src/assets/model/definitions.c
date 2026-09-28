@@ -26,9 +26,10 @@ ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
   ModelDefinitionResult lookupResult;
 
   linkedSlotsRemaining = 8;
-  selectedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
+  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
   do {
-    linkedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
+    /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
+    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
       /* despite its name the check returns true (CF set) when the technology is still locked */
       technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
@@ -56,8 +57,8 @@ static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex
   ModelDefinition_UnlockLinkedTechnologyForFaction
             (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
                                     (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node));
-  for (childIndex = 0; childIndex < *(uint32_t *)(node + 8); childIndex++) {
-    ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(uint8_t **)(node + 0xc + childIndex * 4));
+  for (childIndex = 0; childIndex < ((ArmyModelTreeNode *)node)->childCount; childIndex++) {
+    ModelDefinitionHierarchy_UnlockFrom(factionIndex,(uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex]);
   }
 }
 
@@ -73,7 +74,7 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(uint8_t **)(uintptr_t)(definitionNode + 0xc));
+  ModelDefinitionHierarchy_UnlockFrom(factionIndex,(uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
@@ -85,12 +86,12 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
   uint32_t childIndex;
   /* true from this check means the technology is still locked */
   if (ModelDefinition_IsFactionTechnologyUnlocked
-                (technologyMasks,*(PckModelDefinitionIdCatalog *)(node + 0x20))) {
+                (technologyMasks,((ArmyModelTreeNode *)node)->linkedDefinitionIds[0])) {
     return true;
   }
-  for (childIndex = 0; childIndex < *(uint32_t *)(node + 8); childIndex++) {
+  for (childIndex = 0; childIndex < ((ArmyModelTreeNode *)node)->childCount; childIndex++) {
     if (ModelDefinitionHierarchy_AnyTechnologyFrom
-                  (technologyMasks,*(uint8_t **)(node + 0xc + childIndex * 4))) {
+                  (technologyMasks,(uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex])) {
       return true;
     }
   }
@@ -111,7 +112,7 @@ bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
   return ModelDefinitionHierarchy_AnyTechnologyFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                    *(uint8_t **)(uintptr_t)(definitionNode + 0xc));
+                    (uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
@@ -143,9 +144,8 @@ StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset)
       registrationResult = ModelDefinition_RegisterAndResolveReferences(definition,asset);
       registrationStatusCode = registrationResult.valueOrError;
       if (registrationResult.failed) break;
-      /* advance by the record's leading byte size (reserved010_017 lies at +0x10) */
-      definition = (ModelDefinitionResolvePhaseView280 *)
-                   (definition->reserved010_017 + (definition->byteSize - 0x10));
+      /* advance by the record's leading byte size */
+      definition = (ModelDefinitionResolvePhaseView280 *)((uint8_t *)definition + definition->byteSize);
       recordsRemaining--;
     }
   }
@@ -407,10 +407,9 @@ ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog def
       return missResult;
     }
   }
-  /* [0x20] steps over 0x20 twelve-byte record prefixes: offsets +0x180, +0x188 and +0x184 */
-  foundResult.metric1 = registeredDefinition[0x20].byteSize;
-  foundResult.metric0 = registeredDefinition[0x20].definitionId;
-  foundResult.metric2 = registeredDefinition[0x20].flags;
+  foundResult.metric1 = ((ModelDefinitionRuntimeSemanticView280 *)registeredDefinition)->buildMetric180;
+  foundResult.metric0 = (uint32_t)((ModelDefinitionRuntimeSemanticView280 *)registeredDefinition)->buildMetricTuple188;
+  foundResult.metric2 = ((ModelDefinitionRuntimeSemanticView280 *)registeredDefinition)->xeniteValueQ4_184;
   foundResult.notFound = false;
   return foundResult;
 }
@@ -430,10 +429,9 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
 
   registryCursor = g_ModelDefinitionRegistry;
   registrySlotsRemaining = 768;
-  /* [0x25].flags: 0x25 twelve-byte record prefixes plus 4 = offset +0x1C0 */
   while ((candidateDefinition = *registryCursor,
          candidateDefinition == NULL ||
-         (runtimeClassId != candidateDefinition[0x25].flags))) {
+         (runtimeClassId != ((ModelDefinitionRuntimeSemanticView280 *)candidateDefinition)->requiredTechnologyBit1C0))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -458,9 +456,10 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
   bool technologyLocked;
 
   linkedSlotsRemaining = 8;
-  selectedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
+  selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
   do {
-    linkedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
+    /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
+    linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
       /* true (CF set) means the technology is still locked */
       technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
@@ -701,7 +700,7 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
                                      (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[nodeOffsetOrGridClass];
                                 nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)
                                         [nodeOffsetOrGridClass];
-                                *(uint32_t *)(definition->reserved0C0_0DB + 0xc) =
+                                ((ModelDefinitionRuntimeSemanticView280 *)definition)->classParameterCC =
                                      resolverStatusOrSentinel;
                                 definition->runtimeValue24 = nodeOffsetOrGridClass;
                               }
@@ -762,8 +761,8 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
 
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if (!lookupResult.notFound) {
-    /* [0x25] steps over 0x25 twelve-byte record prefixes: .definitionId is record +0x1C4 */
-    Technology_UnlockForFaction(0,0,lookupResult.modelDefinition[0x25].definitionId,factionIndex);
+    Technology_UnlockForFaction
+              (0,0,((ModelDefinitionRuntimeSemanticView280 *)lookupResult.modelDefinition)->researchTechnologyIds1C4[0],factionIndex);
   }
 }
 
@@ -782,7 +781,7 @@ bool ModelDefinition_IsFactionTechnologyUnlocked
 
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if ((!lookupResult.notFound) &&
-     (technologyBitIndex = lookupResult.modelDefinition[0x25].flags,
+     (technologyBitIndex = ((ModelDefinitionRuntimeSemanticView280 *)lookupResult.modelDefinition)->requiredTechnologyBit1C0,
      (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 0x1f)) != 0)) {
     return false;
   }

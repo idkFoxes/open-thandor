@@ -39,12 +39,17 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
     }
   }
   payloadCursor = playerRecord->snapshotPayloadB0_13AF;
-  /* The asset dword at +0xB8 is an offset; the record behind it holds at +0xE28 the index of the image's
-     palette (0x800-byte palettes of 256 8-byte entries from asset +0x200) and at +0xE2C the offset of its
-     pixel data. */
-  pixelDataOffset = *(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe2c + armyGraphicsAsset);
+  /* The asset is a texture source asset; the replaced image is subresource 0x71 of its table (entry at table
+     offset + 0xE20). Its paletteIndex selects one of the 0x800-byte palettes (256 8-byte entries) from asset
+     +0x200, its dataOffset locates the pixel data. */
+  pixelDataOffset =
+       ((GraphicsTextureSourceEntry *)
+        (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.subresourceTableOffset +
+        armyGraphicsAsset))[0x71].dataOffset;
   remainingCount = 256;
-  destinationCursor = (uint32_t *)(*(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe28 + armyGraphicsAsset) * 0x800
+  destinationCursor = (uint32_t *)(((GraphicsTextureSourceEntry *)
+                                    (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.
+                                     subresourceTableOffset + armyGraphicsAsset))[0x71].paletteIndex * 0x800
                     + 0x200 + armyGraphicsAsset);
   do {
     /* reads four bytes of a three-byte entry; the fourth is replaced by the alpha */
@@ -145,7 +150,8 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
 void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  if (*(int *)((armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset + 0x278) ==
+  if (((ModelDefinitionRuntimeSemanticView280 *)(armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset)->
+      placementContactKindIndex278 ==
       ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
     ArmyRuntimeClass_UpdatePositionedSoundsVariantB
               (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView120 *)armyRuntime);
@@ -428,7 +434,9 @@ void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
     }
   }
   if ((((armyRuntime->articulatedContact).lateralOffsetQ12 != 6) &&
-      (soundSlotIndex = *(uint32_t *)((armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset + 0x274),
+      (soundSlotIndex =
+            ((ModelDefinitionRuntimeSemanticView280 *)(armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset)->
+            soundSlotIndex274,
       (armyRuntime->articulatedContact).lateralOffsetQ12 != 0)) &&
      ((soundSlotIndex != 0 &&
       (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&

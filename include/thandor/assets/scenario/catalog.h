@@ -39,6 +39,37 @@
 #define TEXT_ID_LEVEL_COLUMN60_BASE 0x2200
 #define TEXT_ID_LEVEL_COLUMN80_BASE 0x2205
 
+/* Campaign asset (level\<name>.cgn, g_FrontendLoadedCampaignAsset): a 0x200-byte header followed by
+   levelRecordCount level records of 0x180 bytes. The original walks the records with a cursor that starts at
+   the asset base and advances by 0x180, reading the fields at cursor + 0x200 + field offset; the port keeps
+   that cursor and reads ((CampaignAsset *)cursor)->levels[0] (= record i of the real asset). */
+typedef struct CampaignLevelRecord {
+    int32_t successorLevelIds[8];        /* +0x000 next level id per end selection (g_EndMovieSelectionIndex), <0 = end */
+    int32_t endMovieNumbersVariant[8];   /* +0x020 end movie number per end selection, nonzero g_EndMovieVariantIndex */
+    int32_t endMovieNumbers[8];          /* +0x040 end movie number per end selection, g_EndMovieVariantIndex 0 */
+    int32_t exitZoneCenterX[8];          /* +0x060 per faction: carry-over exit zone centre X (Q12) */
+    int32_t exitZoneCenterY[8];          /* +0x080 per faction: exit zone centre Y */
+    int32_t exitZoneRadius[8];           /* +0x0A0 per faction: exit zone radius (<= 0 = none) */
+    int32_t exitZoneDestinationX[8];     /* +0x0C0 per faction: where the carried units appear, X */
+    int32_t exitZoneDestinationY[8];     /* +0x0E0 per faction: destination Y */
+    int32_t levelId;                     /* +0x100 */
+    uint32_t carryOverMask;              /* +0x104 one carry-over bit per end selection */
+    uint32_t skipMask;                   /* +0x108 one skip bit per end selection */
+    uint16_t levelFileName[58];          /* +0x10C UTF-16 level file name (level\<name>.lev) */
+} CampaignLevelRecord;
+
+typedef struct CampaignAsset {
+    enum AssetMagic magic;               /* +0x00 */
+    PckDecodedByteCount decodedSizeBytes; /* +0x04 allocation/decoded size of the whole asset */
+    uint8_t reserved08_B3[0xac];
+    int32_t firstLevelId;                /* +0xB4 */
+    int32_t levelRecordCount;            /* +0xB8 */
+    uint8_t reservedBC_C3[8];
+    int32_t currentLevelId;              /* +0xC4 */
+    uint8_t reservedC8_1FF[0x138];
+    CampaignLevelRecord levels[1];       /* +0x200, levelRecordCount records */
+} CampaignAsset;
+
 /* Index of the "Choose game" page (gameSelectPage) in the frontend page stack. */
 #define FRONTEND_PAGE_STACK_CHOOSE_GAME 10
 
@@ -56,6 +87,25 @@
 #define SCENARIO_TRANSFER_FIELD_GRID 3         /* field grid of the loaded level */
 #define SCENARIO_TRANSFER_CAMPAIGN_BUNDLE 4    /* level + campaign + field grid */
 #define SCENARIO_TRANSFER_LEVEL_BUNDLE 5       /* level + field grid (every value >= 5) */
+
+/* Header of a SCENARIO_TRANSFER_CAMPAIGN_BUNDLE packet; the three encoded images follow it. */
+typedef struct ScenarioCampaignBundleHeader {
+    uint32_t levelDecodedBytes;          /* +0x00 */
+    uint32_t campaignDecodedBytes;       /* +0x04 */
+    uint32_t fieldGridDecodedBytes;      /* +0x08 */
+    uint32_t levelEncodedBytes;          /* +0x0C */
+    uint32_t campaignEncodedBytes;       /* +0x10 */
+    uint32_t fieldGridEncodedBytes;      /* +0x14 */
+} ScenarioCampaignBundleHeader;
+
+/* Header of a SCENARIO_TRANSFER_LEVEL_BUNDLE packet (built by Frontend_MainLoop); the two encoded
+   images follow it. */
+typedef struct ScenarioLevelBundleHeader {
+    uint32_t levelDecodedBytes;          /* +0x00 */
+    uint32_t fieldGridDecodedBytes;      /* +0x04 */
+    uint32_t levelEncodedBytes;          /* +0x08 */
+    uint32_t fieldGridEncodedBytes;      /* +0x0C */
+} ScenarioLevelBundleHeader;
 
 /* 0x00549E50 */
 void FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *listControl);

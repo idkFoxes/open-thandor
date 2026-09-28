@@ -126,8 +126,8 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
   /* note the crossed bases: modelToken is an army-slot offset, armyToken one from g_ModelRuntimeRebaseDelta */
   if ((((modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne != 0) &&
        (armyToken + g_ModelRuntimeRebaseDelta != 0)) &&
-      (*(int *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne + 4) != 0)) &&
-     (*(int *)(armyToken + g_ModelRuntimeRebaseDelta + 4) != 0)) {
+      (((ArmyRuntimeSlot *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne))->modelNodeRuntime != NULL)) &&
+     ((((ModelRuntimeSlot *)(armyToken + g_ModelRuntimeRebaseDelta))->rootModelNodeOrSavedOffset).modelNode != NULL)) {
     FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(playerIndex,0,0,modelToken);
     inGameRoot = g_InGameRuntimeRoot;
     if (playerIndex == g_LocalPlayerRuntimeId) {
@@ -152,8 +152,7 @@ void FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress3
 {
   uint32_t consensusValue;
   
-  /* source + 0x4C is the button's UiSelectableControl.stateFlags */
-  consensusValue = *(uint32_t *)(source + 0x4c) & UI_SELECTABLE_SELECTED_OR_CHECKED;
+  consensusValue = ((UiSelectableControl *)source)->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_SetConsensusValueAndRefresh(g_LocalPlayerRuntimeId,0,0,consensusValue);
@@ -180,10 +179,8 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
   /* rootNode starts as the kick button and walks up to the frontend root */
   parentCursor = (rootNode->base).parent;
   while (parentCursor != UI_NODE_NONE) {
-    rootNode = *(UiRootNode **)
-                (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
-    parentCursor = *(UiNodeBase **)
-              (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
+    rootNode = (UiRootNode *)(rootNode->base).parent;
+    parentCursor = (rootNode->base).parent;
   }
   /* the list's row slots point at the player blocks */
   selectedPlayerRuntimeSlot = (FrontendPlayerRuntimeRecord **)
@@ -593,13 +590,13 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
   /* source is the frontend template's hostLobbyBackButton (+0x543C). */
   FrontendUiImage *frontendUi;
 
-  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x543c);
+  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostLobbyBackButton));
   UiPageStack_SetActiveIndex
             (FRONTEND_PAGE_HOST_GAME_SETUP,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   sessionTickInterval = g_SessionNetworkTickInterval;
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = sessionTickInterval >> 1;
@@ -1004,7 +1001,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
           } while (!foundEmpty);
           if (foundEmpty) {
             /* = nextScanCursor's previous entry, i.e. the empty slot found */
-            *(GameEntityRuntime **)(nextScanCursor[-1].reserved80B0_8117 + 100) =
+            (nextScanCursor->selection).entries[-1] =
                  (sourceCursor->selection).entries[0];
           }
         }
@@ -1100,14 +1097,14 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   writeOffset = playerBlock->packedSelectionState809C & 0xff;
-  *(FrontendTextCommandValue0 *)(playerBlock->reserved80B0_8117 + writeOffset + 0x10) = value0;
-  *(FrontendTextCommandValue1 *)(playerBlock->reserved80B0_8117 + writeOffset + 0x14) = value1;
+  *(FrontendTextCommandValue0 *)(playerBlock->chatStagingText80C0 + writeOffset) = value0;
+  *(FrontendTextCommandValue1 *)(playerBlock->chatStagingText80C0 + writeOffset + 4) = value1;
   nextOffset = writeOffset + 0xc;
   playerBlock->packedSelectionState809C = playerBlock->packedSelectionState809C & 0xffffff00;
   if (0x24 < nextOffset) {
     nextOffset = 0x24;
   }
-  *(FrontendTextCommandValue2 *)(playerBlock->reserved80B0_8117 + writeOffset + 0x18) = value2;
+  *(FrontendTextCommandValue2 *)(playerBlock->chatStagingText80C0 + writeOffset + 8) = value2;
   playerBlock->packedSelectionState809C = playerBlock->packedSelectionState809C | nextOffset;
   return;
 }
@@ -1138,10 +1135,10 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
       SESSION_NETWORK_ROLE_LOCAL)) {
     /* +0x80C0: the 0x30 staged bytes, widened into a 0x60-byte buffer */
     Text_CopyNarrowToUtf16
-              (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->reserved80B0_8117 + 0x10);
+              (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText80C0);
     messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
     stream = messageText.text;
-    RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->reserved80B0_8117 + 0x40,stream);
+    RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->playerNameUtf16_80F0,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
     InGameRecentTextHistory_InsertAndRebuild8(stream);
   }
@@ -1551,11 +1548,11 @@ void FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((modelOffset != 0) &&
-     (armyAddress = modelOffset + g_ModelRuntimeRebaseDelta, *(int *)(armyAddress + 4) != 0)) {
-    armyFlags = *(uint32_t *)(armyAddress + 0xec);
+     (armyAddress = modelOffset + g_ModelRuntimeRebaseDelta, (((ModelRuntimeSlot *)armyAddress)->rootModelNodeOrSavedOffset).modelNode != NULL)) {
+    armyFlags = (((ModelRuntimeSlot *)armyAddress)->classState).classStateEC;
     playerBlock->assignmentToken80A0 = armyAddress;
     playerBlock->assignmentFlags80A4 = armyFlags & 0x80;
-    *(uint32_t *)(armyAddress + 0xec) = *(uint32_t *)(armyAddress + 0xec) & ~0x80;
+    (((ModelRuntimeSlot *)armyAddress)->classState).classStateEC = (((ModelRuntimeSlot *)armyAddress)->classState).classStateEC & ~0x80;
   }
   return;
 }

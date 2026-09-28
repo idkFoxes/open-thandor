@@ -46,10 +46,10 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance
                      worldXQ12,worldYQ12,modelDefinition,ownerFactionIndex,worldRuntime);
   eaxOrOffsetYQ12 = clearanceResult.value;
   if (!clearanceResult.rejected) {
-    /* the model resource is at +0x30 of the definition's root node */
+    /* the model resource of the definition's root node */
     anchorLookup = ModelLookupTable_ContainsPackedKey
-                      (1,5,*(ModelResourceHitTestAndRenderView210 **)
-                            (modelDefinition->serializedNodeOffsetOrPointer64 + 0x30));
+                      (1,5,((MdlSerializedNodeHeader38 *)modelDefinition->serializedNodeOffsetOrPointer64)->
+                           spriteAssetReference.modelResource);
     offsetLengthAngle = FixedMath_Vector2AngleAndLengthRegs
                       (((anchorLookup.entry)->localPosition).y,((anchorLookup.entry)->localPosition).x);
     rotatedOffset = FixedMath_SinCosScaled(offsetLengthAngle.angle + placementHeading & 0xffff,offsetLengthAngle.length);
@@ -545,14 +545,13 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   FieldGridAsset *activeFieldGrid;
 
-  /* modelDefinition[0x10] is +0xC0: .byteSize the resource selector (0 Xenite, 1 Tritium), .flags (+0xC4)
-     the storage the model adds */
-  storageContribution = modelDefinition[0x10].flags;
+  /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
+  storageContribution = ((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->classParameterC4;
   factionOffsetOrLimitOrCellColumn =
        ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
        GAME_FACTION_RUNTIME_RECORD_BYTES;
   limitOffsetOrCellRow = factionOffsetOrLimitOrCellColumn + 4; /* xeniteStorageLimitQ4 */
-  if (modelDefinition[0x10].byteSize != 0) {
+  if (((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->classParameterC0 != 0) {
     limitOffsetOrCellRow = factionOffsetOrLimitOrCellColumn + 0x14; /* tritiumStorageLimitQ4 */
   }
   factionOffsetOrLimitOrCellColumn = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + limitOffsetOrCellRow + -0x78);
@@ -603,14 +602,13 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
   int factionOffsetOrStorageLimit;
   int storageLimitOffset;
 
-  /* modelDefinition[0x10] is +0xC0: .byteSize the resource selector (0 Xenite, 1 Tritium), .flags (+0xC4)
-     the storage the model adds */
-  storageContribution = modelDefinition[0x10].flags;
+  /* classParameterC0: the resource selector (0 Xenite, 1 Tritium), classParameterC4: the storage the model adds */
+  storageContribution = ((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->classParameterC4;
   factionOffsetOrStorageLimit =
        ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex *
        GAME_FACTION_RUNTIME_RECORD_BYTES;
   storageLimitOffset = factionOffsetOrStorageLimit + 4; /* xeniteStorageLimitQ4 */
-  if (modelDefinition[0x10].byteSize != 0) {
+  if (((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->classParameterC0 != 0) {
     storageLimitOffset = factionOffsetOrStorageLimit + 0x14; /* tritiumStorageLimitQ4 */
   }
   factionOffsetOrStorageLimit = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + storageLimitOffset + -0x78);
@@ -718,7 +716,7 @@ bool ArmyCollision_TestPointAgainstRuntimeList
   WorldOwnerListNode100 *ownerNode;
   bool hit;
 
-  placementRadiusQ12 = *(int *)(modelDefinition + 0xdc);
+  placementRadiusQ12 = ((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->placementRadiusOrClearanceDC;
   ownerNode = worldRuntime->ownerListHead;
   if ((placementRadiusQ12 != 0) && (ownerNode != NULL)) {
     firstMaskHigh = DepthInterval_BuildBinMask(placementRadiusQ12,worldYQ12);
@@ -817,16 +815,17 @@ PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMod
   
   lookupResult = ArmyAssetRegistry_FindById(armyAssetId);
   if (!lookupResult.notFound) {
-    /* the army asset's model definition id is at +0x20 of the record at +0xC */
+    /* the model definition of the army asset's root node */
     lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyAssetLookupResult, ModelDefinitionRegistry_FindByIdWithError
-                      (*(PckModelDefinitionIdCatalog *)((lookupResult.recordOrError)->rootNodeOffsetOrPointer + 0x20)
-                      ));
+                      (((AiLinkedDefinitionListView *)(lookupResult.recordOrError)->rootNodeOffsetOrPointer)->
+                       definitionIds[0]));
     modelDefinition = lookupResult.recordOrError;
     if (!lookupResult.notFound) {
-      assetClassIndex = modelDefinition[4].rootNodeOffsetOrPointer;
-      /* modelDefinition[0x27].registryId is +0x278, the height interpolation mode; the field grid is at
+      /* modelDefinition is the model definition (typed as the army record by the shared lookup result) */
+      assetClassIndex = ((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->runtimeClassId4C;
+      /* placementContactKindIndex278 selects the height interpolation mode; the field grid is at
          +0x54 of the in-game runtime */
-      terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[modelDefinition[0x27].registryId])
+      terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[((ModelDefinitionRuntimeSemanticView280 *)modelDefinition)->placementContactKindIndex278])
                         (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
       lookupResult = THANDOR_BITCAST(PlacementDispatchResult, ArmyAssetLookupResult, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
               )(placementMode,placementClearancePaddingQ12,placementHeading,terrainHeight.heightQ12,
@@ -867,8 +866,7 @@ bool ArmyPlacementCollision_TestPointAgainstRuntimeList
     firstMaskLow = DepthInterval_BuildBinMask(queryRadiusQ12,worldXQ12);
     do {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        /* the class id at +0x4C of the army's model record */
-        modelClassId = *(int *)(*(int *)ownerNode->runtimePayload + 0x4c);
+        modelClassId = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C;
         hit = DepthBinMasks_Overlap
                           (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
                            ownerNode->modelDepthBinMaskNear);
@@ -928,7 +926,7 @@ bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
   }
   else {
     candidateNode = *(WorldOwnerListNode100 **)&candidateRuntimeOrRadiusQ12->e_cp;
-    queryRadiusQ12 = *(char **)(*(int *)candidateRuntimeOrRadiusQ12 + 0xdc);
+    queryRadiusQ12 = (char *)((ModelRuntimeSlot *)candidateRuntimeOrRadiusQ12)->definitionOrSavedId.runtimeDefinition->placementRadiusOrClearanceDC;
   }
   ownerNode = worldRuntime->ownerListHead;
   if (queryRadiusQ12 != NULL) {
@@ -936,16 +934,14 @@ bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
       if (((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             ((((candidateRuntimeOrRadiusQ12 < &IMAGE_DOS_HEADER_00400000 ||
                (hit = DepthBinMasks_Overlap
-                                  (*(DepthBinMask32 *)
-                                    (*(int *)&candidateRuntimeOrRadiusQ12->e_cp + 0xb8),
-                                   *(DepthBinMask32 *)
-                                    (*(int *)&candidateRuntimeOrRadiusQ12->e_cp + 0xb4),
+                                  (((ModelRuntimeSlot *)candidateRuntimeOrRadiusQ12)->rootModelNodeOrSavedOffset.modelNode->depthBinMaskFar,
+                                   ((ModelRuntimeSlot *)candidateRuntimeOrRadiusQ12)->rootModelNodeOrSavedOffset.modelNode->depthBinMaskNear,
                                    ownerNode->modelDepthBinMaskFar,
                                    ownerNode->modelDepthBinMaskNear), hit)) &&
               (armyRuntime = ownerNode->runtimePayload, candidateNode != ownerNode)) &&
              (ownerNode != excludedWorldObject)))) &&
            ((candidateRuntimeOrRadiusQ12 < &IMAGE_DOS_HEADER_00400000 ||
-            ((armyRuntime != *(ArmyRuntimeSlot **)(candidateRuntimeOrRadiusQ12[1].e_program + 0x30)
+            ((armyRuntime != ((ModelRuntimeSlot *)candidateRuntimeOrRadiusQ12)->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime
              && ((ArmyRuntimeSlot *)candidateRuntimeOrRadiusQ12 != armyRuntime->linkedArmyRuntime)))
             ))) && ((modelClassId = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                              definitionValue9C_4C, modelClassId != MODEL_RUNTIME_CLASS_00 &&
@@ -1119,17 +1115,17 @@ ArmyPlacementCollision_TestCandidateAndClearance
         if (ownerNode != NULL) {
           do {
             if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-              /* the army's model record: support radius at +0x19C, class id at +0x4C; the army's
-                 linked entity (+8) holds the owner faction at +0xC, its runtime flags are at +0xEC */
-              recordOrDistanceTerm = *(int *)ownerNode->runtimePayload;
-              eaxContinuity = *(uint32_t *)(recordOrDistanceTerm + 0x19c);
+              /* the model's definition: support radius (supportRadius19C) and class id; the owner army
+                 holds the owner faction */
+              recordOrDistanceTerm = (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition;
+              eaxContinuity = ((ModelDefinitionRuntimeSemanticView280 *)recordOrDistanceTerm)->supportRadius19C;
               if (((eaxContinuity != 0) &&
-                  (*(ArmyPlacementDispatchArg7 *)
-                    (*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) == ownerFactionIndex)) &&
+                  (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex == ownerFactionIndex)) &&
                  ((eaxContinuity = eaxContinuity + placementClearancePaddingQ12,
-                  *(int *)(recordOrDistanceTerm + 0x4c) != MODEL_RUNTIME_CLASS_18 ||
+                  ((ModelDefinitionRuntimeSemanticView280 *)recordOrDistanceTerm)->runtimeClassId4C !=
+                  MODEL_RUNTIME_CLASS_18 ||
                   (((placementMode & ARMY_PLACEMENT_MODE_SKIP_CLASS18_SUPPORT) == 0 &&
-                   ((*(uint32_t *)((int)ownerNode->runtimePayload + 0xec) & 0x18) == 0)))))) {
+                   ((((ModelRuntimeSlot *)ownerNode->runtimePayload)->classState.classStateEC & 0x18) == 0)))))) {
                 recordOrDistanceTerm = eaxContinuity + modelDefinition->placementFlags1A8;
                 radiusSquaredOrDelta = (int64_t)recordOrDistanceTerm * (int64_t)recordOrDistanceTerm;
                 recordOrDistanceTerm = ownerNode->worldXQ12 - worldYQ12;
@@ -1148,7 +1144,7 @@ ArmyPlacementCollision_TestCandidateAndClearance
                     radiusSquaredOrDelta = (radiusSquaredOrDelta - remainingSquared) - nearestDistanceSquared;
                     eaxContinuity = (int)radiusSquaredOrDelta;
                     if (radiusSquaredOrDelta < 0) {
-                      nearestClearanceQ12 = *(int *)(*(int *)ownerNode->runtimePayload + 0x19c);
+                      nearestClearanceQ12 = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->supportRadius19C;
                       nearestDistanceSquared = radiusSquaredOrDelta + nearestDistanceSquared;
                     }
                   }

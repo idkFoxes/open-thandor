@@ -177,9 +177,9 @@ AiCombatTarget_SelectBestCandidate
   ownerNodeCursor = (WorldRuntimeNode *)worldRuntime->ownerListHead;
   classIndexOrFaction = 7;
   bestCandidateArmyRuntime = NULL;
-  /* the eight class counters at +0x100 (reservedF8_FF + 8) */
+  /* the eight class counters at +0x100 */
   do {
-    sourceClassCount = sourceClassCount + *(int *)(sourceArmyRuntime->reservedF8_FF + classIndexOrFaction * 4 + 8);
+    sourceClassCount = sourceClassCount + sourceArmyRuntime->targetClassCounters100[classIndexOrFaction];
     classIndexOrFaction--;
   } while (-1 < classIndexOrFaction);
   /* With a zero sum the original returns an EDX never written in this call (stack slot [EBP-0x10]);
@@ -303,10 +303,10 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                 definitionOrSavedId).savedIdOrOffset;
         /* class counters (+0x100): the candidate's for the source's class and the source's for the
            candidate's class; a zero candidate counter selects the shorter command time (shift 2) */
-        reachDeltaOrSourceCounter = *(int *)(candidateArmyRuntime->reservedF8_FF +
-                        *(int *)((((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                                 definitionOrSavedId).savedIdOrOffset + 0x5c) * 4 + 8);
-        deltaXOrCandidateCounter = *(int *)(sourceArmyRuntime->reservedF8_FF + *(int *)(factionOrDefinitionAddress + 0x5c) * 4 + 8);
+        reachDeltaOrSourceCounter = candidateArmyRuntime->targetClassCounters100
+                        [(((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+                         definitionOrSavedId).runtimeDefinition->targetClassIndex5C];
+        deltaXOrCandidateCounter = sourceArmyRuntime->targetClassCounters100[((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->targetClassIndex5C];
         g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 0;
         if (reachDeltaOrSourceCounter == 0) {
           g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 2;
@@ -317,7 +317,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
             reachDeltaOrSourceCounter = 0;
             deltaXOrCandidateCounter = -deltaXOrCandidateCounter;
           }
-          classBaseScore = *(int *)(&g_AiCombatTargetClassBaseScoreTable24 + *(int *)(factionOrDefinitionAddress + 0x4c) * 4) *
+          classBaseScore = *(int *)(&g_AiCombatTargetClassBaseScoreTable24 + ((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->runtimeClassId4C * 4) *
                   g_AiCombatTargetClassBaseScoreMultiplier;
           hierarchyScaleRatioPairQ12 =
                ModelRuntime_QueryHierarchyScaleRatioQ12Regs
@@ -354,11 +354,11 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                    (sourceWeaponModelRuntime != NULL)))))) {
                 /* the weapon is the first or second attachment; aircraft are aimed at their first child
                    node, all targets at the definition's height offset (+0x50) above the node */
-                if (*(int *)(factionOrDefinitionAddress + 0x4c) == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+                if (((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
                   candidateAimModelNode = candidateAimModelNode->childNodes[0];
                 }
                 testPassed = ArmyWeaponRuntime_TestTargetLineOfFire
-                                  (*(int *)(factionOrDefinitionAddress + 0x50) +
+                                  (((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->aimHeightOffsetQ12 +
                                    (candidateAimModelNode->worldTransform).translation.z,
                                    (candidateAimModelNode->worldTransform).translation.y,
                                    (candidateAimModelNode->worldTransform).translation.x,
@@ -366,8 +366,8 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                                    (ArmyRuntimeSlot *)sourceWeaponModelRuntime);
                 if ((testPassed) &&
                    (candidateScore = candidateScore >> 2,
-                   *(int *)((((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                            definitionOrSavedId).savedIdOrOffset + 0x18) == 0)) {
+                   (((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+                    definitionOrSavedId).runtimeDefinition->runtimeValue18 == 0)) {
                   return 0;
                 }
               }

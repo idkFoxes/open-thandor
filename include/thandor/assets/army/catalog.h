@@ -26,6 +26,16 @@
 #define ARMY_ASSET_EDITOR_ID_LIMIT 0x1000
 /* Army ids from 400 up are rendered in their preview with faction 0 (ArmyAssetRegistry_ResolveOrCreatePreviewTexture). */
 #define ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID 400
+
+/* A node of an army record's model tree (root at ArmyAssetRecordPrefix.rootNodeOffsetOrPointer, which is
+   also the ModelLinkedDefinitionListAddress32 of ModelDefinition_SelectFactionUnlockedLinkedDefinition).
+   The tree walkers index children[0..childCount-1]. */
+typedef struct ArmyModelTreeNode {
+    uint8_t unknown00_07[8];
+    uint32_t childCount;                      /* +0x08 */
+    struct ArmyModelTreeNode *children[5];    /* +0x0C */
+    enum PckModelDefinitionIdCatalog linkedDefinitionIds[8]; /* +0x20 [0] default, others need a technology; 0 = none */
+} ArmyModelTreeNode;
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005719F0 */

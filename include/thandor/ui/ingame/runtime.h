@@ -19,6 +19,21 @@
 #define TEXT_ID_PLAYER_NUMBER_BASE 0x2190
 #define TEXT_ID_DIPLOMATIC_RELATION_BASE 0x21A3
 
+/* The 0x200-byte header at the start of a save-game package, patched by InGameUiAction1210_ResourceRegistrationHelper
+   after the entries are written (the save path's directory is split off behind the header, at +0x200). */
+typedef struct InGameSavePackageHeader200 {
+    uint8_t reserved000_0FF[0x100];
+    uint16_t saveNameUtf16[0x38]; /* +0x100 file name of the save path */
+    uint32_t levelTitleTextId; /* +0x170 */
+    uint8_t reserved174_18F[0x1C];
+    uint32_t campaignIndex; /* +0x190 -1 without campaign */
+    uint8_t reserved194_1BF[0x2C];
+    uint16_t dateTimeTextUtf16[0x18]; /* +0x1C0 "date, time" */
+    uint32_t packedDate; /* +0x1F0 */
+    uint32_t packedTime; /* +0x1F4 */
+    uint8_t reserved1F8_1FF[8];
+} InGameSavePackageHeader200;
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056E3C0 */

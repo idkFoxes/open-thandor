@@ -97,46 +97,39 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
   workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
     runtimeSlotAddress = workspaceEntry->runtimeSlotAddressOrZero;
-    if (((runtimeSlotAddress != 0) && ((*(uint32_t *)(runtimeSlotAddress + 0xec) & 0xc0) != 0)) &&
-       (technologyIndex == *(PckTechnologyIdCatalog *)(runtimeSlotAddress + 0x100))) {
+    if (((runtimeSlotAddress != 0) &&
+        ((((ModelRuntimeSlot *)runtimeSlotAddress)->classState.classStateEC & 0xc0) != 0)) &&
+       (technologyIndex == ((ModelRuntimeSlot *)runtimeSlotAddress)->researchTechnologyId100)) {
       return true;
     }
     workspaceEntry++;
   }
   /* the first test reads the unlock bit in technologyMasks256Bits (faction record +0x6E0) */
-  if ((((((*(uint32_t *)(factionRecordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
+  if (((((((((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[technologyIndex >> 5]) &
           1 << ((uint8_t)technologyIndex & 0x1f)) == 0) &&
         ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
-         *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                  factionRecordOffset)) ==
+         ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[0]) ==
          g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0])) &&
        (((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &
-         *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                  factionRecordOffset + 4)) ==
+         ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[1]) ==
          g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &&
         (((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &
-          *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                   factionRecordOffset + 8)) ==
+          ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[2]) ==
           g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &&
          ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3] &
-          *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                   factionRecordOffset + 0xc)) ==
+          ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[3]) ==
           g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3])))))) &&
       ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4] &
-       *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                factionRecordOffset + 0x10)) ==
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[4]) ==
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4])) &&
      ((((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &
-        *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                 factionRecordOffset + 0x14)) ==
+        ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[5]) ==
         g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &&
        ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6] &
-        *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                 factionRecordOffset + 0x18)) ==
+        ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[6]) ==
         g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6])) &&
       ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7] &
-       *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                factionRecordOffset + 0x1c)) ==
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[7]) ==
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7])))) {
     return false;
   }

@@ -2896,9 +2896,15 @@ struct ModelResourceHitTestAndRenderView210 {
     Q12 placementHeightOffsetQ12; 
     Q12 lightingScaleQ12; 
     ModelPackedLookupTableRelativeOffset packedLookupTableRelativeOffset; 
-    ModelPackedLookupTableEntryCount packedLookupTableEntryCount; 
-    uint8_t reservedEC_1FF[276]; 
-    ModelMeshGroupRelativeOffset firstMeshGroupRelativeOffset; 
+    ModelPackedLookupTableEntryCount packedLookupTableEntryCount;
+    union {
+        uint8_t reservedEC_1FF[276];
+        struct {
+            int shadowMeshGroupOffsetEC; /* +0xEC resource-relative offset of the mesh group the shadow pass draws, 0 = none */
+            uint8_t reservedF0_1FF[272];
+        };
+    };
+    ModelMeshGroupRelativeOffset firstMeshGroupRelativeOffset;
     ModelPackedGeometryRecordCount packedGeometryRecordCount; 
     uint8_t reserved208_20B[4]; 
     enum ModelResourceHitTestFlags hitTestFlags20C; 
@@ -3130,7 +3136,11 @@ struct ShotDefinition {
 
 struct WorldRuntimeSelectionState {
     PlayerRuntimeId activePlayerRuntimeId; // Selection-player runtime used to index the local selection block table.
-    uint8_t reserved04_1F[28]; // Unresolved selection and overlay state.
+    uint8_t reserved04_0B[8]; // Unresolved selection and overlay state.
+    int32_t selectionPoint0C; /* +0x0C shown by the debug overlay (slot 10) */
+    int32_t selectionPoint10; /* +0x10 shown by the debug overlay (slot 11) */
+    int32_t selectionPointMarker14; /* +0x14 0x7FFFFFFF: no selection point */
+    uint8_t reserved18_1F[8];
     struct GameEntityRuntime *selectedEntity; // Current selected entity cleared during destruction and replaced by context-action resolution.
     void (*dispatchCommandCallback)(uint32_t, uint32_t, struct WorldRuntimeContext *);
     uint32_t (*resolveContextActionPrimaryCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
@@ -3314,7 +3324,9 @@ struct GameEntityDamageState2C {
     uint32_t reserved00; // Unresolved damage-state prefix.
     union GameEntityDamageCounterOrTerminalReference4 counterOrTerminalReference; // Movement countdown/state or terminal entity reference selected by the active path.
     int remainingIntegrity; // Impact-subtracted integrity clamped against definition maximum.
-    uint8_t reserved0C_23[24]; // Unresolved damage/relation bytes; includes the still-unresolved +0x1C relation/eligibility word.
+    uint8_t reserved0C_1B[16]; // Unresolved damage/relation bytes.
+    uint32_t factionVisibilityBits1C; /* +0x1C (entity +0x50): two bits per faction, bit 1 = visible to that faction */
+    uint8_t reserved20_23[4];
     Q12 trackedCoordinate0Q12; // First machine-proven tracked coordinate mirrored from pathCoordinate0Q12/model transform; neutral axis name retained because callers disagree on X/Y naming.
     Q12 trackedCoordinate1Q12; // Second machine-proven tracked coordinate mirrored from pathCoordinate1Q12/model transform; neutral axis name retained because callers disagree on X/Y naming.
 };
@@ -3715,9 +3727,10 @@ struct ModelRuntimeAttachmentDescriptor {
 };
 
 union ModelDefinitionReferenceOrSavedId4 {
-    struct ModelDefinitionRecordPrefix *definition; 
-    uint32_t savedIdOrOffset; 
-    uint32_t raw; 
+    struct ModelDefinitionRecordPrefix *definition;
+    uint32_t savedIdOrOffset;
+    uint32_t raw;
+    struct ModelDefinitionRuntimeSemanticView280 *runtimeDefinition; /* same live pointer, full definition field view */
 };
 
 union ModelRuntimeSlotReferenceOrSavedOffset4 {
@@ -3778,22 +3791,34 @@ struct ArmyRuntimeSlot {
     struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
     uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
-    int stateOrTechnologyId; // Committed V218d army runtime field.
-    uint32_t runtimeState104; // Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric0; // Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric1; // Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric2; // Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric3; // Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric4; // Committed V218d army runtime field.
-    ArmySelectionMetric selectionMetric5; // Committed V218d army runtime field.
+    union {
+        struct {
+            int stateOrTechnologyId; // Committed V218d army runtime field.
+            uint32_t runtimeState104; // Committed V218d army runtime field.
+            ArmySelectionMetric selectionMetric0; // Committed V218d army runtime field.
+            ArmySelectionMetric selectionMetric1; // Committed V218d army runtime field.
+            ArmySelectionMetric selectionMetric2; // Committed V218d army runtime field.
+            ArmySelectionMetric selectionMetric3; // Committed V218d army runtime field.
+            ArmySelectionMetric selectionMetric4; // Committed V218d army runtime field.
+            ArmySelectionMetric selectionMetric5; // Committed V218d army runtime field.
+        };
+        int targetClassCounters100[8]; /* +0x100 per target class (definition targetClassIndex5C): summed shot damage of the army's weapons */
+    };
 };
 
 struct ModelRuntimeSlot {
-    union ModelDefinitionReferenceOrSavedId4 definitionOrSavedId; 
-    union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; 
-    union ArmyRuntimeReferenceOrSavedOffset4 ownerArmyRuntimeOrSavedOffset; 
-    uint32_t attachmentCount0C; 
-    uint8_t reserved10_37[40]; 
+    union ModelDefinitionReferenceOrSavedId4 definitionOrSavedId;
+    union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset;
+    union ArmyRuntimeReferenceOrSavedOffset4 ownerArmyRuntimeOrSavedOffset;
+    uint32_t attachmentCount0C;
+    union {
+        uint8_t reserved10_37[40];
+        struct {
+            uint8_t reserved10_2F[32];
+            uint32_t runtimeFlags30; /* +0x30 bit 1 (value 2): an effect model drawn with the army graphics of binding 0 */
+            uint8_t reserved34_37[4];
+        };
+    };
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; 
     uint32_t definitionValue60_3C; 
     uint32_t definitionValue84_40; 
@@ -3806,7 +3831,12 @@ struct ModelRuntimeSlot {
     uint32_t definitionValueBC_5C; 
     struct ModelRuntimeClassLinkState24 classLinkState; 
     struct ModelRuntimeSlotClassState7C classState; 
-    uint8_t reserved100_117[24]; 
+    uint32_t researchTechnologyId100; /* +0x100 technology (TechnologyId) being researched */
+    int researchDurationTicks104; /* +0x104 */
+    int researchElapsedTicks108; /* +0x108 */
+    int researchEnergyLoadQ4_10C; /* +0x10C Energy held while researching */
+    int researchXeniteCostQ4_110; /* +0x110 Xenite still to pay before research starts */
+    uint8_t reserved114_117[4];
     uint32_t classState118; 
     uint32_t classState11C; 
     uint8_t reserved120_13F[32]; 
@@ -6188,7 +6218,7 @@ struct LevelAssetRuntimeTail90 {
     GameRelationUiFlags relationUiFlags; // Copied directly into GameFactionRuntimeImage.tail.relationUiFlags during level initialization.
     LevelFactionRelationGroupMasks32 relationState8FactionGroupMasks; // Packed faction groups whose pairwise members are transitioned with state arguments 8/8 during level initialization.
     LevelFactionRelationGroupMasks32 relationState4FactionGroupMasks; // Packed faction groups whose pairwise members are transitioned with state arguments 4/4 during level initialization.
-    uint8_t reserved44_47[4]; // Unresolved dword between relation setup and the alternate field/lighting profile.
+    InGameNotificationMovieId introNotificationMovieId; /* +0x44: first of the five level intro notification movies (0 = none) */
     uint32_t alternatePackedFieldRegionOriginYHigh16XLow16; // Second field-region origin pair interpolated against packedFieldRegionOriginYHigh16XLow16.
     uint32_t alternatePackedFieldRegionHeightHigh16WidthLow16; // Second field-region dimension pair interpolated against packedFieldRegionHeightHigh16WidthLow16.
     PackedArgb32 alternateTerrainBaseColorArgb; // Second endpoint for terrain base-color interpolation.
@@ -6770,7 +6800,10 @@ struct InGameRuntimeRootImageC3E4 {
     uint8_t opaque0A08_0A2F[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct WorldRuntimeContext worldRuntime0A30;
     void (*worldOverlayCallback0B8C)(uint32_t, struct WorldRuntimeContext *); // Overlay rebuild/release callback installed identically for new and loaded sessions.
-    uint8_t opaque0B90_0B9F[16]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    int32_t pointerPressX0B90; /* pointer position at the button press */
+    int32_t pointerPressY0B94;
+    int32_t pointerX0B98; /* current pointer position */
+    int32_t pointerY0B9C;
     struct SelectionPlayerPairRecord *localPlayerPairRecords0BA0;
     uint32_t localPlayerPairCount0BA4;
     Q12 fieldRegionOriginWorldXQ12_0BA8;
@@ -7835,7 +7868,14 @@ struct SelectionPlayerRuntimeBlock {
     uint32_t assignmentFlags80A4; 
     uint32_t sessionFlags; 
     InGameSimulationStepBatchTicks simulationStepTicks; 
-    uint8_t reserved80B0_8117[104]; 
+    union {
+        uint8_t reserved80B0_8117[104];
+        struct {
+            uint8_t reserved80B0_80BF[16];
+            uint8_t chatStagingText80C0[48]; /* +0x80C0 chat line being received (INGAME_COMMAND_CHAT_APPEND), 8-bit text */
+            uint16_t playerNameUtf16_80F0[20]; /* +0x80F0 the player's name (chat sender) */
+        };
+    };
 };
 
 typedef uint32_t PckArchiveByteCount;
@@ -7937,12 +7977,14 @@ struct ArmyAssetRuntimeSemanticView80 {
     enum PckArmyAssetIdCatalog registryId;
     uint32_t rootNodeOffsetOrPointer;
     void *linkedRuntimeOrRecord10;
-    uint32_t flags14; 
-    uint8_t reserved018_023[12]; 
+    uint32_t flags14;
+    uint8_t reserved018_01B[4];
+    uint32_t selectionDetailValue1C; /* +0x1C copied to InGameRuntimeRoot.selectionDetailArmyAssetValueA060 */
+    uint32_t previewTexture20; /* +0x20 cached editor preview texture (ArmyAssetRegistry_ResolveOrCreatePreviewTexture), 0 = none */
     uint32_t relocationValue24;
     uint32_t relocationValue28;
     uint32_t relocationPointerOrOffset2C;
-    uint8_t reserved030_06F[64]; 
+    enum PckArmyAssetIdCatalog linkedArmyAssetIds30[16]; /* +0x30 ARMY_ASSET_LINKED_ID_COUNT linked army ids, 0 = none */
     uint32_t definitionClassValue70; 
     uint32_t definitionClassValue74; 
     uint32_t definitionClassValue78; 
@@ -7953,20 +7995,23 @@ struct ModelDefinitionRuntimeSemanticView280 {
     AssetRecordByteCount byteSize;
     uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    int runtimeValue0C; /* +0x0C movement speed; door/animation step per tick */
+    int animatedChild0RotationStep10; /* +0x10 per-tick rotation of animated child node 0 */
+    int animatedChild2BobStep14; /* +0x14 per-tick up/down step of animated child node 2 */
+    int runtimeValue18; /* +0x18 movement advance change per tick (acceleration); nonzero = mobile (shots lead it) */
+    int animatedChild1RotationStep1C; /* +0x1C per-tick rotation of animated child node 1 */
+    uint8_t reserved020_023[4];
     uint32_t runtimeValue24;
     uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    int runtimeValue30; /* +0x30 */
+    uint8_t reserved034_047[20];
     uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    uint8_t field10_0x50;
-    uint8_t field11_0x51;
-    uint8_t field12_0x52;
-    uint8_t field13_0x53;
+    Q12 aimHeightOffsetQ12; /* +0x50 height above the model origin that shots aim at */
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    int targetClassIndex5C; /* +0x5C target class: indexes per-class impact effects and AI class tables */
     uint32_t runtimeValue60;
     uint32_t serializedNodeOffsetOrPointer64;
     uint32_t runtimeValue68;
@@ -7974,14 +8019,8 @@ struct ModelDefinitionRuntimeSemanticView280 {
     uint8_t field21_0x6d;
     uint8_t field22_0x6e;
     uint8_t field23_0x6f;
-    uint8_t field24_0x70;
-    uint8_t field25_0x71;
-    uint8_t field26_0x72;
-    uint8_t field27_0x73;
-    uint8_t field28_0x74;
-    uint8_t field29_0x75;
-    uint8_t field30_0x76;
-    uint8_t field31_0x77;
+    int runtimeValue70; /* +0x70 */
+    enum PckArmyAssetIdCatalog destroyedReplacementArmyAssetId74; /* +0x74 army spawned in place of a destroyed root model, -1 = none */
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
@@ -8000,32 +8039,55 @@ struct ModelDefinitionRuntimeSemanticView280 {
     uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
     uint32_t runtimeValueBC;
-    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    union {
+        uint8_t reserved0C0_0DB[28];
+        struct {
+            int classParameterC0; /* +0xC0 class specific (class 0x12: army asset it turns into; walkers: stride) */
+            int classParameterC4; /* +0xC4 class specific (linked-child slot count, buildable asset flag mask, step lift) */
+            int classParameterC8; /* +0xC8 class specific */
+            int classParameterCC; /* +0xCC class specific (placement kind 1: maximum water surface delta) */
+            uint8_t reserved0D0_0DB[12];
+        };
+    };
     uint32_t placementRadiusOrClearanceDC;
-    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved0E0_15F[128];
+    InGameNotificationMovieId firstBuiltNotificationMovieId160; /* +0x160 notification when the first one is built */
+    InGameNotificationMovieId nextBuiltNotificationMovieId164; /* +0x164 notification for every later one */
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    int shotEmitterIntervalTicks16C; /* +0x16C timed shot emitter interval */
+    uint32_t shotEmitterRandomTicks170; /* +0x170 random extra interval, 0 = none */
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    int effectEmitterIntervalTicks178; /* +0x178 timed effect emitter interval */
+    uint32_t effectEmitterRandomTicks17C; /* +0x17C random extra interval, 0 = none */
+    uint32_t buildMetric180; /* +0x180 build metric 1 (ModelDefinitionRegistry_FindBuildMetricTupleById) */
+    uint32_t xeniteValueQ4_184; /* +0x184 Xenite value; dismantling refunds 1/32 of it every 12 ticks */
     void *buildMetricTuple188;
     uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
     uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     uint32_t runtimeValue198;
-    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    int supportRadius19C; /* +0x19C support / proximity radius (0 = none) */
     uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue1A4; /* +0x1A4 */
     uint32_t placementFlags1A8;
-    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1AC_1AF[4];
+    int builtCount1B0; /* +0x1B0 how many of this definition were built (selects the notification) */
+    int healthRegenerationPerStep1B4; /* +0x1B4 health change every 4 ticks */
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t requiredTechnologyBit1C0; /* +0x1C0 technology bit the faction needs; also matched against a runtime class id by ModelDefinitionRegistry_FindByRuntimeClassId */
+    uint32_t researchTechnologyIds1C4[29]; /* +0x1C4 [1..28] (+0x1C8..+0x234) the technologies researchable here */
+    enum PckModelDefinitionIdCatalog variantModelDefinitionIds238[6]; /* +0x238 technology variants, 0 = none */
+    int damageEffectHealthPercent250; /* +0x250 damage effect below this health percentage */
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    int damageEffectIntervalTicks258; /* +0x258 */
+    uint32_t damageEffectRandomTicks25C; /* +0x25C random extra interval, 0 = none */
     uint32_t gridClassification260;
     uint32_t gridClassification264;
     uint32_t runtimeValue268;
-    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t soundIndex26C; /* +0x26C one-shot sound (index into worldRuntime->dwordArray) */
+    uint8_t reserved270_273[4];
+    uint32_t soundSlotIndex274; /* +0x274 positioned sound slot (index into worldRuntime->dwordArray) */
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
     uint32_t runtimeValue27C;
 };
@@ -8521,8 +8583,9 @@ struct InGameEndConditionTriggerRecord8 {
 
 union InGameScheduledConditionStatusAndKind4 {
     enum InGameScheduledConditionKind kind; 
-    enum InGameScheduledConditionStatusFlags statusFlags; 
+    enum InGameScheduledConditionStatusFlags statusFlags;
     uint32_t raw;
+    uint8_t kindAndExpression[4]; /* byte 0 kind; a BOOLEAN_POSTFIX_EXPRESSION starts at byte 1 */
 };
 
 union InGameScheduledConditionPayload0C {
@@ -9467,10 +9530,12 @@ struct UiPayloadPairTextButton {
 
 struct UiCommandRuntimeRecordPrefix {
     uint8_t reserved00_07[8]; 
-    enum PckArmyAssetIdCatalog armyAssetId; 
-    uint8_t reserved0C_1B[16]; 
-    struct GraphicsTextureSourceAsset *textureSource; 
-    uint32_t reserved20; 
+    enum PckArmyAssetIdCatalog armyAssetId;
+    uint8_t reserved0C_13[8];
+    uint32_t assetFlags14; /* +0x14 army asset flags (ArmyAssetRuntimeSemanticView80.flags14): 1 buildable, 0x10 special catalog, rest capability bits */
+    uint8_t reserved18_1B[4];
+    struct GraphicsTextureSourceAsset *textureSource;
+    uint32_t reserved20;
     ArmyBuildDurationQ5 buildDurationQ5; 
     ArmyBuildXeniteCostQ4 buildXeniteCostQ4; 
 };
@@ -10344,7 +10409,7 @@ struct FrontendPlayerRuntimeRecord {
     FrontendSnapshotChunkByteOffset snapshotChunkOffset; // Current snapshot chunk offset.
     uint32_t runtimeState70;
     FrontendCapabilityFlags capabilityFlags; // Player capability/selection flags.
-    uint8_t reserved78_7F[8];
+    uint8_t capabilityLabelUtf16[8]; /* +0x78 UTF-16 label, L"CD" with FRONTEND_CAPABILITY_CD (written byte by byte) */
     FrontendCapturedStateFlag capturedFlag80; // Captured assignment/runtime state flag.
     uint32_t scenarioAvailabilityMask0; // Scenario-availability bitmask for catalog group 0; selected level index maps to one bit within this dword.
     uint32_t scenarioAvailabilityMask1; // Scenario-availability bitmask for catalog group 1.
@@ -12022,7 +12087,7 @@ struct FrontendResultsColumnSequenceControl68 {
     uint32_t modeFlags; // bit 0 selects column sequence vs faction-weight raster path
     void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair8 *); // four-argument raster column callback
     uint32_t columnTypeCount; // number of trailing column type dwords
-    uint32_t field58;
+    uint32_t rowCount; /* +0x58 rows (active factions) of the table, set by the end-of-game results screen */
     uint32_t field5C;
     uint32_t field60;
     uint32_t columnTypes0; // first element of variable-length trailing column type list
@@ -12033,7 +12098,7 @@ struct FrontendResultsColumnSequenceTemplate8_84 {
     uint32_t modeFlags;
     void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair8 *);
     uint32_t columnTypeCount;
-    uint32_t field58;
+    uint32_t rowCount; /* +0x58 */
     uint32_t field5C;
     uint32_t field60;
     uint32_t columnTypes[8];
@@ -12325,10 +12390,7 @@ struct ModelDefinitionClass14PlacementView280 {
     uint8_t field52_0xc5;
     uint8_t field53_0xc6;
     uint8_t field54_0xc7;
-    uint8_t field55_0xc8;
-    uint8_t field56_0xc9;
-    uint8_t field57_0xca;
-    uint8_t field58_0xcb;
+    int claimedCellTagC8; /* +0xC8 stored << 24 into the resource cell the extractor claims */
     uint8_t field59_0xcc;
     uint8_t field60_0xcd;
     uint8_t field61_0xce;

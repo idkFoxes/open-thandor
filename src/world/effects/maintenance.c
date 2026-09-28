@@ -353,22 +353,26 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
               if (spawnArmyCompletionEntity != NULL) {
                 ownerClassRecord = (spawnArmyCompletionEntity->common).ownership.definitionOrClassRecord;
                 ownerModelNode = (spawnArmyCompletionEntity->common).ownership.modelNode;
-                /* frameAdvancedOrScratch now holds the owner's model definition: only class 0x12 (+0x4C) turns
-                   into the army asset named at +0xC0. The new model keeps the owner's armour points (+0x3C) in
-                   proportion, rescaled by the two definitions' values at +0x60 (presumably the full armour). */
+                /* frameAdvancedOrScratch now holds the owner's model definition: only class 0x12 turns into the
+                   army asset named by classParameterC0. The new model keeps the owner's armour points (+0x3C) in
+                   proportion, rescaled by the two definitions' runtimeValue60 (presumably the full armour). */
                 frameAdvancedOrScratch = *ownerClassRecord;
-                if (*(int *)(frameAdvancedOrScratch + 0x4c) == 0x12) {
+                if (((ModelDefinitionRuntimeSemanticView280 *)frameAdvancedOrScratch)->runtimeClassId4C == 0x12) {
                   armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
                                      (6,(ownerModelNode->modelPayload).worldRotationAngle2,
                                       (ownerModelNode->worldTransform).translation.y,
                                       (ownerModelNode->worldTransform).translation.x,
                                       (spawnArmyCompletionEntity->common).ownership.ownerIndex,
-                                      *(PckArmyAssetIdCatalog *)(frameAdvancedOrScratch + 0xc0),worldRuntime);
+                                      (PckArmyAssetIdCatalog)
+                                      ((ModelDefinitionRuntimeSemanticView280 *)frameAdvancedOrScratch)->classParameterC0,
+                                      worldRuntime);
                   if (!armyCreateResult.failed) {
                     (*(int **)armyCreateResult.armyRuntimeOrError)[0xf] =
                          (int)(((int64_t)ownerClassRecord[0xf] *
-                               (int64_t)*(int *)(**(int **)armyCreateResult.armyRuntimeOrError + 0x60)) /
-                              (int64_t)*(int *)(frameAdvancedOrScratch + 0x60));
+                               (int64_t)(int)(*(ModelRuntimeSlot **)armyCreateResult.armyRuntimeOrError)->
+                                              definitionOrSavedId.runtimeDefinition->runtimeValue60) /
+                              (int64_t)(int)((ModelDefinitionRuntimeSemanticView280 *)frameAdvancedOrScratch)->
+                                            runtimeValue60);
                     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,spawnArmyCompletionEntity);
                   }
                 }

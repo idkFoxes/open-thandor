@@ -54,7 +54,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-      FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) |= FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     }
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
     UiPointerList_InitializeColumnLayout
@@ -99,7 +100,8 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
                (uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-      FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) |= FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     }
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,FRONTEND_UI(frontendUi,frontendRoot));
@@ -171,7 +173,8 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
       if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-        FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) |= FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+        ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       }
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
       /* hosting needs a player name */
@@ -338,11 +341,11 @@ void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
   /* source is the frontend template's hostGameSetupBackButton (+0x4F94). */
   FrontendUiImage *frontendUi;
 
-  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x4f94);
+  frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostGameSetupBackButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
@@ -424,10 +427,11 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     appliedOptionMask = appliedOptionMask + 4;
     g_SessionNetworkTickInterval = digitValueOrSpeed * 2;
   }
-  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(hostButton,-0x4920);
+  frontendUi = (FrontendUiImage *)((uint8_t *)hostButton - offsetof(FrontendUiImage,networkGameHostButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_GAME_SETUP,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) |= FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
   g_WideNumberFormatUtf16
@@ -467,12 +471,12 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   uint32_t *localPlayerRecordDwordCursor;
   bool previewLoadFailed;
   
-  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(createButton,-0x4ff4);
+  frontendUi = (FrontendUiImage *)((uint8_t *)createButton - offsetof(FrontendUiImage,hostGameCreateButton));
   UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+         FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
   UiPointerList_InitializeColumnLayout

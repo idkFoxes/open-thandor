@@ -36,9 +36,9 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
   bool emptyBankFound;
   bool banksMerged;
 
-  /* +0xB0 subresource count, +0xB4 palette bank count, +0xB8 subresource table offset; the banks start at
+  /* textureSourceBase is a GraphicsTextureSourceHeaderViewBC address; the banks start at
      GRAPHICS_PALETTE_BANKS_OFFSET, entries are 8 bytes (colour, second dword) */
-  remainingCount = *(int *)(textureSourceBase + 0xb4) << 8;
+  remainingCount = ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount << 8;
   if (remainingCount != 0) {
     /* mark every entry unused; fully transparent colours become plain black */
     entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
@@ -53,16 +53,16 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
       entryCursor = entryCursor + 2;
       remainingCount--;
     } while (remainingCount != 0);
-    remainingCount = *(int *)(textureSourceBase + 0xb0);
-    cursorOrBankIndex = textureSourceBase + *(int *)(textureSourceBase + 0xb8);
+    remainingCount = ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.subresourceCount;
+    cursorOrBankIndex = textureSourceBase + ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.subresourceTableOffset;
     if (remainingCount != 0) {
-      /* clear the mark on every entry a pixel uses (subresource entry: +8 bank or -1, +0xC pixel offset,
-         +0x18/+0x1C width/height, see GraphicsTextureSourceEntry) */
+      /* clear the mark on every entry a pixel uses (cursorOrBankIndex walks the GraphicsTextureSourceEntry
+         table; paletteIndex -1: no bank) */
       do {
-        subresourceBank = *(int *)(cursorOrBankIndex + 8);
-        remainingPixels = *(int *)(cursorOrBankIndex + 0x18) * *(int *)(cursorOrBankIndex + 0x1c);
+        subresourceBank = ((GraphicsTextureSourceEntry *)cursorOrBankIndex)->paletteIndex;
+        remainingPixels = ((GraphicsTextureSourceEntry *)cursorOrBankIndex)->pixelWidth * ((GraphicsTextureSourceEntry *)cursorOrBankIndex)->pixelHeight;
         if (subresourceBank != -1) {
-          pixelCursor = (uint8_t *)(*(int *)(cursorOrBankIndex + 0xc) + textureSourceBase);
+          pixelCursor = (uint8_t *)(((GraphicsTextureSourceEntry *)cursorOrBankIndex)->dataOffset + textureSourceBase);
           for (; remainingPixels != 0; remainingPixels--) {
             entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET + subresourceBank * GRAPHICS_PALETTE_BANK_BYTES + (uint32_t)*pixelCursor * 8);
             *entryCursor = *entryCursor & 0xfff8f8f8; /* ~GRAPHICS_PALETTE_ENTRY_UNUSED_MARK */
@@ -74,7 +74,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
       } while (remainingCount != 0);
       /* count the used colours of each bank (at most 0x200 banks, the size of g_GraphicsPaletteBankSlots) */
       bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
-      indexOrColor = *(uint32_t *)(textureSourceBase + 0xb4);
+      indexOrColor = ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount;
       entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
       if (0x200 < indexOrColor) {
         indexOrColor = 0x200;
@@ -96,7 +96,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
       /* Remove every bank without a used color, rescanning from the first bank after each removal. */
       for (;;) {
         bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
-        remainingCount = *(int *)(textureSourceBase + 0xb4);
+        remainingCount = ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount;
         cursorOrBankIndex = 0;
         emptyBankFound = false;
         do {
@@ -115,7 +115,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
       /* fold duplicates inside each bank: pixels using a later copy of a used colour move to the first one,
          and the copy is marked unused */
       cursorOrBankIndex = 0;
-      remainingCount = *(int *)(textureSourceBase + 0xb4);
+      remainingCount = ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount;
       entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
       do {
         indexOrColor = 0;
@@ -148,7 +148,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
       indexOrColor = 0;
       for (;;) {
         secondIndex = indexOrColor + 1;
-        if (*(uint32_t *)(textureSourceBase + 0xb4) <= secondIndex) break;
+        if (((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount <= secondIndex) break;
         banksMerged = false;
         do {
           colorOrCombinedCount = GraphicsPaletteTextureSource_CountCombinedUsedColors
@@ -160,15 +160,15 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
             break;
           }
           secondIndex++;
-        } while (secondIndex < *(uint32_t *)(textureSourceBase + 0xb4));
+        } while (secondIndex < ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount);
         if (!banksMerged) {
           indexOrColor++;
-          if (*(uint32_t *)(textureSourceBase + 0xb4) <= indexOrColor) break;
+          if (((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount <= indexOrColor) break;
         }
       }
       /* pack the used entries of each bank to its front and zero the colours of the rest */
       bankIndex = 0;
-      remainingCount = *(int *)(textureSourceBase + 0xb4);
+      remainingCount = ((GraphicsTextureSourceHeaderViewBC *)textureSourceBase)->tableDescriptor.paletteBankCount;
       entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
       do {
         secondIndex = 0;
@@ -387,20 +387,18 @@ PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOf
     sourceCursor = (GraphicsPaletteTextureSourceAsset *)&sourceCursor->allocationSizeBytes;
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
-  /* After the header copy destinationCursor is result + 0x200 and destinationCursor[-1] (0x208 bytes back)
-     views the header 8 bytes off: [-1].reserved0C is allocationSizeBytes, [-1].subresourceTableOffset the
-     subresource count (+0xB0), [-1].reservedBC_1FF the bank count (+0xB4) and +4 into it the subresource table
-     offset (+0xB8). Inside the entry loops [-1].reservedBC_1FF + 0x134/+0x138 are the palette bank index and
-     pixel offset (+8/+0xC) of the entry just copied. */
+  /* After the header copy destinationCursor is result + GRAPHICS_PALETTE_BANKS_OFFSET, so the header is
+     addressed back from it. Inside the entry loops ((GraphicsTextureSourceEntry *)destinationCursor)[-1] is
+     the entry just copied. */
   appendedBankCount = appendedAsset->paletteBankCount;
   appendedSubresourceCount = appendedAsset->subresourceCount;
-  destinationCursor[-1].reserved0C = bytes;
-  *(GraphicsPaletteBankCount *)destinationCursor[-1].reservedBC_1FF =
-       *(int *)destinationCursor[-1].reservedBC_1FF + appendedBankCount;
-  destinationCursor[-1].subresourceTableOffset = destinationCursor[-1].subresourceTableOffset + appendedSubresourceCount;
+  ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)destinationCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->common.allocationSizeBytes = bytes;
+  ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)destinationCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->tableDescriptor.paletteBankCount =
+       ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)destinationCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->tableDescriptor.paletteBankCount + appendedBankCount;
+  ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)destinationCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->tableDescriptor.subresourceCount = ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)destinationCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->tableDescriptor.subresourceCount + appendedSubresourceCount;
   appendedPaletteBytesOrCount = appendedBankCount * GRAPHICS_PALETTE_BANK_BYTES;
-  *(int *)(destinationCursor[-1].reservedBC_1FF + 4) = *(int *)(destinationCursor[-1].reservedBC_1FF + 4) + appendedPaletteBytesOrCount;
-  headerCountOrBaseBanks = *(int *)sourceCursor[-1].reservedBC_1FF;
+  ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)destinationCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->tableDescriptor.subresourceTableOffset = ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)destinationCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->tableDescriptor.subresourceTableOffset + appendedPaletteBytesOrCount;
+  headerCountOrBaseBanks = ((GraphicsTextureSourceHeaderViewBC *)((uint8_t *)sourceCursor - GRAPHICS_PALETTE_BANKS_OFFSET))->tableDescriptor.paletteBankCount;
   remainingDwords = headerCountOrBaseBanks << 9;
   if (remainingDwords != 0) {
     for (; remainingDwords != 0; remainingDwords--) {
@@ -420,18 +418,18 @@ PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOf
   }
   baseAllocationSize = baseAsset->allocationSizeBytes;
   remainingBaseSubresources = baseAsset->subresourceCount;
-  byteSourceCursor = baseAsset->reserved10_AF + (baseAsset->subresourceTableOffset - 0x10);
+  byteSourceCursor = (uint8_t *)baseAsset + baseAsset->subresourceTableOffset;
   do {
     for (remainingDwords = 8; remainingDwords != 0; remainingDwords--) {
       destinationCursor->magic = *(GraphicsPaletteTextureAssetMagic *)byteSourceCursor;
       byteSourceCursor = byteSourceCursor + 4;
       destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
-    *(GraphicsAssetSubresourceCount *)(destinationCursor[-1].reservedBC_1FF + 0x138) =
-         *(int *)(destinationCursor[-1].reservedBC_1FF + 0x138) + appendedPaletteBytesOrCount + appendedSubresourceCount * 0x20;
+    ((GraphicsTextureSourceEntry *)destinationCursor)[-1].dataOffset =
+         ((GraphicsTextureSourceEntry *)destinationCursor)[-1].dataOffset + appendedPaletteBytesOrCount + appendedSubresourceCount * 0x20;
     remainingBaseSubresources--;
   } while (remainingBaseSubresources != 0);
-  byteSourceCursor = appendedAsset->reserved10_AF + (appendedAsset->subresourceTableOffset - 0x10);
+  byteSourceCursor = (uint8_t *)appendedAsset + appendedAsset->subresourceTableOffset;
   appendedSubresourceCount = appendedAsset->subresourceCount;
   do {
     for (appendedPaletteBytesOrCount = 8; appendedPaletteBytesOrCount != 0; appendedPaletteBytesOrCount--) {
@@ -439,11 +437,11 @@ PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOf
       byteSourceCursor = byteSourceCursor + 4;
       destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
     }
-    *(GraphicsAssetAllocationByteSize *)(destinationCursor[-1].reservedBC_1FF + 0x138) =
-         *(int *)(destinationCursor[-1].reservedBC_1FF + 0x138) + (baseAllocationSize - GRAPHICS_PALETTE_BANKS_OFFSET);
-    if (-1 < *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134)) { /* entries without a bank keep -1 */
-      *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134) =
-           *(int *)(destinationCursor[-1].reservedBC_1FF + 0x134) + headerCountOrBaseBanks;
+    ((GraphicsTextureSourceEntry *)destinationCursor)[-1].dataOffset =
+         ((GraphicsTextureSourceEntry *)destinationCursor)[-1].dataOffset + (baseAllocationSize - GRAPHICS_PALETTE_BANKS_OFFSET);
+    if (-1 < ((GraphicsTextureSourceEntry *)destinationCursor)[-1].paletteIndex) { /* entries without a bank keep -1 */
+      ((GraphicsTextureSourceEntry *)destinationCursor)[-1].paletteIndex =
+           ((GraphicsTextureSourceEntry *)destinationCursor)[-1].paletteIndex + headerCountOrBaseBanks;
     }
     appendedSubresourceCount--;
   } while (appendedSubresourceCount != 0);
@@ -522,17 +520,16 @@ void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
     }
     sourceEntry = sourceEntry + 2;
   }
-  /* subresourceEntry walks GraphicsTextureSourceEntry records in uint16 steps: +4 paletteIndex, +6 dataOffset,
-     +0xC/+0xE pixelWidth/pixelHeight, +0x10 the next entry */
+  /* subresourceEntry walks the GraphicsTextureSourceEntry records in uint16 steps (+0x10: the next entry); it
+     starts at the subresource table (anchor28 - 0x28 is the asset base) */
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
   subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   do {
-    if (sourcePaletteBank == *(int *)(subresourceEntry + 4)) {
-      *(GraphicsPaletteIndex *)(subresourceEntry + 4) = destinationPaletteBank;
-      pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                *(int *)(subresourceEntry + 6) + -0x28;
-      remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
+    if (sourcePaletteBank == ((GraphicsTextureSourceEntry *)subresourceEntry)->paletteIndex) {
+      ((GraphicsTextureSourceEntry *)subresourceEntry)->paletteIndex = destinationPaletteBank;
+      pixelCursor = (uint8_t *)textureSource + ((GraphicsTextureSourceEntry *)subresourceEntry)->dataOffset;
+      remainingPixels = ((GraphicsTextureSourceEntry *)subresourceEntry)->pixelWidth * ((GraphicsTextureSourceEntry *)subresourceEntry)->pixelHeight;
       do {
         *pixelCursor = *(uint8_t *)(*pixelCursor + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
         pixelCursor++;
@@ -562,17 +559,14 @@ void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
   uint16_t *subresourceEntry;
   uint8_t *pixelCursor;
   
-  /* subresourceEntry walks GraphicsTextureSourceEntry records in uint16 steps: +4 paletteIndex, +6 dataOffset,
-     +0xC/+0xE pixelWidth/pixelHeight, +0x10 the next entry */
+  /* subresourceEntry walks the GraphicsTextureSourceEntry records in uint16 steps (+0x10: the next entry) */
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
-  subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
+  subresourceEntry = (uint16_t *)((uint8_t *)textureSource + (textureSource->tableDescriptor).subresourceTableOffset);
   if (newColorIndex != oldColorIndex) {
     do {
-      if (paletteBank == *(int *)(subresourceEntry + 4)) {
-        pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                 *(int *)(subresourceEntry + 6) + -0x28;
-        remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
+      if (paletteBank == ((GraphicsTextureSourceEntry *)subresourceEntry)->paletteIndex) {
+        pixelCursor = (uint8_t *)textureSource + ((GraphicsTextureSourceEntry *)subresourceEntry)->dataOffset;
+        remainingPixels = ((GraphicsTextureSourceEntry *)subresourceEntry)->pixelWidth * ((GraphicsTextureSourceEntry *)subresourceEntry)->pixelHeight;
         do {
           if ((uint8_t)oldColorIndex == *pixelCursor) {
             *pixelCursor = (uint8_t)newColorIndex;
@@ -678,13 +672,12 @@ void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
   *subresourceTableOffsetField = *subresourceTableOffsetField - GRAPHICS_PALETTE_BANK_BYTES;
   allocationSizeField = &(textureSource->common).allocationSizeBytes;
   *allocationSizeField = *allocationSizeField - GRAPHICS_PALETTE_BANK_BYTES;
-  subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                   ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
+  subresourceEntry = (uint16_t *)((uint8_t *)textureSource + (textureSource->tableDescriptor).subresourceTableOffset);
   for (remainingSubresources = (textureSource->tableDescriptor).subresourceCount; remainingSubresources != 0; remainingSubresources--) {
-    /* GraphicsTextureSourceEntry in uint16 steps: +6 dataOffset, +4 paletteIndex */
-    *(int *)(subresourceEntry + 6) = *(int *)(subresourceEntry + 6) - GRAPHICS_PALETTE_BANK_BYTES;
-    if (paletteIndex < *(int *)(subresourceEntry + 4)) {
-      *(int *)(subresourceEntry + 4) = *(int *)(subresourceEntry + 4) - 1;
+    /* GraphicsTextureSourceEntry records in uint16 steps */
+    ((GraphicsTextureSourceEntry *)subresourceEntry)->dataOffset = ((GraphicsTextureSourceEntry *)subresourceEntry)->dataOffset - GRAPHICS_PALETTE_BANK_BYTES;
+    if (paletteIndex < ((GraphicsTextureSourceEntry *)subresourceEntry)->paletteIndex) {
+      ((GraphicsTextureSourceEntry *)subresourceEntry)->paletteIndex = ((GraphicsTextureSourceEntry *)subresourceEntry)->paletteIndex - 1;
     }
     subresourceEntry = subresourceEntry + 0x10;
   }

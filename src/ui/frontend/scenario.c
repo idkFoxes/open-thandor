@@ -41,7 +41,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   networkState = g_FrontendNetworkState;
   frontendRoot = g_FrontendRootNode;
   RecentTextHistory_SortAndBuildPointerList
-            (5,&FRONTEND_UI_FIELD(g_FrontendRootNode,chatMessageHistory,0x58,RecentTextHistoryPointerList));
+            (5,(RecentTextHistoryPointerList *)&((UiConditionalActionControl *)FRONTEND_UI(g_FrontendRootNode,chatMessageHistory))->lineCount);
   switch(networkState) {
   case FRONTEND_NETWORK_STATE_BROWSING:
     FrontendSessionList_DecrementExpiryAndCompactRows(frontendRoot);
@@ -60,11 +60,11 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
-    if ((FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int) != 0) &&
+    if ((((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource != NULL) &&
        (movieFrame = Movie_AdvanceFrame(), movieFrame.ended)) {
       Movie_Rewind();
     }
-    if (FRONTEND_UI_FIELD(frontendRoot,moviePlaybackView,0x50,int) != 0) {
+    if (((UiSoftwareTexturePreviewControl *)FRONTEND_UI(frontendRoot,moviePlaybackView))->textureSource != NULL) {
       SoftwareMaskBuffer_AdvancePatternByPercentTick
                 ((SoftwareMaskRuntimeView *)FRONTEND_UI(frontendRoot,moviePlaybackView));
     }
@@ -103,7 +103,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
         (selectedGroup.selectedIndexOrCount == SCENARIO_SELECTION_TAB_SINGLE_GAMES)) &&
        (g_ScenarioCatalog != NULL)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
-      levelRecordAddress = (int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset;
+      levelRecordAddress = (int)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset;
       if (levelsRemaining != 0) {
         /* level n has bit n of the players' scenarioAvailabilityMask0..2; its title starts with the rich-text
            code 0x8001 (highlighted) when one of the other players (records 1..) lacks it, else 0x8000 */
@@ -122,8 +122,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
             nextPlayer = playerCursor + 1;
             playerCursor = playerCursor + 1;
           } while (((&nextPlayer->scenarioAvailabilityMask0)[maskWordIndex] & levelMaskBit) != 0);
-          /* +0x70: the level's title index */
-          markerText = TextResource_Resolve(*(int *)(levelRecordAddress + 0x70) + TEXT_ID_LEVEL_TITLE_BASE);
+          markerText = TextResource_Resolve(((ScenarioCatalogRuntimeExpandedRecord100 *)levelRecordAddress)->scenarioTextResourceId + TEXT_ID_LEVEL_TITLE_BASE);
           *markerText.text = availabilityMarker;
           levelRecordAddress = levelRecordAddress + SCENARIO_CATALOG_RECORD_SIZE;
           levelMaskBit = levelMaskBit * 2;
@@ -153,7 +152,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
 void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
 
 {
-  int32_t *menuRoomContextFlags;
+  FrontendModelPointerContextFlags *menuRoomContextFlags;
   UiAnchorFractionQ31 *control;
   UiTextResourceId titleTextId;
   FrontendLoadedLevelRuntimeImage370 *loadedLevel;
@@ -179,7 +178,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    menuRoomContextFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,int32_t);
+    menuRoomContextFlags = &((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -193,9 +192,9 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   } while (playersRemaining != 0);
   titleTextId = (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex;
   /* briefingText's text resource id: level text page entry 0x230017 + faction + level * 0x10 */
-  FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,int32_t) =
-       (playerRecord->factionAssignment).factionAssignmentIndex + 0x230017 +
-       (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10;
+  ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text =
+       (uint16_t *)((playerRecord->factionAssignment).factionAssignmentIndex + 0x230017 +
+       (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
   briefingText = TextResource_Resolve(titleTextId + TEXT_ID_LEVEL_TITLE_BASE);
   *briefingText.text = 0x8000;
   templateText = TextResource_Resolve(TEXT_ID_MISSION_BRIEFING_TEMPLATE);
@@ -206,12 +205,13 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   WidePath_SetExtensionCode(0x6d6c66 /* "flm" */,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
   movieOpen = Movie_Open(0x80000000,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
   if (movieOpen.failed) {
-    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int32_t) = 0;
+    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = NULL;
   }
   else {
     firstFrame = Movie_AdvanceFrame();
-    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int32_t) = firstFrame.movieOrError;
-    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x58,int32_t) = 0;
+    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource =
+         (GraphicsTextureSourceAsset *)firstFrame.movieOrError;
+    ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->subresource = 0;
   }
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
       (g_FrontendLoadedCampaignAsset == 0)) && (g_FrontendScenarioInitializationCount == 0)) {
@@ -255,9 +255,9 @@ FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
     playersRemaining--;
     playerRecord++;
   } while (playersRemaining != 0);
-  briefingText = TextResource_Resolve(FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,int32_t));
+  briefingText = TextResource_Resolve((TextResourceId)((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text);
   textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                     (g_UiTextStyleNormal,briefingText.text,(UiPixelExtent)FRONTEND_UI_FIELD(frontendRoot,briefingText,0x50,struct UiNodeVtable *));
+                     (g_UiTextStyleNormal,briefingText.text,((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->wrapWidth);
   /* size the text control to the wrapped text plus a 6-pixel margin, then refit the scroller */
   FRONTEND_UI(frontendRoot,briefingText)->rightOffset = textExtent.widthPixels + 6;
   FRONTEND_UI(frontendRoot,briefingText)->bottomOffset = textExtent.heightPixels + 6;
@@ -291,11 +291,11 @@ FrontendMissionBriefing_AdvanceFactionAvailabilityScan:
     factionSlot++;
     factionsRemaining--;
     if (factionsRemaining == 0) {
-      /* opponent settings: only with computer factions, and in a campaign only on the level at +0xB4
-         (compared with the current level id at +0xC4) */
+      /* opponent settings: only with computer factions, and in a campaign only on its first level
+         (CampaignAsset.firstLevelId) */
       if (((g_FrontendLoadedCampaignAsset == 0) ||
-          (*(int *)(g_FrontendLoadedCampaignAsset + 0xc4) ==
-           *(int *)(g_FrontendLoadedCampaignAsset + 0xb4))) && (unclaimedActiveFactions != 0)) {
+          (((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId ==
+           ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->firstLevelId)) && (unclaimedActiveFactions != 0)) {
         FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags &= ~UI_NODE_SUPPRESSED;
       }
       else {
