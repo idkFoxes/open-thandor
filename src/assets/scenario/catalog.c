@@ -10,6 +10,100 @@
 
 /* Implementation ownership: assets/scenario/catalog. */
 
+#ifdef THANDOR_TEST_AIDS
+#include <stdlib.h>
+#include <thandor/platform/bootstrap/image.h>
+
+/* Port-only test aid: UTF-16 list row text as ANSI for the log (non-ASCII becomes '?'). */
+static const char *ScenarioCatalog_TestAidRowName(const uint16_t *text, char *out, unsigned capacity)
+{
+  unsigned length = 0;
+  while (text[length] != 0 && length + 1 < capacity) {
+    out[length] = (text[length] < 0x80) ? (char)text[length] : '?';
+    length++;
+  }
+  if (length != 0 && out[length - 1] == '.') { /* the list rows keep the extension dot of the file name */
+    length--;
+  }
+  out[length] = 0;
+  return out;
+}
+
+/* Port-only test aid for unattended mission runs, called when the "Choose game" page opens in a local game:
+     OPEN_THANDOR_LIST_SCENARIOS=1 logs the names of all single games and campaigns ("scenario: ...") and
+                                   ends the process;
+     OPEN_THANDOR_CAMPAIGN=<name>  starts that campaign (name as in the campaigns list, or its 0-based row)
+                                   like its Start button, once per process; OPEN_THANDOR_CAMPAIGN_LEVEL picks
+                                   the level (see ScenarioCatalog_TestAidSelectCampaignLevel).
+   Returns nonzero when a campaign was started. */
+static int ScenarioCatalog_TestAidApplyScenarioOptions(void)
+{
+  static int used;
+  const char *wanted;
+  UiListControl *list;
+  char name[64];
+  uint32_t row;
+  if (used) {
+    return 0;
+  }
+  used = 1;
+  if (getenv("OPEN_THANDOR_LIST_SCENARIOS") != NULL) {
+    ScenarioCatalog_RebuildLevelRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
+    list = (UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
+    for (row = 0; row < list->rowCount; row++) {
+      Thandor_Log("scenario: single \"%s\"",
+                  ScenarioCatalog_TestAidRowName((const uint16_t *)list->rowSlots[row],name,sizeof name));
+    }
+    ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
+    list = (UiListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList);
+    for (row = 0; row < list->rowCount; row++) {
+      Thandor_Log("scenario: campaign %u \"%s\"",row,
+                  ScenarioCatalog_TestAidRowName((const uint16_t *)list->rowSlots[row],name,sizeof name));
+    }
+    ExitProcess(0);
+  }
+  wanted = getenv("OPEN_THANDOR_CAMPAIGN");
+  if (wanted == NULL) {
+    return 0;
+  }
+  ScenarioCatalog_RebuildCampaignRecordListPage(g_LocalPlayerRuntimeId,0,0,0);
+  list = (UiListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList);
+  for (row = 0; row < list->rowCount; row++) {
+    ScenarioCatalog_TestAidRowName((const uint16_t *)list->rowSlots[row],name,sizeof name);
+    if (_stricmp(name,wanted) == 0 ||
+        (wanted[0] >= '0' && wanted[0] <= '9' && (uint32_t)atoi(wanted) == row)) {
+      Thandor_Log("test aid: starting campaign %u \"%s\"",row,name);
+      ScenarioCatalog_RefreshSelectedRecordField50DisplayId(g_LocalPlayerRuntimeId,0,0,row);
+      FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,row);
+      return 1;
+    }
+  }
+  Thandor_Log("test aid: campaign \"%s\" not found",wanted);
+  return 0;
+}
+
+/* Port-only test aid: logs the levels of a just loaded campaign (.cgn: +0xB4 current level id, +0xB8 record
+   count, 0x180-byte records from +0x300 with the level id at +0 and the level file name at +0xC) and, with
+   OPEN_THANDOR_CAMPAIGN_LEVEL=<n>, makes its n-th level (1-based, in record order) the current one. */
+static void ScenarioCatalog_TestAidSelectCampaignLevel(uint8_t *campaign)
+{
+  const char *wanted = getenv("OPEN_THANDOR_CAMPAIGN_LEVEL");
+  int count = *(int *)(campaign + 0xb8);
+  int index;
+  char name[64];
+  for (index = 0; index < count; index++) {
+    uint8_t *record = campaign + 0x300 + index * 0x180;
+    Thandor_Log("campaign level %d: id %d \"%s\"%s",index + 1,*(int *)record,
+                ScenarioCatalog_TestAidRowName((const uint16_t *)(record + 0xc),name,sizeof name),
+                (*(int *)record == *(int *)(campaign + 0xb4)) ? " (first)" : "");
+  }
+  if (wanted != NULL && atoi(wanted) >= 1 && atoi(wanted) <= count) {
+    *(int *)(campaign + 0xb4) = *(int *)(campaign + 0x300 + (atoi(wanted) - 1) * 0x180);
+    Thandor_Log("test aid: campaign starts at level %d",atoi(wanted));
+  }
+}
+#endif
+
 /* Address: 0x00549E50.
    Handler of action 0x2039, the saved-games list (slot 57 of g_FrontendUiActionHandlersPage20.handlers00_54):
    a changed selection shows the saved game's description, locally or on every peer through the frontend
@@ -160,6 +254,12 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   /* Rebuild the tab's list, then refresh the description of its selected entry. */
   g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeTabIndex](0,0,0,0);
   g_FrontendScenarioMapOptionHandlerTable[activeTabIndex](0,0,0,0);
+#ifdef THANDOR_TEST_AIDS
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL &&
+      ScenarioCatalog_TestAidApplyScenarioOptions()) {
+    return;
+  }
+#endif
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
     controlFlags = &(scenarioSelectionPage->scenarioOptionRow1).control.base.nodeFlags;
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
@@ -1016,6 +1116,9 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
     loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
     checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
     recordOrEncodeCursor = (uint8_t *)checkedResult.valueOrError;
+#ifdef THANDOR_TEST_AIDS
+    ScenarioCatalog_TestAidSelectCampaignLevel(recordOrEncodeCursor);
+#endif
     /* campaign asset: +0xB4 id of the current level (copied to +0xC4), +0xB8 record count; the 0x180-byte
        level records start at +0x300 with the level id at +0 and the level file name at +0xC */
     cursorOrSize = recordOrEncodeCursor + 0xb4;

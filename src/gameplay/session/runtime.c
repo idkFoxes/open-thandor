@@ -1211,6 +1211,10 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                           OldUnitRuntime_ResetPendingTables();
                         }
                         else {
+#ifdef THANDOR_TEST_AIDS
+                          Thandor_Log("level start: campaign carries over %u units from the previous level",
+                                      (unsigned)g_OldUnitRecordCount);
+#endif
                           OldUnitRuntime_MergeMasksAndReplayRecords();
                         }
                         gridScratch = GridScratch_AllocateForFieldGrid
@@ -1797,6 +1801,28 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
   InGameRuntimeRootImageC3E4 *triggerRoot;
   InGameRuntimeRootImageC3E4 *relationRoot;
   
+#ifdef THANDOR_TEST_AIDS
+  if (g_GameFactionRuntimeImage.tail.simulationTick == 20) {
+    /* dump the level script before its first evaluation: every used condition (16 raw bytes) and trigger */
+    const uint8_t *raw = (const uint8_t *)&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
+    int index;
+    for (index = 0; index < 0x40; index++) {
+      const uint8_t *c = raw + index * 0x10;
+      if (c[0] != 0) {
+        Thandor_Log("level script: condition %2d: %02x %02x %02x %02x | %02x %02x %02x %02x | %02x %02x %02x %02x | "
+                    "%02x %02x %02x %02x",index,c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],
+                    c[12],c[13],c[14],c[15]);
+      }
+    }
+    for (index = 0; index < 0x10; index++) {
+      const uint8_t *t = (const uint8_t *)&(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule.triggers[index];
+      if (t[0] != 0) {
+        Thandor_Log("level script: trigger %2d: %02x %02x %02x %02x %02x %02x %02x %02x",index,t[0],t[1],t[2],t[3],
+                    t[4],t[5],t[6],t[7]);
+      }
+    }
+  }
+#endif
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
   remainingCount = 7;
   do {
@@ -1964,6 +1990,14 @@ InGameScheduledCondition_AdvanceToNextRecord:
     scheduledCondition = (InGameConditionScheduleImageView480 *)(scheduledCondition->conditions + 1);
     remainingCount--;
     if (remainingCount == 0) {
+#ifdef THANDOR_TEST_AIDS
+      if (g_GameFactionRuntimeImage.tail.simulationTick == 20) {
+        const uint8_t *c = (const uint8_t *)&(levelConditionStorage->schedule).conditions[10];
+        Thandor_Log("level script: after evaluation condition 10: %02x %02x %02x %02x | %02x, storage %p/%p",
+                    c[0],c[1],c[2],c[3],c[4],(void *)levelConditionStorage,
+                    (void *)g_InGameLevelRuntimeGlobalBlock.conditionStorage);
+      }
+#endif
       endTrigger = (InGameEndConditionTriggerRecord8 *)(levelConditionStorage->schedule).triggers;
       remainingCount = 0x10;
       do {
@@ -1971,6 +2005,21 @@ InGameScheduledCondition_AdvanceToNextRecord:
            (((levelConditionStorage->schedule).conditions[endTrigger->conditionIndex].statusAndKind.kind & 1) !=
             INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED)) {
           endTrigger->stateFlags = endTrigger->stateFlags | INGAME_END_CONDITION_TRIGGER_PROCESSED;
+#ifdef THANDOR_TEST_AIDS
+          {
+            InGameScheduledConditionRecord10 *condition =
+                 &(levelConditionStorage->schedule).conditions[endTrigger->conditionIndex];
+            Thandor_Log("level script: end trigger %u fired at tick %u: condition %u kind %u operands %d %d %d, "
+                        "faction %u (local %u, lifecycle %u), end selection %u",
+                        (unsigned)(0x10 - remainingCount),(unsigned)g_GameFactionRuntimeImage.tail.simulationTick,
+                        (unsigned)endTrigger->conditionIndex,(unsigned)(condition->statusAndKind.kind & ~1u),
+                        ((int *)condition)[1],((int *)condition)[2],((int *)condition)[3],
+                        (unsigned)endTrigger->factionRuntimeIndex,
+                        (unsigned)(g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex,
+                        (unsigned)g_GameFactionRuntimeImage.tail.factionLifecycleStates[endTrigger->factionRuntimeIndex],
+                        (unsigned)endTrigger->endMovieSelectionIndex);
+          }
+#endif
           triggerRoot = g_InGameRuntimeRoot;
           cellsLeftOrFaction = (uint32_t)endTrigger->factionRuntimeIndex;
           if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[cellsLeftOrFaction] ==

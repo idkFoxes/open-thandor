@@ -47,12 +47,20 @@ default build leaves them out and compiles to the same code as before they exist
 | `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
 | `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |
+| `OPEN_THANDOR_LIST_SCENARIOS=1` | log the names of all single games and campaigns when the "Choose game" page opens, then quit |
+| `OPEN_THANDOR_CAMPAIGN=<name>` | start that campaign when the "Choose game" page opens (with `-KARTE="-"` to get there); `OPEN_THANDOR_CAMPAIGN_LEVEL=<n>` starts it at its n-th level, without the units the previous level would carry over |
 
 In the test build the real mouse is also ignored while `OPEN_THANDOR_SCRIPT` drives the game, and a
 failed `OPEN_THANDOR_AUTOSHOT` capture is logged. `python tools/test/run_multiplayer.py <game dir> 180
 --host-script tools/test/mp_host_create.txt --client-script tools/test/mp_client_join.txt` starts a host
 and a client side by side with these switches; copy the test build's `thandor.exe` into the game
-directory first.
+directory first. The test build also logs the level script (its conditions and triggers, and which end
+trigger fired) and how many units a campaign carries over into a level.
+
+`python tools/test/run_all_maps.py <game dir> --jobs 10 --minutes 1` starts every campaign level and single
+game (ten at a time, each in its own linked copy of the game directory), sets the computer opponents to
+"stark" and the game speed to its maximum, lets each run a minute and reports per mission whether it loaded,
+ended early, hung or crashed; screenshots and a contact sheet per mission go to `<game dir>/soak/`.
 
 ## Generated files and tools
 

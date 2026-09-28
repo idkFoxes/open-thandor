@@ -82,11 +82,13 @@ static void Win32_AutoShotTick(void)
      <ms> click <x> <y> [hold]  left press at framebuffer pixel x,y, release after hold ms (120)
      <ms> rclick <x> <y>    the same with the right button
      <ms> move <x> <y>      pointer motion
+     <ms> drag <x> <y> <x2> <y2>  left press at x,y, motion to x2,y2 with the button held, release there
      <ms> key <vk>          key press and release (Windows virtual-key code, decimal)
      <ms> shot              save the framebuffer now (shots\script_NNNN.bmp, needs AUTOSHOT's folder)
      <ms> quit              end the process
      <ms> layout <w> <h>    the following coordinates are for a w x h screen; they are moved by half
                             the difference to the current resolution (dialogs and the view are centred)
+     <ms> clickuntilingame <x> <y> [interval]  left click x,y every interval ms (3000) until the level runs
      <ms> ingame            wait until the level has loaded and the game runs; the times of the
                             following lines count from that moment
    <ms> counts from the first message pump. Pointer events go into the same ring DirectInput fills. */
@@ -121,10 +123,11 @@ static void Win32_ScriptTick(void)
   static int state = -1;
   static unsigned start;
   static unsigned due;
-  static char command[16];
+  static char command[32];
   static int x;
   static int y;
   static int hold;
+  static int extra;
   static int pendingRelease;
   static uint32_t releaseButton;
   static unsigned releaseAt;
@@ -145,6 +148,22 @@ static void Win32_ScriptTick(void)
     }
   }
   now = Thandor_TickCount() - start;
+  {
+    /* Report when the in-game session stops producing frames (the level ended and the frontend runs again). */
+    static unsigned lastFrames;
+    static unsigned framesChangedAt;
+    static int sessionEndReported;
+    unsigned tick = Thandor_TickCount();
+    if (g_TestAidInGameFrames != lastFrames) {
+      lastFrames = g_TestAidInGameFrames;
+      framesChangedAt = tick;
+      sessionEndReported = 0;
+    }
+    else if (lastFrames != 0 && !sessionEndReported && tick - framesChangedAt > 3000) {
+      sessionEndReported = 1;
+      Thandor_Log("script: in-game session ended after %u frames", lastFrames);
+    }
+  }
   if (pendingRelease && now >= releaseAt) {
     Win32_PushCursorEvent(releaseButton == 1 ? LEFT_RELEASE : RIGHT_RELEASE, 0, releaseX, releaseY);
     pendingRelease = 0;
@@ -160,8 +179,8 @@ static void Win32_ScriptTick(void)
         return;
       }
       command[0] = 0;
-      x = y = hold = 0;
-      if (sscanf(line, "%u %15s %d %d %d", &due, command, &x, &y, &hold) < 2) {
+      x = y = hold = extra = 0;
+      if (sscanf(line, "%u %31s %d %d %d %d", &due, command, &x, &y, &hold, &extra) < 2) {
         continue;
       }
       state = 2;
@@ -178,6 +197,29 @@ static void Win32_ScriptTick(void)
       state = 1;
       Thandor_Log("script: in game, times restart at 0");
       continue;
+    }
+    if (strcmp(command, "clickuntilingame") == 0) {
+      /* click x,y every `hold` ms (default 3000) until the level runs; this line stays pending until then */
+      int clickX = x;
+      int clickY = y;
+      if (g_TestAidInGameFrames != 0) {
+        state = 1;
+        continue;
+      }
+      if (layoutWidth > 0) {
+        clickX += ((int)g_FramebufferWidth - layoutWidth) / 2;
+        clickY += ((int)g_FramebufferHeight - layoutHeight) / 2;
+      }
+      Thandor_Log("script: %u ms click %d %d (until in game)", now, clickX, clickY);
+      Win32_PushCursorEvent(MOTION_OR_WHEEL, 0, clickX, clickY);
+      Win32_PushCursorEvent(LEFT_PRESS, 1, clickX, clickY);
+      pendingRelease = 1;
+      releaseButton = 1;
+      releaseX = clickX;
+      releaseY = clickY;
+      releaseAt = now + 120;
+      due = now + (hold > 0 ? (unsigned)hold : 3000);
+      return;
     }
     state = 1;
     if (strcmp(command, "layout") == 0) {
@@ -205,9 +247,30 @@ static void Win32_ScriptTick(void)
     else if (strcmp(command, "move") == 0) {
       Win32_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
     }
+    else if (strcmp(command, "drag") == 0) {
+      /* drag x y x2 y2: press the left button at x,y, move with it held to x2,y2 and release there */
+      int toX = hold;
+      int toY = extra;
+      if (layoutWidth > 0) {
+        toX += ((int)g_FramebufferWidth - layoutWidth) / 2;
+        toY += ((int)g_FramebufferHeight - layoutHeight) / 2;
+      }
+      Win32_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
+      Win32_PushCursorEvent(LEFT_PRESS, 1, x, y);
+      Win32_PushCursorEvent(MOTION_OR_WHEEL, 1, (x + toX) / 2, (y + toY) / 2);
+      Win32_PushCursorEvent(MOTION_OR_WHEEL, 1, toX, toY);
+      pendingRelease = 1;
+      releaseButton = 1;
+      releaseX = toX;
+      releaseY = toY;
+      releaseAt = now + 200;
+    }
     else if (strcmp(command, "key") == 0) {
       Keyboard_OnKeyDown(x);
       Keyboard_OnKeyUp(x);
+      if (g_TestAidInGameFrames != 0) {
+        Thandor_Log("script: simulation step ticks now %u", (unsigned)g_InGameSimulationStepTicks);
+      }
     }
     else if (strcmp(command, "quit") == 0) {
       ExitProcess(0);
