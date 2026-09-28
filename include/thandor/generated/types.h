@@ -5709,7 +5709,7 @@ typedef uint32_t PckHeaderDwordCount;
 typedef int InGameCommandHandlerAddress32;
 
 /* A queued player command handler: the command code is the handler's code offset from the queue
-   function (see THANDOR_CODE_AT); called with the player runtime id and the three payload dwords. */
+   function (see CommandDispatch_ResolveHandler); called with the player runtime id and the three payload dwords. */
 typedef void CommandQueueHandlerProc(uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,
                                      uint32_t payloadDword04);
 

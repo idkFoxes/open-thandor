@@ -7,6 +7,7 @@
 
 #include <thandor/network/protocol/commands.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: network/protocol/commands. */
 
@@ -179,5 +180,34 @@ InGameCommandQueue_ContainsTripletValue
     }
   }
   return false;
+}
+
+
+/* Rebuild helper (no original counterpart).
+   The original executes a received command with `ADD EAX,codeBase; CMP EAX,originalRegionEnd; JNC skip;
+   CALL EAX`: the code is the handler's distance from the queue function in the original image. Here the
+   original handler address is resolved to its recovered C function. Codes at or past the region end are
+   skipped like in the original (NULL). A code that does not hit an original function start would make the
+   original jump into the middle of code; valid codes never do, so it is logged once and skipped.
+*/
+CommandQueueHandlerProc *
+CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint32_t code)
+
+{
+  static int s_loggedInvalidCode;
+  uint32_t originalAddress;
+  CommandQueueHandlerProc *handler;
+
+  originalAddress = codeBase + code;
+  if (originalAddress >= originalRegionEnd) {
+    return NULL;
+  }
+  handler = (CommandQueueHandlerProc *)Thandor_FunctionAtOriginalAddress(originalAddress);
+  if ((handler == NULL) && (s_loggedInvalidCode == 0)) {
+    s_loggedInvalidCode = 1;
+    Thandor_Log("network: command code 0x%X (base 0x%08X) is no original function start 0x%08X, ignored",
+                code, codeBase, originalAddress);
+  }
+  return handler;
 }
 

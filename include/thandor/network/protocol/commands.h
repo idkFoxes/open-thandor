@@ -114,6 +114,9 @@
 #define FRONTEND_COMMAND_APPLY_GAME_SPEED 0x2C0 /* FrontendSession_ApplyGameSpeedAndReturnToMainPage */
 #define FRONTEND_COMMAND_SET_GAME_SPEED 0x300 /* FrontendSession_SetGameSpeedPercent */
 #define FRONTEND_COMMAND_RELEASE_CAMPAIGN 0x320 /* FrontendSession_ReleaseSelectedResourceAndReturnToMainPage */
+/* Received commands are executed only below these original addresses (CMP EAX,imm32; JNC skip). */
+#define FRONTEND_COMMAND_HANDLER_REGION_END 0x005456F0 /* g_FrontendRootNode in the original image */
+#define INGAME_COMMAND_HANDLER_REGION_END 0x00562499 /* InGameCommandHandlerCodeRegionEnd */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00543F50 */
@@ -141,5 +144,11 @@ bool __thandor_cf_preserve_eax_ecx_edx
 InGameCommandQueue_ContainsTripletValue
           (InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress);
+
+/* Rebuild helper: the recovered handler for a received command code (codeBase + code is the original
+   handler address), or NULL when the original skips it (at or past originalRegionEnd) or the code does not
+   hit an original function start. */
+CommandQueueHandlerProc *
+CommandDispatch_ResolveHandler(uint32_t codeBase,uint32_t originalRegionEnd,uint32_t code);
 
 #endif /* THANDOR_NETWORK_PROTOCOL_COMMANDS_H */

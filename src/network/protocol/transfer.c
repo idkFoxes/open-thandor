@@ -337,8 +337,11 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       /* command dword = handler offset << 8 | player id; offsets past the command handlers are ignored */
       commandHandlerIndex = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (commandHandlerIndex != 0) {
-        if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-          (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+        CommandQueueHandlerProc *commandHandler =
+             CommandDispatch_ResolveHandler
+                       (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
+        if (commandHandler != NULL) {
+          (*commandHandler)
                     ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
@@ -409,8 +412,11 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
       /* command dword = handler offset << 8 | player id; offsets past the command handlers are ignored */
       commandHandlerIndex = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (commandHandlerIndex != 0) {
-        if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-          (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+        CommandQueueHandlerProc *commandHandler =
+             CommandDispatch_ResolveHandler
+                       (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
+        if (commandHandler != NULL) {
+          (*commandHandler)
                     ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
@@ -766,8 +772,11 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           packedCommand = (commandRecordCursor->command).packedCommandAndPlayerId;
           commandHandlerIndex = packedCommand >> 8;
           if (commandHandlerIndex != 0) {
-            if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-              (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+            CommandQueueHandlerProc *commandHandler =
+                 CommandDispatch_ResolveHandler
+                           (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
+            if (commandHandler != NULL) {
+              (*commandHandler)
                         (packedCommand & 0xff,(commandRecordCursor->command).payloadDword0C,
                          (commandRecordCursor->command).payloadDword08,(commandRecordCursor->command).payloadDword04);
             }
@@ -975,8 +984,11 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
       selectedIndexOrPackedCommand = (commandRecordCursor->command).packedCommandAndPlayerId;
       commandHandlerIndex = selectedIndexOrPackedCommand >> 8;
       if (commandHandlerIndex != 0) {
-        if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-          (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+        CommandQueueHandlerProc *commandHandler =
+             CommandDispatch_ResolveHandler
+                       (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
+        if (commandHandler != NULL) {
+          (*commandHandler)
                     (selectedIndexOrPackedCommand & 0xff,(commandRecordCursor->command).payloadDword0C,(commandRecordCursor->command).payloadDword08,
                      (commandRecordCursor->command).payloadDword04);
         }
@@ -1374,10 +1386,8 @@ FrontendTransfer_HostHandleCommandSubmitOrWaitAck
    Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on
    the local simulation, so host and clients run the same commands in the same tick. The high 24 bits of
    each packed command are the handler's offset from InGameCommandQueue_AppendLocalPlayerCommand, the low
-   8 bits the player id; offsets beyond the handler code region are ignored.
-   Known broken (deferred): THANDOR_CODE_AT adds the original code offset to the address of the compiled
-   InGameCommandQueue_AppendLocalPlayerCommand and bounds it by the image-data stand-in for the original
-   code-region end; neither matches the original code layout, so multiplayer commands do not dispatch.
+   8 bits the player id; offsets beyond the handler code region are ignored. The original handler address
+   is resolved to its recovered C function by CommandDispatch_ResolveHandler.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandRecords(void)
 
@@ -1394,9 +1404,12 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandR
     packedCommand = (commandRecord->command).packedCommandAndPlayerId;
     commandHandlerIndex = packedCommand >> 8;
     if (commandHandlerIndex != 0) {
-      if (THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&InGameCommandHandlerCodeRegionEnd)
+      CommandQueueHandlerProc *commandHandler =
+           CommandDispatch_ResolveHandler
+                     (INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
+      if (commandHandler != NULL)
       {
-        (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex))
+        (*commandHandler)
                   (packedCommand & 0xff,(commandRecord->command).payloadDword0C,(commandRecord->command).payloadDword08,
                    (commandRecord->command).payloadDword04);
       }

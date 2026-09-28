@@ -69,6 +69,27 @@ static void *find_function(unsigned address)
     return NULL;
 }
 
+/* Recovered C function for an original function entry address, or NULL when the address is not
+   the start of a mapped function. Network command codes are original code distances and resolve
+   through this. */
+void *Thandor_FunctionAtOriginalAddress(unsigned originalAddress)
+{
+    return find_function(originalAddress);
+}
+
+/* Reverse lookup: original entry address of a recovered C function (e.g. a handler pointer read from
+   image data that is queued as a network command code), or 0 when it is not mapped. Linear search. */
+unsigned Thandor_OriginalAddressOfFunction(const void *function)
+{
+    unsigned i;
+    for (i = 0; i < g_ThandorFunctionMapCount; i++) {
+        if (g_ThandorFunctionMap[i].function == function) {
+            return g_ThandorFunctionMap[i].originalAddress;
+        }
+    }
+    return 0;
+}
+
 #define ORIGINAL_IMAGE_BASE 0x400000u
 #define ORIGINAL_IMAGE_SIZE 0x192000u
 #define CHILD_MARKER "OPEN_THANDOR_IMAGE_RESERVED"

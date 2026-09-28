@@ -7,6 +7,7 @@
 
 #include <thandor/gameplay/input/world.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: gameplay/input/world. */
 
@@ -631,9 +632,11 @@ InGameWorldInput_CommitPointerAction
           modeHandler(g_LocalPlayerRuntimeId,g_InGameCommandPreviewHeading16,pointerWorldXQ12,pointerWorldYQ12);
         }
         else {
+          /* the command code is the handler's original address minus INGAME_COMMAND_CODE_BASE; the table
+             holds recovered C functions, so map back to the original address first */
           InGameCommandQueue_AppendLocalPlayerCommand
-                    ((UiActionId)((unsigned char *)modeHandler - INGAME_COMMAND_CODE_BASE)
-                     /* TODO: code-address command id, see THANDOR_CODE_AT */,
+                    ((UiActionId)(Thandor_OriginalAddressOfFunction((const void *)modeHandler) -
+                                  INGAME_COMMAND_CODE_BASE),
                      g_InGameCommandPreviewHeading16,pointerWorldXQ12,pointerWorldYQ12);
         }
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==

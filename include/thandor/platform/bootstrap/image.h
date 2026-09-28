@@ -26,6 +26,12 @@ typedef struct ThandorFunctionMapEntry {
 extern const ThandorFunctionMapEntry g_ThandorFunctionMap[];
 extern const unsigned g_ThandorFunctionMapCount;
 
+/* Recovered C function whose original entry address is originalAddress, or NULL when no mapped
+   function starts there (binary search of g_ThandorFunctionMap). */
+void *Thandor_FunctionAtOriginalAddress(unsigned originalAddress);
+/* Original entry address of a recovered C function, or 0 when it is not in g_ThandorFunctionMap. */
+unsigned Thandor_OriginalAddressOfFunction(const void *function);
+
 /* Restarts the process suspended with the original image range reserved. Returns -1 in the
    restarted process, otherwise the exit code to return. */
 int Thandor_RelaunchWithReservedImage(void);

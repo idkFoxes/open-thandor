@@ -394,80 +394,63 @@ FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
    ran out (a notice with the player's name is posted) and compacts the player blocks and their command records,
    then tells the remaining clients about each dropped player with a 0x10007 packet and re-evaluates the ready
    consensus.
-   NOTE: this C differs from the original. The original pushes every dropped player id on the stack (one 0x10007
-   per id) and keeps the command-record destination in a separate slot; here removedIdOrCommandCursor holds the
-   last dropped id and is then copied into destinationCommandOrPacket, so a surviving client after a dropped one
-   gets its command record written to the address "player id", and several drops send the same/garbage id.
+   Quirks kept from the original: the command records start at g_FrontendClientPlayerCommandRecords[0] while the
+   players start at block 1, and the 0x10007 packets go out in reverse drop order (the ids are pushed on the
+   stack while scanning and popped one per packet).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
 
 {
-  FrontendHeartbeatTickCount *heartbeatTicks;
   FrontendPlayerRuntimeBlockCount recipientsRemaining;
-  int copyCount;
   int playersRemaining;
   int removedCount;
+  bool expired;
   FrontendPlayerRuntimeRecord *sourcePlayer;
-  FrontendCommandPacketRecord *commandCopyCursor;
-  FrontendPlayerRuntimeRecord *nextSourcePlayer;
-  UiTransferEndpointDescriptor *endpoint;
   FrontendPlayerRuntimeRecord *destinationPlayer;
-  FrontendPlayerRuntimeRecord *nextDestinationPlayer;
-  TextResolveResult timeoutText;
-  FrontendCommandPacketRecord *removedIdOrCommandCursor;
-  FrontendPlayerRemovalPacket10007 *destinationCommandOrPacket;
   FrontendCommandPacketRecord *sourceCommandRecord;
+  FrontendCommandPacketRecord *destinationCommandRecord;
+  UiTransferEndpointDescriptor *endpoint;
+  TextResolveResult timeoutText;
+  /* the original's PUSH/POP stack of dropped player ids (at most 8 player blocks) */
+  FrontendPlayerRuntimeId removedPlayerIds[8];
   
   removedCount = 0;
-  sourceCommandRecord = g_FrontendClientPlayerCommandRecords;
-  removedIdOrCommandCursor = g_FrontendClientPlayerCommandRecords;
-  playersRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
   sourcePlayer = g_FrontendPlayerRuntimeBlocks + 1;
   destinationPlayer = g_FrontendPlayerRuntimeBlocks + 1;
-  destinationCommandOrPacket = (FrontendPlayerRemovalPacket10007 *)removedIdOrCommandCursor;
-  if (playersRemaining != 0 && 0 < (int)g_FrontendPlayerRuntimeBlockCount) {
+  sourceCommandRecord = g_FrontendClientPlayerCommandRecords;
+  destinationCommandRecord = g_FrontendClientPlayerCommandRecords;
+  playersRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1;
+  if (0 < playersRemaining) {
     do {
-      if (sourcePlayer->heartbeatExpiryTicks == 0) {
-FrontendClientSession_RemoveExpiredPlayer:
-        g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
-        removedIdOrCommandCursor = (FrontendCommandPacketRecord *)sourcePlayer->playerRuntimeId;
-        removedCount = removedCount + 1;
-        nextSourcePlayer = sourcePlayer + 1;
-        nextDestinationPlayer = destinationPlayer;
-      }
-      else {
-        heartbeatTicks = &sourcePlayer->heartbeatExpiryTicks;
-        *heartbeatTicks = *heartbeatTicks - 1;
-        if (*heartbeatTicks == 0) {
+      expired = sourcePlayer->heartbeatExpiryTicks == 0;
+      if (!expired) {
+        sourcePlayer->heartbeatExpiryTicks = sourcePlayer->heartbeatExpiryTicks - 1;
+        if (sourcePlayer->heartbeatExpiryTicks == 0) {
           timeoutText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
           RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText.text);
           InGameRecentTextHistory_InsertAndRebuild8(timeoutText.text);
-          goto FrontendClientSession_RemoveExpiredPlayer;
-        }
-        nextSourcePlayer = sourcePlayer + 1;
-        nextDestinationPlayer = destinationPlayer + 1;
-        removedIdOrCommandCursor = (FrontendCommandPacketRecord *)(destinationCommandOrPacket + 1);
-        copyCount = sizeof(FrontendPlayerRuntimeRecord) / sizeof(uint32_t);
-        if (nextDestinationPlayer != nextSourcePlayer) {
-          for (; nextDestinationPlayer = destinationPlayer, nextSourcePlayer = sourcePlayer, copyCount != 0; copyCount--) {
-            nextDestinationPlayer->runtimeState00 = nextSourcePlayer->runtimeState00;
-            sourcePlayer = (FrontendPlayerRuntimeRecord *)&nextSourcePlayer->peerSequenceToken;
-            destinationPlayer = (FrontendPlayerRuntimeRecord *)&nextDestinationPlayer->peerSequenceToken;
-          }
-          commandCopyCursor = sourceCommandRecord;
-          for (copyCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); copyCount != 0; copyCount--) {
-            (destinationCommandOrPacket->header).packedTypeAndUnitCount = (commandCopyCursor->header).packedTypeAndUnitCount;
-            commandCopyCursor = (FrontendCommandPacketRecord *)&(commandCopyCursor->header).sequenceToken;
-            destinationCommandOrPacket = (FrontendPlayerRemovalPacket10007 *)&(destinationCommandOrPacket->header).sequenceToken;
-          }
+          expired = true;
         }
       }
+      if (expired) {
+        /* drop: only the source cursors advance */
+        g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
+        removedPlayerIds[removedCount] = sourcePlayer->playerRuntimeId;
+        removedCount = removedCount + 1;
+      }
+      else {
+        /* keep: move the player block and its command record down over the gap (REP MOVSD) */
+        if (destinationPlayer != sourcePlayer) {
+          *destinationPlayer = *sourcePlayer;
+          *destinationCommandRecord = *sourceCommandRecord;
+        }
+        destinationPlayer = destinationPlayer + 1;
+        destinationCommandRecord = destinationCommandRecord + 1;
+      }
+      sourcePlayer = sourcePlayer + 1;
       sourceCommandRecord = sourceCommandRecord + 1;
       playersRemaining--;
-      sourcePlayer = nextSourcePlayer;
-      destinationPlayer = nextDestinationPlayer;
-      destinationCommandOrPacket = (FrontendPlayerRemovalPacket10007 *)removedIdOrCommandCursor;
     } while (playersRemaining != 0);
   }
   if (removedCount != 0) {
@@ -475,14 +458,12 @@ FrontendClientSession_RemoveExpiredPlayer:
       g_FrontendClientPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
            FRONTEND_PACKET_10007_PLAYER_REMOVAL;
       endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-      g_FrontendClientPlayerRemovalPacket10007.removedPlayerToken = (FrontendPlayerRuntimeId)removedIdOrCommandCursor
-      ;
+      /* POP: the last dropped id first */
+      g_FrontendClientPlayerRemovalPacket10007.removedPlayerToken = removedPlayerIds[removedCount - 1];
       recipientsRemaining = g_FrontendPlayerRuntimeBlockCount;
       while (recipientsRemaining = recipientsRemaining - 1, recipientsRemaining != 0) {
-        destinationCommandOrPacket = &g_FrontendClientPlayerRemovalPacket10007;
         UiTransfer_StagePacketAndSend(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
         endpoint = endpoint + sizeof(FrontendPlayerRuntimeRecord) / sizeof(UiTransferEndpointDescriptor);
-        removedIdOrCommandCursor = (FrontendCommandPacketRecord *)destinationCommandOrPacket;
       }
       removedCount--;
     } while (removedCount != 0);

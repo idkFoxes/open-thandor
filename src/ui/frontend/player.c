@@ -209,77 +209,56 @@ FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
    blocks and their 0x20-byte command records. Every remaining client is then sent one
    FRONTEND_PACKET_10007_PLAYER_REMOVAL per removed player, and the ready wait is re-evaluated without a new
    report (player id -1).
-   NOTE: this C differs from the original for more than one removal or a removal followed by a kept block: the
-   original pushes each removed id on the stack (PUSH [ESI+0x14] at 0x0054F5AC) and pops one per announcement
-   round (0x0054F63C), and leaves the command destination cursor alone on a removal; here one variable holds the
-   last removed id, the command destination and later the packet address.
+   The command records start at g_FrontendPlayerCommandRecords[0] while the scan starts at player block 1, and
+   the announcements go out in reverse removal order (the original pushes each removed id on the stack and pops
+   one per round); both are kept from the original.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 {
-  FrontendHeartbeatTickCount *heartbeatTicks;
   FrontendPlayerRuntimeBlockCount sendRemaining;
-  int copyRemaining;
   int scanRemaining;
   int removedCount;
   FrontendPlayerRuntimeRecord *sourceBlock;
-  FrontendCommandPacketRecord *commandSource;
-  FrontendPlayerRuntimeRecord *nextSourceBlock;
-  UiTransferEndpointDescriptor *endpoint;
   FrontendPlayerRuntimeRecord *destBlock;
-  FrontendPlayerRuntimeRecord *nextDestBlock;
+  FrontendCommandPacketRecord *commandSource;
+  FrontendCommandPacketRecord *commandDest;
+  UiTransferEndpointDescriptor *endpoint;
   TextResolveResult removalText;
-  FrontendCommandPacketRecord *removedTokenOrCommandDest;
-  FrontendPlayerRemovalPacket10007 *commandDestOrPacket;
-  FrontendCommandPacketRecord *commandCursor;
+  /* the original's PUSH/POP stack of removed player ids (at most 8 player blocks) */
+  FrontendPlayerRuntimeId removedPlayerIds[8];
   
   removedCount = 0;
-  commandCursor = g_FrontendPlayerCommandRecords;
-  removedTokenOrCommandDest = g_FrontendPlayerCommandRecords;
-  scanRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
   sourceBlock = g_FrontendPlayerRuntimeBlocks + 1;
   destBlock = g_FrontendPlayerRuntimeBlocks + 1;
-  commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)removedTokenOrCommandDest;
-  if (scanRemaining != 0 && 0 < (int)g_FrontendPlayerRuntimeBlockCount) {
+  commandSource = g_FrontendPlayerCommandRecords;
+  commandDest = g_FrontendPlayerCommandRecords;
+  scanRemaining = (int)g_FrontendPlayerRuntimeBlockCount - 1;
+  if (0 < scanRemaining) {
     do {
-      heartbeatTicks = &sourceBlock->heartbeatExpiryTicks;
-      *heartbeatTicks = *heartbeatTicks - 1;
-      if (*heartbeatTicks == 0) {
+      sourceBlock->heartbeatExpiryTicks = sourceBlock->heartbeatExpiryTicks - 1;
+      if (sourceBlock->heartbeatExpiryTicks == 0) {
+        /* remove: only the source cursors advance */
         g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
         removalText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
         RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText.text);
         FrontendRecentTextHistory_InsertAndRebuild5(removalText.text);
-        removedTokenOrCommandDest = (FrontendCommandPacketRecord *)sourceBlock->playerRuntimeId;
+        removedPlayerIds[removedCount] = sourceBlock->playerRuntimeId;
         removedCount++;
-        nextSourceBlock = sourceBlock + 1;
-        nextDestBlock = destBlock;
       }
       else {
-        nextSourceBlock = sourceBlock + 1;
-        nextDestBlock = destBlock + 1;
-        removedTokenOrCommandDest = (FrontendCommandPacketRecord *)(commandDestOrPacket + 1);
-        /* REP MOVSD of one 0x13B0-byte player block, then of its 8-dword command record */
-        copyRemaining = 0x4ec;
-        if (nextDestBlock != nextSourceBlock) {
-          for (; nextDestBlock = destBlock, nextSourceBlock = sourceBlock, copyRemaining != 0; copyRemaining--) {
-            nextDestBlock->runtimeState00 = nextSourceBlock->runtimeState00;
-            sourceBlock = (FrontendPlayerRuntimeRecord *)&nextSourceBlock->peerSequenceToken;
-            destBlock = (FrontendPlayerRuntimeRecord *)&nextDestBlock->peerSequenceToken;
-          }
-          commandSource = commandCursor;
-          for (copyRemaining = 8; copyRemaining != 0; copyRemaining--) {
-            (commandDestOrPacket->header).packedTypeAndUnitCount = (commandSource->header).packedTypeAndUnitCount;
-            commandSource = (FrontendCommandPacketRecord *)&(commandSource->header).sequenceToken;
-            commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)&(commandDestOrPacket->header).sequenceToken;
-          }
+        /* keep: REP MOVSD of the 0x13B0-byte player block, then of its 8-dword command record */
+        if (destBlock != sourceBlock) {
+          *destBlock = *sourceBlock;
+          *commandDest = *commandSource;
         }
+        destBlock++;
+        commandDest++;
       }
-      commandCursor++;
+      sourceBlock++;
+      commandSource++;
       scanRemaining--;
-      sourceBlock = nextSourceBlock;
-      destBlock = nextDestBlock;
-      commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)removedTokenOrCommandDest;
     } while (scanRemaining != 0);
   }
   if (removedCount != 0) {
@@ -287,13 +266,12 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       endpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
       g_FrontendPlayerRemovalPacket10007.header.packedTypeAndUnitCount =
            FRONTEND_PACKET_10007_PLAYER_REMOVAL;
-      g_FrontendPlayerRemovalPacket10007.removedPlayerToken = (FrontendPlayerRuntimeId)removedTokenOrCommandDest;
+      /* POP: the last removed id first */
+      g_FrontendPlayerRemovalPacket10007.removedPlayerToken = removedPlayerIds[removedCount - 1];
       sendRemaining = g_FrontendPlayerRuntimeBlockCount;
       while (sendRemaining = sendRemaining - 1, sendRemaining != 0) {
-        commandDestOrPacket = &g_FrontendPlayerRemovalPacket10007;
         UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
         endpoint = endpoint + 0x13b; /* next player block: 0x13B0 bytes */
-        removedTokenOrCommandDest = (FrontendCommandPacketRecord *)commandDestOrPacket;
       }
       removedCount--;
     } while (removedCount != 0);

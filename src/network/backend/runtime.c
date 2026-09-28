@@ -260,8 +260,11 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
     commandHandlerIndex = packedCommandOrDwordCount >> 8;
     if (commandHandlerIndex != 0) {
       /* the handler (FRONTEND_COMMAND_CODE_BASE + code) must lie in the code section */
-      if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-        (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+      CommandQueueHandlerProc *commandHandler =
+           CommandDispatch_ResolveHandler
+                     (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
+      if (commandHandler != NULL) {
+        (*commandHandler)
                   (packedCommandOrDwordCount & 0xff,(commandRecord->command).payloadDword0C,
                    (commandRecord->command).payloadDword08,(commandRecord->command).payloadDword04);
       }
@@ -423,9 +426,8 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
    new COMMAND_BATCH is executed and answered with the client's next COMMAND_SUBMIT (returns true, CF set);
    a repeated batch (same sender context) resends the last submit. COMMAND_WAIT is answered with
    COMMAND_WAIT_ACK, and a player-removal packet drops that player's record and shows a notice. Every
-   packet from the host refreshes the session timeout.
-   Command dispatch through THANDOR_CODE_AT is known to be broken (deferred), see
-   FrontendTransfer_DispatchStagedCommandRecords.
+   packet from the host refreshes the session timeout. Commands are resolved to their handlers by
+   CommandDispatch_ResolveHandler.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
@@ -457,8 +459,11 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeout
       do {
         commandHandlerIndex = (packet->command10011Or10021).command.packedCommandAndPlayerId >> 8;
         if (commandHandlerIndex != 0) {
-          if (THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&InGameCommandHandlerCodeRegionEnd) {
-            (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex))
+          CommandQueueHandlerProc *commandHandler =
+               CommandDispatch_ResolveHandler
+                         (INGAME_COMMAND_CODE_BASE,INGAME_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
+          if (commandHandler != NULL) {
+            (*commandHandler)
                       ((packet->command10011Or10021).command.packedCommandAndPlayerId & 0xff,
                        (packet->command10011Or10021).command.payloadDword0C,
                        (packet->command10011Or10021).command.payloadDword08,

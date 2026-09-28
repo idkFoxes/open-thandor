@@ -91,8 +91,10 @@ Search for `TODO` in the tree. The main groups:
 
 - **Independence from the original executable**: the data still lives in the mapped image; next is
   generating it as C definitions (see `tools/data`).
-- **Multiplayer command dispatch** (`THANDOR_CODE_AT`): command ids are offsets from handler code
-  addresses of the original; needs a real handler table.
+- **Multiplayer**: network command codes are distances between original handler addresses (see
+  `include/thandor/network/protocol/commands.h`); received commands are resolved to the recovered C
+  handlers through the function map (`CommandDispatch_ResolveHandler`). Not yet tested in a real
+  networked game.
 - **Five string literals** (`TODO: verify text` in `src/generated/globals.c`) have no string data in the program
   database and are still reconstructed from their labels.
 - **Stack frames** (`thandor_stack_frame`): `richtext.c` keeps unrecovered stack locals in an unreachable function.
