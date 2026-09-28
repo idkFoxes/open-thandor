@@ -16,8 +16,13 @@ if(THANDOR_MAPPED_IMAGE)
     add_compile_definitions(THANDOR_MAPPED_IMAGE)
 endif()
 
+# OFF (default): the build matches the original's code. ON: compile in the runtime test aids for a
+# local two-instance multiplayer test and windowed mode (OPEN_THANDOR_WINDOWED, OPEN_THANDOR_MULTI_INSTANCE,
+# OPEN_THANDOR_NET_PORT, OPEN_THANDOR_NETLOG; see docs/BUILDING.md and tools/test/run_multiplayer.py).
+option(THANDOR_TEST_AIDS "Build the local multiplayer/windowed test aids" OFF)
+
 # The code needs MSVC (inline __asm, __stdcall/__fastcall, MSVC pragmas) targeting 32-bit x86.
-# Use a preset (CMakePresets.json: debug, release, mapped), which finds MSVC x86 by itself, or
+# Use a preset (CMakePresets.json: debug, release, mapped, test), which finds MSVC x86 by itself, or
 # configure from a vcvars32 prompt. In CLion: Settings > Build > CMake, enable the presets and
 # disable the default MinGW profile.
 if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -148,3 +153,8 @@ add_executable(thandor WIN32
 )
 target_link_libraries(thandor PRIVATE thandor_curated kernel32 user32 dbghelp)
 target_link_options(thandor PRIVATE /BASE:0x10000000 /DYNAMICBASE:NO /LARGEADDRESSAWARE:NO)
+
+if(THANDOR_TEST_AIDS)
+    target_compile_definitions(thandor_curated PRIVATE THANDOR_TEST_AIDS=1)
+    target_compile_definitions(thandor PRIVATE THANDOR_TEST_AIDS=1)
+endif()

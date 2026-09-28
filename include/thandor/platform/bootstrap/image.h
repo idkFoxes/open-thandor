@@ -59,6 +59,7 @@ void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size);
 /* Test aid (OPEN_THANDOR_SCRIPT `ingame`): counts in-game session frames, i.e. frames after the
    level has finished loading. */
 extern volatile unsigned g_TestAidInGameFrames;
+#ifdef THANDOR_TEST_AIDS
 /* Test aids for a local two-instance network test (not in the original):
    OPEN_THANDOR_MULTI_INSTANCE=1 lets a second instance start although a game window exists;
    OPEN_THANDOR_NET_PORT=<n> binds this instance's UDP socket to port n instead of the game port. */
@@ -83,6 +84,7 @@ void *Thandor_TestAidCreateWindowedMainWindow(const char *className, const char 
 void Thandor_TestAidSetWindowClientSize(void *window, unsigned width, unsigned height);
 /* Screen position of the window's client origin. */
 void Thandor_TestAidClientOriginOnScreen(void *window, int *x, int *y);
+#endif
 /* Full path of the running executable (ANSI), independent of how it was started. */
 void Thandor_GetExecutablePathA(char *out, unsigned capacity);
 

@@ -7,9 +7,12 @@
 
 #include <thandor/graphics/backend/directdraw.h>
 #include <thandor/thandor.h>
+#ifdef THANDOR_TEST_AIDS
 #include <thandor/platform/bootstrap/image.h>
+#endif
 
 /* Implementation ownership: graphics/backend/directdraw. */
+#ifdef THANDOR_TEST_AIDS
 
 /* Windowed test aid (OPEN_THANDOR_WINDOWED, not in the original): the few IDirectDrawClipper methods it
    uses, in vtable order (the generated types only know the clipper as an opaque pointer). */
@@ -74,6 +77,7 @@ static TH_LEGACY_HRESULT GraphicsDirectDraw_TestAidAttachWindowClipper(uint32_t 
   }
   return result;
 }
+#endif
 
 /* Address: 0x00423CF0.
    Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
@@ -284,9 +288,11 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
   int completedStages;
 
   completedStages = 0;
+#ifdef THANDOR_TEST_AIDS
   if (Thandor_TestAidWindowed()) {
     adapterIndex = GraphicsDirectDraw_TestAidWindowedAdapter(adapterIndex);
   }
+#endif
   /* EAX as the Glide path returns it. GraphicsGlide3_ApplyDisplayModeAndInitializeResources preserves EAX, so the
      original hands back whatever EAX held before the call (the caller's EAX on the first call, otherwise the last
      COM Release result). The caller only reads it with CF set; 0x1a is the mode error the Glide callee computes
@@ -403,21 +409,30 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
     errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE;
     stageOrLoopCounter = 2;
     if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+#ifdef THANDOR_TEST_AIDS
     comResult = g_DirectDraw2->lpVtbl->SetCooperativeLevel(g_DirectDraw2,g_MainWindow,
                                                         Thandor_TestAidWindowed() ? DDSCL_NORMAL :
                                                         DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE);
+#else
+    comResult = g_DirectDraw2->lpVtbl->SetCooperativeLevel(g_DirectDraw2,g_MainWindow,
+                                                        DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE);
+#endif
     errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE;
     stageOrLoopCounter = 3;
     if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
     completedStages = 4;
     g_ActiveGraphicsAdapterIndex = adapterIndex;
   }
+#ifdef THANDOR_TEST_AIDS
   if (Thandor_TestAidWindowed()) {
     comResult = 0; /* windowed test aid: the desktop keeps its mode (and colour depth) */
   }
   else {
     comResult = g_DirectDraw2->lpVtbl->SetDisplayMode(g_DirectDraw2,width,height,bitsPerPixel,0,0);
   }
+#else
+  comResult = g_DirectDraw2->lpVtbl->SetDisplayMode(g_DirectDraw2,width,height,bitsPerPixel,0,0);
+#endif
   adapterRecord = g_GraphicsAdapters;
   errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_SET_DISPLAY_MODE;
   stageOrLoopCounter = completedStages;
@@ -443,9 +458,11 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
       errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
       stageOrLoopCounter = completedStages + 2;
       if (comResult == 0) {
+#ifdef THANDOR_TEST_AIDS
         if (Thandor_TestAidWindowed()) {
           GraphicsDirectDraw_TestAidAttachWindowClipper(width,height);
         }
+#endif
         Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
         stageOrLoopCounter = completedStages + 3;
         if (adapterRecord[adapterIndex].deviceGuid.Data1 == 0) {
@@ -483,6 +500,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
         if ((((comResult == 0) && (stageOrLoopCounter = completedStages + 1, g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0)
              ) && (stageOrLoopCounter = completedStages + 2, g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0)) &&
            (stageOrLoopCounter = completedStages + 3, g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0)) {
+#ifdef THANDOR_TEST_AIDS
           if (Thandor_TestAidWindowed() && (bitsPerPixel != g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount)) {
             /* windowed test aid: the surfaces have the desktop's depth, and the blitters chosen below, the
                renderer's queue (bytesPerPixel) and the pixel packing must all follow the surfaces */
@@ -491,6 +509,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                         (unsigned)bitsPerPixel);
             bitsPerPixel = g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount;
           }
+#endif
           g_SoftwarePixelFormatConfig.redMask = g_SurfaceDesc.ddpfPixelFormat.dwRBitMask;
           g_SoftwarePixelFormatConfig.greenMask = g_SurfaceDesc.ddpfPixelFormat.dwGBitMask;
           g_SoftwarePixelFormatConfig.blueMask = g_SurfaceDesc.ddpfPixelFormat.dwBBitMask;

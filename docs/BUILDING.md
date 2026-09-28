@@ -35,6 +35,25 @@ Environment switches for testing:
 
 Unattended test: `python tools/test/run_game.py <game dir> 120 --args '-NOINTRO -KARTE="mittelpunkt"' --script tools/test/skirmish_start.txt` starts a skirmish on Ahaggar, plays two minutes, and reports the log, crashes and a contact sheet of snapshots. `tools/test/skirmish_move.txt` also selects the starting vehicle and sends it to two points (left click on the unit, then on the ground), which exercises path finding; its `ingame` line waits until the level has loaded, and the times after it count from that moment. Command-line options need a leading `-` (`-NOINTRO`, `-KARTE="<level>"`).
 
+### Test build (windowed, local multiplayer)
+
+The test aids for running two instances on one machine are compiled in only with
+`-DTHANDOR_TEST_AIDS=ON` (preset `test`: `cmake --preset test && cmake --build --preset test`); the
+default build leaves them out and compiles to the same code as before they existed. With the test build:
+
+| Variable | Effect |
+|---|---|
+| `OPEN_THANDOR_WINDOWED=1` | normal window instead of full-screen exclusive (desktop colour depth, software renderer only, non-exclusive mouse); position with `OPEN_THANDOR_WINDOW_X` / `OPEN_THANDOR_WINDOW_Y` (default 0,0) |
+| `OPEN_THANDOR_MULTI_INSTANCE=1` | allow a second instance although a game window exists |
+| `OPEN_THANDOR_NET_PORT=<n>` | bind this instance's UDP socket to port n; it still addresses the peer's game port |
+| `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |
+
+In the test build the real mouse is also ignored while `OPEN_THANDOR_SCRIPT` drives the game, and a
+failed `OPEN_THANDOR_AUTOSHOT` capture is logged. `python tools/test/run_multiplayer.py <game dir> 180
+--host-script tools/test/mp_host_create.txt --client-script tools/test/mp_client_join.txt` starts a host
+and a client side by side with these switches; copy the test build's `thandor.exe` into the game
+directory first.
+
 ## Generated files and tools
 
 | File | Produced by | Notes |

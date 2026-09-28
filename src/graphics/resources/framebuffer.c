@@ -75,6 +75,7 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
           restoreResult = g_PrimarySurface3->lpVtbl->Restore(g_PrimarySurface3);
         }
         if (restoreResult == 0) {
+#ifdef THANDOR_TEST_AIDS
           if (Thandor_TestAidWindowed()) {
             /* windowed test aid (not in the original): the primary surface is the whole desktop, so blit
                into the client area; Blt (unlike BltFast) honours the window's clipper */
@@ -94,6 +95,10 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
             g_PrimarySurface3->lpVtbl->BltFast
                       (g_PrimarySurface3,0,0,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,DDBLTFAST_WAIT);
           }
+#else
+          g_PrimarySurface3->lpVtbl->BltFast
+                    (g_PrimarySurface3,0,0,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,DDBLTFAST_WAIT);
+#endif
         }
         GraphicsCursor_RestoreAfterPresent(g_BackSurface3);
       }

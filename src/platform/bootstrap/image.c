@@ -89,6 +89,7 @@ unsigned Thandor_OriginalAddressOfFunction(const void *function)
     }
     return 0;
 }
+#ifdef THANDOR_TEST_AIDS
 
 /* Test aid (not in the original): see image.h. */
 int Thandor_TestAidScriptActive(void)
@@ -198,6 +199,7 @@ void Thandor_TestAidClientOriginOnScreen(void *window, int *x, int *y)
     *x = origin.x;
     *y = origin.y;
 }
+#endif
 
 #define ORIGINAL_IMAGE_BASE 0x400000u
 #define ORIGINAL_IMAGE_SIZE 0x192000u
