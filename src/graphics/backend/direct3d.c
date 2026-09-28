@@ -355,7 +355,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
@@ -464,15 +463,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
     }
   }
   if (g_BoundTextureHandle != 0) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = 0;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -500,7 +497,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
@@ -622,15 +618,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     }
   }
   if (g_BoundTextureHandle != 0) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = 0;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -658,7 +652,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
@@ -780,15 +773,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     }
   }
   if (g_BoundTextureHandle != 0) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = 0;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -815,7 +806,6 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
@@ -937,15 +927,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     }
   }
   if (g_BoundTextureHandle != 0) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                        (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = 0;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -976,7 +964,6 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
@@ -1140,15 +1127,13 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = deviceTextureHandle;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -1179,7 +1164,6 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[1].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[1].zWriteEnable;
@@ -1343,15 +1327,13 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = deviceTextureHandle;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -1382,7 +1364,6 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
@@ -1546,15 +1527,13 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = deviceTextureHandle;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -1585,7 +1564,6 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
@@ -1749,15 +1727,13 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = deviceTextureHandle;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;
@@ -1788,7 +1764,6 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
@@ -1952,15 +1927,13 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
     }
   }
   if (deviceTextureHandle != g_BoundTextureHandle) {
-    /* The original pushes the handle and on success pops it into g_BoundTextureHandle; this C stores the
-       device pointer instead (kept for stage 1). */
-    newBoundTextureHandle = g_Direct3DDevice2;
+    /* The original pushes the handle twice and on success pops it into g_BoundTextureHandle; the bind
+       counter counts every attempt, failed or not. */
     bindResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,deviceTextureHandle);
-    if (bindResult != 0) {
-      newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
+    if (bindResult == 0) {
+      g_BoundTextureHandle = deviceTextureHandle;
     }
-    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount++;
   }
   return;

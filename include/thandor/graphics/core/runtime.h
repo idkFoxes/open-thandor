@@ -31,6 +31,13 @@
 #define GRAPHICS_CURSOR_FRAME_ARROW 0
 #define GRAPHICS_CURSOR_FRAME_BUSY 6 /* shown while something loads (credits, session start, savegame list) */
 
+/* GraphicsCursor_ConsumeNextInputEvent: bit 31 of a press's returned button state marks a double click (the
+   same bit as UI_POINTER_BUTTON_REPEAT_CLICK): the press comes less than 16 clock ticks after the release of
+   the same button and within +-4 pixels of the previous press. */
+#define GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK 0x80000000u
+#define GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS 16u
+#define GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE 4
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00576C30 */

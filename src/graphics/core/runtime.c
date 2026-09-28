@@ -97,9 +97,10 @@ GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
    Takes the next mouse event from the 256-entry ring the mouse input code fills (CF set when it is empty)
    and publishes it: button state, cursor position and wheel delta go to the g_Cursor* globals, a release stores
    its clock per button, a press its position as the last click. Installed in g_GraphicsCursorConsumeEvent
-   (image slot 0x00416850). In the original a press less than 16 clock ticks after the release of the same
-   button and within +-4 pixels of the last click also sets bit 31 (double click) in the returned button state
-   (EBX; g_CursorButtonState keeps the raw value); this C does not compute that bit.
+   (image slot 0x00416850). A press less than 16 clock ticks after the release of the same button and within
+   +-4 pixels of the last click also sets bit 31 (double click) in the returned button state (EBX;
+   g_CursorButtonState keeps the raw value), which UiPointer_DispatchPendingEvents passes on to the press
+   dispatchers as UI_POINTER_BUTTON_REPEAT_CLICK.
 */
 CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void)
 
@@ -110,9 +111,11 @@ CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputE
   CursorEventResult emptyResult;
   GraphicsCursorClockValue eventClock;
   uint32_t eventIndex;
-  uint32_t leftReleaseClock;
-  uint32_t middleReleaseClock;
-  
+  uint32_t rawButtonState;
+  uint32_t ticksSinceRelease;
+  UiPixelCoordinate clickDeltaX;
+  UiPixelCoordinate clickDeltaY;
+
   eventIndex = g_CursorInputReadIndex;
   nextReadIndex = g_CursorInputReadIndex + 1;
   if (g_CursorInputReadIndex == g_CursorInputWriteIndex) {
@@ -126,18 +129,42 @@ CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputE
   g_CursorInputReadIndex = nextReadIndex;
   consumedEventType = g_CursorInputEvents[eventIndex].eventType00;
   eventClock = g_CursorInputEvents[eventIndex].clockValue14;
-  g_CursorButtonState = g_CursorInputEvents[eventIndex].buttonState04;
-  leftReleaseClock = g_CursorButtonReleaseClock[0];
-  middleReleaseClock = g_CursorButtonReleaseClock[1];
-  if (((((consumedEventType != LEFT_PRESS) && (consumedEventType != MIDDLE_PRESS)) && (consumedEventType != RIGHT_PRESS)) &&
-      ((leftReleaseClock = eventClock, consumedEventType != LEFT_RELEASE &&
-       (leftReleaseClock = g_CursorButtonReleaseClock[0], middleReleaseClock = eventClock,
-       consumedEventType != MIDDLE_RELEASE)))) &&
-     (middleReleaseClock = g_CursorButtonReleaseClock[1], consumedEventType == RIGHT_RELEASE)) {
+  rawButtonState = g_CursorInputEvents[eventIndex].buttonState04;
+  g_CursorButtonState = rawButtonState;
+  /* ESI: ticks since the release of the pressed button; releases (and motion) leave the limit itself, which
+     never counts as a double click. The compare is unsigned (JNC at 0x00416978). */
+  ticksSinceRelease = GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS;
+  if (consumedEventType == LEFT_PRESS) {
+    ticksSinceRelease = eventClock - g_CursorButtonReleaseClock[0];
+  }
+  else if (consumedEventType == MIDDLE_PRESS) {
+    ticksSinceRelease = eventClock - g_CursorButtonReleaseClock[1];
+  }
+  else if (consumedEventType == RIGHT_PRESS) {
+    ticksSinceRelease = eventClock - g_CursorButtonReleaseClock[2];
+  }
+  else if (consumedEventType == LEFT_RELEASE) {
+    g_CursorButtonReleaseClock[0] = eventClock;
+  }
+  else if (consumedEventType == MIDDLE_RELEASE) {
+    g_CursorButtonReleaseClock[1] = eventClock;
+  }
+  else if (consumedEventType == RIGHT_RELEASE) {
     g_CursorButtonReleaseClock[2] = eventClock;
   }
-  g_CursorButtonReleaseClock[1] = middleReleaseClock;
-  g_CursorButtonReleaseClock[0] = leftReleaseClock;
+  /* The returned state (EBX) gets bit 31 for a double click; g_CursorButtonState above stays raw. The distance
+     is measured to the previous press, before this press becomes the last click below. */
+  rawButtonState = rawButtonState & ~GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK;
+  if (ticksSinceRelease < GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS) {
+    clickDeltaX = g_CursorInputEvents[eventIndex].pointerX08 - g_CursorLastClickX;
+    clickDeltaY = g_CursorInputEvents[eventIndex].pointerY0C - g_CursorLastClickY;
+    if ((-GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE <= clickDeltaX) &&
+        (clickDeltaX <= GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE) &&
+        (-GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE <= clickDeltaY) &&
+        (clickDeltaY <= GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE)) {
+      rawButtonState = rawButtonState | GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK;
+    }
+  }
   g_CursorOverrideX = g_CursorInputEvents[eventIndex].pointerX08;
   g_CursorOverrideY = g_CursorInputEvents[eventIndex].pointerY0C;
   g_CursorWheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
@@ -148,7 +175,7 @@ CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputE
   /* Called through GraphicsCursorConsumeEventProc: the event also leaves the button state in EBX,
      position in ECX/EDX and wheel delta in ESI, which Ghidra's EAX/CF view of this function dropped. */
   eventResult.eventType = consumedEventType;
-  eventResult.buttonState = g_CursorButtonState;
+  eventResult.buttonState = (GraphicsCursorButtonState)rawButtonState;
   eventResult.pointerX = g_CursorInputEvents[eventIndex].pointerX08;
   eventResult.pointerY = g_CursorInputEvents[eventIndex].pointerY0C;
   eventResult.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;

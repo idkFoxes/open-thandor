@@ -304,8 +304,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
                      &g_ScenarioCatalogPathScratchUtf16);
   saveCarry = (uint32_t)(saveStatus & 1);
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
-  /* The original passes the save routine's EAX (kept across the cursor call with PUSHFD/PUSH EAX) as the error
-     code; the helper's prototype exposes only CF, so the row ordinal stands in for it here. */
+  /* The original passes EAX (kept across the cursor call with PUSHFD/PUSH EAX) as the error code. The save
+     routine (0x0050ECE0) and both WidePath helpers push and pop EAX, so EAX is still the row ordinal from
+     INC EAX at 0x0056C250. */
   FatalError_ReportIfFailed(errorOrValue,(saveCarry & 1) != 0);
   UiSelectableControl_SetSelected
             (0,(UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));

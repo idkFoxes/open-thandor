@@ -850,7 +850,10 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
                impactAngle;
         }
         if (impactValue != 0) {
-          /* the original has a stray JZ after IMUL faction,0x740 here (ZF undefined after IMUL); see the report */
+          /* The original tests ZF after IMUL EBX,[EDI+0xC],0x740 (0x0052A5DB / JZ 0x0052A630 at 0x0052A5E2).
+             IMUL leaves ZF unchanged (measured on an AMD Zen 3) and ZF still holds CMP [EBP+0x28],0 at
+             0x0052A5D5, whose own JZ already left for impactValue == 0; so ZF is clear here, the jump is never
+             taken and the counters are always updated. The C follows that. */
           integrityDeltaOrFaction = *(int *)((int)(targetEntityRuntime->common).ownership.runtimeLink + 0xc);
           maxIntegrityOrClassOrCount = *(int *)((int)(targetEntityRuntime->common).ownership.definitionOrClassRecord + 0x4c);
           relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterC;
