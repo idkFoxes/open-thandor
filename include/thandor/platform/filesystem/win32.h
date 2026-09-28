@@ -45,14 +45,14 @@ Win32FileWriteResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle);
 
 /* 0x00576140 */
-uint32_t Win32File_GetPosition(void *handle);
+Win32FileSeekResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetPosition(void *handle);
 
 /* 0x00576180 */
 Win32FileSeekResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle);
 
 /* 0x005761C0 */
-uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path);
+StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_Delete(uint32_t unusedFlags,uint16_t *path);
 
 /* 0x00576210 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx

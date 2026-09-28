@@ -56,10 +56,6 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
   g_ThandorFrameHeartbeat++;
   previousAccessState = g_GraphicsBackendAccessState;
-  savedCursorDrawY = g_CursorCurrentDrawY;
-  savedCursorDrawX = g_CursorCurrentDrawX;
-  savedVisibilityToken = g_CursorCurrentVisibilityToken;
-  savedCursorBackground = g_CursorSavedBackground;
   /* XCHG in the original: take the backend lock and learn whether it was already held */
   LOCK();
   g_GraphicsBackendAccessState = 1;
@@ -90,7 +86,11 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
       }
       else {
         /* Direct3D flip chain: the back buffer becomes visible, so swap in the cursor state saved for it
-           (XCHG in the original) */
+           (XCHG in the original, 0x005797C7, which reads the current state only here, under the lock) */
+        savedCursorDrawY = g_CursorCurrentDrawY;
+        savedCursorDrawX = g_CursorCurrentDrawX;
+        savedVisibilityToken = g_CursorCurrentVisibilityToken;
+        savedCursorBackground = g_CursorSavedBackground;
         LOCK();
         g_CursorSavedBackground = g_CursorAlternateSavedBackground;
         UNLOCK();

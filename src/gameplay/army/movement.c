@@ -3513,7 +3513,8 @@ ArmyRuntime_UpdateMovementAndWaypoints
   }
   /* The original returns the distances in EAX/EDX and whatever CF ArmyRuntime_StartDirectMoveCommand
      leaves (clear when locked, else the pathing call's CF); belowThreshold is always false here since
-     exceededDistance > ARMY_MOVEMENT_TARGET_RADIUS_Q12. */
+     exceededDistance > ARMY_MOVEMENT_TARGET_RADIUS_Q12. That matches: EntityPathing_ResolveDestinationAndRebuildRoutes
+     has a single exit with CLC (0x00534E61), so the CF left by the direct move is always clear (not arrived). */
   belowThreshold = exceededDistance < ARMY_MOVEMENT_TARGET_RADIUS_Q12;
   ArmyRuntime_StartDirectMoveCommand
             (movementRuntime->movementTargetWorldYQ12,movementRuntime->movementTargetWorldXQ12,

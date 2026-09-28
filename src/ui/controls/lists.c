@@ -2739,7 +2739,10 @@ void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
 
 /* Address: 0x004BA560.
    Returns the index of the selected row of a pointer list. The original also reports
-   UI_LIST_SELECTION_CONFIRMED in CF, which this C signature does not carry (both branches return the index).
+   UI_LIST_SELECTION_CONFIRMED in CF (CLC 0x004BA57F / STC 0x004BA587), which this C signature does not carry
+   (both branches return the index). No caller reads it: FrontendNetworkSetupPage_InitializeBackendMode
+   (0x0054C29C) passes EAX straight to the backend call, FrontendUiAction200F_Handler (0x0054D4AD) overwrites
+   CF with a CMP.
 */
 UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *control)
 

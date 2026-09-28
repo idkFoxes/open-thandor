@@ -346,7 +346,11 @@ DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
    Frees a DLL loaded by DynDLL_Load; the module is found by its name pointer (not by comparing text), as the
    Glide backend passes the same name string it loaded with. Returns FreeLibrary's non-zero result, or
    FATAL_ERROR_LOADER_MODULE_MISSING with the name in g_PackageLastErrorPath. The table entry stays in place.
-   The original also reports success/failure in CF (clear/set); the callers ignore both.
+   The original also reports success/failure in CF (CLC at 0x00573D2A, STC at 0x00573D12); no caller reads it:
+   Glide3_InitAndEnumerate follows with CLC/STC, GraphicsGlide3_ApplyDisplayModeAndInitializeResources with STC,
+   and Glide3_Shutdown passes it out unchanged, but its callers overwrite the flags first (ADD at 0x00578B5D,
+   TEST at 0x00579582, XOR EAX,EAX at 0x00586102 after GraphicsBackend_RefreshActiveAdapterIfReady). The EAX
+   result is likewise discarded (POP EAX or ignored) by all of them.
 */
 uint32_t DynDLL_Unload(char *moduleName)
 

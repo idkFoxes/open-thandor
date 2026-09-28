@@ -1752,6 +1752,29 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_Draw(void)
    outside its bounds) is asked via its hitTest method, the last sibling (drawn on top) first. Returns the
    first hit, or the container itself when no child claims the pointer.
 */
+/* Eligible siblings from `child` on, hit-tested last first. The recursion first checks every remaining
+   sibling for eligibility and only then calls hitTest on the way back, like the original, which pushes
+   all eligible children before popping them. Returns UI_NODE_NONE when none claims the pointer. */
+static UiNodeBase *UiContainer_HitTestEligibleSiblings
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *child)
+{
+  UiNodeBase *hit;
+
+  for (; child != UI_NODE_NONE; child = child->nextSibling) {
+    if ((((child->nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0) ||
+         ((child->left <= pointerX && child->top <= pointerY) &&
+          (pointerX < child->right && pointerY < child->bottom))) &&
+        ((child->nodeFlags & UI_NODE_SUPPRESSED) == 0)) {
+      hit = UiContainer_HitTestEligibleSiblings(pointerY,pointerX,child->nextSibling);
+      if (hit != UI_NODE_NONE) {
+        return hit;
+      }
+      return child->vtable->hitTest(pointerY,pointerX,child);
+    }
+  }
+  return UI_NODE_NONE;
+}
+
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiContainer_HitTestChildren
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
@@ -1759,28 +1782,12 @@ UiContainer_HitTestChildren
 {
   /* Rewritten from the assembly (0x004B0800): eligible children are pushed on the machine stack
      in sibling order and hit-tested in reverse (topmost first); Ghidra lost the pushed nodes.
-     The original has no limit; 256 bounds the local array. */
-  UiNodeBase *eligible[256];
-  UiNodeBase *child;
+     Like the original there is no limit on the number of eligible children (the helper recurses). */
   UiNodeBase *hit;
-  int count;
 
-  count = 0;
-  for (child = control->firstChild; child != UI_NODE_NONE; child = child->nextSibling) {
-    if ((((child->nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0) ||
-         ((child->left <= pointerX && child->top <= pointerY) &&
-          (pointerX < child->right && pointerY < child->bottom))) &&
-        ((child->nodeFlags & UI_NODE_SUPPRESSED) == 0) && count < 256) {
-      eligible[count] = child;
-      count++;
-    }
-  }
-  while (count != 0) {
-    count--;
-    hit = eligible[count]->vtable->hitTest(pointerY,pointerX,eligible[count]);
-    if (hit != UI_NODE_NONE) {
-      return hit;
-    }
+  hit = UiContainer_HitTestEligibleSiblings(pointerY,pointerX,control->firstChild);
+  if (hit != UI_NODE_NONE) {
+    return hit;
   }
   return control;
 }

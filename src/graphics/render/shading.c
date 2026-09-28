@@ -504,8 +504,12 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (!terrainRay.hit) {
                 return;
               }
+              /* Original quirk, kept (all 12 such sites, e.g. 0x004CE3F4-0x004CE3F8): after the hit the original
+                 pushes EAX (distance), ECX (azimuth, preserved by the raycast) and EDX as the elevation. EDX was
+                 -viewAngleBC - 0x4000 before the call, but the raycast returns the hit cell's material byte in
+                 EDX (0x00504C80), so the material byte becomes the elevation angle. */
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y =
@@ -633,7 +637,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y =
@@ -761,7 +765,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y =
@@ -889,7 +893,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y =
@@ -1017,7 +1021,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y =
@@ -1145,7 +1149,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y =
@@ -1273,7 +1277,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y =
@@ -1401,7 +1405,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y =
@@ -1529,7 +1533,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y =
@@ -1657,7 +1661,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y =
@@ -1785,7 +1789,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y =
@@ -1913,7 +1917,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
-                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12);
+                                 (terrainRay.materialOrCellIndex,heightDeltaOrIntensityA,surfaceDistanceQ12); /* quirk: EDX */
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x =
                    g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x + direction.x;
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y =

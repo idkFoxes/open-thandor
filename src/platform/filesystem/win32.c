@@ -149,9 +149,10 @@ uint32_t __cdecl FileSystem_Init(void)
   g_FileSystemReadExact = Win32File_ReadExact;
   g_FileSystemWriteExactOrFlush = Win32File_WriteExactOrFlush;
   g_FileSystemGetSize = Win32File_GetSize;
-  g_FileSystemGetPosition = Win32File_GetPosition;
+  /* the generated slot types of GetPosition and Delete return only EAX; callers cast them back to read CF */
+  g_FileSystemGetPosition = (FileSystemGetPositionProc *)Win32File_GetPosition;
   g_FileSystemSeek = Win32File_Seek;
-  g_FileSystemDelete = Win32File_Delete;
+  g_FileSystemDelete = (FileSystemDeleteProc *)Win32File_Delete;
   g_FileSystemGetCurrentDirectory = Win32File_GetCurrentDirectory;
   g_FileSystemSetCurrentDirectory = Win32File_SetCurrentDirectory;
   g_FileSystemRemoveDirectory = Win32File_RemoveDirectory;
@@ -321,7 +322,8 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHigh(ui
    Despite its slot name (g_FileSystemGetVolumeSerialNumber) this queries no volume: it reads all three
    FILETIMEs of the file at path, clears the first byte of outputLabel and returns the high dword of the
    last-write time, like Win32File_GetLastWriteTimeHigh. The original reports failure in CF (with
-   FATAL_ERROR_FILE_ACCESS_FAILED in EAX); this C version returns only EAX.
+   FATAL_ERROR_FILE_ACCESS_FAILED in EAX, STC at 0x00576416); this C version returns only EAX. Nothing
+   calls through g_FileSystemGetVolumeSerialNumber (only FileSystem_Init stores it), so CF is unobservable.
 */
 uint32_t Win32Drive_GetVolumeSerialNumber(uint8_t *outputLabel,char *path)
 
@@ -568,19 +570,24 @@ Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle)
 
 
 /* Address: 0x00576140.
-   Returns the current position of a file. The original returns 0 with CF set when SetFilePointer
-   fails; this C version returns only the value.
+   Returns the current position of a file; 0 with CF set when SetFilePointer fails (0x0057616D).
 */
-uint32_t Win32File_GetPosition(void *handle)
+Win32FileSeekResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetPosition(void *handle)
 
 {
   DWORD filePosition;
+  Win32FileSeekResult successResult;
+  Win32FileSeekResult failureResult;
 
   filePosition = SetFilePointer(handle,0,NULL,FILE_CURRENT);
   if (filePosition != INVALID_SET_FILE_POINTER) {
-    return filePosition;
+    successResult.failed = false;
+    successResult.positionOrError = filePosition;
+    return successResult;
   }
-  return 0;
+  failureResult.failed = true;
+  failureResult.positionOrError = 0;
+  return failureResult;
 }
 
 /* Address: 0x00576180.
@@ -608,21 +615,27 @@ Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,v
 
 
 /* Address: 0x005761C0.
-   Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface. The original
-   sets CF with FATAL_ERROR_FILE_ACCESS_FAILED on failure; this C version returns only EAX.
+   Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface. CF set with
+   FATAL_ERROR_FILE_ACCESS_FAILED on failure (0x00576202); on success EAX is DeleteFileA's result.
 */
-uint32_t Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
+StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
 
 {
   BOOL deletedFile;
+  StatusResult successResult;
+  StatusResult failureResult;
 
   Package_SetLastErrorPath(path);
   RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratchA,g_Win32PathScratchA,path);
   deletedFile = DeleteFileA((LPCSTR)g_Win32PathScratchA);
   if (deletedFile != 0) {
-    return deletedFile;
+    successResult.failed = false;
+    successResult.valueOrError = deletedFile;
+    return successResult;
   }
-  return FATAL_ERROR_FILE_ACCESS_FAILED;
+  failureResult.failed = true;
+  failureResult.valueOrError = FATAL_ERROR_FILE_ACCESS_FAILED;
+  return failureResult;
 }
 
 /* Address: 0x00576210.
@@ -1050,7 +1063,8 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntries
     } while (apiSucceeded != 0);
     FindClose(findHandle);
     /* bubble sort; each swap goes through g_Win32PathScratchA, which is only 0x100 bytes: the 0x200-byte
-       record also fills g_Win32PathScratchB behind it */
+       record also fills g_Win32PathScratchB behind it (original behaviour; relies on B directly following A,
+       0x00575A9C/0x00575B9C, which the generated image struct g_ImageData_0057594C keeps) */
     if (1 < recordCount) {
       comparisonsRemaining = recordCount - 1;
       rightRecordDwords = (uint32_t *)(outputRecords + FILESYSTEM_ENUMERATION_RECORD_BYTES);

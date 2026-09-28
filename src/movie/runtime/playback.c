@@ -269,6 +269,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   bool looseFileOpened;
   FileSystemOpenResult openResult;
   FileSystemSeekResult seekResult;
+  FileSystemSeekResult positionResult;
   FileSystemReadResult readResult;
   ArenaAllocResult allocResult;
   StatusResult audioResult;
@@ -348,12 +349,16 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
         readResult = g_FileSystemReadExact(initialVideoBytes,header + 1,handle);
         status = readResult.valueOrError;
         if (!readResult.failed) {
-          /* The original also fails on CF of g_FileSystemGetPosition (JC 0x004a89f1), but
-             FileSystemGetPositionProc has no CF result (it returns 0 on failure). */
-          streamPosition = g_FileSystemGetPosition(handle);
-          audioResult = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle);
-          status = audioResult.valueOrError;
-          if (!audioResult.failed) {
+          /* The original also fails on CF of g_FileSystemGetPosition (JC 0x004a89f1, EAX 0); the
+             generated slot type returns only EAX, so it is called through its real signature. */
+          positionResult = (*(FileSystemSeekResult (*)(void *))g_FileSystemGetPosition)(handle);
+          streamPosition = positionResult.positionOrError;
+          status = positionResult.positionOrError;
+          if (!positionResult.failed) {
+            audioResult = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle);
+            status = audioResult.valueOrError;
+          }
+          if ((!positionResult.failed) && (!audioResult.failed)) {
             sizeOrValue = header->widthPixels * header->heightPixels * 4 + MOVIE_RUNTIME_PIXELS_OFFSET;
             allocResult = g_MemoryApi.alloc(sizeOrValue);
             status = allocResult.payloadOrError;

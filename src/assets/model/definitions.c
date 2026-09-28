@@ -493,7 +493,10 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
     uint16_t *spritePath = (uint16_t *)(node + 1);
     PackageLoadResult loaded;
     SpriteAssetHeader *registered;
-    WidePath_SetExtensionCode(0x727073,spritePath); /* ".spr" */
+    /* ".spr". The original tests its CF (JC at 0x005286C6), but WidePath_SetExtensionCode always
+       returns with CLC (0x0040F314), so that branch is dead. The error exit at 0x00528677 only drops the
+       walk's stack frames before MOV ESP,EBP; returning up the recursion is equivalent. */
+    WidePath_SetExtensionCode(0x727073,spritePath);
     loaded = Package_LoadEntry(spritePath);
     if (loaded.failed) {
       *error = (uint32_t)loaded.bufferOrError;

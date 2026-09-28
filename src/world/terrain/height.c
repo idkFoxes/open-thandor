@@ -804,6 +804,8 @@ Q12 g_TerrainRayNextCoord1Q12;
    next row when the ray segment start..end leaves the current cell through a row boundary, otherwise to the next
    column. Returns true (CF set) when the current cell already contains the ray end or no step is possible (no
    row crossing and no column movement), false with the next cell and corner in g_TerrainRayNext* otherwise.
+   On a true return g_TerrainRayNext* hold the original's registers too: coord0 (EDX) = end0 - cur0 for the
+   destination-cell exit, cur0 with cell - 0x80 / cur1 - one cell for the no-column-movement exit.
 */
 bool __thandor_cf_preserve_eax
 TerrainRay_AdvanceGridTraversal
@@ -824,8 +826,14 @@ TerrainRay_AdvanceGridTraversal
   g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12;
   delta1 = rayEndCoord1Q12 - currentGridCoord1Q12;
   delta0 = rayEndCoord0Q12 - currentGridCoord0Q12;
-  if (delta1 >= 0 && delta0 >= 0 && delta1 <= FIELD_GRID_CELL_Q12 && delta0 <= FIELD_GRID_CELL_Q12) {
-    return true; /* already in the destination cell */
+  /* SUB + JL (0x005049EC/0x005049F1) is a true signed compare of end and current coordinate; the JG
+     checks against one cell use the wrapped differences */
+  if (rayEndCoord1Q12 >= currentGridCoord1Q12 && rayEndCoord0Q12 >= currentGridCoord0Q12 &&
+      delta1 <= FIELD_GRID_CELL_Q12 && delta0 <= FIELD_GRID_CELL_Q12) {
+    /* already in the destination cell: STC at 0x00504A05 with EDX still end0 - cur0 from 0x005049F1
+       (ESI/ECX untouched). The raycasts leave EDX as materialOrCellIndex of their miss result. */
+    g_TerrainRayNextCoord0Q12 = delta0;
+    return true;
   }
   delta0 = rayEndCoord0Q12 - rayStartCoord0Q12;
   if (delta0 != 0) {
@@ -856,6 +864,9 @@ TerrainRay_AdvanceGridTraversal
   }
   delta1 = rayEndCoord1Q12 - rayStartCoord1Q12;
   if (delta1 == 0) {
+    /* STC via 0x00504AEB after 0x00504ADC/0x00504AE2 already moved ESI/ECX one column back; EDX = cur0 */
+    g_TerrainRayNextCell = (FieldGridCell *)(cell - 0x80);
+    g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 - FIELD_GRID_CELL_Q12;
     return true;
   }
   /* next column: 0x80 bytes = one cell */

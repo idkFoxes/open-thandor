@@ -887,7 +887,9 @@ Graphics_SetViewportAndClearDepth
 /* Address: 0x0057E6D0.
    Starts a frame on the active renderer: nothing for the software rasterizer, the (empty) Glide hook, or for
    Direct3D a restore of a lost back surface followed by IDirect3DDevice2::BeginScene. The original reports a
-   failed restore or BeginScene with CF set; this C version returns nothing.
+   failed restore or BeginScene with CF set (STC at 0x0057E700); this C version returns nothing, since the only
+   caller (g_GraphicsBeginScene in FrontendModelPointerContext_RenderWorldViewQueuesClipped, 0x0050BDF7) never
+   reads CF.
 */
 void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void)
 

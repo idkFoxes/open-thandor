@@ -634,7 +634,9 @@ FieldGrid_RecomputeInteriorDirectionalLighting
    amount, so the water level stays) and lets the six wedge scans around
    the vertex adapt the neighbouring terrain; heightDeltaSourceValue / 0x240 (clamped to 1..255) limits
    those scans. Border cells and cells under water are left alone. (The original also returns CF: clear
-   when the height was applied, set otherwise; this C version returns nothing.)
+   when the height was applied (CLC 0x0050927E), set otherwise (STC 0x0050928B); this C version returns
+   nothing. The only caller, ArmyRuntime_ClassCommandHandlerGroupA (CALL at 0x005275D7), ignores it: the
+   code after the call joins the skip path and overwrites CF with TEST ESI,ESI at 0x00527606.)
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
@@ -2256,7 +2258,9 @@ FieldGrid_RaycastTerrainSurfaceDistance
     rayEndHalfRowOrCurrentColumnQ12 = g_TerrainRayNextCoord1Q12;
     currentRowQ12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  missResult.materialOrCellIndex = currentRowQ12; /* a miss leaves the traversal's row in EDX */
+  /* a miss leaves EDX as is: the current row, or end row - current row when the traversal reached the ray end.
+     No caller reads it on a miss (shots index their impact table only with a terrain distance within range). */
+  missResult.materialOrCellIndex = currentRowQ12;
   missResult.distanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
   missResult.hit = false;
   return missResult;
@@ -2357,7 +2361,9 @@ FieldGrid_RaycastSecondarySurfaceDistance
     rayEndHalfRowOrCurrentColumnQ12 = g_TerrainRayNextCoord1Q12;
     currentRowQ12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  missResult.materialOrCellIndex = currentRowQ12; /* a miss leaves the traversal's row in EDX */
+  /* a miss leaves EDX as is: the current row, or end row - current row when the traversal reached the ray end.
+     No caller reads it on a miss (shots index their impact table only with a terrain distance within range). */
+  missResult.materialOrCellIndex = currentRowQ12;
   missResult.distanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
   missResult.hit = false;
   return missResult;
@@ -2518,7 +2524,7 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
     endHalfCoordOrCurrentCoord1Q12 = g_TerrainRayNextCoord1Q12;
     currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  missResult.materialOrCellIndex = currentGridCoord0Q12;
+  missResult.materialOrCellIndex = currentGridCoord0Q12; /* EDX as the traversal left it (see above) */
   missResult.distanceQ12 = 0x7fffffff;
   missResult.hit = false;
   return missResult;

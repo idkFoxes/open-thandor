@@ -106,10 +106,9 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
 {
   uint16_t *leaf;
   int rowOrdinal;
-  uint32_t errorOrValue;
-  bool carryIn;
+  StatusResult deleteResult;
   ListSelectionResult selectionResult;
-  
+
   g_GraphicsCursorSetFrame(6);
   selectionResult = UiPointerList_GetSelectedIndexVariantB
                     ((UiPointerListControl *)(saveGamePageControl + 0xf0));
@@ -122,9 +121,11 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    carryIn = WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    errorOrValue = g_FileSystemDelete(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    FatalError_ReportIfFailed(errorOrValue,carryIn);
+    WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    /* the fatal-error dispatch reads EAX and CF of the delete (0x0056C20B) */
+    deleteResult = (*(StatusResult (*)(uint32_t,uint16_t *))g_FileSystemDelete)
+                             (0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    FatalError_ReportIfFailed(deleteResult.valueOrError,deleteResult.failed);
     InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(saveGamePageControl + -0x760));
   }
   return;

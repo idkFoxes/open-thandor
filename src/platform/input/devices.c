@@ -463,12 +463,19 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
 }
 
 
+/* Real signature behind the g_SoftwareFramebufferCreate slot (SoftwareFramebuffer_Create): EAX pointer, CF failure. */
+typedef SoftwareFramebufferResult __thandor_eax_cf_preserve_ecx_edx SoftwareFramebufferCreateCfProc
+          (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
+          GraphicsPixelDimension width);
+
 /* Address: 0x005772F0.
    Mouse hook in front of g_GraphicsSetDisplayMode (installed by DirectInputMouse_Init): frees the three
    cursor buffers, switches the mode through the chained setter, recreates the buffers in the new pixel
    format, converts the cursor palette, centres the mouse and reacquires the device. CF set when the mode
-   switch fails. The original also fails on a failed buffer creation (CF of g_SoftwareFramebufferCreate);
-   this C version drops that CF, so the later previousHookFailed tests never fire.
+   switch fails or a buffer creation fails (JC after each g_SoftwareFramebufferCreate call: 0x00577377,
+   0x00577397, 0x005773B7). The slot's generated type returns only the pointer, so the calls go through
+   the SoftwareFramebuffer_Create signature to read its CF. On failure g_GraphicsBackendAccessState stays -1
+   and the buffers created so far stay installed, as in the original.
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 DirectInputMouse_SetDisplayMode
@@ -481,6 +488,7 @@ DirectInputMouse_SetDisplayMode
   SoftwareFramebufferAccess *newCompositeFramebuffer;
   DisplayModeResult previousHookResult;
   DisplayModeResult successResult;
+  SoftwareFramebufferResult createResult;
   bool previousHookFailed;
 
   g_GraphicsBackendAccessState = -1; /* blocks backend access (timer cursor drawing) during the switch */
@@ -496,19 +504,26 @@ DirectInputMouse_SetDisplayMode
   previousHookFailed = previousHookResult.failed;
   newCursorFramebuffer = (SoftwareFramebufferAccess *)previousHookResult.valueOrError;
   if (!previousHookFailed) {
-    newCursorFramebuffer =
-         g_SoftwareFramebufferCreate
+    createResult =
+         (*(SoftwareFramebufferCreateCfProc *)g_SoftwareFramebufferCreate)
                    (g_FramebufferAccess->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
+    newCursorFramebuffer = createResult.framebuffer;
+    previousHookFailed = createResult.failed;
     if (!previousHookFailed) {
       g_CursorSavedBackground = newCursorFramebuffer;
-      newCompositeFramebuffer =
-           g_SoftwareFramebufferCreate(primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
+      createResult =
+           (*(SoftwareFramebufferCreateCfProc *)g_SoftwareFramebufferCreate)
+                     (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
+      newCompositeFramebuffer = createResult.framebuffer;
       newCursorFramebuffer = newCompositeFramebuffer;
+      previousHookFailed = createResult.failed;
       if (!previousHookFailed) {
         g_CursorCompositeBuffer = newCompositeFramebuffer;
-        newCursorFramebuffer =
-             g_SoftwareFramebufferCreate
+        createResult =
+             (*(SoftwareFramebufferCreateCfProc *)g_SoftwareFramebufferCreate)
                        (primaryFramebuffer->bytesPerPixel,g_CursorMaxHeight,g_CursorMaxWidth);
+        newCursorFramebuffer = createResult.framebuffer;
+        previousHookFailed = createResult.failed;
         if (!previousHookFailed) {
           g_CursorAlternateSavedBackground = newCursorFramebuffer;
           g_GraphicsTextureSourceConvertPaletteEntries
