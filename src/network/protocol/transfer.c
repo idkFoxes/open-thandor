@@ -19,7 +19,7 @@
    unanswered for UI_TRANSFER_CHUNK_RETRY_TICKS ticks is sent again. Ping: 0x10032 is echoed as 0x10033,
    whose round trip becomes the player's latency text. Skipped while the ring lock is held elsewhere.
 */
-void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitTimer(void)
+void UiTransferMailbox_ServiceAndRetransmitTimer(void)
 
 {
   UiTransferXorChecksum *checksumField;
@@ -256,8 +256,7 @@ UiTransferMailbox_ReceiveNextRecord:
    before answering with its own next queued command (packet 0x10011). Packets from other hosts or sessions
    are ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_HandleHostSessionAndCommandBatchPackets
+void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendRootRuntimeAddress32 frontendRuntime)
 
@@ -372,8 +371,7 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
    player's PCX preview on 0x10009. Only packets of the selected host and session count; CF is set only when
    a new command batch was executed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendTransfer_HandleGameplayCommandAndRosterPackets
+bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg)
 
@@ -534,8 +532,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
    snapshots and executed on every peer: a client marks its receive mailbox unavailable, so it waits for
    the new transfer instead of reading an old one. The host and a local game do nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04)
+void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -552,8 +549,7 @@ FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint3
    marked, the published block is no longer needed: its allocation is freed and the outgoing mailbox
    emptied.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
+void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
           (int playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04)
 
 {
@@ -594,7 +590,7 @@ FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
    g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address. Hosts answer
    with a 0x50001 session advertisement. CF is the send result.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(void)
+bool UiTransfer_SendPacketType10000Value2931(void)
 
 {
   bool sendCarry;
@@ -613,7 +609,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(v
    g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). CF is the send
    result.
 */
-bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002(void)
+bool UiTransfer_SendPlayerDescriptorPacket20002(void)
 
 {
   int dwordCount;
@@ -653,8 +649,7 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002(vo
    frontendRuntime +0x563C/+0x5640 are the row slots and row count of the lobby's player list
    (a UiPointerListControl), +0x5140 the player limit.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
+void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendRootRuntimeAddress32 frontendRuntime)
 
@@ -882,9 +877,7 @@ FrontendTransfer_InitializeJoiningPlayerWithFreeId:
    switches to FRONTEND_NETWORK_STATE_HOST_STARTING. Then it adds the host's own next queued command to the
    players' collected ones, broadcasts the non-empty ones as one lobby command batch and executes them.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
-          (FrontendRootRuntimeAddress32 frontendRuntime)
+void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRuntimeAddress32 frontendRuntime)
 
 {
   uint32_t roundRobinOrTextLength;
@@ -1005,7 +998,7 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
    Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat
    value of 0x40, which the host stores in this player's record.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void)
+void FrontendTransfer_SendPacket10006(void)
 
 {
   g_FrontendPacket10006Buffer.header.packedTypeAndUnitCount =
@@ -1026,8 +1019,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void)
    notifyWaitingPeers, resends the previous batch to clients that have not submitted yet and COMMAND_WAIT
    to those that have.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
+bool FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
 
 {
   FrontendPlayerRuntimeBlockCount peersRemaining;
@@ -1125,7 +1117,7 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
    with the oldest queued command, or an empty record when none is queued. The sender context counts the
    submissions.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchRequest10021(void)
+void FrontendTransfer_SendCommandBatchRequest10021(void)
 
 {
   g_FrontendPacket10021Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_COMMAND_SUBMIT;
@@ -1141,7 +1133,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchReques
    Empties the receive side of the transfer mailbox (allocation, byte count, remaining bytes, retry ticks) so a
    new transfer can be received; the outgoing buffer is left alone. Consumers call it after taking a buffer.
 */
-void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(void)
+void UiTransferMailbox_ClearReceivedState(void)
 
 {
   g_UiTransferMailbox.receivedAllocation = NULL;
@@ -1156,8 +1148,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(vo
    Hands out a completely received transfer: returns its buffer (EAX) and byte count (ECX) with CF clear once an
    allocation exists and no bytes are outstanding. An empty, unavailable or still incomplete mailbox sets CF.
 */
-MailboxReceiveResult __thandor_eax_ecx_cf_preserve_edx
-UiTransferMailbox_GetReceivedBuffer(void)
+MailboxReceiveResult UiTransferMailbox_GetReceivedBuffer(void)
 
 {
   MailboxReceiveResult receivedResult;
@@ -1185,7 +1176,7 @@ UiTransferMailbox_GetReceivedBuffer(void)
    16-bit value into the low word of the transfer sequence token. The high word stays (a host answers the
    discovery probe only for 0x1234).
 */
-void __thandor_preserve_eax_edx UiTransferMailbox_RandomizeSequenceToken(void)
+void UiTransferMailbox_RandomizeSequenceToken(void)
 
 {
   uint32_t randomValue;
@@ -1203,8 +1194,7 @@ void __thandor_preserve_eax_edx UiTransferMailbox_RandomizeSequenceToken(void)
    marks this machine as a network client.
    frontendRuntime +0x4BBC is the session list's row count.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_HandleSessionListAndJoinAckPackets
+void FrontendTransfer_HandleSessionListAndJoinAckPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           FrontendRootRuntimeAddress32 frontendRuntime)
 
@@ -1288,7 +1278,7 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
    (nothing heard from the host), the client leaves as if its lobby Leave button had been pressed and goes
    back to the session list.
 */
-void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
+void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
 
 {
   g_SessionTransferTimeoutTicks--;
@@ -1304,7 +1294,7 @@ void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void
    g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
    command batch). Returns true (CF set) when no batch arrived, so Frontend_StateTick ends its tick early.
 */
-bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFrontend(void)
+bool FrontendTransfer_ConsumeProcessedFlagFrontend(void)
 
 {
   int previousFlag;
@@ -1321,8 +1311,7 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFron
    player's command slot and marks the player ready for the next batch; a repeated one (retransmit) and a
    COMMAND_WAIT_ACK only refresh the timeout.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_HostHandleCommandSubmitOrWaitAck
+void FrontendTransfer_HostHandleCommandSubmitOrWaitAck
           (NetworkSessionContext *sourceContext,FrontendTransferPacketUnion *packet)
 
 {
@@ -1389,7 +1378,7 @@ FrontendTransfer_HostHandleCommandSubmitOrWaitAck
    8 bits the player id; offsets beyond the handler code region are ignored. The original handler address
    is resolved to its recovered C function by CommandDispatch_ResolveHandler.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandRecords(void)
+void FrontendTransfer_DispatchStagedCommandRecords(void)
 
 {
   uint32_t packedCommand;
@@ -1425,7 +1414,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandR
    FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
    (CF set) when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
-bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlag(void)
+bool FrontendTransfer_ConsumeProcessedFlag(void)
 
 {
   int previousFlag;
@@ -1442,9 +1431,7 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlag(voi
    nibble substitution tables at 0x00403160. UiTransferBlock_Transform64BitBlocksWithRoundKeys16 is the
    matching decryption used on receive.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTransfer_TransformPacketBlocks
-          (uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
+void UiTransfer_TransformPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
           uint32_t *inputBlocks)
 
 {
@@ -1521,8 +1508,7 @@ UiTransfer_TransformPacketBlocks
    UiTransfer_TransformPacketBlocks, running the 16 rounds backwards with the second table set
    (g_UiTransferCipherSubstitution, 0x00405160) and XORing each result with the previous ciphertext block (CBC).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTransferBlock_Transform64BitBlocksWithRoundKeys16
+void UiTransferBlock_Transform64BitBlocksWithRoundKeys16
           (uint32_t *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source)
 
 {
@@ -1582,7 +1568,7 @@ UiTransferBlock_Transform64BitBlocksWithRoundKeys16
    Marks the receive side as unavailable: publishes the UI_TRANSFER_MAILBOX_UNAVAILABLE sentinel and sets the
    byte count, remaining bytes and retry ticks to one, so the mailbox is neither empty nor receivable.
 */
-void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_MarkUnavailable(void)
+void UiTransferMailbox_MarkUnavailable(void)
 
 {
   g_UiTransferMailbox.receivedAllocation = UI_TRANSFER_MAILBOX_UNAVAILABLE;
@@ -1597,8 +1583,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_MarkUnavailable(void)
    Publishes the buffer the next outgoing transfer sends (NULL/0 withdraws it). The allocation is later
    released through g_MemoryApi.free by the frontend transfer consumers.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation)
+void UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *allocation)
 
 {
   g_UiTransferMailbox.outgoingAllocation = allocation;
@@ -1612,7 +1597,7 @@ UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *a
    queued lobby command in packet 0x10011 (a new sender sequence number each time) and, while player snapshots
    are still missing, requests the next one with packet 0x10004.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOptional10004(void)
+void FrontendTransfer_SendQueued10011AndOptional10004(void)
 
 {
   FrontendPlayerRuntimeBlockCount nextPlayerIndex;
@@ -1642,9 +1627,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOpti
    with a parallel ring of 16-byte endpoint copies) and hands that copy to the backend send slot. The unit
    count is the high word of packedTypeAndUnitCount. CF is the backend's send result.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTransfer_StagePacketAndSend
-          (UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
+bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
 
 {
   uint32_t nextUnitCursor;

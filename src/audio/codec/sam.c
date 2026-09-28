@@ -967,8 +967,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
    writes them as a 0x400-byte interleaved stereo 16-bit block with the same value on both channels. No state
    is kept between blocks.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients)
+void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients)
 
 {
   MmxPackedValue64 coefficientQuadLow;
@@ -1898,8 +1897,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
    (Q12), bits 16..31 of the wrapping 32-bit sum, >> 3. Nothing in the executable calls it or stores its
    address in a function-pointer table; it is only listed in the g_ThandorFunctionMap address map.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *inputPcm)
+void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *inputPcm)
 
 {
   short *cosineRowCursor;
@@ -2898,8 +2896,7 @@ SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *
    Nothing in the executable calls it or stores its address in a function-pointer table; it is only listed in
    the g_ThandorFunctionMap address map.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients)
+uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients)
 
 {
   uint32_t coefficientValue;
@@ -2994,8 +2991,7 @@ SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoeff
    little-endian bit accumulator (prefix bits listed from bit 0): 0 -> zero (1 bit), 1,0 -> 3-bit value (5 bits),
    1,1,0 -> 6-bit value (9 bits), 1,1,1 -> 12-bit value (15 bits). Returns the encoded byte count consumed, rounded DOWN to a multiple of 4.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock)
+uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock)
 
 {
   uint16_t refillWord;

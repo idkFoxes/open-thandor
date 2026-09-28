@@ -18,9 +18,7 @@
    for g_FrontendResultsFactionPackedPixelColors, then draws one pixel column per x through the control's
    factionWeightRaster, each showing the stat table sample at x / width of the game so far.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawColumnSequenceByType
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,
+void FrontendResultsTable_DrawColumnSequenceByType(int clipTop,int clipLeft,int clipBottom,int clipRight,
           FrontendResultsColumnSequenceControl68 *control)
 
 {
@@ -207,8 +205,7 @@ FrontendResultsTable_DrawColumnSequenceByType
    hitTest of g_UiCommandVisibilityWrappedTextVtable and g_UiCommandVisibilitySingleLineTextVtable: these text
    controls are never hit, so the pointer passes through them (UI_NODE_NONE).
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-FrontendResultsTable_HitTestAlwaysNone
+UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
@@ -222,8 +219,7 @@ FrontendResultsTable_HitTestAlwaysNone
    metrics of the stat table sample, each in the faction's colour. When all are 0, every active faction counts
    as 1 (written back into the sample). Every pixel is stored as a 16-bit word.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsGraph_DrawFactionWeightSumColumn
+void FrontendResultsGraph_DrawFactionWeightSumColumn
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair8 *factionWeights)
 
@@ -285,8 +281,7 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
    factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
    sample's first metric (lane 0, faction record +0x88 when sampled) only.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsGraph_DrawFactionWeightLane0Column
+void FrontendResultsGraph_DrawFactionWeightLane0Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair8 *factionWeights)
 
@@ -345,8 +340,7 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
    factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
    sample's second metric (lane 1, faction record +0x8C when sampled) only.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsGraph_DrawFactionWeightLane1Column
+void FrontendResultsGraph_DrawFactionWeightLane1Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
           FrontendResultsFactionWeightPair8 *factionWeights)
 
@@ -406,8 +400,7 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
    then one row per active faction 1..7 with its colour name (TEXT_ID_FACTION_NAME_BASE + colour index at record
    +0x38).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawColourColumn
+void FrontendResultsTable_DrawColourColumn
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
           FrontendResultsRowMetrics *rowMetrics)
@@ -446,8 +439,7 @@ FrontendResultsTable_DrawColourColumn
    Results table column type 7: header TEXT_ID_RESULTS_FACTION, then the name of each active faction 1..7
    (TEXT_ID_PLAYER_NUMBER_BASE + faction index).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawFactionColumn
+void FrontendResultsTable_DrawFactionColumn
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
           FrontendResultsRowMetrics *rowMetrics)
@@ -483,8 +475,7 @@ FrontendResultsTable_DrawFactionColumn
    Results table column types 8..0x11: header headerResourceId, then for each active faction 1..7 the signed
    dword at factionFieldOffset of its faction record, patched into the valueFormatResourceId template.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawFormattedFactionFieldColumn
+void FrontendResultsTable_DrawFormattedFactionFieldColumn
           (TextResourceId valueFormatResourceId,TextResourceId headerResourceId,
           FrontendResultsFactionFieldByteOffset factionFieldOffset,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,
@@ -529,8 +520,7 @@ FrontendResultsTable_DrawFormattedFactionFieldColumn
    Results table column type 5: header TEXT_ID_RESULTS_POINTS, then for each active faction 1..7 its points,
    the sum of the economy (+0x90) and military (+0x94) values of its faction record.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawPointsColumn
+void FrontendResultsTable_DrawPointsColumn
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
           FrontendResultsRowMetrics *rowMetrics)
@@ -574,8 +564,7 @@ FrontendResultsTable_DrawPointsColumn
    Results table column type 3: header TEXT_ID_RESULTS_ECONOMY, then for each active faction 1..7 the economy
    value at +0x90 of its faction record.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawEconomyColumn
+void FrontendResultsTable_DrawEconomyColumn
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
           FrontendResultsRowMetrics *rowMetrics)
@@ -618,8 +607,7 @@ FrontendResultsTable_DrawEconomyColumn
    Results table column type 4: header TEXT_ID_RESULTS_MILITARY, then for each active faction 1..7 the military
    value at +0x94 of its faction record.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawMilitaryColumn
+void FrontendResultsTable_DrawMilitaryColumn
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
           FrontendResultsRowMetrics *rowMetrics)
@@ -663,8 +651,7 @@ FrontendResultsTable_DrawMilitaryColumn
    up to three players assigned to it, 26 pixels apart. The second and fourth clip bounds of each name are
    narrowed to the row (rowBottomY, rowTopY), so the names are clipped to their row.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendResultsTable_DrawPlayerColumn
+void FrontendResultsTable_DrawPlayerColumn
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
           FrontendResultsRowMetrics *rowMetrics)

@@ -15,8 +15,7 @@
    colour scale slider has moved, stores the new values, rebuilds the pixel packing tables at once (a live
    preview), refreshes which mode buttons are available and rewrites the two number readouts.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
+void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
 
 {
   UiAnchorFractionQ31 colorBiasQ16;
@@ -48,7 +47,7 @@ UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
    dword 8 bytes before it (sourceNode[-1].layoutHeight). UiDisplayModeAction_UpdateColorDepthSelection is its
    mirror image for the adapter buttons; the two names are swapped.
 */
-void __thandor_preserve_eax UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
+void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;
@@ -69,7 +68,7 @@ void __thandor_preserve_eax UiDisplayModeAction_UpdateAdapterSelection(UiNodeBas
    of the display settings dialog: selects the button's resolution (height 12 bytes and width 8 bytes before
    the button), keeps the selected adapter and bit depth and refreshes the available buttons.
 */
-void __thandor_preserve_eax UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
+void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;
@@ -89,7 +88,7 @@ void __thandor_preserve_eax UiDisplayModeAction_UpdateResolutionSelection(UiNode
    the button), keeps the selected resolution and bit depth and refreshes the available buttons. See
    UiDisplayModeAction_UpdateAdapterSelection, whose name it has swapped.
 */
-void __thandor_preserve_eax UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
+void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;
@@ -111,8 +110,7 @@ void __thandor_preserve_eax UiDisplayModeAction_UpdateColorDepthSelection(UiNode
    restored framebuffer size and opens the display settings dialog again. The name is misleading: nothing is
    applied.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode)
+void UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode)
 
 {
   int64_t scaledAnchor;
@@ -163,9 +161,7 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
    gets a synthetic press and the drag, becomes activeChild, and the previous one gets a synthetic drag and
    release far outside (UI_POINTER_FAR_OUTSIDE). A drag over the current child is simply forwarded.
 */
-void __thandor_preserve_eax_edx
-UiImageControl_NonRightDrag
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageControl *control)
 
 {
@@ -220,7 +216,7 @@ UiImageControl_NonRightDrag
    state bit 0x100 until it is released), an opaque child under the cursor gets a release, press and drag at
    the current cursor position, so that it re-evaluates the pointer; state bit 0x800 is cleared then.
 */
-void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *control)
+void UiImageControl_TickHover(UiImageControl *control)
 
 {
   UiSelectableStateFlags *clearStateFlagsField;
@@ -267,8 +263,7 @@ void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *co
    reported; otherwise every root is laid out again and the "keep the new display mode?" dialog opens with
    the previous mode, which it restores unless the player confirms.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
+void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
 
 {
   uint32_t pendingBitsPerPixel;
@@ -323,8 +318,7 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
    settings dialog: closes it and rebuilds the pixel packing tables from the colour bias and scale the
    dialog opened with, undoing the slider preview.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
+void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
 
 {
   int32_t colorBiasQ16;
@@ -345,8 +339,7 @@ UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
    UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS frame updates the shown countdown drops by one; at zero the revert
    action is queued, otherwise the new number is written into the message.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
+void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
 
 {
   int32_t *stepTicksField;
@@ -379,8 +372,7 @@ UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
    within minimumValue..maximumValue, rounded to the nearest pixel. Horizontal or vertical after
    UI_RANGE_SLIDER_VERTICAL; a suppressed slider uses the greyed pieces.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_DrawTrackAndThumb
+void UiRangeSliderControl_DrawTrackAndThumb
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiRangeSliderControl *control)
 
@@ -493,8 +485,7 @@ UiRangeSliderControl_DrawTrackAndThumb
    thumb's cross size (its height for a horizontal slider, its width for a vertical one), starts a thumb
    drag and plays the click sound when UI_RANGE_SLIDER_CLICK_SOUND is set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_BeginThumbDrag
+void UiRangeSliderControl_BeginThumbDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control)
 
@@ -551,8 +542,7 @@ void UiRangeSliderControl_EndThumbDrag
    suppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
    greyed out (UI_NODE_SUPPRESSED), gives up the keyboard focus and is redrawn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
+void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
 
 {
   if (actionId == control->actionId) {
@@ -568,8 +558,7 @@ UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl
    unsuppressActionId of the range slider (g_UiRangeSliderControlVtable): a slider with this action id is
    enabled again, takes the keyboard focus if nobody has it and is redrawn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
+void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
 
 {
   if (actionId == control->actionId) {
@@ -586,9 +575,7 @@ UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderContr
    are drawn first, then the image itself: alternateSubresource while selected, else normalSubresource. An
    image with UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE is only drawn while selected.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiImageControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+void UiImageControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiImageControl *control)
 
 {
@@ -626,9 +613,7 @@ UiImageControl_DrawClipped
    unless bit 0x400 is set), drops the active child and the hover target, then toggles: a press on an
    opaque pixel of an already selected image clears the press state bits (0xA03), any other press sets them.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiImageControl_NonRightPress
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageControl *control)
 
 {
@@ -684,8 +669,7 @@ UiImageControl_NonRightPress
    0x400 was not yet set or bit 0x800 is set; else it closes: hover target cleared,
    UI_IMAGE_CONTROL_HOVER_STATE_BITS cleared and the pointer sound played (bit 0x20).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiImageControl_NonRightRelease
+void UiImageControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageControl *control)
 
@@ -737,7 +721,7 @@ UiImageControl_NonRightRelease
    UiNode_GetStateTintArgb from runtimeFlags 0x04/0x08/0x10 is applied to the whole hierarchy only when it
    differs from the tint the model already has.
 */
-void __thandor_preserve_eax ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
+void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
 
 {
   PackedArgb32 tintArgb;
@@ -757,8 +741,7 @@ void __thandor_preserve_eax ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *
    client it is the received byte count and the bytes received so far. Draws nothing unless a transfer is
    running and not yet complete.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
+void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiHorizontalGaugeControl *control)
 
 {
@@ -821,7 +804,7 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
    Reopened by UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings. The original sets CF when the
    allocation fails; that caller ignores it.
 */
-void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSelection(void)
+void UiDisplaySettings_OpenAndPopulateModeSelection(void)
 
 {
   DisplayModeScratchWord adapterOption1Or4;
@@ -1111,9 +1094,7 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
    precisely. A miss clears state bit 0x200 and, in persistent activation mode, passes the test on to the
    children. Returns the hit node or UI_NODE_NONE.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiImageControl_HitTestOpaque
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
+UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
 
 {
   UiImageControl *hitNode;
@@ -1165,8 +1146,7 @@ UiImageControl_HitTestOpaque
    is suppressed while it and the colour bias/scale equal the values the dialog opened with.
    The bit depth arrives in the pointer-typed selectedModeValue parameter.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiDisplayModeSelection_RefreshEnumeratedOptions
+void UiDisplayModeSelection_RefreshEnumeratedOptions
           (FrontendDisplayAdapterIndex adapterIndex,UiNodeBase *selectedModeValue,
           FrontendDisplayDimensionPixels modeHeight,FrontendDisplayDimensionPixels modeWidth,
           UiNodeBase *displaySettingsRoot)

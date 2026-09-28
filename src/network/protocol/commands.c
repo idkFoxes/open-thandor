@@ -16,9 +16,7 @@
    record of (commandCode << 8 | local player id) and three payload dwords. The queue holds 16 records;
    further commands are dropped. The lobby chat command (0x1540) is sent this way.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendCommandQueue_EnqueueLocalPlayerCommand
-          (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
+void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
 
 {
@@ -43,8 +41,7 @@ FrontendCommandQueue_EnqueueLocalPlayerCommand
    record into outputRecord->command and shifts the remaining records down by one. An empty queue only
    writes a zero packed command dword.
 */
-void __thandor_void_preserve_ecx_edx
-FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
+void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
 
 {
   int firstRecordDwordsRemaining;
@@ -87,9 +84,7 @@ FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputR
    INGAME_COMMAND_* handler offsets (relative to this function's address). The queue holds 16 records;
    further commands are dropped.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandQueue_AppendLocalPlayerCommand
-          (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
+void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
 
 {
@@ -114,8 +109,7 @@ InGameCommandQueue_AppendLocalPlayerCommand
    and moves the remaining records one slot down. With an empty queue only the packed command dword is
    cleared, which marks "no command" in the batch.
 */
-void __thandor_void_preserve_ecx_edx
-InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
+void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
 
 {
   int firstRecordDwordsRemaining;
@@ -157,9 +151,7 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
    with payloadValue in any of its three payload dwords (returned in CF), so input handlers do not queue a
    selection change twice. Single player has no queue and always answers no.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-InGameCommandQueue_ContainsTripletValue
-          (InGameCommandPayloadTripletValue32 payloadValue,
+bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress)
 
 {

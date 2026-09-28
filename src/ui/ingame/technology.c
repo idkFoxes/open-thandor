@@ -15,8 +15,7 @@
    slots 20..26 of g_InGameUiActionHandlersPage10): a tab that is now selected deselects the other six, then the
    technology window is rebuilt for the chosen area (or the general text when the tab was deselected).
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
+void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
 
 {
   UiRootNode *inGameRoot;
@@ -52,8 +51,7 @@ InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
    selects the tab of the area that holds its current technology; then resets the shown technology to the basic
    one and rebuilds the panel.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
+void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
 
 {
   uint32_t *tabStateFlags;
@@ -110,7 +108,7 @@ InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
    slot, in a grid of at most eight columns with its texture and Xenite cost; the frame is sized to the grid
    (smaller margins below 800 pixels width) and the panel hidden when the catalog is empty.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
+void UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
 
 {
   UiNodeFlags *gridNodeFlags;
@@ -255,7 +253,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
    six columns with its texture and Xenite cost. The frame is sized to the grid (smaller margins below 800
    pixels width); an empty catalog hides its panel, and also the army stock panel when the stock is empty.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
+void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
 
 {
   UiNodeFlags *gridNodeFlags;
@@ -400,7 +398,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
    INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE for the first selected building with the technology of the selected area
    tab, which starts that research; with no tab selected the technology argument is 0 and nothing starts.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(void *source)
+void InGameTechnologyResearch_StartSelected(void *source)
 
 {
   int parentLink;
@@ -457,7 +455,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
    technology name and its Xenite cost. With no tab selected it shows the general text; otherwise the selected
    technology's description with its Xenite cost (red when unaffordable), Energy cost and research time.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
+void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
 
 {
   UiScrollableControl *scrollableControl;

@@ -40,59 +40,46 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00486080 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_RadixSortForRendering
-          (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
+void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0A10 */
 StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
 
 /* 0x004D0A40 */
-PrimitiveQueueResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_ResetGlobal(void);
+PrimitiveQueueResult GraphicsPrimitiveQueue_ResetGlobal(void);
 
 /* 0x004D0A70 */
-void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue);
+void GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0A90 */
-uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
+uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0AA0 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue);
+PrimitivePacketResult GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0AE0 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
+PrimitivePacketResult GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0B20 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_AppendTriangle
-          (GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0C80 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_SetVertexColors
+void GraphicsPrimitiveQueue_SetVertexColors
           (PackedArgb32 vertex2Color,PackedArgb32 vertex1Color,PackedArgb32 vertex0Color,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0D00 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_SetMaterial
-          (PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
+void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0D50 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_OffsetTextureCoordinates
-          (GraphicsPrimitiveTextureCoordinateFixed deltaV,
+void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoordinateFixed deltaV,
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0DA0 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
+PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -101,8 +88,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           FrontendModelPointerContextRuntimeState17C *renderContext);
 
 /* 0x004D0F20 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -111,13 +97,10 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           FrontendModelPointerContextRuntimeState17C *renderContext);
 
 /* 0x004FFC10 */
-DepthBinMask32 __thandor_eax_preserve_ecx_edx
-DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
+DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
 
 /* 0x004FFC50 */
-bool __thandor_cf_preserve_eax_ecx_edx
-DepthBinMasks_Overlap
-          (DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1);
 
 #endif /* THANDOR_GRAPHICS_RENDER_PRIMITIVES_H */

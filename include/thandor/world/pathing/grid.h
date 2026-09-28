@@ -63,34 +63,27 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
           WorldRuntimeContext *worldRuntime);
 
 /* 0x00536500 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridReachability_RebuildConnectedRegionAroundWorldPoint
+bool GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12);
 
 /* 0x00533620 */
-void __thandor_void_preserve_eax_ecx_edx
-GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime);
+void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime);
 
 /* 0x00533E70 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestRuntimePairReachabilityFromWorldPoint
+bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
           (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair);
 
 /* 0x005332C0 */
-GridScratchAllocResult __thandor_eax_cf_preserve_ecx_edx
-GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid);
+GridScratchAllocResult GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid);
 
 /* 0x00533360 */
-void __thandor_preserve_eax GridScratch_ReleaseBuffers(void);
+void GridScratch_ReleaseBuffers(void);
 
 /* 0x00533400 */
-void __thandor_void_preserve_eax_ecx_edx
-GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
+void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
 
 /* 0x00533BA0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestProjectedCellMaskBands
-          (Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
+bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
 /* 0x00536C90 */
 WorldPositionXYEaxEdx8
@@ -99,26 +92,21 @@ EntityPathing_RebuildOverlappingGroupRoutes
           WorldRuntimeContext *worldRuntime);
 
 /* 0x00534F50 */
-void __thandor_void_preserve_eax_ecx_edx
-GridFootprint_ClearTraversalFlagsAroundWorldPoint
+void GridFootprint_ClearTraversalFlagsAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12);
 
 /* 0x005369A0 */
-WorldPositionXYEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-EntityPathing_UpdateRouteSegment
+WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
           EntityPathingRouteEntityRuntimeView10 *routeEntityRuntime);
 
 /* 0x00533D60 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestWorldPointReachability
-          (uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
+bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
           GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
           GraphicsWorldCoordinateQ12 targetWorldXQ12);
 
 /* 0x00534660 */
-PathBacktrackResult __thandor_eax_cf_preserve_edx
-GridPathCost_BacktrackBestHexRoute
+PathBacktrackResult GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell);
 
@@ -129,61 +117,49 @@ GridPathMarkedRegionCellRegisterResult GridPathRegion_MarkUnreachableFromCell (G
 void __cdecl GridScratch_CopyPrimaryToSecondary(void);
 
 /* 0x005333E0 */
-void __thandor_preserve_eax GridScratch_SwapPrimarySecondary(void);
+void GridScratch_SwapPrimarySecondary(void);
 
 /* 0x00533580 */
-void __thandor_void_preserve_eax_ecx_edx
-GridScratch_FloodFillConnectedCellsRegs
+void GridScratch_FloodFillConnectedCellsRegs
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
 /* 0x00533C50 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestConnectedReachabilityRecursiveRegs
+bool GridScratch_TestConnectedReachabilityRecursiveRegs
           (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell);
 
 /* 0x00533EF0 */
-void __thandor_void_preserve_eax_ecx_edx
-GridPathCost_PropagateWeightedHexNeighbors
-          (GridPathPassCount remainingPasses,GridScratchCell *originCell,
+void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasses,GridScratchCell *originCell,
           FieldGridCellCoordinate startRow,FieldGridCellCoordinate startColumn);
 
 /* 0x00534200 */
 void GridScratch_ResetTraversalFlagsAndCosts(void);
 
 /* 0x00534780 */
-GridPathUnreachableRecursiveEdiEdx8 __thandor_eax_edx_cf_preserve_ecx
-GridPathRegion_MarkUnreachableRecursive
+GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
           (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
           uint32_t bestCellByteOffset);
 
 /* 0x00534E70 */
-int __thandor_void_preserve_eax_ecx_edx
-GridFootprint_ClearTraversalFlagsDiagonalNegative
+int GridFootprint_ClearTraversalFlagsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
 
 /* 0x00534EE0 */
-int __thandor_void_preserve_eax_ecx_edx
-GridFootprint_ClearTraversalFlagsDiagonalPositive
+int GridFootprint_ClearTraversalFlagsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
 
 /* 0x005363C0 */
-void __thandor_void_preserve_eax_ecx_edx
-GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
+void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
 /* 0x00536440 */
-void __thandor_void_preserve_eax_ecx_edx
-GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
+void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
 /* 0x005342F0 */
-NearestCellResult __thandor_eax_cf_preserve_ecx_edx
-GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn);
+NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn);
 
 /* 0x005344B0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridPathLine_TestHexSegmentClear
-          (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+bool GridPathLine_TestHexSegmentClear(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
 
 #endif /* THANDOR_WORLD_PATHING_GRID_H */

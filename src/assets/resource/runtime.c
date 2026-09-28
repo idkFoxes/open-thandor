@@ -17,8 +17,7 @@
    Called directly by the save-game writer InGameUiAction1210_ResourceRegistrationHelper, which creates the
    save directory and retries when it fails.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-ResourceRegistration_OpenSource(void *packagePath)
+StatusResult ResourceRegistration_OpenSource(void *packagePath)
 
 {
   uint8_t *header;
@@ -82,7 +81,7 @@ ResourceRegistration_OpenSource(void *packagePath)
    entry is decoded into the buffer; otherwise the loose file is read, first from the executable's directory,
    then from the path as given. On failure CF is set and EAX carries the file-system or out-of-memory code.
 */
-ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path)
+ResourceLoadResult Resource_Load(uint16_t *path)
 
 {
   PckEntryHeader *entry;
@@ -172,7 +171,7 @@ Resource_Load_ReturnOpenAllocationOrDecodeResult:
    Frees a buffer returned by Resource_Load (or Package_LoadEntry) back to the arena heap. Unlike a direct
    g_MemoryApi.free call it keeps EAX, ECX and EDX, so register-convention callers need not save them.
 */
-void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *resourceBuffer)
+void Resource_Release(void *resourceBuffer)
 
 {
   g_MemoryApi.free(resourceBuffer);
@@ -483,8 +482,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
    Called directly by the save-game writer InGameUiAction1210_ResourceRegistrationHelper.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage)
+void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage)
 
 {
   LevelPlayerSlotByteOffset32 playerSlotByteOffset;

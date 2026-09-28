@@ -21,8 +21,7 @@
    the menu is rebuilt at the scenario selection or the entry record. Returns CF clear when the UI root stack
    empties (quit), CF set with the error when Frontend_Init fails.
 */
-FrontendMainLoopResult __thandor_eax_cf_preserve_ecx_edx
-Frontend_MainLoop(RomRecordId frontendEntryRecordId)
+FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId)
 
 {
   FrontendRoleStateFlags *roleStateFlagsPtr;
@@ -572,8 +571,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
    model hit, routes the following pointer moves to resolvedActionCallback108 and reports the press to
    resolvedActionCallback10C.
 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_NonRightPress
+void FrontendModelPointerContext_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext)
 
@@ -606,8 +604,7 @@ FrontendModelPointerContext_NonRightPress
    g_FrontendModelPointerContextVtable): stores the best model hit, routes pointer moves back to the hover
    callback and reports the release to resolvedActionCallback114.
 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_NonRightRelease
+void FrontendModelPointerContext_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState118 *callbackContext)
 
@@ -636,8 +633,7 @@ FrontendModelPointerContext_NonRightRelease
    g_FrontendModelPointerContextVtable): remembers the current point (the other corner of the drag frame),
    stores the best model hit and reports the drag to resolvedActionCallback110.
 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_NonRightDrag
+void FrontendModelPointerContext_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext)
 
@@ -669,7 +665,7 @@ FrontendModelPointerContext_NonRightDrag
    that faction's colour (FrontendUiAction2044_IndexedSelectionHelper directly in a local game,
    FRONTEND_COMMAND_CYCLE_FACTION_COLOUR in a network game).
 */
-void __thandor_void_preserve_eax_ecx FrontendUiAction2044_Handler(UiNodeBase *factionControl)
+void FrontendUiAction2044_Handler(UiNodeBase *factionControl)
 
 {
   CommandPayloadDword04 rowIndex;
@@ -699,7 +695,7 @@ void __thandor_void_preserve_eax_ecx FrontendUiAction2044_Handler(UiNodeBase *fa
    whether that faction takes part (FrontendUiAction2045_IndexedSelectionHelper directly in a local game,
    FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE in a network game).
 */
-void __thandor_void_preserve_eax_ecx FrontendUiAction2045_Handler(UiNodeBase *playerControl)
+void FrontendUiAction2045_Handler(UiNodeBase *playerControl)
 
 {
   CommandPayloadDword04 rowIndex;
@@ -729,7 +725,7 @@ void __thandor_void_preserve_eax_ecx FrontendUiAction2045_Handler(UiNodeBase *pl
    that faction the local player's (FrontendUiAction2046_IndexedSelectionHelper directly in a local game,
    FRONTEND_COMMAND_CHOOSE_FACTION in a network game).
 */
-void __thandor_void_preserve_eax_ecx FrontendUiAction2046_Handler(UiNodeBase *selectionRowControl)
+void FrontendUiAction2046_Handler(UiNodeBase *selectionRowControl)
 
 {
   CommandPayloadDword04 rowIndex;
@@ -794,8 +790,7 @@ void FrontendModelPointerContext_Relocate
    invalidates the reusable terrain projection (WorldRuntime_ClearFieldGridDirtyFlag clears
    TERRAIN_RENDER_REUSE_PROJECTION), then the children are laid out.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
+void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
 
 {
   WorldRuntime_ClearFieldGridDirtyFlag(callbackContext);
@@ -813,8 +808,7 @@ FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
    overlays are drawn and the child controls on top. Nothing is drawn while FRONTEND_MENU_ROOM_RENDER_SUPPRESSED
    is set (a dialog page covers the room).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_RenderWorldViewQueuesClipped
+void FrontendModelPointerContext_RenderWorldViewQueuesClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FrontendModelPointerContextRuntimeState17C *control)
 
@@ -1093,8 +1087,7 @@ EndSceneAndDrawOverlays:
    moves to the camera cursor resolution, restarts the held-tick counter (rightButtonState11C, counted by
    FrontendModelPointerContext_Tick) and pins the drawn cursor.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_RightPress
+void FrontendModelPointerContext_RightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext)
 
@@ -1116,8 +1109,7 @@ FrontendModelPointerContext_RightPress
    the camera drag and unpins the cursor. A release within 7 ticks of the press counts as a click and is
    reported to rightReleaseCallback118 (the menu room stops its camera flight with it).
 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_RightRelease
+void FrontendModelPointerContext_RightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext)
 
@@ -1141,8 +1133,7 @@ FrontendModelPointerContext_RightRelease
    combination; 0x10 blocks camera input. FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
    shows the matching cursor.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_DispatchWorldCameraPointerInput
+void FrontendModelPointerContext_DispatchWorldCameraPointerInput
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext)
 
@@ -1268,8 +1259,7 @@ FrontendModelPointerContext_DispatchWorldCameraPointerInput
    camera input is blocked (0x10) or the view has no camera scheme (0x100/0x200/0x8000), the scaled wheel
    delta changes the camera distance, with Ctrl the pitch, and the camera state is snapshotted.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_PointerWheel
+void FrontendModelPointerContext_PointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext)
 
@@ -1302,9 +1292,7 @@ FrontendModelPointerContext_PointerWheel
    the key to the view's keyboardFallback first; when there is none or it returns CF set, the default handling
    (UiNode_DefaultKeyboardEventMoveFocusNext) decides. Returns CF.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendModelPointerContext_KeyboardEvent
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerContextRuntimeState118 *control)
 
 {
@@ -1327,8 +1315,7 @@ FrontendModelPointerContext_KeyboardEvent
    the camera distance by one convergence step per tick until it is within 15/16..17/16 of the clamped committed
    distance, placing the camera behind the target.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
+void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
 
 {
   uint32_t *callbackStateCounter;
@@ -1381,7 +1368,7 @@ FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
    (current / storage limit), Energy demand / generation capacity, and baseline Energy supply plus the Tritium
    extraction rate. Q4 amounts are shown as whole units (>> 4); the Xenite amount is also formatted as text.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_UpdateCurrentFactionMetricCache(void)
+void FrontendRuntime_UpdateCurrentFactionMetricCache(void)
 
 {
   XeniteAmountQ4 xeniteStorageLimit;
@@ -1455,8 +1442,7 @@ void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void)
    setup page toggles bit 0 of the local player's runtimeState64 (an eighth entry in the faction cycle,
    FrontendUiAction2044_IndexedSelectionHelper). Returns true (CF set) when the key is not in the table.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendRuntime_DispatchCommandByCodeAndModifierFlags
+bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime)
 
 {
@@ -1580,7 +1566,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
    Runs one record of the frontend ROM action table locally, with the activation sound (the direct-call form of
    the FRONTEND_COMMAND_EXECUTE_ROM_ACTION command handler).
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
+void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
 
 {
   FrontendRomActionTable_ExecuteRecord(0,0,false,romRecordIndex);
@@ -1596,8 +1582,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStat
    Actions 3, 4, 9 and negative ones are not offered in a network session, the network page (2) not without
    a network backend (the same rule as FrontendRomActionTable_ExecuteRecord). Returns the cursor frame index.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-FrontendRuntime_UpdatePointerContextAndSceneView
+uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
           void *pointedModelNode,FrontendPointerSceneRuntimeView43E8 *frontendRuntime)
 
@@ -1746,8 +1731,7 @@ void FrontendRuntimeCallback60_NoOp
    the menu room runs the ROM action record that belongs to it (FrontendRomActionTable_ExecuteRecord). In a
    network game the host sends it as a frontend command so every player follows; clients ignore clicks.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendRuntimeCallback64_DispatchRecord1350
+void FrontendRuntimeCallback64_DispatchRecord1350
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
           FrontendCallbackArgument5 pointedModelNode,uint32_t pointerContext)
 
@@ -1798,7 +1782,7 @@ void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t pointerContext)
    Adds a chat line to the shared recent-text history and rebuilds the frontend chat history box from its five
    newest entries.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
+void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
 
 {
   RecentTextHistoryPointerList *output;
@@ -1866,7 +1850,7 @@ void FrontendCallback_NoOpArg1(void *source)
    page's "Back" button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE
    in a network game).
 */
-void __thandor_preserve_eax FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument)
+void FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1915,8 +1899,7 @@ void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument
    button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a
    network game).
 */
-void __thandor_preserve_eax
-FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument)
+void FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1935,7 +1918,7 @@ FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgum
    page's "Ok" button and the display settings page's "Back" button: "Ok" returns to the main page (ROM action
    record 0, FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a network game), "Back" reopens the options page.
 */
-void __thandor_preserve_eax_edx FrontendUiAction2010_Handler(UiNodeBase *sourceNode)
+void FrontendUiAction2010_Handler(UiNodeBase *sourceNode)
 
 {
   UiNodeFlags *compactLayoutFlags;
@@ -1974,8 +1957,7 @@ void __thandor_preserve_eax_edx FrontendUiAction2010_Handler(UiNodeBase *sourceN
    collected by an insertion into a sorted list with 0xFFFFFFFF as the empty mark, and the name and device of
    up to five adapters. The saved adapter, resolution and colour depth become the current selection.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
+void FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
 
 {
   uint8_t *compactLayoutFlagBytes;
@@ -2340,8 +2322,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
    adapter choices of the display settings page: selects the adapter whose button was pressed (identified by
    its offset in the parent container, 0x68 bytes apart) and refreshes which modes can be chosen.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode)
+void FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode)
 
 {
   int controlOffsetFromParent;
@@ -2370,8 +2351,7 @@ FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode)
    the host lobby's player list: the Kick button (FRONTEND_ACTION_KICK_PLAYER) is hidden while the first row,
    the host itself, is selected and shown for any other player.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction200C_Handler(UiPointerListControl *playerListControl)
+void FrontendUiAction200C_Handler(UiPointerListControl *playerListControl)
 
 {
   UiPointerListControl *frontendRoot;
@@ -2397,7 +2377,7 @@ FrontendUiAction200C_Handler(UiPointerListControl *playerListControl)
    strip at the top left: drops the oldest chat lines until four are left, then one more (a click removes the
    oldest line shown), and rebuilds the strip's pointer list of at most five lines.
 */
-void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source)
+void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source)
 
 {
   uint32_t currentEntryCount;
@@ -2420,8 +2400,7 @@ void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNod
    g_FrontendNetworkEndpointTextUtf16, the session list is emptied, Join hidden and a discovery probe sent. A failure is reported and the backend opened once more without a report; if that
    fails too, the menu returns to the main page and the random generator to the primary stream.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
+void FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
 
 {
   UiListRowIndex selectedBackendIndex;
@@ -2489,7 +2468,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
    button sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED. Without an in-game root or end movie path, or when the
    movie cannot be opened, it only installs the results-screen callbacks.
 */
-void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
+void Frontend_PlaySelectedEndMovie(void)
 
 {
   UiRootCallbacks *rootCallbacks;
@@ -2697,7 +2676,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
    Returns the frontend root, or CF set with the failing call's error; FrontendRuntime_ShutdownAndReleaseResourcesRegs
    undoes it.
 */
-FrontendInitResult __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId initialRomRecordId)
+FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId)
 
 {
   SessionNetworkRoleFlags pendingBlockCountOrRoleMask;
@@ -2997,7 +2976,7 @@ Frontend_Init_ReturnInitializationFailure:
    it sends the periodic packets of the state and hands every received packet to the state's handler, at most
    once per FRONTEND_TIMER_TICKS_PER_NETWORK_TICK timer ticks (the session start states faster).
 */
-void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
+void Frontend_StateTick(void)
 
 {
   uint32_t frontendRoot; /* passed to the packet handlers */
@@ -3115,8 +3094,7 @@ FrontendStateTick_ReleaseLock:
    menu panels (also kept in g_FrontendMenuTextureSource) and gives the buttons their click sounds, button
    sound voice sets 3 to 6 by control kind. Nothing is bound when the texture cannot be loaded.
 */
-void __thandor_void_preserve_ecx_edx
-FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
+void FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
 
 {
   DirectSoundVoiceSet *buttonVoiceSet;
@@ -3257,8 +3235,7 @@ FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
    (faction colour name) and the level player slot's colour index (the field typed aiClassOrMode) move together.
    Nothing happens for an unknown player id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2044_IndexedSelectionHelper
+void FrontendUiAction2044_IndexedSelectionHelper
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex)
 
@@ -3311,8 +3288,7 @@ FrontendUiAction2044_IndexedSelectionHelper
    whether that faction takes part (FACTION_RUNTIME_LIFECYCLE_ACTIVE: computer or nobody) and refreshes the
    faction setup page.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2045_IndexedSelectionHelper
+void FrontendUiAction2045_IndexedSelectionHelper
           (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex)
 
@@ -3344,8 +3320,7 @@ FrontendUiAction2045_IndexedSelectionHelper
    The player's record (the first one in a local game) gets the faction and the next ready-state generation,
    which orders the choices, then the faction setup page is refreshed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2046_IndexedSelectionHelper
+void FrontendUiAction2046_IndexedSelectionHelper
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex)
 
@@ -3410,8 +3385,7 @@ FrontendUiAction2046_IndexedSelectionHelper
    draw calls, texture binds and texture reloads per frame (then all four counters restart), and on every call
    the menu camera's position and orientation, the cursor override position and the free arena bytes.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
+void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
 
 {
   uint32_t freeArenaBytes;
@@ -3487,7 +3461,7 @@ FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
    frontend root, releases the ROM registry, world objects, central ROM, textures, palette, menu sounds and
    music, and flushes pending input. Preserves EAX, ECX and EDX.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResourcesRegs(void)
+void FrontendRuntime_ShutdownAndReleaseResourcesRegs(void)
 
 {
   UiRootNode *root;

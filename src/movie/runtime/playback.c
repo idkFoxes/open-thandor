@@ -67,8 +67,7 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
    set and 0xFFFFFFFF. Returns the total byte count with CF clear, or CF set with the provider's error. A
    leftover of the movie tools: no caller found in src/ or src/generated/image_data.c.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Movie_EncodeFlmBufferFromFrameProvider
+StatusResult Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider)
 
@@ -161,7 +160,7 @@ Movie_EncodeFlmBufferFromFrameProvider
    up to it, presenting at least every 8th frame on the way, then runs the regular simulation and network tick
    so the session keeps going under the movie.
 */
-void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndTick(void)
+void MoviePlayback_AdvanceScheduledFrameAndTick(void)
 
 {
   uint32_t targetFrame;
@@ -258,7 +257,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
    MovieRuntime that looks like a one-frame gfx texture, so the ARGB frame can be drawn like any other texture.
    A partly loaded stream gets the refill worker thread. Returns frameCount and frameIntervalMilliseconds.
 */
-MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
+MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
 
 {
   MovieFileHeader *header;
@@ -461,7 +460,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
    Returns the frame size of the active movie (width in EAX, height in EDX), so callers can place and scale
    the movie texture. Both are zero when no movie is open.
 */
-MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDimensions(void)
+MovieFrameDimensionsEdxEax8 Movie_GetFrameDimensions(void)
 
 {
   AssetDimension frameWidth;
@@ -481,7 +480,7 @@ MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDime
    Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame
    with this gain on both channels). Does nothing when no movie is open.
 */
-void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
+void Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 
 {
   if (g_ActiveMovie != NULL) {
@@ -576,7 +575,7 @@ void Movie_Rewind(void)
    spins), then the semaphore is closed. Frees the FLM buffer, the soundtrack voice set, a still-open own
    stream handle and the MovieRuntime.
 */
-void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
+void Movie_Close(void)
 
 {
   MovieRuntime *movie;
@@ -618,7 +617,7 @@ void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
    SESSION_NETWORK_ROLE_CLIENT bit selects the host tick and the HOST bit the client tick: either the enum or
    the two tick functions are named the wrong way round.
 */
-void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime)
+void EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -638,8 +637,7 @@ void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransition(void *endMovi
    say which Ctrl/Alt combination they need, and runs the matching action: save a numbered PCX screenshot, or
    skip the end movie (marks the local player done with the results; in a network game as a queued command).
 */
-void __thandor_void_preserve_eax_ecx_edx
-EndMovieUiRuntime_DispatchCommandByFlags
+void EndMovieUiRuntime_DispatchCommandByFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime)
 
 {
@@ -753,9 +751,7 @@ void IntroMovie_TimerTick(void)
    (min + max - 8) / 2; otherwise bit 31 of the second dword is set and the levels step by 2 above a base
    4 lower. The levels are packed from the bottom right pixel backwards. Returns the bytes written.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-Movie_EncodeFrame4x4Keyframe
-          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *encodedOutput,uint32_t *sourcePixels)
 
 {
@@ -1193,9 +1189,7 @@ Movie_EncodeFrame4x4Keyframe
    up with what the decoder shows, and encoded as in Movie_EncodeFrame4x4Keyframe. Returns the bytes written,
    rounded up to a multiple of 8.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-Movie_EncodeFrame4x4Delta
-          (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
+uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *encodedOutput,uint32_t *previousFramePixels,uint32_t *currentFramePixels)
 
 {
@@ -1825,7 +1819,7 @@ static void Movie_DebugCompareAfter(MovieRuntime *movie, uint32_t height, uint32
    bytes from the buffer front in MOVIE_COMPACT_SHIFT_BYTES steps. Ends (CF set) after the last frame, on a
    read failure of the worker or when no movie is open.
 */
-MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
+MovieFrameResult Movie_AdvanceFrame(void)
 
 {
   MovieFileHeader *flmHeader;
@@ -1930,8 +1924,7 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
    shows the movie texture) and presents it once. Stops without drawing, and without updating the frame
    counter, when the movie ends or cannot deliver a frame.
 */
-void __thandor_void_preserve_eax_ecx_edx
-MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
+void MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
 {
   uint32_t frameIndex;
@@ -1961,8 +1954,7 @@ MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
    g_MovieChromaLumaToArgb; the skip tokens leave runs of blocks unchanged. Returns the encoded bytes consumed,
    rounded up to eight, so the caller can advance the stream.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-Movie_DecodeFrame4x4Delta
+uint32_t Movie_DecodeFrame4x4Delta
           (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,uint32_t *destinationArgb,
           uint8_t *encodedFrame)
 
@@ -2106,7 +2098,7 @@ Movie_DecodeFrame4x4Delta
    ((blue - green) * sqrt(3), green + blue - 2 * red), both scaled by 0x8000. The bytes of PackedRgb24 are
    blue, green, red from the lowest. Called by Movie_EncodeFrame4x4Keyframe and Movie_EncodeFrame4x4Delta.
 */
-uint32_t __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
+uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 
 {
   uint32_t green;
@@ -2127,7 +2119,7 @@ uint32_t __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(P
    32, one more than 5 bits; the encoders clamp their per-pixel levels, so it never reaches the stream. Called by
    Movie_EncodeFrame4x4Keyframe and Movie_EncodeFrame4x4Delta.
 */
-uint32_t __thandor_eax_preserve_ecx_edx MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
+uint32_t MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
 
 {
   return (((rgb888 & 0xff) + (rgb888 >> 8 & 0xff) + (rgb888 >> 0x10 & 0xff)) * 0x5555 + 0x40000) >> 19;

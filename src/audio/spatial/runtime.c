@@ -44,8 +44,7 @@ StatusResult SpatialSoundPool_Init(void)
    the positioned-sound functions use to get distance and azimuth. Called directly by the frontend camera
    control setup in ui/frontend/runtime.c (no callback table).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SpatialSound_RebuildListenerTransformFromPose
+void SpatialSound_RebuildListenerTransformFromPose
           (AngleTurn32 viewAngle1,AngleTurn32 viewAngle0,GraphicsWorldCoordinateQ12 originZ,
           GraphicsWorldCoordinateQ12 originY,GraphicsWorldCoordinateQ12 originX)
 
@@ -84,9 +83,7 @@ SpatialSound_RebuildListenerTransformFromPose
    around the listener (sides swapped with reverse stereo). Nothing plays when the voice set is missing,
    the position is out of range or the attenuated gain is not above SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SpatialSound_PlayPositionedOneShot
-          (SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
+void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
           GraphicsFixedVec3 *worldPosition,DirectSoundVoiceSet **voiceSetRef)
 
 {
@@ -155,8 +152,7 @@ SpatialSound_PlayPositionedOneShot
    gains at the 0 that SpatialSoundPool_ClearDesiredGains set, so it stops. Called directly by the army and shot
    sound updates (gameplay/army, world/shots; no callback table).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SpatialSound_UpdateDesiredPositionedGains
+void SpatialSound_UpdateDesiredPositionedGains
           (SpatialSoundMaximumDistanceQ12 maximumDistanceQ12,SpatialSoundGainQ15 gainQ15,
           GraphicsFixedVec3 *worldPosition,SpatialSoundSlot *slot)
 
@@ -226,8 +222,7 @@ SpatialSound_UpdateDesiredPositionedGains
    Returns the slot with CF clear; CF set with the voice-set error, or FATAL_ERROR_GENERAL_FAILURE when the
    pool is full (the new voice set is released again).
 */
-SpatialSoundSlotResult __thandor_eax_cf_preserve_ecx_edx
-SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
+SpatialSoundSlotResult SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
 
 {
   SpatialSoundSlot *voiceSetOrError;
@@ -311,7 +306,7 @@ SpatialSoundSlot_CreateFromPcm
    Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot
    (all four dwords), which makes it free again. A NULL slot is ignored.
 */
-void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
+void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 
 {
   int slotEntriesRemaining;
@@ -333,7 +328,7 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleaseSample(SpatialSound
    dwords), which makes it free again. A NULL slot is ignored. Nothing in this code base calls it and no
    callback-table slot references it.
 */
-void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleasePcm(SpatialSoundSlot *slot)
+void SpatialSoundSlot_ReleasePcm(SpatialSoundSlot *slot)
 
 {
   int slotEntriesRemaining;
@@ -355,7 +350,7 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleasePcm(SpatialSoundSlo
    Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the
    sounds whose gains are set again this frame keep playing when SpatialSoundPool_ApplyDesiredGains runs.
 */
-void __thandor_void_preserve_eax_ecx SpatialSoundPool_ClearDesiredGains(void)
+void SpatialSoundPool_ClearDesiredGains(void)
 
 {
   int slotsRemaining;
@@ -379,7 +374,7 @@ void __thandor_void_preserve_eax_ecx SpatialSoundPool_ClearDesiredGains(void)
    End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but
    is not playing, stops the voice when both gains are 0, and otherwise updates the voice's gains.
 */
-void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void)
+void SpatialSoundPool_ApplyDesiredGains(void)
 
 {
   IDirectSoundBuffer *existingVoice;

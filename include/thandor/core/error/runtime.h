@@ -146,28 +146,25 @@
 void __cdecl ErrorSystem_Init(void);
 
 /* 0x00407F50 */
-bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFail(UiRootNode *root);
+bool ErrorRuntime_CallbackAlwaysFail(UiRootNode *root);
 
 /* 0x00407F60 */
-int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *root);
+int ErrorRuntime_CallbackReturnCode8(UiRootNode *root);
 
 /* 0x00407F70 */
-void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
+void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);
 
 /* 0x00407F90 */
-FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
-FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn);
+FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn);
 
 /* 0x00408090 */
 void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
 /* 0x0041BC50 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
+StatusResult FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x005758D0 */
-FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
-FatalError_Exit(uint32_t errorOrValue,bool carryIn);
+FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn);
 
 /* 0x0041BB00 */
 int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);

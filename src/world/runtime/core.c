@@ -56,8 +56,7 @@ static __inline uint32_t WorldLighting_BlendColors
    At phase 0 the blend index is 256 if the cosine table holds exactly 1.0 there: one past the declared
    256-entry factor tables (as in the original).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
+void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
 
 {
   SoftwareBgraWordLanes forwardFactors;
@@ -212,8 +211,7 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
    Moves the camera (motion.position, +0x60) to the given point and keeps its target point (+0x80): the
    target and committed distances become the new distance between the two.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_SetPosition60AndDistanceFromPosition80
+void WorldRuntime_SetPosition60AndDistanceFromPosition80
           (Q12 positionZ,Q12 positionY,Q12 positionX,WorldRuntimeContext *runtime)
 
 {
@@ -238,8 +236,7 @@ WorldRuntime_SetPosition60AndDistanceFromPosition80
    motion value at +0x78. The pitch is clamped to the world's pitch limits (unless the camera is unlimited)
    and always to a quarter turn up or down (+-0x4000).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_SetMotionParameters6CThrough78Clamped
+void WorldRuntime_SetMotionParameters6CThrough78Clamped
           (WorldMotionValue78 value78,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
           ,WorldRuntimeContext *runtime)
 
@@ -277,8 +274,7 @@ WorldRuntime_SetMotionParameters6CThrough78Clamped
    distance, and places the camera (motion.position, +0x60) that distance away from the target, looking at it
    along the given angles (the offset uses the reversed direction: negated pitch, heading + half a turn).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+void WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
           (AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 distance,Q12 originZ,Q12 originY,
           Q12 originX,WorldRuntimeContext *runtime)
 
@@ -305,8 +301,7 @@ WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
    Restores the camera saved by WorldRuntime_CaptureMotionStateToSnapshot (position, magnitude, angles,
    distance) and recomputes its target point where the view ray meets the field.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
+void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
 
 {
   AngleTurn32 snapshotHeadingAngle;
@@ -337,8 +332,7 @@ WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
    Attaches a field grid ('fld' asset) to the world and computes its triangle normals; any other asset is
    ignored.
 */
-void __thandor_preserve_eax
-WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world)
+void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world)
 
 {
   if ((asset->common).magic == ASSET_MAGIC_FLD) {
@@ -358,8 +352,7 @@ WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *wor
    -0x4000..-0x1000 and the azimuth wrapped to 16 bits, and relights the field with the unchanged light
    direction. The name is historical: nothing here is a field origin.
 */
-void __thandor_preserve_eax_edx
-WorldRuntime_AdjustFieldOriginWrappedClamped
+void WorldRuntime_AdjustFieldOriginWrappedClamped
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle)
 
 {
@@ -447,8 +440,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
    lies inside the rectangle spanned by the two corners at +0x160/+0x164 and +0x168/+0x16C of boundsControl
    (inclusive, in either corner order).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-WorldRuntimeNode_IsPositionInsideBounds
+bool WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode100 *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl)
 
 {
@@ -496,8 +488,7 @@ WorldRuntimeNode_IsPositionInsideBounds
    Saves the camera (position, magnitude, heading, pitch and committed distance) into worldRuntime->snapshot,
    to be restored later by WorldRuntime_RestoreMotionStateFromSnapshot.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime)
+void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime)
 
 {
   UQ12 snapshotDistanceQ12;
@@ -528,8 +519,7 @@ WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime)
    clear when all of them match and CF set otherwise; this version returns nothing (no caller found in src/
    or the image tables).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
+void WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
 
 {
   if ((((worldRuntime->motion).positionXQ12 == (worldRuntime->snapshot).positionXQ12) &&
@@ -550,7 +540,7 @@ WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
    Commits the camera's target distance (+0x8C) as its committed distance (+0x7C), the base that later
    distance input is added to.
 */
-void __thandor_preserve_eax WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContext *world)
+void WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContext *world)
 
 {
   (world->motion).committedDistanceQ12 = (world->motion).targetDistanceQ12;
@@ -562,8 +552,7 @@ void __thandor_preserve_eax WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContex
    Attaches the pool of 0x100-byte object records that WorldObjectArray_AllocateFreeRecord hands out (callers
    attach 0x100 or 0x4000 records).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_AttachObjectArray
+void WorldRuntime_AttachObjectArray
           (WorldObjectRecordCount count,WorldObjectRecord *objectArray,WorldRuntimeContext *world)
 
 {
@@ -577,8 +566,7 @@ WorldRuntime_AttachObjectArray
    Replaces the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in src/ or the
    image tables.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_SetFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
+void WorldRuntime_SetFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 {
   world->runtimeControlFlags = flags;
@@ -590,8 +578,7 @@ WorldRuntime_SetFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
    Sets the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in
    src/ or the image tables.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_AddFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
+void WorldRuntime_AddFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 {
   world->runtimeControlFlags = world->runtimeControlFlags | flags;
@@ -603,8 +590,7 @@ WorldRuntime_AddFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
    Clears the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found
    in src/ or the image tables.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
+void WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 {
   world->runtimeControlFlags = world->runtimeControlFlags & ~flags;
@@ -616,8 +602,7 @@ WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
    Toggles the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found
    in src/ or the image tables.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
+void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 {
   world->runtimeControlFlags = world->runtimeControlFlags ^ flags;
@@ -660,8 +645,7 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
    Returns the world's secondary control flags (runtimeControlFlags, +0xCC) in EAX with CF clear. No caller
    found in src/ or the image tables.
 */
-WorldFlagsResult __thandor_eax_cf_preserve_ecx_edx
-WorldRuntime_GetFlags(WorldRuntimeContext *world)
+WorldFlagsResult WorldRuntime_GetFlags(WorldRuntimeContext *world)
 
 {
   WorldFlagsResult flagsResult;
@@ -712,9 +696,7 @@ uint32_t WorldRuntime_TakePendingToken(WorldRuntimeContext *world)
    Attaches a caller-owned workspace of count dwords to the world runtime (see WorldRuntime_GetDwordArray) and
    zeroes it.
 */
-void __thandor_void_preserve_eax_ecx
-WorldRuntime_AttachAndClearDwordArray
-          (WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world)
+void WorldRuntime_AttachAndClearDwordArray(WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world)
 
 {
   world->dwordArray = array;
@@ -742,8 +724,7 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
    (which also resets its other flag bits) and stores the owning world. Returns FATAL_ERROR_GENERAL_FAILURE with
    CF set when the pool is exhausted.
 */
-WorldObjectAllocResult __thandor_eax_cf_preserve_ecx_edx
-WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
+WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
 
 {
   WorldObjectRecordCount recordsRemaining;
@@ -775,8 +756,7 @@ WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
    Marks node as linked and puts it at the head of its world's owner list (head at +0xD8; the head is
    swapped with XCHG, the neighbour links are then set without a lock).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
+void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
 
 {
   WorldOwnerListNode100 **ownerListHeadLink;
@@ -803,8 +783,7 @@ WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
    Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
    of its runtime flags, the linked mark included.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node)
+void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node)
 
 {
   WorldOwnerListNode100 *previousNode;
@@ -832,9 +811,7 @@ WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node)
    Calls callback(callbackContext, node) for every node of the world's owner list (head at +0xD8), from the most
    recently linked one on.
 */
-void __thandor_preserve_eax_edx
-WorldRuntime_ForEachNodeInOwnerListD8
-          (void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
+void WorldRuntime_ForEachNodeInOwnerListD8(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
           WorldRuntimeContext *world)
 
 {
@@ -906,8 +883,7 @@ void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldI
    node: its hierarchy's targets and two fields of the entity linked at payload dword 2; for an effect node:
    its target at +0x1C.
 */
-void __thandor_preserve_eax_edx
-WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode100 *node)
+void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode100 *node)
 
 {
   int *modelRuntime;
@@ -944,9 +920,7 @@ WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwn
    grid. The extent is 0x800 << n for definitions of kind 0xE, else unlimited (-1).
    The definitionRecord[n] indexing below addresses fields of the definition record at fixed offsets.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
-          (void *sourceRuntime,WorldRuntimeContext *worldRuntime)
+void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t overlayBaseOffset;
@@ -1016,8 +990,7 @@ void UnifiedRuntimeTable_Method6_TwoArgNoOp
    Default model-unrebase handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase, every class
    except 13 and 21): those classes keep no pointers that need unrebasing, so this does nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
+void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
 
 {
   return;
@@ -1040,7 +1013,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
    One-argument default handler that returns 0. It sits next to the other defaults of
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, but no table slot or caller in src/ uses it.
 */
-uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(void *context)
+uint32_t UnifiedRuntimeDefault_OneArgReturnZero(void *context)
 
 {
   return 0;
@@ -1051,8 +1024,7 @@ uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(v
    Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
    0, 5-9, 12 and 21): accepts every placement (CF clear).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UnifiedRuntimeDefault_TwoArgSuccess
+bool UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
@@ -1065,8 +1037,7 @@ UnifiedRuntimeDefault_TwoArgSuccess
    15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
    have none, so this does nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   return;
@@ -1078,9 +1049,7 @@ UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeS
    (detachedObject = that model runtime): every effect (+0x1C), shot (+0x14) or entity (+0xF0, and +0x60 for
    definition class 0x15) that still points at it gets the pointer cleared, so nothing keeps a dangling reference.
 */
-void __thandor_preserve_eax_edx
-WorldRuntimeNode_ClearDetachedEntityReferencesCallback
-          (void *detachedObject,WorldOwnerListNode100 *node)
+void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject,WorldOwnerListNode100 *node)
 
 {
   int *entityRuntimeWords;
@@ -1115,9 +1084,7 @@ WorldRuntimeNode_ClearDetachedEntityReferencesCallback
    31 (linked into the owner list) and 30 and zeroes one back-reference field of their runtime payload (+0x10 for
    shots, +4 for effects).
 */
-void __thandor_preserve_eax_edx
-WorldRuntimeNode_ReleaseShutdownBindingsCallback
-          (WorldRuntimeContext *shutdownContext,WorldOwnerListNode100 *node)
+void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode100 *node)
 
 {
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
@@ -1142,8 +1109,7 @@ WorldRuntimeNode_ReleaseShutdownBindingsCallback
    nearer secondary surface (only the secondary surface with WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY).
    Without a hit the ray is intersected with the ground plane z = 0. Also updates the target distance.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *worldRuntime)
+void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *worldRuntime)
 
 {
   AngleTurn32 currentPitchAngle;
@@ -1213,9 +1179,7 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
    Stores the eight terrain lighting colours of the level (or of the current lighting-cycle blend) in the world
    runtime and rebuilds the terrain colour ramp from the two ramp colours and the base colour.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_SetTerrainLightingConfiguration
-          (PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
+void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
           PackedArgb32 lightingColor134Argb,PackedArgb32 lightingColor130Argb,
           PackedArgb32 rampColor12CArgb,PackedArgb32 lightingColor128Argb,
           PackedArgb32 rampColor124Argb,PackedArgb32 baseColorArgb,WorldRuntimeContext *worldRuntime
@@ -1242,8 +1206,7 @@ WorldRuntime_SetTerrainLightingConfiguration
    -0x4000..-0x1000, azimuth & 0xFFFF). Callers: level load, the periodic lighting cycle and the light-direction
    commands.
 */
-void __thandor_void_preserve_ecx_edx
-WorldRuntime_RecomputeFieldRegionNormalsAndLighting
+void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
           (FieldGridDimensionCells auxiliaryElevationAngle,FieldGridDimensionCells auxiliaryAzimuthAngle,
           Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime)
 
@@ -1263,8 +1226,7 @@ WorldRuntime_RecomputeFieldRegionNormalsAndLighting
    Clears WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY; called after every change of the camera state and when a
    field grid is attached.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_ClearFieldGridDirtyFlag(WorldRuntimeContext *world)
+void WorldRuntime_ClearFieldGridDirtyFlag(WorldRuntimeContext *world)
 
 {
   world->runtimeFlags = world->runtimeFlags & ~WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY;

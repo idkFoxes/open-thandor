@@ -27,7 +27,7 @@ static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node)
   }
 }
 
-void __thandor_void_preserve_eax_ecx_edx UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
+void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
 
 {
   UiTree_AdvanceSpriteButtonAnimationsFrom(root->firstChild);
@@ -41,9 +41,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTree_AdvanceSpriteButtonAnimations(Ui
    normal and selected frame ranges) and starts the animation on a random normal frame, so buttons of the
    same kind do not animate in lockstep; then the children are relocated.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSpriteButtonControl_Relocate
-          (UiSerializedRelocationDelta relocationDelta,UiSpriteButtonControl *control)
+void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiSpriteButtonControl *control)
 
 {
   UiSelectableStateFlags *stateFlagsField;
@@ -89,8 +87,7 @@ UiSpriteButtonControl_Relocate
    half-transparent black shadow shifted by the state's drawOffsets, then the sprite itself, optionally
    over the normal frame (NORMAL_UNDER_SELECTED).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSpriteButtonControl_DrawClipped
+void UiSpriteButtonControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiSpriteButtonControl *control)
 
@@ -175,8 +172,7 @@ UiSpriteButtonControl_DrawClipped
    (the action follows on release); a persistent one toggles (TOGGLE_ON_ACTIVATION) or latches selected,
    plays its activation sound and queues actionId, deferred to the animation end for ACTION_AFTER_ANIMATION.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSpriteButtonControl_NonRightPress
+void UiSpriteButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSpriteButtonControl *control)
 
@@ -259,8 +255,7 @@ UiSpriteButtonControl_NonRightPress
    is still shown pressed (the pointer was released over it), it plays the activation sound, drops the
    pressed state and queues actionId. Persistent buttons act on press instead.
 */
-void __thandor_preserve_eax
-UiSpriteButtonControl_NonRightRelease
+void UiSpriteButtonControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSpriteButtonControl *control)
 
@@ -297,8 +292,7 @@ UiSpriteButtonControl_NonRightRelease
    pointer, it shows the pressed state only while the pointer is over the button (opaque sprite pixel or
    node rectangle), so dragging off cancels the click.
 */
-void __thandor_preserve_eax_edx
-UiSpriteButtonControl_NonRightDrag
+void UiSpriteButtonControl_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSpriteButtonControl *control)
 
@@ -366,8 +360,7 @@ UiSpriteButtonControl_NonRightDrag
    frame for SELECTED_ONLY buttons); RECT_HIT_TEST buttons accept the whole node (the caller has already
    checked the rectangle). Otherwise UI_NODE_NONE.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiSpriteButtonControl_HitTestOpaque
+UiNodeBase * UiSpriteButtonControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSpriteButtonControl *control)
 
 {
@@ -408,8 +401,7 @@ UiSpriteButtonControl_HitTestOpaque
    letterboxWidth narrower than the node it is scaled to that width, centred and framed by black bars.
    Children are drawn on top.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiImageActionControl_DrawImageAndChildren
+void UiImageActionControl_DrawImageAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiImageActionControl *control)
 
@@ -482,8 +474,7 @@ UiImageActionControl_DrawImageAndChildren
 /* Address: 0x005151F0.
    pointerMove slot of g_UiImageActionControlVtable: returns the control's cursor frame for the pointer.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiImageActionControl_QueryPointerCode
+GraphicsCursorFrameIndex UiImageActionControl_QueryPointerCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageActionControl *control)
 
 {
@@ -494,8 +485,7 @@ UiImageActionControl_QueryPointerCode
 /* Address: 0x00515210.
    nonRightPress slot of g_UiImageActionControlVtable: a left click queues primaryActionId.
 */
-void __thandor_preserve_eax
-UiImageActionControl_EnqueuePrimaryAction
+void UiImageActionControl_EnqueuePrimaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageActionControl *control)
 
@@ -508,8 +498,7 @@ UiImageActionControl_EnqueuePrimaryAction
 /* Address: 0x00515230.
    rightPress slot of g_UiImageActionControlVtable: a right click queues secondaryActionId.
 */
-void __thandor_preserve_eax
-UiImageActionControl_EnqueueSecondaryAction
+void UiImageActionControl_EnqueueSecondaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageActionControl *control)
 
@@ -524,8 +513,7 @@ UiImageActionControl_EnqueueSecondaryAction
    UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
    CF clear when the key was consumed, set to pass it on.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiImageActionControl_HandleKeyboardActivation
+bool UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
 
 {
@@ -547,8 +535,7 @@ UiImageActionControl_HandleKeyboardActivation
    rich-text lines inside the frame, clipped to the inner area. The 416x58 variant shows at most 4 lines,
    last line first.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiConditionalActionControl_DrawClipped
+void UiConditionalActionControl_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiConditionalActionControl *control)
 
 {
@@ -663,8 +650,7 @@ UiConditionalActionControl_DrawClipped
 /* Address: 0x005155A0.
    pointerMove slot of g_UiConditionalActionControlVtable: returns the control's cursor frame.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiConditionalActionControl_QueryPointerCode
+GraphicsCursorFrameIndex UiConditionalActionControl_QueryPointerCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control)
 
 {
@@ -676,8 +662,7 @@ UiConditionalActionControl_QueryPointerCode
    hitTest slot of g_UiConditionalActionControlVtable. An empty box (no text lines) is invisible and
    returns UI_NODE_NONE; otherwise the normal child hit test applies.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiConditionalActionControl_HitTestWhenEnabled
+UiNodeBase * UiConditionalActionControl_HitTestWhenEnabled
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control)
 
 {
@@ -695,8 +680,7 @@ UiConditionalActionControl_HitTestWhenEnabled
    nonRightPress slot of g_UiConditionalActionControlVtable: a left click queues actionId, but only while
    the box shows text.
 */
-void __thandor_preserve_eax
-UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
+void UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiConditionalActionControl *control)
 
@@ -713,8 +697,7 @@ UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
    the first frame. On the last frame a deferred activation action is queued (and cleared), then the UI is
    redrawn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
+void UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
 
 {
   uint32_t subresourceStart;

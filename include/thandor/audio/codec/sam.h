@@ -26,20 +26,16 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
           SoundCoefficientBlock256 *coefficientBlock);
 
 /* 0x00418560 */
-void __thandor_void_preserve_eax_ecx_edx
-SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients);
+void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients);
 
 /* 0x004193D0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *inputPcm);
+void SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *inputPcm);
 
 /* 0x0041A430 */
-uint32_t __thandor_eax_preserve_ecx_edx
-SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock);
+uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock);
 
 
 /* 0x0041A320 */
-uint32_t __thandor_eax_preserve_ecx_edx
-SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients);
+uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients);
 
 #endif /* THANDOR_AUDIO_CODEC_SAM_H */

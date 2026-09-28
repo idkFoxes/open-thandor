@@ -17,8 +17,7 @@
    every bank to its front (zeroing the rest), remapping the pixel indices at each step. CF set (true) when the
    source has no palette bank or no subresource. No caller or table reference is known (converter/editor code left in the game).
 */
-bool __thandor_cf_preserve_ecx_edx
-GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase)
+bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase)
 
 {
   int subresourceBank;
@@ -221,8 +220,7 @@ void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset)
    g_GraphicsPaletteAssetValidate; an invalid asset is released again. CF set with the load or validation error.
    Installed as g_GraphicsPaletteAssetLoadPackage (used by the army graphics and frontend palette loaders).
 */
-PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
+PaletteAssetResult GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
 
 {
   GraphicsPaletteAsset *loadedPaletteAsset;
@@ -252,8 +250,7 @@ GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
    g_GraphicsPaletteAssetResolveAllocationBase and hands it to Resource_Release. Installed as
    g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
+void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset)
 
 {
   GraphicsPaletteAsset *allocation;
@@ -305,8 +302,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
    g_GraphicsPaletteAssetResolveAllocationBase and frees it with g_MemoryApi.free. Installed as
    g_GraphicsPaletteAssetLifecycleCallbacks3.releaseClone.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
+void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
 
 {
   GraphicsPaletteAsset *allocation;
@@ -321,8 +317,7 @@ GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
    Accepts paletteAsset when it starts with the 'pal' signature (CF clear, pointer returned), otherwise CF set
    with FATAL_ERROR_PALETTE_ASSET_INVALID. Installed as g_GraphicsPaletteAssetValidate.
 */
-PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
+PaletteAssetResult GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
 
 {
   PaletteAssetResult successResult;
@@ -343,8 +338,7 @@ GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
    Returns the allocation that owns a palette asset, which is the asset itself; both release callbacks go
    through this slot. Installed as g_GraphicsPaletteAssetResolveAllocationBase.
 */
-GraphicsPaletteAsset * __thandor_eax_preserve_ecx_edx
-GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset)
+GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset)
 
 {
   return paletteAsset;
@@ -358,8 +352,7 @@ GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset)
    of appended entries are rebased. CF set with the arena error when the allocation fails.
    No caller or table reference is known (converter/editor code left in the game).
 */
-PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
+PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,
           GraphicsPaletteTextureSourceAsset *baseAsset)
 
@@ -480,8 +473,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
    destination bank and its new indices, then removes the source bank. Called by
    GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices once the pair is known to fit.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
+void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
           (GraphicsPaletteIndex sourcePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
@@ -560,8 +552,7 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
    bank paletteBank (nothing to do when both are equal). Called by
    GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
+void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
           (uint32_t oldColorIndex,uint32_t newColorIndex,GraphicsPaletteIndex paletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
@@ -603,8 +594,7 @@ GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
    candidatePaletteBank (colours present in both counted once). Called by
    GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices to find bank pairs that can be merged.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-GraphicsPaletteTextureSource_CountCombinedUsedColors
+uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
           (GraphicsPaletteIndex candidatePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
@@ -656,8 +646,7 @@ GraphicsPaletteTextureSource_CountCombinedUsedColors
    the subresources of later banks and drops the bank's slot from g_GraphicsPaletteBankSlots. Called by the
    palette optimiser (GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices/MergePaletteBank...).
 */
-void __thandor_void_preserve_eax_ecx
-GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
+void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
           (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderViewBC *textureSource)
 
 {

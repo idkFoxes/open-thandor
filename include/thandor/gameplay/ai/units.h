@@ -21,54 +21,41 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053B0E0 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_UpdateWorkspace01Entities
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiUnitBehavior_UpdateWorkspace01Entities(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B4C0 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_SelectBestAnchorAction
+void AiUnitBehavior_SelectBestAnchorAction
           (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B1D0 */
-AiWorkspace05DistanceSelectionRegs8 __thandor_eax_ebx_cf_preserve_ecx_edx
-AiUnitBehavior_ComputeWorkspace05DistanceScore
+AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeWorkspace05DistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
 /* 0x0053B260 */
-AiCandidateScore32 __thandor_eax_preserve_ecx_edx
-AiUnitBehavior_ComputeFactionAnchorDistanceScore
+AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
           (FactionRuntimeIndex factionIndex,AiCandidateScore32 currentBestScore,
           MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot);
 
 /* 0x0053B330 */
-AiSecondaryWorkspaceDistanceSelectionRegs8 __thandor_eax_ebx_cf_preserve_ecx_edx
-AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
+AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
 /* 0x0053B3E0 */
-void __thandor_preserve_eax
-AiUnitCommand_AssignWorkspacePoint
-          (uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
+void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext);
 
 /* 0x0053B420 */
-void __thandor_preserve_eax_edx
-AiUnitCommand_AssignFactionAnchorPoint
-          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime,
+void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext);
 
 /* 0x0053B480 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_CollectUnassignedEntity
-          (ArmyRuntimeSlot *armyRuntimeSlot,WorldRuntimeContext *worldRuntimeContext);
+void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,WorldRuntimeContext *worldRuntimeContext);
 
 /* 0x0053B620 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_UpdateSpecialClass12Entity
+void AiUnitBehavior_UpdateSpecialClass12Entity
           (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 

@@ -18,8 +18,7 @@
    Definitions of class 1 only score while the faction has none of ARM 302/303/304, at half weight, and at
    3/8 when it has ARM 305 or 306.
 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
+AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -86,8 +85,7 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
    on it (runtimeFlags & 0xC0 with the technology id at +0x100), the faction (factionRecordOffset = faction *
    0x740) has not unlocked it yet, and all eight prerequisite mask words are covered by its unlocked technologies.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCandidate_IsCurrentlyAvailable
+bool AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           )
 
@@ -213,8 +211,7 @@ AiTechnologyPlanning_AddCandidateRecord
    scaled by energy demand / energy supply (Q8), but only once demand reaches 0xF0/0x100 (about 94%)
    of supply.
 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeFactionScaledCandidateValue
+AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -255,8 +252,7 @@ AiTechnologyScore_ComputeFactionScaledCandidateValue
    0x0053B9E8; technologies researched in class 11 structures): the technology's base candidate score
    from the technology asset, unconditionally.
 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ReturnBaseCandidateValueForKind2
+AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind2
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -269,8 +265,7 @@ AiTechnologyScore_ReturnBaseCandidateValueForKind2
    Technology score callback for score kind 4 (g_AiTechnologyCandidateScoreCallbackTable[4], image
    0x0053B9F0; radar and AR-M silo technologies): the technology's base candidate score, unconditionally.
 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ReturnBaseCandidateValueForKind4
+AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -283,8 +278,7 @@ AiTechnologyScore_ReturnBaseCandidateValueForKind4
    here before its scoring loop. */
 AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
 
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
+AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
           (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
 
@@ -293,8 +287,7 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
    0x0053B9F4; every technology not caught by kinds 0-4). Hands the EDX category mask (here a global) to
    the body below, which holds the original code.
 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
+AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -309,8 +302,7 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
    of the army assets the technology leads to (weights g_AiArmyCandidateScoreWeightsVariantC15) times the
    base candidate score, >> 8.
 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
+AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
           (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime)
 
@@ -346,8 +338,7 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
    directly): would return true (CF set) to reject the candidate definition, but always accepts (CF clear).
    The caller passes candidateDefinition in EAX as well as on the stack; EAX is preserved.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCompatibility_AcceptRuntimeClassCandidate
+bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate
           (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition)
 
 {

@@ -46,8 +46,7 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
    TERRAIN_OCCUPANCY_FLAG_* visibility flags for the active faction and refreshes the state tint, then
    modulates the node tint with the shot definition's tint.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
+void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNodeClassView100 *modelNode)
 
 {
@@ -111,8 +110,7 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
    g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.shot: shots do not contribute to the terrain occupancy,
    so this callback does nothing (it still pops its two stack arguments).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
+void ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
 {
   return;
@@ -124,8 +122,7 @@ ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,vo
    its definition selects (terrainGridMaskIndex indexes the world's sound slot table, not a terrain mask),
    unless the shot is over a cell hidden by TerrainGrid_TestProjectedCellMaskBits01.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
+void ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNodeClassView100 *modelNode)
 
 {
@@ -166,8 +163,7 @@ ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
    towards its target) and ends at the first hit, emitting the impact effect and dealing the full damage to
    an army. Ballistic, lead-adjusted and fixed-range shots then update speed and angles for the next tick.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
+void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           (WorldRuntimeContext *worldRuntime,ShotModelRuntimeNodeClassView100 *modelNode)
 
 {

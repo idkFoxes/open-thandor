@@ -32,26 +32,22 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041CD30 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
+bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 
 /* 0x0041B080 */
-void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void);
+void FontRuntime_Init(void);
 
 /* 0x0041CCB0 */
-void __thandor_preserve_eax TextResourcePage_Unload(TextResourcePageIndex pageIndex);
+void TextResourcePage_Unload(TextResourcePageIndex pageIndex);
 
 /* 0x0041CDB0 */
-AssetRecordCount __thandor_eax_cf_preserve_ecx_edx
-TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset);
+AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset);
 
 /* 0x0041CEB0 */
-GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
-FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource);
+GlyphSizeResult FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource);
 
 /* 0x0041CEF0 */
-GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
-FontGlyph_GetLogicalSizeForStyleRegs
+GlyphSizeResult FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource);
 
 /* 0x0041D370 */
@@ -61,15 +57,12 @@ uint32_t FontGlyph_DrawBottomAligned (UiPixelCoordinate clipTop,UiPixelCoordinat
 uint32_t FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineHeight,UiPixelCoordinate lineBottom,int32_t drawX);
 
 /* 0x0041CA50 */
-TextPageLoadResult __thandor_eax_cf_preserve_ecx_edx
-TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path);
+TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path);
 
 /* 0x0041CCF0 */
-void __thandor_void_preserve_eax_ecx_edx
-TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
+void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
 /* 0x0041CDE0 */
-TextResolveResult __thandor_eax_cf_preserve_ecx_edx
-TextResource_Resolve(TextResourceId resourceId);
+TextResolveResult TextResource_Resolve(TextResourceId resourceId);
 
 #endif /* THANDOR_ASSETS_TEXT_RESOURCES_H */

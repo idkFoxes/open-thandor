@@ -16,9 +16,7 @@
    rebuild that runs over every owned army (the army's radius at +0x90). Nothing happens when the centre is outside
    the grid or on a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkAroundWorldPoint
-          (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
+void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridOccupancyByteIndex occupancyByteOffset,FieldGridAsset *fieldGrid)
 
 {
@@ -100,8 +98,7 @@ static __inline uint64_t TerrainOccupancy_Pcmpeqb(uint64_t a,uint64_t b)
    persistent bit 7 is (bits 1 and 2 are ignored). TerrainOccupancyMask_ResolveRuntimeClassFlags consumes the
    result. Returns 0 (in EDX) when the grid is missing or the point lies outside it or on a map-edge cell.
 */
-uint32_t __thandor_void_preserve_eax_ecx
-TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
+uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
           (Q12 neighborhoodRadiusQ12,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
@@ -262,8 +259,7 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
    +7); from every spine cell a straight leg runs along each bounding direction, and the sector ends at the step
    limit or at a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *diagonalMaskByte;
@@ -309,8 +305,7 @@ TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCel
    TerrainOccupancyBit2_MarkWedge0: spine step C+1-2W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *diagonalMaskByte;
@@ -357,8 +352,7 @@ TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCel
    TerrainOccupancyBit2_MarkWedge0: spine step C-1-W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *legStartCell;
@@ -401,8 +395,7 @@ TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCel
    TerrainOccupancyBit2_MarkWedge0: spine step C-2+W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *centerMaskByte;
@@ -451,8 +444,7 @@ TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCel
    TerrainOccupancyBit2_MarkWedge0: spine step C-1+2W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *cellRuntimeBytes;
@@ -503,8 +495,7 @@ TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCel
    TerrainOccupancyBit2_MarkWedge0: spine step C+1+W (scan step +7), a straight leg along each bounding direction
    from every spine cell, ending at the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *legStartCell;
@@ -547,8 +538,7 @@ TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCel
    Straight leg of the occupancy scan along direction 0 (C+1, right): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -575,8 +565,7 @@ TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGri
    Straight leg of the occupancy scan along direction 1 (C+1-W, up and right): sets occupancy bit 1 in the scan's
    faction byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -603,8 +592,7 @@ TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGri
    Straight leg of the occupancy scan along direction 2 (C-W, up): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -631,8 +619,7 @@ TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGri
    Straight leg of the occupancy scan along direction 3 (C-1, left): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -659,8 +646,7 @@ TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGri
    Straight leg of the occupancy scan along direction 4 (C-1+W, down and left): sets occupancy bit 1 in the
    scan's faction byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -688,8 +674,7 @@ TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGri
    Straight leg of the occupancy scan along direction 5 (C+W, down): sets occupancy bit 1 in the scan's faction
    byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;

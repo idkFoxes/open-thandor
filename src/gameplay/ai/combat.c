@@ -17,9 +17,7 @@
    current target (re-stamping commandGeneration), falls back to the stored group-attack target (+0x98) when
    nothing was found although the army has hostile class counters, or else commands the selected target.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiCombatDecision_UpdateTargetAssignment
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmyRuntimeSlot *selectedTargetArmyRuntime;
@@ -248,8 +246,7 @@ AiCombatTarget_SelectBestCandidate
    is set. The class definitions are read through two dereferences (definition+0x5C), i.e. the live type.
    Called by AiCombatTarget_SelectBestCandidate and ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate.
 */
-AiCandidateScore32 __thandor_eax_preserve_ecx_edx
-AiCombatTarget_EvaluateCandidateScore
+AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
           (AiCandidateScore32 currentBestScore,AiSourceClassCount sourceClassCount,
           DepthBinMask32 sourceDepthMask0,DepthBinMask32 sourceDepthMask1,
           ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)

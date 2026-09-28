@@ -44,100 +44,78 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00568300 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameWorldOverlay_RebuildOrReleaseTransientMarkers
+void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime);
 
 /* 0x0052F0C0 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_RenderSelectedArmyMetrics
+void SelectionOverlay_RenderSelectedArmyMetrics
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight);
 
 /* 0x0052F1B0 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_RenderArmyMetricsForEntity
+void SelectionOverlay_RenderArmyMetricsForEntity
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,GameEntityRuntime *entity);
 
 /* 0x0052F2A0 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawBoundsFrame
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
           UiPixelCoordinate cornerBY,UiPixelCoordinate cornerBX);
 
 /* 0x0052F490 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
+void SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int markerPointCount,int *gridCoordinatePairs,
           FieldGridAsset *fieldGrid);
 
 /* 0x0052F5A0 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerACForWorldSurfacePoint
+void SelectionOverlay_DrawMarkerACForWorldSurfacePoint
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x0052F680 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
+void SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
 
 /* 0x0052F780 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
+void SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
 
 /* 0x0052F8C0 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
+void SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid);
 
 /* 0x0052FA20 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
+void SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
 
 /* 0x00560020 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType3
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x00560050 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType4
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x00560080 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType5
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x005600B0 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType6
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x005600E0 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType7
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x00568210 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
+void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
           (Q12 scaleQ12,void *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,void *effectDefinition,
           void *inGameRuntime);
 

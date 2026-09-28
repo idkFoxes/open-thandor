@@ -15,14 +15,13 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0040E2E0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-ResourceRegistration_OpenSource(void *packagePath);
+StatusResult ResourceRegistration_OpenSource(void *packagePath);
 
 /* 0x0040F000 */
-ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path);
+ResourceLoadResult Resource_Load(uint16_t *path);
 
 /* 0x0040F1D0 */
-void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *resourceBuffer);
+void Resource_Release(void *resourceBuffer);
 
 /* 0x0050E890 */
 ResourceRegistrationImagePair ResourceRegistration_SelectDomainPair (ResourceRegistrationRuntimeImageSerializedScalarViewDC *runtimeImage);
@@ -37,7 +36,6 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
 ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void);
 
 /* 0x00532B00 */
-void __thandor_void_preserve_eax_ecx_edx
-ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage);
+void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage);
 
 #endif /* THANDOR_ASSETS_RESOURCE_RUNTIME_H */

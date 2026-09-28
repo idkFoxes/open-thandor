@@ -20,8 +20,7 @@
    effect.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
+void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
           (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime)
 
 {
@@ -208,8 +207,7 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
    proportion to the owner faction's current Xenite (or Tritium when definition +0xC0 is 1) over its storage
    limit, then emits the damage-threshold effect.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateTransformAndDamageEffect
+void ArmyRuntimeClass_UpdateTransformAndDamageEffect
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
@@ -248,8 +246,7 @@ ArmyRuntimeClass_UpdateTransformAndDamageEffect
    when the definition's gate at +0x1C8 is set), then emits the damage-threshold effect.
 */
 
-void __thandor_preserve_eax
-ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
+void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
           (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedEffectsUpdateView200 *modelRuntime)
 
 {
@@ -272,8 +269,7 @@ ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
    angle, any other root army is counted in its owner faction's relation counter C (group-A command classes:
    counter D).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ApplyImpactDamageAndFinalizeState
+void ArmyRuntime_ApplyImpactDamageAndFinalizeState
           (AngleTurn32 impactAngle,DamageAmount32 damageAmount,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -351,9 +347,7 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
    sourceFactionIndex that the original would update for a root army are never reached (see below). No caller or
    table slot referencing it was found in src/ or src/generated/image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ApplyDamageAndFactionRelationState
-          (FactionRuntimeIndex sourceFactionIndex,DamageAmount32 damageAmount,
+void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFactionIndex,DamageAmount32 damageAmount,
           ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -407,9 +401,7 @@ ArmyRuntime_ApplyDamageAndFactionRelationState
    hit army, the rest to the parent model node's army, or to the hit army again when it has no parent. Called
    directly by the shot impact handling in world/shots/maintenance.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
-          (AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
+void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
           ImpactDamageValue32 impactValue,ArmyRuntimeSlot *targetArmyRuntime)
 
 {
@@ -440,9 +432,7 @@ ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
    passes the owner test (commandState < 1: models of the own owner, otherwise those of other owners). Called
    directly by the AI combat target selection (gameplay/ai/combat.c) and gameplay/army/movement.c.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyWeaponRuntime_TestTargetLineOfFire
-          (Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -612,9 +602,7 @@ ArmyWeaponRuntime_TestTargetLineOfFire
    so destroying a mounted part also damages its carrier; a negative damage (repair) is capped at the maximum
    health.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ApplyDamageAndPropagateToParent
-          (DamageAmount32 damageAmount,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,ArmyRuntimeSlot *armyRuntime)
 
 {
   Q12 *healthField;
@@ -668,9 +656,7 @@ ArmyRuntime_ApplyDamageAndPropagateToParent
    at the end of nearly every army class runtime update (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
    .runtimeUpdate slots, e.g. [4], [9], [15] in this file).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_EmitDamageThresholdEffect
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeNode *modelNodeRuntime;

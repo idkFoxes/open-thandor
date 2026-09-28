@@ -22,9 +22,7 @@
    ArmyArticulatedRuntime_InitializeTerrainContactGeometry.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateArticulatedMovement
-          (WorldRuntimeContext *worldRuntime,
+void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntime,
           ModelRuntimeArticulatedMovementDefinitionView200 *modelRuntime)
 
 {
@@ -358,9 +356,7 @@ ArmyArticulatedMovement_CommitPositionSuspensionAndTransforms:
    the army starts a route to the target's current world position under the standard command generation.
    A null target clears the command instead.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ResolveCommandTargetAndRoute
-          (GameEntityRuntime *targetRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmyCommandGeneration standardGeneration;
@@ -400,8 +396,7 @@ ArmyRuntime_ResolveCommandTargetAndRoute
    movement variant B when it sits on the water surface, otherwise with variant A.
 */
 
-void __thandor_preserve_eax_edx
-ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
+void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime
           )
 
@@ -436,8 +431,7 @@ ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
    while the owner moves or it is still turning. Skipped while destroyed.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
+void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
           (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime)
 
 {
@@ -590,8 +584,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
    barrel 1 and its muzzle point.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
+void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
           (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime)
 
 {
@@ -769,8 +762,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
    wrapping the offsets at +-0x100000.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
+void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementTrackView200 *modelRuntime)
 
 {
@@ -1061,8 +1053,7 @@ ArmyGroundMovementCollision_FinalizeEffectsAnimationAndTransforms:
    spins its three child parts for the countdown at +0x70.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
+void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime
           )
 
@@ -1393,8 +1384,7 @@ static void ArmyRuntime_ClearModelTreeFlags218(uint8_t *node)
    If the attached model has class-state bit 0x10 and a non-zero definition value +0x3C, state bits 0x218
    are cleared on its whole model tree.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -1440,8 +1430,7 @@ ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
    Cancels an active target command (army or position): marks the command as interrupted, stamps the
    standard command generation and drops the target army. Also used by the 32-slot command reset traversal.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmyCommandGeneration commandGeneration;
@@ -1463,8 +1452,7 @@ ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot *army
    separately by the two auxiliary values (x = auxiliaryValue0, y = auxiliaryValue1). The target becomes both
    the route end and the final movement target. Called directly from gameplay/army/runtime.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_StartMoveCommandWithAuxiliaryValues
+void ArmyRuntime_StartMoveCommandWithAuxiliaryValues
           (ArmyMoveAuxiliaryValue1 auxiliaryValue1,ArmyMoveAuxiliaryValue0 auxiliaryValue0,
           Q12 targetWorldYQ12,Q12 targetWorldXQ12,ArmyMovementRuntime *movementRuntime)
 
@@ -1507,9 +1495,7 @@ ArmyRuntime_StartMoveCommandWithAuxiliaryValues
    fallback position only follows when no move was active, the final target only when mirroring is enabled;
    the current model position is recorded for the route-retry check.
 */
-void __thandor_preserve_eax_edx
-ArmyRuntime_SetPendingMoveTarget
-          (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_SetPendingMoveTarget(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -1562,8 +1548,7 @@ ArmyRuntime_SetPendingMoveTarget
      step progress (Q12, 0..1.0): runtimeStateA8 (left), articulatedContact.terrainContactMode (right)
      step state: articulatedContact.fallbackPosition0Q12 (ARMY_ARTICULATED_STEP_*), step rate: fallbackPosition1Q12
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_InitializeTerrainContactGeometry
+void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
           (ModelRuntimeNode *modelNodeRuntime,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1641,9 +1626,7 @@ void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ArmyRuntimeS
    queue and target mirroring. While the movement is locked the target replaces the waypoint queue instead.
    Entities whose definition record has zero at +0x18 ignore the order.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_QueueOrStartMoveCommandVariantA
-          (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_QueueOrStartMoveCommandVariantA(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -1689,9 +1672,7 @@ ArmyRuntime_QueueOrStartMoveCommandVariantA
    Same as ArmyRuntime_QueueOrStartMoveCommandVariantA, but keeps the waypoint queue and target mirroring:
    used by ArmyRuntime_UpdateMovementAndWaypoints to start the next queued waypoint.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_QueueOrStartMoveCommandVariantB
-          (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_QueueOrStartMoveCommandVariantB(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -1740,8 +1721,7 @@ ArmyRuntime_QueueOrStartMoveCommandVariantB
    Also applies water damage, drops a linked army that is out of reach and does the moved/turned bookkeeping.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateGroundMovementVariantA
+void ArmyRuntimeClass_UpdateGroundMovementVariantA
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime
           )
 
@@ -1978,9 +1958,7 @@ ArmyGroundMovementVariantA_FinalizeEffectsAnimationAndTransforms:
    Finally the step rate is derived from the foot's 3D travel. Called by ArmyRuntimeClass_UpdateArticulatedMovement;
    the walker state layout is described at ArmyArticulatedRuntime_InitializeTerrainContactGeometry.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_UpdateLeftTerrainContact
-          (AngleTurn32 headingAngle16,Q12 routeDistanceQ12,
+void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,Q12 routeDistanceQ12,
           ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
@@ -2111,9 +2089,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact_ComputeStepFromContact:
    Mirror of ArmyArticulatedRuntime_UpdateLeftTerrainContact for the right foot (side angle heading - 90
    degrees, placed relative to the left foot). Called by ArmyRuntimeClass_UpdateArticulatedMovement.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_UpdateRightTerrainContact
-          (AngleTurn32 headingAngle16,Q12 routeDistanceQ12,
+void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16,Q12 routeDistanceQ12,
           ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
@@ -2245,8 +2221,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact_ComputeStepFromContact:
    (ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement).
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateGroundMovementVariantB
+void ArmyRuntimeClass_UpdateGroundMovementVariantB
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime
           )
 
@@ -2464,9 +2439,7 @@ ArmyGroundMovementVariantB_FinalizeEffectsAnimationAndTransforms:
    following army re-routes in short hops; the final target itself stays unchanged. Called by
    ArmyRuntimeCommand_UpdateTargetFollowingState.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_StartClampedMoveCommand
-          (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -2515,9 +2488,7 @@ ArmyRuntime_StartClampedMoveCommand
    routes to the target, but leaves the final movement target unchanged. Used by
    ArmyRuntime_UpdateMovementAndWaypoints to re-approach the final target.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_StartDirectMoveCommand
-          (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -2554,9 +2525,7 @@ ArmyRuntime_StartDirectMoveCommand
    footstep sound at the walker unless its cell is masked, and spawns the footprint effect at the foot node
    (three levels below the leg): one effect on dry ground, another where the nearest water is above ground.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_UpdateContactChildAndEffects
-          (ModelRuntimeNode *legNode,WorldRuntimeContext *worldRuntime,
+void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNode,WorldRuntimeContext *worldRuntime,
           ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -2622,8 +2591,7 @@ ArmyArticulatedRuntime_UpdateContactChildAndEffects
    (placement contact kind 3). g_ArmySuspension* are scratch vectors and matrices.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_UpdateSuspensionHierarchy
+void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
           (ModelRuntimeNode *modelNodeRuntime,WorldRuntimeContext *worldRuntime)
 
 {
@@ -2994,8 +2962,7 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
    ArmyRuntimeClass_UpdateArticulatedMovement for the second half of a turn and for closing steps; the walker
    state layout is described at ArmyArticulatedRuntime_InitializeTerrainContactGeometry.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_InitializeLeftTerrainContact
+void ArmyArticulatedRuntime_InitializeLeftTerrainContact
           (AngleTurn16Stored32 headingAngle16,ArmyArticulatedRuntimeSlotView *armyRuntime,
           WorldRuntimeContext *worldRuntime)
 
@@ -3050,8 +3017,7 @@ ArmyArticulatedRuntime_InitializeLeftTerrainContact
    Mirror of ArmyArticulatedRuntime_InitializeLeftTerrainContact for the right foot (set beside the left
    foot's target, side angle heading - 90 degrees). Called by ArmyRuntimeClass_UpdateArticulatedMovement.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_InitializeRightTerrainContact
+void ArmyArticulatedRuntime_InitializeRightTerrainContact
           (AngleTurn16Stored32 headingAngle16,ArmyArticulatedRuntimeSlotView *armyRuntime,
           WorldRuntimeContext *worldRuntime)
 
@@ -3111,8 +3077,7 @@ ArmyArticulatedRuntime_InitializeRightTerrainContact
    ArmyRuntimeClass_UpdateArticulatedMovement; the walker state layout is described at
    ArmyArticulatedRuntime_InitializeTerrainContactGeometry.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyArticulatedRuntime_UpdateSelectedTerrainContact
+void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
           (AngleTurn32 steeringAngle16,ArmyArticulatedRuntimeSlotView *armyRuntime,
           WorldRuntimeContext *worldRuntime)
 
@@ -3263,9 +3228,7 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
    to fire. With a clear line of fire a running target-following move is stopped and false is returned. Called
    by the aim-and-fire class updates (runtime-update slots 7 and 8 here, and gameplay/army/combat.c).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntimeCommand_UpdateTargetFollowingState
-          (Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
+bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -3311,8 +3274,7 @@ ArmyRuntimeCommand_UpdateTargetFollowingState
    (starting a new queue if none is in use; when full the last entry is overwritten); otherwise starts it
    at once with ArmyRuntime_QueueOrStartMoveCommandVariantA.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_QueueWaypointOrStartMoveVariantA
+void ArmyRuntime_QueueWaypointOrStartMoveVariantA
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
@@ -3346,8 +3308,7 @@ ArmyRuntime_QueueWaypointOrStartMoveVariantA
    routed or still waiting for its retry countdown, routes to the target. If a move was active, its
    fallback position is first saved into the waypoint queue (apparently so the army resumes it afterwards).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_StartMoveCommandWithFallbackWaypoints
+void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
@@ -3407,8 +3368,7 @@ ArmyRuntime_StartMoveCommandWithFallbackWaypoints
    move is in progress all targets are set to the current model position so the army stops where it is.
    Bits 0x10-0x80 are cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldXQ12;
@@ -3439,8 +3399,7 @@ ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *movement
    with queued waypoints the current and fallback positions are set to the model position (the final
    target is kept). Bits 0x10-0x80 are cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldXQ12;
@@ -3471,8 +3430,7 @@ ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementR
    when the model moved or the retry countdown ran out. Near the final target the move ends (arrived);
    farther away a direct move to it is started.
 */
-MovementStepResult __thandor_eax_edx_cf_preserve_ecx
-ArmyRuntime_UpdateMovementAndWaypoints
+MovementStepResult ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime)
 
 {

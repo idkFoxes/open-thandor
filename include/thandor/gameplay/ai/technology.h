@@ -19,14 +19,12 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053BD80 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
+AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x00538000 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCandidate_IsCurrentlyAvailable
+bool AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           );
 
@@ -37,26 +35,22 @@ AiTechnologyPlanning_AddCandidateRecord
           ArmyRuntimeSlot *sourceArmyRuntime,PckTechnologyIdCatalog technologyId);
 
 /* 0x0053BCC0 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeFactionScaledCandidateValue
+AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BD60 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ReturnBaseCandidateValueForKind2
+AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind2
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BEA0 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ReturnBaseCandidateValueForKind4
+AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BEC0 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
+AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
@@ -65,8 +59,7 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
 extern AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
 
 /* 0x0053BC00 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCompatibility_AcceptRuntimeClassCandidate
+bool AiTechnologyCompatibility_AcceptRuntimeClassCandidate
           (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition);
 
 /* 0x0053BC20 */

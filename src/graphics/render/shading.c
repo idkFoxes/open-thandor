@@ -59,8 +59,7 @@ static __inline uint32_t Shading_PackWordLanesUnsignedSaturate(uint64_t lanes)
    silhouette is then rasterized into the current texture tile (blurred for flag-0 mesh records, sharp for
    the rest) and the tile cursor advances. Any point without a terrain hit abandons the model.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
+void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext)
 
 {
@@ -2484,7 +2483,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
    +/- GRAPHICS_INTENSITY_CLAMP_MAX_STEP. The table is aligned to 64 KiB so the original can index it with a
    16-bit register pair. CF set with the arena error when the allocation fails.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_Initialize(void)
+StatusResult GraphicsIntensityClampTable_Initialize(void)
 
 {
   int rowsRemaining;
@@ -2538,9 +2537,9 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_Initi
    MMX light accumulator (MM1 in the original), with unsigned saturation. The strength comes from
    g_PackedLightingLookupTable indexed by (radius^2 - distance^2) / radius^2, so it falls off towards the
    sphere edge. Used by the terrain vertex shading in src/world/terrain/projection.c.
+   Original register convention: ECX and EDX preserved; the packed value lives in MMX register MM1.
 */
-MmxPackedValue64 __thandor_void_preserve_ecx_edx_mm1
-GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulatorMmx)
 
 {
@@ -2602,8 +2601,7 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
    starts at 0 and grows over that many ticks. CF set with NULL when packedColorRgb is 0 or all
    GRAPHICS_SHADING_RUNTIME_RECORD_COUNT records are taken.
 */
-ShadingRecordResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingRuntime_AllocateRecordRegs
+ShadingRecordResult GraphicsShadingRuntime_AllocateRecordRegs
           (GraphicsTransitionTickCount transitionDurationTicks,GraphicsRadiusQ12 radiusQ12,
           PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12)
@@ -2652,7 +2650,7 @@ GraphicsShadingRuntime_AllocateRecordRegs
    Zeroes the 256 runtime light records (0x40 bytes each, 0x4000 bytes in total) so that no light source is
    active; GraphicsShadingRuntime_RebuildCompactLightingRecords only picks up records with a colour set.
 */
-void __thandor_void_preserve_eax_ecx GraphicsShadingRuntime_ClearRecordTable(void)
+void GraphicsShadingRuntime_ClearRecordTable(void)
 
 {
   int recordDwordsRemaining;
@@ -2673,7 +2671,7 @@ void __thandor_void_preserve_eax_ecx GraphicsShadingRuntime_ClearRecordTable(voi
    runtime light record (colour set) into the compact table with its position transformed into view space,
    and publishes the count, so the per-vertex and per-model light queries only walk the live lights.
 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsShadingRuntime_RebuildCompactLightingRecords(void)
+void GraphicsShadingRuntime_RebuildCompactLightingRecords(void)
 
 {
   GraphicsRadiusQ12 targetRadius;
@@ -2712,9 +2710,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingRuntime_RebuildCompactLi
    g_GraphicsShadingNearbyRecordCount, so model vertex lighting (src/graphics/render/model.c) only tests
    the lights near the model. Called per model node by the hierarchy renderers in src/world/model/runtime.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingRuntime_CollectNearbyRecords
-          (GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
+void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12)
 
 {
@@ -2766,8 +2762,7 @@ GraphicsShadingRuntime_CollectNearbyRecords
    textureDimension^2 pixels, from which a texture set is created. Also derives the grid step and origin used to
    map world positions into the textures. Returns the allocator/texture error with CF set on failure.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingRuntime_InitializeGeneratedTexture
+StatusResult GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension)
 
@@ -2868,7 +2863,7 @@ GraphicsShadingRuntime_InitializeGeneratedTexture
    Counterpart of GraphicsShadingRuntime_InitializeGeneratedTexture: destroys the texture set, frees the generated
    gfx asset and the scratch grid, and clears the three pointers.
 */
-void __thandor_void_preserve_eax GraphicsShadingRuntime_Shutdown(void)
+void GraphicsShadingRuntime_Shutdown(void)
 
 {
   g_GraphicsDestroyTextureSet(g_GraphicsShadingTextureSet);
@@ -2887,8 +2882,7 @@ void __thandor_void_preserve_eax GraphicsShadingRuntime_Shutdown(void)
    tile of subresource 0 (the pixel cursor at the tile centre), clears the tile/subresource counters and the
    "all tiles used" count, and zeroes the 8-bit pixels of every generated shadow texture.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
+void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
 
 {
   AssetRelativeOffset tableOffset;
@@ -2935,8 +2929,7 @@ GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
    generated shadow texture the pass filled, i.e. all subresources before the current one plus the current
    one when it has at least one used tile (and not every tile ran out).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
+void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
 
 {
   uint32_t subresourceIndex;
@@ -2989,8 +2982,7 @@ void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
    vertex count (+8), triangle count (+0xC) and flags (+0x10), then 0x40-byte vertices (position at +0,
    projected XY stored at +0x20) followed by 0x40-byte triangles (vertex pointers at +0, +0xC, +0x18).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshRecord)
+void GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshRecord)
 
 {
   int vertexCount;
@@ -3026,8 +3018,7 @@ GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAdd
    relative to the shadow origin, composed with the generated texture basis) and rasterizes the node's mesh
    records whose flag bit 0 is clear.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *modelNode)
+void GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *modelNode)
 
 {
   GraphicsFixedVec3 *nodeTranslation;
@@ -3200,9 +3191,7 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *mode
    record) and widens the projected min/max X/Y of g_GeneratedTextureScratchRuntime, from which
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy sizes the shadow tile.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
-          (ModelMeshGroupAddress32 meshRecord)
+void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelMeshGroupAddress32 meshRecord)
 
 {
   int vertexX;
@@ -3241,9 +3230,7 @@ GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
    g_AuxiliaryRotationMatrixFixed (the light-space rotation) and accumulates the projected bounds of all mesh
    records, i.e. the extent of the model's shadow before it is scaled into a texture tile.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
-          (ModelRuntimeNode *modelNode)
+void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds(ModelRuntimeNode *modelNode)
 
 {
   GraphicsFixedVec3 *nodeTranslation;
@@ -3302,8 +3289,7 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
    plus translation and stores only X and Y; the shadow bounds pass
    (GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords) needs no depth.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TransformPointXY
+void GraphicsShadingGeneratedTexture_TransformPointXY
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
@@ -3331,7 +3317,7 @@ GraphicsShadingGeneratedTexture_TransformPointXY
    tile row, then on to the next generated texture. When the last texture is full the completed count
    becomes nonzero and further models get no shadow until the next pass.
 */
-void __thandor_void_preserve_eax_ecx GraphicsShadingGeneratedTexture_AdvanceTileCursor(void)
+void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void)
 
 {
   g_GraphicsShadingGeneratedTextureTileX =
@@ -3370,7 +3356,7 @@ void __thandor_void_preserve_eax_ecx GraphicsShadingGeneratedTexture_AdvanceTile
    the zero-bordered scratch grid, then writes back to every texel the byte-saturated weighted sum of its
    neighbourhood (centre x4, taps gridHalfSize / 16 texels apart), 32 texels per step with MMX.
 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
+void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void)
 
 {
   int backtrackOffset;
@@ -3559,8 +3545,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
    group (resource +0xEC), so GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy skips hierarchies
    that cannot cast a shadow. Children are probed from the last to the first; the first hit ends the search.
 */
-bool __thandor_void_preserve_eax_ecx
-GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
+bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
 
 {
   uint32_t decrementedCount;
@@ -3591,8 +3576,7 @@ GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *mode
    address in the pool's block table and presets the first block's 0x20-byte header at +0x60 (0, flags
    0x11000); the three 0x20-byte vertices of each triangle come first. Pool full: poolFull (CF) set.
 */
-ProjectedBlockReserveResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
+ProjectedBlockReserveResult GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext)
 
 {
@@ -3650,8 +3634,7 @@ void GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks
    dot products are shifted right by 12 only and the results are rounded down to whole texels (multiples of
    0x1000), ready for GraphicsShadingGeneratedTexture_RasterizeTriangleMask. Used by the silhouette passes.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TransformPointXYQuantized
+void GraphicsShadingGeneratedTexture_TransformPointXYQuantized
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
@@ -3681,8 +3664,7 @@ GraphicsShadingGeneratedTexture_TransformPointXYQuantized
    12 instead of 28, keeping the extra precision that GraphicsShadingGeneratedTexture_TransformPointXYQuantized
    (also >> 12) expects. The original reloads lhs row elements between the dot products, as kept here.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_ComposeTransform
+void GraphicsShadingGeneratedTexture_ComposeTransform
           (GraphicsFixedMatrix3x4 *outTransform,GraphicsFixedMatrix3x4 *rhsTransform,
           GraphicsFixedMatrix3x4 *lhsTransform)
 
@@ -3766,8 +3748,7 @@ GraphicsShadingGeneratedTexture_ComposeTransform
    spans between the long top-to-bottom edge and the two short edges. Called per triangle by the silhouette
    passes (GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set/Flag0Clear).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_RasterizeTriangleMask
+void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC)
 
 {

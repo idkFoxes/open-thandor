@@ -15,87 +15,72 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041A580 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex);
+StatusResult NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex);
 
 /* 0x0041A590 */
 void __cdecl NetworkBackendFallback_Slot1_NoOp(void);
 
 /* 0x0041A5A0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort);
+StatusResult NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort);
 
 /* 0x0041A5B0 */
 void __cdecl NetworkBackendFallback_Slot3_NoOp(void);
 
 /* 0x0041A5C0 */
-NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailure (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
+NetworkReceiveResult NetworkBackendFallback_Slot4_ThreeArgFailure (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
 
 /* 0x0041A5D0 */
-NetworkSendResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5_ThreeArgSuccess (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
+NetworkSendResult NetworkBackendFallback_Slot5_ThreeArgSuccess (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
 /* 0x0041A5E0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkBackendFallback_Slot6_TwoArgFailure
-          (UiTransferEndpointDescriptor *endpoint,char *endpointText);
+bool NetworkBackendFallback_Slot6_TwoArgFailure(UiTransferEndpointDescriptor *endpoint,char *endpointText);
 
 /* 0x0041A5F0 */
 void NetworkBackendFallback_Slot7_ClearOutput(char *outputText,WinSockAddress *socketAddress);
 
 /* 0x00584E70 */
-void __thandor_void_preserve_eax_ecx_edx NetworkFallback_NoOpBackendCleanup(void);
+void NetworkFallback_NoOpBackendCleanup(void);
 
 /* 0x00584E80 */
-NetworkOpenBindResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort);
+NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort);
 
 /* 0x00585030 */
-void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void);
+void NetworkFallback_CloseActiveSocket(void);
 
 /* 0x00585060 */
-NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_ReceiveDatagram
+NetworkReceiveResult NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
 /* 0x005850B0 */
-NetworkSendResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_SendDatagram
+NetworkSendResult NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
 /* 0x00585120 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkFallback_ParsePeerEndpoint
-          (UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText);
+bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText);
 
 /* 0x005851C0 */
-void __thandor_void_preserve_eax_ecx_edx
-NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
+void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
 
 /* 0x00585450 */
-void __thandor_void_preserve_eax_ecx_edx NetworkFallbackUdp_CloseSocket(void);
+void NetworkFallbackUdp_CloseSocket(void);
 
 /* 0x00585480 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLength,uint8_t *buffer);
+StatusResult NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLength,uint8_t *buffer);
 
 /* 0x005854E0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount,uint8_t *buffer);
+StatusResult NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount,uint8_t *buffer);
 
 /* 0x00585640 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address);
+bool NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address);
 
 
 /* 0x00585290 */
-void __thandor_void_preserve_eax_ecx_edx NetworkBackend_NoOpCleanup(void);
+void NetworkBackend_NoOpCleanup(void);
 
 /* 0x005852A0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder);
+StatusResult NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder);
 
 /* 0x00585550 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut,uint16_t *addressText);
+bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut,uint16_t *addressText);
 
 #endif /* THANDOR_NETWORK_BACKEND_FALLBACK_UDP_H */

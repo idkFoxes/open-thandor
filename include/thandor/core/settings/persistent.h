@@ -59,32 +59,24 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00402C00 */
-void __thandor_preserve_eax PersistentSettings_Flush(void);
+void PersistentSettings_Flush(void);
 
 /* 0x00402B00 */
-void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void);
+void PersistentSettings_Load(void);
 
 /* 0x00402C50 */
-uint32_t __thandor_eax_preserve_ecx_edx
-PersistentSettings_Read
-          (PersistentSettingsValue defaultValue,
+uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 /* 0x00402CC0 */
-void * __thandor_eax_preserve_ecx_edx
-PersistentSettings_GetRegionOrFallback
-          (PersistentSettingsByteCount regionByteCount,void *fallback,
+void * PersistentSettings_GetRegionOrFallback(PersistentSettingsByteCount regionByteCount,void *fallback,
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 /* 0x00402CF0 */
-void __thandor_void_preserve_eax_ecx_edx
-PersistentSettings_WriteBlock
-          (PersistentSettingsByteCount regionByteCount,uint32_t *source,
+void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,uint32_t *source,
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 /* 0x00402C80 */
-void __thandor_void_preserve_eax_ecx_edx
-PersistentSettings_Write
-          (PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
+void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes);
 
 #endif /* THANDOR_CORE_SETTINGS_PERSISTENT_H */

@@ -120,29 +120,21 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00543F50 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendCommandQueue_EnqueueLocalPlayerCommand
-          (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
+void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04);
 
 /* 0x00543FB0 */
-void __thandor_void_preserve_ecx_edx
-FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
+void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
 
 /* 0x0055F130 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandQueue_AppendLocalPlayerCommand
-          (UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
+void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04);
 
 /* 0x0055F190 */
-void __thandor_void_preserve_ecx_edx
-InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
+void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord);
 
 /* 0x0055F200 */
-bool __thandor_cf_preserve_eax_ecx_edx
-InGameCommandQueue_ContainsTripletValue
-          (InGameCommandPayloadTripletValue32 payloadValue,
+bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress);
 
 /* Rebuild helper: the recovered handler for a received command code (codeBase + code is the original

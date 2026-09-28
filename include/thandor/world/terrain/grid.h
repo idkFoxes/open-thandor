@@ -62,76 +62,59 @@
 #define FIELD_CELL_OCCUPANCY_BIT1 0x02
 
 /* 0x00505930 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
+void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
           (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00562330 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RunDirectionalRelaxationPasses
-          (FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
+void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
           TerrainRelaxationPassCount passCount,TerrainRelaxationMode mode);
 
 /* 0x005610A0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyPositiveCellDeltas
-          (PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
+void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
 /* 0x005613C0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyNegativeCellDeltas
-          (PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
+void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
 /* 0x00561C10 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RebuildLocalInfluenceState
+void FieldGrid_RebuildLocalInfluenceState
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00505620 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid);
+void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid);
 
 /* 0x00505700 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RecomputeInteriorDirectionalLighting
+void FieldGrid_RecomputeInteriorDirectionalLighting
           (AngleTurn32 lightElevationAngle,AngleTurn32 lightAzimuthAngle,FieldGridAsset *fieldGrid);
 
 /* 0x005090E0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
+void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
           (TerrainHeightBrushDeltaSource heightDeltaSourceValue,Q12 worldZQ12,Q12 worldYQ12,
           Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x005618A0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyLocalCellUpdate
+void FieldGrid_ApplyLocalCellUpdate
           (PlayerRuntimeId playerRuntimeId,FieldGridTransitionValue transitionValue,Q12 gridRowQ12,
           Q12 gridColumnQ12);
 
 /* 0x00562390 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyEncodedCellUpdate
-          (PlayerRuntimeId playerRuntimeId,Q12 gridRowQ12,Q12 gridColumnQ12,
+void FieldGrid_ApplyEncodedCellUpdate(PlayerRuntimeId playerRuntimeId,Q12 gridRowQ12,Q12 gridColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
 /* 0x005623D0 */
-void __thandor_preserve_eax
-FieldGrid_ApplyMaskDFFFFFFF
+void FieldGrid_ApplyMaskDFFFFFFF
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00562410 */
-void __thandor_preserve_eax
-FieldGrid_ApplyMaskBFFFFFFF
+void FieldGrid_ApplyMaskBFFFFFFF
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00562450 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyCallerMask
+void FieldGrid_ApplyCallerMask
           (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 gridRowQ12,
           Q12 gridColumnQ12);
 
@@ -144,87 +127,68 @@ SurfacePointResult
 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEBA0 */
-int32_t __thandor_eax_preserve_ecx_edx
-FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
+int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEC10 */
-HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
+HeightSampleResult FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FED50 */
-int32_t __thandor_eax_preserve_ecx_edx
-FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
+int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEE90 */
-HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
+HeightSampleResult FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FEFF0 */
-HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
+HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF1A0 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field);
+HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FF3D0 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
+HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF600 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
+HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF830 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
+HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x004FFB80 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FieldGrid_TestWorldPointBlocked
+bool FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           );
 
 /* 0x00503C90 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid);
+void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid);
 
 /* 0x00503DB0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid);
+void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid);
 
 /* 0x00503E20 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyByteClampLookupToCells
-          (FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid);
+void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid);
 
 /* 0x00503E80 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ClassifyCellFlagsToRuntimeByte
-          (FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid);
+void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid);
 
 /* 0x00503EE0 */
-void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuildVectors(void);
+void TerrainDirectionTable_AdvanceAndRebuildVectors(void);
 
 /* 0x00504B10 */
-TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastTerrainSurfaceDistance
+TerrainRaycastResult FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00504CA0 */
-TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastSecondarySurfaceDistance
+TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00504E60 */
-TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastTerrainTrianglesAlongDirection
+TerrainRaycastResult FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
 
@@ -232,113 +196,85 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid);
 
 /* 0x00505240 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_SetOccupancyMaskByteBit0AllCells
+void FieldGrid_SetOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
 
 /* 0x00505290 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ClearOccupancyMaskByteBit0AllCells
+void FieldGrid_ClearOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid);
 
 /* 0x00507580 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainGrid_TestProjectedCellMaskBits01
-          (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
+bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x005092A0 */
 void FieldGrid_ClearCellFlag8000AcrossGrid(FieldGridAsset *fieldGrid);
 
 /* 0x005092E0 */
-void __thandor_void_preserve_eax_ecx
-FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
+void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
 
 /* 0x00532B60 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords);
+StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords);
 
 /* 0x00561050 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ClearPlayerScratchPlane
+void FieldGrid_ClearPlayerScratchPlane
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 reservedWorldYQ12,Q12 reservedWorldXQ12);
 
 /* 0x00561BB0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ResetLocalInfluenceState
+void FieldGrid_ResetLocalInfluenceState
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 reservedWorldYQ12,Q12 reservedWorldXQ12);
 
 /* 0x00571EC0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyEncodedUpdateCore
-          (FieldGridHeightDeltaUnits heightDeltaUnits,Q12 gridRowQ12,Q12 gridColumnQ12,
+void FieldGrid_ApplyEncodedUpdateCore(FieldGridHeightDeltaUnits heightDeltaUnits,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x005058A0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
-          (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
+void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridCell *cell);
 
 /* 0x00505AA0 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid);
+void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid);
 
 /* 0x00505BE0 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid);
+void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid);
 
 /* 0x00505D30 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid);
+void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid);
 
 /* 0x00505E60 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid);
+void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid);
 
 /* 0x00571090 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ProcessHorizontalSpan
-          (Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
+void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
           FieldGridRadiusUnits radiusUnits,Q12 centerRowQ12,Q12 centerColumnQ12,
           FieldGridAccumulatorValue *accumulatorPlane,FieldGridAsset *fieldGrid);
 
 /* 0x00571250 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ProcessVerticalSpan
-          (FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
+void FieldGrid_ProcessVerticalSpan(FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
           Q12 centerRowQ12,Q12 centerColumnQ12,FieldGridAccumulatorValue *accumulatorPlane,
           FieldGridAsset *fieldGrid);
 
 /* 0x005713E0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplySingleCellTransition
-          (FieldGridTransitionValue transitionValue,Q12 gridRowQ12,Q12 gridColumnQ12,
+void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValue,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x00571860 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridAsset *fieldGrid);
+void FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FEA50 */
-FieldGridCoordinatesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx_mm0
-FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX);
+FieldGridCoordinatesEaxEdx8 FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX);
 
 /* 0x00571FE0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyMaskedRegionCore
+void FieldGrid_ApplyMaskedRegionCore
           (FieldGridRegionMask preserveMask,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x005052E0 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridCell_RecomputeTriangleNormalAngles
-          (FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell);
+void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell);
 
 /* 0x00505690 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell);
+void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell);
 
 #endif /* THANDOR_WORLD_TERRAIN_GRID_H */

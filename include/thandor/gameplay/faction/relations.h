@@ -19,65 +19,51 @@
 #define PLAYER_PAIR_LIST_CAPACITY 4096
 
 /* 0x0053C010 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_UpdateAllPairsForFaction
+void GameFactionRelations_UpdateAllPairsForFaction
           (FactionRuntimeIndex sourceFactionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00560E30 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_InsertRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+void PlayerPairList_InsertRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
           SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12);
 
 /* 0x00560E70 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_RemoveRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
           SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12);
 
 /* 0x0053C3D0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_TestPairTransitionAllowed
+bool GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0053C090 */
-FactionActiveMask __thandor_eax_preserve_ecx_edx
-GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex);
+FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex);
 
 /* 0x0053C0F0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_EvaluateTransitionRules
+bool GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask);
 
 /* 0x0053C490 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_IsNotResetEligibleState
+bool GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0053C4D0 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_MaybeAdvancePairStateRare
+void GameFactionRelations_MaybeAdvancePairStateRare
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0053C540 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_MaybeAdvancePairStateCommon
+void GameFactionRelations_MaybeAdvancePairStateCommon
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0053C5B0 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_MaybeResetPairState
+void GameFactionRelations_MaybeResetPairState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x00560EB0 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_InsertUnique
+void PlayerPairList_InsertUnique
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
           SelectionPlayerPairValue worldXQ12);
 
 /* 0x00560F50 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_RemoveFirstMatch
+void PlayerPairList_RemoveFirstMatch
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
           SelectionPlayerPairValue worldXQ12);
 

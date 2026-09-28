@@ -15,7 +15,7 @@
    heap copy of the dialog root when UiRootStack_Pop closes it. The close is vetoed (CF set) only when the
    free fails.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root)
+bool UiRootCallbacks_Free(UiRootNode *root)
 
 {
   ArenaFreeResult freeResult;
@@ -30,7 +30,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root)
    pointer press that misses the dialog ends the root-stack hit test there (the dialogs are modal). The
    caller removes the one stack argument.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *root)
+bool UiRootCallbacks_NoOpMethod08(UiRootNode *root)
 
 {
   return true;
@@ -42,7 +42,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *
    non-negative result stops pointer motion that misses the dialog from reaching the roots below it. The value
    8 carries no meaning beyond being non-negative (same as ErrorRuntime_CallbackReturnCode8).
 */
-int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root)
+int UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root)
 
 {
   return 8;
@@ -56,7 +56,7 @@ int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicy_ReturnCode8(UiRootNod
    root +0xBB4 for the bias, +0x5C = root +0xB94 for the scale). Called when the dialog opens and by
    UiDisplaySettingsRoot_RefreshModeSelection.
 */
-void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *root)
+void UiRuntime_FormatSignedValues140And144(void *root)
 
 {
   /* fractionalDigits 3, integerDigitLimit 10; the denominators are 64.0 and 1.0 in Q16 */
@@ -79,9 +79,7 @@ void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void 
    0x20D (button or countdown expiry) restores. The original returns CF set when the allocation failed; no
    caller looks at it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRuntime_OpenFourValueDialog
-          (UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
+void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
           UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth)
 
 {
@@ -128,8 +126,7 @@ UiRuntime_OpenFourValueDialog
    until the receiver wraps around to it again. empty (CF set) when nothing was pending; then both values
    are the read index.
 */
-RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx
-UiRuntimeRecordRing_DiscardOldest(void)
+RecordRingDiscardResult UiRuntimeRecordRing_DiscardOldest(void)
 
 {
   uint32_t nextReadIndex;
@@ -164,7 +161,7 @@ UiRuntimeRecordRing_DiscardOldest(void)
    Discards every received network packet still waiting in the record ring (read index = write index),
    e.g. before a new session is opened.
 */
-void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void)
+void UiRuntimeRecordRing_Clear(void)
 
 {
   g_UiRuntimeRecordReadIndex = g_UiRuntimeRecordWriteIndex;
@@ -176,7 +173,7 @@ void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void)
    Tells whether a received network packet is waiting in the record ring: CF set when the write and read
    indices differ. No caller was found in the executable.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void)
+bool UiRuntimeRecordRing_HasPending(void)
 
 {
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
@@ -191,8 +188,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void)
    host of this session has sent something. The in-game client tick uses it to skip processing until the
    host's packets are there. Returns false when nothing matches or the ring lock is busy (it only try-locks).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
+bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
 
 {
   uint32_t ringIndex;
@@ -231,8 +227,7 @@ UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
    that lock is released (SpinLockReleaseAndInvoke), so UI work is serialised with the active state tick
    (frontend or in-game). Passing two null pointers disables the synchronisation.
 */
-void __thandor_preserve_eax_edx
-UiRuntime_SetSynchronizationHooks
+void UiRuntime_SetSynchronizationHooks
           (UiRuntimePostUnlockCallbackProc *postUnlockCallback,RuntimeSpinLockValue *frameLock)
 
 {
@@ -248,7 +243,7 @@ UiRuntime_SetSynchronizationHooks
    in-game error handler and allocates the UI queues and the network transfer buffers. Every allocation
    failure is fatal.
 */
-void __thandor_preserve_eax UiRuntime_Initialize(void)
+void UiRuntime_Initialize(void)
 
 {
   ArenaAllocResult allocResult;
@@ -368,7 +363,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
    Default method04 (vtable slot +0x04) of the UI node classes: does nothing. Installed statically in 40
    UiNodeVtable tables in image_data.c; no caller of the slot is known yet.
 */
-void __thandor_void_preserve_eax_ecx_edx UiNode_DefaultMethod04_NoOp(void *node)
+void UiNode_DefaultMethod04_NoOp(void *node)
 
 {
   return;
@@ -379,9 +374,7 @@ void __thandor_void_preserve_eax_ecx_edx UiNode_DefaultMethod04_NoOp(void *node)
    Default nonRightPress (vtable slot +0x10, left/middle button press) of the UI node classes: ignores the
    press. Installed statically in 14 UiNodeVtable tables in image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_DefaultNonRightPress
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
 
 {
@@ -393,9 +386,7 @@ UiNode_DefaultNonRightPress
    Default nonRightRelease (vtable slot +0x14, left/middle button release) of the UI node classes: ignores
    the release. Installed statically in 25 UiNodeVtable tables in image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_DefaultNonRightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultNonRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
 
 {
@@ -408,8 +399,7 @@ UiNode_DefaultNonRightRelease
    parent, which also takes over the pointer capture; at the root nobody takes it and the capture is
    cleared. Installed statically in 32 UiNodeVtable tables in image_data.c.
 */
-void __thandor_preserve_eax_edx
-UiNode_ForwardRightPressToParent
+void UiNode_ForwardRightPressToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
 
@@ -431,9 +421,7 @@ UiNode_ForwardRightPressToParent
    Default rightRelease (vtable slot +0x1C) of the UI node classes: ignores the right-button release.
    Installed statically in 34 UiNodeVtable tables in image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_DefaultRightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
 
 {
@@ -457,9 +445,7 @@ void UiNode_DefaultNonRightDrag
    Default rightDrag (vtable slot +0x24, pointer motion while a right press holds the capture) of the UI
    node classes: ignores it. Installed statically in 34 UiNodeVtable tables in image_data.c.
 */
-void __thandor_preserve_eax_edx
-UiNode_DefaultRightDrag
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
 
 {
@@ -473,8 +459,7 @@ UiNode_DefaultRightDrag
    reaches the whole subtree. Installed statically in 39 UiNodeVtable tables in image_data.c; also called
    directly by UiLayoutContainerControl_ApplyFlagsRecursive once per page.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
+void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
 
 {
   UiNodeBase *childControl;
@@ -503,8 +488,7 @@ void UiNode_DefaultTick(UiNodeBase *control)
    Installs the handler page for action ids pageIndex * 256 .. pageIndex * 256 + 255, so a UI module can register
    its actions; out-of-range page indices are ignored.
 */
-void __thandor_preserve_eax
-UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page)
+void UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page)
 
 {
   if (pageIndex < UI_ACTION_HANDLER_PAGE_COUNT) {
@@ -536,7 +520,7 @@ UiNodeBase * UiNode_GetRoot(UiNodeBase *node)
    list. Ignored while invalidation is suppressed or when UI_DIRTY_RECT_CAPACITY rectangles are already
    collected.
 */
-void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node)
+void UiNode_InvalidateRoot(UiNodeBase *node)
 
 {
   UiDirtyRectEntry *dirtyRectEntry;
@@ -571,7 +555,7 @@ void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node)
    Queues action actionId of the control source for UiActionQueue_DispatchPending (at the end of the
    frame). UI_ACTION_NONE and actions beyond the 16 queue entries are dropped.
 */
-void __thandor_void_preserve_eax_ecx_edx UiActionQueue_Enqueue(UiActionId actionId,void *source)
+void UiActionQueue_Enqueue(UiActionId actionId,void *source)
 
 {
   UiActionId *destinationEntry;

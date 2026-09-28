@@ -28,9 +28,7 @@ static TH_LEGACY_DWORD DirectInputMouse_CooperativeLevel(void)
    g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218). Both 16-bit code units are upper-cased and the result
    is returned in CF (upper(right) < upper(left)); EAX, ECX and EDX are preserved for the caller.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Keyboard_CompareAsciiCaseInsensitiveFlags
-          (KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
+bool Keyboard_CompareAsciiCaseInsensitiveFlags(KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
 {
   uint32_t leftLowWord;
@@ -48,7 +46,7 @@ Keyboard_CompareAsciiCaseInsensitiveFlags
    Discards every queued keyboard event by moving the ring's write index back onto its read index.
    Reached through the g_KeyboardFlushEvents pointer (0x00417210).
 */
-void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
+void Keyboard_FlushEvents(void)
 
 {
   g_KeyboardWriteIndex = g_KeyboardReadIndex;
@@ -61,7 +59,7 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
    (0x00417214). Returns EAX = key code and EDX = modifier state with CF clear, or CF set when the ring is
    empty; the struct return only models that register triple.
 */
-KeyboardEventResult __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
+KeyboardEventResult Keyboard_ReadNextEventRegs(void)
 
 {
   uint32_t nextReadIndex;
@@ -93,7 +91,7 @@ KeyboardEventResult __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs
    Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged. Reached through the toLower
    slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218).
 */
-uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
+uint32_t Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
   if (('A' - 1 < asciiCodeUnit) && (asciiCodeUnit < 'Z' + 1)) {
@@ -111,7 +109,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterC
    CF clear on success; on failure EAX is FATAL_ERROR_DIRECTINPUT_SETUP (failed stage in
    g_PackageLastErrorPath) or the cursor asset load error.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
+StatusResult DirectInputMouse_Init(void)
 
 {
   GraphicsSubresourceIndex copiedFrameField;
@@ -247,7 +245,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
    device and only recreates one when there is none (see the deviations below). g_MousePollBusy keeps
    DirectInputMouse_PollBufferedEvents off the device meanwhile.
 */
-void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(void)
+void DirectInputMouse_RefreshDeviceIfIdle(void)
 
 {
   TH_LEGACY_HRESULT createInputResult;
@@ -311,7 +309,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
    Shuts the mouse down: releases the DirectInput device and object, stops the mouse-poll and
    cursor-animation timers and gives Windows back its arrow cursor.
 */
-void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_Shutdown(void)
+void DirectInputMouse_Shutdown(void)
 
 {
   HCURSOR arrowCursor;
@@ -339,7 +337,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_Shutdown(void)
    ring. A lost device is reacquired; after 16 errors the poll gives up until the next tick. Skipped when
    a poll or DirectInputMouse_RefreshDeviceIfIdle is already running (g_MousePollBusy).
 */
-void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(void)
+void DirectInputMouse_PollBufferedEvents(void)
 
 {
   uint32_t wasBusyOrEventIndex;
@@ -483,7 +481,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
 
 
 /* Real signature behind the g_SoftwareFramebufferCreate slot (SoftwareFramebuffer_Create): EAX pointer, CF failure. */
-typedef SoftwareFramebufferResult __thandor_eax_cf_preserve_ecx_edx SoftwareFramebufferCreateCfProc
+typedef SoftwareFramebufferResult SoftwareFramebufferCreateCfProc
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
           GraphicsPixelDimension width);
 
@@ -496,8 +494,7 @@ typedef SoftwareFramebufferResult __thandor_eax_cf_preserve_ecx_edx SoftwareFram
    the SoftwareFramebuffer_Create signature to read its CF. On failure g_GraphicsBackendAccessState stays -1
    and the buffers created so far stay installed, as in the original.
 */
-DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-DirectInputMouse_SetDisplayMode
+DisplayModeResult DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
 
@@ -569,8 +566,7 @@ DirectInputMouse_SetDisplayMode
    g_PointerSetPosition implementation: moves the mouse to (positionX, positionY) in both the published
    cursor state and the DirectInput position, and clears the wheel delta.
 */
-void __thandor_void_preserve_eax_ecx
-DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX)
+void DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX)
 
 {
   g_CursorOverrideX = positionX;
@@ -588,7 +584,7 @@ DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordi
    cursor state and discards the queued cursor events. Note that it moves the write index back to the
    read index (the keyboard flush moves the read index instead).
 */
-void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_FlushBufferedEvents(void)
+void DirectInputMouse_FlushBufferedEvents(void)
 
 {
   g_CursorOverrideX = g_MouseX;
@@ -605,7 +601,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_FlushBufferedEvents(vo
    mapped key is queued as a KEYBOARD_KEY_CODE_* event with the modifier state of the moment in the 64-entry
    keyboard ring (0x10000-family keys also mark g_KeyboardSpecialKeyDown). CF clear when an event was queued.
 */
-void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
+void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 
 {
   KeyboardInputEvent *eventRecord;
@@ -712,7 +708,7 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCo
    toggle, and releases the g_KeyboardSpecialKeyDown entry of a 0x10000-family key (the held state the in-game
    camera keys poll). Queues no event. CF clear when a non-modifier key was processed.
 */
-void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
+void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
 {
   uint32_t mappedKeyStateCode;
@@ -792,7 +788,7 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyUp(KeyboardVirtualKeyCode
    the current modifier state in the keyboard ring. With Ctrl held, the control characters 1-26 that
    Windows delivers for Ctrl+A..Ctrl+Z are turned back into 'a'..'z'.
 */
-void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode character)
+void Keyboard_OnChar(KeyboardCharacterCode character)
 
 {
   KeyboardInputEvent *eventRecord;
@@ -822,7 +818,7 @@ void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode chara
    slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218); Keyboard_CompareAsciiCaseInsensitiveFlags
    also calls it directly.
 */
-uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
+uint32_t Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
   if (('a' - 1 < asciiCodeUnit) && (asciiCodeUnit < 'z' + 1)) {

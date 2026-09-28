@@ -17,9 +17,7 @@
    three digits and up to fractionalDigits fraction digits (denominator must not be 0); hexadecimal mode prints
    prefix, 2/4/6/8 digits without leading zero bytes, and suffix.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-WideNumber_FormatUtf16
-          (WideNumberFormatFlags flags,WideNumberFractionalDigitCount fractionalDigits,
+uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractionalDigitCount fractionalDigits,
           WideNumberIntegerDigitLimit integerDigitLimit,WideNumberDenominator32 denominator,
           WideNumberSignedValue32 value,uint16_t *destination)
 
@@ -147,8 +145,7 @@ WideNumber_FormatUtf16
    in the flags (ZF equal, CF leftText < rightText); a string that ends first compares as equal-or-greater
    (CF clear), with ZF set only when both end together.
 */
-TextCompareResult __thandor_void_preserve_eax_ecx_edx
-Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText)
+TextCompareResult Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText)
 
 {
   uint16_t leftCodeUnit;
@@ -193,8 +190,7 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
    bytes. Returns the bytes written including the terminator; if the string does not fit it is cut off
    and terminated, and CF is set with FATAL_ERROR_GENERAL_FAILURE.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
+StatusResult Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
   uint32_t remainingCapacityBytes;
@@ -252,8 +248,7 @@ uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source)
    Copies exactly codeUnitCount UTF-16 code units from source to destination (rep movsw in the original).
    It appends no terminator, so the number formatter can splice digit runs into a larger buffer.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,uint16_t *destination)
+void WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,uint16_t *destination)
 
 {
   if (codeUnitCount != 0) {

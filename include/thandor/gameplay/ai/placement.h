@@ -15,68 +15,49 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053A110 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_ReserveAdditionalSpecialSite
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AE60 */
-void __thandor_void_preserve_eax_ecx_edx
-AiCandidatePlanning_AddSpecialSiteCandidate
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00537B20 */
-void __thandor_void_preserve_ecx_edx
-AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell);
+void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell);
 
 /* 0x00537C10 */
-void __thandor_void_preserve_ecx_edx
-AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell);
+void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell);
 
 /* 0x00537CF0 */
-void __thandor_void_preserve_ecx_edx
-AiSiteCandidate_AddTerrainFeatureCellIfSeparated
+void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
           (FieldGridCell *terrainFeatureCell,uint32_t gridScratchRowStrideBytes);
 
 /* 0x00539200 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_TestWorkspaceRecordAtPoint
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           ArmyPlacementContext placementContext,UiRootNode *inGameRoot);
 
 /* 0x0053A1B0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_TestMode4AtWorkspaceRecord
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B570 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-AiPlacement_QueryReachableSiteBucketCount
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+StatusResult AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053ACD0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_ReserveMode3SiteCluster
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AD50 */
-SiteWeightResult __thandor_eax_cf_preserve_ecx_edx
-AiCandidatePlanning_ComputeSpecialSiteWeight
+SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539330 */
-AiAnchorResult __thandor_preserve_eax
-AiPlacement_FindNearestValidWorkspace09Anchor
+AiAnchorResult AiPlacement_FindNearestValidWorkspace09Anchor
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539EF0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_ReserveSeparatedSpecialSiteChain
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 #endif /* THANDOR_GAMEPLAY_AI_PLACEMENT_H */

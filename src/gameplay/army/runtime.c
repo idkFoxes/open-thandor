@@ -21,8 +21,7 @@
    the terrain and its transforms, emitters and damage effect are refreshed.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClassUpdateSlot21_DispatchByClassId
+void ArmyRuntimeClassUpdateSlot21_DispatchByClassId
           (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView200 *modelRuntime)
 
 {
@@ -429,9 +428,7 @@ ArmyRuntimeClassUpdateSlot21_DispatchByClassId
    hangar transition in +0xB0 (1 open, 2 lift, 4 lower, 5 close, 6/0 idle) and launches pending linked aircraft.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode
-          (WorldRuntimeContext *worldRuntime,
+void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldRuntimeContext *worldRuntime,
           ModelRuntimeLinkedChildSpawnAndBuildView200 *modelRuntime)
 
 {
@@ -772,8 +769,7 @@ ArmyRuntimeClass_AdvanceSecondaryArmyAssetCandidate:
    definition's mask (Xenite paid up front, Energy load held while building), creates the army at the spawn
    point, opens the door, sends the army out to the exit point, waits until it has left and closes the door.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
+void ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
@@ -1028,8 +1024,7 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
    64 entries, from where it is placed) and, for the active faction, the command grid is rebuilt and a
    notification is queued.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClassUpdateSlot11_DispatchByClassId
+void ArmyRuntimeClassUpdateSlot11_DispatchByClassId
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
@@ -1162,8 +1157,7 @@ ArmyRuntimeClassUpdateSlot11_DispatchByClassId
    the cell carries the matching resource-field support bit, registers itself there and runs its emitters and
    animation.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
+void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
           (WorldRuntimeContext *worldRuntime,ModelRuntimeClass14UpdateView200 *modelRuntime)
 
 {
@@ -1215,9 +1209,7 @@ ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
    class-state bit 0x20 is set), and when every model of the same owner within reach is an idle class-18
    model, marks the last of them (flag 8) and spawns its army-from-model completion effect.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ClassCommandHandlerGroupA
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeNode *ownNode;
@@ -1336,8 +1328,7 @@ ArmyRuntime_ClassCommandHandlerGroupA
    Army entry of the terrainStateRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
    table): re-registers the owning army's terrain occupancy flags and refreshes the state tint of the model.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint
+void ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint
           (WorldRuntimeContext *worldRuntime,ModelRuntimeNode *modelNodeRuntime)
 
 {
@@ -1355,8 +1346,7 @@ ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint
    runs the class sound callbacks (classMethodD) over the army's model hierarchy, starting at the runtime
    stored at +0x48 of the passed slot.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
+void ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -1372,8 +1362,7 @@ ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
    for non-neutral factions, drops a timed-out target command, clears the LOCKED movement flag once nothing
    links to the model any more and counts down the timer at +0xA4.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
+void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode100 *ownerNode)
 
 {
@@ -1411,8 +1400,7 @@ ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    panel preview textures of every army asset that has a selection panel entry. The movie schedule is ticked in between, since this
    runs behind the level-loading movie. Any load error is returned with CF set.
 */
-ArmyRuntimeInitResult __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath)
+ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath)
 
 {
   uint16_t pathChar;
@@ -1568,8 +1556,7 @@ ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBaseP
    whole model hierarchy is destroyed, e.g. a wreck that has sunk out of sight.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
+void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
           (WorldRuntimeContext *worldRuntime,ModelRuntimeDestroyEffectsView200 *modelRuntime)
 
 {
@@ -1612,8 +1599,7 @@ ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
    army's terrain occupancy and refreshes the node's state tint. Second pass after
    ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback when a level's armies are set up.
 */
-void __thandor_preserve_eax_edx
-ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
+void ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
           (WorldRuntimeContext *armyContext,WorldOwnerListNode100 *node)
 
 {
@@ -1632,8 +1618,7 @@ ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
    weapon definition's two post-launch values as the army's action vector, but only when both of those values
    are nonzero; otherwise the previous vector is kept.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_SetNonzeroActionVector
+void ArmyRuntime_SetNonzeroActionVector
           (Q12 actionVector0,Q12 actionVector2,Q12 actionVector1,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -1650,8 +1635,7 @@ ArmyRuntime_SetNonzeroActionVector
    Gives the army a new target army (NULL clears the command). A move started by target following is
    ended first; the command is stamped with the standard generation, or generation 0 when cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmyCommandGeneration standardGeneration;
@@ -1682,8 +1666,7 @@ ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeS
    Gives the army a target position command (commandCoordinate0-2Q12): ends a move started by target
    following, drops any target army and stamps the standard command generation.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ApplyTargetPositionCommand
+void ArmyRuntime_ApplyTargetPositionCommand
           (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -1832,8 +1815,7 @@ ArmyRuntime_ResolveShotAimPoint
    set) around the node, and marks occupancy bit 2 around it when the active faction's nibble has bit 3 set. First pass of the occupancy rebuild; see
    ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
+void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode100 *node)
 
 {
@@ -1908,8 +1890,7 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
    Tests the army's state/technology id at +0x100 for zero (CF set when it is zero, SETZ / RCR); used by
    ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime)
 
 {
   return armyRuntime->stateOrTechnologyId == 0;
@@ -1920,8 +1901,7 @@ ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime)
    Tests the army's signed state/technology id at +0x100 for being non-negative (CF set when it is >= 0,
    SETGE / RCR). No C code calls it directly.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime)
 
 {
   return -1 < armyRuntime->stateOrTechnologyId;
@@ -1932,9 +1912,7 @@ ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime)
    Runs the placement-validation handler of the army's runtime class (table at 0x0051FED8, indexed by the class id
    at model runtime +0x4C) for the army in *armyRuntimeHolder and returns its acceptance in CF.
 */
-bool __thandor_cf_preserve_eax_edx
-ArmyRuntimeNode_DispatchTypedCallback
-          (ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
+bool ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
 
 {
   bool accepted;
@@ -1953,9 +1931,7 @@ ArmyRuntimeNode_DispatchTypedCallback
    for the army in *armyRuntimeHolder; the AI planners call it to start the class-specific behaviour of the
    armies they create or re-task.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_DispatchClassCommand
-          (ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
+void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
 
 {
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
@@ -1970,7 +1946,7 @@ ArmyRuntime_DispatchClassCommand
    army texture set and palette, frees the two preview textures (+0x18/+0x1C) of every registered army asset
    and clears the asset registry.
 */
-void __thandor_void_preserve_eax_ecx_edx ArmyRuntime_ShutdownPoolAndGraphics(void)
+void ArmyRuntime_ShutdownPoolAndGraphics(void)
 
 {
   ArmyAssetRecordPrefix *armyAsset;
@@ -2071,7 +2047,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
    and model node (+0x04) are rebased by their pools' deltas; the army references (+0x1C, +0x98) are saved
    as pointer - (pool base - 1), so 0 stays NULL.
 */
-void __thandor_void_preserve_eax_ecx_edx ArmyRuntimePool_RebaseAfterLoad(void)
+void ArmyRuntimePool_RebaseAfterLoad(void)
 
 {
   uint32_t savedRuntimeState98Offset;
@@ -2124,9 +2100,7 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntimePool_RebaseAfterLoad(void)
    variant B except for the reload below.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdatePositionedSoundsVariantA
-          (WorldRuntimeContext *worldRuntime,
+void ArmyRuntimeClass_UpdatePositionedSoundsVariantA(WorldRuntimeContext *worldRuntime,
           ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime)
 
 {
@@ -2188,8 +2162,7 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantA
    Empty sound update of class 3, reached only through
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[3] (0x0051FCF8).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   return;
@@ -2225,9 +2198,7 @@ static uint8_t *ArmyRuntimeClass_FindLastClass10Node(uint8_t *node)
    node is destroyed; for a shot of the same shot definition it records that one is still in flight (+0x64).
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_SelectProjectileTargetNode
-          (ModelRuntimeTimedTargetProjectileView200 *modelRuntime,
+void ArmyRuntimeClass_SelectProjectileTargetNode(ModelRuntimeTimedTargetProjectileView200 *modelRuntime,
           WorldOwnerListNode100 *candidateNode)
 
 {
@@ -2277,8 +2248,7 @@ ArmyRuntimeClass_SelectProjectileTargetNode
    reload and fires from its attachment points at the target's position.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
+void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
           (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedTargetProjectileView200 *modelRuntime)
 
 {
@@ -2344,9 +2314,7 @@ ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
    cell bits 0/1 are set.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdatePositionedSoundsVariantB
-          (WorldRuntimeContext *worldRuntime,
+void ArmyRuntimeClass_UpdatePositionedSoundsVariantB(WorldRuntimeContext *worldRuntime,
           ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime)
 
 {
@@ -2405,9 +2373,9 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantB
    Segment meter of the selection panel (called directly by gameplay/selection/runtime with a model runtime):
    filled segments from +0x6C of the passed runtime (the completed linked assets of a class-22 pad), total
    segments from +0xC4 of its definition (the linked-child slot capacity). Returned in EBX/ECX.
+   Original register convention: result in EBX and ECX; EAX and EDX preserved.
 */
-ArmySegmentMeter __thandor_regs_ebx_ecx_preserve_eax_edx
-ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime)
+ArmySegmentMeter ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmySegmentMeter metricRegs;
@@ -2424,8 +2392,7 @@ ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime)
    occur among the army's 13 attachment asset-id slots (dwords from +0x78); the selection panel ORs these
    masks over all selected armies.
 */
-int __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRuntime)
+int ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRuntime)
 
 {
   int attachmentAssetId;
@@ -2459,9 +2426,7 @@ ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRunti
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[10], [14] and [16] (0x0051FCF8) and through
    ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled (classMethodD[4]).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_UpdateLoopingPositionedSound
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   GraphicsFixedVec3 *worldPosition;
@@ -2500,8 +2465,7 @@ ArmyRuntime_UpdateLoopingPositionedSound
    travel is 0. A positioned one-shot sound marks the start of either movement.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
+void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
           (WorldRuntimeContext *worldRuntime,ModelRuntimeVerticalDeploymentView200 *modelRuntime)
 
 {
@@ -2614,8 +2578,7 @@ ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
    freshly rebuilt modelNode and creates the projectile from there towards the target point. Returns true (CF
    set) when the model has no such launch point.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_ResolveShotLaunchFromModelAttachment
+bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
@@ -2661,9 +2624,7 @@ ArmyRuntime_ResolveShotLaunchFromModelAttachment
    quarter and three quarters of a turn. The advance per tick grows by +0x08 of the class data up to that limit (and drops to it at once). When
    the army starts from standstill its start sound plays where the active faction's cell bits 0/1 are set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_UpdateActivationMetricAndPlayStartSound
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_UpdateActivationMetricAndPlayStartSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   GraphicsFixedVec3 *worldPosition;
@@ -2727,9 +2688,7 @@ ArmyRuntime_UpdateActivationMetricAndPlayStartSound
    (contact flag 1, timer 0x20) and, once it is ready (flag 2), both armies are linked to each other; an army of
    class 0 is run over and takes impact damage 0x100000 from the direction of the collision.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_HandleCollisionPartner
-          (ArmyRuntimeSlot *currentArmyRuntime,Q12 currentWorldYQ12,Q12 currentWorldXQ12,
+void ArmyRuntime_HandleCollisionPartner(ArmyRuntimeSlot *currentArmyRuntime,Q12 currentWorldYQ12,Q12 currentWorldXQ12,
           ArmyRuntimeSlot *collisionPartnerArmyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
@@ -2779,8 +2738,7 @@ ArmyRuntime_HandleCollisionPartner
   (ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) | \
    ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0))
 
-ArmyPreviewTextureResult __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_RenderPreviewTexture
+ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,
           FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
           WorldRuntimeContext *worldRuntime)
@@ -2972,8 +2930,7 @@ ArmyRuntime_RenderPreviewTexture
    at zero), the attachment channel ticks of a model without health, and technology research (Xenite paid once
    when affordable, the Energy load held until the technology is unlocked).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
+void ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
@@ -3153,8 +3110,7 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
    height; its health is scaled by the pad's health. Returns true (CF set) when no slot matches or the creation
    fails.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntimeSpawner_CreateLinkedChildInstance
+bool ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
           WorldMotionValue70 inheritedValue70,PckArmyAssetIdCatalog linkedArmyAssetId,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime)
@@ -3217,9 +3173,7 @@ ArmyRuntimeSpawner_CreateLinkedChildInstance
    of every attached model listed in the source's attachment records (+0x140, 0x20 bytes each, count at +0xC);
    false as soon as one of them is out of reach.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestModelAttachmentProximity
-          (ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
+bool ArmyRuntime_TestModelAttachmentProximity(ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
 
 {
   ModelRuntimeSlot *candidateModelRuntime;
@@ -3263,9 +3217,7 @@ ArmyRuntime_TestModelAttachmentProximity
    tables), frees its runtime slot (model node = NULL) and rebuilds the in-game catalog grids and the
    selection detail panel.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_DestroyInstanceAndRefreshUi
-          (WorldRuntimeContext *worldRuntime,GameEntityRuntime *entityRuntime)
+void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,GameEntityRuntime *entityRuntime)
 
 {
   ModelRuntimeSlot *modelRuntime;
@@ -3309,9 +3261,7 @@ ArmyRuntime_DestroyInstanceAndRefreshUi
    within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry (1,5),
    transformed to world space), measured in x/y.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestClass13ProximityCandidate
-          (ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
+bool ArmyRuntime_TestClass13ProximityCandidate(ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
 
 {
   ModelRuntimeSlot *attachmentChildRuntime;
@@ -3350,9 +3300,7 @@ ArmyRuntime_TestClass13ProximityCandidate
    0x10 in the active faction's byte (+0x70 + faction of the cell), the sound soundAssetIndex is played
    unpositioned at the effects gain, at most once per 16 ticks of the faction's relationTransitionTick.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
-          (FactionRuntimeIndex factionIndex,Q12 worldYQ12,Q12 worldXQ12,
+void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex factionIndex,Q12 worldYQ12,Q12 worldXQ12,
           SoundAssetIndex soundAssetIndex,WorldRuntimeContext *worldContext)
 
 {
@@ -3402,9 +3350,7 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
    faction's model definition of every linked asset whose slot bit is still clear, divided by 32 (the same
    rate as the pad's own refund).
 */
-uint32_t __thandor_void_preserve_eax_ecx
-ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
-          (ArmyRuntimeLinkedChildMaskSlotView *armyRuntime)
+uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedChildMaskSlotView *armyRuntime)
 
 {
   FactionRuntimeIndex factionIndex;
@@ -3444,8 +3390,7 @@ ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
    by ArmyRuntimeClassUpdateSlot21_DispatchByClassId for the home pad when an aircraft lands or takes off (the
    pad's platform sound; despite the name nothing is created).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime)
+void ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
@@ -3482,9 +3427,7 @@ ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeCo
    name no effect is spawned; it is the hatch sound class 22 plays itself in
    ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint
-          (ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldContext)
+void ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldContext)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
@@ -3519,8 +3462,7 @@ ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint
    of two armies or attachments): CF clear when dx^2 + dy^2 <= (candidateRadius + sourceRadius)^2, in 64-bit
    Q24 arithmetic.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestPositionDistanceWithinCombinedRadius
+bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
           (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
           void *sourceModelNode)
 
@@ -3559,8 +3501,7 @@ ArmyRuntime_TestPositionDistanceWithinCombinedRadius
    effectDefinitionId (despite the name a shot definition) is created from every launch point with packed key
    modelPointOrdinal << 4 | 2.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
+void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
           (EffectCreationFlagBits effectFlags,Q12 worldZQ12,Q12 worldYQ12,Q12 worldXQ12,
           ModelAttachmentOrdinal modelPointOrdinal,PckEffectDefinitionIdCatalog effectDefinitionId,
           void *sourceRuntime,void *modelPointTable,WorldRuntimeContext *worldContext)
@@ -3644,9 +3585,7 @@ ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
    root's orientation, and, when the definition has a child model, at those of child node 0 with a fixed
    orientation. Also sets its own health to 0 and clears health and link (+0x38) of every attached child model.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ProcessReadyAttachmentChannels
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
+void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *childModelRuntime;
@@ -3747,9 +3686,7 @@ ArmyRuntime_ProcessReadyAttachmentChannels
    g_RuntimeMaintenanceCallbackPhases). The ArmyRuntimeSlot view is really a model runtime: factionIndex is the
    attachment count at +0x0C, commandCoordinate0Q12 of the next slot view the child at +0x140 + 0x20 * i.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeHierarchy_DispatchClassMethodDRecursive
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   int remainingChildren;
@@ -3775,8 +3712,7 @@ ArmyRuntimeHierarchy_DispatchClassMethodDRecursive
    cleared, as are the eight per-target-class damage sums at +0x100, then
    ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics adds up every node of the model.
 */
-void __thandor_void_preserve_eax_ecx
-ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
 
 {
   uint8_t *metricBytes;
@@ -3808,8 +3744,7 @@ ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
    Stub of a world point test (called directly by the aircraft and pad updates, slots 21 and 22): always
    returns false (CF clear), so the callers' `!result` branches are always taken.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
+bool ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
 
 {
   return false;
@@ -3823,8 +3758,7 @@ ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldY
    the army slot, or with CF set FATAL_ERROR_GENERAL_FAILURE (no free slot or model creation failed) or
    FATAL_ERROR_ARMY_ID_NOT_FOUND (the id is left in g_PackageLastErrorPath).
 */
-ArmyRuntimeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_CreateInstanceFromAsset
+ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
           (WorldObjectAllocationFlags creationFlags,AngleTurn32 orientationAngle,Q12 worldXQ12,
           Q12 worldYQ12,FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
           WorldRuntimeContext *worldRuntime)
@@ -4045,9 +3979,7 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[10] and directly from the class updates 11,
    13, 14, 22 and gameplay/army/combat.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_UpdateAnimatedModelSubnodes
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
+void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
   uint32_t *classStateField;
@@ -4128,8 +4060,7 @@ ArmyRuntime_UpdateAnimatedModelSubnodes
    FieldGrid_GetNearestWaterDelta is positive, the water (+0x58) effect at a model point with key n << 4 | 6 (random, or in turn when definition +0x68
    bit 0 is set; the root position when there is none) and restarts at +0x178 plus a random part below +0x17C.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_UpdateTimedShotAndEffectEmitters
+void ArmyRuntime_UpdateTimedShotAndEffectEmitters
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {

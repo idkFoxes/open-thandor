@@ -15,7 +15,7 @@
    Shuts DirectSound down: restores the primary buffer's volume and pan saved by DirectSound_Init,
    releases the primary buffer and the device, and frees the voice-set registry.
 */
-void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void)
+void DirectSound_Shutdown(void)
 
 {
   /* The original calls the silent stub here (CALL 0x004175F0), not DirectSound_StopAllVoices, so
@@ -42,8 +42,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void)
    switches the slots to DirectSound). Returns the dummy voice set 0xFFFFFFFF as success, so callers
    holding a sample keep a non-NULL handle even without sound.
 */
-SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
-SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
+SampleVoiceSetResult SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
   /* Returned through SoundCreateSampleVoiceSetProc, so it must use that {EAX, CF} result type. */
@@ -58,8 +57,7 @@ SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
    Silent-backend stub in slot g_SoundReleaseSampleVoiceSet (image 0x0041733C): nothing to release,
    clears CF.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
+void SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 {
   return;
@@ -70,8 +68,7 @@ SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
    Silent-backend stub in slot g_SoundCreatePcmVoiceSet (image 0x00417340). Ignores the raw PCM
    description and returns the dummy voice set 0xFFFFFFFF as success.
 */
-PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
-SoundBackendDisabled_CreatePcmVoiceSet
+PcmVoiceSetResult SoundBackendDisabled_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
           void *pcmData)
@@ -88,8 +85,7 @@ SoundBackendDisabled_CreatePcmVoiceSet
    Silent-backend stub in slot g_SoundReleasePcmVoiceSet (image 0x00417344): nothing to release,
    clears CF.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
+void SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 {
   return;
@@ -100,8 +96,7 @@ SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
    Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
    success (CF clear); the original leaves EAX unchanged.
 */
-SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
-SoundBackendDisabled_PlayOneShot
+SoundPlayResult SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
@@ -116,8 +111,7 @@ SoundBackendDisabled_PlayOneShot
    Silent-backend stub in slot g_SoundPlayLooping (image 0x0041734C): plays nothing and reports
    success (CF clear); the original leaves EAX unchanged.
 */
-SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
-SoundBackendDisabled_PlayLooping
+SoundPlayResult SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
@@ -132,7 +126,7 @@ SoundBackendDisabled_PlayLooping
    Silent-backend stub in slot g_SoundStopVoice (image 0x00417350): nothing plays, so nothing to
    stop; clears CF.
 */
-void __thandor_void_preserve_eax_ecx_edx SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
+void SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
 
 {
   return;
@@ -143,8 +137,7 @@ void __thandor_void_preserve_eax_ecx_edx SoundBackendDisabled_StopVoice(IDirectS
    Silent-backend stub in slot g_SoundIsVoicePlaying (image 0x00417358): always sets CF, meaning the
    voice is not playing.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
+bool SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 {
   return true;
@@ -165,9 +158,7 @@ uint64_t SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice)
    Silent-backend stub in slot g_SoundSetVoiceGains (image 0x00417360): ignores the new left/right
    gains.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoundBackendDisabled_SetVoiceGains
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+void SoundBackendDisabled_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice)
 
 {
@@ -181,7 +172,7 @@ SoundBackendDisabled_SetVoiceGains
    g_Sound* backend slots from the silent stubs to DirectSound. Without a sound device it succeeds and
    leaves the silent backend in place; a failing setup step reports FATAL_ERROR_DIRECTSOUND_SETUP.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
+StatusResult DirectSound_Init(void)
 
 {
   HINSTANCE module;
@@ -290,8 +281,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
    registers a new eight-voice set holding the buffer in voices[0]. On failure CF is set, EAX holds the
    error code and the failing stage number is left in g_PackageLastErrorPath.
 */
-SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
-DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
+SampleVoiceSetResult DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
   TH_LEGACY_HRESULT directSoundResult;
@@ -403,8 +393,7 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
    Frees a voice set made by DirectSound_CreateSampleVoiceSet: releases its eight voices (the data
    buffer and its duplicates), frees the set and clears its registry slot. NULL is accepted.
 */
-void __thandor_void_preserve_eax_ecx_edx
-DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
+void DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 {
   DirectSoundVoiceSet **registryGuard;
@@ -450,9 +439,7 @@ DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
    holding the buffer in voices[0]. On failure CF is set, EAX holds the error code and the failing stage
    number is left in g_PackageLastErrorPath.
 */
-PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
-DirectSound_CreatePcmVoiceSet
-          (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
+PcmVoiceSetResult DirectSound_CreatePcmVoiceSet(AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
           uint32_t *pcmData)
 
@@ -562,8 +549,7 @@ DirectSound_CreatePcmVoiceSet
    Frees a voice set made by DirectSound_CreatePcmVoiceSet; the same code as
    DirectSound_ReleaseSampleVoiceSet (release the eight voices, free the set, clear its registry slot).
 */
-void __thandor_void_preserve_eax_ecx_edx
-DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
+void DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 {
   IDirectSoundBuffer *voiceBuffer;
@@ -670,9 +656,7 @@ static SoundPlayResult DirectSound_PlayVoiceSet
    table. CF clear returns the voice in EAX; CF set (EAX 0) when all eight voices are busy or the
    duplication fails.
 */
-SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
-DirectSound_PlayOneShot
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+SoundPlayResult DirectSound_PlayOneShot(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
 {
@@ -683,9 +667,7 @@ DirectSound_PlayOneShot
 /* Address: 0x00583A70.
    Like DirectSound_PlayOneShot, but the voice plays with DSBPLAY_LOOPING until it is stopped.
 */
-SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
-DirectSound_PlayLooping
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+SoundPlayResult DirectSound_PlayLooping(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
 {
@@ -696,7 +678,7 @@ DirectSound_PlayLooping
 /* Address: 0x00583B90.
    Stops one voice (a buffer returned by the play functions); NULL is accepted.
 */
-void __thandor_void_preserve_eax_ecx_edx DirectSound_StopVoice(IDirectSoundBuffer *voice)
+void DirectSound_StopVoice(IDirectSoundBuffer *voice)
 
 {
   if (voice != NULL) {
@@ -710,7 +692,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopVoice(IDirectSoundBuffe
    Tells whether a voice is still playing. The result is inverted like all CF flags here: CF clear
    (false) means playing, CF set (true) means NULL or stopped; EAX is preserved.
 */
-bool __thandor_cf_preserve_eax_ecx_edx DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
+bool DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 {
   bool notPlaying;
@@ -728,7 +710,7 @@ bool __thandor_cf_preserve_eax_ecx_edx DirectSound_IsVoicePlaying(IDirectSoundBu
 /* Address: 0x00583C00.
    Stops every voice of every voice set in the registry (empty registry slots and voices are skipped).
 */
-void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void)
+void DirectSound_StopAllVoices(void)
 
 {
   IDirectSoundBuffer *voiceBuffer;
@@ -779,9 +761,7 @@ uint64_t DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice)
    the play functions (louder channel's attenuation = volume, attenuation difference = pan). NULL is
    accepted.
 */
-void __thandor_void_preserve_eax_ecx_edx
-DirectSound_SetVoiceGains
-          (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
+void DirectSound_SetVoiceGains(SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice)
 
 {
@@ -795,7 +775,7 @@ DirectSound_SetVoiceGains
    Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until
    DirectSound_Init installs DirectSound_StopAllVoices): there are no voices, so it only clears CF.
 */
-void __thandor_void_preserve_eax_ecx_edx SoundBackendDisabled_StopAllVoices(void)
+void SoundBackendDisabled_StopAllVoices(void)
 
 {
 }

@@ -97,8 +97,7 @@ static __inline PackedArgb32 ModelLighting_PackUnsignedMmx(uint64_t lanes)
    whose mask (mesh +4) shares a bit with the node's meshGroupMask is submitted; facingThresholdQ12 is the
    back-face limit ModelRender_SubmitTriangle compares against (the caller derives it from radius / distance).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_DrawMeshGroupsWithTemporaryTransform
+void ModelRender_DrawMeshGroupsWithTemporaryTransform
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
@@ -178,9 +177,7 @@ ModelRender_DrawMeshGroupsWithTemporaryTransform
    the node transform and without a back-face limit: applies the facing / billboard rotation of group flags 1 / 2
    and submits every mesh that matches the node's meshGroupMask.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_DrawMeshGroupsAlternatePath
-          (ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
+void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
   uint32_t groupFlagsOrMask;
@@ -210,9 +207,7 @@ ModelRender_DrawMeshGroupsAlternatePath
    Grows bounds by the projected bounding boxes of a model node and all its descendants, for the selection frame
    of SelectionOverlay_RenderSelectedArmyMetrics and the other overlay code in gameplay/selection/overlay.
 */
-void __thandor_void_preserve_eax_ecx
-ModelProjectedBounds_AccumulateHierarchyRecursive
-          (ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
+void ModelProjectedBounds_AccumulateHierarchyRecursive(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
 
 {
   uint32_t remainingChildCount;
@@ -236,8 +231,7 @@ ModelProjectedBounds_AccumulateHierarchyRecursive
    the default or scaled lighting path with the vertex or (flat shaded) triangle normal. The colour is reused
    while the next triangle has the same MODEL_TRIANGLE_VERTEX_CACHE_FLAGS and is not flat shaded.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_PrepareProjectedVertex
+void ModelRender_PrepareProjectedVertex
           (ModelRuntimeNode *modelNode,ModelMeshGroupAddress32 triangle,GraphicsFixedVec3 *vertex)
 
 {
@@ -329,9 +323,7 @@ ModelRender_PrepareProjectedVertex
    material colour (MODEL_TRIANGLE_PALETTE_BANK_MASK, 0xFFFFFFFF without one). Node flag 0x80 scrolls the
    texture coordinates of the node's one or (flag 0x400) two animated subresources.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_SubmitTriangle
-          (Q12 facingThresholdQ12,GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
+void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
 
 {
   GraphicsProjectedVertexSource *firstVertex;
@@ -433,8 +425,7 @@ ModelRender_SubmitTriangle
    marks the mesh's vertices (count at mesh +8) as not projected for this draw, then submits its triangles
    (count at +0xC, stored after the vertices) through ModelRender_SubmitTriangle.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_SubmitMeshTriangles
+void ModelRender_SubmitMeshTriangles
           (Q12 facingThresholdQ12,ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
@@ -459,9 +450,7 @@ ModelRender_SubmitMeshTriangles
    Draws one mesh of ModelRender_DrawMeshGroupsAlternatePath: the same as ModelRender_SubmitMeshTriangles, but
    through ModelRender_SubmitTriangleAlternatePath.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_SubmitMeshTrianglesAlternatePath
-          (ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
+void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGroup,ModelRuntimeNode *modelNode)
 
 {
   int remainingCount;
@@ -488,8 +477,7 @@ ModelRender_SubmitMeshTrianglesAlternatePath
    (ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath), or white with the tint's alpha when unlit,
    and cached like in ModelRender_PrepareProjectedVertex.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ModelRender_PrepareProjectedVertexAlternatePath
+bool ModelRender_PrepareProjectedVertexAlternatePath
           (ModelRuntimeNode *modelNode,GraphicsTriangleInput *triangle,GraphicsFixedVec3 *vertex)
 
 {
@@ -546,8 +534,7 @@ ModelRender_PrepareProjectedVertexAlternatePath
    beyond the same edge of g_ProjectionClipRect. Otherwise it is queued with its vertex colours, texture and the
    palette's alternate modulation colour (0 without one).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
+void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRuntimeNode *modelNode)
 
 {
   GraphicsProjectedVertexSource *firstVertex;
@@ -621,8 +608,7 @@ ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,ModelRun
    ModelProjectedBounds_AccumulateHierarchyRecursive). Nodes without a bounding radius or with
    MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST are skipped.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
+void ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
 
 {
   ModelResourceHitTestAndRenderView210 *resource;
@@ -667,8 +653,7 @@ ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRunt
    Back-face measure of a triangle for ModelRender_SubmitTriangle: the Q12 dot product of its plane normal
    (+0x24) with the model-space view direction from ModelRender_PrepareViewDirections.
 */
-int32_t __thandor_eax_preserve_ecx_edx
-ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
+int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle)
 
 {
   int32_t facingDotQ12;
@@ -923,8 +908,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
    it lies beyond the near plane, grows bounds by its projected pixel position (Q12 >> 12). Used by
    ModelProjectedBounds_AccumulateNode for each bounding-box corner.
 */
-void __thandor_preserve_eax_edx
-ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *bounds)
+void ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *bounds)
 
 {
   int pixelX;
@@ -960,8 +944,7 @@ ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixels *b
    direction from the viewer to the node (for the back-face test) and the auxiliary forward direction (for the
    lighting) into model space.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
+void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
 
 {
   int nodeWorldX;

@@ -130,7 +130,7 @@ void __cdecl ProcessEntry(void)
    (0xF for itself, 1 for everyone else) and the starting economy limits, and replaces the stat table with a
    fresh zeroed one. CF is set when the stat table cannot be allocated (the old one then stays).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
+StatusResult GameData_ResetDefaults(void)
 
 {
   FactionCapabilityFlags *capabilityFlagsSlot;
@@ -213,7 +213,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
    old-unit tables; without oldunit.hex both tables and the count are cleared. CF is set when daten.hex or
    stat.hex cannot be loaded.
 */
-bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
+bool GameData_LoadExternalTables(void)
 
 {
   void *previousStatTable;
@@ -287,8 +287,7 @@ bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
    of g_DynamicModules) in g_FatalErrorDetail1Utf16 for the fatal-error message; CF set with
    FATAL_ERROR_DLL_PROCEDURE_MISSING.
 */
-DynApiResolveResult __thandor_eax_cf_preserve_ecx_edx
-DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
+DynApiResolveResult DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 
 {
   FARPROC resolvedProcedure;
@@ -328,7 +327,7 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
    (the name left in g_PackageLastErrorPath) when LoadLibraryA is not bound yet, the table is full or the load
    fails.
 */
-DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
+DllLoadResult DynDLL_Load(char *moduleName)
 
 {
   HINSTANCE loadedModule;
@@ -399,8 +398,7 @@ uint32_t DynDLL_Unload(char *moduleName)
    FATAL_ERROR_LOADER_MODULE_MISSING on both paths. No caller found in src/ or src/generated/image_data.c
    (only the function map lists it).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-BootstrapApi_ResolveBindingByDestination(void **destination)
+StatusResult BootstrapApi_ResolveBindingByDestination(void **destination)
 
 {
   void *resolvedProcedure;
@@ -440,7 +438,7 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
    Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared
    before the call so a module is never freed twice. The count is left unchanged.
 */
-void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
+void DynDLL_UnloadAll(void)
 
 {
   uint32_t modulesRemaining;
@@ -1468,7 +1466,7 @@ static void DebugMovie_Run(const char *which)
    a key or mouse-button release skips to the next one, Escape skips all of them (the number jumps to 9).
    CF is set only when the first frame of an opened movie cannot be decoded.
 */
-bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
+bool Game_PlayIntroMovies(void)
 
 {
   uint32_t frameHeightSnapshot;
@@ -1582,7 +1580,7 @@ GameIntroMovies_StopCurrentPlayback:
    the table's first entry (LoadLibraryA, resolved first) and recorded in g_DynamicModules. On failure the
    DLL/procedure name is stored for the fatal-error message and a FATAL_ERROR_* code is returned with CF set.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
+StatusResult DynAPI_Bootstrap(void)
 
 {
   /* EAX at the table end: the last resolved procedure (the table is never empty; incoming EAX otherwise) */
@@ -1648,9 +1646,9 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
    length bytes are compared (case-sensitive): a length including the NUL asks for an exact match, a shorter
    one for a prefix such as an option name followed by its value. Returns CF clear and the stored option in
    EBX when found, CF set otherwise; EAX is preserved.
+   Original register convention: result in EBX, CF set on failure; EAX, ECX and EDX preserved.
 */
-CommandLineOptionResult __thandor_ebx_cf_preserve_eax_ecx_edx
-CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
+CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 
 {
   uint32_t compareBytesRemaining;
@@ -1710,7 +1708,7 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
    optionBuffer (quoted parts kept verbatim with their quotes). Everything else is uppercased (ASCII a-z
    only). The 256-byte buffers are not bounds-checked. The arguments are also stored as UTF-16.
 */
-void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
+void CommandLine_Parse(void)
 
 {
   uint8_t *commandLineNext;

@@ -15,8 +15,7 @@
    them visited) the horizontal run of cells around cell that carry one of requiredCellFlags, then recurses into
    matching cells of the rows above and below that run. Edge-ring and already visited cells stop the fill.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainRegionCollection_CollectConnectedCellsRecursive
+void TerrainRegionCollection_CollectConnectedCellsRecursive
           (FieldGridRegionMask requiredCellFlags,FieldGridRowStrideBytes rowStrideBytes,
           FieldGridCell *cell)
 
@@ -69,8 +68,7 @@ TerrainRegionCollection_CollectConnectedCellsRecursive
    The player's material edit plane is cleared first and receives old - new per changed cell, so
    TerrainEditBuffer_CommitFlagsAndMaterialDeltas can undo the fill.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainMaterialEdit_SeedMatchingRegionReplacement
+void TerrainMaterialEdit_SeedMatchingRegionReplacement
           (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue replacementMaterialByte,
           Q12 worldYQ12,Q12 worldXQ12)
 
@@ -115,8 +113,7 @@ TerrainMaterialEdit_SeedMatchingRegionReplacement
    borders made of it. Like the matching fill it clears the player's material edit plane and records the
    undo deltas there.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainMaterialEdit_SeedNonTargetRegionReplacement
+void TerrainMaterialEdit_SeedNonTargetRegionReplacement
           (FrontendPlayerIndex playerIndex,TerrainMaterialByteValue referenceMaterialByte,
           Q12 worldYQ12,Q12 worldXQ12)
 
@@ -158,8 +155,7 @@ TerrainMaterialEdit_SeedNonTargetRegionReplacement
    level), the delta is negated so the next call redoes the edit, and the normals and lighting of the cell and
    its lattice neighbours are recomputed. commandArg0 is the player runtime id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
+void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
           (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
 
 {
@@ -234,8 +230,7 @@ TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
    material byte of every cell in the player's material edit plane, so TerrainEditBuffer_SubtractCurrentCellMaterialBytes
    can turn it into undo deltas when the stroke ends.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainEditBuffer_CopyCellMaterialBytes
+void TerrainEditBuffer_CopyCellMaterialBytes
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2)
 
@@ -265,8 +260,7 @@ TerrainEditBuffer_CopyCellMaterialBytes
    each cell's current material from the byte saved at the start of the stroke, leaving old - new per cell in
    the player's material edit plane for TerrainEditBuffer_CommitFlagsAndMaterialDeltas (undo).
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainEditBuffer_SubtractCurrentCellMaterialBytes
+void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2)
 
@@ -295,8 +289,7 @@ TerrainEditBuffer_SubtractCurrentCellMaterialBytes
    material edit by adding the player's material deltas to the cells and negating them, so the next call
    redoes the edit. commandArg0 is the player runtime id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainEditBuffer_CommitFlagsAndMaterialDeltas
+void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
           (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
 
 {
@@ -328,8 +321,7 @@ TerrainEditBuffer_CommitFlagsAndMaterialDeltas
    value of the player's height plane by the cell's terrain height minus that value, leaving the deltas that
    TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting undoes.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainEditBuffer_ConvertHeightsToDeltas
+void TerrainEditBuffer_ConvertHeightsToDeltas
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2)
 
@@ -359,9 +351,7 @@ TerrainEditBuffer_ConvertHeightsToDeltas
    moves the descriptor and the extracting model's offset out of the cell into the region collection (at
    most TERRAIN_REGION_COLLECTION_CAPACITY entries), so the per-tick mining pays each extractor once.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainRegionCollection_RecordConnectedCell
-          (FieldGridRegionMask requiredOccupancyMask,FieldGridCell *cell)
+void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOccupancyMask,FieldGridCell *cell)
 
 {
   ArmyRuntimeSavedOffset savedArmyOffset;
@@ -399,9 +389,7 @@ TerrainRegionCollection_RecordConnectedCell
    width/height, +0x200 the 0x80-byte cells, cell +0x50 flagsAndMaterial (+0xD0 / -0x30: that of the next /
    previous cell).
 */
-void __thandor_eax_preserve_ecx_edx
-TerrainMaterialEdit_PropagateMatchingRegionReplacement
-          (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
+void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {
   uint32_t referenceMaterial;
@@ -472,8 +460,7 @@ TerrainMaterialEdit_PropagateMatchingRegionReplacement
    g_TerrainMaterialEditReferenceMaterialByte, which all receive that material (old - new goes to
    g_TerrainMaterialEditDeltaBuffer).
 */
-void __thandor_eax_preserve_ecx_edx
-TerrainMaterialEdit_PropagateNonTargetRegionReplacement
+void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
           (FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {

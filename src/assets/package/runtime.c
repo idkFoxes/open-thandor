@@ -21,7 +21,7 @@
    aliases (keyed by the level's title text id). CF clear means the package stays mounted; on any failure it is
    unmounted again and CF is set (a failed mount returns without unmounting).
 */
-bool __thandor_cf_preserve_eax_ecx_edx LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
+bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 
 {
   uint32_t levelTitleTextId;
@@ -75,8 +75,7 @@ bool __thandor_cf_preserve_eax_ecx_edx LevelPackage_ValidateAndMount(uint16_t *l
    the entry's typeTag. The in-memory directory is reloaded afterwards; CF set with an error code on failure.
    Called directly by the save-game writer in ui/ingame/runtime.c (no callback table).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
+StatusResult Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
 
 {
@@ -203,8 +202,7 @@ Package_UpsertEntry_Fail:
    first try next to the executable). Returns the byte count; CF set with an error code, FATAL_ERROR_OUT_OF_MEMORY
    when the entry does not fit (or is to be decoded into g_PackageScratchBuffer, which holds the packed data).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Package_LoadEntryIntoBuffer
+StatusResult Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path)
 
 {
@@ -288,7 +286,7 @@ Package_LoadEntryIntoBuffer_Fail:
    Like Package_Mount, but takes the last free mount slot: lookups scan the table from the front, so this
    archive loses against every other one. FileSystem_Init mounts engine.pck this way.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(uint16_t *path)
+StatusResult Package_MountLowPriority(uint16_t *path)
 
 {
   PckEntryHeader *handle;
@@ -348,8 +346,7 @@ Package_MountLowPriority_Fail:
    CF set with an error code on failure. Called directly by Package_UpsertEntry and the save-game writer in
    ui/ingame/runtime.c (no callback table).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle)
+StatusResult Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle)
 
 {
   PckStoredByteCount entryPackedSize;
@@ -452,7 +449,7 @@ Package_DeleteEntry_Fail:
    a loose file (first relative to the executable directory, then as given). The buffer is untyped here;
    callers cast it to their gfx, fld, lev, mdl, sound, text, ... layout. CF set: bufferOrError is an error code.
 */
-PackageLoadResult __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(uint16_t *path)
+PackageLoadResult Package_LoadEntry(uint16_t *path)
 
 {
   PckEntryHeader *entry;
@@ -547,7 +544,7 @@ Package_LoadEntry_Fail:
    the same order, so earlier mounts win. Returns the file handle; CF set with an error code when no slot is
    free, the file cannot be opened or the allocation fails.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Package_Mount(uint16_t *path)
+StatusResult Package_Mount(uint16_t *path)
 
 {
   PckEntryHeader *handle;
@@ -606,8 +603,7 @@ Package_Mount_Fail:
    by path (UTF-16 code-unit order). Returns the record size with the match count in ECX; CF set with
    FATAL_ERROR_GENERAL_FAILURE when the handle is not mounted.
 */
-PackageFindResult __thandor_eax_cf_preserve_edx
-Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
+PackageFindResult Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                  uint16_t *pattern,EngineFileHandle fileHandle)
 
 {
@@ -738,7 +734,7 @@ Package_FindEntry_ReturnMatches:
    Unmounts the package fileHandle: frees its entry-header array, closes the file and clears the mount slot.
    Does nothing for a zero or unknown handle.
 */
-void __thandor_preserve_eax_edx Package_Unmount(EngineFileHandle fileHandle)
+void Package_Unmount(EngineFileHandle fileHandle)
 
 {
   EngineFileHandle handleOrRemaining;
@@ -771,7 +767,7 @@ void __thandor_preserve_eax_edx Package_Unmount(EngineFileHandle fileHandle)
    unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
    patterns like "level\*.lev". The comparison is case-sensitive. CF clear means match.
 */
-bool __thandor_cf_preserve_eax_ecx_edx Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
+bool Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
 
 {
   uint16_t patternCodeUnit;
@@ -799,8 +795,7 @@ bool __thandor_cf_preserve_eax_ecx_edx Package_WildcardPathMatches(uint16_t *pat
    destination with the decoder of its compression method (g_PckDecoderTable). Returns the decoder result; on
    failure the entry path is left in g_PackageLastErrorPath and CF is set.
 */
-PackageDecodeResult __thandor_eax_cf_preserve_ecx_edx
-Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle)
+PackageDecodeResult Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle)
 
 {
   PckCompressionMethod entryCompression;
@@ -842,7 +837,7 @@ Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHan
    many code units as the path has (SUB EDI,ESI then REP MOVSW), running past the terminator and, for paths
    over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer.
 */
-void __thandor_void_preserve_eax_ecx_edx Package_SetLastErrorPath(uint16_t *path)
+void Package_SetLastErrorPath(uint16_t *path)
 
 {
   uint16_t codeUnit;
@@ -877,8 +872,7 @@ void __thandor_void_preserve_eax_ecx_edx Package_SetLastErrorPath(uint16_t *path
    entry name, an unmounted handle or an empty package. Called directly by Package_UpsertEntry and
    Package_DeleteEntry (no callback table).
 */
-PackageMountEntryResult __thandor_eax_cf_preserve_ecx_edx
-Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
+PackageMountEntryResult Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
 
 {
   int lengthRemaining; /* PCK_ENTRY_PATH_UNITS minus the path length, terminator included */
@@ -959,9 +953,9 @@ Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
    package that has the entry wins. The path is lowercased in place first (package paths are stored in lower
    case). Returns the entry header and, in EBX, the package handle; CF set when the path is too long for an
    entry or no package has it.
+   Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
-PackageEntryLookupResult __thandor_eax_ebx_cf_preserve_ecx_edx
-Package_FindEntryAcrossMounts(uint16_t *path)
+PackageEntryLookupResult Package_FindEntryAcrossMounts(uint16_t *path)
 
 {
   uint32_t codeUnit;
@@ -1043,8 +1037,7 @@ Package_FindEntryAcrossMounts_NotFound:
    payload follows it) and seeking past the payload to the next header. CF set with the file-system error, or FATAL_ERROR_GENERAL_FAILURE when fileHandle is
    not mounted.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Package_ReadDirectory(EngineFileHandle fileHandle)
+StatusResult Package_ReadDirectory(EngineFileHandle fileHandle)
 
 {
   PckStoredByteCount *packedSizeField;

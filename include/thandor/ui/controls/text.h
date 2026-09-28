@@ -90,165 +90,132 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004B0200 */
-void __thandor_void_preserve_eax_ecx_edx UiTooltip_TickCountdown(void);
+void UiTooltip_TickCountdown(void);
 
 /* 0x004B5F20 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiNumericTextEditControl_HandleKeyboardAndCommit
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control);
 
 /* 0x004B68C0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiPathTextEditControl_HandleKeyboardAndValidate
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control);
 
 /* 0x004B7110 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiRequiredTextEditControl_HandleKeyboardAndValidate
+bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control);
 
 /* 0x004227B0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiGraphicsAdapterTextButton_DrawFormattedAdapterText
+void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextButtonControl *control);
 
 /* 0x004B58F0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNumericTextEditControl_RelocateAndRebuildText
+void UiNumericTextEditControl_RelocateAndRebuildText
           (UiSerializedRelocationDelta relocationDelta,UiNumericTextControl *control);
 
 /* 0x004B5960 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_DrawTextSelectionAndCaret
+void UiTextEditControl_DrawTextSelectionAndCaret
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextEditControl *control);
 
 /* 0x004B5DF0 */
-void __thandor_preserve_eax
-UiTextEditControl_BeginSelectionAtPointer
+void UiTextEditControl_BeginSelectionAtPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextEditControl *control);
 
 /* 0x004B5EA0 */
-void __thandor_preserve_eax_edx
-UiTextEditControl_UpdateSelectionFromPointer
+void UiTextEditControl_UpdateSelectionFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextEditControl *control);
 
 /* 0x004B6850 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPathTextEditControl_RelocateAndValidateDos83
+void UiPathTextEditControl_RelocateAndValidateDos83
           (UiSerializedRelocationDelta relocationDelta,UiPathTextEditControl *control);
 
 /* 0x004B70A0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRequiredTextEditControl_RelocateAndValidateNonEmpty
+void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
           (UiSerializedRelocationDelta relocationDelta,UiRequiredTextEditControl *control);
 
 /* 0x004BB5C0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByExpandedTextFieldAscending
+void UiPointerList_SortByExpandedTextFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
 /* 0x004BB6B0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByExpandedTextFieldDescending
+void UiPointerList_SortByExpandedTextFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
 /* 0x005156A0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNumericPairTextButton_DrawFormattedValues
+void UiNumericPairTextButton_DrawFormattedValues
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiNumericPairTextButton *control);
 
 /* 0x00515780 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPayloadPairTextButton_DrawFormattedPayloads
+void UiPayloadPairTextButton_DrawFormattedPayloads
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPayloadPairTextButton *control);
 
 /* 0x004B0320 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
               UiPixelCoordinate clipLeft);
 
 /* 0x004B0F90 */
-bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundary(void);
+bool UiRootStack_PopUntilWindowTextureBoundary(void);
 
 /* 0x004B1DD0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_Relocate
-          (UiSerializedRelocationDelta relocationDelta,UiFramedTextButtonControl *control);
+void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiFramedTextButtonControl *control);
 
 /* 0x004B1E10 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_DrawClipped
+void UiFramedTextButtonControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiFramedTextButtonControl *control);
 
 /* 0x004B22A0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_NonRightPress
+void UiFramedTextButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control);
 
 /* 0x004B2380 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_NonRightRelease
+void UiFramedTextButtonControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control);
 
 /* 0x004B23F0 */
-void __thandor_preserve_eax
-UiFramedTextButtonControl_NonRightDrag
+void UiFramedTextButtonControl_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control);
 
 /* 0x004B24C0 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiFramedTextButtonControl_HitTestRect
+UiNodeBase * UiFramedTextButtonControl_HitTestRect
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control);
 
 /* 0x004B27D0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWindowControl_DrawFramedTextAndChrome
+void UiWindowControl_DrawFramedTextAndChrome
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiWindowControl *control);
 
 /* 0x004B2E40 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextButtonControl_Relocate
-          (UiSerializedRelocationDelta relocationDelta,UiTextButtonControl *control);
+void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiTextButtonControl *control);
 
 /* 0x004B31B0 */
-void __thandor_void_preserve_ecx_edx
-UiTextButtonControl_NonRightPress
+void UiTextButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextButtonControl *control);
 
 /* 0x004B32C0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTextButtonControl_KeyboardEvent
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control);
 
 /* 0x004B37C0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiImagePanelControl_DrawAlignedTextureAndChildren
+void UiImagePanelControl_DrawAlignedTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiImagePanelControl *control);
 
 /* 0x004B3960 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control);
+UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control);
 
 /* 0x004B3AA0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFillPanelControl_DrawColorOrTiledTextureAndChildren
+void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiFillPanelControl *control);
 
@@ -258,153 +225,122 @@ void UiTextEditControl_EndSelection
                ,UiTextEditControl *control);
 
 /* 0x004B6480 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *control);
+void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *control);
 
 /* 0x004B64B0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *control);
+void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *control);
 
 /* 0x004B64E0 */
-void __thandor_preserve_eax UiTextEditControl_TickCaretBlink(UiTextEditControl *control);
+void UiTextEditControl_TickCaretBlink(UiTextEditControl *control);
 
 /* 0x004B95E0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSingleLineTextControl_DrawClipped
+void UiSingleLineTextControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiSingleLineTextControl *control);
 
 /* 0x004B9E90 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_DrawRowsAndSelection
+void UiTextListControl_DrawRowsAndSelection
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextListControl *control);
 
 /* 0x004BA040 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_SelectRowFromPointer
+void UiTextListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextListControl *control);
 
 /* 0x004BA130 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTextListControl_HandleKeyboardNavigationAndSearch
+bool UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control);
 
 /* 0x004BA390 */
-void __thandor_preserve_eax UiTextListControl_TickActivationPulse(UiTextListControl *control);
+void UiTextListControl_TickActivationPulse(UiTextListControl *control);
 
 /* 0x004BA3D0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control);
+void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control);
 
 /* 0x004BA400 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control);
+void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control);
 
 /* 0x004BA430 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_InitializeMeasuredTextRows
-          (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
+void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
 
 /* 0x004BC490 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWrappedTextControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiWrappedTextControl *control);
 
 /* 0x004BCC80 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNineSlicePanelControl_DrawTextureFrameAndChildren
+void UiNineSlicePanelControl_DrawTextureFrameAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiNineSlicePanelControl *control);
 
 /* 0x00515830 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFormattedContainer_RelocateWithPatchedTextPayloads
+void UiFormattedContainer_RelocateWithPatchedTextPayloads
           (UiSerializedRelocationDelta relocationDelta,UiFormattedContainer *control);
 
 /* 0x005158B0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFormattedContainer_DrawClipped
+void UiFormattedContainer_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiFormattedContainer *control);
 
 /* 0x00516D10 */
-void __thandor_void_preserve_eax_ecx_edx
-UiArmyMetricsPanel_DrawTextureMetricsAndChildren
+void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiArmyMetricsPanel *control);
 
 /* 0x00519110 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
+void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiSoftwareTexturePreviewControl *control);
 
 /* 0x00519190 */
-void __thandor_preserve_eax
-UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
+void UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control);
 
 /* 0x005191B0 */
-void __thandor_preserve_eax
-UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
+void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control);
 
 /* 0x005191D0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiSoftwareTexturePreviewControl_HandleKeyboardActivation
+bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control);
 
 /* 0x004B0150 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
+void UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
 
 /* 0x004B6520 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control);
+void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control);
 
 /* 0x004B65F0 */
-void __thandor_preserve_eax_edx
-UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control);
+void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control);
 
 /* 0x004B0250 */
-void __thandor_void_preserve_eax_ecx_edx UiTooltip_PrepareTargetText(UiNodeBase *node);
+void UiTooltip_PrepareTargetText(UiNodeBase *node);
 
 /* 0x004B66E0 */
-void __thandor_preserve_eax UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control);
+void UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control);
 
 /* 0x004B6740 */
-UiPixelCoordinate __thandor_eax_preserve_ecx_edx
-UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEditControl *control);
+UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEditControl *control);
 
 /* 0x004B6790 */
-UiTextCodeUnitCount __thandor_eax_preserve_ecx_edx
-UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditControl *control);
+UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditControl *control);
 
 /* 0x004B7010 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control);
+void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control);
 
 /* 0x004B78F0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control);
+void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control);
 
 /* 0x004BB570 */
-TextCompareResult __thandor_void_preserve_eax_ecx_edx
-UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText);
+TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText);
 
 /* 0x004B5D00 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control);
+void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control);
 
 /* 0x004B2E60 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextButtonControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextButtonControl *control);
 
 #endif /* THANDOR_UI_CONTROLS_TEXT_H */

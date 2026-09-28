@@ -15,9 +15,7 @@
    report a nonzero count, the mode-4 query must fail, and the count rounded up to whole separation quanta must be
    at most 4; the result is then that of AiPlacement_ReserveSeparatedSpecialSiteChain. CF (true) means rejected.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_ReserveAdditionalSpecialSite
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveAdditionalSpecialSite(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -57,9 +55,7 @@ AiPlacement_ReserveAdditionalSpecialSite
    it proposes technology 11 (entry kind 2) until the faction has researched it, then ARM_0050. Each candidate
    gets the special-site weight; nothing is added when no site is available.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiCandidatePlanning_AddSpecialSiteCandidate
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   bool hasEntry;
@@ -104,8 +100,7 @@ AiCandidatePlanning_AddSpecialSiteCandidate
    primary workspace and distance (capped) from workspaces 02 and 01, weighted by the ki.dat parameters at
    +0x84..+0xA0; unlike the flagged-site list below, these parameters are read from the right base.
 */
-void __thandor_void_preserve_ecx_edx
-AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
+void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
 
 {
   Q12 cellWorldX;
@@ -181,8 +176,7 @@ AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
    buffer (EDI still holds it) instead of from g_AiKnowledgeData, so they are whatever lies further on in the
    buffer. Nothing reads workspace 06, so the list is filled but never used.
 */
-void __thandor_void_preserve_ecx_edx
-AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
+void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
 
 {
   Q12 cellWorldX;
@@ -254,8 +248,7 @@ AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
    Manhattan distance to the nearest workspace-00 structure (at least 0). A same-asset entry within a third of the
    separation is replaced instead when the new cell has the higher priority. gridScratchRowStrideBytes is unused.
 */
-void __thandor_void_preserve_ecx_edx
-AiSiteCandidate_AddTerrainFeatureCellIfSeparated
+void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
           (FieldGridCell *terrainFeatureCell,uint32_t gridScratchRowStrideBytes)
 
 {
@@ -402,9 +395,7 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
    Runs the mode-0 placement query for the asset at a workspace cell (its position and heading) and returns the
    query's CF: true when the asset cannot be placed there.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_TestWorkspaceRecordAtPoint
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestWorkspaceRecordAtPoint(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           ArmyPlacementContext placementContext,UiRootNode *inGameRoot)
 
 {
@@ -422,9 +413,7 @@ AiPlacement_TestWorkspaceRecordAtPoint
    Runs the mode-4 placement query for the asset at a workspace cell (its position and heading) and returns
    the query's CF: true when the asset cannot be placed there in that mode.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_TestMode4AtWorkspaceRecord
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_TestMode4AtWorkspaceRecord(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -444,9 +433,7 @@ AiPlacement_TestMode4AtWorkspaceRecord
    specialSiteSeparationQuantumQ12 units; otherwise the result is 0. CF is set only when both the mode-3 and the
    mode-0 query fail (EAX then holds the mode-0 error).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-AiPlacement_QueryReachableSiteBucketCount
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+StatusResult AiPlacement_QueryReachableSiteBucketCount(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -497,9 +484,7 @@ AiPlacement_QueryReachableSiteBucketCount
    one separation quantum (rounded up). More than 4 quanta accept the site outright; 1-4 quanta accept it only
    when AiPlacement_ReserveSeparatedSpecialSiteChain reports CF set. CF (true) means rejected.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_ReserveMode3SiteCluster
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -535,8 +520,7 @@ AiPlacement_ReserveMode3SiteCluster
    scaled by (2 * unpowered + supplied energy demand) / (tritiumCurrentQ4 << 8) when the faction has tritium.
    CF (noSite) is set when no site qualifies.
 */
-SiteWeightResult __thandor_eax_cf_preserve_ecx_edx
-AiCandidatePlanning_ComputeSpecialSiteWeight
+SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -600,8 +584,7 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
    the mode-1 placement query accepts the asset. CF (notFound) is set when no such cell exists.
    Note the argument order: Y first, then X, like ArmyPlacement_DispatchAssetAtFieldPoint.
 */
-AiAnchorResult __thandor_preserve_eax
-AiPlacement_FindNearestValidWorkspace09Anchor
+AiAnchorResult AiPlacement_FindNearestValidWorkspace09Anchor
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -669,9 +652,7 @@ AiPlacement_FindNearestValidWorkspace09Anchor
    far or an anchor/instance is missing. Every temporary instance is destroyed again before returning; the
    armyAssetId argument is not used.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPlacement_ReserveSeparatedSpecialSiteChain
-          (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
+bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {

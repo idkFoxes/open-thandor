@@ -15,7 +15,7 @@
    Default g_GraphicsFramebufferBeginAccess hook: an in-memory software framebuffer needs no lock, so it only
    reports success (false, CF clear). Backends with a real surface install their own hook.
 */
-bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccessStub(void)
+bool GraphicsFramebuffer_BeginAccessStub(void)
 
 {
   return false;
@@ -26,7 +26,7 @@ bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccessStub(void)
    Default g_GraphicsFramebufferEndAccess hook, the counterpart of GraphicsFramebuffer_BeginAccessStub: nothing
    to unlock.
 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccessStub(void)
+void GraphicsFramebuffer_EndAccessStub(void)
 
 {
   return;
@@ -40,8 +40,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccessStub(void)
    state is swapped with the one of the other buffer. Skipped while another thread holds
    g_GraphicsBackendAccessState.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
+void GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 {
   uint32_t adapterDeviceKind;
@@ -152,8 +151,7 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
    with the arena error, or with FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES when the back surface cannot be
    restored or locked.
 */
-FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsFramebuffer_CaptureRegion16Bit
+FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
@@ -278,8 +276,7 @@ GraphicsFramebuffer_CaptureRegion16Bit
    no Glide branch here. Callers pass the full (even) screen width. CF set with the arena error or
    FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES.
 */
-FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsFramebuffer_CaptureRegion32Bit
+FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
@@ -395,7 +392,7 @@ GraphicsFramebuffer_CaptureRegion32Bit
    and publishing its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (CF set) while
    texture uploads are active or when the restore or lock fails.
 */
-bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccess(void)
+bool GraphicsFramebuffer_BeginAccess(void)
 
 {
   TH_LEGACY_HRESULT isLostResult;
@@ -437,7 +434,7 @@ bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccess(void)
    Ends the CPU access begun by GraphicsFramebuffer_BeginAccess: Glide releases its locked buffers,
    DirectDraw unlocks the back surface and clears the published pixel pointer.
 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccess(void)
+void GraphicsFramebuffer_EndAccess(void)
 
 {
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE) {

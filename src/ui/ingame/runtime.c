@@ -18,8 +18,7 @@
    placement armies, moving the field origin or the light direction, saving the map, screenshots and leaving
    the editor. Editor commands go through the command queue in network games.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
+void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
           (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot)
 
 {
@@ -535,8 +534,7 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
    with a message. In a network game the text is sent to the recipients chosen in the message window (all, the
    ticked factions or the ticked session players) and the line is cleared. Either way the command page closes.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
+void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
 
 {
   int countOrTabOffset;
@@ -705,8 +703,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
    writing and rebased afterwards. Finally the 0x200-byte package header gets the save name, date and time
    and the level title and campaign index. Returns true (CF set) on failure; the busy count is raised meanwhile.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-InGameUiAction1210_ResourceRegistrationHelper(void *worldView,void *savePath)
+bool InGameUiAction1210_ResourceRegistrationHelper(void *worldView,void *savePath)
 
 {
   uint16_t *timeTextDestination;
@@ -910,8 +907,7 @@ InGameResourceRegistration_DecrementBusyCountAndReturn:
    world runtime (which lies 0x8FEC bytes before the map control) by the distance to the new centre, then clears
    the field grid dirty flag.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
+void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
 
 {
   int64_t scaledProduct;
@@ -948,8 +944,7 @@ InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 ma
    The many differently typed INGAME_UI_FIELD accesses to offsets 0x20..0x2C are the leftOffset..bottomOffset
    fields; their Ghidra types are kept because the compiler schedules the stores by them.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot)
+StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot)
 
 {
   int32_t *sdwordField;
@@ -2710,7 +2705,7 @@ InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot)
    formats the camera pose, the selection point, free memory and the elapsed game time, and builds the faction
    status lines (name, player roster with pause/speed/slow marks, a counter) for the active factions 1..7.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessionPrompts(void)
+void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
 
 {
   SelectionPlayerRuntimeBlock *selectionBlock;
@@ -2931,7 +2926,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
    with the player's name patched in). Runs under the in-game tick spin lock because the network code updates
    the player records.
 */
-void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
+void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
 
 {
   FrontendPlayerRuntimeRecord *playerRecord;
@@ -3032,9 +3027,7 @@ enum InGameKeyCommandContinuation {
      Ctrl+Alt+V             cheat, single player only: toggle occupancy bit 0 on every field cell
    The original also returns CF set when no record matches; this void callback does not reproduce it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiRuntime_DispatchCommandByCodeAndModifierFlags
-          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *world)
 
 {
@@ -3330,9 +3323,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
    of lower priority is swapped (XCHG) with the carried record, so lower entries move down one slot and the
    lowest falls out. A notification with movie id 0 is ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameNotificationQueue_InsertPriorityRecord
-          (InGameNotificationPayloadKind payloadKind,uint32_t payloadReserved10,
+void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind payloadKind,uint32_t payloadReserved10,
           uint32_t orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
           Q12 secondaryWorldCoordinateQ12_04,Q12 primaryWorldCoordinateQ12_00,
           InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId)
@@ -3408,8 +3399,7 @@ InGameNotificationQueue_InsertPriorityRecord
    are switched to their empty page. g_UiAction1012TargetPlayerIndices keeps the faction of each row for the
    row buttons (action 0x1012).
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
+void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
 
 {
   uint32_t *controlFlags;
@@ -3556,9 +3546,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
    +0x2C) plus 50 per army with definition flag 0x10, and weights them by the track's number band (below 20, 50,
    70, or above). Track number 0 scores 0. The in-game music picks the best of the level's four tracks.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-InGameMusic_ComputeTrackSuitabilityScore
-          (MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime)
+uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime)
 
 {
   int activeFactionIndex;
@@ -3628,7 +3616,7 @@ InGameMusic_ComputeTrackSuitabilityScore
    was already paused before the window opened.
 */
 
-void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *source)
+void InGameUiAction101F_Handler(UiNodeBase *source)
 
 {
   WorldInteractionFlags *interactionFlagsField;
@@ -3712,8 +3700,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *
    (resultsTabThird / Economy / Military) was clicked. Selects it exclusively and shows the chart page of the
    selected tab.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
+void InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
 
 {
   SelectableGroupNodeResult visibleSelection;
@@ -3748,8 +3735,7 @@ InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
    faction towards that row's faction (g_UiAction1012TargetPlayerIndices), or resets it when the activation
    carries UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK. Ignored while paused or with world input disabled.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control)
+void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control)
 
 {
   UiNodeBase *ancestorParent;
@@ -3811,8 +3797,7 @@ InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *co
    entity's definition is assigned to the player (command INGAME_COMMAND_ASSIGN_ARMY_TOKEN). Ignored while the
    game is paused or the world input is disabled.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
+void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
 
 {
   UiPageStackControl *gameWindowStack;
@@ -3867,8 +3852,7 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
    labelled with the faction name (label texts 0x216D.. patched with name text 0x2173 + name index); the list
    is sized to the used rows and the unused check boxes are hidden.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
+void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
 
 {
   uint32_t *controlFlags;
@@ -3932,8 +3916,7 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
    of the message window. Like action 0x1006, but gives one check box to each of the first seven session
    players (g_FrontendPlayerRuntimeBlocks), labelled with the player name from the player's selection block.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
+void InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
 
 {
   uint32_t *controlFlags;
@@ -3987,7 +3970,7 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
    of the message window (send to everyone). Selects the tab and shows page 1 of the recipient page stack,
    which has no check boxes.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
+void InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
 
 {
   UiNodeBase *parentNode;
@@ -4013,8 +3996,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNode
    message lines drops the oldest ones so that at most three remain - and always at least one, even when
    three or fewer are shown - then rebuilds the eight-line list.
 */
-void __thandor_void_preserve_eax_ecx
-InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
+void InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
 
 {
   uint32_t currentEntryCount;
@@ -4153,8 +4135,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
    toggle, places, deletes or picks up an army, or (other tools) starts a rectangle selection. Editor
    commands go through the command queue in network games.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiCommand_BeginInteractionByMode
+void InGameUiCommand_BeginInteractionByMode
           (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,uint32_t reservedArg3,
           ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView170 *mapControl
           )
@@ -4530,9 +4511,7 @@ InGameUiCommand_BeginInteractionByMode
    rebuilds the influence, toggles fluid or region flags, moves or rotates a picked-up army, or grows the
    cell rectangle selection (deselecting the old rectangle, selecting the new one row by row).
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiCommand_UpdateInteractionByMode
-          (UiPointerRegionCode pointerRegionCode,GraphicsScreenCoordinate pointerX,
+void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCode,GraphicsScreenCoordinate pointerX,
           GraphicsScreenCoordinate pointerY,uint32_t reservedArg3,int optionalContext,
           WorldRuntimeExtendedMapControlView170 *mapControl)
 
@@ -4940,8 +4919,7 @@ InGameUiCommand_UpdateInteractionByMode
    after a height drag, converts the influence edit to height deltas, subtracts the painted materials, or drops the
    placed or moved army.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiCommand_EndInteractionByMode
+void InGameUiCommand_EndInteractionByMode
           (uint32_t callbackArg0,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3,
           WorldOwnerListNode100 *worldNode,WorldRuntimeContext *worldRuntime)
 
@@ -5007,8 +4985,7 @@ InGameUiCommand_EndInteractionByMode
    editor is active): clears the cell selection on the height and material tabs and the army selection on
    the unit placement tab.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
+void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
 
 {
   switch(g_UiCommandModeG) {
@@ -5053,8 +5030,7 @@ InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
    and terrain display flags and the lighting, and clears the hovered record. Each path runs only when the
    state actually changes (UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE).
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
+void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
           (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t activeStateFlags)
 
 {
@@ -5264,8 +5240,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
    grid asset image and the level asset image - from the current world state. A failure of either is
    reported through FatalError_ReportIfFailed without stopping the game.
 */
-void __thandor_preserve_eax
-InGameUiCommand_SaveFieldAndLevelAssetImages
+void InGameUiCommand_SaveFieldAndLevelAssetImages
           (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04)
 
 {
@@ -5292,7 +5267,7 @@ InGameUiCommand_SaveFieldAndLevelAssetImages
    recent-text history and rebuilds the eight-line pointer list the in-game UI displays
    (g_InGameRuntimeRoot->recentTextHistory09B8).
 */
-void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text)
+void InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text)
 
 {
   RecentTextHistoryPointerList *messageList;
@@ -5308,7 +5283,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuil
    UI action 0x1002 (g_InGameUiActionHandlersPage10[2], InGameUiImage.messageCancelButton): closes the message
    window - shows the world view again and switches the game window page stack back to page 0.
 */
-void __thandor_preserve_eax InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
+void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
@@ -5331,8 +5306,7 @@ void __thandor_preserve_eax InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
    InGameUiAction1024_Handler), then the mask, the text as four 12-byte chat commands and the publish command
    are issued, and the text field is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
+void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
 
 {
   int32_t *formBase;
@@ -5478,7 +5452,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
    entity plus the name of its linked army asset (definition classes 0x0B/0x0D/0x16), and enables the technology button only when a technology is
    available; page 3 shows the hovered record's armour, costs, build time, energy, name and weapons.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void)
+void InGameSelectionDetailPanel_Rebuild(void)
 
 {
   UiPageStackControl *stack;

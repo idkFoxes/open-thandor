@@ -15,8 +15,7 @@
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd): stamps the low distance bands around the
    model's current position, unless its definition has no influence radius.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
+void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   ModelRuntimeNode *modelNode;
@@ -37,8 +36,7 @@ GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove): clears the low distance bands around the
    model's current position, the counterpart of GridInfluence_AddLowDistanceBands.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
+void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   ModelRuntimeNode *modelNode;
@@ -60,8 +58,7 @@ GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
    model's position and remembers that position in the linked runtime (+0x68/+0x6C), so the removal clears the
    same disc even after the model has moved.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
+void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   void *linkedRuntime;
@@ -89,8 +86,7 @@ GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove): clears the high distance bands around
    the position GridInfluence_AddHighDistanceBands stored in the linked runtime.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
+void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
 
 {
   void *linkedRuntime;
@@ -111,7 +107,7 @@ GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
    (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd). Returns with RET 4 and keeps EAX and the
    flags.
 */
-void __thandor_void_preserve_eax_ecx_edx GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
+void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime)
 
 {
   return;
@@ -122,7 +118,7 @@ void __thandor_void_preserve_eax_ecx_edx GridInfluence_AddNoOp(GameEntityRuntime
    gridInfluenceRemove handler of the runtime classes 5..9 and 21 (the counterpart of GridInfluence_AddNoOp).
    Returns with RET 4 and keeps EAX and the flags.
 */
-void __thandor_void_preserve_eax_ecx_edx GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
+void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
 
 {
   return;
@@ -134,8 +130,7 @@ void __thandor_void_preserve_eax_ecx_edx GridInfluence_RemoveNoOp(GameEntityRunt
    model re-add its influence through the gridInfluenceAdd handler of its runtime class. Runs on tick-wheel
    case 4 and, on the other simulation-tick path, every 16th tick.
 */
-void __thandor_preserve_eax
-GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entityListHead)
+void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entityListHead)
 
 {
   int cellsRemaining;
@@ -187,9 +182,7 @@ GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entity
    leftwards and rightwards, then upwards from the row above and downwards from the row below. Nothing happens
    off the grid or on a blocked centre cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_SetLowDistanceBandsAroundWorldPoint
-          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void GridInfluence_SetLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   int64_t wideProduct;
@@ -310,9 +303,7 @@ GridInfluence_SetLowDistanceBandsAroundWorldPoint
    covers the disc the same way, but sets high distance band bit n (scratch bit 16 + n). Called by
    GridInfluence_AddHighDistanceBands.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_SetHighDistanceBandsAroundWorldPoint
-          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void GridInfluence_SetHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   int64_t wideProduct;
@@ -433,9 +424,7 @@ GridInfluence_SetHighDistanceBandsAroundWorldPoint
    clears low distance band bit n (scratch bit 8 + n) in every cell inside ring n. Called by
    GridInfluence_RemoveLowDistanceBands.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_ClearLowDistanceBandsAroundWorldPoint
-          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void GridInfluence_ClearLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   int64_t wideProduct;
@@ -556,9 +545,7 @@ GridInfluence_ClearLowDistanceBandsAroundWorldPoint
    clears high distance band bit n (scratch bit 16 + n) in every cell inside ring n. Called by
    GridInfluence_RemoveHighDistanceBands.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridInfluence_ClearHighDistanceBandsAroundWorldPoint
-          (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
+void GridInfluence_ClearHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
   int64_t wideProduct;
@@ -682,8 +669,7 @@ GridInfluence_ClearHighDistanceBandsAroundWorldPoint
    blocked cell. Returns the number of cells written, one less when the walk ended at a blocked cell (DEC in the
    original).
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_SetLowDistanceBandsDiagonalNegative
+int GridInfluence_SetLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)
@@ -727,8 +713,7 @@ GridInfluence_SetLowDistanceBandsDiagonalNegative
    Mirror of GridInfluence_SetLowDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
    right per step), with the same band bits and the same return value.
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_SetLowDistanceBandsDiagonalPositive
+int GridInfluence_SetLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)
@@ -771,8 +756,7 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
    High-band twin of GridInfluence_SetLowDistanceBandsDiagonalNegative: walks downwards from scratchCell and ORs
    high distance band bit n (scratch bit 16 + n) into each cell inside ring n. Same stop rule and return value.
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_SetHighDistanceBandsDiagonalNegative
+int GridInfluence_SetHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)
@@ -815,8 +799,7 @@ GridInfluence_SetHighDistanceBandsDiagonalNegative
    Mirror of GridInfluence_SetHighDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
    right per step).
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_SetHighDistanceBandsDiagonalPositive
+int GridInfluence_SetHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)
@@ -859,8 +842,7 @@ GridInfluence_SetHighDistanceBandsDiagonalPositive
    Clearing twin of GridInfluence_SetLowDistanceBandsDiagonalNegative: walks downwards from scratchCell and clears
    low distance band bit n (scratch bit 8 + n) in each cell inside ring n. Same stop rule and return value.
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_ClearLowDistanceBandsDiagonalNegative
+int GridInfluence_ClearLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)
@@ -903,8 +885,7 @@ GridInfluence_ClearLowDistanceBandsDiagonalNegative
    Mirror of GridInfluence_ClearLowDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one column
    right per step).
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_ClearLowDistanceBandsDiagonalPositive
+int GridInfluence_ClearLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)
@@ -947,8 +928,7 @@ GridInfluence_ClearLowDistanceBandsDiagonalPositive
    Clearing twin of GridInfluence_SetHighDistanceBandsDiagonalNegative: walks downwards from scratchCell and clears
    high distance band bit n (scratch bit 16 + n) in each cell inside ring n. Same stop rule and return value.
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_ClearHighDistanceBandsDiagonalNegative
+int GridInfluence_ClearHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)
@@ -991,8 +971,7 @@ GridInfluence_ClearHighDistanceBandsDiagonalNegative
    Mirror of GridInfluence_ClearHighDistanceBandsDiagonalNegative walking upwards (two scratch rows up and one
    column right per step).
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridInfluence_ClearHighDistanceBandsDiagonalPositive
+int GridInfluence_ClearHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell)

@@ -26,65 +26,55 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004CDD40 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
+void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004BCF70 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_Initialize(void);
+StatusResult GraphicsIntensityClampTable_Initialize(void);
 
 /* 0x004CCA90 */
-MmxPackedValue64 __thandor_void_preserve_ecx_edx_mm1
-GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
+MmxPackedValue64 GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulatorMmx);
 
 /* 0x004CCB40 */
-ShadingRecordResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingRuntime_AllocateRecordRegs
+ShadingRecordResult GraphicsShadingRuntime_AllocateRecordRegs
           (GraphicsTransitionTickCount transitionDurationTicks,GraphicsRadiusQ12 radiusQ12,
           PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
 /* 0x004CCC60 */
-void __thandor_void_preserve_eax_ecx GraphicsShadingRuntime_ClearRecordTable(void);
+void GraphicsShadingRuntime_ClearRecordTable(void);
 
 /* 0x004CCD00 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsShadingRuntime_RebuildCompactLightingRecords(void);
+void GraphicsShadingRuntime_RebuildCompactLightingRecords(void);
 
 /* 0x004CCD70 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingRuntime_CollectNearbyRecords
-          (GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
+void GraphicsShadingRuntime_CollectNearbyRecords(GraphicsRadiusQ12 queryRadiusQ12,GraphicsWorldCoordinateQ12 worldZQ12,
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
 /* 0x004CCFF0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingRuntime_InitializeGeneratedTexture
+StatusResult GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension);
 
 /* 0x004CD1B0 */
-void __thandor_void_preserve_eax GraphicsShadingRuntime_Shutdown(void);
+void GraphicsShadingRuntime_Shutdown(void);
 
 /* 0x004CD200 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void);
+void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void);
 
 /* 0x004CD360 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void);
+void GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void);
 
 /* 0x004D1170 */
 void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
                (GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004CD880 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshRecord);
+void GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshRecord);
 
 /* 0x004CD930 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *modelNode);
+void GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *modelNode);
 
 /* 0x004CD9F0 */
 uint32_t
@@ -95,33 +85,26 @@ uint32_t
 GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *modelNode);
 
 /* 0x004CDB80 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords
-          (ModelMeshGroupAddress32 meshRecord);
+void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelMeshGroupAddress32 meshRecord);
 
 /* 0x004CDC20 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
-          (ModelRuntimeNode *modelNode);
+void GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds(ModelRuntimeNode *modelNode);
 
 /* 0x00485020 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TransformPointXY
+void GraphicsShadingGeneratedTexture_TransformPointXY
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform);
 
 /* 0x004CD2B0 */
-void __thandor_void_preserve_eax_ecx GraphicsShadingGeneratedTexture_AdvanceTileCursor(void);
+void GraphicsShadingGeneratedTexture_AdvanceTileCursor(void);
 
 /* 0x004CD3D0 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void);
+void GraphicsShadingGeneratedTexture_FilterGridScratchMmx(void);
 
 /* 0x004CDCE0 */
-bool __thandor_void_preserve_eax_ecx
-GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
+bool GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 
 /* 0x004D1060 */
-ProjectedBlockReserveResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
+ProjectedBlockReserveResult GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004D1150 */
@@ -129,19 +112,16 @@ void GraphicsShadingGeneratedTexture_RollbackFourteenProjectedPointBlocks
                (GeneratedTextureRenderContextView *renderContext);
 
 /* 0x00484FA0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_TransformPointXYQuantized
+void GraphicsShadingGeneratedTexture_TransformPointXYQuantized
           (GraphicsFixedVec2 *outputXY,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform);
 
 /* 0x00485320 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_ComposeTransform
+void GraphicsShadingGeneratedTexture_ComposeTransform
           (GraphicsFixedMatrix3x4 *outTransform,GraphicsFixedMatrix3x4 *rhsTransform,
           GraphicsFixedMatrix3x4 *lhsTransform);
 
 /* 0x004CD690 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsShadingGeneratedTexture_RasterizeTriangleMask
+void GraphicsShadingGeneratedTexture_RasterizeTriangleMask
           (GraphicsFixedVec2 *vertexA,GraphicsFixedVec2 *vertexB,GraphicsFixedVec2 *vertexC);
 
 /* Not in the original: fills g_PackedLightingLookupTable (the original shipped it precomputed). */

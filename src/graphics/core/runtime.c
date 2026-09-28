@@ -17,7 +17,7 @@
    frame (wrapping to the first one); when the frame changed or mouse events moved the cursor, and the graphics
    backend is not in use, the cursor is redrawn directly on the primary surface.
 */
-void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
+void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
 
 {
   GraphicsCursorFrameRecord *frameRecords;
@@ -82,8 +82,7 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
    An index at or above g_CursorFrameCount is rejected with CF set. EAX holds FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE
    on both paths. Installed in g_GraphicsCursorSetFrame (image slot 0x00416848).
 */
-CursorFrameResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
+CursorFrameResult GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 {
   CursorFrameResult successResult;
@@ -109,8 +108,9 @@ GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
    +-4 pixels of the last click also sets bit 31 (double click) in the returned button state (EBX;
    g_CursorButtonState keeps the raw value), which UiPointer_DispatchPendingEvents passes on to the press
    dispatchers as UI_POINTER_BUTTON_REPEAT_CLICK.
+   Original register convention: the event is returned in registers (see the result type), CF flag.
 */
-CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void)
+CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void)
 
 {
   GraphicsCursorEventType consumedEventType;
@@ -198,8 +198,7 @@ CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputE
    centre. Points with z not above the numerator's high dword (behind or too close to the eye, where the
    32-bit IDIV would overflow) project to (0,0).
 */
-GraphicsProjectedPointPair __thandor_eax_edx_cf_preserve_ecx
-Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
+GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
 
 {
   int perspectiveScaleQ12;
@@ -232,8 +231,7 @@ Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
    point). First step of a scene setup, before the view parameters and the viewport (called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped and GraphicsOffscreen_RenderModelListToTextureSource).
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetProjectionClipRect
+void Graphics_SetProjectionClipRect
           (GraphicsScreenCoordinate maxY,GraphicsScreenCoordinate maxX,GraphicsScreenCoordinate minY
           ,GraphicsScreenCoordinate minX)
 
@@ -253,8 +251,7 @@ Graphics_SetProjectionClipRect
    The azimuth/elevation names follow FixedMath_DirectionFromAnglesScaledRegs, which
    Graphics_RebuildFrustumPlanes feeds with the same two angles.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetViewProjectionParameters
+void Graphics_SetViewProjectionParameters
           (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewElevationAngle,
           GraphicsViewAngle16 viewAzimuthAngle,GraphicsProjectionScale projectionScale,
           GraphicsWorldCoordinateQ12 originZ,GraphicsWorldCoordinateQ12 originY,
@@ -307,9 +304,7 @@ Graphics_SetViewProjectionParameters
    is width * projection scale, shifted by g_ProjectionShift - 1 and widened to a signed 64-bit value << 12.
    Must follow Graphics_SetViewProjectionParameters, whose scale and shift it reads.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetProjectionViewport
-          (GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
+void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
           GraphicsScreenCoordinate top,GraphicsScreenCoordinate left)
 
 {
@@ -346,8 +341,7 @@ Graphics_SetProjectionViewport
    direction into each model's space and passes it to ModelRender_ComputeVertexIntensity* as the light direction;
    the rotation is used by the generated-texture shading code.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
+void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
   g_AuxiliaryOrientation.component0 = azimuthAngle;
@@ -367,9 +361,7 @@ Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthA
    colours: the model renderer passes bound5/bound4 and bound7/bound6 as the scene colour pairs of
    ModelRender_ComputeVertexIntensityDefaultPath and ...ScaledPath. No reader of bound0..bound3 is known.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetSceneBounds
-          (GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
+void Graphics_SetSceneBounds(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
           GraphicsSceneExtentFixed bound5,GraphicsSceneExtentFixed bound4,
           GraphicsSceneExtentFixed bound3,GraphicsSceneExtentFixed bound2,
           GraphicsSceneExtentFixed bound1,GraphicsSceneExtentFixed bound0)
@@ -390,8 +382,7 @@ Graphics_SetSceneBounds
    Selects the primitive queue the model renderer appends its triangles to (g_ActivePrimitiveQueue); the scene
    setup calls it with the queue freshly reset by GraphicsPrimitiveQueue_ResetGlobal.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
+void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
 
 {
   g_ActivePrimitiveQueue = queue;
@@ -404,7 +395,7 @@ Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
    1 << (12 - shift), two are forward + / - an up/down vector of that length; the plane normals are cross products of neighbouring
    rays, normalised to Q28 in g_FrustumPlaneNormalFixed_0[0..3].
 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
+void Graphics_RebuildFrustumPlanes(void)
 
 {
   uint32_t forwardX;
@@ -499,8 +490,7 @@ GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsO
    transform at +0x10 into the shared scratch matrix, applies it to the direction's unit vector and returns the
    resulting angles. No caller in the executable (only in g_ThandorFunctionMap).
 */
-FixedElevationAzimuth __thandor_preserve_eax
-GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
+FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           GraphicsObjectAddress32 graphicsObject)
 
@@ -524,8 +514,7 @@ GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
    turns into the translation with FixedMath_DirectionFromAnglesScaledRegs. No caller in the executable (only in
    g_ThandorFunctionMap).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
+void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
           (AngleTurn16Stored32 elevationAngle16,AngleTurn16Stored32 azimuthAngle16,
           FixedMathScale32 distance,GraphicsObjectAddress32 graphicsObjectAddress)
 
@@ -542,9 +531,7 @@ GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
    FixedTransform_BuildRotationBasis (the angle names follow that function's parameters). No caller in the
    executable (only in g_ThandorFunctionMap).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsObject_SetRotationEulerAnglesPacked
-          (AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
+void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
           AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
@@ -562,8 +549,7 @@ GraphicsObject_SetRotationEulerAnglesPacked
    As in the original, the child loop takes its count from this object (+0x0C) but reads the child pointers from
    the parent's list at +0x78 (EBX = parent), so a root object with children would read from address 0x78.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress)
+void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
   int remainingChildCount;
@@ -776,7 +762,7 @@ StatusResult __cdecl Graphics_Init(void)
    is the running 3dfx Glide adapter, so the full-screen Glide display is released while the game is in the
    background.
 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfReady(void)
+void GraphicsBackend_RefreshActiveAdapterIfReady(void)
 
 {
   if (((g_GlideRuntimeActiveCount != 0) && (g_ActiveGraphicsAdapterIndex != GRAPHICS_ADAPTER_INDEX_NONE)) &&
@@ -792,7 +778,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfR
    cursor buffers, shuts Glide down, releases the objects of every texture slot and then every Direct3D and
    DirectDraw object, viewport first and primary surface last.
 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
+void Graphics_Shutdown(void)
 
 {
   GraphicsTextureResource **slotsOrRemaining;
@@ -869,9 +855,7 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
    the rectangle as its clip rectangle; Direct3D also gets it as its viewport (SetViewport2 only when the
    rectangle changed since the last successful call) and clears the Z-buffer inside it; Glide does its own.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetViewportAndClearDepth
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void Graphics_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
 
 {
@@ -936,7 +920,7 @@ Graphics_SetViewportAndClearDepth
    caller (g_GraphicsBeginScene in FrontendModelPointerContext_RenderWorldViewQueuesClipped, 0x0050BDF7) never
    reads CF.
 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void)
+void Graphics_BeginScene(void)
 
 {
   TH_LEGACY_DWORD deviceKind;
@@ -974,7 +958,7 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void)
    Ends the frame started by Graphics_BeginScene: IDirect3DDevice2::EndScene for Direct3D, the (empty) Glide
    hook for Glide, nothing for the software rasterizer.
 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_EndScene(void)
+void Graphics_EndScene(void)
 
 {
   TH_LEGACY_DWORD deviceKind;
@@ -997,9 +981,7 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_EndScene(void)
    rectangle. Software and Glide have their own queue walkers; for Direct3D every packet is turned into
    transformed vertices by the primitive handler its render flags select and drawn as one triangle fan.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_DrawPrimitiveQueue
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void Graphics_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue)
 
@@ -1037,8 +1019,7 @@ Graphics_DrawPrimitiveQueue
    blended onto the first copy (the pressed image while a mouse button is down) and that copy is written back.
    The visibility token is latched so the restore matches what was drawn. Glide draws its cursor itself.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
+void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
 
 {
   UiPixelCoordinate cursorX;
@@ -1087,8 +1068,7 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
    cursor was hidden at compose time; Glide calls a no-op because it draws the cursor directly into the
    locked framebuffer.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface)
+void GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface)
 
 {
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE) {
@@ -1108,9 +1088,7 @@ GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface)
    that lies on screen into destinationBuffer (same layout, 16 or 32 bits per pixel), so the cursor can later
    be removed again with GraphicsCursor_RestoreSurfaceBackground. The surface is restored first if it was lost.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_SaveSurfaceBackground
-          (SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
+void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface)
 
 {
@@ -1182,9 +1160,7 @@ GraphicsCursor_SaveSurfaceBackground
    destinationSurface at (drawX, drawY), clipped to the screen exactly like the save. Used to draw the
    composed cursor and to remove it again after the present.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_RestoreSurfaceBackground
-          (SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
+void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface)
 
 {

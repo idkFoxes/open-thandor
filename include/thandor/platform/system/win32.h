@@ -15,9 +15,9 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005868D0 */
-void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void);
+void Win32_PumpMessages(void);
 
 /* 0x00577B90 */
-bool __thandor_void_preserve_eax_ecx Win32_ShouldTranslateMessageFlags(Win32Message32 *message);
+bool Win32_ShouldTranslateMessageFlags(Win32Message32 *message);
 
 #endif /* THANDOR_PLATFORM_SYSTEM_WIN32_H */

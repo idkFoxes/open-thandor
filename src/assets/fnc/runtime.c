@@ -98,8 +98,7 @@ FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
    relocated entry of its export table. CF set with FATAL_ERROR_FNC_MODULE_BINDING for an index outside
    exportCount.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHeader *module)
+StatusResult FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHeader *module)
 
 {
   StatusResult successResult;

@@ -15,39 +15,29 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00519320 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime);
+void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime);
 
 /* 0x00485FD0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_ClearViewport
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX);
 
 /* 0x004D1560 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawQueue16Bit
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_DrawQueue16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x004D15D0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawQueueNon16Bit
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_DrawQueueNon16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x004D1640 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawQueueAuxiliary
+void SoftwareRenderer_DrawQueueAuxiliary
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,void *targetBase,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x00486020 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawPrimitiveQueueBridge
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue);
 
@@ -55,83 +45,69 @@ SoftwareRenderer_DrawPrimitiveQueueBridge
 void SoftwareGraphicsDispatch_SuccessNoOp(void);
 
 /* 0x00486060 */
-void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void);
+void SoftwareGraphicsDispatch_NoOp(void);
 
 /* 0x004A8F80 */
-DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-SoftwarePixelFormat_BaseDisplayModeHook
+DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width);
 
 /* 0x004A9110 */
-SoftwareFramebufferResult __thandor_eax_cf_preserve_ecx_edx
-SoftwareFramebuffer_Create
+SoftwareFramebufferResult SoftwareFramebuffer_Create
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
           GraphicsPixelDimension width);
 
 /* 0x004A9160 */
-void __thandor_preserve_eax SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer);
+void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004A9180 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwarePixelFormat_BuildChannelPackTables
+void SoftwarePixelFormat_BuildChannelPackTables
           (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16);
 
 /* 0x004A93C0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlpha16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004A9710 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlpha32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004A9B20 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfSourceRgb16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004A9E10 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfSourceRgb32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AA170 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_StretchDirectColorBilinear16
+void SoftwareTextureSource_StretchDirectColorBilinear16
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AA3F0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_StretchDirectColorBilinear32
+void SoftwareTextureSource_StretchDirectColorBilinear32
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AA630 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
+void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -139,8 +115,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AAA40 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
+void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -148,8 +123,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AADE0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlphaPaletteBank16
+void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -157,8 +131,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AB150 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlphaPaletteBank32
+void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -166,26 +139,21 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank32
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AB4A0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSaturatedAddRgb16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AB750 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSaturatedAddRgb32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004ABA70 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
+bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -193,8 +161,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004ABD20 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
+bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -202,8 +169,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AC040 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitModulatedSourceAlpha16
+bool SoftwareTextureSource_BlitModulatedSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -211,8 +177,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AC4C0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitModulatedSourceAlpha32
+bool SoftwareTextureSource_BlitModulatedSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -220,34 +185,26 @@ SoftwareTextureSource_BlitModulatedSourceAlpha32
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AD110 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_FillRectArgb16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareFramebuffer_FillRectArgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
           GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AD2A0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_FillRectArgb32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
           GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AD410 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_CopyRegionToOrigin
-          (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
+void SoftwareFramebuffer_CopyRegionToOrigin(GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX,
           SoftwareFramebufferAccess *destination,SoftwareFramebufferAccess *source);
 
 /* 0x004AD520 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_CopyOriginToRegion
-          (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
+void SoftwareFramebuffer_CopyOriginToRegion(GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
           GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
           SoftwareFramebufferAccess *source,SoftwareFramebufferAccess *destination);
 
@@ -432,8 +389,7 @@ void SoftwareRasterAux_Mode10 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenC
 void SoftwareRasterAux_Mode12 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitivePacket *packet);
 
 /* 0x004FE620 */
-DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-SoftwareRenderer_SetDisplayMode
+DisplayModeResult SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 
@@ -441,8 +397,7 @@ SoftwareRenderer_SetDisplayMode
 StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void);
 
 /* 0x00518CE0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTexture_BilinearBlendScaleSubresources
+void SoftwareTexture_BilinearBlendScaleSubresources
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
           uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
@@ -451,41 +406,32 @@ SoftwareTexture_BilinearBlendScaleSubresources
           int *framebufferAccess);
 
 /* 0x004D16D0 */
-void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void);
+void SoftwareRenderer_AdvanceDepthEpoch(void);
 
 /* 0x00519210 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl);
+void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl);
 
 /* 0x00519270 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime);
+void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime);
 
 /* 0x00519500 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_ApplyCircularRegionBit
-          (UiBooleanState32 invertSelection,GraphicsScreenCoordinate centerY,
+void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,GraphicsScreenCoordinate centerY,
           GraphicsScreenCoordinate centerX,SoftwareMaskRadiusStep radiusStep,
           SoftwareMaskRuntimeView *maskRuntime);
 
 /* 0x005195D0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
+void SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
           (UiBooleanState32 invertSelection,SoftwareMaskThresholdStep thresholdStep,
           SoftwareMaskRuntimeView *maskRuntime);
 
 /* 0x00519670 */
-void __thandor_preserve_eax_edx
-SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl);
+void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl);
 
 /* 0x005196C0 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_ApplyHorizontalBandBit
-          (UiBooleanState32 reverseRows,TerrainGridMaskIndex bandIndex,
+void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,TerrainGridMaskIndex bandIndex,
           SoftwareMaskRuntimeView *maskRuntime);
 
 /* 0x004FE840 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet);
+void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet);
 
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_H */

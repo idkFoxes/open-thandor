@@ -15,8 +15,7 @@
    configured scroll step in that direction and returns the matching scroll-arrow cursor frame
    (WORLD_CURSOR_SCROLL_*), or 0 when no edge is touched.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
+uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t edgeScrollStep;
@@ -84,8 +83,7 @@ WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
    ui/frontend/runtime.c): moves camera position and target together by screenDelta scaled with
    k_CameraScreenDeltaDistanceScaleQ16 along the heading minus a quarter turn, at the elevation passed in EDX.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
+void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
           (AngleTurn32 elevationAngle,int screenDelta,WorldRuntimeContext *worldRuntime)
 
 {
@@ -117,9 +115,7 @@ WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
    up direction (pitch minus a quarter turn; past straight down the direction is mirrored with the heading turned
    by half a turn).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn
-          (int screenDelta,WorldRuntimeContext *worldRuntime)
+void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,WorldRuntimeContext *worldRuntime)
 
 {
   Q12 *coordinateField;
@@ -157,8 +153,7 @@ WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn
    the sideways move; ui/frontend/runtime.c): moves camera position and target together by the scaled
    screenDelta against the viewing direction (negated pitch, heading plus half a turn).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
+void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
           (int screenDelta,WorldRuntimeContext *worldRuntime)
 
 {
@@ -190,9 +185,7 @@ WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
    0x200, ui/frontend/runtime.c): turns the heading by headingDeltaInput * g_WorldMotionHeadingInputScale and puts
    the camera back at targetDistanceQ12 from the unchanged target.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotion_AdjustHeadingAndRecomputePosition
-          (int headingDeltaInput,WorldRuntimeContext *worldRuntime)
+void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t azimuthAngle;
@@ -217,9 +210,7 @@ WorldMotion_AdjustHeadingAndRecomputePosition
    ui/frontend/runtime.c): changes only the heading, in the opposite sense of
    WorldMotion_AdjustHeadingAndRecomputePosition; position and target stay.
 */
-void __thandor_void_preserve_eax_ecx
-WorldMotion_AdjustHeadingAndClearFieldGridDirty
-          (int headingDeltaInput,WorldRuntimeContext *worldRuntime)
+void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
   (worldRuntime->motion).headingAngle =
@@ -236,9 +227,7 @@ WorldMotion_AdjustHeadingAndClearFieldGridDirty
    distance range (with WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA only with flag 0x200, to the alternate range) and to at
    least WORLD_MOTION_MINIMUM_DISTANCE_Q12, and puts the camera at that distance from its target.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotion_AdjustDistanceClampAndRecomputePosition
-          (int distanceDeltaInput,WorldRuntimeContext *worldRuntime)
+void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
   UQ12 requestedDistanceQ12;
@@ -282,8 +271,7 @@ WorldMotion_AdjustDistanceClampAndRecomputePosition
    changes positionMagnitudeQ12 against magnitudeDeltaInput with the same clamps as
    WorldMotion_AdjustDistanceClampAndRecomputePosition, without moving the camera.
 */
-void __thandor_void_preserve_eax_ecx
-WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeContext *worldRuntime)
+void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
   UQ12 requestedMagnitudeQ12;
@@ -321,9 +309,7 @@ WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeCon
    the distance in WorldMotion_AdjustDistanceClampAndRecomputePosition (world pitch range or, unlimited with flag
    0x200, the alternate range) and always to +-a quarter turn, and puts the camera back around the target.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotion_AdjustPitchClampAndRecomputePosition
-          (int pitchDeltaInput,WorldRuntimeContext *worldRuntime)
+void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
   AngleTurn32 requestedPitchAngle;
@@ -371,9 +357,7 @@ WorldMotion_AdjustPitchClampAndRecomputePosition
    ui/frontend/runtime.c): changes only the pitch, in the opposite sense of
    WorldMotion_AdjustPitchClampAndRecomputePosition and with the same clamps; position and target stay.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotion_AdjustPitchClampAndClearFieldGridDirty
-          (int pitchDeltaInput,WorldRuntimeContext *worldRuntime)
+void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
   AngleTurn32 requestedPitchAngle;
@@ -414,8 +398,7 @@ WorldMotion_AdjustPitchClampAndClearFieldGridDirty
    camera heading, screenDeltaRight along the heading plus a quarter turn, both scaled with the camera distance so
    a scroll step covers the same screen distance at any zoom. Camera position and target move together.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_TranslateCameraByScreenDelta
+void WorldRuntime_TranslateCameraByScreenDelta
           (CameraScreenDeltaPixels screenDeltaDown,uint32_t screenDeltaRight,WorldRuntimeContext *worldRuntime
           )
 

@@ -89,8 +89,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
 
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacement_TestModelTerrainAndRuntimeClearance
+bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
@@ -154,8 +153,7 @@ Q12 g_ArmyPlacementValidatedWorldYQ12;
    0x240 on each axis). Returns false (CF clear) when one fits and leaves the accepted point in
    g_ArmyPlacementValidatedWorldXQ12/YQ12 (the original's ECX/EDX); true when none fits.
 */
-bool __thandor_preserve_eax
-ArmyPlacement_ValidateAssetAtPointAndCellCorners
+bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
           (ArmyPlacementMode placementMode,uint32_t placementHeading,Q12 worldYQ12,
           Q12 worldXQ12,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionId,
           void *inGameRuntime)
@@ -263,8 +261,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancy
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[14] (0x0051FED8),
    called by ArmyRuntimeNode_DispatchTypedCallback.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacement_TestGridOccupancyMask
+bool ArmyPlacement_TestGridOccupancyMask
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View200 *modelRuntime)
 
 {
@@ -310,8 +307,7 @@ ArmyPlacement_TestGridOccupancyMask
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation[1..3, 17..19]
    (0x0051FED8), called by ArmyRuntimeNode_DispatchTypedCallback.
 */
-bool __thandor_cf_preserve_eax
-ArmyPlacement_TestGridRuntimeAndFieldBlocking
+bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
@@ -392,8 +388,7 @@ PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[0] (0x004BD890), indexed by the model
    definition's contact kind (+0x278) from the movement, creation and session code.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacementContact_ApplyTerrainHeight
+void ArmyPlacementContact_ApplyTerrainHeight
           (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
@@ -425,8 +420,7 @@ ArmyPlacementContact_ApplyTerrainHeight
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[1] (0x004BD890), indexed by the model
    definition's contact kind (+0x278).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacementContact_ApplyWaterSurfaceHeight
+void ArmyPlacementContact_ApplyWaterSurfaceHeight
           (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
@@ -455,8 +449,7 @@ ArmyPlacementContact_ApplyWaterSurfaceHeight
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[2] (0x004BD890), indexed by the model
    definition's contact kind (+0x278).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacementContact_ApplyTerrainHeightAndNormal
+void ArmyPlacementContact_ApplyTerrainHeightAndNormal
           (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
@@ -489,8 +482,7 @@ ArmyPlacementContact_ApplyTerrainHeightAndNormal
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[4] (0x004BD890), indexed by the model
    definition's contact kind (+0x278).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacementContact_ApplyTopSurfaceHeight
+void ArmyPlacementContact_ApplyTopSurfaceHeight
           (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
@@ -520,8 +512,7 @@ ArmyPlacementContact_ApplyTopSurfaceHeight
    Reached through g_ArmyPlacementContactKindDispatchTable.callbacks[3] (0x004BD890), indexed by the model
    definition's contact kind (+0x278).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacementContact_InitializeArticulatedSuspension
+void ArmyPlacementContact_InitializeArticulatedSuspension
           (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
@@ -542,8 +533,7 @@ ArmyPlacementContact_InitializeArticulatedSuspension
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[14] (0x0051FE78),
    called by ModelRuntimePool_DestroyHierarchyAndDetach.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
+void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
@@ -605,9 +595,7 @@ ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[15] (0x0051FE78),
    called by ModelRuntimePool_DestroyHierarchyAndDetach.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacement_ReleaseFactionCapacity
-          (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
+void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
   uint8_t *storageLimit;
@@ -647,8 +635,7 @@ ArmyPlacement_ReleaseFactionCapacity
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[21] (0x0051FE78),
    called by ModelRuntimePool_DestroyHierarchyAndDetach.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyPlacement_ReleaseClassStateReservation
+void ArmyPlacement_ReleaseClassStateReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
@@ -721,8 +708,7 @@ PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccess
    Called directly by ArmyRuntimeCollision_TestShotSpawnPoint.
 */
 
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyCollision_TestPointAgainstRuntimeList
+bool ArmyCollision_TestPointAgainstRuntimeList
           (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime)
 
 {
@@ -765,8 +751,7 @@ ArmyCollision_TestPointAgainstRuntimeList
    Called directly by the ground-movement code (gameplay/army/movement.c) and by
    ArmyPlacement_TestGridRuntimeAndFieldBlocking.
 */
-ArmyCollisionResult __thandor_eax_cf_preserve_ecx_edx
-ArmyCollision_FindBlockingRuntimeForCurrentUnit
+ArmyCollisionResult ArmyCollision_FindBlockingRuntimeForCurrentUnit
           (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryViewF4 *currentRuntime,
           WorldRuntimeContext *worldRuntime)
 
@@ -817,9 +802,7 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnit
    definition's class (+0x4C) in the placement dispatch table. Returns that handler's result, or the lookup
    error with CF set.
 */
-PlacementDispatchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyPlacement_DispatchAssetAtFieldPoint
-          (ArmyPlacementMode placementMode,
+PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
           uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
@@ -867,8 +850,7 @@ ArmyPlacement_DispatchAssetAtFieldPoint
    ArmyPlacementCandidate_TestOffsetClearance.
 */
 
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestPointAgainstRuntimeList
+bool ArmyPlacementCollision_TestPointAgainstRuntimeList
           (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
           Q12 worldYQ12,WorldRuntimeContext *worldRuntime)
 
@@ -925,8 +907,7 @@ ArmyPlacementCollision_TestPointAgainstRuntimeList
    ArmyPlacement_TestModelTerrainAndRuntimeClearance.
 */
 
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestCandidateAgainstRuntimeList
+bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode100 *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime)
 
@@ -993,8 +974,7 @@ ArmyPlacementCollision_TestCandidateAgainstRuntimeList
    ArmyPlacement_TestModelTerrainAndRuntimeClearance and ArmyPlacement_TestGridOccupancyMask.
 */
 
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestCurrentRuntime
+bool ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
@@ -1215,8 +1195,7 @@ ArmyPlacementCollision_TestCandidateAndClearance_Reject:
    Called directly by ArmyPlacementCollision_TestPointAgainstRuntimeList and
    ArmyPlacementCollision_TestCandidateAgainstRuntimeList.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCandidate_TestModelAnchorDistance
+bool ArmyPlacementCandidate_TestModelAnchorDistance
           (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -1247,8 +1226,7 @@ ArmyPlacementCandidate_TestModelAnchorDistance
    Called directly by the runtime-list collision scans in this file and by the movement code
    (gameplay/army/movement.c).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyCollision_TestPointWithinExpandedRuntimeRadius
+bool ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ArmyRuntimeSlot *armyRuntime)
 
 {

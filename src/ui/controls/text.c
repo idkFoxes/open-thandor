@@ -15,7 +15,7 @@
    delay down and prepares the tooltip text when it expires. While a node has captured the pointer or the
    hovered control is disabled, re-evaluates the hover target at the last pointer position instead.
 */
-void __thandor_void_preserve_eax_ecx_edx UiTooltip_TickCountdown(void)
+void UiTooltip_TickCountdown(void)
 
 {
   if ((g_UiPointerCaptureTarget == UI_NODE_NONE) &&
@@ -39,9 +39,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTooltip_TickCountdown(void)
    and after every handled key parses and commits the value. Enter queues the action when the control acts on
    Enter only; everything else goes to UiNode_DefaultKeyboardEventMoveFocusNext. CF clear: consumed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiNumericTextEditControl_HandleKeyboardAndCommit
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control)
 
 {
@@ -345,9 +343,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommit
    Enter only, its action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext.
    CF clear: consumed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiPathTextEditControl_HandleKeyboardAndValidate
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control)
 
 {
@@ -743,8 +739,7 @@ UiPathTextEditControl_HandleKeyboardAndValidate
    After every handled key the non-empty validity is updated and, unless the control acts on Enter only, its
    action is queued. Unhandled keys go to UiNode_DefaultKeyboardEventMoveFocusNext. CF clear: consumed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiRequiredTextEditControl_HandleKeyboardAndValidate
+bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control)
 
@@ -1175,8 +1170,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidate
    the adapter's driver description and device name (text 0x111 for the primary adapter, whose GUID is 0);
    neither: both numbers.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiGraphicsAdapterTextButton_DrawFormattedAdapterText
+void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextButtonControl *control)
 
@@ -1233,8 +1227,7 @@ UiGraphicsAdapterTextButton_DrawFormattedAdapterText
    fallback focus target unless it is the preferred one, hides the caret, rebuilds the text from the value,
    selects all of it and relocates the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNumericTextEditControl_RelocateAndRebuildText
+void UiNumericTextEditControl_RelocateAndRebuildText
           (UiSerializedRelocationDelta relocationDelta,UiNumericTextControl *control)
 
 {
@@ -1270,8 +1263,7 @@ UiNumericTextEditControl_RelocateAndRebuildText
    the text in the active, invalid-value or disabled style, and in the visible caret phase the insert or
    overwrite caret with its shadow. The clip rectangle is narrowed to the text area first.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_DrawTextSelectionAndCaret
+void UiTextEditControl_DrawTextSelectionAndCaret
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextEditControl *control)
 
@@ -1424,8 +1416,7 @@ UiTextEditControl_DrawTextSelectionAndCaret
    vtables): unless read-only, starts a pointer selection by placing the cursor and an empty selection at the
    pointer; plays the interaction sound when enabled.
 */
-void __thandor_preserve_eax
-UiTextEditControl_BeginSelectionAtPointer
+void UiTextEditControl_BeginSelectionAtPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextEditControl *control)
 
@@ -1452,8 +1443,7 @@ UiTextEditControl_BeginSelectionAtPointer
    vtables): while a pointer selection is active, moves the cursor and the selection end it sits on to the
    pointer, keeps selectionStart <= selectionEnd, lays the control out again (scroll) and redraws it.
 */
-void __thandor_preserve_eax_edx
-UiTextEditControl_UpdateSelectionFromPointer
+void UiTextEditControl_UpdateSelectionFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextEditControl *control)
 
@@ -1493,8 +1483,7 @@ UiTextEditControl_UpdateSelectionFromPointer
    focus target unless it is the preferred one, hides the caret, validates the path, selects all of it and
    relocates the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPathTextEditControl_RelocateAndValidateDos83
+void UiPathTextEditControl_RelocateAndValidateDos83
           (UiSerializedRelocationDelta relocationDelta,UiPathTextEditControl *control)
 
 {
@@ -1529,8 +1518,7 @@ UiPathTextEditControl_RelocateAndValidateDos83
    fallback focus target unless it is the preferred one, hides the caret, updates the non-empty validity,
    selects all of the text and relocates the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRequiredTextEditControl_RelocateAndValidateNonEmpty
+void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
           (UiSerializedRelocationDelta relocationDelta,UiRequiredTextEditControl *control)
 
 {
@@ -1566,8 +1554,7 @@ UiRequiredTextEditControl_RelocateAndValidateNonEmpty
    the front in each pass. The previously selected record stays selected and is scrolled into view. Called
    by the scenario catalogue (assets/scenario/catalog.c, field offset 0x74).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByExpandedTextFieldAscending
+void UiPointerList_SortByExpandedTextFieldAscending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
 {
@@ -1635,8 +1622,7 @@ UiPointerList_SortByExpandedTextFieldAscending
    remaining row (by the expanded rich text at fieldOffset) to the front; the selected record stays selected
    and is scrolled into view. No caller was found in the source or in the image's tables.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByExpandedTextFieldDescending
+void UiPointerList_SortByExpandedTextFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
 {
@@ -1704,8 +1690,7 @@ UiPointerList_SortByExpandedTextFieldDescending
    display resolution): formats firstValue and secondValue as decimal into rich-text payloads 0 and 1 of its
    text, then draws it as a text button.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNumericPairTextButton_DrawFormattedValues
+void UiNumericPairTextButton_DrawFormattedValues
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiNumericPairTextButton *control)
 
@@ -1733,8 +1718,7 @@ UiNumericPairTextButton_DrawFormattedValues
    firstPayload and secondPayload into rich-text payloads 0 and 1 of its text, then draws it as a text
    button.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPayloadPairTextButton_DrawFormattedPayloads
+void UiPayloadPairTextButton_DrawFormattedPayloads
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPayloadPairTextButton *control)
 
@@ -1757,8 +1741,7 @@ UiPayloadPairTextButton_DrawFormattedPayloads
    control when there is no room above. Drawn last in the frame, over everything. With no root open at all,
    the whole screen is darkened (ARGB 0x80000000: black at half alpha).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
               UiPixelCoordinate clipLeft)
 
 {
@@ -1855,7 +1838,7 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
    its close stops the loop and is reported as CF (true). The original also stops at the dword after g_UiRootNode (0x004B0E34, the
    window texture source), which is never a root, so in practice this pops every root.
 */
-bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundary(void)
+bool UiRootStack_PopUntilWindowTextureBoundary(void)
 
 {
   bool popStopped;
@@ -1876,9 +1859,7 @@ bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundary(void)
    button (UI_BUTTON_FRAME_INSET) grows its layout offsets by g_UiWindowFrameInset on every side, so the frame
    lies outside the authored box; then the children are relocated.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_Relocate
-          (UiSerializedRelocationDelta relocationDelta,UiFramedTextButtonControl *control)
+void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiFramedTextButtonControl *control)
 
 {
   int32_t *bottomOffsetField;
@@ -1908,8 +1889,7 @@ UiFramedTextButtonControl_Relocate
    win.gfx frame (plain or inset), its text centred in the state's style, with the focus mark and its shadow
    behind the text while it has keyboard focus, then the children unless the button is suppressed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_DrawClipped
+void UiFramedTextButtonControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiFramedTextButtonControl *control)
 
@@ -2089,8 +2069,7 @@ UiFramedTextButtonControl_DrawClipped
    persistent toggle button flips its selected state, a persistent radio-style button becomes selected unless
    it already is. Both of those play the activation sound when enabled and queue the action.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_NonRightPress
+void UiFramedTextButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control)
 
@@ -2139,8 +2118,7 @@ UiFramedTextButtonControl_NonRightPress
    g_UiWindowControlVtable): a momentary button that is still pressed (the pointer stayed on it) plays the
    activation sound when enabled, pops back up and queues its action.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFramedTextButtonControl_NonRightRelease
+void UiFramedTextButtonControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control)
 
@@ -2168,8 +2146,7 @@ UiFramedTextButtonControl_NonRightRelease
    g_UiWindowControlVtable): a momentary button shows itself pressed while the pointer is inside its box
    (inside the frame for UI_BUTTON_FRAME_INSET) and released while it is outside.
 */
-void __thandor_preserve_eax
-UiFramedTextButtonControl_NonRightDrag
+void UiFramedTextButtonControl_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiFramedTextButtonControl *control)
 
@@ -2214,8 +2191,7 @@ UiFramedTextButtonControl_NonRightDrag
    control itself when the point lies inside its box (for UI_BUTTON_FRAME_INSET: inside the frame), else
    UI_NODE_NONE. Suppressed buttons are never hit; children are not tested.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiFramedTextButtonControl_HitTestRect
+UiNodeBase * UiFramedTextButtonControl_HitTestRect
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFramedTextButtonControl *control)
 
 {
@@ -2249,8 +2225,7 @@ UiFramedTextButtonControl_HitTestRect
    and the icon, vertically centred and ending at the quarter line, over its shadow copy shifted by the normal
    or selected iconDrawOffsets (no shift while suppressed). Children are not drawn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWindowControl_DrawFramedTextAndChrome
+void UiWindowControl_DrawFramedTextAndChrome
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiWindowControl *control)
 
@@ -2440,9 +2415,7 @@ UiWindowControl_DrawFramedTextAndChrome
    g_UiGraphicsAdapterTextButtonVtable, g_UiNumericPairTextButtonVtable and g_UiPayloadPairTextButtonVtable):
    only the children need relocating; the text resource id and style are plain values.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextButtonControl_Relocate
-          (UiSerializedRelocationDelta relocationDelta,UiTextButtonControl *control)
+void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiTextButtonControl *control)
 
 {
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
@@ -2457,8 +2430,7 @@ UiTextButtonControl_Relocate
    alternate state; a radio-style button becomes selected unless it already is. Either way the activation
    sound plays when enabled and the action is queued.
 */
-void __thandor_void_preserve_ecx_edx
-UiTextButtonControl_NonRightPress
+void UiTextButtonControl_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextButtonControl *control)
 
@@ -2519,9 +2491,7 @@ UiTextButtonControl_NonRightPress
    an already selected radio-style button, goes to UiNode_DefaultKeyboardEventMoveFocusNext. CF clear:
    consumed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTextButtonControl_KeyboardEvent
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control)
 
 {
@@ -2572,8 +2542,7 @@ UiTextButtonControl_KeyboardEvent
    clipped to the panel; then the children. A panel without a texture or a suppressed one draws nothing, not
    even its children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiImagePanelControl_DrawAlignedTextureAndChildren
+void UiImagePanelControl_DrawAlignedTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiImagePanelControl *control)
 
@@ -2658,8 +2627,7 @@ UiImagePanelControl_DrawAlignedTextureAndChildren
    the point must lie on an opaque pixel of the aligned texture (unless UI_IMAGE_PANEL_HIT_WHOLE_BOX), then
    the children are tested. UI_NODE_NONE for UI_IMAGE_PANEL_NEVER_HIT or a miss.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control)
+UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control)
 
 {
   bool childrenAlreadyRetried;
@@ -2726,8 +2694,7 @@ UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,U
    ARGB colour subresourceOrFillArgb; with one, its subresource once or tiled across and/or down the box
    (fillFlags), each tile optionally over a drop shadow. Then the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFillPanelControl_DrawColorOrTiledTextureAndChildren
+void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiFillPanelControl *control)
 
@@ -2816,8 +2783,7 @@ void UiTextEditControl_EndSelection
    Disables a text edit whose action id matches (suppressActionId slot of the numeric, path and required text
    edit vtables): suppresses it, takes the keyboard focus away from it and redraws. Children are not visited.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
+void UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -2836,8 +2802,7 @@ UiTextEditControl_SuppressIfActionId(UiActionId actionId,UiTextEditControl *cont
    Enables a text edit whose action id matches (unsuppressActionId slot of the numeric, path and required text
    edit vtables): clears the suppression, gives it the keyboard focus if nothing has it and redraws.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
+void UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -2857,7 +2822,7 @@ UiTextEditControl_UnsuppressIfActionId(UiActionId actionId,UiTextEditControl *co
    has the keyboard focus, counts the blink frames in the top byte of editStateFlags down; when they run out
    the caret phase flips, the counter restarts at g_UiTextEditCaretBlinkPhaseStep and the edit is redrawn.
 */
-void __thandor_preserve_eax UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
+void UiTextEditControl_TickCaretBlink(UiTextEditControl *control)
 
 {
   int blinkPhaseIncrement;
@@ -2888,8 +2853,7 @@ void __thandor_preserve_eax UiTextEditControl_TickCaretBlink(UiTextEditControl *
    the line (disabled style when the focus child is suppressed). While the label holds the keyboard focus,
    the focus is lent to focusChild for drawing the children, so the child draws itself focused.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSingleLineTextControl_DrawClipped
+void UiSingleLineTextControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiSingleLineTextControl *control)
 
@@ -3065,8 +3029,7 @@ UiSingleLineTextControl_DrawClipped
    text in the list style, the selected row over a highlight bar as wide as its text plus 6 pixels (with end
    caps while the list has keyboard focus).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_DrawRowsAndSelection
+void UiTextListControl_DrawRowsAndSelection
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextListControl *control)
 
@@ -3138,8 +3101,7 @@ UiTextListControl_DrawRowsAndSelection
    selection sound when enabled. A double click also marks the selection confirmed and repeats the action for
    the already selected row; a single click on it does nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_SelectRowFromPointer
+void UiTextListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiTextListControl *control)
 
@@ -3188,8 +3150,7 @@ UiTextListControl_SelectRowFromPointer
    UiTextListControl_TickActivationPulse queues after g_UiListActivationPulseFrames frames. Other keys go to
    UiNode_DefaultKeyboardEventMoveFocusNext. CF clear: consumed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTextListControl_HandleKeyboardNavigationAndSearch
+bool UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control)
 
@@ -3292,7 +3253,7 @@ UiTextListControl_HandleKeyboardNavigationAndSearch
    is pending, counts its frame counter (top byte of listStateFlags) down and queues the list's action when it
    reaches 0, so quick key repeats queue only one action.
 */
-void __thandor_preserve_eax UiTextListControl_TickActivationPulse(UiTextListControl *control)
+void UiTextListControl_TickActivationPulse(UiTextListControl *control)
 
 {
   if (((control->listStateFlags & UI_TEXT_LIST_DEFERRED_ACTION_PENDING) != 0) &&
@@ -3310,8 +3271,7 @@ void __thandor_preserve_eax UiTextListControl_TickActivationPulse(UiTextListCont
    Enables a text list whose action id matches (unsuppressActionId slot of g_UiTextListControlVtable), then
    passes the id on to the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control)
+void UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -3329,8 +3289,7 @@ UiTextListControl_UnsuppressIfActionId(UiActionId actionId,UiTextListControl *co
    Disables a text list whose action id matches (suppressActionId slot of g_UiTextListControlVtable), then
    passes the id on to the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control)
+void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -3349,9 +3308,7 @@ UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *cont
    list's size follows its content: one list-font line plus 1 pixel per row, and the widest measured row
    plus 6 pixels; the parent (the scrollable frame) is laid out again for the new size.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_InitializeMeasuredTextRows
-          (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
+void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
 
 {
   UiNodeBase *parentNode;
@@ -3392,9 +3349,7 @@ UiPointerList_InitializeMeasuredTextRows
    UI_LABEL_KEEP_WRAP_WIDTH, in g_UiTextStyleNormal with the label's font/palette overrides; then the
    children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWrappedTextControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiWrappedTextControl *control)
 
 {
@@ -3444,8 +3399,7 @@ UiWrappedTextControl_DrawClipped
    4 right edge, 5 bottom-left and 6 bottom-right corner, 7 bottom edge (edges tiled), and centerSubresource
    tiled over the interior; then the children. GRAPHICS_TILED_BLIT_ONE_TILE keeps an edge one tile thick.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNineSlicePanelControl_DrawTextureFrameAndChildren
+void UiNineSlicePanelControl_DrawTextureFrameAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiNineSlicePanelControl *control)
 
@@ -3559,8 +3513,7 @@ UiNineSlicePanelControl_DrawTextureFrameAndChildren
    just before the node) at the gauge's own value strings, so the tooltip always shows the current numbers;
    the value strings start out empty. Then the children are relocated.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFormattedContainer_RelocateWithPatchedTextPayloads
+void UiFormattedContainer_RelocateWithPatchedTextPayloads
           (UiSerializedRelocationDelta relocationDelta,UiFormattedContainer *control)
 
 {
@@ -3592,8 +3545,7 @@ UiFormattedContainer_RelocateWithPatchedTextPayloads
    initialScaleRange and grows by factors of 4 until every value fits. Afterwards (also when nothing is
    drawn) the value strings for the tooltip are refreshed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiFormattedContainer_DrawClipped
+void UiFormattedContainer_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiFormattedContainer *control)
 
 {
@@ -3740,8 +3692,7 @@ UiFormattedContainer_RefreshNumericText:
    SelectionPanel_RenderArmyRuntimeMetrics with the info-panel graphics temporarily installed as the
    selection-panel graphics; then the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiArmyMetricsPanel_DrawTextureMetricsAndChildren
+void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiArmyMetricsPanel *control)
 
@@ -3828,8 +3779,7 @@ UiArmyMetricsPanel_DrawTextureMetricsAndChildren
    outgoing and incoming subresources blended bilinearly and scaled over the layout box (a crossfade driven by
    the control's blend buffers), then the children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
+void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiSoftwareTexturePreviewControl *control)
 
@@ -3858,8 +3808,7 @@ UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
    Primary button press on a software texture preview (nonRightPress slot of
    g_UiSoftwareTexturePreviewControlVtable): queues the control's action.
 */
-void __thandor_preserve_eax
-UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
+void UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control)
 
@@ -3873,8 +3822,7 @@ UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
    Secondary button press on a software texture preview (rightPress slot of
    g_UiSoftwareTexturePreviewControlVtable): queues the control's action, like the primary button.
 */
-void __thandor_preserve_eax
-UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
+void UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSoftwareTexturePreviewControl *control)
 
@@ -3889,8 +3837,7 @@ UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
    g_UiSoftwareTexturePreviewControlVtable): Tab moves the focus on, any other key queues the control's action.
    Always consumed (CF clear).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiSoftwareTexturePreviewControl_HandleKeyboardActivation
+bool UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control)
 
 {
@@ -3908,8 +3855,7 @@ UiSoftwareTexturePreviewControl_HandleKeyboardActivation
    pointer in the top root (only while no button holds a capture, and only tooltip-eligible nodes). When the
    target changes, the tooltip delay starts over and the text of the previous target is prepared again.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
+void UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
   UiNodeBase *node;
@@ -3941,8 +3887,7 @@ UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointer
    for a negative signed value, then the magnitude in decimal or upper-case hexadecimal, and updates the
    range validity. Called by UiNumericTextEditControl_RelocateAndRebuildText.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
+void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
 
 {
   uint32_t remainingValue;
@@ -4016,8 +3961,7 @@ UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
    Empty text, a bad digit or a '-' on an unsigned control only clears UI_NUMERIC_TEXT_VALUE_VALID (the value
    stays). Called after every handled key by UiNumericTextEditControl_HandleKeyboardAndCommit.
 */
-void __thandor_preserve_eax_edx
-UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
+void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
 
 {
   uint32_t parsedValue;
@@ -4079,7 +4023,7 @@ UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
    either a UTF-16 text pointer (UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) or a text resource id. The text is
    measured in the tooltip style and the UI is redrawn.
 */
-void __thandor_void_preserve_eax_ecx_edx UiTooltip_PrepareTargetText(UiNodeBase *node)
+void UiTooltip_PrepareTargetText(UiNodeBase *node)
 
 {
   uint16_t *commandStream;
@@ -4106,7 +4050,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTooltip_PrepareTargetText(UiNodeBase 
    compared signed for UI_NUMERIC_TEXT_SIGNED_VALUE and unsigned otherwise. Called by
    UiNumericTextControl_RebuildTextFromValue and UiNumericTextControl_ParseAndCommitValue.
 */
-void __thandor_preserve_eax UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control)
+void UiNumericTextControl_UpdateRangeValidity(UiNumericTextControl *control)
 
 {
   uint32_t currentNumericValue;
@@ -4135,8 +4079,7 @@ void __thandor_preserve_eax UiNumericTextControl_UpdateRangeValidity(UiNumericTe
    before), measured glyph by glyph in g_UiTextEditActiveTextStyle. Used for the selection, caret and scroll
    positions by the text edit draw and layout functions.
 */
-UiPixelCoordinate __thandor_eax_preserve_ecx_edx
-UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEditControl *control)
+UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEditControl *control)
 
 {
   int accumulatedWidth;
@@ -4165,8 +4108,7 @@ UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefixLength,UiTextEdit
    right edge reaches it), or the text length past the end. Accounts for the horizontal scroll and, with
    UI_TEXT_EDIT_DRAW_FRAMED_CHROME, the frame width. Used by the pointer press and drag handlers.
 */
-UiTextCodeUnitCount __thandor_eax_preserve_ecx_edx
-UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditControl *control)
+UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditControl *control)
 
 {
   int nextTextIndex;
@@ -4202,8 +4144,7 @@ UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate pointerX,UiTextEditContro
    control's UI_PATH_TEXT_ALLOW_WILDCARDS and UI_PATH_TEXT_NAME_ONLY bits shifted down to bits 0-1. Called by
    the path edit's keyboard handler and relocation.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
+void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
 
 {
   bool validatorRejected;
@@ -4223,8 +4164,7 @@ UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
 /* Address: 0x004B78F0.
    A text control's value is valid (UI_TEXT_EDIT_VALUE_VALID) exactly when its text is not empty.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
+void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
 
 {
   if (control->textPrefix6C[0] == 0) {
@@ -4242,8 +4182,7 @@ UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
    1 KiB scratch buffers and compared with Utf16String_CompareAsciiCaseInsensitiveFlags; the result is its
    flags (CF: leftText < rightText, ZF: equal). Called by the UiPointerList_SortByExpandedTextField* sorts.
 */
-TextCompareResult __thandor_void_preserve_eax_ecx_edx
-UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText)
+TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText)
 
 {
   TextCompareResult compareFlags;
@@ -4263,8 +4202,7 @@ UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText)
    every edit): refreshes the layout size and scrolls horizontally just enough to keep the glyphs before and
    after the cursor visible, or not at all while the whole text (plus caret and frame) fits.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
+void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
 
 {
   UiTextCodeUnitCount prefixLength;
@@ -4321,9 +4259,7 @@ UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
    (pressed/checked, alternate, disabled), then its text 6 pixels right of the graphic, vertically centred,
    with the focus mark and its shadow while it has keyboard focus. Children are not drawn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTextButtonControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiTextButtonControl *control)
 
 {

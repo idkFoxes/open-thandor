@@ -16,7 +16,7 @@
    ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves the
    asset path in g_PackageLastErrorPath and fails with FATAL_ERROR_SHOT_ASSET_INVALID.
 */
-StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetHeader *asset)
+StatusResult ShotAsset_PrepareEntries(ShotAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
@@ -59,8 +59,7 @@ StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetH
    registry index of the offending shot is written to g_PackageLastErrorPath and the check fails with
    FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-ShotDefinitions_ValidateTerrainMaterialReferences(void)
+StatusResult ShotDefinitions_ValidateTerrainMaterialReferences(void)
 
 {
   /* EAX: success returns the last index checked (the caller's EAX when the registry is empty); callers
@@ -111,8 +110,7 @@ ShotDefinitions_ValidateTerrainMaterialReferences(void)
    Looks up a registered shot definition by id. On a miss the id is written as decimal text to
    g_PackageLastErrorPath for the fatal-error message and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned with CF set.
 */
-ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId)
+ShotDefinitionResult ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId)
 
 {
   ShotDefinition *registeredDefinition;
@@ -149,8 +147,7 @@ ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId
    pass the points in Z, Y, X order (Z = height). Called directly by the weapon aiming code (gameplay/army/combat.c,
    movement.c, runtime.c) and the shot launch in world/shots/runtime.c.
 */
-ShotLaunchAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-ShotDefinition_ComputeLaunchAnglesRegs
+ShotLaunchAnglesEaxEdx8 ShotDefinition_ComputeLaunchAnglesRegs
           (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition)
 
@@ -237,9 +234,9 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
    Returns in EBX the shot speed used to lead a moving target: the launch speed (+0x0C) for unguided shots that
    do not fly a direct line, INT32_MAX (no lead) for direct-line or guided (+0x290 non-zero) shots. Called
    directly by the target aim-point computation in gameplay/army/runtime.c.
+   Original register convention: result in EBX, CF set on failure; EAX, ECX and EDX preserved.
 */
-ShotRangeLimitResult __thandor_ebx_cf_preserve_eax_ecx_edx
-ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
+ShotRangeLimitResult ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
 
 {
   uint32_t rangeLimit;
@@ -261,8 +258,7 @@ ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
    thirds (0xAB / 256) of the ramp-up ticks (+0x270), during which the shot is still accelerating; 0 for all
    other shots. The aim-point computation in gameplay/army/runtime.c multiplies it by the target's speed.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition)
+uint32_t ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition)
 
 {
   uint32_t leadAdjustmentQ12;
@@ -283,8 +279,7 @@ ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition)
    target-class-impact effects by their registered definitions. CF/EAX report a duplicate id, a full registry
    or the first failing load or lookup.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
+StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
 
 {
   ShotDefinition *valueOrError;

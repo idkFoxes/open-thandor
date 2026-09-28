@@ -49,9 +49,9 @@ static __inline uint32_t TerrainProjection_PackWordsUnsignedSaturate(uint64_t wo
    hide from an eye at referenceHeightQ12 within the radius. The centre cell is marked here, the rest by the six
    sector traces, each seeded with the height of the next sector's first cell. Nothing happens outside the grid or
    on a map-edge cell.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
+void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
           (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
           Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
@@ -149,8 +149,7 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
    as TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint, without line of sight). Marks the field grid
    surface dirty. CF set (nothing applied) without a grid, outside it or on a map-edge cell.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -245,8 +244,7 @@ FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
    FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint, but only for cells with water above them; the centre
    cell also needs a bit of cellFlagMask, the sector walks ignore the mask.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
+bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -343,8 +341,7 @@ FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
    grid surface changed or the projection is not reusable, else only the parts that can change (VariantB), and
    queues every grid quad between two rows of the spans as two triangles.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainProjectedGrid_TransformShadeAndQueue
+void TerrainProjectedGrid_TransformShadeAndQueue
           (FieldGridAsset *fieldGrid,FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
@@ -502,10 +499,9 @@ TerrainProjectedGrid_TransformShadeAndQueue
    two spine cells, and hands the current horizon to a straight leg along each bounding direction. The first spine
    cell is tested against its own unscaled height above the eye; unless it is visible, the legs start from the
    average of that height and the caller's projectedHeightThresholdQ20.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_TraceWedge0
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_TraceWedge0(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -576,10 +572,9 @@ TerrainProjectedOcclusion_TraceWedge0
    Line-of-sight marking for the sector between directions 1 (C+1-W) and 2 (C-W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C+1-2W (scan step +7), the direction-2 neighbour between two
    spine cells, a straight leg along each bounding direction.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_TraceWedge1
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_TraceWedge1(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -650,10 +645,9 @@ TerrainProjectedOcclusion_TraceWedge1
    Line-of-sight marking for the sector between directions 2 (C-W) and 3 (C-1), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-1-W (scan step +7), the direction-3 neighbour between two
    spine cells, a straight leg along each bounding direction.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_TraceWedge2
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -719,10 +713,9 @@ TerrainProjectedOcclusion_TraceWedge2
    Line-of-sight marking for the sector between directions 3 (C-1) and 4 (C-1+W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-2+W (scan step +7), the direction-4 neighbour between two
    spine cells, a straight leg along each bounding direction.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_TraceWedge3
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_TraceWedge3(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -795,10 +788,9 @@ TerrainProjectedOcclusion_TraceWedge3
    Line-of-sight marking for the sector between directions 4 (C-1+W) and 5 (C+W), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C-1+2W (scan step +7), the direction-5 neighbour between two
    spine cells, a straight leg along each bounding direction.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_TraceWedge4
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_TraceWedge4(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -871,10 +863,9 @@ TerrainProjectedOcclusion_TraceWedge4
    Line-of-sight marking for the sector between directions 5 (C+W) and 0 (C+1), built like
    TerrainProjectedOcclusion_TraceWedge0: spine step C+1+W (scan step +7), the direction-0 neighbour between two
    spine cells, a straight leg along each bounding direction.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_TraceWedge5
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_TraceWedge5(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -944,9 +935,7 @@ TerrainProjectedOcclusion_TraceWedge5
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyWedge0
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -993,9 +982,7 @@ FieldGridTerrainOverlayVariantA_ApplyWedge0
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyWedge1
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -1044,9 +1031,7 @@ FieldGridTerrainOverlayVariantA_ApplyWedge1
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyWedge2
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -1089,9 +1074,7 @@ FieldGridTerrainOverlayVariantA_ApplyWedge2
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyWedge3
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   int scanRowStrideBytes;
@@ -1141,9 +1124,7 @@ FieldGridTerrainOverlayVariantA_ApplyWedge3
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyWedge4
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   uint8_t *currentCellRuntimeBase;
@@ -1196,9 +1177,7 @@ FieldGridTerrainOverlayVariantA_ApplyWedge4
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyWedge5
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -1242,9 +1221,7 @@ FieldGridTerrainOverlayVariantA_ApplyWedge5
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyWedge0
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -1288,9 +1265,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge0
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyWedge1
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -1336,9 +1311,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge1
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyWedge2
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -1379,9 +1352,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge2
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyWedge3
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   int scanRowStrideBytes;
@@ -1428,9 +1399,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge3
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyWedge4
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   uint8_t *currentCellRuntimeBase;
@@ -1480,9 +1449,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge4
    between two spine cells get the overlay, and a straight leg runs from each along both bounding
    directions, so the whole sector is covered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyWedge5
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   FieldGridCell *adjacentCell;
@@ -1523,8 +1490,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge5
    secondary-surface packet; rowStrideBytes is one grid row of vertex records. Called for every quad of the
    visible spans by TerrainProjectedGrid_TransformShadeAndQueue.
 */
-void __thandor_void_preserve_ecx_edx
-TerrainProjectedQuad_QueueAsTwoTrianglesRegs
+void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
           (uint32_t rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
           FrontendModelPointerContextRuntimeState17C *renderContext)
 
@@ -1551,8 +1517,7 @@ TerrainProjectedQuad_QueueAsTwoTrianglesRegs
    0xFF). Does the same for point B, the secondary surface point (terrain point + secondaryOffset, raised by
    secondaryProjectionDepthQ12). Vertices without terrain (material 0xFF) are skipped.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWorkRecord *vertex)
+void TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWorkRecord *vertex)
 
 {
   GraphicsWorldCoordinateQ12 *sourceCoordinate;
@@ -1656,8 +1621,7 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWo
    the terrain point and only re-shades it; point B (the secondary surface point) is projected and shaded again
    only when the vertex belonged to a visible secondary-surface triangle last frame.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWorkRecord *vertex)
+void TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWorkRecord *vertex)
 
 {
   GraphicsWorldCoordinateQ12 *sourceCoordinate;
@@ -1746,8 +1710,7 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWo
    chooses between the terrain (0) and the secondary surface. Skipped entirely when the OR of the three material
    bytes is 0xFF, which it always is when a vertex has no terrain.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
+void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
           (int surfacePacketIndex,TerrainProjectedVertexWorkRecord *vertex2,
           TerrainProjectedVertexWorkRecord *vertex1,TerrainProjectedVertexWorkRecord *vertex0,
           FrontendModelPointerContextRuntimeState17C *renderContext)
@@ -1998,9 +1961,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
    plane crosses that row (skewed by half a column per row); a plane parallel to the columns empties the rows
    on its far side.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainProjectedGrid_ClipRowSpansAgainstPlane
-          (FieldGridAsset *fieldGrid,GraphicsFixedVec3 *planeNormal)
+void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,GraphicsFixedVec3 *planeNormal)
 
 {
   int64_t fixedProduct;
@@ -2103,10 +2064,9 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
    above the eye (g_TerrainScanReferenceHeight) is scaled by the per-step table g_TerrainHeightDeltaScaleByStepQ12;
    a cell whose value reaches the highest value seen so far on this line is visible and gets occupancyMaskBits,
    and its value becomes the new horizon. 4 scan steps per cell, until the step limit or a map-edge cell.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_ScanDirection0
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_ScanDirection0(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -2142,10 +2102,9 @@ TerrainProjectedOcclusion_ScanDirection0
 
 /* Address: 0x00506430.
    Line-of-sight leg along direction 1 (C+1-W, up and right); works like TerrainProjectedOcclusion_ScanDirection0.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_ScanDirection1
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_ScanDirection1(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -2180,10 +2139,9 @@ TerrainProjectedOcclusion_ScanDirection1
 
 /* Address: 0x005064C0.
    Line-of-sight leg along direction 2 (C-W, up); works like TerrainProjectedOcclusion_ScanDirection0.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_ScanDirection2
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_ScanDirection2(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -2218,10 +2176,9 @@ TerrainProjectedOcclusion_ScanDirection2
 
 /* Address: 0x00506540.
    Line-of-sight leg along direction 3 (C-1, left); works like TerrainProjectedOcclusion_ScanDirection0.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_ScanDirection3
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_ScanDirection3(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -2256,10 +2213,9 @@ TerrainProjectedOcclusion_ScanDirection3
 
 /* Address: 0x005065C0.
    Line-of-sight leg along direction 4 (C-1+W, down and left); works like TerrainProjectedOcclusion_ScanDirection0.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_ScanDirection4
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_ScanDirection4(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -2295,10 +2251,9 @@ TerrainProjectedOcclusion_ScanDirection4
 
 /* Address: 0x00506650.
    Line-of-sight leg along direction 5 (C+W, down); works like TerrainProjectedOcclusion_ScanDirection0.
+   Original register convention: no result; EAX, ECX, EDX preserved; works on MMX register MM0.
 */
-void __thandor_void_preserve_eax_ecx_edx_mm0
-TerrainProjectedOcclusion_ScanDirection5
-          (uint64_t occupancyMaskBits,
+void TerrainProjectedOcclusion_ScanDirection5(uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
@@ -2337,9 +2292,7 @@ TerrainProjectedOcclusion_ScanDirection5
    stores the overlay value (g_TerrainScanReferenceHeight) into runtimeOverlayOrHeightValue04 of every cell
    that has a bit of the overlay's cell flag mask and no water above it (waterSurfaceDelta < 0), 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyDirection0
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2363,9 +2316,7 @@ FieldGridTerrainOverlayVariantA_ApplyDirection0
    Overlay leg along direction 1 (C+1-W, up and right) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyDirection1
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2389,9 +2340,7 @@ FieldGridTerrainOverlayVariantA_ApplyDirection1
    Overlay leg along direction 2 (C-W, up) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyDirection2
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2415,9 +2364,7 @@ FieldGridTerrainOverlayVariantA_ApplyDirection2
    Overlay leg along direction 3 (C-1, left) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyDirection3
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2441,9 +2388,7 @@ FieldGridTerrainOverlayVariantA_ApplyDirection3
    Overlay leg along direction 4 (C-1+W, down and left) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyDirection4
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2467,9 +2412,7 @@ FieldGridTerrainOverlayVariantA_ApplyDirection4
    Overlay leg along direction 5 (C+W, down) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantA_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyDirection5
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantA_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2494,9 +2437,7 @@ FieldGridTerrainOverlayVariantA_ApplyDirection5
    stores the overlay value (g_TerrainScanReferenceHeight) into runtimeOverlayOrHeightValue04 of every cell
    with water above it (waterSurfaceDelta > 0), whatever its flags, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyDirection0
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2519,9 +2460,7 @@ FieldGridTerrainOverlayVariantB_ApplyDirection0
    Overlay leg along direction 1 (C+1-W, up and right) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyDirection1
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2544,9 +2483,7 @@ FieldGridTerrainOverlayVariantB_ApplyDirection1
    Overlay leg along direction 2 (C-W, up) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyDirection2
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2569,9 +2506,7 @@ FieldGridTerrainOverlayVariantB_ApplyDirection2
    Overlay leg along direction 3 (C-1, left) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyDirection3
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2594,9 +2529,7 @@ FieldGridTerrainOverlayVariantB_ApplyDirection3
    Overlay leg along direction 4 (C-1+W, down and left) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyDirection4
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {
@@ -2619,9 +2552,7 @@ FieldGridTerrainOverlayVariantB_ApplyDirection4
    Overlay leg along direction 5 (C+W, down) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint;
    works like FieldGridTerrainOverlayVariantB_ApplyDirection0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyDirection5
-          (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
+void FieldGridTerrainOverlayVariantB_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
   if (scanStep < g_TerrainScanStepLimit) {

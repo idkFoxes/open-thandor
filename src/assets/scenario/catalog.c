@@ -109,8 +109,7 @@ static void ScenarioCatalog_TestAidSelectCampaignLevel(uint8_t *campaign)
    a changed selection shows the saved game's description, locally or on every peer through the frontend
    command queue; a confirmed row (double click) starts it like the Start button.
 */
-void __thandor_preserve_eax
-FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *listControl)
+void FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *listControl)
 
 {
   ListSelectionResult selectedRow;
@@ -139,8 +138,7 @@ FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *list
    or on every peer through the frontend command queue; a confirmed row (double click) starts it like the
    Start button.
 */
-void __thandor_preserve_eax
-FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listControl)
+void FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listControl)
 
 {
   ListSelectionResult selectedRow;
@@ -170,8 +168,7 @@ FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listContro
    locally or on every peer through the frontend command queue; a confirmed row (double click) starts it
    like the Start button.
 */
-void __thandor_preserve_eax
-FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listControl)
+void FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listControl)
 
 {
   ListSelectionResult selectedRow;
@@ -201,8 +198,7 @@ FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listContro
    the command-line option KARTE="<level>" matching a single mission, that mission is selected and loaded
    directly; network hosts never get the Load game tab.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendScenarioSelectionPage_InitializeAndApplyMapOption
+void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
           (FrontendScenarioSelectionPageView26C4 *scenarioSelectionPage)
 
 {
@@ -431,7 +427,7 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
    list and shows the description of its first row, locally or on every peer through the frontend command
    queue.
 */
-void __thandor_preserve_eax FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
+void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *parentCursor;
@@ -467,8 +463,7 @@ void __thandor_preserve_eax FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNo
    g_FrontendUiActionHandlersPage20.handlers00_54): clears the description box, switches to the campaigns list
    and shows the description of its first row, locally or on every peer through the frontend command queue.
 */
-void __thandor_preserve_eax
-FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
+void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *parentCursor;
@@ -525,7 +520,7 @@ void FrontendScenarioAction_StartFieldGridLoad(void *source)
    campagne00..99.dat (records merged by name), followed by the header record of every save\*.sve.
    The catalog is also what a network host sends to its clients.
 */
-void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
+void ScenarioCatalog_Rebuild(void)
 
 {
   ScenarioCatalogHeader *catalog;
@@ -684,8 +679,7 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
    Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments,
    all ignored): skips the running menu-room camera flight via FrontendRomTransition_RequestStop.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
+void ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
                                                  uint32_t unusedArg3)
 
 {
@@ -700,7 +694,7 @@ ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32
    frees the mailbox buffer and reports the new state to the host through the frontend command queue (or
    directly when no network session runs). Every packet starts with the unpacked size(s), then the packed data.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceivedAsset(void)
+void FrontendScenarioTransfer_ProcessReceivedAsset(void)
 
 {
   /* The three command payload dwords double as a 96-bit mask of levels that are new in the
@@ -962,8 +956,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
    Reached as frontend command FRONTEND_COMMAND_LOAD_FIELD_GRID (command-handler format: playerRuntimeId and
    three unused arguments, RET 0x10 in the original).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
+void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
 
 {
   FrontendRoleStateFlags *roleFlags;
@@ -1081,8 +1074,7 @@ FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
    for that bundle (SCENARIO_TRANSFER_CAMPAIGN_BUNDLE). Then the frontend closes its dialog pages and runs
    ROM action table entry 3. Reached as frontend command FRONTEND_COMMAND_LOAD_CAMPAIGN.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendScenarioSession_LoadOrRequestCampaignBundle
+void FrontendScenarioSession_LoadOrRequestCampaignBundle
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRecordIndex)
 
 {
@@ -1224,8 +1216,7 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
    through scenarioCatalogRebuildCallbacks[SCENARIO_SELECTION_TAB_SAVED_GAMES] of
    g_FrontendUiActionHandlersPage20; the four arguments of the command-handler format are unused.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RebuildSaveRecordListPage
+void ScenarioCatalog_RebuildSaveRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
@@ -1280,8 +1271,7 @@ ScenarioCatalog_RebuildSaveRecordListPage
    FRONTEND_COMMAND_SHOW_SINGLE_GAMES and through scenarioCatalogRebuildCallbacks[SCENARIO_SELECTION_TAB_SINGLE_GAMES]
    of g_FrontendUiActionHandlersPage20; the four arguments of the command-handler format are unused.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RebuildLevelRecordListPage
+void ScenarioCatalog_RebuildLevelRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
@@ -1363,8 +1353,7 @@ ScenarioCatalog_RebuildLevelRecordListPage
    scenarioCatalogRebuildCallbacks[SCENARIO_SELECTION_TAB_CAMPAIGNS] of g_FrontendUiActionHandlersPage20; the
    four arguments of the command-handler format are unused.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RebuildCampaignRecordListPage
+void ScenarioCatalog_RebuildCampaignRecordListPage
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
@@ -1432,8 +1421,7 @@ ScenarioCatalog_RebuildCampaignRecordListPage
    record count (EDX in the original). The original scans with REPE CMPSD and copies with REP MOVSD; like it,
    the loops assume at least one source and one existing destination record.
 */
-ScenarioCatalogRecordCount __thandor_void_preserve_eax_ecx
-ScenarioCatalog_MergeRecordsByName
+ScenarioCatalogRecordCount ScenarioCatalog_MergeRecordsByName
           (ScenarioCatalogSourceByteCount sourceByteCount,ScenarioCatalogRecord *sourceRecords,
           ScenarioCatalogRecordCount existingRecordCount,ScenarioCatalogRecord *destinationRecords)
 
@@ -1496,8 +1484,7 @@ ScenarioCatalog_MergeRecordsByName
    only when its catalog level mask has it, otherwise it requests it (SCENARIO_TRANSFER_LEVEL). Every other
    player whose mask has the level is marked as having it locally with a finished transfer.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendScenarioSession_LoadOrRequestLevelAsset
+void FrontendScenarioSession_LoadOrRequestLevelAsset
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRowIndex)
 
 {
@@ -1631,8 +1618,7 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
    Reached as frontend command FRONTEND_COMMAND_SELECT_SAVED_GAME and through
    g_FrontendScenarioMapOptionHandlerTable[SCENARIO_SELECTION_TAB_SAVED_GAMES].
 */
-void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RefreshSelectedRecordLocalizedText
+void ScenarioCatalog_RefreshSelectedRecordLocalizedText
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
 
 {
@@ -1680,8 +1666,7 @@ ScenarioCatalog_RefreshSelectedRecordLocalizedText
    the empty placeholder while the list has no rows. Reached as frontend command FRONTEND_COMMAND_SELECT_CAMPAIGN
    and through g_FrontendScenarioMapOptionHandlerTable[SCENARIO_SELECTION_TAB_CAMPAIGNS].
 */
-void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RefreshSelectedRecordField50DisplayId
+void ScenarioCatalog_RefreshSelectedRecordField50DisplayId
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
 
 {
@@ -1711,9 +1696,7 @@ ScenarioCatalog_RefreshSelectedRecordField50DisplayId
    the campaign bundle (locally or on every peer through the frontend command queue), or, for a saved game,
    puts save\<name>.sve into g_FrontendScenarioPathScratchUtf16 and returns to the main page with code 2.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendScenarioSelection_ActivateSelectedRecord
-          (FrontendScenarioSelectionControlAddress32 selectionControl)
+void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionControlAddress32 selectionControl)
 
 {
   UiListRowIndex selectedRowIndex;
@@ -1789,8 +1772,7 @@ FrontendScenarioSelection_ActivateSelectedRecord
    text (TEXT_ID_LEVEL_DESCRIPTION_BASE + 0x10 * the record's title index at +0x70) in the description box,
    which keeps the empty placeholder while the list has no rows.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RefreshSelectedRecordField70DisplayId
+void ScenarioCatalog_RefreshSelectedRecordField70DisplayId
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
 
 {

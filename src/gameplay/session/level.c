@@ -16,8 +16,7 @@
    5th and 6th characters of that path ('w' 0xFC -> 2, "ei" -> 3, "la" -> 4, anything else 0). It keeps a copy of
    the level path in g_LevelEndingMovieSourcePath, which the loaders report on errors.
 */
-EndingMoviePathResult __thandor_eax_cf_preserve_ecx_edx
-LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *asset)
+EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *asset)
 
 {
   int movieNameChars4And5;
@@ -103,8 +102,7 @@ LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *a
    default build list and applies the initial faction relations.
 */
 
-LevelDefaultLoadResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_LoadResourcesAfterDefaultReset
+LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimeImagePrefix370 *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
@@ -982,8 +980,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailu
    and initial relations are skipped; the saved faction image already holds them.
 */
 
-LevelLoadResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_LoadResourcesAfterExternalTables
+LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelRuntimeImage370 *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1663,8 +1660,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFai
    and the technology file.
 */
 
-void __thandor_void_preserve_eax_ecx
-InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime)
+void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime)
 
 {
   void **loadedResourceCursor;
@@ -1726,8 +1722,7 @@ InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntim
    the field grid itself is written separately.
 */
 
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView)
+StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView)
 
 {
   int placementOffsetOrModelRuntime;

@@ -16,8 +16,7 @@
    be reset (GameFactionRelations_IsNotResetEligibleState returns false for exactly those states); otherwise it may
    advance: rarely from the other states, more often from 3, 6 and 10.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_UpdateAllPairsForFaction
+void GameFactionRelations_UpdateAllPairsForFaction
           (FactionRuntimeIndex sourceFactionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -59,9 +58,7 @@ GameFactionRelations_UpdateAllPairsForFaction
    worldYQ12) to the player's marked-cell list. Called per row by the in-game command UI when an area is dragged
    out in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D00 instead).
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_InsertRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+void PlayerPairList_InsertRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
           SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12)
 
 {
@@ -77,9 +74,7 @@ PlayerPairList_InsertRange
    lastWorldXQ12 inclusive, at worldYQ12) from the player's marked-cell list. Called per row by the in-game
    command UI in a local session (ui/ingame/runtime.c; networked sessions queue command 0x1D40 instead).
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_RemoveRange
-          (PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
+void PlayerPairList_RemoveRange(PlayerRuntimeId playerRuntimeId,SelectionPlayerPairValue lastWorldXQ12,
           SelectionPlayerPairValue worldYQ12,SelectionPlayerPairValue firstWorldXQ12)
 
 {
@@ -95,8 +90,7 @@ PlayerPairList_RemoveRange
    selects the reset path: the pending states 2, 5 and 9, relations frozen by relationUiFlags, or a state
    below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. CF clear lets the pair advance.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_TestPairTransitionAllowed
+bool GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -132,8 +126,7 @@ GameFactionRelations_TestPairTransitionAllowed
    Returns the bloc of sourceFactionIndex as a faction bit mask (bit n = faction n, factions 1..7): every active
    faction whose relation state towards it is 4 or higher (friendly), plus the faction itself when active.
 */
-FactionActiveMask __thandor_eax_preserve_ecx_edx
-GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex)
+FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex)
 
 {
   uint32_t relationStateNibble;
@@ -170,8 +163,7 @@ GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionI
    neither focalFactionIndex nor in the mask. Returns true (CF) when that variant is 0 or nothing fires.
    Leaves the recomputed satisfied bits in the real condition records.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_EvaluateTransitionRules
+bool GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
@@ -314,8 +306,7 @@ GameFactionRelations_EvaluateTransitionRules
    below the merge; only from those states does the random drift reset the relation
    (GameFactionRuntime_ResetPairwiseRelationState).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_IsNotResetEligibleState
+bool GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -335,8 +326,7 @@ GameFactionRelations_IsNotResetEligibleState
    while the pair pressure is 0, otherwise 1 in 1024 and only while the pressure (below 32) is smaller than
    the random value's top four bits.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_MaybeAdvancePairStateRare
+void GameFactionRelations_MaybeAdvancePairStateRare
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -371,8 +361,7 @@ GameFactionRelations_MaybeAdvancePairStateRare
    128 while the pair pressure is 0, otherwise 1 in 512 and only while the pressure (below 32) is smaller than
    the random value's top four bits.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_MaybeAdvancePairStateCommon
+void GameFactionRelations_MaybeAdvancePairStateCommon
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -405,8 +394,7 @@ GameFactionRelations_MaybeAdvancePairStateCommon
 /* Address: 0x0053C5B0.
    Random drift for a pair whose change is blocked: resets the relation state with a chance of 1 in 4.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRelations_MaybeResetPairState
+void GameFactionRelations_MaybeResetPairState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -426,8 +414,7 @@ GameFactionRelations_MaybeResetPairState
    the list is full (PLAYER_PAIR_LIST_CAPACITY). For the local player the in-game root's count at +0xBA4 (its
    records pointer at +0xBA0 aliases this list) is raised too. Called by PlayerPairList_InsertRange.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_InsertUnique
+void PlayerPairList_InsertUnique
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
           SelectionPlayerPairValue worldXQ12)
 
@@ -466,8 +453,7 @@ PlayerPairList_InsertUnique
    down so the order is kept, and lowers the in-game root's count at +0xBA4 for the local player. A list at
    PLAYER_PAIR_LIST_CAPACITY or above is left untouched. Called by PlayerPairList_RemoveRange.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerPairList_RemoveFirstMatch
+void PlayerPairList_RemoveFirstMatch
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue worldYQ12,
           SelectionPlayerPairValue worldXQ12)
 

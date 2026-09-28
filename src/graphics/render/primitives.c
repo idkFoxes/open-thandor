@@ -22,9 +22,7 @@
    by FrontendModelPointerContext_RenderWorldViewQueuesClipped with node flag 8) and called directly by the
    offscreen model renderer (graphics/render/projection.c).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_RadixSortForRendering
-          (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
+void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue)
 
 {
   int *bucketSlot;
@@ -309,8 +307,7 @@ StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCap
    the capacity given to GraphicsPrimitiveQueue_AllocateGlobalPool. Never fails (CF clear); returns the queue.
    Called by the frontend 3D views (ui/frontend/runtime.c) and the offscreen model renderer.
 */
-PrimitiveQueueResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_ResetGlobal(void)
+PrimitiveQueueResult GraphicsPrimitiveQueue_ResetGlobal(void)
 
 {
   GraphicsPrimitiveQueue *globalQueue;
@@ -334,7 +331,7 @@ GraphicsPrimitiveQueue_ResetGlobal(void)
 /* Address: 0x004D0A70.
    Frees a primitive queue allocation. No caller or table reference to this function is known.
 */
-void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue)
+void GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue)
 
 {
   g_MemoryApi.free(queue);
@@ -346,7 +343,7 @@ void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *
    Returns the number of packets queued in queue. Used by FrontendModelPointerContext_RenderWorldViewQueuesClipped
    (ui/frontend/runtime.c) after each drawn pass.
 */
-uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
+uint32_t GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue)
 
 {
   return queue->count;
@@ -358,8 +355,7 @@ uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(Graphics
    GraphicsPrimitiveQueue_RadixSortForRendering) and advances the cursor to the next node. CF set when the
    queue is empty; GraphicsPrimitiveQueue_Next continues the walk.
 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
+PrimitivePacketResult GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
 
 {
   PrimitivePacketResult successResult;
@@ -384,8 +380,7 @@ GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
    Continues a walk begun by GraphicsPrimitiveQueue_Begin: returns the packet of the node at traversalCursor
    and advances the cursor. CF set once the cursor reaches GRAPHICS_PRIMITIVE_QUEUE_END_NODE.
 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
+PrimitivePacketResult GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
 
 {
   PrimitivePacketResult successResult;
@@ -415,9 +410,7 @@ GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
    true (CF set) when the queue is full; one slot is always left unused. Called by ModelRender_SubmitTriangle and
    ModelRender_PrepareProjectedVertexAlternatePath (graphics/render/model.c).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_AppendTriangle
-          (GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
+bool GraphicsPrimitiveQueue_AppendTriangle(GraphicsRenderFlagMask renderFlags,GraphicsTriangleInput *triangle,
           GraphicsProjectedVertexSource *vertex2,GraphicsProjectedVertexSource *vertex1,
           GraphicsProjectedVertexSource *vertex0,GraphicsPrimitiveQueue *queue)
 
@@ -485,8 +478,7 @@ GraphicsPrimitiveQueue_AppendTriangle
    (alpha 0xFF) and the packet's blend mode is opaque (0) or 4, the blend mode becomes 6 (the XOR clears the
    old mode). Called by the model renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_SetVertexColors
+void GraphicsPrimitiveQueue_SetVertexColors
           (PackedArgb32 vertex2Color,PackedArgb32 vertex1Color,PackedArgb32 vertex0Color,
           GraphicsPrimitiveQueue *queue)
 
@@ -515,9 +507,7 @@ GraphicsPrimitiveQueue_SetVertexColors
    (marking the packet GRAPHICS_PRIMITIVE_FLAG_TEXTURED); otherwise the texture is cleared. Called by the model
    renderer (graphics/render/model.c) after GraphicsPrimitiveQueue_AppendTriangle.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_SetMaterial
-          (PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
+void GraphicsPrimitiveQueue_SetMaterial(PackedArgb32 modulationColor,GraphicsTextureSetEntry *textureEntry,
           GraphicsPrimitiveQueue *queue)
 
 {
@@ -541,9 +531,7 @@ GraphicsPrimitiveQueue_SetMaterial
    Adds (deltaU, deltaV) to the texture coordinates of all three vertices of the packet appended last, for
    scrolling textures. Called by ModelRender_SubmitTriangle (graphics/render/model.c).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPrimitiveQueue_OffsetTextureCoordinates
-          (GraphicsPrimitiveTextureCoordinateFixed deltaV,
+void GraphicsPrimitiveQueue_OffsetTextureCoordinates(GraphicsPrimitiveTextureCoordinateFixed deltaV,
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue)
 
 {
@@ -580,8 +568,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
    packet, CF set when the queue is full. Called by TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
    (world/terrain/projection.c).
 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
+PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -689,8 +676,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
    packet, CF set when the queue is full. Called by TerrainProjectedQuad_QueueAsTwoTrianglesRegs and
    TerrainProjectedTriangle_ClipInterpolateAndQueueTextured (world/terrain/projection.c).
 */
-PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
+PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           (uint32_t *terrainPacketRecord,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -778,8 +764,7 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
    the interval [center - radius, center + radius] on one world axis (Q12). Bin indices wrap modulo 32, so
    the mask is a coarse spatial hash used by the collision and target searches.
 */
-DepthBinMask32 __thandor_eax_preserve_ecx_edx
-DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12)
+DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12)
 
 {
   uint32_t binMask;
@@ -803,9 +788,7 @@ DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32
    Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): CF set when
    axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-DepthBinMasks_Overlap
-          (DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+bool DepthBinMasks_Overlap(DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
           DepthBinMask32 secondMaskAxis1)
 
 {

@@ -16,8 +16,7 @@
    to worldRuntime, caching the six derivatives. Returns true (CF set) while the spline runs; past the last
    keyframe it applies that keyframe, clears the derivatives and returns false.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-WorldMotionSpline_EvaluateAndApplyAtTime
+bool WorldMotionSpline_EvaluateAndApplyAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
 
@@ -99,8 +98,7 @@ WorldMotionSpline_EvaluateAndApplyAtTime
    spline runs; past the last keyframe it applies that keyframe, clears the derivatives and returns 0.
    No caller, function-pointer table or data reference to 0x0053CBB0 was found in the port or the image data.
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx
-WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
+uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
 
@@ -171,8 +169,7 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
    short way across the 0/0x10000 wrap, then builds and solves a natural cubic spline for each of the six
    keyframe channels into the global coefficient tables the evaluators read.
 */
-void __thandor_void_preserve_eax_ecx_edx
-WorldMotionSpline_BuildSixChannelCurves
+void WorldMotionSpline_BuildSixChannelCurves
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes)
 
 {
@@ -260,8 +257,7 @@ WorldMotionSpline_BuildSixChannelCurves
    makes InterpolationStateTable_Advance256ByTicks shrink the radius to zero and then free the light. A
    light still fading in keeps its current fraction; a zero duration switches the light off at once.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InterpolationState_SetNegatedTargetAndRescaleProgress
+void InterpolationState_SetNegatedTargetAndRescaleProgress
           (GraphicsTransitionTickCount fadeOutTicks,GraphicsShadingRuntimeRecord *shadingRecord)
 
 {
@@ -306,8 +302,7 @@ InterpolationState_SetNegatedTargetAndRescaleProgress
    light in transition gets radius = target * elapsed / duration (squared for the shading pass); a finished
    fade-in becomes steady, a finished fade-out (negative duration) frees the light.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
+void InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
 
 {
   int durationTicks;
@@ -355,9 +350,7 @@ InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
    (Doolittle) decomposition of the matrix without pivoting, whose unit-L forward substitution runs along row
    by row, followed by back substitution with U. rhsVector then holds the four coefficients of every segment.
 */
-void __thandor_void_preserve_eax_ecx_edx
-CubicSpline_SolveCoefficientSystem
-          (CubicSplineEquationCount equationCount,float *rhsVector,float *matrix32x32)
+void CubicSpline_SolveCoefficientSystem(CubicSplineEquationCount equationCount,float *rhsVector,float *matrix32x32)
 
 {
   float pivot;
@@ -407,9 +400,7 @@ CubicSpline_SolveCoefficientSystem
    4s+5 the curvature; row 1 sets the start slope to startDerivative and the last segment's row 4s+2 the end slope
    to 0 (so the spline is clamped, not natural). The right-hand side goes to outCoefficients.
 */
-void __thandor_void_preserve_eax_ecx_edx
-CubicSpline_BuildNaturalCoefficientSystem
-          (float startDerivative,CubicSplineEquationCount *outEquationCount,
+void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSplineEquationCount *outEquationCount,
           float *outCoefficients,float *matrix32x32,WorldMotionSplineKeyframeCount keyframeCount,
           WorldMotionSplineChannelByteOffset channelByteOffset,WorldMotionSplineKeyframe *keyframes)
 
@@ -531,8 +522,7 @@ CubicSpline_BuildNaturalCoefficientSystem
    M[row][column] = (M[row][column] - sum over k = 0..lastPriorIndex of M[row][k] * M[k][column]) / pivot.
    With pivot 1 this yields an element of U, with the diagonal element of U as pivot an element of L.
 */
-void __thandor_void_preserve_ecx_edx
-CubicSpline_ForwardEliminateColumn
+void CubicSpline_ForwardEliminateColumn
           (float pivot,CubicSplineMatrixIndex lastPriorIndex,CubicSplineMatrixIndex columnIndex,
           CubicSplineMatrixIndex rowIndex,float *matrix32x32)
 
@@ -566,9 +556,7 @@ CubicSpline_ForwardEliminateColumn
    b[target] = (b[target] - sum over k = firstSolvedIndex..lastSolvedIndex of M[target][k] * b[k]) / pivot.
    Used with pivot 1 for the forward (unit-L) pass and with the diagonal of U for the back substitution.
 */
-void __thandor_void_preserve_ecx_edx
-CubicSpline_BackSubstituteRow
-          (float pivot,CubicSplineMatrixIndex lastSolvedIndex,
+void CubicSpline_BackSubstituteRow(float pivot,CubicSplineMatrixIndex lastSolvedIndex,
           CubicSplineMatrixIndex firstSolvedIndex,CubicSplineMatrixIndex targetIndex,
           float *rhsVector,float *matrix32x32)
 
@@ -594,7 +582,7 @@ CubicSpline_BackSubstituteRow
    Zeroes the six derivatives cached by the world-motion spline evaluators, so a finished or newly built
    spline reports no motion.
 */
-void __thandor_void_preserve_eax_ecx WorldMotionSpline_ClearCachedDerivatives(void)
+void WorldMotionSpline_ClearCachedDerivatives(void)
 
 {
   int derivativesRemaining;

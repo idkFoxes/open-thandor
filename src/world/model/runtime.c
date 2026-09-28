@@ -19,8 +19,7 @@
    the attachment entry, hangs its root node into the parent node's child slot and gives it the saved local
    rotation and the attachment translation. CF set when the model could not be created.
 */
-ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ModelRuntimePool_RepairDeferredChild
+ModelNodeCreateResult ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
           ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime)
@@ -87,8 +86,7 @@ ModelRuntimePool_RepairDeferredChild
    model by the offscreen preview renderer (src/graphics/render/projection.c) and by the frontend/in-game world
    view (src/ui/frontend/runtime.c).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
+void ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 {
   Q12 *boundingRadiusField;
@@ -203,8 +201,7 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
    of the node's local bounds is transformed into g_ModelCullViewRelativeX/Y/Z to collect the nearby shading
    records; every drawn node gets MODEL_NODE_FLAG_RENDERED.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
+void ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
 
 {
   ModelResourceHitTestAndRenderView210 *modelResourceView;
@@ -248,8 +245,7 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
    hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot updates
    (src/world/shots/maintenance.c).
 */
-ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
-ModelRuntime_RaycastCandidateListNearest
+ModelRaycastResult ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime)
@@ -299,8 +295,7 @@ ModelRuntime_RaycastCandidateListNearest
    Returns the condition ratio (Q12) of an army's model hierarchy: the EAX half of
    ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs; EDX is preserved. No caller in the C code (function map only).
 */
-Q12 __thandor_eax_preserve_ecx_edx
-ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix10 *runtimeEntry)
+Q12 ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   ModelRuntimeScaleRatioRegisterPairQ12 scaleRatioPairQ12;
@@ -314,8 +309,7 @@ ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix10 *runtimeEnt
    Returns ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs (EDX:EAX) for the model runtime hierarchy of a
    runtime entry (an army).
 */
-ModelRuntimeScaleRatioRegisterPairQ12 __thandor_eax_edx_cf_preserve_ecx
-ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix10 *runtimeEntry)
+ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   return ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
@@ -327,8 +321,7 @@ ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix10 *runtim
    ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs); the in-game selection detail shows it divided by 16
    as the energy value. EDX is preserved.
 */
-int __thandor_eax_preserve_ecx_edx
-ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
+int ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeActiveTotalMetricRegisterPair activeHierarchyMetricPair;
@@ -417,7 +410,7 @@ static void ModelRuntimePool_ReleaseDefinitionNodeResources(uint32_t resourceRec
    registered model definition's node tree (see ModelRuntimePool_ReleaseDefinitionNodeResources) and clears
    the definition registry.
 */
-void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
+void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
 
 {
   int registryRemaining;
@@ -522,7 +515,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
    runs the class's load-repair callback and rebuilds the attachment descriptors from the definition. A slot
    whose definition is no longer registered is dropped.
 */
-void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
+void ModelRuntimePool_RebaseAfterLoad(void)
 
 {
   ModelRuntimeSlot *linkedRuntimeOrCursor;
@@ -639,9 +632,7 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
    rebuilt; a root model destroys its army instead, first spawning the army asset its definition names at
    +0x74 at the same place, unless that id is -1 or flag 0x20 is set at +0xEC of the owner record.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimePool_DestroyHierarchyAndDetach
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
+void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   int *ownerRecord;
@@ -720,8 +711,7 @@ ModelRuntimePool_DestroyHierarchyAndDetach
    side-by-side launchers fire parallel shots. Called by the army weapon code (src/gameplay/army/movement.c,
    src/gameplay/army/runtime.c).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntime_EmitProjectilesFromAttachmentPoints
+void ModelRuntime_EmitProjectilesFromAttachmentPoints
           (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
           Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
           MdlSerializedNodeHeader38 *definitionNode,WorldRuntimeContext *worldRuntime)
@@ -763,8 +753,7 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
    the definition class's initialize handler. Returns the slot, or with CF set FATAL_ERROR_GENERAL_FAILURE
    (no pool or no free slot), the node tree's error, or FATAL_ERROR_MODEL_DEFINITION_MISSING.
 */
-ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ModelRuntimePool_CreateInstanceByDefinitionId
+ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
           WorldRuntimeContext *worldRuntime)

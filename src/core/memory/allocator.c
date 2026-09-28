@@ -15,8 +15,7 @@
    appended last entity/priority pair moves up the max-heap, swapping with its parent while its priority is
    larger.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
+void PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
 
 {
   EntityPathingPriorityPair *parentHeapPair;
@@ -52,8 +51,7 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
    swapped with the last entry, the new root entity/priority pair moves down the max-heap, swapping with its
    larger-priority child while that child is larger.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
+void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
 
 {
   int selectedChildPriority;
@@ -99,8 +97,7 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
    candidateRecord. Inverted like all CF results: false (CF clear) = found, true (CF set) = not found.
    recordCount must be at least 1.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-DwordBlock64Array_ContainsExactRecord
+bool DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord)
 
 {
@@ -169,7 +166,7 @@ void * __cdecl ArenaHeap_Init(void)
 /* Address: 0x00586470.
    Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
 */
-void __thandor_preserve_eax ArenaHeap_Shutdown(void)
+void ArenaHeap_Shutdown(void)
 
 {
   HeapFree(g_Arena.processHeap,0,g_Arena.rawAllocation);
@@ -184,7 +181,7 @@ void __thandor_preserve_eax ArenaHeap_Shutdown(void)
    payload pointer with CF clear; with CF set FATAL_ERROR_ARENA_EXHAUSTED (largest free size left in
    g_PackageLastErrorPath) or ARENA_HEAP_FAILURE_SENTINEL_0x13 for a corrupt block chain.
 */
-ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
+ArenaAllocResult ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
 
 {
   ArenaBlockHeader *followingBlock;
@@ -278,7 +275,7 @@ uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
    The block header is accessed as dwords below the payload: -0x20 payloadSize, -0x1C stateMagic,
    -0x18 next, -0x14 previous (see ArenaBlockHeader).
 */
-ArenaFreeResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
+ArenaFreeResult ArenaHeap_Free(void *memory)
 
 {
   int mergedNextBlockAddress;
@@ -332,8 +329,7 @@ ArenaFreeResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
    ArenaHeap_ShrinkInPlace. CF set with FATAL_ERROR_ARENA_EXHAUSTED when nothing is free, or
    ARENA_HEAP_FAILURE_SENTINEL_0x13 (ECX 0xFFFFFFFF) for a corrupt block chain.
 */
-ArenaLargestAllocResult __thandor_eax_ecx_cf_preserve_edx
-ArenaHeap_AllocLargestFreeBlock(void)
+ArenaLargestAllocResult ArenaHeap_AllocLargestFreeBlock(void)
 
 {
   uint32_t largestFreePayloadBytes;
@@ -381,8 +377,7 @@ ArenaHeap_AllocLargestFreeBlock(void)
    CF clear on success (EAX carries no meaning); CF set with ARENA_HEAP_FAILURE_SENTINEL_0x13 when the
    block is not allocated or newSize is larger than the block.
 */
-ArenaShrinkResult __thandor_eax_cf_preserve_ecx_edx
-ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
+ArenaShrinkResult ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 {
   uint32_t originalPayloadSize;
@@ -437,8 +432,7 @@ ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
    returns the old cursor and advances it by bytes, or CF set with FATAL_ERROR_GENERAL_FAILURE when the
    region is full. Nothing is ever given back.
 */
-ArenaReserveResult __thandor_eax_cf_preserve_ecx_edx
-ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
+ArenaReserveResult ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
 
 {
   uint8_t *previousLinearCursor;
@@ -462,7 +456,7 @@ ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
    Zeroes bytes / 4 dwords at destination (REP STOSD); a trailing one to three bytes are left unchanged,
    so callers pass multiples of 4.
 */
-void __thandor_void_preserve_eax_ecx_edx Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
+void Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
 
 {
   uint32_t dwordsRemaining;

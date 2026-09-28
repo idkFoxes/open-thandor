@@ -17,8 +17,7 @@
    level: TEXT_ID_LEVEL_TITLE_BASE + title index and TEXT_ID_LEVEL_DESCRIPTION_BASE + 0x10 * title index (+1..14).
    CF is set when the page cannot be loaded or one of the strings is missing.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
+bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
 
 {
   uint16_t *resolvedText;
@@ -63,7 +62,7 @@ TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *pat
    the 16 KiB font runtime buffer (the flattened text of the wrapped-text functions) and the text-resource
    override table, and fills that whole table (ids and text pointers) with 0xFFFFFFFF. Any failure is fatal.
 */
-void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
+void FontRuntime_Init(void)
 
 {
   wchar_t pathChar;
@@ -122,7 +121,7 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
    the page's binding (selected locale block and asset). No caller or table slot referencing it was found in
    src/ or src/generated/image_data.c.
 */
-void __thandor_preserve_eax TextResourcePage_Unload(TextResourcePageIndex pageIndex)
+void TextResourcePage_Unload(TextResourcePageIndex pageIndex)
 
 {
   Resource_Release(g_TextResourcePageBindings[pageIndex].asset);
@@ -137,8 +136,7 @@ void __thandor_preserve_eax TextResourcePage_Unload(TextResourcePageIndex pageIn
    lacks the 'str' signature. No caller or table slot referencing it was found in src/ or
    src/generated/image_data.c.
 */
-AssetRecordCount __thandor_eax_cf_preserve_ecx_edx
-TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
+AssetRecordCount TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
 
 {
   if ((asset->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
@@ -152,8 +150,7 @@ TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
    Returns the width of one glyph (EAX, 0 when the font has no such glyph) and the line height (EDX, the height
    of glyph 0) in the active font; used to measure text before it is laid out.
 */
-GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
-FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
+GlyphSizeResult FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
 
 {
   uint32_t glyphWidth;
@@ -180,8 +177,7 @@ FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
    Returns the width of one glyph (EAX, 0 when the font has no such glyph) and the line height (EDX, the height
    of glyph 0) in the font selected by packedStyle, without changing the active font.
 */
-GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
-FontGlyph_GetLogicalSizeForStyleRegs
+GlyphSizeResult FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource)
 
 {
@@ -289,8 +285,7 @@ uint32_t FontGlyph_DrawVerticallyCentered
    run time (see the switch). Returns the selected block with CF clear; a package error, or
    TEXT_RESOURCE_MISSING_SENTINEL_0x33 for a non-'str' asset (which is released), with CF set.
 */
-TextPageLoadResult __thandor_eax_cf_preserve_ecx_edx
-TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
+TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
 
 {
   uint16_t codeUnit;
@@ -421,8 +416,7 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
    pair in the first override entry whose id is zero. Without an override table, or when it is full, nothing
    is registered.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
+void TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
 
 {
   int overrideSlotsRemaining;
@@ -458,8 +452,7 @@ TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
    override table is searched, then the bound locale block of the id's page (compact or extended id, see
    resources.h). A missing text sets CF and returns the value TEXT_RESOURCE_MISSING_SENTINEL_0x33.
 */
-TextResolveResult __thandor_eax_cf_preserve_ecx_edx
-TextResource_Resolve(TextResourceId resourceId)
+TextResolveResult TextResource_Resolve(TextResourceId resourceId)
 
 {
   TextResourceLocaleBlockPrefix *localeBlock;

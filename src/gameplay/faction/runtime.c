@@ -17,9 +17,7 @@
    most 600 ticks old; the same check in states 4 and 8 never holds (it only accepts 2, 5 and 9). The first
    two arguments are not used.
 */
-void __thandor_void_preserve_eax_ecx
-GameFactionRuntime_AdvancePairwiseRelationState
-          (uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
+void GameFactionRuntime_AdvancePairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -76,9 +74,7 @@ GameFactionRuntime_AdvancePairwiseRelationState
    sourceFactionIndex: 1..3 -> 0, 4 and 6 -> 0, 5 -> 4, 8 and 10 -> 4, 9 -> 8 (both directions get the same
    state), with the matching notification text. Other states stay. The first two arguments are not used.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_ResetPairwiseRelationState
-          (uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
+void GameFactionRuntime_ResetPairwiseRelationState(uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -298,8 +294,7 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
    Called when an army is destroyed: clears every slot of the eight factions' 256-entry runtime group member
    tables that still points to it, so no group keeps a dangling pointer to the freed army slot.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember)
+void GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember)
 
 {
   int factionsRemaining;
@@ -336,9 +331,7 @@ GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runt
    GameFactionRuntime_ApplyPairwiseRelationTransition sets or clears the others, so a clear bit marks a faction
    this one is not friendly with (the AI treats its entities as foreign/hostile).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRuntime_TestCapabilityBitClear
-          (uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
+bool GameFactionRuntime_TestCapabilityBitClear(uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
   return (g_GameFactionRuntimeImage.records[factionIndex].capabilityFlags &
@@ -350,8 +343,7 @@ GameFactionRuntime_TestCapabilityBitClear
    Returns the diplomatic relation state (0..11) of factionIndex towards otherFactionIndex: nibble
    otherFactionIndex of the faction record's packedRelationStates. States from 4 on count as friendly.
 */
-FactionRelationState __thandor_eax_preserve_ecx_edx
-GameFactionRuntime_GetPackedStateNibble
+FactionRelationState GameFactionRuntime_GetPackedStateNibble
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -366,8 +358,7 @@ GameFactionRuntime_GetPackedStateNibble
    other faction has are swapped (each side unlocks the other's). A pair where either side has nothing the
    other lacks exchanges nothing. Afterwards the other-player command entries are rebuilt.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
+void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
 
 {
   int otherRecordBase;
@@ -440,8 +431,7 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
    the cooldown had fallen below 50 and the hit is more than 12 world units from the old anchor or the cooldown had
    run out, and only when the shown faction owns the hit model, so a sustained attack does not repeat the alert.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
+void GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
           (ArmyRuntimeSlot *targetArmyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
@@ -527,8 +517,7 @@ GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
    technologies beyond the five starting ones, extracted resource components, the economy and relation scores,
    the summed value of its army assets on the map, and the combined progress score.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_RecomputeProgressAndScoreMetrics
+void GameFactionRuntime_RecomputeProgressAndScoreMetrics
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -622,8 +611,7 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
    selection commands in gameplay/selection/runtime. Returns the one-based group number with CF clear, or
    runtimeEntry itself with CF set when it is in no group.
 */
-RuntimeGroupIndexResult __thandor_eax_cf_preserve_ecx_edx
-GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEntry)
+RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   int slotsRemaining;
@@ -668,8 +656,7 @@ GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEnt
    production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). Despite the name the result is
    inverted: false (CF clear) when found, true (CF set) when not.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FactionRuntime_HasArmyAssetOrActiveStructure
+bool FactionRuntime_HasArmyAssetOrActiveStructure
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
@@ -716,8 +703,7 @@ FactionRuntime_HasArmyAssetOrActiveStructure
    0x01, 0x08, 0x10 and 0x20 and sets the path target and both tracked coordinate pairs to the current
    x/y position of its model.
 */
-void __thandor_void_preserve_eax_ecx
-GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime)
+void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime)
 
 {
   GameEntityCommandFlags *commandFlagsField;
@@ -806,8 +792,7 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
    the definition maximum (+0x60) is clamped and the excess handed to the first linked army that is not at full
    integrity.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
+void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
           (AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
           ImpactDamageValue32 impactValue,GameEntityRuntime *targetEntityRuntime)
 
@@ -913,9 +898,7 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
    the AI): appends the registry pointer of armyAssetId that many times to the faction's secondary army-asset
    list, stopping when its 64 entries are full. An unknown id queues nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_RegisterArmyAssetPointers
-          (uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount repetitionCount,
+void GameFactionRuntime_RegisterArmyAssetPointers(uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount repetitionCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
@@ -948,8 +931,7 @@ GameFactionRuntime_RegisterArmyAssetPointers
    record. Waiting orders are taken out of the faction's production queue first (without a refund); what is left is cancelled in the faction's producing structures (class 0x0B, 0x16 or 0x0D, chosen by the
    army's flags 0x10 / 0x08), which stop production and refund the full price to the faction's xenite.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
+void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
           (uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount requestedCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
@@ -1070,8 +1052,7 @@ cancelInStructures:
    the command sprite grid is rebuilt, and for the local player the placement cursor is armed. If the faction
    has no such entry the pending slot is cleared again.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
+void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
           (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex)
 
@@ -1134,8 +1115,7 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
    (at most 64 entries). When the faction is the one shown it rebuilds the command sprite grid, and for the local
    player it ends the pending placement.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
+void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
           (PlayerRuntimeId playerRuntimeId,uint32_t unusedConsumeArgument0,uint32_t unusedConsumeArgument1
           ,FactionRuntimeIndex factionIndex)
 
@@ -1175,8 +1155,7 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
    first entry of the army record out of the faction's primary army-asset list (record +0x1E0) and credits 7/8 of
    its price to the faction's xenite. The command sprite grid is rebuilt when the faction is the one shown.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
+void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           (uint32_t unusedPlayerRuntimeId,uint32_t unusedZero,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex)
 
@@ -1232,9 +1211,7 @@ GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
    by PlayerRuntime_SetState8090 and keeps it as the player's placed army (+0x8094, as an offset from
    g_ArmyRuntimeRebaseBaseMinusOne), or 0 when it could not be created.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerRuntime_ResolveAndStoreState8094
-          (PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
+void PlayerRuntime_ResolveAndStoreState8094(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
           PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId)
 
 {
@@ -1257,9 +1234,7 @@ PlayerRuntime_ResolveAndStoreState8094
    In-game command INGAME_COMMAND_PLACEMENT_SET_FACTION (from InGameUiCommand_BeginInteractionByMode, before
    INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (+0x8090) that the player's next placed army belongs to.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerRuntime_SetState8090
-          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_SetState8090(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlayerState8090Value placementFactionIndex)
 
 {
@@ -1272,9 +1247,7 @@ PlayerRuntime_SetState8090
    InGameUiCommand_BeginInteractionByMode): makes it the player's placed army (+0x8094); armyToken is its offset from
    g_ArmyRuntimeRebaseBaseMinusOne.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerRuntime_SetState8094
-          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_SetState8094(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlayerState8094Value armyToken)
 
 {
@@ -1286,9 +1259,7 @@ PlayerRuntime_SetState8094
    In-game command INGAME_COMMAND_PLACEMENT_CLEAR_ARMY (end of a placement interaction, from
    InGameUiCommand_EndInteractionByMode): forgets the player's placed army (+0x8094).
 */
-void __thandor_void_preserve_eax_ecx_edx
-PlayerRuntime_ClearState8094
-          (PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_ClearState8094(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           uint32_t unusedZero2)
 
 {
@@ -1302,7 +1273,7 @@ PlayerRuntime_ClearState8094
    (0x20-byte primary records: asset id, faction, position, rotation) in the world, then rebuilds terrain
    occupancy and the cell classification for the active faction.
 */
-void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecords(void)
+void OldUnitRuntime_MergeMasksAndReplayRecords(void)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -1364,8 +1335,7 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
    2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
    again too soon.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRuntime_IsRecentTimedRelationState
+bool GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -1388,7 +1358,7 @@ GameFactionRuntime_IsRecentTimedRelationState
    Drops any pending mission carry-over: clears the 64-dword technology-mask table and the unit-record count, so
    OldUnitRuntime_MergeMasksAndReplayRecords has nothing to apply.
 */
-void __thandor_void_preserve_eax_ecx OldUnitRuntime_ResetPendingTables(void)
+void OldUnitRuntime_ResetPendingTables(void)
 
 {
   int tableEntriesRemaining;
@@ -1413,9 +1383,7 @@ void __thandor_void_preserve_eax_ecx OldUnitRuntime_ResetPendingTables(void)
    technology, statistics and army-asset lists to the other and becomes inactive. Finally the other-player
    command entries are rebuilt.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GameFactionRuntime_ApplyPairwiseRelationTransition
-          (FactionNotificationCodeBase activeFactionCodeForFirst,
+void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeBase activeFactionCodeForFirst,
           FactionNotificationCodeBase activeFactionCodeForSecond,
           FactionRelationStateNibble stateFirstTowardSecond,
           FactionRelationStateNibble stateSecondTowardFirst,FactionRuntimeIndex firstFactionIndex,

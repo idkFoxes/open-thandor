@@ -18,8 +18,7 @@
    (single games tab) marks each level title that some other player does not have.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext)
+void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext)
 
 {
   FrontendPlayerRuntimeBlockCount playersRemaining;
@@ -151,8 +150,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
    in a campaign or a re-initialised scenario). The opponent settings stay visible only while an active
    faction is left to the computer.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
+void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
 
 {
   int32_t *menuRoomContextFlags;

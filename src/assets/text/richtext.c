@@ -18,8 +18,7 @@
    style's font and colour, and sums the heights of all wrapped lines. Returns maximumWidth itself in EAX (not
    the widest line) and the total height in EDX.
 */
-RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
-RichTextCommandStream_MeasureWrappedBlockRegs
+RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
           (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth)
 
 {
@@ -53,8 +52,7 @@ RichTextCommandStream_MeasureWrappedBlockRegs
    draws line after line (RichTextCommandStream_DrawNextWrappedLine) until the end of the text. Called directly
    by UiWrappedTextControl_DrawClipped.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_DrawWrappedBlock
+void RichTextCommandStream_DrawWrappedBlock
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX)
@@ -85,8 +83,7 @@ RichTextCommandStream_DrawWrappedBlock
    to place the baseline below lineTopY, then interprets glyphs, colour, font, nested-stream and inline-image
    commands until the end of the stream or a line break.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-RichTextCommandStream_DrawSingleLine
+bool RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX)
@@ -225,8 +222,7 @@ RichTextCommandStream_DrawSingleLine
    (0x18/0x19) whose selector matches at replacementPayload, so a text can have its placeholders bound to
    concrete sub-streams at run time.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchPayloadBySelector
+void RichTextCommandStream_PatchPayloadBySelector
           (RichTextCommandSelector selector,void *replacementPayload,uint16_t *stream)
 
 {
@@ -268,8 +264,7 @@ RichTextCommandStream_PatchPayloadBySelector
    Walks one command stream (without following nested streams) and sets the texture source of every inline
    image command to textureSource, so a text's icons can be bound to the texture they are drawn from.
 */
-void __thandor_void_preserve_eax_ecx
-RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream)
+void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream)
 
 {
   uint16_t *commandCursor;
@@ -313,8 +308,7 @@ RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSourc
    the stream has fewer such commands. No caller and no function-pointer table entry for it was found in src/
    or src/generated/image_data.c.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-RichTextCommandStream_FindNthCommandPayloadPair
+bool RichTextCommandStream_FindNthCommandPayloadPair
           (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
           uint16_t *commandStream)
 
@@ -362,8 +356,7 @@ RichTextCommandStream_FindNthCommandPayloadPair
    RichTextCommandStream_PatchPayloadBySelector). No caller and no function-pointer table entry for it was
    found in src/ or src/generated/image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchNestedStreamPointerPayloads
+void RichTextCommandStream_PatchNestedStreamPointerPayloads
           (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,uint16_t *commandStream)
 
 {
@@ -408,9 +401,7 @@ RichTextCommandStream_PatchNestedStreamPointerPayloads
    imageSubresourceValue (see RichTextCommandStream_BindTextureSource for the texture source alone). No caller
    and no function-pointer table entry for it was found in src/ or src/generated/image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchOpcode1APayloadPair
-          (RichTextOpcode1APayloadValue32 imageSubresourceValue,
+void RichTextCommandStream_PatchOpcode1APayloadPair(RichTextOpcode1APayloadValue32 imageSubresourceValue,
           RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream)
 
 {
@@ -455,9 +446,7 @@ RichTextCommandStream_PatchOpcode1APayloadPair
    inline-value command (0x14..0x16) to inlinePayloadValue. No caller and no function-pointer table entry
    for it was found in src/ or src/generated/image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchInlinePayloads
-          (RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream)
+void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream)
 
 {
   uint16_t *commandCursor;
@@ -499,8 +488,7 @@ RichTextCommandStream_PatchInlinePayloads
    access also covers the low half of the payload, which the mask 0xFFFF8014 keeps. No caller and no
    function-pointer table entry for it was found in src/ or src/generated/image_data.c.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
+bool RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
 
 {
   uint32_t *streamCursor;
@@ -550,8 +538,7 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBi
    such commands. No caller and no function-pointer table entry for it was found in src/ or
    src/generated/image_data.c.
 */
-RichTextCommandQueryResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream)
+RichTextCommandQueryResult RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream)
 
 {
   uint16_t commandCodeUnit;
@@ -603,8 +590,7 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
    commands and every code unit above 0xFF. Returns the byte count including the terminator; on overflow the
    output is cut and terminated and CF is set with FATAL_ERROR_GENERAL_FAILURE.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyToNarrow
+StatusResult RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {
@@ -709,8 +695,7 @@ RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
    An unknown character returns the formatted "TXT2STR: unknown character" message (with its byte offset)
    and CF set; running out of arena space returns FATAL_ERROR_GENERAL_FAILURE.
 */
-RichTextAssetResult __thandor_eax_cf_preserve_edx
-RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
+RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
 
 {
   /* Unreachable: nothing in the original image calls 0x0041BCB0 or stores its address (a leftover
@@ -1104,8 +1089,7 @@ RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
    payload records are copied unchanged. Returns the byte count without the terminator; on overflow the output is
    cut and terminated and CF is set with FATAL_ERROR_GENERAL_FAILURE.
 */
-RichTextCopyResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyExpanded
+RichTextCopyResult RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source)
 
 {
@@ -1214,8 +1198,7 @@ RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError:
    streams and font changes and including inline images. Returns the total width in EAX and the tallest glyph or
    image in EDX; used to align a line before it is drawn.
 */
-RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
-RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream)
+RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream)
 
 {
   /* Rewritten from the assembly (0x0041CF30-0x0041D0E0). Command 0x18 enters a nested stream and pushes
@@ -1309,8 +1292,7 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *comman
    g_RichTextRuntimeBufferUsedWords past it. Font commands are applied on the way. Returns the tallest glyph or
    image height of the line in EAX; CF is set when the line ends the text.
 */
-WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
+WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
 
 {
   GraphicsSubresourceIndex glyphSubresource;
@@ -1418,8 +1400,7 @@ RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
    when the line wraps at a soft hyphen) and advances g_RichTextRuntimeBufferUsedWords. Returns the line height;
    CF is set when the line ends the text. Called directly by RichTextCommandStream_DrawWrappedBlock.
 */
-WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_DrawNextWrappedLine
+WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX)
@@ -1635,8 +1616,7 @@ RichTextCommandStream_DrawNextWrappedLine_EndLine:
    commands are dropped. Output beyond RICHTEXT_RUNTIME_BUFFER_UNITS is discarded; the read position
    g_RichTextRuntimeBufferUsedWords is reset to the start.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
+void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
 
 {
   uint16_t commandCodeUnit;

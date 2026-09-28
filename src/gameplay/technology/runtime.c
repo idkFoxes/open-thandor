@@ -16,8 +16,7 @@
    applies the technology's model variants to the faction's models on the map and, for the local faction, rebuilds
    the two build-catalog grids.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Technology_UnlockForFaction
+void Technology_UnlockForFaction
           (GraphicsWorldCoordinateQ12 notificationXQ12,GraphicsWorldCoordinateQ12 notificationYQ12,
           TechnologyId technologyIndex,FactionRuntimeIndex factionIndex)
 
@@ -76,9 +75,7 @@ Technology_UnlockForFaction
    at +0x6E0). Note the inverted CF result: false (CF clear) when the technology is unlocked, true (CF set)
    when it is still locked.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsUnlockedForFaction
-          (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
+bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
   if ((*(uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
@@ -94,9 +91,7 @@ Technology_IsUnlockedForFaction
    its eight prerequisite mask words must be unlocked for the faction, and no army
    of that faction may already be researching it. True (CF set) means available.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsAvailableForFaction
-          (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
+bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
   WorldRuntimeNode *worldNodeCursor;
@@ -159,8 +154,7 @@ Technology_IsAvailableForFaction
    (+0x28) into the entity; the HUD shows these as the research costs and time. The fast-build cheat divides the
    duration by 16.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity)
+void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity)
 
 {
   uint32_t researchDurationQ5;
@@ -193,8 +187,7 @@ Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntity
    model value +0x60 and its Q24 reciprocal, the largest value +0x0C of models with a non-zero +0x18 (used by the
    AI army candidates), and the 256-bit masks of the technologies in categories 2 and 3.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
+void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
 
 {
   ModelDefinitionRecordPrefix *definitionRecord;

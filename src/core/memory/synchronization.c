@@ -16,7 +16,7 @@
    frontend and in-game loops against the timer callbacks.
    Reached through the function-pointer slot g_SpinLockAcquire (0x00402784).
 */
-void __thandor_void_preserve_eax_ecx_edx SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
+void SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
 
 {
   RuntimeSpinLockValue *previousLockValue; /* first the lock pointer (null test), then the swapped-out value */
@@ -36,7 +36,7 @@ void __thandor_void_preserve_eax_ecx_edx SpinLock_Acquire(RuntimeSpinLockValue *
    skip its work instead of waiting.
    Reached through the function-pointer slot g_SpinLockTryAcquire (0x00402788).
 */
-bool __thandor_cf_preserve_eax_ecx_edx SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
+bool SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
 {
   RuntimeSpinLockValue previousLockValue;
@@ -55,7 +55,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SpinLock_TryAcquireFlags(RuntimeSpinLockV
    Releases the lock with a plain (non-atomic) store of zero; a null lock is ignored.
    Reached through the function-pointer slot g_SpinLockRelease (0x0040278C).
 */
-void __thandor_void_preserve_eax_ecx_edx SpinLock_Release(RuntimeSpinLockValue *lockValue)
+void SpinLock_Release(RuntimeSpinLockValue *lockValue)
 
 {
   if (lockValue != NULL) {
@@ -71,8 +71,7 @@ void __thandor_void_preserve_eax_ecx_edx SpinLock_Release(RuntimeSpinLockValue *
    Reached through the function-pointer slot g_SpinLockReleaseAndInvoke (0x00402790); the UI pointer and
    keyboard dispatchers use it to drop g_UiRuntimeFrameLock and run g_UiRuntimePostUnlockCallback.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)
+void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)
 
 {
   if ((lockValue != NULL) &&
@@ -88,7 +87,7 @@ SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockV
    roughly the reverse order of their initialisation, frees the memory arena last and drops the process
    back from real-time to normal priority.
 */
-void __thandor_preserve_eax Runtime_Shutdown(void)
+void Runtime_Shutdown(void)
 
 {
   HANDLE process;

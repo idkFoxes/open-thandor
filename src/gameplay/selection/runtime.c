@@ -19,8 +19,7 @@
    SelectionOverlay_RenderArmyMetricsForEntity (gameplay/selection/overlay.c) and
    UiArmyMetricsPanel_DrawTextureMetricsAndChildren (ui/controls/text.c).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_RenderArmyRuntimeMetrics
+void SelectionPanel_RenderArmyRuntimeMetrics
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
           UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
@@ -467,8 +466,7 @@ SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
    definition class 0x16 that the player owns, then rebuilds the selection panels when the player is the local
    one.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSelection_RebuildOwnedClass16Selection
+void InGameSelection_RebuildOwnedClass16Selection
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
 
 {
@@ -506,8 +504,7 @@ InGameSelection_RebuildOwnedClass16Selection
    entries matching the army at the rebased index (byte offset from g_ArmyRuntimeRebaseBaseMinusOne, 0 = none)
    and refreshes the local selection panels. Nothing is added when the army has no model node.
 */
-void __thandor_preserve_eax
-InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
+void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
           (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
           RuntimeToken armyRuntimeIndex)
 
@@ -535,8 +532,7 @@ InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
    selection to the world point, each entry keeping its formation offset unless the selection is spread too wide.
    A lone class-0x0D entry takes the point into its definition record instead and the selection is cleared.
 */
-void __thandor_preserve_eax_edx
-InGamePlayerSelection_ApplyPositionCommandVariantB
+void InGamePlayerSelection_ApplyPositionCommandVariantB
           (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12)
 
@@ -552,8 +548,7 @@ InGamePlayerSelection_ApplyPositionCommandVariantB
    In-game command handler INGAME_COMMAND_POSITION (Shift/Alt-click on the ground): queues the world point as a
    waypoint for every entry of the player's selection (formation offsets as in the plain move).
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGamePlayerSelection_ApplyPositionCommand
+void InGamePlayerSelection_ApplyPositionCommand
           (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12)
 
@@ -570,8 +565,7 @@ InGamePlayerSelection_ApplyPositionCommand
    the rebased index the command target of every eligible entry of the player's selection. Ignored for index 0
    and for armies without a model node.
 */
-void __thandor_preserve_eax
-InGamePlayerSelection_SelectArmyRuntimeIndex
+void InGamePlayerSelection_SelectArmyRuntimeIndex
           (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
           RuntimeToken armyRuntimeIndex)
 
@@ -591,9 +585,7 @@ InGamePlayerSelection_SelectArmyRuntimeIndex
    In-game command handler INGAME_COMMAND_TARGET_POSITION (Ctrl-click on the ground): gives every eligible
    entry of the player's selection the terrain point (surface height, x, y) as its target position.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGamePlayerSelection_ApplyTargetPositionCommand
-          (PlayerRuntimeId playerId,CommandPayloadDword04 surfaceHeightQ12,
+void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,CommandPayloadDword04 surfaceHeightQ12,
           CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12)
 
 {
@@ -608,9 +600,7 @@ InGamePlayerSelection_ApplyTargetPositionCommand
    In-game command handler 0xE10 (key S, stop): resets the movement of the player's selection, drops its
    class-0x16 entries and recenters the formation offsets (SelectionRuntime_ResetMovementPruneAndRecenterEntries).
 */
-void __thandor_preserve_eax
-PlayerSelection_ResetMovementPruneAndRecenterEntries
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
+void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
 {
@@ -625,8 +615,7 @@ PlayerSelection_ResetMovementPruneAndRecenterEntries
    selection and clears their command flag 0x200. The block pointer doubles as its selection array (first
    member).
 */
-void __thandor_preserve_eax
-PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
+void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
           (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
@@ -641,8 +630,7 @@ PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
    In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
    selection and clears flag 0x10 of their dword +0x2C.
 */
-void __thandor_preserve_eax
-PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
+void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
           (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
@@ -657,8 +645,7 @@ PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
    In-game command handler 0xE70 (Alt+D): applies the model hierarchy flags 0x418 to the eligible entries of the
    player's selection (SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries).
 */
-void __thandor_preserve_eax
-PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
+void PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
           (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
           CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
 
@@ -675,8 +662,7 @@ PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
    0xE90): stores the pointed world point and preview heading as marker lane 1 of every class-0x16 entity in
    the player's selection (SelectionPointerArray_ApplyType16MarkerCoordinates).
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSelection_ApplyType16MarkerCoordinatesVariant1
+void InGameSelection_ApplyType16MarkerCoordinatesVariant1
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
@@ -692,8 +678,7 @@ InGameSelection_ApplyType16MarkerCoordinatesVariant1
    Pointer-mode handler for lane 2 (g_InGamePointerModeHandlers[2]: modifier mask & attachment variant mask
    == 2, Alt = 2; networked as command code 0xEC0): like InGameSelection_ApplyType16MarkerCoordinatesVariant1, for marker lane 2.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSelection_ApplyType16MarkerCoordinatesVariant2
+void InGameSelection_ApplyType16MarkerCoordinatesVariant2
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
@@ -712,8 +697,7 @@ InGameSelection_ApplyType16MarkerCoordinatesVariant2
    depth bins are rebuilt. Sent by InGameUiCommand_UpdateInteractionByMode (ui/ingame/runtime.c) while the
    pointer drags with bit 0x4 of g_CursorButtonState set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPlayerRuntime_MovePrimarySelectionBy
+void SelectionPlayerRuntime_MovePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12)
 
 {
@@ -763,8 +747,7 @@ SelectionPlayerRuntime_MovePrimarySelectionBy
    (16-bit angle, wraps) and rebuilds its transforms. Sent by InGameUiCommand_UpdateInteractionByMode
    (ui/ingame/runtime.c) with the horizontal pointer drag * 64.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPlayerRuntime_RotatePrimarySelectionBy
+void SelectionPlayerRuntime_RotatePrimarySelectionBy
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta)
 
 {
@@ -793,8 +776,7 @@ SelectionPlayerRuntime_RotatePrimarySelectionBy
    patches sequence descriptors inside the loaded textures (swaps two select.gfx entries, rewrites frames of
    info.gfx) - the exact meaning of these patches is not known. On failure returns the failing loader's error.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
+StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
 
 {
   uint8_t *patchBytes;
@@ -1068,7 +1050,7 @@ SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
    Counterpart of SelectionInfoPanel_InitResources: releases both panel textures and both .dat tables and clears
    the four resource pointers.
 */
-void __thandor_preserve_eax SelectionInfoPanel_ShutdownResources(void)
+void SelectionInfoPanel_ShutdownResources(void)
 
 {
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_SelectionPanelTextureSource);
@@ -1087,8 +1069,7 @@ void __thandor_preserve_eax SelectionInfoPanel_ShutdownResources(void)
    Removes an entity from the selections of all eight players (every matching entry of each player block's
    32-entry selection becomes NULL), so no selection keeps pointing at an entity that is being destroyed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
+void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 
 {
   int entriesRemainingInBlock;
@@ -1170,8 +1151,7 @@ WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPosition
    Removes an entity from one 32-entry selection array: only the first matching entry is set to NULL
    (an entity is in a selection at most once).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array)
+void SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
   int entryIndex;
@@ -1189,7 +1169,7 @@ SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointe
 /* Address: 0x0052FDC0.
    Returns true (CF set) when the local selection holds at least one entity, false when it is empty.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntry(void)
+bool SelectionInfo_HasAnyEntry(void)
 
 {
   int entriesRemaining;
@@ -1216,8 +1196,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntry(void)
    Returns false (CF clear) when every entity of the local selection belongs to the faction ownerIndex (an empty
    selection passes), true as soon as one belongs to another faction.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
+bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 
 {
   int entriesRemaining;
@@ -1242,8 +1221,7 @@ SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
    and at least one of them has a non-zero dword +0x70 in its runtime record; true otherwise (also for an empty
    selection).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
+bool SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
 
 {
   int *classRecord;
@@ -1287,7 +1265,7 @@ SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
    definition has a non-zero dword +0x18, or the selection is a single entity of definition class 0x0D (13).
    True otherwise; the world input then ignores the ground click.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass13(void)
+bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
 
 {
   int entriesRemaining;
@@ -1326,9 +1304,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass1
    typed callback; without such an entity the first class-0x0D entity tests the grid cell mask bands selected by
    its capability flags (0x80 -> band 3, 4 -> band 1, else 6). CF is set when neither exists.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_TestPositionCommandAtWorldPoint
-          (Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
+bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
 {
   GraphicsFixedVec3 *translationPtr;
@@ -1396,7 +1372,7 @@ SelectionInfo_TestPositionCommandAtWorldPoint
    ArmyRuntime_TestStateField100Nonnegative but fails ArmyRuntime_TestStateField100Zero (its state value at
    +0x100 is positive); true when none does.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonpositive(void)
+bool SelectionInfo_TestAllStateField100Nonpositive(void)
 
 {
   GameEntityRuntime *armyRuntime;
@@ -1428,7 +1404,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonposi
    Returns true (CF set) when ArmyRuntime_TestStateField100Nonnegative holds for any entity of the local
    selection, false otherwise.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnegative(void)
+bool SelectionInfo_TestAnyStateField100Nonnegative(void)
 
 {
   int entriesRemaining;
@@ -1486,7 +1462,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 /* Address: 0x00530100.
    Tests whether entry is part of the local selection: false (CF clear) when found, true when absent.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntry(GameEntityRuntime *entry)
+bool SelectionInfo_FindEntry(GameEntityRuntime *entry)
 
 {
   /* REPNE SCASD over the 32 selection slots in the original */
@@ -1505,7 +1481,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntry(GameEntityRuntime
    Returns the OR of the attachment effect variant masks of all entities in the local selection (per entity from
    ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs).
 */
-uint32_t __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVariantMask(void)
+uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void)
 
 {
   uint32_t effectVariantMask;
@@ -1566,8 +1542,7 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
    PlayerPairList_InsertRange) and, for the local player, the in-game root's copy of its count (+0xBA4). Sent by
    InGameUiCommand_BeginInteractionByMode and InGameUiCommand_ResetInteractionByMode (ui/ingame/runtime.c).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPlayerRuntime_ClearTerrainEditSelectionState
+void SelectionPlayerRuntime_ClearTerrainEditSelectionState
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           uint32_t reservedZero2)
 
@@ -1588,9 +1563,7 @@ SelectionPlayerRuntime_ClearTerrainEditSelectionState
    PlayerPairList_InsertUnique): CF clear (false) when listed, CF set (true) when not. Used by the FieldGrid cell
    updates in world/terrain/grid.c.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPlayerPairList_ContainsPair
-          (SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
+bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,SelectionPlayerPairKey worldXQ12,
           PlayerRuntimeId playerRuntimeId)
 
 {
@@ -1618,8 +1591,7 @@ SelectionPlayerPairList_ContainsPair
    entity (a production structure, cf. gameplay/faction/runtime.c), the target becomes its point at model
    runtime +0x78/+0x7C (flag 0x800 at +0xEC) and the selection is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_ApplyPositionCommandVariantB
+void SelectionPointerArray_ApplyPositionCommandVariantB
           (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
 
 {
@@ -1695,8 +1667,7 @@ SelectionPointerArray_ApplyPositionCommandVariantB
    entity gets its point at model runtime +0x78/+0x7C reset to its model's lookup point (1,5) (flag 0x800
    cleared) and the selection cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
 
 {
   ModelRuntimeSlot *entryModelRuntime;
@@ -1774,8 +1745,7 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
    Adds to a selection every entity in the world of the same army type (army asset id) and faction as
    sourceArmyRuntime, i.e. "select all units of this kind"; each insertion recomputes the formation offsets.
 */
-void __thandor_void_preserve_ecx_edx
-SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
+void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
           (ArmyRuntimeSlot *sourceArmyRuntime,SelectionPointerArray32 *selection)
 
 {
@@ -1806,9 +1776,7 @@ SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
    SelectionPointerArray_ApplyPositionCommandVariantB each entity gets the target shifted by its formation
    offset, unless the selection is spread too widely, but without the class-0xD special case.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_ApplyPositionCommand
-          (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
+void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
 
 {
   ArmyMovementRuntime *movementRuntime;
@@ -1843,8 +1811,7 @@ SelectionPointerArray_ApplyPositionCommand
    background (+4). The label is placed at the start, the end or the centre (SELECTION_PANEL_CELL_FLAG_ALIGN_*)
    and left out when the span is too short. No caller was found in src/ or src/generated/image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_DrawHorizontalNumberTextCappedBar
+void SelectionPanel_DrawHorizontalNumberTextCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
@@ -2004,8 +1971,7 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
    SELECTION_PANEL_CELL_FLAG_NO_ADVANCE_* keep an axis at the origin plus offset). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the group number.
 */
-SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-SelectionPanel_DrawNumberCellAndAdvanceRegs
+SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex)
@@ -2067,8 +2033,7 @@ SelectionPanel_DrawNumberCellAndAdvanceRegs
    after the cell (see SelectionPanel_DrawNumberCellAndAdvanceRegs). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the frame corners.
 */
-SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-SelectionPanel_DrawIconCellAndAdvanceRegs
+SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelCellIndex cellIndex)
@@ -2118,8 +2083,7 @@ SelectionPanel_DrawIconCellAndAdvanceRegs
    0). Returns the coordinates after the cell (see SelectionPanel_DrawNumberCellAndAdvanceRegs). Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the hierarchy meter.
 */
-SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
+SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
@@ -2193,8 +2157,7 @@ SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
    when maximumValue is 0), the rest in the plain fill (+1). Called by SelectionPanel_RenderArmyRuntimeMetrics
    for the top and bottom edge.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_DrawProportionalCappedBar
+void SelectionPanel_DrawProportionalCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
@@ -2260,8 +2223,7 @@ SelectionPanel_DrawProportionalCappedBar
    barEndCoordinate in column fixedCoordinate, the filled part grows upwards from the end cap. No caller was found
    in src/ or src/generated/image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_DrawVerticalProportionalCappedBar
+void SelectionPanel_DrawVerticalProportionalCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
@@ -2326,8 +2288,7 @@ SelectionPanel_DrawVerticalProportionalCappedBar
    end cap (+2) ending at barEndCoordinate and the plain fill (+1) between them. Called by
    SelectionPanel_RenderArmyRuntimeMetrics for the top edge when there is no value to show.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_DrawForwardCappedBar
+void SelectionPanel_DrawForwardCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
@@ -2364,8 +2325,7 @@ SelectionPanel_DrawForwardCappedBar
    end cap (+2) ending at barEndCoordinate and the plain fill (+1) between them, in column fixedCoordinate.
    Called by SelectionPanel_RenderArmyRuntimeMetrics for the left and right edge.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_DrawSolidCappedBar
+void SelectionPanel_DrawSolidCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
@@ -2404,8 +2364,7 @@ SelectionPanel_DrawSolidCappedBar
    by SELECTION_PANEL_CELL_FLAG_ALIGN_*, and the plain fill (+1) around them; only the fill when the segments do
    not fit. No caller was found in src/ or src/generated/image_data.c.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_DrawHorizontalSegmentedCappedBar
+void SelectionPanel_DrawHorizontalSegmentedCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
@@ -2524,8 +2483,7 @@ SelectionPanel_DrawHorizontalSegmentedCappedBar
    upwards from the centre, with the plain fill (+1) around them; only the fill when the segments do not fit.
    Called by SelectionPanel_RenderArmyRuntimeMetrics for the left and right edge of class-0x16 entities.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPanel_DrawSegmentedCappedBar
+void SelectionPanel_DrawSegmentedCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
@@ -2645,9 +2603,7 @@ SelectionPanel_DrawSegmentedCappedBar
    its command target (ArmyRuntime_ResolveCommandTarget), stored again at +0x98, command-mode bits 0x14 set and
    movement bit 0x200 cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_ApplyArmyRuntimeTarget
-          (ArmyRuntimeSlot *targetArmyRuntime,SelectionPointerArray32 *selection)
+void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRuntime,SelectionPointerArray32 *selection)
 
 {
   ArmyRuntimeSlot *runtimeState;
@@ -2678,8 +2634,7 @@ SelectionPointerArray_ApplyArmyRuntimeTarget
    command coordinates (ArmyRuntime_ApplyTargetPositionCommand), command-mode bits 0x14 set, movement bit 0x200
    cleared and its command generation shifted left by 2.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_ApplyTargetPositionCommand
+void SelectionPointerArray_ApplyTargetPositionCommand
           (Q12 coordinateA,uint32_t coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection)
 
 {
@@ -2711,9 +2666,7 @@ SelectionPointerArray_ApplyTargetPositionCommand
    current model position (GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel) and clears command
    flag 0x200.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
-          (GameEntityRuntime **selectionEntries)
+void SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries(GameEntityRuntime **selectionEntries)
 
 {
   GameEntityCommandFlags *commandFlagsPtr;
@@ -2739,9 +2692,7 @@ SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
    For every selected entity without command flag 0x2: drops an active attack/follow target
    (ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) and clears command-mode bit 0x10.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
-          (GameEntityRuntime **selectionEntries)
+void SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries(GameEntityRuntime **selectionEntries)
 
 {
   GameEntityRuntime *armyRuntime;
@@ -2769,8 +2720,7 @@ SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
    For every selected entity without command flag 0x2: sets runtime flags 0x418 on all nodes of its model
    hierarchy that do not have flag 0x08 yet (ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive).
 */
-void __thandor_void_preserve_eax_ecx
-SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **selectionEntries)
 
 {
   GameEntityRuntime *modelRuntime;
@@ -2795,9 +2745,7 @@ SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **se
    Adds an entity to a 32-entry selection (into the first free entry, unless it is already in it or the
    selection is full) and recomputes every entry's formation offset from the new centre.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_InsertUniqueAndRecenter
-          (GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection)
+void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection)
 
 {
   int entryIndex;
@@ -2823,8 +2771,7 @@ SelectionPointerArray_InsertUniqueAndRecenter
    centre - position in common.selectionOffsetXQ12/YQ12 (+0x60/+0x64); move orders subtract that offset from
    the target so the group keeps its formation.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
+void SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
 
 {
   int positionRecord;
@@ -2877,8 +2824,7 @@ SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray
    when not. Used by FrontendPlayerSelection_ApplyEntryOrAll (ui/frontend/player.c); the primary-selection
    move/rotate handlers call it and ignore the result.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
+bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
   int entryIndex;
@@ -2899,8 +2845,7 @@ SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32
    than 5.0 (Q12 0x5000) on either axis or the two extents add up to more than 7.0 (0x7000). An empty
    selection returns false.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
+bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
 
 {
   int entryAddress;
@@ -2958,8 +2903,7 @@ SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection
    Called by the pointer-mode handlers InGameSelection_ApplyType16MarkerCoordinatesVariant1/2 and
    SelectionMarkerCoordinates_ApplyType3..7.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_ApplyType16MarkerCoordinates
+void SelectionPointerArray_ApplyType16MarkerCoordinates
           (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12,
           SelectionPointerArray32 *selection)
@@ -3021,8 +2965,7 @@ SelectionPointerArray_ApplyType16MarkerCoordinates
 /* Address: 0x0052FB00.
    Empties a 32-entry selection array (all entries NULL).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
+void SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
 
 {
   int entriesRemaining;

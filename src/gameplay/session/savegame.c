@@ -17,8 +17,7 @@
    and enables Delete, while the new row shows the empty description, disables Delete and enables Save only for a
    valid typed name.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
+void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
 
 {
   /* catalogList is the save page's saveGameList node of the in-game UI copy. */
@@ -93,9 +92,7 @@ enableSave:
    slot 25): deletes save\<name>.sve of the selected save list row (not the trailing "new savegame" row) and
    rebuilds the page with InGameSaveGamePage_RebuildCatalog. A failed delete is reported, not fatal.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
-          (InGameSaveGamePageControlAddress32 deleteButton)
+void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePageControlAddress32 deleteButton)
 
 {
   uint16_t *leaf;
@@ -134,7 +131,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
    description shows the selected save's title texts (alone, or patched into text 0x215E while a campaign is
    loaded), or text 0x215D for the new row.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
+void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
 
 {
   InGameUiImage *inGameUi;
@@ -270,7 +267,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
    save\<name>.sve, named by the typed name for the trailing "new savegame" row or by the selected save's file
    name (overwriting it), reports a failed save and closes the in-game menu.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
+void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
 
 {
   /* saveButton is the save page's saveGameSaveButton node of the in-game UI copy. */
@@ -320,8 +317,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
    while the typed name is valid (edit flag 0x1 set, terminated within the capacity) and contains none of the
    characters * . \ ? < > : " | / that would break the file name built from it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
+void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
 
 {
   UiNodeBase *parentWalk;

@@ -48,57 +48,47 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00576C30 */
-void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
+void GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
 
 /* 0x004168B0 */
-CursorFrameResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
+CursorFrameResult GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
 /* 0x004168E0 */
-CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void);
+CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void);
 
 /* 0x00486430 */
-GraphicsProjectedPointPair __thandor_eax_edx_cf_preserve_ecx
-Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint);
+GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint);
 
 /* 0x00486490 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetProjectionClipRect
+void Graphics_SetProjectionClipRect
           (GraphicsScreenCoordinate maxY,GraphicsScreenCoordinate maxX,GraphicsScreenCoordinate minY
           ,GraphicsScreenCoordinate minX);
 
 /* 0x004864D0 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetViewProjectionParameters
+void Graphics_SetViewProjectionParameters
           (GraphicsProjectionShift projectionShift,GraphicsViewAngle16 viewElevationAngle,
           GraphicsViewAngle16 viewAzimuthAngle,GraphicsProjectionScale projectionScale,
           GraphicsWorldCoordinateQ12 originZ,GraphicsWorldCoordinateQ12 originY,
           GraphicsWorldCoordinateQ12 originX);
 
 /* 0x00486640 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetProjectionViewport
-          (GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
+void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScreenCoordinate right,
           GraphicsScreenCoordinate top,GraphicsScreenCoordinate left);
 
 /* 0x004866C0 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
+void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x00486730 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetSceneBounds
-          (GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
+void Graphics_SetSceneBounds(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
           GraphicsSceneExtentFixed bound5,GraphicsSceneExtentFixed bound4,
           GraphicsSceneExtentFixed bound3,GraphicsSceneExtentFixed bound2,
           GraphicsSceneExtentFixed bound1,GraphicsSceneExtentFixed bound0);
 
 /* 0x00486790 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue);
+void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue);
 
 /* 0x004867B0 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void);
+void Graphics_RebuildFrustumPlanes(void);
 
 /* 0x004A9100 */
 void GraphicsBackend_RefreshActiveAdapterNoOp(void);
@@ -108,73 +98,58 @@ FixedEulerAnglesEaxEcxEdx12
 GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsObject);
 
 /* 0x004BD000 */
-FixedElevationAzimuth __thandor_preserve_eax
-GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
+FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           GraphicsObjectAddress32 graphicsObject);
 
 /* 0x004BD050 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
+void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
           (AngleTurn16Stored32 elevationAngle16,AngleTurn16Stored32 azimuthAngle16,
           FixedMathScale32 distance,GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x004BD080 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsObject_SetRotationEulerAnglesPacked
-          (AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
+void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleTurn16Stored32 rollAngle16,
           AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x004BD0B0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress);
+void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x00578560 */
 StatusResult __cdecl Graphics_Init(void);
 
 /* 0x005794E0 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfReady(void);
+void GraphicsBackend_RefreshActiveAdapterIfReady(void);
 
 /* 0x00579520 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void);
+void Graphics_Shutdown(void);
 
 /* 0x0057A5C0 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_SetViewportAndClearDepth
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void Graphics_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX);
 
 /* 0x0057E6D0 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void);
+void Graphics_BeginScene(void);
 
 /* 0x0057E750 */
-void __thandor_void_preserve_eax_ecx_edx Graphics_EndScene(void);
+void Graphics_EndScene(void);
 
 /* 0x0057E7A0 */
-void __thandor_void_preserve_eax_ecx_edx
-Graphics_DrawPrimitiveQueue
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void Graphics_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x0057A330 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface);
+void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface);
 
 /* 0x0057A2C0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface);
+void GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface);
 
 /* 0x00579EC0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_SaveSurfaceBackground
-          (SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
+void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destinationBuffer,GraphicsScreenCoordinate drawY,
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *sourceSurface);
 
 /* 0x0057A0C0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsCursor_RestoreSurfaceBackground
-          (SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
+void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBuffer,GraphicsScreenCoordinate drawY,
           GraphicsScreenCoordinate drawX,IDirectDrawSurface3 *destinationSurface);
 
 #endif /* THANDOR_GRAPHICS_CORE_RUNTIME_H */

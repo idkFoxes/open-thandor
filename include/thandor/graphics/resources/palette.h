@@ -24,62 +24,51 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004AE520 */
-bool __thandor_cf_preserve_ecx_edx
-GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
+bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
 
 /* 0x004AD800 */
 void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD820 */
-PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16);
+PaletteAssetResult GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16);
 
 /* 0x004AD860 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset);
+void GraphicsPaletteAsset_ReleasePackage(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD880 */
 GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD8D0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset);
+void GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD8F0 */
-PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset);
+PaletteAssetResult GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD920 */
-GraphicsPaletteAsset * __thandor_eax_preserve_ecx_edx
-GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset);
+GraphicsPaletteAsset * GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AE7E0 */
-PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
+PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,
           GraphicsPaletteTextureSourceAsset *baseAsset);
 
 /* 0x004AE3F0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
+void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
           (GraphicsPaletteIndex sourcePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource);
 
 /* 0x004AE2E0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
+void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
           (uint32_t oldColorIndex,uint32_t newColorIndex,GraphicsPaletteIndex paletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource);
 
 /* 0x004AE370 */
-uint32_t __thandor_eax_preserve_ecx_edx
-GraphicsPaletteTextureSource_CountCombinedUsedColors
+uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
           (GraphicsPaletteIndex candidatePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource);
 
 /* 0x004AE230 */
-void __thandor_void_preserve_eax_ecx
-GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
+void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
           (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderViewBC *textureSource);
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_PALETTE_H */

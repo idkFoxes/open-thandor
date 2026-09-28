@@ -16,7 +16,7 @@
    the tool's pages and switches the world view to the height tool overlays: surface point, terrain point, grid
    vertex and secondary surface markers, with the unmasked terrain colour ramp.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select0(UiSelectableControl *source)
+void InGameCommandModeG_Select0(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -40,7 +40,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select0(UiSelectable
    g_UiCommandModeGHandlers[1]; also called by the editor hotkeys in ui/ingame/runtime.c). Like G0, but without the
    secondary surface markers.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select1(UiSelectableControl *source)
+void InGameCommandModeG_Select1(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -65,7 +65,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select1(UiSelectable
    grid vertex and secondary surface markers and is the only mode with the masked terrain colours
    (UiCommandModeG_ApplyMaskedColorVariant).
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select2(UiSelectableControl *source)
+void InGameCommandModeG_Select2(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -90,7 +90,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select2(UiSelectable
    and grid vertex markers and puts the army asset g_UiCommandModeGArmyAssetId into the selection detail panel;
    an unknown asset id is fatal.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectableControl *source)
+void InGameCommandModeG_Select3(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -120,7 +120,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
    g_UiCommandModeGHandlers[4]; also called by the editor hotkeys in ui/ingame/runtime.c). Same overlays as G3
    (army metrics and grid vertex markers) without the detail panel update.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select4(UiSelectableControl *source)
+void InGameCommandModeG_Select4(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -145,7 +145,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select4(UiSelectable
    vertex and region markers; the region markers draw the variant chosen by mode F, so g_UiCommandModeF is copied
    into the world runtime (+0xB4) as well.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select5(UiSelectableControl *source)
+void InGameCommandModeG_Select5(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -170,7 +170,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select5(UiSelectable
    sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED (the host through command 0x310 so every machine sees it); a network
    client instead reports itself ready, which lets the host show its own continue button.
 */
-void __thandor_preserve_eax InGameCommandAction_SetFlag1000OrMarkReady(void *source)
+void InGameCommandAction_SetFlag1000OrMarkReady(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -200,7 +200,7 @@ void __thandor_preserve_eax InGameCommandAction_SetFlag1000OrMarkReady(void *sou
    it does not toggle but clears UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING (clear mask of command 0x310, sent to
    every machine in a network game).
 */
-void __thandor_preserve_eax InGameCommandAction_ToggleRuntimeFlag0800(void *source)
+void InGameCommandAction_ToggleRuntimeFlag0800(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -221,8 +221,7 @@ void __thandor_preserve_eax InGameCommandAction_ToggleRuntimeFlag0800(void *sour
    g_InGameUiActionHandlersPage10[39]): deselects and closes the in-game menu, then issues command 0x150 with
    INGAME_COMMAND150_FLAG_CLOSE_SESSION, which ends the session.
 */
-void __thandor_preserve_eax
-InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source)
+void InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
@@ -253,7 +252,7 @@ InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source)
    twelve swatch controls (g_UiMappedCommandControlOffsets) was clicked and selects the material at that position
    of the current page. Clicks on other controls are ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
+void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
 
 {
   UiNodeBase *root;
@@ -286,8 +285,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandMatrix_SelectMappedControl
    g_UiNodeVtable_00516310 and g_UiNodeVtable_00516530): shows the button pressed and starts a new
    activationInputState, marking a double click when the node reports one.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCommandSpriteButtonControl_BeginPress
+void UiCommandSpriteButtonControl_BeginPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control)
 
@@ -314,8 +312,7 @@ UiCommandSpriteButtonControl_BeginPress
    activationInputState, plays the activation sound if enabled and queues the button's action; the action
    handler reads activationInputState to choose what to do.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCommandSpriteButtonControl_NonRightRelease
+void UiCommandSpriteButtonControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control)
 
@@ -349,8 +346,7 @@ UiCommandSpriteButtonControl_NonRightRelease
    g_UiNodeVtable_00516310 and g_UiNodeVtable_00516530): like the left release, but replaces activationInputState
    with the modifier keys plus UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON (which also drops the double-click marker).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCommandSpriteButtonControl_RightRelease
+void UiCommandSpriteButtonControl_RightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control)
 
@@ -383,9 +379,7 @@ UiCommandSpriteButtonControl_RightRelease
    the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then sells the army,
    see InGameCommandSprite_DispatchVariantAControl24), 10 otherwise.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiCommandSpriteVariantA_PointerMove
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+GraphicsCursorFrameIndex UiCommandSpriteVariantA_PointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control)
 
 {
@@ -418,8 +412,7 @@ UiCommandSpriteVariantA_PointerMove
    unless g_UiCommandRuntimeFlags bit 0x200 hides all these texts; with label flag 0x800 only while the game is
    paused.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCommandVisibilityWrappedText_DrawWhenAllowed
+void UiCommandVisibilityWrappedText_DrawWhenAllowed
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
@@ -440,8 +433,7 @@ UiCommandVisibilityWrappedText_DrawWhenAllowed
    rules as the wrapped text; label flag 0x1000 additionally needs g_InGameSimulationStepTicks > 1 and draws the
    text shifted by ticks - 2 bytes (the text pointer is restored afterwards).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCommandVisibilitySingleLineText_DrawWhenAllowed
+void UiCommandVisibilitySingleLineText_DrawWhenAllowed
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
@@ -466,8 +458,7 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
    In-game command handler 0x370 (key P): toggles the player's pause request, then toggles the global pause once
    every player agrees - the game pauses when all players request it and resumes when none does any more.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
+void InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
 
 {
@@ -503,9 +494,7 @@ InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
    given heading, counts it for the faction and spawns the asset's placement effect. A rejected placement leaves
    the asset pending; a successful one ends the local placement mode.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommand_ExecuteLocalPlacementFromSelection
-          (PlayerRuntimeId playerId,CommandPayloadDword04 headingAngle,
+void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,CommandPayloadDword04 headingAngle,
           CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12)
 
 {
@@ -589,7 +578,7 @@ InGameCommand_ExecuteLocalPlacementFromSelection
    grid of at most four columns; the frame is sized to the grid (smaller margins below 800 pixels width) and
    hidden when the stock is empty, unused slots are hidden.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node)
+void UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node)
 
 {
   uint32_t *controlFlags;
@@ -695,8 +684,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
    INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE with -1 (cancel) for the first selected building, which gives back what
    opening the page took away.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
+void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
 
 {
   UiNodeBase *parentCursor;
@@ -733,8 +721,7 @@ InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
    stack). Its restart button is only offered in local games, its surrender button only while the local
    faction is still in play (world input enabled).
 */
-void __thandor_preserve_eax
-InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSourceAddress32 source)
+void InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSourceAddress32 source)
 
 {
   UiNodeBase *firstNode;
@@ -765,8 +752,7 @@ InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSourceAddre
    (activationInputState & KEYBOARD_STATE_CTRL) cancels a queued one with refund. Ignored while paused or while the
    world input is disabled.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
+void InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
 
 {
   UiNodeBase *parentOrFactionIndex; /* ancestor cursor, then the active faction index (one register) */
@@ -828,8 +814,7 @@ InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
    Special build catalog entry click (action 0x100C, g_InGameUiActionHandlersPage10[12]): the same as
    InGameCommandCatalog_SubmitGroup48Entry for the 42 slots of the special build catalog.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
+void InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
 
 {
   UiNodeBase *parentOrFactionIndex; /* ancestor cursor, then the active faction index (one register) */
@@ -893,8 +878,7 @@ InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
    (activationInputState & KEYBOARD_STATE_CTRL). Ignored while paused, while the world input is disabled and while
    world runtime flag 0x10 is set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *control)
+void InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *control)
 
 {
   int32_t *flagsField;
@@ -980,8 +964,7 @@ InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *cont
    (SELECTION_TRANSFER_TO_GROUP) and a double click also centres the view. Every variant except the plain recall
    is refused when SelectionInfo_AllEntriesEmptyOrMatchOwner reports so for the active faction.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *control)
+void InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *control)
 
 {
   UiNodeBase *parentCursor;
@@ -1056,8 +1039,7 @@ void InGameCommandState_SetRuntimeFlag1000(UiNodeBase *source)
    two buttons and copies the chosen mode (0 or 1) into the modeFlags of the three results charts (graph or table
    drawing) and into the image subresource of the results screen background.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
+void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
 
 {
   UiNodeBase *parentCursor;
@@ -1095,7 +1077,7 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
    Hides the grid vertex markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); called
    when the editor is switched off (InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState).
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(WorldRuntimeContext *context)
+void UiCommandModeG_ClearNodeFlag00800000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS;
@@ -1107,7 +1089,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(Wo
    Height tool option 0 (action 0x1108, g_InGameUiCommandModeActionHandlers30[8]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption0 among the four height tool buttons and sets g_UiCommandModeC = 0.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select0(UiSpriteButtonControl *source)
+void InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1124,7 +1106,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select0(UiSpriteButt
    Height tool option 1 (action 0x1109, g_InGameUiCommandModeActionHandlers30[9]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption1 among the four height tool buttons and sets g_UiCommandModeC = 1.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select1(UiSpriteButtonControl *source)
+void InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1141,7 +1123,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select1(UiSpriteButt
    Height tool option 2 (action 0x110A, g_InGameUiCommandModeActionHandlers30[10]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption2 among the four height tool buttons and sets g_UiCommandModeC = 2.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select2(UiSpriteButtonControl *source)
+void InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1158,7 +1140,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select2(UiSpriteButt
    Height tool option 3 (action 0x110B, g_InGameUiCommandModeActionHandlers30[11]; also the editor hotkeys in
    ui/ingame/runtime.c): selects heightToolOption3 among the four height tool buttons and sets g_UiCommandModeC = 3.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select3(UiSpriteButtonControl *source)
+void InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1176,7 +1158,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select3(UiSpriteButt
    ui/ingame/runtime.c): selects materialToolOption0 among the four material tool buttons and sets
    g_UiCommandModeD = 0.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select0(UiSpriteButtonControl *source)
+void InGameCommandModeD_Select0(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1194,7 +1176,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select0(UiSpriteButt
    ui/ingame/runtime.c): selects materialToolOption1 among the four material tool buttons and sets
    g_UiCommandModeD = 1.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select1(UiSpriteButtonControl *source)
+void InGameCommandModeD_Select1(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1212,7 +1194,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select1(UiSpriteButt
    ui/ingame/runtime.c): selects materialToolOption2 among the four material tool buttons and sets
    g_UiCommandModeD = 2.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select2(UiSpriteButtonControl *source)
+void InGameCommandModeD_Select2(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1230,7 +1212,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select2(UiSpriteButt
    ui/ingame/runtime.c): selects materialToolOption3 among the four material tool buttons and sets
    g_UiCommandModeD = 3.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select3(UiSpriteButtonControl *source)
+void InGameCommandModeD_Select3(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1248,7 +1230,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select3(UiSpriteButt
    ui/ingame/runtime.c): selects unitPlacementOption0 among the three unit placement buttons and sets
    g_UiCommandModeA = 0.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select0(UiSpriteButtonControl *source)
+void InGameCommandModeA_Select0(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1265,7 +1247,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select0(UiSpriteButt
    ui/ingame/runtime.c): selects unitPlacementOption1 among the three unit placement buttons and sets
    g_UiCommandModeA = 1.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select1(UiSpriteButtonControl *source)
+void InGameCommandModeA_Select1(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1282,7 +1264,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select1(UiSpriteButt
    ui/ingame/runtime.c): selects unitPlacementOption2 among the three unit placement buttons and sets
    g_UiCommandModeA = 2.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select2(UiSpriteButtonControl *source)
+void InGameCommandModeA_Select2(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1299,7 +1281,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select2(UiSpriteButt
    in ui/ingame/runtime.c): selects objectPlacementOption0 among the three object placement buttons and sets
    g_UiCommandModeB = 0.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select0(UiSpriteButtonControl *source)
+void InGameCommandModeB_Select0(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1316,7 +1298,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select0(UiSpriteButt
    in ui/ingame/runtime.c): selects objectPlacementOption1 among the three object placement buttons and sets
    g_UiCommandModeB = 1.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select1(UiSpriteButtonControl *source)
+void InGameCommandModeB_Select1(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1333,7 +1315,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select1(UiSpriteButt
    in ui/ingame/runtime.c): selects objectPlacementOption2 among the three object placement buttons and sets
    g_UiCommandModeB = 2.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select2(UiSpriteButtonControl *source)
+void InGameCommandModeB_Select2(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1350,7 +1332,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select2(UiSpriteButt
    ui/ingame/runtime.c): selects smoothingToolOption0 and sets g_UiCommandModeE = 0. Unlike options 1 and 2 its
    exclusive group also contains smoothingRelaxLandButton.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select0(UiSpriteButtonControl *source)
+void InGameCommandModeE_Select0(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(4,(UiNodeBase *)source,
@@ -1368,7 +1350,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select0(UiSpriteButt
    ui/ingame/runtime.c): selects smoothingToolOption1 among the three smoothing tool buttons and sets
    g_UiCommandModeE = 1.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select1(UiSpriteButtonControl *source)
+void InGameCommandModeE_Select1(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1385,7 +1367,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select1(UiSpriteButt
    ui/ingame/runtime.c): selects smoothingToolOption2 among the three smoothing tool buttons and sets
    g_UiCommandModeE = 2.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select2(UiSpriteButtonControl *source)
+void InGameCommandModeE_Select2(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)source,
@@ -1402,7 +1384,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select2(UiSpriteButt
    an editor hotkey in ui/ingame/runtime.c): runs 128 sign-gated terrain relaxation passes over the field, in a
    network game through command 0x3200 on every machine.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState0(UiNodeBase *source)
+void InGameCommandRange_DispatchState0(UiNodeBase *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1423,7 +1405,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState0(UiNod
    an editor hotkey in ui/ingame/runtime.c): like InGameCommandRange_DispatchState0 with the ungated land tool
    relaxation mode.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState1(UiNodeBase *source)
+void InGameCommandRange_DispatchState1(UiNodeBase *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1444,7 +1426,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState1(UiNod
    two region tool buttons, sets g_UiCommandModeF = 0 and copies it into the world runtime (+0xB4), where the
    region markers of the world view read it.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select0(UiSpriteButtonControl *source)
+void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source,
@@ -1461,7 +1443,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select0(UiSpriteButt
    Region tool option 1 (action 0x111D, g_InGameUiCommandModeActionHandlers30[29]): selects regionToolOption1 and
    sets g_UiCommandModeF and its world runtime copy (+0xB4) to 1.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select1(UiSpriteButtonControl *source)
+void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
 
 {
   UiSelectableGroup_SelectExclusive(2,(UiNodeBase *)source,
@@ -1490,8 +1472,7 @@ void UiCommandRuntime_CallbackNoOp(void)
    departure is announced in the message history (text 0xFF08); the local player's own departure marks the
    session as left and, in a network game, shuts the network backend down and falls back to a one-player setup.
 */
-void __thandor_void_preserve_eax_ecx
-InGameCommand150_HandlePlayerDepartureAndOwnership
+void InGameCommand150_HandlePlayerDepartureAndOwnership
           (PlayerOrFactionRuntimeId32 playerOrFactionId,uint32_t value1,uint32_t value2,
           GameEntityCommandFlags flags)
 
@@ -1576,7 +1557,7 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
    colour (+0x12C) made opaque, relights the field grid with the light angles at +0x178/+0x17C, then sets bit 0x1000
    of g_UiCommandModeGColorVariantFlags and the limit 0x7FFFFFFF read by the terrain triangle and marker drawing.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
+void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
@@ -1596,7 +1577,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(
    Shows the region markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); only the region tool
    (InGameCommandModeG_Select5) uses it.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(WorldRuntimeContext *context)
+void UiCommandModeG_SetNodeFlag02000000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS;
@@ -1610,8 +1591,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(Worl
    scrolls the twelve-swatch page in rows of three until the material is visible, fills the twelve swatches from
    g_TerrainMaterialTextureSets (empty entries show nothing) and selects the material's swatch.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
+void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
 
 {
   GraphicsTextureSourceAsset *firstTexture;
@@ -1725,9 +1705,7 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
    (the masks come in the reverse order as arguments). Local games call it directly, network games send the
    same masks as player command 0x310. playerRuntimeId is not used: the flags are not per player.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCommandRuntimeFlags_ApplyClearSetToggleMasks
-          (PlayerRuntimeId playerRuntimeId,UiCommandRuntimeFlagMask toggleMask,
+void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntimeId,UiCommandRuntimeFlagMask toggleMask,
           UiCommandRuntimeFlagMask setMask,UiCommandRuntimeFlagMask clearMask)
 
 {
@@ -1741,7 +1719,7 @@ UiCommandRuntimeFlags_ApplyClearSetToggleMasks
    Hides the surface point marker of the world view (clears WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
    mode tabs G3/G4 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00100000(WorldRuntimeContext *context)
+void UiCommandModeG_ClearNodeFlag00100000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
@@ -1753,7 +1731,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00100000(Wo
    Shows the terrain point markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
    mode tabs G0/G1 (height and material tools).
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00200000(WorldRuntimeContext *context)
+void UiCommandModeG_SetNodeFlag00200000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS;
@@ -1765,7 +1743,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00200000(Worl
    Sets WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY (view ray and markers use only the secondary field surface);
    editor mode tabs G0 and G2.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag01000000(WorldRuntimeContext *context)
+void UiCommandModeG_SetNodeFlag01000000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY;
@@ -1777,7 +1755,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag01000000(Worl
    Shows the army metrics overlay of the world view (sets WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS); editor mode tabs
    G3-G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the editor is switched off.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00000400(WorldRuntimeContext *context)
+void UiCommandModeG_SetNodeFlag00000400(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
@@ -1789,7 +1767,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00000400(Worl
    Hides the army metrics overlay and ends a drag selection (clears WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS and
    WORLD_RUNTIME_FLAG_DRAG_SELECTING, which also draws the selection frame); editor mode tabs G0-G2.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlags00000480(WorldRuntimeContext *context)
+void UiCommandModeG_ClearNodeFlags00000480(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags =
@@ -1802,7 +1780,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlags00000480(W
    Shows the surface point marker of the world view (sets WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
    mode tabs G0, G1, G2 and G5.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00100000(WorldRuntimeContext *context)
+void UiCommandModeG_SetNodeFlag00100000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
@@ -1814,7 +1792,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00100000(Worl
    Hides the terrain point markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
    mode tabs G2-G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(WorldRuntimeContext *context)
+void UiCommandModeG_ClearNodeFlag00200000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS;
@@ -1826,7 +1804,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(Wo
    Clears WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY; editor mode tabs G1, G3-G5 and
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context)
+void UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY;
@@ -1841,7 +1819,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(Wo
    +0x178/+0x17C, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
    counterpart of UiCommandModeG_ApplyMaskedColorVariant.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
+void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
@@ -1860,7 +1838,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(voi
    Hides the region markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); every editor mode tab
    except G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(WorldRuntimeContext *context)
+void UiCommandModeG_ClearNodeFlag02000000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS;
@@ -1872,7 +1850,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(Wo
    Shows the grid vertex markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); every
    editor mode tab.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(WorldRuntimeContext *context)
+void UiCommandModeG_SetNodeFlag00800000(WorldRuntimeContext *context)
 
 {
   context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS;
@@ -1885,8 +1863,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(Worl
    the mode's pages in modePreviewPageStack, modeDetailPageStack and modeCommandPageStack (page tables
    g_UiCommandModeG*PageIndices) and stores the mode in g_UiCommandModeG. Returns the in-game root.
 */
-InGameRuntimeRootImageC3E4 * __thandor_eax_edx_cf_preserve_ecx
-UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source)
+InGameRuntimeRootImageC3E4 * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source)
 
 {
   UiNodeBase *parentCursor;

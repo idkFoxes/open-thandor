@@ -15,8 +15,7 @@
    catalog to reject duplicate ids). On a miss it writes a number into the package error text and returns
    FATAL_ERROR_EFFECT_ID_NOT_FOUND with CF set.
 */
-EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId)
+EffectDefinitionResult EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *registryDefinition;
@@ -97,7 +96,7 @@ StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
    texture set and palette, releases the nested resource owned by each registered effect definition and clears
    the definition registry.
 */
-void __thandor_void_preserve_eax_ecx EffectRuntime_ShutdownGraphicsResources(void)
+void EffectRuntime_ShutdownGraphicsResources(void)
 
 {
   int registrySlotsRemaining;
@@ -134,7 +133,7 @@ void __thandor_void_preserve_eax_ecx EffectRuntime_ShutdownGraphicsResources(voi
    and the owner as a model runtime or an army depending on the completion action) and replaces the saved
    definition id by the registered definition; an effect whose definition is no longer registered is dropped.
 */
-void __thandor_void_preserve_eax_ecx_edx EffectRuntime_RebaseSlotsAfterLoad(void)
+void EffectRuntime_RebaseSlotsAfterLoad(void)
 
 {
   EffectRuntimeCompletionAction slotCompletionAction;
@@ -207,8 +206,7 @@ void __thandor_void_preserve_eax_ecx_edx EffectRuntime_RebaseSlotsAfterLoad(void
    is masked. Returns the effect slot; FATAL_ERROR_GENERAL_FAILURE (no pool or no free slot) or the record
    allocation error with CF set. A NULL definition returns the pool base with CF clear.
 */
-EffectCreateResult __thandor_eax_cf_preserve_ecx_edx
-EffectRuntimePool_CreateInstanceFromDefinition
+EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
           (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference4 ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
           Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,

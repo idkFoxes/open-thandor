@@ -15,15 +15,11 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00423CF0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsDisplayMode_IsEnumerated
-          (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
+bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 
 /* 0x0054B0E0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-DisplayModeTable_ContainsExactMode
-          (FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
+bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex);
 
 /* 0x00578080 */
@@ -33,8 +29,7 @@ int __stdcall DirectDraw_EnumAdapterCallback (TH_LEGACY_GUID *adapterGuid,char *
 int32_t __stdcall DirectDraw_EnumDisplayModeCallback (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex);
 
 /* 0x00578920 */
-DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
+DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width);
 

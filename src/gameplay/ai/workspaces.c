@@ -16,9 +16,7 @@
    ARM 330 (0x14A) additionally scaled by (2 * unpowered + supplied Energy demand) / (record +0x358 rate << 4)
    when that rate is nonzero.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiWorkspaceAssetCandidate_AddWeightedEntry
-          (AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
+void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -74,9 +72,7 @@ AiWorkspaceAssetCandidate_AddWeightedEntry
    Capacities: 00 128, 01 64, 02 128, 03 512, 04 8, 07 64, 11 1024 entries.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-AiPlanning_RebuildFactionWorkspaces
-          (AiPlanningPhaseIndex planningPhaseDispatchIndex,
+void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispatchIndex,
           FactionRuntimeIndex factionRuntimeIndexRegisterCopy,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 
@@ -501,9 +497,7 @@ AiPlanning_RebuildFactionWorkspaces
    workspace 12 with the score callback of its kind and proposes the best one (entry kind 2) with
    workspace12BestCandidateBaseWeight, halved while the faction's primary anchor cooldown runs.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiStrategicCandidate_AddBestWorkspace12Entry
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiStrategicCandidate_AddBestWorkspace12Entry(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiTechnologyCandidateScore candidateScore;
@@ -561,7 +555,7 @@ AiStrategicCandidate_AddBestWorkspace12Entry
 /* Address: 0x00537420.
    Empties the AI candidate workspace (workspace 13) by resetting its entry count.
 */
-void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_Clear(void)
+void AiCandidateWorkspace_Clear(void)
 
 {
   g_AiCandidateWorkspaceEntryCount = 0;
@@ -607,8 +601,7 @@ void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImage
    Refills the shared AI candidate workspace with the candidates that AiCandidateWorkspace_SaveToFactionImage
    kept in the faction's runtime record (factionImageByteOffset = faction * 0x740).
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByteOffset)
+void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByteOffset)
 
 {
   int copyDwordsRemaining;
@@ -639,7 +632,7 @@ AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByt
    purchase planner tries the best candidates first. Selection sort: each pass swaps every higher entry into the
    pass's first slot, carrying the id/multiplicity dword along.
 */
-void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(void)
+void AiCandidateWorkspace_SortDescending(void)
 
 {
   int currentRecordScore;
@@ -695,8 +688,7 @@ void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(voi
    the technology's xeniteCostQ4 for a technology candidate, else the army asset's cost dword at +0x28, or
    0x7FFFFFFF (never affordable) when the asset is unknown.
 */
-int __thandor_eax_preserve_ecx_edx
-AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
+int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 
 {
   uint32_t xeniteCostQ4;
@@ -725,8 +717,7 @@ AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
    AiPrimaryWorkspace_HasUnassignedEntryById. No caller and no function-pointer table entry for it was found
    in src/ or src/generated/image_data.c.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
+bool AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -751,8 +742,7 @@ AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
    Returns true (CF set) when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
    or not.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -777,8 +767,7 @@ AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
    primary-workspace (workspace 00) entries of this army asset that have a runtime object. No caller and no
    function-pointer table entry for this copy was found in src/ or src/generated/image_data.c.
 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId)
+int AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId)
 
 {
   int matchingAssignedEntryCount;
@@ -804,8 +793,7 @@ AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entry
    entry, measured to the linked entity's path coordinates, or 0x7FFFFFFF when there is none.
    Arguments are Y first, then X, as every caller passes them.
 */
-int __thandor_eax_preserve_ecx_edx
-AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
+int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
@@ -844,8 +832,7 @@ AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
    whose linked entity has a nonzero commandState (i.e. is active), or 0x7FFFFFFF when there is none.
    Arguments are Y first, then X, as every caller passes them.
 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
+int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumActiveManhattanDistanceQ12;
@@ -884,8 +871,7 @@ AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 world
    Returns the smallest Manhattan distance from the point to an assigned workspace-02 unit, or 0x7FFFFFFF when
    there is none. Arguments are Y first, then X, as every caller passes them.
 */
-int __thandor_eax_preserve_ecx_edx
-AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
+int AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
@@ -923,8 +909,7 @@ AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
    Returns the smallest Manhattan distance from the point to an assigned workspace-03 unit, or 0x7FFFFFFF when
    there is none. Arguments are Y first, then X, as every caller passes them.
 */
-int __thandor_eax_preserve_ecx_edx
-AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
+int AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
@@ -962,8 +947,7 @@ AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
    Returns the smallest Manhattan distance from the point to any assigned primary-workspace (workspace 00) unit,
    or 0x7FFFFFFF when there is none. Arguments are Y first, then X, as every caller passes them.
 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
+int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
@@ -1003,8 +987,7 @@ AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
    its model transforms, dispatches its class command, starts the effect referenced by its model runtime and
    removes the asset from the faction's pending list. Nothing happens when no site passes.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
+void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 
@@ -1071,8 +1054,7 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
    called by AiStrategicCandidate_AddBestWorkspace12Entry): a technology of this kind always scores 0, so it
    is never chosen for research.
 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiWorkspace12Score_DefaultZero
+AiTechnologyCandidateScore AiWorkspace12Score_DefaultZero
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -1086,7 +1068,7 @@ AiWorkspace12Score_DefaultZero
    parameters from engine\ki.dat into g_AiKnowledgeData. Stops at the first failure with CF set and that
    failure's error code; buffers allocated before it are not freed.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
+StatusResult AiRuntime_InitWorkspace(void)
 
 {
   uint8_t *workspaceAllocation;
@@ -1175,8 +1157,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
    definition) of some primary-workspace structure, i.e. when AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
    returns false. These cells are the build sites near the AI's own base.
 */
-void __thandor_void_preserve_ecx_edx
-AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell)
+void AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell)
 
 {
   FieldGridCell **cellBuffer;
@@ -1200,8 +1181,7 @@ AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell)
 /* Address: 0x00537FC0.
    Same as the workspace-09 variant for workspace 10 (at most 256 cells).
 */
-void __thandor_void_preserve_ecx_edx
-AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell)
+void AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell)
 
 {
   FieldGridCell **cellBuffer;
@@ -1226,8 +1206,7 @@ AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell)
    Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset whose
    runtime pointer is NULL.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
+bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1252,8 +1231,7 @@ AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
    Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset, with or
    without a runtime object.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
+bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1276,8 +1254,7 @@ AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 /* Address: 0x00538C40.
    Counts the primary-workspace (workspace 00) entries of this army asset that have a runtime object.
 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
+int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
 
 {
   int matchingAssignedEntryCount;
@@ -1303,8 +1280,7 @@ AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
    An existing entry of the same kind and id gets the score added and its multiplicity raised by one; otherwise
    a new entry is appended while the workspace has fewer than 128. A weightRange of 0 or 1 proposes nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiCandidateWorkspace_AddOrAccumulateWeightedEntry
+void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
           (RuntimeToken entityId,uint32_t weightRange,AiCandidateEntryKind entryKind)
 
 {
@@ -1352,8 +1328,7 @@ AiCandidateWorkspace_AddOrAccumulateWeightedEntry
    of its definition. True (CF set) when it is outside all of them. Arguments are Y first, then X, as every
    caller passes them.
 */
-bool __thandor_void_preserve_ecx_edx
-AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
+bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
 
 {
   Q12 deltaXAbsQ12;

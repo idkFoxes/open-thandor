@@ -32,27 +32,25 @@
 void __cdecl ProcessEntry(void);
 
 /* 0x00512E70 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void);
+StatusResult GameData_ResetDefaults(void);
 
 /* 0x00512F60 */
-bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void);
+bool GameData_LoadExternalTables(void);
 
 /* 0x00573BC0 */
-DynApiResolveResult __thandor_eax_cf_preserve_ecx_edx
-DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
+DynApiResolveResult DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
 
 /* 0x00573C50 */
-DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName);
+DllLoadResult DynDLL_Load(char *moduleName);
 
 /* 0x00573CD0 */
 uint32_t DynDLL_Unload(char *moduleName);
 
 /* 0x00573D40 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-BootstrapApi_ResolveBindingByDestination(void **destination);
+StatusResult BootstrapApi_ResolveBindingByDestination(void **destination);
 
 /* 0x00573EB0 */
-void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void);
+void DynDLL_UnloadAll(void);
 
 /* 0x00585F50 */
 LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
@@ -70,17 +68,16 @@ StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void);
 uint32_t __cdecl Game_LoadCoreAssets(void);
 
 /* 0x005739D0 */
-bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void);
+bool Game_PlayIntroMovies(void);
 
 /* 0x00573DB0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void);
+StatusResult DynAPI_Bootstrap(void);
 
 /* 0x00586110 */
-CommandLineOptionResult __thandor_ebx_cf_preserve_eax_ecx_edx
-CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
+CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
 
 /* 0x00586170 */
-void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void);
+void CommandLine_Parse(void);
 
 /*
 g_BootstrapApiBindings (0x00573F74) is resolved at startup from {name, module} pairs; each slot then

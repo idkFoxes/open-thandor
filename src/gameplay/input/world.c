@@ -26,9 +26,7 @@ typedef void InGamePointerModeHandler
    there and switches the interaction to state 27. Jump table 0x0056D340: kinds 1, 2, 3 are handled, the rest
    do nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameTargetingContext_AdvanceOrResolveTarget
-          (InGameTargetingRootTraversalView9E60 *targetingContext)
+void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView9E60 *targetingContext)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
@@ -304,8 +302,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
    placement or command-mode heading drag, marks a selection-mode capture, or in command mode selects an own
    army under the pointer right away. The release is handled by InGameWorldInput_CommitPointerAction.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameWorldInput_BeginPointerCapture
+void InGameWorldInput_BeginPointerCapture
           (InGamePointerCallbackValue0 pickedHeightQ12,uint32_t pointerWorldXQ12,uint32_t pointerWorldYQ12,
           InGamePointerCallbackValue3 candidateHeightQ12,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime)
@@ -376,8 +373,7 @@ InGameWorldInput_BeginPointerCapture
    batches of three per command, skipping armies already queued). In placement and command mode, horizontal
    travel rotates the placement/command heading and the pointer is snapped back to the press position.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameWorldInput_UpdateDragSelectionAndCamera
+void InGameWorldInput_UpdateDragSelectionAndCamera
           (InGamePointerCallbackValue0 pickedHeightQ12,uint32_t pointerWorldXQ12,uint32_t pointerWorldYQ12,
           uint32_t candidateHeightQ12,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime)
@@ -564,8 +560,7 @@ InGameWorldInput_UpdateDragSelectionAndCamera
    move, target-position or target-army commands. Every action goes through the command queue in network games
    and calls the handler directly in single player. Always ends the selection-mode capture.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameWorldInput_CommitPointerAction
+void InGameWorldInput_CommitPointerAction
           (InGamePointerCallbackValue0 pickedHeightQ12,InGamePointerCallbackValue1 pointerWorldXQ12,
           InGamePointerCallbackValue2 pointerWorldYQ12,InGamePointerCallbackValue3 candidateHeightQ12,
           WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime)
@@ -834,8 +829,7 @@ InGameWorldInput_ReleasePointerCapture:
      Ctrl+C    toggle WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA
    The original returns CF set when no record matches and CF clear after a command.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameCameraCommand_DispatchByCodeAndModifierFlags
+void InGameCameraCommand_DispatchByCodeAndModifierFlags
           (uint32_t modifierFlags,uint32_t commandCode,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1017,8 +1011,7 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
    of its world runtimeFlags and restores the camera saved by InGameTargetingContext_AdvanceOrResolveTarget.
    Also the queued UI action handler for INGAME_PAGE10[14] (0x100E).
 */
-void __thandor_preserve_eax
-InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E60 *targetingContext)
+void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E60 *targetingContext)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;

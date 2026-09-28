@@ -16,9 +16,7 @@
    method 0 behind a PCK_FIELD_GRID_PREFIX_BYTES prefix holding its size. Returns the packed size including the
    prefix; CF set with the error code of the allocation or the method-0 encoder.
 */
-PckCodecResult __thandor_eax_cf_preserve_ecx_edx
-PckCodec_EncodeFieldGrid
-          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+PckCodecResult PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid)
 
 {
@@ -90,9 +88,7 @@ PckCodec_EncodeFieldGrid
    coordinates: worldX = column * 0x901 + row * 0x480, worldY = row * -1999 (Q12, 32-bit wrap). CF set with the
    error code of the allocation or the method-0 decoder.
 */
-PckCodecResult __thandor_eax_cf_preserve_ecx_edx
-PckCodec_DecodeFieldGrid
-          (PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
+PckCodecResult PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source)
 
 {
@@ -195,9 +191,7 @@ PckCodec_DecodeFieldGrid
    Copies the source dword by dword when it fits into the destination and returns its size rounded up to
    four bytes with CF clear; FATAL_ERROR_GENERAL_FAILURE with CF set when it does not fit.
 */
-PckCodecResult __thandor_eax_cf_preserve_ecx_edx
-PckCodec_EncodeStored
-          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+PckCodecResult PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source)
 
 {
@@ -226,9 +220,7 @@ PckCodec_EncodeStored
    PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable (0x0040E230).
    Copies the stored bytes dword by dword to the destination; the capacity is not checked.
 */
-PckCodecResult __thandor_eax_cf_preserve_ecx_edx
-PckCodec_DecodeStored
-          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+PckCodecResult PckCodec_DecodeStored(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source)
 
 {
@@ -256,9 +248,7 @@ PckCodec_DecodeStored
    slack for the decoder's dword reads) with CF clear, or FATAL_ERROR_GENERAL_FAILURE with CF set when the tree
    overflows or the output does not fit.
 */
-PckCodecResult __thandor_eax_cf_preserve_ecx_edx
-PckCodec_EncodeHuffmanRle
-          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source)
 
 {
@@ -479,8 +469,7 @@ PckCodec_EncodeHuffmanRle_ReturnCapacityError:
    written. CF clear on success; FATAL_ERROR_GENERAL_FAILURE with CF set when the tree overflows the workspace.
    sourceSizeBytes is not checked: the bitstream is trusted.
 */
-PckCodecResult __thandor_eax_cf_preserve_ecx_edx
-PckCodec_DecodeHuffmanRle
+PckCodecResult PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
           uint8_t *source)
 

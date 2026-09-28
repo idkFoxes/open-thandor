@@ -236,7 +236,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
    a general site when its scratch neighbourhood avoids every bit of one of these masks. Without any unit
    class 0 falls back to 0x90000100 (band bit 8, terrain bit 28).
 */
-void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses(void)
+void AiPlanning_CollectActiveGridMaskClasses(void)
 
 {
   ModelRuntimeSlot *entityModelRuntime;
@@ -303,9 +303,7 @@ void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses
    purchase candidates, which are reused from the faction's cache while it is valid and the anchor cooldowns
    are below 50).
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiRuntime_DispatchFactionPlanningPhase
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *inGameRuntime)
+void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,WorldRuntimeContext *inGameRuntime)
 
 {
   uint32_t planningPhaseDispatchIndex;
@@ -390,8 +388,7 @@ AiRuntime_DispatchFactionPlanningPhase
    330/332 site, other ids below 340 at a reachable candidate, ids from 340 on near the faction anchor.
    Returns true (CF set) as soon as a handler has placed an asset (g_AiConstructionPendingAssetConsumedCount).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiConstructionPlanner_ProcessPendingAssetRequests
+bool AiConstructionPlanner_ProcessPendingAssetRequests
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -459,8 +456,7 @@ AiConstructionPlanner_ProcessPendingAssetRequests
    affordable. The cost is deducted even when no producer is found. Returns true (CF set) when candidates
    existed but none was applied, false otherwise.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
+bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
 
 {
   bool noCandidateApplied;
@@ -505,9 +501,7 @@ AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
    planners, starts its effect and removes it from the pending list (a failed creation ends the attempt). Without
    such a site it falls back to AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiConstructionPlanner_PlaceDerivedAsset14D
-          (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
+void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 
 {
@@ -622,9 +616,7 @@ AiConstructionPlanner_PlaceDerivedAsset14D
    anchor cooldown is 0, else x2. Assets below ARM 300 are only proposed while workspace 01 has at most 10
    entries.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiArmyCandidate_AddBestScoredVariantA
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiArmyCandidate_AddBestScoredVariantA(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiCandidateScore32 candidateScore;
@@ -689,9 +681,7 @@ AiArmyCandidate_AddBestScoredVariantA
    ARM 301 (0x12D) if it has none and the capacity allows; after the research it proposes the best class of the
    ARM 302..306 (0x12E..0x132) family, its weight divided by twice the class's existing count (if any).
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiStrategicClass_AddCandidate12DOr12FTo132
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiStrategicClass_AddCandidate12DOr12FTo132(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t weightRange;
@@ -741,9 +731,7 @@ AiStrategicClass_AddCandidate12DOr12FTo132
    chosen from the ARM 321..323 (0x141..0x143) family, its weight divided by twice the class's existing count
    (if any).
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiStrategicClass_AddWeightedClassCandidate
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiStrategicClass_AddWeightedClassCandidate(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiKnowledgeDataImage *knowledgeData;
@@ -779,8 +767,7 @@ AiStrategicClass_AddWeightedClassCandidate
    distance to the nearest workspace-03 site (at most 0x8000), where the mode-1 placement test passes. The
    building is created there, initialised like the other planners and removed from the pending list.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
+void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 
@@ -888,9 +875,7 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
    with the unexplored share of the terrain, (100 - explored %) * coefficient / (32 * (workspace 01 count + 1)),
    halved while there are targets (workspace 07).
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiArmyCandidate_AddBestScoredVariantB
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiArmyCandidate_AddBestScoredVariantB(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiCandidateScore32 candidateScore;
@@ -940,9 +925,7 @@ AiArmyCandidate_AddBestScoredVariantB
    The halving for an empty workspace 07 can never apply (the entry check requires targets); the original
    (0x0053A95D) has the same dead test.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiArmyCandidate_AddBestScoredVariantC
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiArmyCandidate_AddBestScoredVariantC(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiCandidateScore32 candidateScore;
@@ -990,9 +973,7 @@ AiArmyCandidate_AddBestScoredVariantC
    class-11 structure with +0xB8 clear, bit 0x08 a class-22 structure with +0xAC clear, the bits 0xEE a class-13
    structure whose definition mask at +0xC4 shares them and with +0xB8 clear (runtimeFlags without 0xC9 each).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPurchaseCandidate_HasEligibleProducer
-          (AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
+bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
 
 {
   uint32_t countOrClassMask;
@@ -1084,9 +1065,7 @@ AiPurchaseCandidate_HasEligibleProducer
    cleared so it takes no second job this round. An army asset is appended once to the faction's pending asset
    list, and its producer class mask is added to g_AiPurchaseAppliedArmyClassMask.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiPurchaseCandidate_ApplyToFaction
-          (AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
+void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
 
 {
   GameEntityRuntime *entity;
@@ -1137,8 +1116,7 @@ AiPurchaseCandidate_ApplyToFaction
    When nothing triggers but the flag is already set, re-applies the model flags of every workspace 00/01
    entity in the world runtime.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionIndex)
+void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionIndex)
 
 {
   FactionRuntimeFlags *factionRuntimeFlags;
@@ -1212,8 +1190,7 @@ AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionInde
    first workspace 08 site that still allows an extra special site adds the candidate again with a weight
    3 * derived / (existing count of that site's structure + 3).
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiStructureCandidate_AddWeightedId14BOr14CCandidate
+void AiStructureCandidate_AddWeightedId14BOr14CCandidate
           (AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog candidateArmyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -1283,8 +1260,7 @@ AiStructureCandidate_AddWeightedId14BOr14CCandidate
    Weight: surplus * demand / capacity * resource136DeficitScoreNumerator / resource136DeficitScoreDenominator
    (Q4 values taken as integers, demand at least 1).
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
+void AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
 
 {
   int energySupply;
@@ -1326,9 +1302,9 @@ AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
    (not in workspace 00) but may build (enabled) is scored with its row of g_AiStrategicClassTerrainWeights plus
    14 random bits (0..0x3FFF), and the best one is returned in EBX (0 = none), with the number of these five
    buildings already present in ECX.
+   Original register convention: result in EBX and ECX; EAX and EDX preserved.
 */
-AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
-AiStrategicClass_SelectBestCandidate12ETo132
+AiStrategicClassSelectionRegs8 AiStrategicClass_SelectBestCandidate12ETo132
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1469,9 +1445,9 @@ AiStrategicClass_SelectBestCandidate12ETo132
    with its own three ki.dat coefficients, plus 7 random bits; only buildings the faction lacks (not in workspace
    00) but may build (enabled) compete. Returns the winner in EBX (0 = none) and the number of these three
    buildings already present in ECX.
+   Original register convention: result in EBX and ECX; EAX and EDX preserved.
 */
-AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
-AiStrategicClass_SelectWeightedClass141To143
+AiStrategicClassSelectionRegs8 AiStrategicClass_SelectWeightedClass141To143
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1573,8 +1549,7 @@ AiStrategicClass_SelectWeightedClass141To143
    asset's model definition) finds a connected region wins. The asset is created there, initialised like the
    other planners and removed from the pending list.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
+void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 
@@ -1682,8 +1657,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
    primary army asset list, shifting the rest down. The registry lookup's CF is not checked; an unknown id simply
    matches no entry.
 */
-void __thandor_void_preserve_eax_ecx
-AiConstructionPlanner_ConsumeFactionPendingArmyAsset
+void AiConstructionPlanner_ConsumeFactionPendingArmyAsset
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
@@ -1722,9 +1696,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
    (whole units): the usable supply is the smaller of the generation capacity and baseline supply + tritium
    extraction rate, the demand is supplied + unpowered demand (Q4 values shifted down by 4).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiFactionRuntime_TestPlanningCapacityExceeded
-          (uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
+bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
 
 {
   int supplyCapacity;
@@ -1751,8 +1723,7 @@ AiFactionRuntime_TestPlanningCapacityExceeded
    and added as << 10 / the class maximum. Result: 12 * that + the weighted asset values at +0x70/+0x74/+0x78;
    0 when a definition is not available to the faction.
 */
-AiCandidateScore32 __thandor_eax_preserve_ecx_edx
-AiArmyCandidate_ComputeFactionWeightedScore
+AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
           (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
           ArmyAssetRuntimeSemanticView80 *armyAssetRecord)
 

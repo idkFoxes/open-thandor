@@ -206,8 +206,6 @@ def main(export):
          "/* Function-signature types Ghidra does not include in its C export, taken from",
          " * ghidra/export/function_definitions.jsonl (tools/ghidra/ExportBuildData.java). */"]
     sigs = infer_signatures.infer(unrecovered_signatures(), [(t, n) for t, n, _, _ in decls])
-    for conv in infer_signatures.conventions(sigs):
-        h += [f"#ifndef {conv}", f"#define {conv}", "#endif"]
     h += [infer_signatures.render(t, s) for t, s in sigs.items()]
     h += [""]
     addrs = data_addresses()

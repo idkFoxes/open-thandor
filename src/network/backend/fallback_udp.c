@@ -17,8 +17,7 @@
    Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init
    installs the WinSock backend: every backend index fails with FATAL_ERROR_NETWORK_UNAVAILABLE (CF set).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex)
+StatusResult NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex)
 
 {
   StatusResult status;
@@ -42,8 +41,7 @@ void __cdecl NetworkBackendFallback_Slot1_NoOp(void)
    Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can
    be opened, so it fails with FATAL_ERROR_NETWORK_UNAVAILABLE (CF set).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort)
+StatusResult NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort)
 
 {
   StatusResult status;
@@ -67,7 +65,7 @@ void __cdecl NetworkBackendFallback_Slot3_NoOp(void)
    Default g_NetworkBackendSlot4 (receive a datagram) in the image data: sets CF (nothing received) and leaves
    EAX as it was, so UiTransfer receive loops stop at once.
 */
-NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailure
+NetworkReceiveResult NetworkBackendFallback_Slot4_ThreeArgFailure
                (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer)
 
 {
@@ -81,7 +79,7 @@ NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Sl
    Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend:
    drops the packet and reports success (CF clear) so a session without network keeps running.
 */
-NetworkSendResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5_ThreeArgSuccess
+NetworkSendResult NetworkBackendFallback_Slot5_ThreeArgSuccess
                (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -94,9 +92,7 @@ NetworkSendResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5
 /* Address: 0x0041A5E0.
    Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (CF set).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkBackendFallback_Slot6_TwoArgFailure
-          (UiTransferEndpointDescriptor *endpoint,char *endpointText)
+bool NetworkBackendFallback_Slot6_TwoArgFailure(UiTransferEndpointDescriptor *endpoint,char *endpointText)
 
 {
   return true;
@@ -121,7 +117,7 @@ void NetworkBackendFallback_Slot7_ClearOutput(char *outputText,WinSockAddress *s
    Cleanup slot of the WinSock UDP backend. Nothing to release here: the socket is closed by
    NetworkFallback_CloseActiveSocket and WinSock itself by Network_Shutdown.
 */
-void __thandor_void_preserve_eax_ecx_edx NetworkFallback_NoOpBackendCleanup(void)
+void NetworkFallback_NoOpBackendCleanup(void)
 
 {
   return;
@@ -135,8 +131,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_NoOpBackendCleanup(void
    session discovery. On failure the WinSock error code is left in g_PackageLastErrorPath and
    FATAL_ERROR_NETWORK_SOCKET is returned with CF set.
 */
-NetworkOpenBindResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
+NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 
 {
   uint8_t copiedByte;
@@ -254,7 +249,7 @@ NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
    Closes the UDP socket, if one is open. The handle is swapped out (XCHG in the original) before
    closesocket so that nobody uses the socket while it is being closed.
 */
-void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
+void NetworkFallback_CloseActiveSocket(void)
 
 {
   NetworkSocketHandle32 socket;
@@ -273,8 +268,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
    (16-byte sockaddr_in). Returns the byte count; CF is set when no socket is open or recvfrom fails,
    including WSAEWOULDBLOCK when nothing is pending.
 */
-NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_ReceiveDatagram
+NetworkReceiveResult NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -310,8 +304,7 @@ NetworkFallback_ReceiveDatagram
    A sendto error leaves the WinSock error code in g_PackageLastErrorPath and returns
    FATAL_ERROR_NETWORK_SOCKET with CF set.
 */
-NetworkSendResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_SendDatagram
+NetworkSendResult NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -347,9 +340,7 @@ NetworkFallback_SendDatagram
    sockaddr_in with the game's port. An empty text yields the broadcast address from the local
    endpoint descriptor. CF is set when the text does not convert or the host is unknown.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkFallback_ParsePeerEndpoint
-          (UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
+bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
 
 {
   NetworkEndpointAddressHeader4 bindAddressHeader;
@@ -398,8 +389,7 @@ NetworkFallback_ParsePeerEndpoint
    Writes the IPv4 address of socketAddress as dotted UTF-16 text (at most 0x200 bytes) into
    outputText, for showing a peer's address; an empty string when inet_ntoa fails.
 */
-void __thandor_void_preserve_eax_ecx_edx
-NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
+void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
 
 {
   uint8_t *dottedAddress;
@@ -423,7 +413,7 @@ NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress
    NetworkFallback_NoOpBackendCleanup. No recovered table points at it: the ws2_32 backend is presumably
    installed by the part of Network_Init that the original jumps over.
 */
-void __thandor_void_preserve_eax_ecx_edx NetworkBackend_NoOpCleanup(void)
+void NetworkBackend_NoOpCleanup(void)
 
 {
   return;
@@ -436,8 +426,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkBackend_NoOpCleanup(void)
    presets the local endpoint descriptor to the family's broadcast address. Failures leave the WinSock
    error code in g_PackageLastErrorPath and return FATAL_ERROR_NETWORK_SOCKET with CF set.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
+StatusResult NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
 
 {
   uint16_t networkPort;
@@ -533,7 +522,7 @@ NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
    handle is swapped out (XCHG in the original) before closesocket so that nobody uses the socket while it
    is being closed.
 */
-void __thandor_void_preserve_eax_ecx_edx NetworkFallbackUdp_CloseSocket(void)
+void NetworkFallbackUdp_CloseSocket(void)
 
 {
   NetworkSocketHandle32 socket;
@@ -552,8 +541,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallbackUdp_CloseSocket(void)
    and the sender's address (the instance's address length) into sourceAddress. Returns the byte count; CF
    is set when no socket is open or recvfrom fails, including WSAEWOULDBLOCK when nothing is pending.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLength,uint8_t *buffer)
+StatusResult NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLength,uint8_t *buffer)
 
 {
   uint32_t receivedByteCount;
@@ -585,8 +573,7 @@ NetworkFallbackUdp_ReceiveDatagram(WinSockAddress *sourceAddress,int bufferLengt
    INVALID_SOCKET as the count). A sendto error leaves the WinSock error code in g_PackageLastErrorPath
    and returns FATAL_ERROR_NETWORK_SOCKET with CF set.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount,uint8_t *buffer)
+StatusResult NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount,uint8_t *buffer)
 
 {
   NetworkSocketHandle32 sentByteCount;
@@ -619,8 +606,7 @@ NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount
    puts the game's port into it. An empty text yields the broadcast address from the local endpoint
    descriptor. CF is set when the text does not convert or the host is unknown.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut,uint16_t *addressText)
+bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut,uint16_t *addressText)
 
 {
   NetworkEndpointAddressHeader4 resolvedAddress;
@@ -680,8 +666,7 @@ NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut,uint
    (WSAAddressToStringA, at most 0x200 bytes) into outputUtf16, for showing a peer's address. When the
    conversion fails the output is an empty string and CF is clear; otherwise CF is the copy result.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address)
+bool NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address)
 
 {
   int conversionResult;

@@ -36,8 +36,7 @@ void SpriteAssetRegistry_Reset(void)
    recently registered one; NULL when no asset has that id. Lets model loading reuse a sprite that another
    model already loaded.
 */
-SpriteAssetHeader * __thandor_eax_preserve_ecx_edx
-SpriteAssetRegistry_FindById(SpriteAssetId registryId)
+SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
 
 {
   SpriteAssetHeader *spriteAssetCursor;
@@ -57,8 +56,7 @@ SpriteAssetRegistry_FindById(SpriteAssetId registryId)
    absolute pointers. Must run exactly once per loaded image. Returns the asset with CF clear, or
    FATAL_ERROR_SPRITE_ASSET_INVALID with CF set.
 */
-SpriteRegisterResult __thandor_eax_cf_preserve_ecx_edx
-SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
+SpriteRegisterResult SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
 
 {
   AssetAllocationSizeBytes relocationBlocksRemaining;
@@ -134,9 +132,7 @@ SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
    pointer record become offsets from the asset start again. No caller or callback-table slot references it
    in this code base.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SpriteAsset_CopyAndDerelocateImage
-          (void *serializedDestination,SpriteAssetHeader *relocatedSourceImage)
+void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetHeader *relocatedSourceImage)
 
 {
   uint32_t copyDwordsRemaining;

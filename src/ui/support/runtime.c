@@ -16,8 +16,7 @@
    RECENT_TEXT_HISTORY_LIFETIME) or maxEntries is reached. In the last two cases the remaining slots are
    emptied, so messages beyond maxEntries are forgotten too. Finally the serial counter advances.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RecentTextHistory_SortAndBuildPointerList
+void RecentTextHistory_SortAndBuildPointerList
           (RecentTextHistoryEntryLimit maxEntries,RecentTextHistoryPointerList *output)
 
 {
@@ -70,7 +69,7 @@ RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop:
    slot has serial 0; on ties the last one) and gets the current serial, the text being copied with its
    rich-text commands expanded, truncated to the slot's 256 bytes.
 */
-void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text)
+void RecentTextHistory_Insert(uint16_t *text)
 
 {
   uint32_t oldestSerial;
@@ -106,7 +105,7 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text
    one); the text itself stays. Used when the message lines are clicked away (InGameRecentText_TrimHistoryToThree,
    FrontendRecentText_TrimAndSortTopFive).
 */
-void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void)
+void RecentTextHistory_RemoveOldest(void)
 
 {
   uint32_t oldestSerial;
@@ -141,8 +140,7 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void)
    its width * height bytes for the mask effect, then switches the frontend view to the credits page and hides
    the cursor. On any failure the partial resources are released and the menu stays as it was.
 */
-void __thandor_void_preserve_eax_ecx_edx
-CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
+void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 
 {
   uint32_t bufferBytes;
@@ -195,8 +193,7 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
    its 256-colour RGB palette followed by the 4096 pixel indices. CF set when the file is missing, cannot
    be decoded or has another size.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
+bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
 
 {
   uint16_t pathChar;
@@ -276,8 +273,7 @@ PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourc
    their serials and their whole 256-byte text slots (in 32 steps of two dwords, swapped with XCHG as in the
    original: the history is rebuilt on the main thread and on the timer thread, FrontendSession_PeriodicTick).
 */
-void __thandor_void_preserve_eax_ecx_edx
-RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
+void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
 
 {
   uint32_t firstHighDword;

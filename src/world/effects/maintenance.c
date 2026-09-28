@@ -47,8 +47,7 @@ static __inline uint32_t EffectTint_PackWordsUnsignedSaturate(uint64_t words)
    replaces the node's PRESENT/SEEN_BEFORE visibility flags with the resolved ones and refreshes the state tint;
    while the resulting tint is not fully transparent it becomes the effect tint modulated by the definition tint.
 */
-void __thandor_void_preserve_eax_ecx_edx
-EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
+void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
           (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode)
 
 {
@@ -90,8 +89,7 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
    table, from InGameRuntime_UpdateSimulationAndNetworkTick): effects take no part in the occupancy rebuild, so this
    does nothing (RET 8).
 */
-void __thandor_void_preserve_eax_ecx_edx
-EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
+void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
 {
   return;
@@ -103,8 +101,7 @@ EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,
    from the every-8th-frame spatial sound pass in EndGameResultsUiRuntime_UpdateAndHandleInput): effects add no
    spatial sound, so this does nothing (RET 8).
 */
-void __thandor_void_preserve_eax_ecx_edx
-EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
+void EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
 
 {
   return;
@@ -119,8 +116,7 @@ EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void
    definition's transition kind (linked effect, shots and completion action, linear motion, or terrain-relative
    motion that ends on ground contact).
 */
-void __thandor_void_preserve_eax_ecx_edx
-EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
+void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
           (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode)
 
 {

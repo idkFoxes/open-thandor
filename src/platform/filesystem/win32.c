@@ -18,8 +18,7 @@
    is shrunk to its used size. Returns table (EAX) and entry count (ECX) with CF clear; an empty listing
    returns NULL and 0. No caller in the recovered code (reached only through the function map).
 */
-EnumerationStringTableResult __thandor_eax_ecx_cf_preserve_edx
-FileSystem_BuildEnumerationStringTable
+EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
           (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText)
 
 {
@@ -258,7 +257,7 @@ FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
    the low word), CF clear. CF set with FATAL_ERROR_FILE_ACCESS_FAILED when the file cannot be opened or
    its time cannot be read.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDate(uint16_t *path)
+StatusResult Win32File_GetLastWriteDosDate(uint16_t *path)
 
 {
   BOOL gotFileTime;
@@ -296,7 +295,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDate(uin
    per step), CF clear. CF set with FATAL_ERROR_FILE_ACCESS_FAILED when the file cannot be opened or its
    time cannot be read.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHigh(uint16_t *path)
+StatusResult Win32File_GetLastWriteTimeHigh(uint16_t *path)
 
 {
   BOOL gotFileTime;
@@ -376,8 +375,7 @@ void __cdecl Win32FileSystem_RestoreInitialDirectory(void)
    \\.\X: + IOCTL_STORAGE_CHECK_VERIFY probe after the type check, so removable and CD-ROM drives are
    always reported as not ready.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
+bool Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
 
 {
   uint32_t engineDriveType;
@@ -396,7 +394,7 @@ Win32Drive_CheckMediaReady(DosDriveLetterCode32 driveLetter)
    FATAL_ERROR_OUT_OF_MEMORY with the file size left in g_FatalErrorDetail1Utf16. No caller in the recovered
    code (reached only through the function map).
 */
-FileLoadResult __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFile(uint16_t *pathUtf16)
+FileLoadResult FileSystem_LoadWholeFile(uint16_t *pathUtf16)
 
 {
   void *handle;
@@ -453,8 +451,7 @@ FileLoadResult __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFile(uint16
    the original is that ECX is not preserved: it returns the file size there. No caller in the recovered
    code (reached only through the function map).
 */
-FileLoadResult __thandor_eax_cf_preserve_edx
-FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16)
+FileLoadResult FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16)
 
 {
   void *handle;
@@ -548,8 +545,7 @@ StatusResult FileSystem_WriteBufferToPath(FileIoByteCount byteCount,void *source
    position (SetEndOfFile). CF set with FATAL_ERROR_FILE_WRITE_FAILED when WriteFile fails, or
    FATAL_ERROR_FILE_WRITE_INCOMPLETE when it wrote fewer bytes (disk full).
 */
-Win32FileWriteResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle)
+Win32FileWriteResult Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle)
 
 {
   BOOL wroteFile;
@@ -583,7 +579,7 @@ Win32File_WriteExactOrFlush(FileIoByteCount byteCount,void *source,void *handle)
 /* Address: 0x00576140.
    Returns the current position of a file; 0 with CF set when SetFilePointer fails (0x0057616D).
 */
-Win32FileSeekResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetPosition(void *handle)
+Win32FileSeekResult Win32File_GetPosition(void *handle)
 
 {
   DWORD filePosition;
@@ -605,8 +601,7 @@ Win32FileSeekResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetPosition(void
    Moves the file pointer (moveMethod is FILESYSTEM_SEEK_BEGIN/CURRENT/END, the Win32 FILE_* values) and
    returns the new position; CF set with FATAL_ERROR_FILE_SEEK_FAILED on failure.
 */
-Win32FileSeekResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle)
+Win32FileSeekResult Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle)
 
 {
   DWORD newFilePosition;
@@ -629,7 +624,7 @@ Win32File_Seek(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,v
    Deletes a file; the first argument is an unused slot of the g_FileSystemDelete interface. CF set with
    FATAL_ERROR_FILE_ACCESS_FAILED on failure (0x00576202); on success EAX is DeleteFileA's result.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
+StatusResult Win32File_Delete(uint32_t unusedFlags,uint16_t *path)
 
 {
   BOOL deletedFile;
@@ -653,8 +648,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_Delete(uint32_t unusedF
    Moves (renames) a file from sourcePath to destinationPath; CF set with FATAL_ERROR_FILE_ACCESS_FAILED on
    failure.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_Move(uint16_t *destinationPath,uint16_t *sourcePath)
+StatusResult Win32File_Move(uint16_t *destinationPath,uint16_t *sourcePath)
 
 {
   BOOL movedFile;
@@ -680,8 +674,7 @@ Win32File_Move(uint16_t *destinationPath,uint16_t *sourcePath)
    Copies a file from sourcePath to destinationPath without overwriting an existing destination; CF set
    with FATAL_ERROR_FILE_ACCESS_FAILED on failure.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_Copy(uint16_t *destinationPath,uint16_t *sourcePath)
+StatusResult Win32File_Copy(uint16_t *destinationPath,uint16_t *sourcePath)
 
 {
   BOOL copiedFile;
@@ -708,8 +701,7 @@ Win32File_Copy(uint16_t *destinationPath,uint16_t *sourcePath)
    parent directories (recursively) and then retries. CF set with FATAL_ERROR_FILE_WRITE_FAILED when the
    directory cannot be created.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags,uint16_t *path)
+StatusResult Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags,uint16_t *path)
 
 {
   uint32_t createdDirectory;
@@ -751,7 +743,7 @@ Win32File_CreateDirectoryRecursive(FileSystemCreateDirectoryFlags flags,uint16_t
    Removes an (empty) directory; CF set with FATAL_ERROR_REMOVE_DIRECTORY_FAILED on failure. Unlike the
    other path operations it does not record the path in g_PackageLastErrorPath.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_RemoveDirectory(uint16_t *path)
+StatusResult Win32File_RemoveDirectory(uint16_t *path)
 
 {
   BOOL removedDirectory;
@@ -803,8 +795,7 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
    Lists the existing drives: writes one letter 'A'..'Z' per set bit of GetLogicalDrives to lettersOut
    (no terminator) and returns the number of letters in EAX and ECX.
 */
-DriveLetterEnumerationEaxEcx8 __thandor_eax_ecx_preserve_edx
-Win32Drive_EnumerateLetters(uint8_t *lettersOut)
+DriveLetterEnumerationEaxEcx8 Win32Drive_EnumerateLetters(uint8_t *lettersOut)
 
 {
   uint32_t logicalDriveMask;
@@ -839,8 +830,7 @@ Win32Drive_EnumerateLetters(uint8_t *lettersOut)
    FILESYSTEM_DOS83_COMPONENT_ONLY checks one name only, and FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION lets
    that name end at a '\'. CF clear (false) means valid, CF set (true) rejected.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
+bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
 
 {
   uint8_t pathChar;
@@ -997,8 +987,7 @@ Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
    ANSI "X:\"). Entries that no longer fit are skipped. Returns the record size in EAX and the record
    count in ECX, always with CF clear (an unreadable path or drive yields 0 records).
 */
-DirectoryEnumerationResult __thandor_eax_ecx_cf_preserve_edx
-Win32FileSystem_EnumerateDirectoryOrVolumeEntries
+DirectoryEnumerationResult Win32FileSystem_EnumerateDirectoryOrVolumeEntries
           (FileSystemEnumerationMode mode,uint32_t reserved,
           FileSystemOutputCapacityBytes outputCapacityBytes,uint8_t *outputRecords,
           uint8_t *pathOrVolumeText)
@@ -1130,8 +1119,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntries
    Reads exactly byteCount bytes from a file and returns the count, CF clear; CF set with
    FATAL_ERROR_FILE_READ_FAILED when fewer bytes arrive (end of file or read error).
 */
-Win32FileReadResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *handle)
+Win32FileReadResult Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *handle)
 
 {
   Win32FileReadResult successResult;
@@ -1153,7 +1141,7 @@ Win32File_ReadExact(FileIoByteCount byteCount,void *destination,void *handle)
 /* Address: 0x00576100.
    Returns the size of a file (low 32 bits), CF clear; CF set with 0 when GetFileSize fails.
 */
-Win32FileSizeResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetSize(void *handle)
+Win32FileSizeResult Win32File_GetSize(void *handle)
 
 {
   DWORD fileSize;
@@ -1176,8 +1164,7 @@ Win32FileSizeResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetSize(void *ha
    Stores the current directory as UTF-16 into destination (0x200 bytes), CF clear. When
    GetCurrentDirectoryA fails, destination becomes an empty string and CF is set with 0.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_GetCurrentDirectory(uint16_t *destination)
+StatusResult Win32File_GetCurrentDirectory(uint16_t *destination)
 
 {
   DWORD narrowPathLength;
@@ -1200,7 +1187,7 @@ Win32File_GetCurrentDirectory(uint16_t *destination)
 /* Address: 0x00576490.
    Changes the current directory; CF set with FATAL_ERROR_SET_DIRECTORY_FAILED on failure.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_SetCurrentDirectory(uint16_t *path)
+StatusResult Win32File_SetCurrentDirectory(uint16_t *path)
 
 {
   BOOL changedDirectory;
@@ -1225,8 +1212,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_SetCurrentDirectory(uin
    Classifies a drive for the engine: ENGINE_DRIVE_REMOVABLE, ENGINE_DRIVE_REMOTE, ENGINE_DRIVE_CDROM, or
    ENGINE_DRIVE_OTHER for fixed, RAM-disk and unknown drives.
 */
-EngineDriveTypeCode __thandor_eax_preserve_ecx_edx
-Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
+EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
 
 {
   UINT win32DriveType;
@@ -1255,8 +1241,7 @@ Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
    are always opened write-through. Returns the handle with CF clear, or CF set with
    FATAL_ERROR_FILE_ACCESS_FAILED.
 */
-Win32FileOpenResult __thandor_eax_cf_preserve_ecx_edx
-Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path)
+Win32FileOpenResult Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path)
 
 {
   HANDLE fileHandle;
@@ -1312,7 +1297,7 @@ Win32File_Open(FileSystemOpenFlags openFlags,uint16_t *path)
 /* Address: 0x00576000.
    Closes a file handle.
 */
-void __thandor_void_preserve_eax_ecx_edx Win32File_Close(void *handle)
+void Win32File_Close(void *handle)
 
 {
   CloseHandle(handle);

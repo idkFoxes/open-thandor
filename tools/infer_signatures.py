@@ -101,12 +101,6 @@ def is_import(d):
             or d["name"].startswith(("WinSock_", "WSA", "Gr")))
 
 
-def conventions(sigs):
-    """Calling-convention markers used by exported prototypes (empty macros for the C build)."""
-    return sorted({s[1]["convention"] for s in sigs.values()
-                   if s and s[0] == "ghidra" and s[1]["convention"].startswith("__thandor_")})
-
-
 def infer_heuristic(ptypes, globals_decls):
     types_h = read(ROOT / "include/thandor/generated/types.h")
     protos = header_prototypes()
@@ -181,6 +175,8 @@ def render(ptype, sig):
         if not is_import(sig[1]):
             # Ghidra's default x86 convention; the game's own functions are plain C (cdecl) here
             proto = proto.replace(" __stdcall ", " ", 1)
+        # the original register conventions (__thandor_*) do not matter to the C build
+        proto = re.sub(r" __thandor_\w+ ", " ", proto, count=1)
         return f"typedef {proto}; /* Ghidra FunctionDefinition {sig[1]['category']} */"
     if sig is None:
         return f"typedef dword {ptype}(); /* TODO: unrecovered signature */"

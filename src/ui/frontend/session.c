@@ -16,8 +16,7 @@
    directly by FrontendCallback_ReleaseSelectedResourceOrDispatch0320 in a local game, through the command queue
    in a network game. Only the player id is forwarded; the other three arguments are unused.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
+void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
           (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           uint32_t unusedArgument3)
 
@@ -36,7 +35,7 @@ FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
    source and its two frame buffers, shows the pointer cursor again and returns to the main page (directly in a
    local game, as FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a network game).
 */
-void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
+void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
 
 {
   int parentNodeAddress;
@@ -74,7 +73,7 @@ void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(
    (FRONTEND_COMMAND_APPLY_GAME_SPEED in a network game); a client only reports that it is ready
    (FRONTEND_COMMAND_BRIEFING_READY).
 */
-void __thandor_preserve_eax FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
+void FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -103,7 +102,7 @@ void __thandor_preserve_eax FrontendSessionAction_ApplySpeedOrToggleReady(void *
    game page: closes and cleans up the network backend, sets the frontend network state back to idle, returns
    to the main page and switches the random generator back to the primary stream.
 */
-void __thandor_preserve_eax FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
+void FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
 
 {
   g_NetworkBackendSlot3(); /* close */
@@ -127,8 +126,7 @@ void __thandor_preserve_eax FrontendSessionAction_ResetNetworkAndReturnToMainPag
    the lobby list, reseeds both random streams from the primary one and selects the secondary stream, clears the handshake state of all eight player blocks, arms the player-snapshot transfer and returns to the
    main page with ROM action record 1.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
+void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
 
 {
   UiNodeBase *parentNode;
@@ -173,9 +171,7 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
    mission briefing's gameSpeedSlider value (+0x58). Called directly by
    FrontendGameplaySettings_SetGameSpeedPercent in a local game, through the command queue in a network game.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendSession_SetGameSpeedPercent
-          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+void FrontendSession_SetGameSpeedPercent(uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           GameSpeedPercent gameSpeedPercent)
 
 {
@@ -188,7 +184,7 @@ FrontendSession_SetGameSpeedPercent
    Opens the "Exit programme" confirmation page (FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE from the main menu). At 640 pixels
    width or less the page covers the menu room, so the room's 3D rendering is switched off.
 */
-void __thandor_preserve_eax FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
+void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
 
 {
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_QUIT_CONFIRM,
@@ -206,8 +202,7 @@ void __thandor_preserve_eax FrontendSession_ShowQuitConfirmPage(FrontendUiImage 
    session, takes a new session identity and sends a fresh discovery probe; the local player becomes the only
    player again, with id 0.
 */
-void __thandor_preserve_eax
-FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
+void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
 
 {
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
@@ -248,9 +243,7 @@ FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
    whose expiry ran out by compacting the 0xB0-byte records in place, rebuilds the row pointers,
    keeps the selection on the same session (row 0 when the selected one went away) and refreshes the list.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendSessionList_DecrementExpiryAndCompactRows
-          (FrontendNetworkListsRuntimeView5650 *frontendRuntime)
+void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView5650 *frontendRuntime)
 
 {
   UiTransferPayloadByteCount *expiryTicks;
@@ -321,7 +314,7 @@ FrontendSessionList_DecrementExpiryAndCompactRows
    one due movie frame in g_EndMoviePendingTicks per step. The host executes the staged command batch at each
    interval boundary and broadcasts the next one half an interval later; a client waits for the host's batch.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
+void FrontendSession_PeriodicTick(void)
 
 {
   InGameRuntimeRootImageC3E4 *inGameRoot;
@@ -398,8 +391,7 @@ FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
    players start at block 1, and the 0x10007 packets go out in reverse drop order (the ids are pushed on the
    stack while scanning and popped one per packet).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
+void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
 
 {
   FrontendPlayerRuntimeBlockCount recipientsRemaining;
@@ -479,7 +471,7 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
    pending ready vote is submitted if some player has not voted yet, and the local player becomes the only
    player, with id 0.
 */
-void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyConsensus(void)
+void FrontendHostSession_TickShutdownOrReadyConsensus(void)
 
 {
   PlayerRuntimeId previousLocalPlayerId;
@@ -546,8 +538,7 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
    FrontendSessionAction_ApplySpeedOrToggleReady and FrontendCallback_ApplyGameSpeedOrDispatch02C0 in a local
    game, through the command queue in a network game.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendSession_ApplyGameSpeedAndReturnToMainPage
+void FrontendSession_ApplyGameSpeedAndReturnToMainPage
           (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendStatusCode romActionIndex)
 
@@ -573,9 +564,7 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
    FrontendRomActionTable_ExecuteRecord). Command handler with four dword arguments (frontend command 0xDC0 in a
    network game); the player id and the two middle arguments are not used.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendSession_ReturnToMainPage
-          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendStatusCode romActionIndex)
 
 {

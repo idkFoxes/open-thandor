@@ -15,8 +15,7 @@
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
@@ -41,8 +40,7 @@ ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog record
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in unit-placement mode.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -74,8 +72,7 @@ ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in unit-placement mode.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -107,8 +104,7 @@ ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
    the step functions this jumps between id blocks. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014) in unit-placement mode.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
@@ -142,8 +138,7 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
@@ -168,8 +163,7 @@ ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId)
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in object-placement mode.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -201,8 +195,7 @@ ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in object-placement mode.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -234,8 +227,7 @@ ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
    from the in-game keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014)
    in object-placement mode.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
@@ -270,7 +262,7 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
    header stores the asset path as the error detail and fails with FATAL_ERROR_ARMY_ASSET_INVALID; a failed
    registration fails with that step's error code.
 */
-StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
+StatusResult ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
@@ -314,8 +306,7 @@ StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetH
    Checks whether an army asset id is registered and enabled: returns false (CF clear) only when the record
    exists and bit 0 of its flags dword (+0x14) is set, true when it is missing or disabled.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
+bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 {
   bool missingOrDisabled;
@@ -336,8 +327,7 @@ ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
    one names a registered, enabled asset whose technology is fully unlocked for the faction, that has a model
    tree (+0x1C) and whose flags (+0x14) share a bit with requiredDefinitionFlags.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
+bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord)
 
@@ -382,8 +372,7 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
    table g_InGameKeyboardDispatchRecords (handlers 0x0056ED80 / 0x0056EDC0, commands 0x10012 / 0x1001A) after
    g_UiCommandModeGOwnerFactionIndex was cycled.
 */
-void __thandor_void_preserve_eax_ecx
-ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress)
+void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress)
 
 {
   uint32_t resolvedTexture;
@@ -435,8 +424,7 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
    the linked definition the faction has unlocked, so the in-game detail display shows the armour of the
    current upgrades.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-ArmyAssetHierarchy_SumFactionUnlockedArmour
+uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
@@ -472,8 +460,7 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
    at each node the linked definition the faction has unlocked; children only count below definitions with
    flag 0x80. Used by the in-game detail display.
 */
-EnergyDemandQ4 __thandor_eax_preserve_ecx_edx
-ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
+EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
@@ -490,8 +477,7 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
    g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in unit-placement mode, and by
    ArmyAssetRegistry_NormalizeIdForFlag0100Without0200.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
@@ -521,8 +507,7 @@ ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
    keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in
    object-placement mode, and by ArmyAssetRegistry_NormalizeIdForFlags0100And0200.
 */
-ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
@@ -585,9 +570,7 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
    left), turns its model-tree offsets into pointers against assetBase and adds the build metrics of every node's
    model definition to the record. CF set on failure with the error code in EAX.
 */
-StatusResult __thandor_void_preserve_ecx_edx
-ArmyAssetRecord_RegisterAndRelocate
-          (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
+StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
 
 {
   /* Rewritten from the assembly (0x0051B4A0-0x0051B5D8): the model tree walk kept its recursion on
@@ -678,8 +661,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
    Looks an army asset up by its registry id in the 768-slot army registry and returns the record (CF clear).
    An unknown id is written as decimal text to g_PackageLastErrorPath and fails with FATAL_ERROR_ARMY_ID_NOT_FOUND.
 */
-ArmyAssetLookupResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
+ArmyAssetLookupResult ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
 
 {
   ArmyAssetRecordPrefix *matchedRecord;
@@ -714,8 +696,7 @@ ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
    with the wrong flags. Predicate of the editor's unit-placement id searches
    (FindNext/FindPrevious/Step*Flag0100Without0200).
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -742,7 +723,7 @@ ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
    flags dword (+0x14) set; 1 (CF set) otherwise. Predicate of the editor's object-placement id searches
    (FindNext/FindPrevious/Step*Flags0100And0200).
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -769,8 +750,7 @@ uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200(Ar
    0x0100 set and 0x0200 clear); 1 (CF set) otherwise. The id test of the editor's unit-placement list
    (NormalizeIdFor/FindNext/FindPrevious/Step*Flag0100Without0200).
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -798,8 +778,7 @@ ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
    with 0x0100 and 0x0200 set); 1 (CF set) otherwise. The id test of the editor's object-placement list
    (NormalizeIdFor/FindNext/FindPrevious/Step*Flags0100And0200).
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;

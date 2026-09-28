@@ -21,17 +21,13 @@ void SpriteAsset_ValidateGroupCount(void);
 void SpriteAssetRegistry_Reset(void);
 
 /* 0x004BE490 */
-SpriteAssetHeader * __thandor_eax_preserve_ecx_edx
-SpriteAssetRegistry_FindById(SpriteAssetId registryId);
+SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId);
 
 /* 0x004BE4D0 */
-SpriteRegisterResult __thandor_eax_cf_preserve_ecx_edx
-SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset);
+SpriteRegisterResult SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset);
 
 
 /* 0x004BE5A0 */
-void __thandor_void_preserve_eax_ecx_edx
-SpriteAsset_CopyAndDerelocateImage
-          (void *serializedDestination,SpriteAssetHeader *relocatedSourceImage);
+void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetHeader *relocatedSourceImage);
 
 #endif /* THANDOR_ASSETS_SPRITE_CATALOG_H */

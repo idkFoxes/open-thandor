@@ -35,51 +35,39 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context);
 
 /* 0x0057A450 */
-RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode);
+RenderStateApplyResult Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode);
 
 /* 0x0057A4C0 */
-RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode);
+RenderStateApplyResult Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode);
 
 /* 0x0057A550 */
-RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled);
+RenderStateApplyResult Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled);
 
 /* 0x0057CCB0 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet);
 
 /* 0x0057CF20 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet);
 
 /* 0x0057D1D0 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet);
 
 /* 0x0057D480 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet);
 
 /* 0x0057D730 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet);
 
 /* 0x0057DA50 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet);
 
 /* 0x0057DD70 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet);
 
 /* 0x0057E090 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet);
 
 /* 0x0057E3B0 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet);
+void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet);
 
 #endif /* THANDOR_GRAPHICS_BACKEND_DIRECT3D_H */

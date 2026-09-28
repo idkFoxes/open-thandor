@@ -17,8 +17,7 @@
    Gameplay settings, page 9, credits and closing are refused in network sessions, network setup without a
    network backend.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendRomActionTable_ExecuteRecord
+void FrontendRomActionTable_ExecuteRecord
           (uint32_t reservedZero0,uint32_t reservedZero1,FrontendBooleanState32 suppressActivationSound,
           RomRecordTableIndex recordIndex)
 
@@ -131,7 +130,7 @@ FrontendRomActionTable_ExecuteRecord
    Local calls: RomAssetRecord_RegisterAndRelocate.
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx RomAsset_PrepareRecords(RomAssetHeader *asset)
+StatusResult RomAsset_PrepareRecords(RomAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
@@ -215,7 +214,7 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
    (not negative), activates that ROM record. The elapsed ticks are advanced by the frontend timer callback
    FrontendRomTransition_AdvanceElapsedTicks; the body runs under the frontend tick spin lock.
 */
-void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(void)
+void FrontendRomTransition_ProcessPendingRecord(void)
 
 {
   RomRecordId pendingRecordId;
@@ -249,7 +248,7 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
    then clears both dwords of every eight-byte slot. All saved registers and EAX are preserved.
    Cross-module calls: Resource_Release [assets/resource/runtime].
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRomRegistry_ClearAndReleaseNestedResources(void)
+void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 
 {
   int slotsRemaining;
@@ -293,7 +292,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRomRegistry_ClearAndReleaseNest
    Skips a running menu-room camera flight: sets the elapsed ticks far past the last keyframe time, so the next
    FrontendRomTransition_ProcessPendingRecord finds the spline finished and activates the target record.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRomTransition_RequestStop(void)
+void FrontendRomTransition_RequestStop(void)
 
 {
   if (g_FrontendRomTransitionPendingCount != 0) {
@@ -307,8 +306,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRomTransition_RequestStop(void)
    Reverse lookup in the ROM registry: returns the ROM record whose slot holds the given runtime root node, or
    NULL when no slot does.
 */
-RomAssetRecordPrefix * __thandor_eax_preserve_ecx_edx
-RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue)
+RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue)
 
 {
   int slotsRemaining;
@@ -354,8 +352,7 @@ uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
    Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries)
    whose record id matches, or NULL. Used to find the target record of a frontend camera flight.
 */
-void * __thandor_eax_preserve_ecx_edx
-RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
+void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
 
 {
   int recordsRemaining;
@@ -379,8 +376,7 @@ RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
    Same scan as RomRecordTable_FindRecordById, but returns the zero-based entry index, or -1 when no entry of
    the table has the record id.
 */
-RomRecordTableIndex __thandor_eax_preserve_ecx_edx
-RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
+RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
 
 {
   int recordIndex;
@@ -415,8 +411,7 @@ RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
    WorldRuntime_SetMotionParameters6CThrough78Clamped [world/runtime/core], UiActionQueue_Enqueue
    [ui/core/runtime].
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
+StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t *slotNodeFlags;
@@ -503,9 +498,7 @@ FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContex
    Local calls: RomRegistry_FindRecordById, RomRuntime_ApplyIndexedDescriptor.
    Cross-module calls: GraphicsShadingRuntime_ClearRecordTable [graphics/render/shading].
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-RomRuntime_UpdateRecordVisibilityAndDescriptors
-          (RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
+bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
 
 {
   WorldRuntimeNodeFlags *nodeFlags;
@@ -566,8 +559,7 @@ RomRuntime_UpdateRecordVisibilityAndDescriptors
    child offsets become pointers, and every node's ".spr" sprite is loaded, or an already registered sprite with
    the same registry id is reused. Fails with FATAL_ERROR_ROM_REGISTRY_FULL or the loader's error.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
+StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
 
 {
   uint32_t rootNodeOffset;
@@ -671,8 +663,7 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
    *.
    Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core].
 */
-ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-RomRuntime_BuildNodeTreeRecursive
+ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
           (PackedArgb32 stateTintArgb,RomSerializedNodeHeader34 *romNodeRecord,
           WorldRuntimeContext *worldObjectArray)
 
@@ -780,9 +771,7 @@ RomRuntime_BuildNodeTreeRecursive
    unchanged.
    Cross-module calls: WorldMotionSpline_BuildSixChannelCurves [core/math/interpolation].
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendRomTransition_InitializeFromRecord
-          (FrontendBooleanState32 transitionEnabled,RomAssetRecordPrefix *record)
+void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,RomAssetRecordPrefix *record)
 
 {
   g_FrontendRomTransitionElapsedTicks = 0;
@@ -800,8 +789,7 @@ FrontendRomTransition_InitializeFromRecord
    Returns the runtime root node registered for the ROM record with the given id; fails with
    FATAL_ERROR_ROM_RECORD_NOT_REGISTERED when no registry slot holds such a record.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
+StatusResult RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
 
 {
   int slotsRemaining;
@@ -833,8 +821,7 @@ RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
    record stores for the entry (0x10-byte entries from +0x50). Indices beyond the record's count (+0x38) are
    ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx
-RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record)
+void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record)
 
 {
   uint32_t descriptorsRemaining;
@@ -872,8 +859,7 @@ RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordP
    identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
    flow, globals, locals, and executable data remain unchanged.
 */
-RomRecordResult __thandor_eax_cf_preserve_ecx_edx
-RomRegistry_FindRecordById(RomRecordId recordId)
+RomRecordResult RomRegistry_FindRecordById(RomRecordId recordId)
 
 {
   RomAssetRecordPrefix *slotRecord;

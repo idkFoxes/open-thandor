@@ -21,27 +21,20 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005139C0 */
-void __thandor_void_preserve_eax_ecx_edx
-Technology_UnlockForFaction
+void Technology_UnlockForFaction
           (GraphicsWorldCoordinateQ12 notificationXQ12,GraphicsWorldCoordinateQ12 notificationYQ12,
           TechnologyId technologyIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x00513AE0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsUnlockedForFaction
-          (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
+bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x00513B20 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsAvailableForFaction
-          (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
+bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x0052AE10 */
-void __thandor_void_preserve_eax_ecx_edx
-Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity);
+void Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity);
 
 /* 0x00539BB0 */
-void __thandor_void_preserve_eax_ecx_edx
-TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void);
+void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void);
 
 #endif /* THANDOR_GAMEPLAY_TECHNOLOGY_RUNTIME_H */

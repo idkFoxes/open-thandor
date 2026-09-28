@@ -18,8 +18,7 @@
    [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; also when fieldGrid is NULL or the point is
    off the grid.
 */
-bool __thandor_void_preserve_ecx_edx
-TerrainHeightBand_TestAroundWorldPoint
+bool TerrainHeightBand_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 
@@ -118,8 +117,7 @@ TerrainHeightBand_TestAroundWorldPoint
    cell, has a negative waterSurfaceDelta, or the high word of its packed normal angles is below
    g_TerrainAuxHeightMinimum; also when fieldGrid is NULL or the point is off the grid.
 */
-bool __thandor_void_preserve_ecx_edx
-TerrainAuxHeightThreshold_TestAroundWorldPoint
+bool TerrainAuxHeightThreshold_TestAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
 
@@ -217,8 +215,7 @@ TerrainAuxHeightThreshold_TestAroundWorldPoint
    g_TerrainScanReferenceHeight (the removed height goes into waterSurfaceDelta, so the water surface stays), and
    starts the straight scans of directions 0 and 1 that fill the sector. Stops at a map-edge cell or the radius.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int *adjacentWaterDeltaField;
@@ -265,8 +262,7 @@ TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell
    Flatten brush, sector 1: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 1 and 2.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int *adjacentWaterDeltaField;
@@ -313,8 +309,7 @@ TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell
    Flatten brush, sector 2: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 2 and 3.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -353,8 +348,7 @@ TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell
    Flatten brush, sector 3: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 3 and 4.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentOrRowStride;
@@ -401,8 +395,7 @@ TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell
    Flatten brush, sector 4: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 4 and 5.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentOrRowStride;
@@ -452,8 +445,7 @@ TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell
    Flatten brush, sector 5: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
    straight scans of directions 5 and 0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -497,8 +489,7 @@ TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell
    distance from the ray origin with CF clear; a miss (also the quick reject when all four corners lie below the
    ray's lowest point) returns CF set with a meaningless EAX.
 */
-TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
-TerrainTriangle_IntersectRayDistance
+TerrainRayTriangleResult TerrainTriangle_IntersectRayDistance
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12)
@@ -801,8 +792,7 @@ Q12 g_TerrainRayNextCoord1Q12;
    On a true return g_TerrainRayNext* hold the original's registers too: coord0 (EDX) = end0 - cur0 for the
    destination-cell exit, cur0 with cell - 0x80 / cur1 - one cell for the no-column-movement exit.
 */
-bool __thandor_cf_preserve_eax
-TerrainRay_AdvanceGridTraversal
+bool TerrainRay_AdvanceGridTraversal
           (Q12 rayEndCoord0Q12,Q12 rayEndCoord1Q12,Q12 rayStartCoord0Q12,Q12 rayStartCoord1Q12,
           FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *currentCell,Q12 currentGridCoord0Q12
           ,Q12 currentGridCoord1Q12)
@@ -882,8 +872,7 @@ TerrainRay_AdvanceGridTraversal
    tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first cell outside the height
    band, false when the step limit is reached.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -940,8 +929,7 @@ TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *
    Height-band placement test, sector 1: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 1 and 2.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -998,8 +986,7 @@ TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *
    Height-band placement test, sector 2: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 2 and 3.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -1052,8 +1039,7 @@ TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *
    Height-band placement test, sector 3: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 3 and 4.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
+bool TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
 
 {
   int rowStrideBytes;
@@ -1114,8 +1100,7 @@ TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
    Height-band placement test, sector 4: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 4 and 5.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *cellRuntimeBase;
@@ -1176,8 +1161,7 @@ TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *
    Height-band placement test, sector 5: like TerrainHeightBand_TestWedge0, running the straight tests of
    directions 5 and 0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -1234,8 +1218,7 @@ TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *
    straight tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first failing cell,
    false when the step limit is reached.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -1285,8 +1268,7 @@ TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGr
    Water-surface placement test, sector 1: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 1 and 2.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -1336,8 +1318,7 @@ TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGr
    Water-surface placement test, sector 2: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 2 and 3.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -1383,8 +1364,7 @@ TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGr
    Water-surface placement test, sector 3: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 3 and 4.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int rowStrideBytes;
@@ -1436,8 +1416,7 @@ TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGr
    Water-surface placement test, sector 4: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 4 and 5.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *cellRuntimeBase;
@@ -1491,8 +1470,7 @@ TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGr
    Water-surface placement test, sector 5: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
    of directions 5 and 0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *directionStartCell;
@@ -1542,8 +1520,7 @@ TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGr
    g_TerrainScanReferenceHeight leaves [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; false
    once the step limit is reached (4 scan steps per cell).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1566,8 +1543,7 @@ TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCe
 /* Address: 0x00507860.
    Height-band placement test, straight leg along direction 1 (C+1-W, up and right); see TerrainHeightBand_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1590,8 +1566,7 @@ TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCe
 /* Address: 0x005078E0.
    Height-band placement test, straight leg along direction 2 (C-W, up); see TerrainHeightBand_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1614,8 +1589,7 @@ TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCe
 /* Address: 0x00507950.
    Height-band placement test, straight leg along direction 3 (C-1, left); see TerrainHeightBand_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1638,8 +1612,7 @@ TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCe
 /* Address: 0x005079C0.
    Height-band placement test, straight leg along direction 4 (C-1+W, down and left); see TerrainHeightBand_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1662,8 +1635,7 @@ TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCe
 /* Address: 0x00507A40.
    Height-band placement test, straight leg along direction 5 (C+W, down); see TerrainHeightBand_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
@@ -1688,8 +1660,7 @@ TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCe
    cell that is a map-edge cell, has a negative waterSurfaceDelta or whose triangle1NormalAngles high word is below
    g_TerrainAuxHeightMinimum; false once the step limit is reached (4 scan steps per cell).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while( true ) {
@@ -1709,8 +1680,7 @@ TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,Fie
    Water-surface placement test, straight leg along direction 1 (C+1-W, up and right); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while( true ) {
@@ -1730,8 +1700,7 @@ TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,Fie
    Water-surface placement test, straight leg along direction 2 (C-W, up); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while( true ) {
@@ -1751,8 +1720,7 @@ TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,Fie
    Water-surface placement test, straight leg along direction 3 (C-1, left); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while( true ) {
@@ -1772,8 +1740,7 @@ TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,Fie
    Water-surface placement test, straight leg along direction 4 (C-1+W, down and left); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while( true ) {
@@ -1793,8 +1760,7 @@ TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,Fie
    Water-surface placement test, straight leg along direction 5 (C+W, down); see
    TerrainAuxHeightThreshold_TestDirection0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+bool TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   while( true ) {
@@ -1815,8 +1781,7 @@ TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,Fie
    and takes the change out of waterSurfaceDelta so the water surface stays where it was. 4 scan steps per cell,
    until the step limit or a map-edge cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
@@ -1841,8 +1806,7 @@ TerrainHeightDelta_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGrid
    Flatten brush, straight leg along direction 1 (C+1-W, up and right): levels each cell to
    g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
@@ -1867,8 +1831,7 @@ TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGrid
    Flatten brush, straight leg along direction 2 (C-W, up): levels each cell to g_TerrainScanReferenceHeight,
    keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
@@ -1893,8 +1856,7 @@ TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGrid
    Flatten brush, straight leg along direction 3 (C-1, left): levels each cell to g_TerrainScanReferenceHeight,
    keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
@@ -1919,8 +1881,7 @@ TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGrid
    Flatten brush, straight leg along direction 4 (C-1+W, down and left): levels each cell to
    g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
@@ -1946,8 +1907,7 @@ TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGrid
    Flatten brush, straight leg along direction 5 (C+W, down): levels each cell to g_TerrainScanReferenceHeight,
    keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainHeightDelta_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
+void TerrainHeightDelta_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;

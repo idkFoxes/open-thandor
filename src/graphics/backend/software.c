@@ -18,8 +18,7 @@
    cycle grows one of the reveal shapes (circles, diagonal wipes, horizontal bands, or everything), step by
    step. At the start of each cycle the mask is cleared and the two pattern counters (capped at 13) advance.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime)
+void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime)
 
 {
   uint32_t cycleTicks;
@@ -98,9 +97,7 @@ SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRunt
    Software backend of Graphics_SetViewportAndClearDepth: fills the rectangle with opaque black and starts a
    new depth epoch instead of clearing a depth buffer.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_ClearViewport
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
 
 {
@@ -122,9 +119,7 @@ SoftwareRenderer_ClearViewport
    Queue renderer for 16-bit framebuffers (installed in g_SoftwareDrawQueue by SoftwareRenderer_SetDisplayMode):
    prepares every packet of the queue and draws it with the 16-bit raster handler its render flags select.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawQueue16Bit
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_DrawQueue16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue)
 
@@ -150,9 +145,7 @@ SoftwareRenderer_DrawQueue16Bit
    Queue renderer for every framebuffer that is not 16-bit, i.e. 32-bit (installed in g_SoftwareDrawQueue by
    SoftwareRenderer_SetDisplayMode): like SoftwareRenderer_DrawQueue16Bit, with g_SoftwareRasterHandlersNon16Bit.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawQueueNon16Bit
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_DrawQueueNon16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue)
 
@@ -180,8 +173,7 @@ SoftwareRenderer_DrawQueueNon16Bit
    g_SoftwareRasterHandlersAuxiliary with clip minima of 0. Textured packets whose texture is subresource 99 or
    113 of its source are skipped (which textures these are is not known).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawQueueAuxiliary
+void SoftwareRenderer_DrawQueueAuxiliary
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,void *targetBase,
           GraphicsPrimitiveQueue *queue)
 
@@ -212,9 +204,7 @@ SoftwareRenderer_DrawQueueAuxiliary
    Software backend of Graphics_DrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue
    renderer chosen for the current pixel depth (g_SoftwareDrawQueue); draws nothing when the lock fails.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_DrawPrimitiveQueueBridge
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareRenderer_DrawPrimitiveQueueBridge(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue)
 
@@ -243,7 +233,7 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void)
 /* Address: 0x00486060.
    Software backend of g_GraphicsEndScene (slot 0x00485824): nothing to finish (a bare RET).
 */
-void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void)
+void SoftwareGraphicsDispatch_NoOp(void)
 
 {
   return;
@@ -257,8 +247,7 @@ void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void)
    and blits from g_SoftwarePixelFormatConfig. The mode arguments are not used. CF set when the allocation fails;
    on success EAX holds the blue unpack scale, the last value the original computed.
 */
-DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-SoftwarePixelFormat_BaseDisplayModeHook
+DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t adapterIndex,uint32_t bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width)
 
@@ -331,8 +320,7 @@ SoftwarePixelFormat_BaseDisplayModeHook
    the pixels, which are zeroed. Used for the off-screen buffers of the display setup (platform/input/devices.c).
    CF set with the allocation error on failure.
 */
-SoftwareFramebufferResult __thandor_eax_cf_preserve_ecx_edx
-SoftwareFramebuffer_Create
+SoftwareFramebufferResult SoftwareFramebuffer_Create
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
           GraphicsPixelDimension width)
 
@@ -369,7 +357,7 @@ SoftwareFramebuffer_Create
    g_SoftwareFramebufferDestroy (slot 0x004A8EDC): frees a framebuffer made by SoftwareFramebuffer_Create
    (header and pixels are one allocation).
 */
-void __thandor_preserve_eax SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
+void SoftwareFramebuffer_Destroy(SoftwareFramebufferAccess *framebuffer)
 
 {
   g_MemoryApi.free(framebuffer);
@@ -384,8 +372,7 @@ void __thandor_preserve_eax SoftwareFramebuffer_Destroy(SoftwareFramebufferAcces
    display-mode hook and by the display settings dialog (ui/controls/misc.c), which is why it also stores the two
    values in g_SoftwareColorScaleQ16/g_SoftwareColorBiasQ16.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwarePixelFormat_BuildChannelPackTables
+void SoftwarePixelFormat_BuildChannelPackTables
           (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16)
 
 {
@@ -434,9 +421,7 @@ SoftwarePixelFormat_BuildChannelPackTables
    paletted texel tests the alpha of the entry's converted pixel (+4) and writes its low word, but blends the
    entry's ARGB colour (+0) with the alpha of that colour. ABI: all registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlpha16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSourceAlpha16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -484,9 +469,7 @@ SoftwareTextureSource_BlitSourceAlpha16
    opaque write, which converts it through the pack tables again. ABI: all registers are preserved and CF is
    cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlpha32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSourceAlpha32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -523,9 +506,7 @@ SoftwareTextureSource_BlitSourceAlpha32
    paletted texel uses the entry's ARGB colour (+0) for both the alpha test and the blend. ABI: all registers are
    preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfSourceRgb16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitHalfSourceRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -563,9 +544,7 @@ SoftwareTextureSource_BlitHalfSourceRgb16
    the direct-colour path uses >> 2, i.e. it is an ordinary source-alpha blend whose alpha 0xFF still goes
    through the blend tables. ABI: all registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfSourceRgb32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitHalfSourceRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -606,8 +585,7 @@ SoftwareTextureSource_BlitHalfSourceRgb32
    g_SoftwareBilinearInverseFactors. The routine performs no clipping and draws the destination width in
    pixel pairs (an odd last column is left out).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_StretchDirectColorBilinear16
+void SoftwareTextureSource_StretchDirectColorBilinear16
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -711,8 +689,7 @@ SoftwareTextureSource_StretchDirectColorBilinear16
    g_SoftwareBilinearInverseFactors. The routine performs no clipping and draws the destination width in
    pixel pairs (an odd last column is left out).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_StretchDirectColorBilinear32
+void SoftwareTextureSource_StretchDirectColorBilinear32
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -814,8 +791,7 @@ SoftwareTextureSource_StretchDirectColorBilinear32
    negative paletteIndex means ARGB texels, and the counters are do-while loops, so a scale or image size of 0
    runs them 2^32 times. ABI: all registers are preserved and CF is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
+void SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -881,8 +857,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
    converted through g_SoftwarePixelPackTables when opaque. Same quirks as the 16-bit version. ABI: all registers
    are preserved and CF is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
+void SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -947,8 +922,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
    subresource ignores paletteBankIndex. The pixel operation is that of BlitSourceAlpha16, including the palette
    +0/+4 mix. ABI: all registers are preserved and CF is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlphaPaletteBank16
+void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1002,8 +976,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
    subresource ignores paletteBankIndex. The pixel operation is that of BlitSourceAlpha32 (the palette entry's +4
    dword used for everything). ABI: all registers are preserved and CF is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSourceAlphaPaletteBank32
+void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1047,9 +1020,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank32
    is not a blend factor. A paletted texel uses the entry's ARGB colour (+0), unlike the 32-bit version. ABI: all
    registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSaturatedAddRgb16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -1085,9 +1056,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb16
    second dword (+4, the converted pixel), not its ARGB colour, both for the RGB-zero test and for the add. ABI:
    all registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitSaturatedAddRgb32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -1121,8 +1090,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb32
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour. A paletted texel uses the
    entry's ARGB colour (+0). ABI: all registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
+bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1157,8 +1125,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour, and a paletted texel again
    uses the entry's second dword (+4). ABI: all registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
+bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1196,8 +1163,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
    everything. Quirk: the modulated alpha is at most 0xFE, so the opaque branch is never taken. ABI: all
    registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitModulatedSourceAlpha16
+bool SoftwareTextureSource_BlitModulatedSourceAlpha16
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1235,8 +1201,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
    BlitSourceAlpha32, a paletted texel uses the entry's ARGB colour (+0). Quirk: the modulated alpha is at most
    0xFE, so the opaque branch is never taken. ABI: all registers are preserved and CF is cleared.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-SoftwareTextureSource_BlitModulatedSourceAlpha32
+bool SoftwareTextureSource_BlitModulatedSourceAlpha32
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -1274,9 +1239,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha32
    converted through g_SoftwarePixelPackTables, anything else blends it over every pixel (see
    docs/software_raster.md "Blits"). ABI: all registers are preserved and CF is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_FillRectArgb16
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareFramebuffer_FillRectArgb16(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
           GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
@@ -1308,9 +1271,7 @@ SoftwareFramebuffer_FillRectArgb16
    0xFF writes the converted colour, anything else is blended in 8-bit lanes (alpha lane included). ABI: all
    registers are preserved and CF is cleared.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_FillRectArgb32
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void SoftwareFramebuffer_FillRectArgb32(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
           GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
@@ -1344,9 +1305,7 @@ SoftwareFramebuffer_FillRectArgb32
    negative source coordinate moves the destination start instead, so the copy stays aligned. Rows are copied in
    dwords when their byte length allows.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_CopyRegionToOrigin
-          (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
+void SoftwareFramebuffer_CopyRegionToOrigin(GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX,
           SoftwareFramebufferAccess *destination,SoftwareFramebufferAccess *source)
 
@@ -1440,9 +1399,7 @@ SoftwareFramebuffer_CopyRegionToOrigin
    copyHeight. The rectangle is clipped to destination; a negative destination coordinate moves the source start
    instead. Rows are copied in dwords when their byte length allows.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareFramebuffer_CopyOriginToRegion
-          (GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
+void SoftwareFramebuffer_CopyOriginToRegion(GraphicsPixelDimension copyHeight,GraphicsPixelDimension copyWidth,
           GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
           SoftwareFramebufferAccess *source,SoftwareFramebufferAccess *destination)
 
@@ -2902,8 +2859,7 @@ void SoftwareRasterAux_Mode12
    with one of the new size and rebuilds the MMX colour constants from the new pixel format. CF set when the
    chained hook or the depth-buffer allocation fails.
 */
-DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-SoftwareRenderer_SetDisplayMode
+DisplayModeResult SoftwareRenderer_SetDisplayMode
           (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
@@ -3071,8 +3027,7 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
    destination size run 2^32 times, and a destination size of 1 divides by zero; the scale reads
    one row below the blended image.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareTexture_BilinearBlendScaleSubresources
+void SoftwareTexture_BilinearBlendScaleSubresources
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
           uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
@@ -3171,7 +3126,7 @@ SoftwareTexture_BilinearBlendScaleSubresources
    value drops by one (0x01000000), so every new depth is nearer than any value left from earlier epochs. Only when the epoch underflows or
    reaches zero is the width*height depth buffer really cleared (0xFFFFFFFF) and the epoch reset to 0xFF000000.
 */
-void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void)
+void SoftwareRenderer_AdvanceDepthEpoch(void)
 
 {
   int pixelsRemaining;
@@ -3197,8 +3152,7 @@ void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void)
    Zeroes the one-byte-per-pixel mask buffer of a software mask (if it has one), sized by the logical
    width x height of its texture source, 64 bytes per step (eight MMX qword stores).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
+void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 
 {
   uint64_t *maskQwordWriteCursor;
@@ -3234,8 +3188,7 @@ SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
    the block counter is a do-while loop, so fewer than 32 pixels means 2^32 blocks. Nothing happens when
    maskPixels is NULL. ABI: all registers are preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
+void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
 
 {
   uint8_t *mask;
@@ -3266,9 +3219,7 @@ SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *mas
    the radius is (width + height) - radiusStep * 28 (at least 0) and the pixels outside it are set, a shrinking
    hole. Distances are compared squared and unsigned.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_ApplyCircularRegionBit
-          (UiBooleanState32 invertSelection,GraphicsScreenCoordinate centerY,
+void SoftwareMaskBuffer_ApplyCircularRegionBit(UiBooleanState32 invertSelection,GraphicsScreenCoordinate centerY,
           GraphicsScreenCoordinate centerX,SoftwareMaskRadiusStep radiusStep,
           SoftwareMaskRuntimeView *maskRuntime)
 
@@ -3331,8 +3282,7 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
    with x + y < thresholdStep * 40 (from the top-left corner), or with invertSelection every pixel with
    x + y > (width + height) - thresholdStep * 40 (from the bottom-right corner).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
+void SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
           (UiBooleanState32 invertSelection,SoftwareMaskThresholdStep thresholdStep,
           SoftwareMaskRuntimeView *maskRuntime)
 
@@ -3398,8 +3348,7 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
    per step (width * height >> 4 steps; the remainder is left alone). Quirk kept: a mask of fewer than 16 pixels
    makes the do-while counter wrap to 2^32 steps.
 */
-void __thandor_preserve_eax_edx
-SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
+void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
 
 {
   uint32_t maskBlocksRemaining;
@@ -3427,9 +3376,7 @@ SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
    bandIndex above 24, and bandIndex 0 top-down, set nothing. The band is filled in 16-byte steps
    (width * 15 >> 4 of them).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareMaskBuffer_ApplyHorizontalBandBit
-          (UiBooleanState32 reverseRows,TerrainGridMaskIndex bandIndex,
+void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,TerrainGridMaskIndex bandIndex,
           SoftwareMaskRuntimeView *maskRuntime)
 
 {
@@ -3472,8 +3419,7 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
    widthLog2/heightLog2 size. The vertex slots are addressed as packet pointers (slot->vertices[0]), as Ghidra
    typed the swap registers.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
+void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitivePacket *thirdVertexSlot;

@@ -16,8 +16,7 @@
    only refreshes the player's timeout, 0x10004 answers with the requested player's 0x30005 snapshot, and 0x8000A
    stores one chunk of the player's snapshot payload and requests the next one with 0x10009.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendNetwork_HandleHandshakeAndPlayerStatePackets
+void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg)
 
@@ -157,8 +156,7 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
    the snapshot exchange: re-requests a missing chunk, or once every snapshot is complete packs all of them,
    PCK-encodes the block into the outgoing transfer mailbox and queues FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
+bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
 
 {
   FrontendSnapshotTransferFlags playerFlags;
@@ -350,7 +348,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
    first page if it was still waiting for players, the TEXT_ID_NETWORK_HOST_LOST notice with the host's name
    is shown and the player list collapses to the local player alone.
 */
-void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
+void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
 
 {
   uint32_t *frontendRootFlags;
@@ -429,8 +427,7 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
    packet from the host refreshes the session timeout. Commands are resolved to their handlers by
    CommandDispatch_ResolveHandler.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetwork_HandleCommandBatchAndPlayerTimeout
+bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet)
 
 {
@@ -530,7 +527,7 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeout
    Stub in the network backend code that returns 0 and preserves the other registers; nothing references
    it (neither a call nor a table entry).
 */
-uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
+uint32_t Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
 
 {
   return 0;
@@ -539,7 +536,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_0058
 /* Address: 0x00583D30.
    Empty stub in the network backend code (a bare RET); nothing references it.
 */
-void __thandor_void_preserve_eax_ecx_edx Unreferenced_NoOpPreserveRegs_00583D30(void)
+void Unreferenced_NoOpPreserveRegs_00583D30(void)
 
 {
   return;
@@ -549,7 +546,7 @@ void __thandor_void_preserve_eax_ecx_edx Unreferenced_NoOpPreserveRegs_00583D30(
    Stub in the network backend code that returns 0 and preserves the other registers; nothing references
    it.
 */
-uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D40(void)
+uint32_t Unreferenced_ReturnZeroPreserveRegs_00583D40(void)
 
 {
   return 0;
@@ -779,7 +776,7 @@ uint32_t __cdecl Network_Init(void)
    Stops WinSock at program end: WSACleanup of the DLL that Network_Init started. The ws2_32 mode also
    frees its heap-allocated backend instance table (the wsock32 table is static image data).
 */
-void __thandor_preserve_eax Network_Shutdown(void)
+void Network_Shutdown(void)
 
 {
   if (g_NetworkBackendMode == NETWORK_BACKEND_MODE_WSOCK32) {
@@ -803,9 +800,9 @@ void __thandor_preserve_eax Network_Shutdown(void)
    accepts any backendIndex and returns it with CF clear. It stores ECX, not the index, in
    g_NetworkBackendSessionContext (the ws2_32 variant NetworkBackend_SelectInstanceByIndex stores the
    index); the callers pass the index on the stack only.
+   Original register convention: result in EAX, CF set on failure; ECX and EDX preserved.
 */
-NetworkSetSessionResult __thandor_this_eax_cf_preserve_ecx_edx
-NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionReturnValue32 backendIndex)
+NetworkSetSessionResult NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionReturnValue32 backendIndex)
 
 {
   NetworkSetSessionResult sessionResult;
@@ -825,7 +822,7 @@ NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionRetur
    No recovered table points at it; like the other ws2_32 slots it belongs to the skipped part of
    Network_Init.
 */
-bool __thandor_cf_preserve_eax_ecx_edx NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex)
+bool NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex)
 
 {
   NetworkBackendInstanceDescriptorPrefix *selectedBackendDescriptor;

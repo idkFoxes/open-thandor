@@ -908,69 +908,6 @@ typedef pointer32 ImageBaseOffset32;
 #endif
 #endif
 
-#ifndef __thandor_cf_preserve_eax
-#define __thandor_cf_preserve_eax
-#endif
-#ifndef __thandor_cf_preserve_eax_ecx_edx
-#define __thandor_cf_preserve_eax_ecx_edx
-#endif
-#ifndef __thandor_cf_preserve_eax_edx
-#define __thandor_cf_preserve_eax_edx
-#endif
-#ifndef __thandor_cf_preserve_ecx_edx
-#define __thandor_cf_preserve_ecx_edx
-#endif
-#ifndef __thandor_eax_cf_io_preserve_ecx_edx
-#define __thandor_eax_cf_io_preserve_ecx_edx
-#endif
-#ifndef __thandor_eax_cf_preserve_ecx_edx
-#define __thandor_eax_cf_preserve_ecx_edx
-#endif
-#ifndef __thandor_eax_edx_cf_preserve_ecx
-#define __thandor_eax_edx_cf_preserve_ecx
-#endif
-#ifndef __thandor_eax_cf_preserve_edx
-#define __thandor_eax_cf_preserve_edx
-#endif
-#ifndef __thandor_eax_ebx_cf_preserve_ecx_edx
-#define __thandor_eax_ebx_cf_preserve_ecx_edx
-#endif
-#ifndef __thandor_eax_ecx_cf_preserve_edx
-#define __thandor_eax_ecx_cf_preserve_edx
-#endif
-#ifndef __thandor_eax_preserve_ecx_edx
-#define __thandor_eax_preserve_ecx_edx
-#endif
-#ifndef __thandor_ebx_cf_preserve_eax_ecx_edx
-#define __thandor_ebx_cf_preserve_eax_ecx_edx
-#endif
-#ifndef __thandor_preserve_eax
-#define __thandor_preserve_eax
-#endif
-#ifndef __thandor_preserve_eax_edx
-#define __thandor_preserve_eax_edx
-#endif
-#ifndef __thandor_regs_ebx_ecx_preserve_eax_edx
-#define __thandor_regs_ebx_ecx_preserve_eax_edx
-#endif
-#ifndef __thandor_this_eax_cf_preserve_ecx_edx
-#define __thandor_this_eax_cf_preserve_ecx_edx
-#endif
-#ifndef __thandor_void_preserve_eax_ecx
-#define __thandor_void_preserve_eax_ecx
-#endif
-#ifndef __thandor_void_preserve_eax_ecx_edx
-#define __thandor_void_preserve_eax_ecx_edx
-#endif
-#ifndef __thandor_void_preserve_ecx_edx
-#define __thandor_void_preserve_ecx_edx
-#endif
-#ifndef __thandor_eax_ecx_preserve_edx
-#define __thandor_eax_ecx_preserve_edx
-#endif
-#ifndef __thandor_void_preserve_eax
-#define __thandor_void_preserve_eax
-#endif
 
 struct MovieOpenResult {
     uint32_t frameCountOrError; // Physical ABI component EAX
@@ -1210,36 +1147,36 @@ struct NetworkSetSessionResult {
 };
 
 /* Callback/function-definition ABIs. */
-typedef CursorFrameResult __thandor_eax_cf_preserve_ecx_edx GraphicsCursorSetFrameProc(uint32_t arg0);
-typedef DisplayModeResult __thandor_eax_cf_preserve_ecx_edx SoftwareDisplayModeHookProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * arg0);
-typedef FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx GraphicsFramebufferCaptureRegionProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebufferBeginAccessProc(void);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferEndAccessProc(void);
-typedef TextureSizeResult __thandor_eax_edx_cf_preserve_ecx GraphicsTextureSourceGetLogicalSizeProc(uint32_t arg0, GraphicsTextureSourceAsset * arg1);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferFillRectArgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, SoftwareFramebufferAccess * arg9);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyRegionToOriginProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyOriginToRegionProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
-typedef GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx GraphicsTextureSourceResolveAllocationBaseProc(GraphicsTextureSourceAsset * arg0);
-typedef GraphicsPaletteAsset * __thandor_eax_preserve_ecx_edx GraphicsPaletteAssetResolveAllocationBaseProc(GraphicsPaletteAsset * arg0);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceBlitProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceBlitModulatedSourceAlphaProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceSaturatedAddRgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceTestOpaquePixelProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, uint32_t arg4, GraphicsTextureSourceAsset * arg5);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceTiledBlitProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceTiledSaturatedAddRgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceStretchDirectColorBilinearProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3, uint32_t arg4, GraphicsTextureSourceAsset * arg5, SoftwareFramebufferAccess * arg6);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
-typedef SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx SoundCreateSampleVoiceSetProc(SoundSampleAsset * arg0);
-typedef PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx SoundCreatePcmVoiceSetProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, void * arg4);
-typedef SoundPlayResult __thandor_eax_cf_preserve_ecx_edx SoundPlayVoiceProc(uint32_t arg0, uint32_t arg1, DirectSoundVoiceSet * arg2);
-typedef void __thandor_void_preserve_eax_ecx_edx SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * arg0);
-typedef void __thandor_void_preserve_eax_ecx_edx SoundReleasePcmVoiceSetProc(DirectSoundVoiceSet * arg0);
-typedef void __thandor_void_preserve_eax_ecx_edx SoundStopVoiceProc(IDirectSoundBuffer * arg0);
-typedef bool __thandor_cf_preserve_eax_ecx_edx SoundIsVoicePlayingProc(IDirectSoundBuffer * arg0);
-typedef void __thandor_void_preserve_eax_ecx_edx SoundStopAllVoicesProc(void);
-typedef void __thandor_void_preserve_eax_ecx_edx SoundSetVoiceGainsProc(uint32_t arg0, uint32_t arg1, IDirectSoundBuffer * arg2);
+typedef CursorFrameResult GraphicsCursorSetFrameProc(uint32_t arg0);
+typedef DisplayModeResult SoftwareDisplayModeHookProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3);
+typedef void GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * arg0);
+typedef FramebufferCaptureResult GraphicsFramebufferCaptureRegionProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3);
+typedef bool GraphicsFramebufferBeginAccessProc(void);
+typedef void GraphicsFramebufferEndAccessProc(void);
+typedef TextureSizeResult GraphicsTextureSourceGetLogicalSizeProc(uint32_t arg0, GraphicsTextureSourceAsset * arg1);
+typedef void GraphicsFramebufferFillRectArgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, SoftwareFramebufferAccess * arg9);
+typedef void GraphicsFramebufferCopyRegionToOriginProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
+typedef void GraphicsFramebufferCopyOriginToRegionProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
+typedef GraphicsTextureSourceAsset * GraphicsTextureSourceResolveAllocationBaseProc(GraphicsTextureSourceAsset * arg0);
+typedef GraphicsPaletteAsset * GraphicsPaletteAssetResolveAllocationBaseProc(GraphicsPaletteAsset * arg0);
+typedef bool GraphicsTextureSourceBlitProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
+typedef bool GraphicsTextureSourceBlitModulatedSourceAlphaProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
+typedef bool GraphicsTextureSourceSaturatedAddRgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
+typedef bool GraphicsTextureSourceTestOpaquePixelProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, uint32_t arg4, GraphicsTextureSourceAsset * arg5);
+typedef void GraphicsTextureSourceTiledBlitProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
+typedef void GraphicsTextureSourceTiledSaturatedAddRgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
+typedef void GraphicsTextureSourceStretchDirectColorBilinearProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3, uint32_t arg4, GraphicsTextureSourceAsset * arg5, SoftwareFramebufferAccess * arg6);
+typedef void GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
+typedef void GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
+typedef SampleVoiceSetResult SoundCreateSampleVoiceSetProc(SoundSampleAsset * arg0);
+typedef PcmVoiceSetResult SoundCreatePcmVoiceSetProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, void * arg4);
+typedef SoundPlayResult SoundPlayVoiceProc(uint32_t arg0, uint32_t arg1, DirectSoundVoiceSet * arg2);
+typedef void SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * arg0);
+typedef void SoundReleasePcmVoiceSetProc(DirectSoundVoiceSet * arg0);
+typedef void SoundStopVoiceProc(IDirectSoundBuffer * arg0);
+typedef bool SoundIsVoicePlayingProc(IDirectSoundBuffer * arg0);
+typedef void SoundStopAllVoicesProc(void);
+typedef void SoundSetVoiceGainsProc(uint32_t arg0, uint32_t arg1, IDirectSoundBuffer * arg2);
 struct FrontendInitResult {
     uint32_t frontendRootOrError; /* EAX result/error value. */
     bool failed;               /* Carry-flag status. */
@@ -1290,7 +1227,7 @@ struct TextResolveResult {
     uint16_t *text; // Physical ABI component EAX
     bool notFound; // Physical ABI component CF
 };
-typedef TextureSourceLoadResult __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16);
+typedef TextureSourceLoadResult GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16);
 
 /* Recovered semantic scalar types used by canonical records. */
 typedef uint32_t ResourceExtractionDescriptor32;
@@ -8995,7 +8932,7 @@ typedef enum WideNumberFormatFlags {
     WIDE_FORMAT_WRITE_TERMINATOR=64,
     WIDE_FORMAT_GROUP_THOUSANDS=128
 } WideNumberFormatFlags;
-typedef uint32_t __thandor_eax_preserve_ecx_edx WideNumberFormatUtf16Proc(WideNumberFormatFlags arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, int32_t arg4, uint16_t * arg5);
+typedef uint32_t WideNumberFormatUtf16Proc(WideNumberFormatFlags arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, int32_t arg4, uint16_t * arg5);
 
 struct RichTextExtentRegs {
     uint32_t widthPixels; 
@@ -12150,15 +12087,6 @@ struct AiCombatTargetSelectionResult {
 typedef int WSAAddressToStringA_Proc(WinSockAddress *address, uint32_t addressLength, void *protocolInfo, uint8_t *addressString, uint32_t *addressStringLength);
 
 
-#ifndef __thandor_void_preserve_eax_ecx_edx_mm0
-#define __thandor_void_preserve_eax_ecx_edx_mm0
-#endif
-#ifndef __thandor_eax_edx_cf_preserve_ecx_mm0
-#define __thandor_eax_edx_cf_preserve_ecx_mm0
-#endif
-#ifndef __thandor_void_preserve_ecx_edx_mm1
-#define __thandor_void_preserve_ecx_edx_mm1
-#endif
 
 
 struct WorldOwnerListNode100 {

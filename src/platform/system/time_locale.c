@@ -14,7 +14,7 @@
    Stops every periodic timer: unregisters each callback still present in the 32 slots (which also
    kills its WinMM timer).
 */
-void __thandor_preserve_eax TimerSystem_Shutdown(void)
+void TimerSystem_Shutdown(void)
 
 {
   uint32_t callbackSlotByteOffset;
@@ -38,7 +38,7 @@ void __thandor_preserve_eax TimerSystem_Shutdown(void)
    AM/PM designators) in g_LocaleSystemState for the date and number formatters.
    Numeric fields are parsed from the GetLocaleInfoA text; string fields are widened to UTF-16.
 */
-void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
+void Locale_Init(void)
 
 {
   CPU_DetectFeatures();
@@ -88,8 +88,7 @@ void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
    "NL", "E", "USA"); unknown codes give "-". Installed statically in the function-pointer slot at
    0x004027B0 (between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16).
 */
-LocaleRegionTagPacked __thandor_eax_preserve_ecx_edx
-Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode countryCode)
+LocaleRegionTagPacked Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode countryCode)
 
 {
   LocaleRegionTagPacked packedRegionTag;
@@ -170,8 +169,7 @@ void __stdcall WinMM_TimerDispatchCallback
    frequencyHz times per second (period 1000 / frequencyHz ms, truncated) through
    WinMM_TimerDispatchCallback, on WinMM's timer thread. With all slots taken the request is ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback)
+void TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback)
 
 {
   WinMmTimerPeriodMilliseconds intervalMilliseconds;
@@ -341,7 +339,7 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
    Returns today's local date packed as (year << 16) | (month << 8) | day, so packed dates compare in
    calendar order.
 */
-uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentDate(void)
+uint32_t Locale_GetPackedCurrentDate(void)
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -480,7 +478,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
 /* Address: 0x005872B0.
    Returns the current local time packed as (hour << 16) | (minute << 8) | second.
 */
-uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
+uint32_t Locale_GetPackedCurrentTime(void)
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -494,7 +492,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
    Guesses the player's telephone country code from the Windows user language: English 44, German 49,
    French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
 */
-uint32_t __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(void)
+uint32_t Locale_GetDefaultTelephoneCountryCode(void)
 
 {
   LCID userLocaleId;
@@ -532,7 +530,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(vo
    Copies the default computer label (L"Computer", or the machine name FileSystem_Init put there) to
    destination: always the whole 0x40-byte buffer including its zero padding.
 */
-void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
+void Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
 
 {
   int copyDwordsRemaining;
@@ -552,7 +550,7 @@ void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(ui
    Stops the periodic timer of callback: clears its slot (the first match) and kills the paired WinMM
    timer; the stale timer id stays in the table. An unknown callback is ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
+void TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
 
 {
   int callbackSlotByteOffset;

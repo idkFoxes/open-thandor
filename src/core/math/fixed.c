@@ -17,8 +17,7 @@
    of the product again. Used by the army movement code to add a local rotation to a heading.
    Returns EAX = azimuth, EBX = elevation, EDX = roll of the composed rotation.
 */
-FixedEulerAnglesEaxEbxEdx12 __thandor_eax_edx_cf_preserve_ecx
-FixedTransform_ComposeEulerAnglesRegs
+FixedEulerAnglesEaxEbxEdx12 FixedTransform_ComposeEulerAnglesRegs
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2)
 
@@ -130,8 +129,7 @@ FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsF
    turn), EAX = floor(sqrt(component0^2 + component1^2)). Used by the army movement and combat code and the
    shot catalog for planar headings and distances.
 */
-FixedLengthAngleEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-FixedMath_Vector2AngleAndLengthRegs
+FixedLengthAngleEaxEdx8 FixedMath_Vector2AngleAndLengthRegs
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1)
 
 {
@@ -183,8 +181,7 @@ FixedTransform_ApplyEulerRotationToVectorRegs
    attachment nodes with the weapon's backward-step scale and -elapsedTicks, which moves the offset outward
    along its direction.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedVector_StepBackwardAlongOwnDirection
+void FixedVector_StepBackwardAlongOwnDirection
           (FixedVectorStepMultiplier32 stepMultiplier,FixedMathScale32 directionScale,
           FixedVectorStateAddress32 vectorState)
 
@@ -206,8 +203,7 @@ FixedVector_StepBackwardAlongOwnDirection
    joint of s0 and s1). The height over the base comes from 64-bit sums of squares; when the triangle cannot
    close or the base is at most 0x10, both angles are 0 when s0 < s2 (unsigned) and 0x8000 (half turn) otherwise.
 */
-FixedTriangleJointAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
+FixedTriangleJointAnglesEaxEdx8 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
 
 {
   int64_t projectionOrHeightSquared;
@@ -262,8 +258,7 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
    Returns the length floor(sqrt(x*x + y*y + z*z)) of a 3D vector; the squares are summed in 64 bits so Q12
    world coordinates cannot overflow, and the result has the same fixed-point scale as the components.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
+uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z)
 
 {
@@ -282,8 +277,7 @@ FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
    step of FixedTransform_ExtractEulerAnglesRegs. No caller, function-pointer table or data reference to
    0x00484E50 was found in the port or the image data.
 */
-FixedVectorAngles __thandor_preserve_eax
-FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
+FixedVectorAngles FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 {
   FixedVectorAngles forwardAngles;
@@ -299,8 +293,7 @@ FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
    2^32 / length (unsigned 64/32 DIV) and shifted right by 4. Vectors shorter than 2 give {0, 0, 0}.
    Used to normalize the frustum plane normals and model light directions.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
+void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
 
 {
   uint32_t inputLengthQ12;
@@ -430,9 +423,7 @@ void __cdecl CosineDerivedLookupTables_Init(void)
    x = cos(az)cos(el), y = sin(az)cos(el), z = sin(el). The products are formed with the sum-to-product
    identities, e.g. cos(az)cos(el) = (cos(az+el) + cos(az-el)) / 2, so only table lookups are needed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedMath_WriteDirectionQ28
-          (GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
+void FixedMath_WriteDirectionQ28(GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
   uint32_t azimuthPlusElevationAngle16;
@@ -459,8 +450,7 @@ FixedMath_WriteDirectionQ28
    using the Q28 tables, so the results keep the scale's fixed-point format. Used for terrain direction
    records and by the rotation basis builder.
 */
-FixedSinCosEdxEax8 __thandor_eax_edx_cf_preserve_ecx
-FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
+FixedSinCosEdxEax8 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 
 {
   uint32_t sinScaled;
@@ -488,8 +478,7 @@ FixedSinCosEdxEax8 FixedMath_SinCosQ28(AngleTurn32 angle)
    in 64 bits and shifted right by 28); the translation is ignored, so the direction keeps its scale.
    Used by the model lighting to rotate surface normals.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedTransform_ApplyDirection
+void FixedTransform_ApplyDirection
           (GraphicsFixedVec3 *output,GraphicsFixedVec3 *direction,GraphicsFixedMatrix3x4 *transform)
 
 {
@@ -525,8 +514,7 @@ FixedTransform_ApplyDirection
    rotation, i.e. world to local), summing in 64 bits and shifting right by 28; the translation is ignored.
    Used by ModelRender_PrepareViewDirections to bring the view and auxiliary directions into model space.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedTransform_ApplyTransposeDirection
+void FixedTransform_ApplyTransposeDirection
           (GraphicsFixedVec3 *output,GraphicsFixedMatrix3x4 *transform,GraphicsFixedVec3 *direction)
 
 {
@@ -563,8 +551,7 @@ FixedTransform_ApplyTransposeDirection
    and the output translation is -(outputBasis * inputTranslation). Used for the view transform and the
    leg suspension.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
+void FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
 
 {
   int64_t cofactorOrTranslationProduct;
@@ -659,8 +646,7 @@ FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix
    Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12 (SHRD), so the result is Q12.
    Used by the model renderer for back-face and light-facing tests.
 */
-int32_t __thandor_eax_preserve_ecx_edx
-FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
+int32_t FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
   int64_t dotProductAccumulatorQ24;
@@ -677,8 +663,7 @@ FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
    Dot product summed in 64 bits and shifted right by 28: with one Q28 unit vector (a frustum plane normal or
    a direction) the result keeps the other vector's scale. Used for frustum culling and effect motion.
 */
-int32_t __thandor_eax_preserve_ecx_edx
-FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
+int32_t FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
   int64_t dotProductAccumulatorQ56;
@@ -696,8 +681,7 @@ FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
    The parameters are in the original's stack order: output, rightOperand, leftOperand. Used to build the
    frustum plane normals from the corner rays.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
+void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
                   GraphicsFixedVec3 *leftOperand)
 
 {
@@ -748,8 +732,7 @@ FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 
    rotation basis of the three rotation angles and returns it in EAX = x, EBX = y, EDX = z. Works through the
    shared model-transform scratch globals; called only by FixedTransform_RotateDirectionScaledRegs.
 */
-FixedVectorXEaxYEbxZEdx12 __thandor_eax_edx_cf_preserve_ecx
-FixedTransform_RotateDirectionScaledCoreRegs
+FixedVectorXEaxYEbxZEdx12 FixedTransform_RotateDirectionScaledCoreRegs
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
@@ -778,8 +761,7 @@ FixedTransform_RotateDirectionScaledCoreRegs
    as 16-bit angles (the horizontal length is summed in 64 bits). Used by the army suspension, the graphics
    direction setup and FixedVector_StepBackwardAlongOwnDirection.
 */
-FixedElevationAzimuth __thandor_preserve_eax
-FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
+FixedElevationAzimuth FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
 
 {
   uint32_t magnitudeOrElevationAngle;
@@ -845,7 +827,7 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
    Length of a 3D vector: floor(sqrt(x*x + y*y + z*z)), with the squares summed in 64 bits so Q12 components
    cannot overflow. The result has the components' fixed-point scale.
 */
-uint32_t __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
+uint32_t FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
 
 {
   uint32_t vectorLengthQ12;
@@ -865,8 +847,7 @@ uint32_t __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *
    Length of the 2D vector (x, y): floor(sqrt(x*x + y*y)), with the squares summed in 64 bits so Q12
    components cannot overflow. The result has the components' fixed-point scale.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
+uint32_t FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
 
 {
   uint32_t vectorLengthQ12;
@@ -946,9 +927,7 @@ FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azim
    output has the scale's fixed-point format. x and y use the sum-to-product sums (twice the value), hence the
    shift by 29 instead of 28. Used for the frustum corner rays and by FixedTransform_RotateDirectionScaledCoreRegs.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedMath_WriteDirectionScaled
-          (GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
+void FixedMath_WriteDirectionScaled(GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           FixedMathScale32 scale)
 
 {
@@ -985,9 +964,7 @@ FixedMath_WriteDirectionScaled
    innerTransform first and then by outerTransform. Each Q28 basis product is summed in 64 bits and
    shifted back by 28; the inner translation is rotated by the outer basis and the outer translation added.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedTransform_Compose
-          (GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *innerTransform,
+void FixedTransform_Compose(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *innerTransform,
           GraphicsFixedMatrix3x4 *outerTransform)
 
 {
@@ -1070,8 +1047,7 @@ FixedTransform_Compose
    atan2(z, sqrt(x*x + y*y)) and ECX = azimuth atan2(y, x); EAX is preserved. It is the inverse of
    FixedMath_WriteDirectionQ28 and is used for aiming and view angles.
 */
-FixedVectorAngles __thandor_preserve_eax
-FixedMath_VectorToAngles3Regs
+FixedVectorAngles FixedMath_VectorToAngles3Regs
           (FixedMathVectorComponent32 z,FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
 {
@@ -1098,9 +1074,7 @@ FixedMath_VectorToAngles3Regs
    Moves a point through a rigid transform: output = basis * point + translation, where each row is a Q28
    dot product summed in 64 bits and shifted back by 28 (SHLD 4), so the point keeps its own scale.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedTransform_ApplyPoint
-          (GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
+void FixedTransform_ApplyPoint(GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
   int row2FirstCoefficientQ28;
@@ -1135,9 +1109,7 @@ FixedTransform_ApplyPoint
    third column is the forward direction (elevation, azimuth), the rest follows from the roll about it.
    Only the nine basis coefficients are written; callers set the translation themselves.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FixedTransform_BuildRotationBasis
-          (GraphicsFixedMatrix3x4 *output,AngleTurn32 rollAngle,AngleTurn32 elevationAngle,
+void FixedTransform_BuildRotationBasis(GraphicsFixedMatrix3x4 *output,AngleTurn32 rollAngle,AngleTurn32 elevationAngle,
           AngleTurn32 azimuthAngle)
 
 {
@@ -1196,8 +1168,7 @@ FixedTransform_BuildRotationBasis
    eighth-turn sectors, rotating (x, y) so the remaining angle is within +-1/16 turn, which an odd
    polynomial in the ratio numerator/denominator approximates. (0, 0) yields 0.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
+uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
 {
   uint32_t angle16Result;
@@ -1283,7 +1254,7 @@ FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x
    Inputs of 2^29 or more give wrong results (the shift wraps). No caller, function-pointer table or data
    reference to 0x004846A0 was found in the port or the image data.
 */
-uint32_t __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint32_t inputValue)
+uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue)
 
 {
   int highestBitOrNormalized;
@@ -1314,7 +1285,7 @@ uint32_t __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint32_t inputVa
    The start value is the power of two just above the root (from the highest set bit, BSR); three Newton
    steps x = (x + value / x) / 2 follow, the divisions being 64/32-bit DIVs.
 */
-uint32_t __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
+uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
 
 {
   uint8_t initialRootShift;

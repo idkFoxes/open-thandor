@@ -19,8 +19,7 @@ static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node);
    neither black and transparent; flag 0x1000 always makes it transparent. The step limit comes from the
    intensity clamp table (GraphicsIntensityClampTable_Initialize).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
+void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 {
   uint8_t *clampTable;
@@ -71,8 +70,7 @@ ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
    translation changed: composes from the node's parent if it has one, else from the node itself. Only one
    level is climbed, so callers pass a root node or a direct child of it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRuntime)
+void ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRuntime)
 
 {
   if (modelNodeRuntime->parentNode == NULL) {
@@ -88,8 +86,7 @@ ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRuntime)
    Gives a model node and all its descendants the palette and texture set. Only
    called by itself in the executable; the faction code uses ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
+void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,ModelRuntimeNode *node)
 
 {
@@ -112,9 +109,7 @@ ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
    Switches the models of an army to the variants its faction's technology selects: runs
    ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive on the army's model runtime hierarchy.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
-          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime)
+void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
@@ -126,8 +121,7 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
    Grows the global model bounding box (g_ModelBoundsMinimum/Maximum X/Y/Z) by every mesh vertex of the node,
    transformed by the node's world transform, and then by all its descendants. The caller seeds the box first.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNode)
+void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNode)
 
 {
   ModelResourceHitTestAndRenderView210 *resourceView;
@@ -188,8 +182,7 @@ ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNod
    ModelRender_DrawMeshGroupsWithTemporaryTransform): rotates the camera-to-node vector into the model's frame
    (keeping its two stored rotation angles) and replaces the third angle by the view direction plus a quarter turn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime)
+void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime)
 
 {
   uint32_t viewFacingAngle16;
@@ -215,8 +208,7 @@ ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime)
    ModelRender_DrawMeshGroupsWithTemporaryTransform): the rotation basis is built from the direction of the
    camera-to-node vector (azimuth + half turn, negated elevation).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
+void ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
 
 {
   uint32_t angle0;
@@ -237,8 +229,7 @@ ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
    model radius and, per child, the child's distance from the node plus the child's subtree radius. Read by
    rendering, the selection overlay and ModelNodeRuntime_UpdateDepthBinMasks.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRuntime)
+void ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRuntime)
 
 {
   ModelRuntimeNode *childNode;
@@ -275,9 +266,7 @@ ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRunti
    world y, each covering the node's position +- the larger of minimumRadius (the army's placement radius)
    and the subtree bounding radius. Placement and combat test these masks before exact distance checks.
 */
-void __thandor_preserve_eax
-ModelNodeRuntime_UpdateDepthBinMasks
-          (DepthIntervalRadius32 minimumRadius,ModelRuntimeNode *modelNodeRuntime)
+void ModelNodeRuntime_UpdateDepthBinMasks(DepthIntervalRadius32 minimumRadius,ModelRuntimeNode *modelNodeRuntime)
 
 {
   DepthBinMask32 binMask;
@@ -326,8 +315,7 @@ ModelNodeRuntime_TransformLocalPointRegs
    relative by adding the node's local rotation angle 2 (+0x2C).
 */
 
-ModelRelativeDirectionAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-ModelNodeRuntime_ComputeRelativeDirectionAngle
+ModelRelativeDirectionAnglesEaxEdx8 ModelNodeRuntime_ComputeRelativeDirectionAngle
           (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
@@ -358,8 +346,7 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
    reference point to the node (to the box centre with context flag 0x80000); otherwise the children are tested
    in order. missed is set (CF) when nothing was hit.
 */
-ModelHitTestResult __thandor_eax_cf_preserve_ecx_edx
-ModelRuntimeNode_HitTestProjectedBoundsAndChildren
+ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerContextRuntimeState118 *context)
 
@@ -605,8 +592,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildren
    node's mesh group, then the children are tested. Returns the nearest distance and node (hit, CF set), or
    MODEL_RAYCAST_NO_HIT_DISTANCE.
 */
-ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
-ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
+ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
 
 {
   GraphicsFixedVec3 **triangleCountField;
@@ -736,8 +722,7 @@ ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
    yields the variant the faction's technology selects, which is created in the matching child slot and then
    built the same way. CF set (true) when a child cannot be created.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime)
@@ -785,8 +770,7 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursive
    ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive it expects a non-NULL node and skips empty child
    slots itself.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
+void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeNode *modelNode)
 
@@ -813,8 +797,7 @@ ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
    that points at targetRuntimeId, so no model keeps aiming at a destroyed object. The dword view: [0] model
    definition, [3] attachment count, [0x1B] target, [0x50 + 8*i] attached child model runtime.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime)
+void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime)
 
 {
   int childrenRemaining;
@@ -837,9 +820,7 @@ ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,
    Sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on every node of the model hierarchy rooted at *modelRuntime
    that does not have flag 0x08 yet; the world context is not used.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
-          (WorldRuntimeContext *contextArg,int *modelRuntime)
+void ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(WorldRuntimeContext *contextArg,int *modelRuntime)
 
 {
   /* Rewritten from the assembly (0x0051C100-0x0051C162). */
@@ -886,7 +867,7 @@ static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node)
   }
 }
 
-int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
+int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 
 {
   /* Rewritten from the assembly (0x0051C1F0-0x0051C23F). */
@@ -901,8 +882,7 @@ int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumArmour(int *modelRun
    definition, a NULL result from there stores the record in the next of the six attachments140[] entries.
    Returns the caller's EDI (modelRuntimeContinuityEdi) otherwise.
 */
-ModelRuntimeSlot * __thandor_eax_preserve_ecx_edx
-ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
+ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntimeContinuityEdi,ModelRuntimeSlot *modelRuntime,
           MdlSerializedNodeHeader38 *definitionNode)
 
@@ -964,8 +944,7 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
    nodeFlags is set are not instantiated (NULL); for such a child an attachment point is recorded in the model
    runtime so that another model can be attached there later. CF set when a world node could not be allocated.
 */
-ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ModelNodeRuntime_CreateHierarchyRecursive
+ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader38 *definitionNode,
           WorldRuntimeContext *worldRuntime)
@@ -1114,8 +1093,7 @@ ModelNodeRuntime_CreateHierarchyRecursive
    Frees a model node and its whole subtree: releases the children first, clears the parent's childNodes[]
    entries that point at this node and finally unlinks the node from its world owner list.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
+void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
 
 {
   uint32_t childrenRemaining;
@@ -1151,8 +1129,7 @@ ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
    The dword view: [0] model definition, [1] linked runtime, [2] army, [3] attachment count, [0x3B] class
    state flags (+0xEC), [0x50 + 8*i] attached child model runtime.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
+void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 
 {
   int *categoryDamageSlot;
@@ -1214,8 +1191,7 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
    hierarchies. EAX carries the ratio and EDX the Q12 unity 0x1000 (the 8-byte return type models that
    register pair). Unrelated to the draw scale at node +0xC0.
 */
-ModelRuntimeScaleRatioRegisterPairQ12 __thandor_eax_edx_cf_preserve_ecx
-ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
+ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *childModelRuntime;
@@ -1296,8 +1272,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
    within one step. outsideTolerance (CF) is set while the remaining difference exceeds +-0x3FF.
 */
 
-AimSmoothResult __thandor_eax_cf_preserve_ecx_edx
-ModelNodeRuntime_SmoothYawTowardTarget
+AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState,
           AngleTurn32 targetYawAngle16)
 
@@ -1384,8 +1359,7 @@ ModelNodeRuntime_SmoothYawTowardTarget
    without wrap-around. outsideTolerance (CF) is set while the remaining difference exceeds +-0x3FF.
 */
 
-AimSmoothResult __thandor_eax_cf_preserve_ecx_edx
-ModelNodeRuntime_SmoothPitchTowardTarget
+AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState,
           AngleTurn32 targetPitchAngle16)
 
@@ -1471,8 +1445,7 @@ ModelNodeRuntime_SmoothPitchTowardTarget
    Sets the packed ARGB tint of a model node and of all its descendants (the state tint of a whole model,
    see ModelNodeRuntime_UpdateStateTintRecursive).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode)
+void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode)
 
 {
   uint32_t childrenRemaining;
@@ -1495,8 +1468,7 @@ ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *mode
    angles; then every child's world transform = parent world transform x child local transform, the child's world
    Euler angles are extracted from it, the parent's tint is inherited, and the child's subtree is processed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRuntime)
+void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 {
   ModelRuntimeNode *currentChild;
@@ -1553,9 +1525,7 @@ ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRunt
    definition (+0x238) that the faction's technology unlocks. The armour points (+0x3C) are rescaled to the new
    definition's maximum (+0x60) so the condition stays the same, and the army's derived metrics are rebuilt.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-          (FactionRuntimeIndex factionIndex,int *modelRuntime)
+void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntimeIndex factionIndex,int *modelRuntime)
 
 {
   PckModelDefinitionIdCatalog modelDefinitionId;

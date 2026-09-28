@@ -25,8 +25,7 @@
    texture and registers it in g_GraphicsTextureSlots. A subresource whose allocation or registration
    fails is left NULL; only a failed metadata allocation fails the call (CF set).
 */
-TextureSetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
+TextureSetResult GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *setSourceAsset;
@@ -105,7 +104,7 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
    changed: Glide reinitialises its own resources; for DirectDraw each resource's surfaces are released and
    its staging texture rebuilt, while the device texture is recreated lazily when next used.
 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsTexture_RebuildAllStagingTextures(void)
+void GraphicsTexture_RebuildAllStagingTextures(void)
 
 {
   GraphicsTextureResource *texture;
@@ -135,8 +134,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsTexture_RebuildAllStagingTextur
    g_GraphicsTextureSlots, released and freed, then the set metadata is freed. Returns the source asset
    the set was built from, so the caller can release it too.
 */
-GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
-GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
+GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *texture;
@@ -185,8 +183,7 @@ GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
    g_GraphicsCreateTextureSet (installed as g_GraphicsTextureSetLoadPackage). When the set cannot be created the
    loaded asset is released again and CF is set with the creation error; a failed load returns its own error.
 */
-TextureSetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16)
+TextureSetResult GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16)
 
 {
   GraphicsTextureSourceAsset *loadedSourceOrError;
@@ -215,7 +212,7 @@ GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16)
    Counterpart of GraphicsTextureSet_LoadPackage (installed as g_GraphicsTextureSetReleasePackage): destroys the
    texture set through g_GraphicsDestroyTextureSet and releases the 'gfx' source asset that call hands back.
 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
+void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set)
 
 {
   GraphicsTextureSourceAsset *sourceAsset;
@@ -231,8 +228,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSet_ReleasePackage(Graph
    (GraphicsTextureSet_AllocateMetadata) own no renderer textures, so there is nothing to re-upload until
    Graphics_Init installs GraphicsTextureSet_RefreshColor/RefreshAlpha.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   return;
@@ -254,8 +250,7 @@ void __cdecl GraphicsTexture_RebuildNoOp(void)
    extent the tiled blits repeat (installed as g_GraphicsTextureSourceGetLogicalSize). CF is set when the asset
    is not a 'gfx' asset or the index is out of range.
 */
-TextureSizeResult __thandor_eax_edx_cf_preserve_ecx
-GraphicsTextureSource_GetLogicalSizeRegs
+TextureSizeResult GraphicsTextureSource_GetLogicalSizeRegs
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
@@ -293,9 +288,7 @@ GraphicsTextureSource_GetLogicalSizeRegs
    for direct ARGB and paletted subresources alike. CF is clear for transparent pixels, points outside the
    stored pixels and invalid input.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsTextureSource_TestOpaquePixel
-          (GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
@@ -365,9 +358,7 @@ GraphicsTextureSource_TestOpaquePixel
    repeatEnd (GRAPHICS_TILED_BLIT_ONE_TILE: one tile past the origin), clipped to clipMax and the framebuffer;
    CF is always clear on return.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledSourceAlpha
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
           GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
@@ -436,9 +427,7 @@ GraphicsTextureSource_BlitTiledSourceAlpha
    GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitHalfSourceRgb as the per-tile
    blit (installed as g_GraphicsTextureSourceBlitTiledHalfSourceRgb).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledHalfSourceRgb
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
           GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
@@ -507,9 +496,7 @@ GraphicsTextureSource_BlitTiledHalfSourceRgb
    GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitSaturatedAddRgb as the per-tile
    blit (installed as g_GraphicsTextureSourceBlitTiledSaturatedAddRgb).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledSaturatedAddRgb
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
           GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
@@ -578,8 +565,7 @@ GraphicsTextureSource_BlitTiledSaturatedAddRgb
    GraphicsTextureSource_BlitTiledSourceAlpha with g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd as the
    per-tile blit (installed as g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
+void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
@@ -655,8 +641,7 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
    shrunk to the result at the end. CF is set with FATAL_ERROR_GFX_ASSET_INVALID, 0x2D (nothing but
    background), FATAL_ERROR_GENERAL_FAILURE (work area too small) or the allocator's error.
 */
-TextureSourceDecomposeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_DecomposeSubresourceRegions
+TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
@@ -1325,8 +1310,7 @@ DecomposeFreeWorkBufferAndFail:
    to the current framebuffer format. If the conversion fails the entry is released again; CF is set with the
    load or conversion error.
 */
-TextureSourceLoadResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16)
+TextureSourceLoadResult GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16)
 
 {
   GraphicsPaletteTextureSourceAsset *loadedSourceOrError;
@@ -1397,8 +1381,7 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
    g_GraphicsTextureSourceConvertPaletteEntries). CF is set with FATAL_ERROR_GFX_ASSET_INVALID for a NULL or
    non-'gfx' asset.
 */
-PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset)
+PaletteTextureSourceResult GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset)
 
 {
   int paletteEntriesRemaining;
@@ -1435,8 +1418,7 @@ GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *s
    Releases a texture source loaded by GraphicsTextureSource_LoadPackageAsset back to the resource cache
    (g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset)
+void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *allocation;
@@ -1450,8 +1432,7 @@ GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsse
 /* Address: 0x004AD790.
    Frees a copy made by GraphicsTextureSource_CloneAsset (g_GraphicsTextureSourceLifecycleCallbacks3.releaseClone).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset)
+void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *allocation;
@@ -1466,8 +1447,7 @@ GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset
    Returns the allocation that holds a texture source (installed as g_GraphicsTextureSourceResolveAllocationBase);
    the asset is its own allocation, but both release callbacks ask this slot first.
 */
-GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
-GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset)
+GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   return sourceAsset;
@@ -1514,8 +1494,7 @@ GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *source
    matching palette (a grey ramp for direct pixels) is built. A lost surface is restored first;
    g_ActiveTextureUploads is raised for the duration.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
+void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
 
 {
   int offsetOrGreenTopBit;
@@ -1928,8 +1907,7 @@ GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn:
    GraphicsTexture_UploadColor_1x at half size (g_GraphicsDispatchTable.colorUpload[1]): every destination
    pixel is the average of a 2x2 source block (8-bit surfaces take the top-left source pixel).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
+void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
 
 {
   DDPIXELFORMAT *destinationFormat;
@@ -2446,8 +2424,7 @@ GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn:
    GraphicsTexture_UploadColor_1x at quarter size (g_GraphicsDispatchTable.colorUpload[2]): every destination
    pixel is the average of a 4x4 source block (8-bit surfaces take the top-left source pixel).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
+void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
 
 {
   int offsetOrGreenTopBit;
@@ -3173,8 +3150,7 @@ GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn:
    full size, into the alpha bits of the staging surface with all RGB bits set (white). 8-bit surfaces are
    skipped. A lost surface is restored first; g_ActiveTextureUploads is raised for the duration.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
+void GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
 
 {
   IDirectDrawSurface3 *stagingSurface3;
@@ -3284,8 +3260,7 @@ GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
    GraphicsTexture_UploadAlpha_1x at half size (g_GraphicsDispatchTable.alphaUpload[1]): each destination alpha
    is the 10-bit sum of a 2x2 block of source bytes, scaled to the alpha mask.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
+void GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
 
 {
   int nextRemaining;
@@ -3413,8 +3388,7 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
    upload this is no full 4x4 average, each destination alpha is the sum of the four source bytes at (0,0),
    (2,0), (0,2) and (2,2) of its block, scaled like the 2x version.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
+void GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
 
 {
   int nextRemaining;
@@ -3544,8 +3518,7 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
    g_GraphicsRefreshTextureColor): the colour upload for the texture's downsample level refills the staging texture,
    and an existing device texture is reloaded from it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *texture;
@@ -3567,8 +3540,7 @@ GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,Graphi
    Like GraphicsTextureSet_RefreshColor, but re-uploads only the alpha channel of the subresource
    (g_GraphicsRefreshTextureAlpha; used for the shading texture set).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *texture;
@@ -3593,8 +3565,7 @@ GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Graphi
    used device texture is evicted and the creation retried; any other failure leaves the device fields NULL.
    Preserves EAX; callers keep texture in it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
+void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
 
 {
   D3DDEVICEDESC_DX6 *deviceDesc;
@@ -3721,8 +3692,7 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
    CF set with the conversion/arena error, or FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO (the set is then not
    freed, as in the original).
 */
-TextureSetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
+TextureSetResult GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   uint32_t widthLog2;
@@ -3795,8 +3765,7 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
    Counterpart of GraphicsTextureSet_AllocateMetadata: frees the set and returns its source asset so the
    caller can release that too. NULL for a NULL set.
 */
-GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
-GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
+GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
 
 {
   GraphicsTextureSourceAsset *sourceAsset;
@@ -3815,8 +3784,7 @@ GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
    texture that has a device handle (other than exclude); its staging copy stays so it can be reloaded later.
    Unbinds the handle if it was bound. CF set when there was nothing to evict.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
+bool GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
 
 {
   GraphicsTextureResource *candidate;
@@ -3876,7 +3844,7 @@ GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
    textures and to rebuild all staging textures. CF set when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are
    taken.
 */
-bool __thandor_void_preserve_eax_ecx GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
+bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
 
 {
   int slotsRemaining;
@@ -3960,8 +3928,7 @@ GraphicsTexture_SelectPixelFormat
    adapters the fields are just cleared before the upload. When the creation fails all staging fields are
    NULL and nothing is uploaded. Returns texture (EAX preserved).
 */
-GraphicsTextureResource * __thandor_eax_preserve_ecx_edx
-GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
+GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
 
 {
   uint32_t largerExtent;
@@ -4050,8 +4017,7 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
    texture was the one bound to the device, g_BoundTextureHandle becomes 0xFFFFFFFF, which matches no handle,
    so the next bind sets the render state again. Preserves EAX; callers keep texture in it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture)
+void GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture)
 
 {
   IDirect3DTexture2 *deviceTexture2;

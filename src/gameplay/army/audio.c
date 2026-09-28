@@ -16,9 +16,7 @@
    become opaque ARGB entries (pure black stays transparent), followed by 0x1000 bytes of pixel data. Nothing
    changes when no player with a complete snapshot has frontendPlayerRuntimeId as faction assignment.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
-          (FrontendPlayerRuntimeId frontendPlayerRuntimeId,
+void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId frontendPlayerRuntimeId,
           ArmyGraphicsAssetAddress32 armyGraphicsAsset)
 
 {
@@ -81,8 +79,7 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[2] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
+void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -145,9 +142,7 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_DispatchPositionedSoundVariant
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   if (*(int *)((armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset + 0x278) ==
@@ -169,8 +164,7 @@ ArmyRuntimeAudio_DispatchPositionedSoundVariant
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[17] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
+void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -231,8 +225,7 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[5..8] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
+void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -271,9 +264,7 @@ ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[11] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdateConditionalProjectedSound
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateConditionalProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeSlot *modelSlot;
@@ -312,8 +303,7 @@ ArmyRuntimeAudio_UpdateConditionalProjectedSound
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[13] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
+void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -369,9 +359,7 @@ ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[21] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdateAssetProjectedSound
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeSlot *modelSlot;
@@ -409,8 +397,7 @@ ArmyRuntimeAudio_UpdateAssetProjectedSound
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[22] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
+void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -466,9 +453,7 @@ ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[4] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   if ((armyRuntime->runtimeFlags & 0x40) != 0) {

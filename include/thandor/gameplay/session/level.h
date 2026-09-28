@@ -15,25 +15,20 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00531080 */
-EndingMoviePathResult __thandor_eax_cf_preserve_ecx_edx
-LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *asset);
+EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *asset);
 
 /* 0x005311D0 */
-LevelDefaultLoadResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_LoadResourcesAfterDefaultReset
+LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimeImagePrefix370 *levelImage,WorldRuntimeContext *worldRuntime);
 
 /* 0x00532020 */
-LevelLoadResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_LoadResourcesAfterExternalTables
+LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelRuntimeImage370 *levelImage,WorldRuntimeContext *worldRuntime);
 
 /* 0x005329C0 */
-void __thandor_void_preserve_eax_ecx
-InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime);
+void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime);
 
 /* 0x00532CA0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView);
+StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_LEVEL_H */

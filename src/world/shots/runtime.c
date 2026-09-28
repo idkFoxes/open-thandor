@@ -49,9 +49,7 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
    unless the shooter's active command targets another faction or the pair's last relation change is too
    recent (the ticks elapsed in both directions add up to less than 100).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ShotRuntime_ApplyArmyHitRelationAndNotifications
-          (ArmyRuntimeSlot *targetArmyRuntime,ShotRuntimeSlot *shotRuntime)
+void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArmyRuntime,ShotRuntimeSlot *shotRuntime)
 
 {
   ArmyRuntimeSlot *shooterArmy;
@@ -189,7 +187,7 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
    shot texture set and palette, releases the nested resource each shot definition owns and empties the shot
    definition registry.
 */
-void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
+void ShotRuntime_ShutdownGraphicsResources(void)
 
 {
   int registrySlotsRemaining;
@@ -228,8 +226,7 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
    On a miss a number is formatted into g_PackageLastErrorPath and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned
    with CF set.
 */
-ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
+ShotDefinitionResult ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
 
 {
   ShotDefinition *registryDefinition;
@@ -265,7 +262,7 @@ ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
    rebased and the saved definition id is replaced by the registered ShotDefinition. A shot whose id is no
    longer registered is dropped (model node cleared).
 */
-void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
+void ShotRuntime_RebaseSlotsAfterLoad(void)
 
 {
   ShotSecondaryEffectCountdownTicks *firstSlotCountdown;
@@ -340,8 +337,7 @@ void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
    EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions. The original sets CF when no slot
    or record is free; this version just returns.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ShotRuntimePool_CreateProjectileFromDefinition
+void ShotRuntimePool_CreateProjectileFromDefinition
           (ShotRuntimeState14 shotRuntimeState14,ArmyRuntimeSlot *ownerArmyRuntime,
           Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,Q12 launchWorldZQ12,
           Q12 launchWorldYQ12,Q12 launchWorldXQ12,ShotDefinition *shotDefinition,
@@ -491,9 +487,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
    Hook called by ShotRuntime_ApplyArmyHitRelationAndNotifications after the "under attack" alert of a hit on
    a hostile army; it does nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ShotRuntime_PostImpactRelationNotificationNoOp
-          (ShotRuntimeSlot *shotRuntime,WorldRuntimeContext *worldRuntime)
+void ShotRuntime_PostImpactRelationNotificationNoOp(ShotRuntimeSlot *shotRuntime,WorldRuntimeContext *worldRuntime)
 
 {
   return;

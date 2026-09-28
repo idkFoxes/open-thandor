@@ -30,114 +30,89 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053A1E0 */
-void __thandor_void_preserve_eax_ecx_edx
-AiWorkspaceAssetCandidate_AddWeightedEntry
-          (AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
+void AiWorkspaceAssetCandidate_AddWeightedEntry(AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00538230 */
-void __thandor_void_preserve_eax_ecx_edx
-AiPlanning_RebuildFactionWorkspaces
-          (AiPlanningPhaseIndex planningPhaseDispatchIndex,
+void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispatchIndex,
           FactionRuntimeIndex factionRuntimeIndexRegisterCopy,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BF30 */
-void __thandor_void_preserve_eax_ecx_edx
-AiStrategicCandidate_AddBestWorkspace12Entry
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiStrategicCandidate_AddBestWorkspace12Entry(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00537420 */
-void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_Clear(void);
+void AiCandidateWorkspace_Clear(void);
 
 /* 0x00537430 */
 void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImageByteOffset);
 
 /* 0x00537470 */
-void __thandor_void_preserve_eax_ecx_edx
-AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByteOffset);
+void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByteOffset);
 
 /* 0x00537570 */
-void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(void);
+void AiCandidateWorkspace_SortDescending(void);
 
 /* 0x005375D0 */
-int __thandor_eax_preserve_ecx_edx
-AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry);
+int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry);
 
 /* 0x00538C90 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
+bool AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538CF0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
+bool AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538D40 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId);
+int AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538D90 */
-int __thandor_eax_preserve_ecx_edx
-AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
+int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538E00 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
+int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538E80 */
-int __thandor_eax_preserve_ecx_edx
-AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
+int AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538EF0 */
-int __thandor_eax_preserve_ecx_edx
-AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
+int AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538F60 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
+int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00539240 */
-void __thandor_void_preserve_eax_ecx_edx
-AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
+void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
           (PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BCB0 */
-AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
-AiWorkspace12Score_DefaultZero
+AiTechnologyCandidateScore AiWorkspace12Score_DefaultZero
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053C6C0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void);
+StatusResult AiRuntime_InitWorkspace(void);
 
 /* 0x00537F80 */
-void __thandor_void_preserve_ecx_edx
-AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell);
+void AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell);
 
 /* 0x00537FC0 */
-void __thandor_void_preserve_ecx_edx
-AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell);
+void AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell);
 
 /* 0x00538B90 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
+bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538BF0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
+bool AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538C40 */
-int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId);
+int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId);
 
 /* 0x005374B0 */
-void __thandor_void_preserve_eax_ecx_edx
-AiCandidateWorkspace_AddOrAccumulateWeightedEntry
+void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
           (RuntimeToken entityId,uint32_t weightRange,AiCandidateEntryKind entryKind);
 
 /* 0x00538FD0 */
-bool __thandor_void_preserve_ecx_edx
-AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
+bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
 
 #endif /* THANDOR_GAMEPLAY_AI_WORKSPACES_H */

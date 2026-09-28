@@ -34,7 +34,7 @@ void __cdecl ErrorSystem_Init(void)
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
-bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFail(UiRootNode *root)
+bool ErrorRuntime_CallbackAlwaysFail(UiRootNode *root)
 
 {
   return true;
@@ -46,7 +46,7 @@ bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFail(UiRootNod
    stops the pointer traversal at the dialog, so the roots below it get no pointer input. The value 8 itself
    carries no meaning beyond being non-negative.
 */
-int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *root)
+int ErrorRuntime_CallbackReturnCode8(UiRootNode *root)
 
 {
   return 8;
@@ -58,7 +58,7 @@ int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *
    setup in ui/controls/layout.c): closes the fatal-error dialog root and counts the dismissal, which ends
    the modal frame loop in FatalErrorRuntime_DispatchPendingError.
 */
-void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
+void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
 
 {
   UiRootStack_Pop(rootNode);
@@ -72,9 +72,9 @@ void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootN
    ErrorRuntime_InstallUiHandlerAndAllocateState): with CF clear it passes EAX through; with CF set it builds
    the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames until the
    dialog is dismissed, then returns the error with CF set so the caller can carry on.
+   Original register convention: EAX and CF are passed in and returned (CF set = failure); ECX and EDX preserved.
 */
-FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
-FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
+FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
 
 {
   int32_t *topOffsetField;
@@ -165,8 +165,7 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
    not fit is cut off and terminated, and CF is set with FATAL_ERROR_GENERAL_FAILURE. Nothing in this code
    base calls it and no callback-table slot references it.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
+StatusResult FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
   uint8_t sourceByte;
@@ -202,9 +201,9 @@ FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *des
    (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills in the
    last path and the three detail strings, shuts everything down, shows the text in a message box and
    exits the process.
+   Original register convention: EAX and CF are passed in and returned (CF set = failure); ECX and EDX preserved.
 */
-FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
-FatalError_Exit(uint32_t errorOrValue,bool carryIn)
+FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn)
 
 {
   FatalErrorCheckResult passThroughResult;

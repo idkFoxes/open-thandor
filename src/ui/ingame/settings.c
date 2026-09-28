@@ -15,7 +15,7 @@
    window by releasing the missionObjectivesButton toggle and running the settings page toggle on it, which
    hides the window and resumes a game that the window paused.
 */
-void __thandor_preserve_eax InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
+void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
 
 {
   int parentNodeAddress;
@@ -38,7 +38,7 @@ void __thandor_preserve_eax InGameSettingsAction_CloseAlternatePanel(UiNodeBase 
    and lets the local player leave the session (command 0x150 without flags). A local game runs the handler
    directly, a network game queues the command so every peer executes it.
 */
-void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
+void InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
 
 {
   int parentNodeAddress;
@@ -66,7 +66,7 @@ void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode0(UiNod
    closes the game menu and gives up, command 0x150 with INGAME_COMMAND150_FLAG_SURRENDER destroys every army
    of the local faction. Local games call the handler directly, network games queue the command.
 */
-void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
+void InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
 
 {
   int parentNodeAddress;
@@ -95,7 +95,7 @@ void __thandor_preserve_eax InGameSettingsAction_CloseAndDepartPlayerMode1(UiNod
    UI action 0x1201 (gameMenuCloseButton; g_InGameUiActionHandlersPage12[1]): closes the game menu by
    releasing the inGameMenuButton toggle and running its toggle handler, which also resumes a paused game.
 */
-void __thandor_preserve_eax InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
+void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
@@ -116,7 +116,7 @@ void __thandor_preserve_eax InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *
    g_InGameUiActionHandlersPage12[24]): selects the inGameMenuButton toggle again and runs its toggle handler,
    which returns to the game menu page with freshly loaded gameplay options.
 */
-void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
+void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
@@ -137,8 +137,7 @@ void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *s
    1..INGAME_SIMULATION_STEP_TICKS_MAX, and sets g_InGameSimulationStepTicks to the smallest batch of all players,
    so the slowest request wins in a network game.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
+void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
           (FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           int stepDelta)
 
@@ -170,7 +169,7 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
    UI action 0x1021 (missionHelpBriefingTab; g_InGameUiActionHandlersPage10[33]): selects tab 0 of the mission help
    window exclusively among its three tab buttons and shows page 0 (the mission briefing) of its page stack.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab0(UiNodeBase *sourceNode)
+void InGameMissionHelpPage_SelectTab0(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpBriefingTab of the in-game UI template copy */
@@ -187,7 +186,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab0(UiNode
    UI action 0x1022 (missionHelpKeyboardTab; g_InGameUiActionHandlersPage10[34]): selects tab 1 of the mission help
    window exclusively among its three tab buttons and shows page 1 (the keyboard help) of its page stack.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab1(UiNodeBase *sourceNode)
+void InGameMissionHelpPage_SelectTab1(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
@@ -204,7 +203,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab1(UiNode
    UI action 0x1023 (missionHelpMouseTab; g_InGameUiActionHandlersPage10[35]): selects tab 2 of the mission help
    window exclusively among its three tab buttons and shows page 2 (the mouse help) of its page stack.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab2(UiNodeBase *sourceNode)
+void InGameMissionHelpPage_SelectTab2(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpMouseTab of the in-game UI template copy */
@@ -223,8 +222,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab2(UiNode
    button does not scroll", the effect is to hide the side panel (side panel stack page 1) and widen the
    world view to the right screen edge; clearing it restores the panel and the view's right edge.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
+void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
   UiPageStackControl *sidePanelStack;
@@ -270,8 +268,7 @@ InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
    UI action 0x1217 (scrollSpeedSlider; g_InGameUiActionHandlersPage12[23]): stores the slider value as
    PERSISTENT_SETTING_CAMERA_SCROLL_STEP; the camera reads the setting whenever it scrolls.
 */
-void __thandor_preserve_eax
-InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
+void InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 
 {
   PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
@@ -284,8 +281,7 @@ InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
    PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF. Switching automatic zoom off also resets the minimap to its
    default scale.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
+void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -313,8 +309,7 @@ InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
    PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF. Switching automatic rotation off also turns the minimap back
    to its default angle.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
+void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -342,8 +337,7 @@ InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
    g_InGameUiActionHandlersPage12[20]): stores PERSISTENT_LINK_OPTION_ROTATION_ZOOM and mirrors it to the world
    view. The rotation can only be linked to zoom or to tilt, so the tilt checkbox is disabled while this is on.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
+void InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
@@ -379,8 +373,7 @@ InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
    g_InGameUiActionHandlersPage12[21]): stores PERSISTENT_LINK_OPTION_ROTATION_TILT and mirrors it to the world
    view; the zoom link checkbox is disabled while this is on, as the two links exclude each other.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
+void InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
@@ -416,8 +409,7 @@ InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
    PERSISTENT_LINK_OPTION_HIDE_PANEL and mirrors it to the world view's WORLD_RUNTIME_FLAG_HIDE_PANEL. The name
    follows the checkbox label; the world view tests the flag together with the left mouse button.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
+void InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
@@ -452,8 +444,7 @@ InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
    button matching the stored grid size and depth, the texture quality and the model detail slider. The
    shading level buttons are only usable with shading on, texture quality only in a local game.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
+void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
 
 {
   UiNodeBase *uiRoot;
@@ -542,8 +533,7 @@ InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
    effects and movie sliders only work with effects on, the music slider only with music on, and reverse
    stereo only while any sound is on.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr settingsSourceNode)
+void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr settingsSourceNode)
 
 {
   UiNodeBase *parentCursor;
@@ -601,7 +591,7 @@ InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr
    mirrors it to the world view's WORLD_RUNTIME_FLAG_SHADING_ENABLED and enables the shading level buttons
    only while shading is on.
 */
-void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectableControl *control)
+void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
 
 {
   uint8_t selectedState;
@@ -634,8 +624,7 @@ void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectab
    depth. When that succeeds the level is stored and its button selected; when it fails the error is
    reported and the texture is rebuilt from the previously stored level.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
+void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
   UiNodeBase *shadingLevelGroup;
@@ -709,8 +698,7 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
    UI action 0x1206 (modelDetailSlider; g_InGameUiActionHandlersPage12[6]): stores the model detail slider
    value and makes it the model LOD depth threshold (Q8) at once.
 */
-void __thandor_preserve_eax
-InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
+void InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -728,8 +716,7 @@ InGameModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
    staging texture with it, showing the wait cursor meanwhile. Unlike the frontend version
    (FrontendTextureSettings_SetQuality, which uses level >> 1) the level itself becomes the downsample shift.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameTextureSettings_SetQuality(UiSelectableControl *control)
+void InGameTextureSettings_SetQuality(UiSelectableControl *control)
 
 {
   PersistentTextureQualityLevel qualityLevel;
@@ -768,8 +755,7 @@ InGameTextureSettings_SetQuality(UiSelectableControl *control)
    stops the playing effect voice when switched off, enables or disables the dependent sliders and loads the
    effects and movie volumes from the settings (or silences them).
 */
-void __thandor_void_preserve_eax_ecx
-InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
+void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
@@ -839,8 +825,7 @@ InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
    enables or disables the dependent sliders. Switching music off stops the playing track and sets the
    music countdown to 1, so the next track is chosen right away when music comes back on.
 */
-void __thandor_void_preserve_eax_ecx
-InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
+void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
@@ -896,8 +881,7 @@ InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
    UI action 0x120A (reverseStereoCheckbox; g_InGameUiActionHandlersPage12[10]): stores the reverse stereo
    switch and sets g_ReverseStereoMask to all ones (swap the channels) or zero.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
+void InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
   uint32_t currentAudioFlags;
@@ -924,7 +908,7 @@ InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
    UI action 0x120B (effectsVolumeSlider; g_InGameUiActionHandlersPage12[11]): stores the effects volume,
    makes it the UI and effects gain and applies it to the playing effect voice so the change is audible.
 */
-void __thandor_preserve_eax InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
+void InGameAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -942,7 +926,7 @@ void __thandor_preserve_eax InGameAudioSettings_SetEffectsGain(UiSettingsValueCo
    UI action 0x120C (movieVolumeSlider; g_InGameUiActionHandlersPage12[12]): stores the movie volume and
    makes it the default movie gain.
 */
-void __thandor_preserve_eax InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
+void InGameAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -958,7 +942,7 @@ void __thandor_preserve_eax InGameAudioSettings_SetMovieDefaultGain(UiSettingsVa
    UI action 0x120D (musicVolumeSlider; g_InGameUiActionHandlersPage12[13]): stores the music volume and
    applies it to the playing music voice.
 */
-void __thandor_preserve_eax InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
+void InGameAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -974,8 +958,7 @@ void __thandor_preserve_eax InGameAudioSettings_SetMusicGain(UiSettingsValueCont
    UI action 0x121A (messageMovieVolumeSlider; g_InGameUiActionHandlersPage12[26]): stores the volume of the
    message movies and makes it the alternate movie gain used by timed movie playback.
 */
-void __thandor_preserve_eax
-InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
+void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -993,8 +976,7 @@ InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
    save, so the save button is suppressed there. Closing hides the window and resumes as
    InGameUiAction101F_Handler does.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle)
+void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle)
 
 {
   UiNodeBase *parentCursor;

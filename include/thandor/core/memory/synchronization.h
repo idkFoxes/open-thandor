@@ -15,19 +15,18 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00407470 */
-void __thandor_void_preserve_eax_ecx_edx SpinLock_Acquire(RuntimeSpinLockValue *lockValue);
+void SpinLock_Acquire(RuntimeSpinLockValue *lockValue);
 
 /* 0x004074A0 */
-bool __thandor_cf_preserve_eax_ecx_edx SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue);
+bool SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue);
 
 /* 0x004074D0 */
-void __thandor_void_preserve_eax_ecx_edx SpinLock_Release(RuntimeSpinLockValue *lockValue);
+void SpinLock_Release(RuntimeSpinLockValue *lockValue);
 
 /* 0x004074F0 */
-void __thandor_void_preserve_eax_ecx_edx
-SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue);
+void SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue);
 
 /* 0x00585F00 */
-void __thandor_preserve_eax Runtime_Shutdown(void);
+void Runtime_Shutdown(void);
 
 #endif /* THANDOR_CORE_MEMORY_SYNCHRONIZATION_H */

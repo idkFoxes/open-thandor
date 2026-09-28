@@ -15,11 +15,9 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00547D60 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext);
+void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext);
 
 /* 0x0054C9F0 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot);
+void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot);
 
 #endif /* THANDOR_UI_FRONTEND_SCENARIO_H */

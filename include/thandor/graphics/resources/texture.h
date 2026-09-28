@@ -45,46 +45,37 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0057E970 */
-TextureSetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset);
+TextureSetResult GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x0057AD30 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsTexture_RebuildAllStagingTextures(void);
+void GraphicsTexture_RebuildAllStagingTextures(void);
 
 /* 0x0057EAF0 */
-GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
-GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
+GraphicsTextureSourceAsset * GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
 
 /* 0x00485E40 */
-TextureSetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16);
+TextureSetResult GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16);
 
 /* 0x00485E80 */
-void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
+void GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
 
 /* 0x00485FC0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
+void GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
 
 /* 0x00486070 */
 void __cdecl GraphicsTexture_RebuildNoOp(void);
 
 /* 0x004A9270 */
-TextureSizeResult __thandor_eax_edx_cf_preserve_ecx
-GraphicsTextureSource_GetLogicalSizeRegs
+TextureSizeResult GraphicsTextureSource_GetLogicalSizeRegs
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004A92C0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsTextureSource_TestOpaquePixel
-          (GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
+bool GraphicsTextureSource_TestOpaquePixel(GraphicsScreenCoordinate queryY,GraphicsScreenCoordinate queryX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004A9A50 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledSourceAlpha
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void GraphicsTextureSource_BlitTiledSourceAlpha(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
           GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
@@ -92,9 +83,7 @@ GraphicsTextureSource_BlitTiledSourceAlpha
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AA0A0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledHalfSourceRgb
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void GraphicsTextureSource_BlitTiledHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
           GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
@@ -102,9 +91,7 @@ GraphicsTextureSource_BlitTiledHalfSourceRgb
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AB9A0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledSaturatedAddRgb
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void GraphicsTextureSource_BlitTiledSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
           GraphicsScreenCoordinate tileOriginY,GraphicsScreenCoordinate tileOriginX,
@@ -112,8 +99,7 @@ GraphicsTextureSource_BlitTiledSaturatedAddRgb
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004ABF70 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
+void GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate repeatEndY,GraphicsScreenCoordinate repeatEndX,
@@ -122,98 +108,78 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AD630 */
-TextureSourceLoadResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16);
+TextureSourceLoadResult GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16);
 
 /* 0x004AD670 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD6C0 */
-PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset);
+PaletteTextureSourceResult GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset);
 
 /* 0x004AD770 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset);
+void GraphicsTextureSource_ReleasePackageAsset(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD790 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset);
+void GraphicsTextureSource_ReleaseClonedAsset(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD7B0 */
-GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
-GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset);
+GraphicsTextureSourceAsset * GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD7C0 */
 TextureSizeResult
 GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x0057ADA0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture);
+void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture);
 
 /* 0x0057B410 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture);
+void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture);
 
 /* 0x0057BBE0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture);
+void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture);
 
 /* 0x0057C6C0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture);
+void GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture);
 
 /* 0x0057C890 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture);
+void GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture);
 
 /* 0x0057CAA0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture);
+void GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture);
 
 /* 0x0057EBB0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
+void GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
 
 /* 0x0057EC40 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
+void GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set);
 
 /* 0x0057AAD0 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture);
+void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture);
 
 /* 0x00485EA0 */
-TextureSetResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset);
+TextureSetResult GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x00485F90 */
-GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
-GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
+GraphicsTextureSourceAsset * GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set);
 
 /* 0x0057A9D0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude);
+bool GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude);
 
 /* 0x0057E870 */
-bool __thandor_void_preserve_eax_ecx GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
+bool GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture);
 
 /* 0x0057E8C0 */
 DDPIXELFORMAT * GraphicsTexture_SelectPixelFormat (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x0057A740 */
-GraphicsTextureResource * __thandor_eax_preserve_ecx_edx
-GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture);
+GraphicsTextureResource * GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture);
 
 /* 0x0057A900 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture);
+void GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture);
 
 
 /* 0x004AC8E0 */
-TextureSourceDecomposeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_DecomposeSubresourceRegions
+TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset);
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_TEXTURE_H */

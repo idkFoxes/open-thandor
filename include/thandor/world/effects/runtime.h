@@ -19,21 +19,19 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051E120 */
-EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
+EffectDefinitionResult EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId);
 
 /* 0x0051E190 */
 StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath);
 
 /* 0x0051E210 */
-void __thandor_void_preserve_eax_ecx EffectRuntime_ShutdownGraphicsResources(void);
+void EffectRuntime_ShutdownGraphicsResources(void);
 
 /* 0x0051E340 */
-void __thandor_void_preserve_eax_ecx_edx EffectRuntime_RebaseSlotsAfterLoad(void);
+void EffectRuntime_RebaseSlotsAfterLoad(void);
 
 /* 0x0051E4A0 */
-EffectCreateResult __thandor_eax_cf_preserve_ecx_edx
-EffectRuntimePool_CreateInstanceFromDefinition
+EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
           (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference4 ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
           Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,

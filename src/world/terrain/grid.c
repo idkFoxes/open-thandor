@@ -19,8 +19,7 @@
    handler. (The original also returns CF: clear after the edit, set for a non-positive radius or an empty
    rectangle; the only caller ignores it.)
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
+void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
           (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid)
@@ -129,9 +128,7 @@ FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
    sign-gated pair or (mode bit 0 set) the ungated land-tool pair. Queued or called directly by
    InGameCommandRange_DispatchState0/1 (ui/ingame/commands.c) with 0x80 passes. passCount must not be 0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RunDirectionalRelaxationPasses
-          (FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
+void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
           TerrainRelaxationPassCount passCount,TerrainRelaxationMode mode)
 
 {
@@ -165,9 +162,7 @@ TerrainGrid_RunDirectionalRelaxationPasses
    (waterSurfaceDelta moves opposite to the terrain). Called directly or through the command queue by
    InGameUiCommand_UpdateInteractionByMode (0x005703D0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyPositiveCellDeltas
-          (PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
+void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16)
 
 {
@@ -324,9 +319,7 @@ FieldGrid_ApplyPositiveCellDeltas
    the anchor (or around every selected pair) and they are added to the terrain; water surfaces stay at their
    level. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode (0x005703D0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyNegativeCellDeltas
-          (PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
+void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16)
 
 {
@@ -475,8 +468,7 @@ FieldGrid_ApplyNegativeCellDeltas
    when the stroke began). Called directly or through the command queue by
    InGameUiCommand_UpdateInteractionByMode (0x005703D0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RebuildLocalInfluenceState
+void FieldGrid_RebuildLocalInfluenceState
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 gridRowQ12,Q12 gridColumnQ12)
 
@@ -558,8 +550,7 @@ FieldGrid_RebuildLocalInfluenceState
    border ring is skipped) after the heights changed, and marks the field grid dirty (runtimeStateFlags
    bit 0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
+void FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension rowLength;
@@ -596,8 +587,7 @@ FieldGrid_RecomputeInteriorTriangleNormalAngles(FieldGridAsset *fieldGrid)
    Sets the terrain light direction (g_TerrainLightDirectionX/Y/Z, Q28) from an elevation and azimuth
    and relights every interior cell with it (border ring skipped); marks the field grid dirty.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RecomputeInteriorDirectionalLighting
+void FieldGrid_RecomputeInteriorDirectionalLighting
           (AngleTurn32 lightElevationAngle,AngleTurn32 lightAzimuthAngle,FieldGridAsset *fieldGrid)
 
 {
@@ -643,8 +633,7 @@ FieldGrid_RecomputeInteriorDirectionalLighting
    nothing. The only caller, ArmyRuntime_ClassCommandHandlerGroupA (CALL at 0x005275D7), ignores it: the
    code after the call joins the skip path and overwrites CF with TEST ESI,ESI at 0x00527606.)
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
+void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
           (TerrainHeightBrushDeltaSource heightDeltaSourceValue,Q12 worldZQ12,Q12 worldYQ12,
           Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
@@ -740,8 +729,7 @@ FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
    the surface dirty. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode
    (0x005703D0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyLocalCellUpdate
+void FieldGrid_ApplyLocalCellUpdate
           (PlayerRuntimeId playerRuntimeId,FieldGridTransitionValue transitionValue,Q12 gridRowQ12,
           Q12 gridColumnQ12)
 
@@ -778,9 +766,7 @@ FieldGrid_ApplyLocalCellUpdate
    InGameUiCommand_UpdateInteractionByMode (0x005703D0). (The command constant's name notwithstanding, nothing
    is smoothed here; FieldGrid_RebuildLocalInfluenceState is the smoothing brush.)
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyEncodedCellUpdate
-          (PlayerRuntimeId playerRuntimeId,Q12 gridRowQ12,Q12 gridColumnQ12,
+void FieldGrid_ApplyEncodedCellUpdate(PlayerRuntimeId playerRuntimeId,Q12 gridRowQ12,Q12 gridColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16)
 
 {
@@ -800,8 +786,7 @@ FieldGrid_ApplyEncodedCellUpdate
    the Q12 grid row/column with setMask (0 or the flag, g_UiCommandTerrainMaskToggleValue) and marks the surface
    dirty. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode (0x005703D0).
 */
-void __thandor_preserve_eax
-FieldGrid_ApplyMaskDFFFFFFF
+void FieldGrid_ApplyMaskDFFFFFFF
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12)
 
 {
@@ -822,8 +807,7 @@ FieldGrid_ApplyMaskDFFFFFFF
    surface dirty. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode
    (0x005703D0).
 */
-void __thandor_preserve_eax
-FieldGrid_ApplyMaskBFFFFFFF
+void FieldGrid_ApplyMaskBFFFFFFF
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12)
 
 {
@@ -845,8 +829,7 @@ FieldGrid_ApplyMaskBFFFFFFF
    the surface dirty. Called directly or through the command queue by InGameUiCommand_UpdateInteractionByMode
    (0x005703D0).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyCallerMask
+void FieldGrid_ApplyCallerMask
           (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 gridRowQ12,
           Q12 gridColumnQ12)
 
@@ -963,8 +946,7 @@ FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
    (ArmyArticulatedRuntime_UpdateContactChildAndEffects 0x00521580, ArmyRuntime_UpdateTimedShotAndEffectEmitters
    0x00527C00).
 */
-int32_t __thandor_eax_preserve_ecx_edx
-FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+int32_t FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   int32_t columnOrWaterDelta;
@@ -994,8 +976,7 @@ FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
    ArmyPlacementContact_ApplyTerrainHeight, WorldRuntime_InterpolateTerrainHeightOrSentinel and the army
    movement code.
 */
-HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+HeightSampleResult FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   int64_t upperTriangleAccumulator;
@@ -1082,8 +1063,7 @@ FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *f
    (ArmyRuntimeClass_UpdateArticulatedMovement, ..UpdateGroundMovementCollisionAndTrackAnimation,
    ..UpdateGroundMovementVariantA).
 */
-int32_t __thandor_eax_preserve_ecx_edx
-FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+int32_t FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   int64_t upperTriangleAccumulator;
@@ -1153,8 +1133,7 @@ FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
    g_FieldGridInterpolationCallbacks5 (0x004FEA30); also called directly by
    ArmyPlacementContact_ApplyWaterSurfaceHeight and WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel.
 */
-HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+HeightSampleResult FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   int gridColumnIndex;
@@ -1249,8 +1228,7 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
    over the grid triangle that contains it; one of the five height samplers of the field-grid
    interpolation table. Q12 height in EAX; CF set (height 0) outside the grid or on a border cell.
 */
-HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
+HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   int64_t partialAccumulator;
@@ -1369,8 +1347,7 @@ FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset
    left over from the fractions) outside the grid or on a border cell. Used by the articulated army contact
    code (ArmyArticulatedRuntime_UpdateLeftTerrainContact, ..RightTerrainContact and their siblings).
 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field)
+HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
   FieldGridDimension rowLength;
@@ -1493,8 +1470,7 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
    (waterSurfaceDelta, +0x4C), not the terrain height, despite the name; the blended normal is still the
    terrain normal (triangle0NormalAngles, +0x08). No caller found in src/ or the image tables.
 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
+HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
@@ -1614,8 +1590,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
    and blends the water-surface normals (triangle1NormalAngles, +0x78). No caller found in src/ or the image
    tables.
 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
+HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
@@ -1735,8 +1710,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
    negative (dry) or the water-surface normals (triangle1NormalAngles) otherwise (packed angles in EDX). CF set
    outside the grid or on a border cell. No caller found in src/ or the image tables.
 */
-HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
+HeightNormalSampleResult FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
           FieldGridAsset *fieldGrid)
 
@@ -1914,8 +1888,7 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
    ArmyPlacement_TestGridRuntimeAndFieldBlocking (0x00528110), ArmyPlacementCollision_TestCurrentRuntime
    (0x00527740) and ..TestCandidateAndClearance (0x005278D0) with the owner army's faction index.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FieldGrid_TestWorldPointBlocked
+bool FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           )
 
@@ -1950,8 +1923,7 @@ FieldGrid_TestWorldPointBlocked
    low nibbles of its world X/Y, a white overlay colour and random material variant bits 8-10. Then it rebuilds
    the four map-edge flags on the outermost ring of cells, which neighbour loops test before stepping outside.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
+void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension cellsPerRow;
@@ -2037,8 +2009,7 @@ FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
    of its world X/Y, the same 16x16 tiling FieldGrid_InitializeRuntimeCellsAndBoundaryFlags uses. The secondary
    terrain resource load calls this instead of the full initialization, so the other cell state is kept.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
+void FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension columnsRemaining;
@@ -2071,9 +2042,7 @@ FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
    the cell's occupancy byte of the given faction, and writes the result back. Runs on tick-wheel cases 3
    and 7 after the per-class terrain-state refresh callbacks.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyByteClampLookupToCells
-          (FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid)
+void FieldGrid_ApplyByteClampLookupToCells(FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid)
 
 {
   uint8_t *clampLookup;
@@ -2112,9 +2081,7 @@ FieldGrid_ApplyByteClampLookupToCells
    active faction): 0xFF when a current presence bit (FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) is set,
    0x87 when only the persistent bit 7 is, 0 otherwise.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ClassifyCellFlagsToRuntimeByte
-          (FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid)
+void FieldGrid_ClassifyCellFlagsToRuntimeByte(FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid)
 
 {
   uint8_t classifiedRuntimeByte;
@@ -2144,7 +2111,7 @@ FieldGrid_ClassifyCellFlagsToRuntimeByte
    both 16-bit angles advance by their rates, and the scaled sine/cosine of angle A and one component of
    angle B are stored, computed from the angles before this step.
 */
-void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuildVectors(void)
+void TerrainDirectionTable_AdvanceAndRebuildVectors(void)
 
 {
   uint32_t previousPackedAngles;
@@ -2180,8 +2147,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuild
    distance and the cell's material byte with CF set; a miss (or more than FIELD_GRID_RAYCAST_MAX_STEPS cells)
    returns FIELD_GRID_RAYCAST_MISS_DISTANCE with CF clear. Used for line-of-fire tests and terrain picking.
 */
-TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastTerrainSurfaceDistance
+TerrainRaycastResult FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
 
@@ -2280,8 +2246,7 @@ FieldGrid_RaycastTerrainSurfaceDistance
    corner is terrainHeight + waterSurfaceDelta. Same result contract: distance and material byte with CF set on
    a hit, FIELD_GRID_RAYCAST_MISS_DISTANCE with CF clear on a miss.
 */
-TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastSecondarySurfaceDistance
+TerrainRaycastResult FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
 
@@ -2386,8 +2351,7 @@ FieldGrid_RaycastSecondarySurfaceDistance
    GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy (0x004CDD40) along the render context's view
    angles from a model's sample points, to find terrain between them and the viewer.
 */
-TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastTerrainTrianglesAlongDirection
+TerrainRaycastResult FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
 
@@ -2594,8 +2558,7 @@ void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
    for the active faction when bit 3 of g_UiCommandRuntimeFlags is set, right after the rebuild clear, so
    every cell carries bit 0 for that faction during the rebuild.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_SetOccupancyMaskByteBit0AllCells
+void FieldGrid_SetOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid)
 
 {
@@ -2627,8 +2590,7 @@ FieldGrid_SetOccupancyMaskByteBit0AllCells
    Counterpart of FieldGrid_SetOccupancyMaskByteBit0AllCells: clears FIELD_CELL_OCCUPANCY_BIT0 in one
    faction's occupancy byte of every cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ClearOccupancyMaskByteBit0AllCells
+void FieldGrid_ClearOccupancyMaskByteBit0AllCells
           (FieldGridOccupancyByteIndex occupancyMaskByteIndex,FieldGridAsset *fieldGrid)
 
 {
@@ -2660,9 +2622,7 @@ FieldGrid_ClearOccupancyMaskByteBit0AllCells
    Returns false (CF clear) when one of them is set, true when the point is outside the grid or neither bit is
    set. Unit, shot and effect code play positioned sounds only when this returns false.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-TerrainGrid_TestProjectedCellMaskBits01
-          (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
+bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
   FieldGridAsset *activeFieldGrid;
@@ -2712,8 +2672,7 @@ void FieldGrid_ClearCellFlag8000AcrossGrid(FieldGridAsset *fieldGrid)
 /* Address: 0x005092E0.
    Sets the overlay colour (ARGB, cell +0x04) of every field-grid cell to one value.
 */
-void __thandor_void_preserve_eax_ecx
-FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid)
+void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid)
 
 {
   int cellsRemaining;
@@ -2736,8 +2695,7 @@ FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGr
    g_LevelResourcePathScratchUtf16. Returns the free status (CF clear) on success, or CF set with the
    allocation or write error. Called by InGameUiCommand_SaveFieldAndLevelAssetImages (0x005622F0).
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords)
+StatusResult FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords)
 
 {
   FieldGridAsset *writeErrorValue;
@@ -2822,8 +2780,7 @@ FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords)
    other payload dwords are unused. Called directly or through the command queue by
    InGameUiCommand_BeginInteractionByMode (0x0056FA70).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ClearPlayerScratchPlane
+void FieldGrid_ClearPlayerScratchPlane
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 reservedWorldYQ12,Q12 reservedWorldXQ12)
 
@@ -2850,8 +2807,7 @@ FieldGrid_ClearPlayerScratchPlane
    dwords are unused. Called directly or through the command queue by InGameUiCommand_BeginInteractionByMode
    (0x0056FA70).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ResetLocalInfluenceState
+void FieldGrid_ResetLocalInfluenceState
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
           Q12 reservedWorldYQ12,Q12 reservedWorldXQ12)
 
@@ -2880,9 +2836,7 @@ FieldGrid_ResetLocalInfluenceState
    heightDeltaUnits (the vertical drag distance, so dragging up raises it) and refreshes the normals and light of
    the cell and of its six neighbours that are not border cells. Called by FieldGrid_ApplyEncodedCellUpdate.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyEncodedUpdateCore
-          (FieldGridHeightDeltaUnits heightDeltaUnits,Q12 gridRowQ12,Q12 gridColumnQ12,
+void FieldGrid_ApplyEncodedUpdateCore(FieldGridHeightDeltaUnits heightDeltaUnits,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid)
 
 {
@@ -2937,9 +2891,7 @@ FieldGrid_ApplyEncodedUpdateCore
    0 at the rim), cells with water (waterSurfaceDelta >= 0) keep their water level, and a non-negative
    terrainMaterialIndexOrNegativeSentinel replaces the material byte.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
-          (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
+void FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial(TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridCell *cell)
 
@@ -2985,8 +2937,7 @@ FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
    The source is the centre cell itself ([ESI+0x4C] with ESI = centre); verified against the original
    machine code by OPEN_THANDOR_SELFTEST=relaxcmp.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
+void TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
 
 {
   int columnsRemaining;
@@ -3064,8 +3015,7 @@ TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
    +0x50 flagsAndMaterial; +/-0x80 is the next/previous cell).
    The source is the centre cell itself (ESI); verified by OPEN_THANDOR_SELFTEST=relaxcmp.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
+void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
 
 {
   int *lowerNeighborWaterDelta;
@@ -3147,8 +3097,7 @@ TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
    the original by OPEN_THANDOR_SELFTEST=relaxcmp. (cellBeforeSource is advanced at the top of the inner loop, so
    inside it it is the source cell.)
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
+void TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
 
 {
   int columnsRemaining;
@@ -3227,8 +3176,7 @@ TerrainGrid_RelaxNeighborHeightsForward(FieldGridAsset *fieldGrid)
    terrainHeight, +0x4C waterSurfaceDelta, +0x50 flagsAndMaterial; 0x40000000 = FIELD_CELL_FLUID_SOURCE_EXCLUDED,
    0x20000000 = FIELD_CELL_FLUID_RECEIVER_EXCLUDED). Verified by OPEN_THANDOR_SELFTEST=relaxcmp.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
+void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
 
 {
   int *lowerNeighborWaterDelta;
@@ -3310,9 +3258,7 @@ TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
    but never away from it (so overlapping brushes keep the strongest pull). The scanned box is the centre +/- 4 *
    radius in grid Q12 coordinates, clipped to the grid.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ProcessHorizontalSpan
-          (Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
+void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
           FieldGridRadiusUnits radiusUnits,Q12 centerRowQ12,Q12 centerColumnQ12,
           FieldGridAccumulatorValue *accumulatorPlane,FieldGridAsset *fieldGrid)
 
@@ -3420,9 +3366,7 @@ FieldGrid_ProcessHorizontalSpan
    of the centre cell, capping the sum at offset (so overlapping brushes do not add up beyond it). The scanned
    box is the centre +/- 2 * radius in grid Q12 coordinates, clipped to the grid.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ProcessVerticalSpan
-          (FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
+void FieldGrid_ProcessVerticalSpan(FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
           Q12 centerRowQ12,Q12 centerColumnQ12,FieldGridAccumulatorValue *accumulatorPlane,
           FieldGridAsset *fieldGrid)
 
@@ -3522,9 +3466,7 @@ FieldGrid_ProcessVerticalSpan
    Replaces the material byte of the cell at Q12 grid row/column (gridRowQ12/gridColumnQ12) with transitionValue,
    when the cell is inside the grid. Called by FieldGrid_ApplyLocalCellUpdate.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplySingleCellTransition
-          (FieldGridTransitionValue transitionValue,Q12 gridRowQ12,Q12 gridColumnQ12,
+void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValue,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid)
 
 {
@@ -3546,8 +3488,7 @@ FieldGrid_ApplySingleCellTransition
    average of its six neighbours (the water level stays); only rows 2..height-2 and columns 2..width-2 are
    touched. Called by FieldGrid_RebuildLocalInfluenceState.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridAsset *fieldGrid)
+void FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridAsset *fieldGrid)
 
 {
   Q12 *heightField;
@@ -3583,9 +3524,9 @@ FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridA
    Converts a world-plane position to field-grid coordinates in Q12 (integer part = cell column/row,
    fraction = position inside the cell): column in EAX, row in EDX. The triangular lattice makes the
    column shift by half a cell per row.
+   Original register convention: result in EAX and EDX, CF flag; ECX preserved; uses MMX register MM0.
 */
-FieldGridCoordinatesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx_mm0
-FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
+FieldGridCoordinatesEaxEdx8 FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
 
 {
   uint32_t gridHalfRowCoordinateQ12;
@@ -3608,8 +3549,7 @@ FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
    setMask, when the cell is inside the grid. Shared by FieldGrid_ApplyMaskDFFFFFFF, FieldGrid_ApplyMaskBFFFFFFF
    and FieldGrid_ApplyCallerMask.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyMaskedRegionCore
+void FieldGrid_ApplyMaskedRegionCore
           (FieldGridRegionMask preserveMask,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid)
 
@@ -3633,9 +3573,7 @@ FieldGrid_ApplyMaskedRegionCore
    triangle1NormalAngles (+0x78) for the secondary surface (terrainHeight + waterSurfaceDelta). The lighting in
    FieldGridCell_ComputeDirectionalLightColor reads the first one.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridCell_RecomputeTriangleNormalAngles
-          (FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell)
+void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *cell)
 
 {
   int rightDeltaOrNegativeStride;
@@ -3712,8 +3650,7 @@ FieldGridCell_RecomputeTriangleNormalAngles
    direction, dots it with the global light direction and looks the result up in the directional light colour
    table (+0x58). The secondary surface always gets the one fixed secondary colour (+0x5C).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
+void FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
 
 {
   FixedDirection normalDirection;

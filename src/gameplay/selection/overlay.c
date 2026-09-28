@@ -16,8 +16,7 @@
    movement target of own class-13 armies (runtime flag 0x800), and the waypoint (EWAYP0) and target (ETARG0)
    markers of the selected own armies.
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameWorldOverlay_RebuildOrReleaseTransientMarkers
+void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime)
 
 {
@@ -288,8 +287,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
    bounds come out empty are skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when
    context flag 0x400 is set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_RenderSelectedArmyMetrics
+void SelectionOverlay_RenderSelectedArmyMetrics
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight)
 
@@ -331,8 +329,7 @@ SelectionOverlay_RenderSelectedArmyMetrics
    FrontendModelPointerContext_RenderWorldViewQueuesClipped for its selectedOverlayEntity when that entity is in
    the selection info.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_RenderArmyMetricsForEntity
+void SelectionOverlay_RenderArmyMetricsForEntity
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,GameEntityRuntime *entity)
 
@@ -377,9 +374,7 @@ SelectionOverlay_RenderArmyMetricsForEntity
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x80 is set (the drag-selection
    rectangle, WORLD_RUNTIME_FLAG_DRAG_SELECTING in the in-game world view).
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawBoundsFrame
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
+void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
           UiPixelCoordinate cornerBY,UiPixelCoordinate cornerBX)
 
@@ -454,8 +449,7 @@ SelectionOverlay_DrawBoundsFrame
    FrontendModelPointerContext_RenderWorldViewQueuesClipped with its terrainMarkerCoordinatePairs170 when context
    flag 0x200000 is set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
+void SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int markerPointCount,int *gridCoordinatePairs,
           FieldGridAsset *fieldGrid)
@@ -525,8 +519,7 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
    context flag 0x100000 is set and callbackArgumentF0 is not WORLD_POINTER_NO_HIT; useTopSurface is set when the
    high byte of g_UiCommandModeGColorVariantLimit is nonzero.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerACForWorldSurfacePoint
+void SelectionOverlay_DrawMarkerACForWorldSurfacePoint
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -588,8 +581,7 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
    when the high byte of g_UiCommandModeGColorVariantLimit is nonzero; cells whose point A was not projected are
    skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x800000 is set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
+void SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
@@ -657,8 +649,7 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
    not projected. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x1000000
    is set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
+void SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
@@ -744,8 +735,7 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
    FrontendModelPointerContext_RenderWorldViewQueuesClipped with the low byte of its overlayMarkerStateB4 when
    context flag 0x2000000 is set.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
+void SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid)
 
@@ -832,8 +822,7 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x4000 and g_UiCommandRuntimeFlags
    bit 0x40 are set and a field grid is attached.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
+void SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
@@ -895,9 +884,7 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType3
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
@@ -914,9 +901,7 @@ SelectionMarkerCoordinates_ApplyType3
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType4
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
@@ -933,9 +918,7 @@ SelectionMarkerCoordinates_ApplyType4
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType5
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
@@ -952,9 +935,7 @@ SelectionMarkerCoordinates_ApplyType5
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType6
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
@@ -971,9 +952,7 @@ SelectionMarkerCoordinates_ApplyType6
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
-void __thandor_void_preserve_eax_ecx_edx
-SelectionMarkerCoordinates_ApplyType7
-          (SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
+void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
@@ -989,8 +968,7 @@ SelectionMarkerCoordinates_ApplyType7
    own position or already carries a marker. Markers for a scaleQ12 other than 1.0 are lifted and scaled so the
    model's bounding radius becomes 6.5 * scaleQ12 (Q12).
 */
-void __thandor_void_preserve_eax_ecx_edx
-InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
+void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
           (Q12 scaleQ12,void *sourceWorldNode,Q12 worldYQ12,Q12 worldXQ12,void *effectDefinition,
           void *inGameRuntime)
 

@@ -245,8 +245,7 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
    Returns the mode (CF clear), or FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage number in
    g_PackageLastErrorPath. No caller or table slot in the executable or image data references it.
 */
-RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
+RenderStateApplyResult Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
 
 {
   int32_t direct3DResult;
@@ -275,8 +274,7 @@ Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
    FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage of the failed call in g_PackageLastErrorPath. No caller or
    table slot in the executable or image data references it.
 */
-RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
+RenderStateApplyResult Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
 
 {
   int32_t direct3DResult;
@@ -310,8 +308,7 @@ Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
    device setup to reapply. Returns the value (CF clear), or FATAL_ERROR_DIRECT3D_SETUP (CF set) with the stage
    number in g_PackageLastErrorPath. No caller or table slot in the executable or image data references it.
 */
-RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled)
+RenderStateApplyResult Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled)
 
 {
   int32_t direct3DResult;
@@ -341,8 +338,7 @@ Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled
    into slot 3 for a four-vertex fan, and any bound texture is unbound. Graphics_DrawPrimitiveQueue calls it
    through g_GraphicsDispatchTable.primitive slots 0, 4, 8 and 12.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 packetModulationColor;
@@ -483,8 +479,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
    is unbound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive slots 1, 9, 32, 33,
    36, 38, 40, 41, 44 and 46.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 packetModulationColor;
@@ -638,8 +633,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
    for a four-vertex fan, and any bound texture is unbound. Graphics_DrawPrimitiveQueue calls it through
    g_GraphicsDispatchTable.primitive slots 6 and 14.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 packetModulationColor;
@@ -792,8 +786,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
    second vertex copied into slot 3 for a four-vertex fan, and any bound texture is unbound.
    Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive slots 2, 10, 34 and 42.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
   PackedArgb32 packetModulationColor;
@@ -947,8 +940,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
    it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive
    slots 16 and 24.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
@@ -1147,8 +1139,7 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
    recreated on the device if it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it through
    g_GraphicsDispatchTable.primitive slots 20 and 28.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
@@ -1347,8 +1338,7 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
    it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive
    slots 17, 25, 48, 49, 52, 54, 56, 57, 60 and 62.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
@@ -1547,8 +1537,7 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
    is marked used, recreated on the device if it was evicted, and bound. Graphics_DrawPrimitiveQueue calls it
    through g_GraphicsDispatchTable.primitive slots 22 and 30.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
@@ -1747,8 +1736,7 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
    and bound. Graphics_DrawPrimitiveQueue calls it through g_GraphicsDispatchTable.primitive slots 18, 26, 50
    and 58.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
+void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;

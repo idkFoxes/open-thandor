@@ -47,9 +47,7 @@ static __inline uint64_t Glide_UnpackArgbToWordLanes(uint32_t argb,int shift)
    empty; the function itself always succeeds (CF clear). EAX carries the set from
    GraphicsTextureSet_AllocateMetadata; the stack argument (RET 4) is unused, set->sourceAsset is read instead.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Glide3_TextureSet_CreateBackend
-          (GraphicsTextureSet *textureSet,GraphicsTextureSourceAsset *sourceAsset)
+bool Glide3_TextureSet_CreateBackend(GraphicsTextureSet *textureSet,GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *setSourceAsset;
@@ -105,7 +103,7 @@ Glide3_TextureSet_CreateBackend
    Releases and re-prepares the Glide upload data of every registered texture (all 4096 slots), for when the
    Glide texture state has to be rebuilt.
 */
-void __thandor_void_preserve_eax_ecx Glide3_TextureResource_ReinitializeAll(void)
+void Glide3_TextureResource_ReinitializeAll(void)
 
 {
   GraphicsTextureResource *texture;
@@ -143,8 +141,7 @@ void __cdecl GlideBackend_ShutdownWrapper(void)
    resolution, installs the Glide framebuffer and blit handlers (RGB565 layout), sets the fixed Glide render
    state for every TMU and re-prepares all registered textures. CF set on failure; the DLL is unloaded again.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsGlide3_ApplyDisplayModeAndInitializeResources
+bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width)
 
@@ -377,9 +374,7 @@ static __inline float Glide_BitsToFloat(uint32_t bits)
    The x87 intermediates (FILD of an int, FIADD, FDIVRP, FMUL) are done in double below (FILD is exact, the
    CRT's default x87 precision is 53 bits) and rounded to float only at the FSTP.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_DrawPrimitiveQueue
-          (int32_t clipMaxY,int32_t clipMaxX,int32_t clipMinY,int32_t clipMinX,
+void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMinY,int32_t clipMinX,
           GraphicsPrimitiveQueue *queue)
 
 {
@@ -625,8 +620,7 @@ Glide3_DrawPrimitiveQueue
    releases its Glide data and frees it, then frees the set metadata and returns the source asset it owned
    (NULL for a NULL set). The generic wrapper passes the set in EBX and on the stack; the EBX copy is used.
 */
-GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
-Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,GraphicsTextureSet *set)
+GraphicsTextureSourceAsset * Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *texture;
@@ -672,8 +666,7 @@ Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,GraphicsT
    waits for Glide and swaps buffers on the next vertical retrace. The cursor records are swapped back afterwards,
    so the cursor drawn for this frame is tracked in the alternate record.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
+void Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 {
   SoftwareFramebufferAccess *savedBackground;
@@ -718,7 +711,7 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
    as display modes, then unloads the DLL again. Fails (CF set) with the DLL's error code when the DLL or one
    of its procedures is missing.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
+StatusResult Glide3_InitAndEnumerate(void)
 
 {
   uint8_t *boardName;
@@ -846,7 +839,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
    Glide entry of the begin-scene slot: Glide needs no scene bracket, so it does nothing (all registers and
    flags preserved).
 */
-void __thandor_void_preserve_eax_ecx_edx GlideBackend_BeginSceneNoOp(void)
+void GlideBackend_BeginSceneNoOp(void)
 
 {
   return;
@@ -857,7 +850,7 @@ void __thandor_void_preserve_eax_ecx_edx GlideBackend_BeginSceneNoOp(void)
    Glide entry of the end-scene slot: does nothing, like GlideBackend_BeginSceneNoOp (all registers and flags
    preserved).
 */
-void __thandor_void_preserve_eax_ecx_edx GlideBackend_EndSceneNoOp(void)
+void GlideBackend_EndSceneNoOp(void)
 
 {
   return;
@@ -868,9 +861,7 @@ void __thandor_void_preserve_eax_ecx_edx GlideBackend_EndSceneNoOp(void)
    Glide backend of Graphics_SetViewportAndClearDepth: sets viewport and clip window to the rectangle and
    clears colour, alpha and depth there to 0 (depth writes are switched on first, grBufferClear needs them).
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_ClearViewport
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void Glide3_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
 
 {
@@ -890,8 +881,7 @@ Glide3_ClearViewport
    converter for the texture's downsample shift and, when the texture is resident in a TMU, downloads it again.
    The subresource index arrives in ECX (mirrored on the stack), the set as the second stack argument.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void Glide3_TextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *entryTexture;
@@ -911,8 +901,7 @@ Glide3_TextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,Graphic
    Alpha counterpart of Glide3_TextureSet_RefreshColor: rebuilds the upload data with the alpha converter for
    the downsample shift and re-downloads a resident texture. Same register contract.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
+void Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *entryTexture;
@@ -934,8 +923,7 @@ Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Graphic
    (same layout as the DirectDraw capture: source entry at GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET, pixels at
    GRAPHICS_CAPTURE_PIXELS_OFFSET). CF set when the allocation fails.
 */
-FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
-Glide3_Framebuffer_CaptureRegion
+FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
@@ -1035,7 +1023,7 @@ void Glide3_Cursor_RestoreAfterPresentNoOp(IDirectDrawSurface3 *backSurfaceSenti
    shift 0) of both g_GlideTextureColorUpload and g_GlideTextureAlphaUpload, called through them by
    Glide3_TextureResource_Initialize, Glide3_TextureSet_RefreshColor and Glide3_TextureSet_RefreshAlpha.
 */
-void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
+void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
@@ -1145,7 +1133,7 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_1x(GraphicsTexture
    colours, packed as GR_TEXFMT_RGB_565 or GR_TEXFMT_ARGB_4444. Entry 1 (downsample shift 1) of both
    g_GlideTextureColorUpload and g_GlideTextureAlphaUpload.
 */
-void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
+void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
@@ -1343,7 +1331,7 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
    source block (columns and rows 0 and 2), packed as GR_TEXFMT_RGB_565 or GR_TEXFMT_ARGB_4444. Entry 2
    (downsample shift 2) of both g_GlideTextureColorUpload and g_GlideTextureAlphaUpload.
 */
-void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
+void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
@@ -1535,8 +1523,7 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
    Fills the texture's full-size Glide upload buffer with 0x0FFF, i.e. GR_TEXFMT_ARGB_4444 white with alpha 0.
    Neither called nor referenced by any table in the original (like the two downsamplers after it).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture)
+void GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
@@ -1572,8 +1559,7 @@ GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture)
    average of the 2x2 source block (the sum of the four samples divided by 4 each). Neither called nor referenced
    by any table in the original.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
+void GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
@@ -1628,8 +1614,7 @@ GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
    per output texel and two source rows per output row, so it reads just the left half of each row pair.
    Neither called nor referenced by any table in the original.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureResource *texture)
+void GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
@@ -1689,9 +1674,7 @@ GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureRes
    255 writes the colour converted to the native pixel, anything between is blended. Paletted texels test and
    write the palette entry's +4 dword and blend +0 (see docs/software_raster.md). Returns with CF clear.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Glide3_TextureSource_BlitSourceAlpha
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -1948,9 +1931,7 @@ Glide3_TextureSource_BlitSourceAlpha
    >> 3 instead of >> 2) and there is no opaque shortcut: every texel with alpha != 0 is blended, alpha 255
    included. Returns with CF clear.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Glide3_TextureSource_BlitHalfSourceRgb
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -2193,8 +2174,7 @@ Glide3_TextureSource_BlitHalfSourceRgb
    width drops the last column, a width below 2 or a height of 0 loops 2^32 times, and a destination size of 1
    divides by zero.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureSource_StretchDirectColorBilinear
+void Glide3_TextureSource_StretchDirectColorBilinear
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationY,GraphicsScreenCoordinate destinationX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -2414,8 +2394,7 @@ Glide3_TextureSource_StretchDirectColorBilinear
    tested against it. Original bug: for any other framebuffer it calls SoftwareTextureSource_BlitHalfSourceRgb16
    (not the integer-scaled software blit) with the argument list shifted by integerScale.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureSource_BlitIntegerScaledSourceAlpha
+void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -2672,8 +2651,7 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
    paletteBankIndex (checked against paletteBankCount after clipping) instead of its own bank, which must still
    be valid. Direct-colour subresources ignore paletteBankIndex.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureSource_BlitSourceAlphaPaletteBank
+void Glide3_TextureSource_BlitSourceAlphaPaletteBank
           (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
@@ -2932,9 +2910,7 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
    Additive blit: adds the texel's RGB to the pixel with saturation (PADDUSW). Texels
    with RGB 0 are skipped whatever their alpha; alpha is otherwise ignored. Returns with CF clear.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Glide3_TextureSource_BlitSaturatedAddRgb
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -3164,9 +3140,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
 /* Address: 0x00582580.
    Glide3_TextureSource_BlitSaturatedAddRgb with the texel's RGB at half strength. Returns with CF clear.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Glide3_TextureSource_BlitHalfRgbSaturatedAdd
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset,
@@ -3400,9 +3374,7 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
    0x004ABA70 at 0x005828A1) without the modulation colour instead of the modulated software blit. Returns with
    CF clear.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-Glide3_TextureSource_BlitModulatedSourceAlpha
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate drawY,GraphicsScreenCoordinate drawX,
           PackedArgb32 modulationArgb8888,GraphicsSubresourceIndex subresourceIndex,
@@ -3691,9 +3663,7 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
    pixel read back through the LFB read lock (g_GlideSecondBufferOffset). Any other framebuffer goes to
    SoftwareFramebuffer_FillRectArgb16.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_Framebuffer_FillRectArgb
-          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+void Glide3_Framebuffer_FillRectArgb(GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
           GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsScreenCoordinate rectMaxY,GraphicsScreenCoordinate rectMaxX,
           GraphicsScreenCoordinate rectMinY,GraphicsScreenCoordinate rectMinX,PackedArgb32 argb8888,
@@ -3822,8 +3792,7 @@ Glide3_Framebuffer_FillRectArgb
    restore. Only Glide3_Framebuffer_Present's call (GLIDE_CURSOR_PRESENT_SENTINEL) draws, just before the
    buffer swap; the visibility token is latched on every call.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
+void Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
 
 {
   UiPixelOffset cursorHotspotX;
@@ -3866,7 +3835,7 @@ Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
    Glide backend shutdown: invalidates both saved cursor backgrounds and, when Glide is active, releases the
    device objects of every registered texture, closes the Glide window, shuts Glide down and unloads the DLL.
 */
-void __thandor_void_preserve_eax_ecx_edx Glide3_Shutdown(void)
+void Glide3_Shutdown(void)
 
 {
   int textureSlotsRemaining;
@@ -3899,7 +3868,7 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_Shutdown(void)
    read-only lock of the same buffer for blending. CF set (and the access flag left taken) when the backend is
    busy or the write lock fails.
 */
-bool __thandor_cf_preserve_eax_ecx_edx Glide3_Framebuffer_BeginAccess(void)
+bool Glide3_Framebuffer_BeginAccess(void)
 
 {
   int lfbLockSucceeded;
@@ -3937,7 +3906,7 @@ bool __thandor_cf_preserve_eax_ecx_edx Glide3_Framebuffer_BeginAccess(void)
    Ends Glide3_Framebuffer_BeginAccess: drops the read-only lock if it was taken, unlocks the write lock,
    clears g_DisplayFramebufferAccess.pixels and releases the backend access flag.
 */
-void __thandor_void_preserve_eax_ecx_edx Glide3_Framebuffer_EndAccess(void)
+void Glide3_Framebuffer_EndAccess(void)
 
 {
   if (g_GlideSecondBufferBase != NULL) {
@@ -3961,8 +3930,7 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_Framebuffer_EndAccess(void)
    The upload buffer is then downloaded to the chosen address. Textures without an upload buffer, or with no
    room after a full round, stay not resident.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
+void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureSourceAsset *asset;
@@ -4070,8 +4038,7 @@ Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
    with the converter for that shift. A failed allocation leaves glideInfo.data NULL. EAX is preserved, which
    callers use as the texture pointer result.
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
+void Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
 
 {
   GrAspectRatio_t *aspectRatioLog2Field;
@@ -4143,8 +4110,7 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
    frees its upload buffer. The TMU memory simply becomes free for Glide3_TextureResource_EnsureResident. EAX is
    preserved (the texture pointer).
 */
-void __thandor_void_preserve_eax_ecx_edx
-Glide3_TextureResource_Release(GraphicsTextureResource *texture)
+void Glide3_TextureResource_Release(GraphicsTextureResource *texture)
 
 {
   GraphicsTextureResource *previousResidentTexture;

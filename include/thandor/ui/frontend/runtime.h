@@ -124,38 +124,34 @@
 #define FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS 0x10
 
 /* 0x00546BD0 */
-FrontendMainLoopResult __thandor_eax_cf_preserve_ecx_edx
-Frontend_MainLoop(RomRecordId frontendEntryRecordId);
+FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId);
 
 /* 0x0050C380 */
 GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context);
 
 /* 0x0050C5A0 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_NonRightPress
+void FrontendModelPointerContext_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext);
 
 /* 0x0050C610 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_NonRightRelease
+void FrontendModelPointerContext_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState118 *callbackContext);
 
 /* 0x0050C670 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_NonRightDrag
+void FrontendModelPointerContext_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext);
 
 /* 0x00549B40 */
-void __thandor_void_preserve_eax_ecx FrontendUiAction2044_Handler(UiNodeBase *factionControl);
+void FrontendUiAction2044_Handler(UiNodeBase *factionControl);
 
 /* 0x00549BC0 */
-void __thandor_void_preserve_eax_ecx FrontendUiAction2045_Handler(UiNodeBase *playerControl);
+void FrontendUiAction2045_Handler(UiNodeBase *playerControl);
 
 /* 0x00549C40 */
-void __thandor_void_preserve_eax_ecx FrontendUiAction2046_Handler(UiNodeBase *selectionRowControl);
+void FrontendUiAction2046_Handler(UiNodeBase *selectionRowControl);
 
 /* 0x0050BB80 */
 void FrontendModelPointerContext_Relocate
@@ -163,51 +159,42 @@ void FrontendModelPointerContext_Relocate
                FrontendModelPointerContextRuntimeState17C *control);
 
 /* 0x0050BC30 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext);
+void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext);
 
 /* 0x0050BC60 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_RenderWorldViewQueuesClipped
+void FrontendModelPointerContext_RenderWorldViewQueuesClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FrontendModelPointerContextRuntimeState17C *control);
 
 /* 0x0050C6E0 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_RightPress
+void FrontendModelPointerContext_RightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext);
 
 /* 0x0050C730 */
-void __thandor_preserve_eax_edx
-FrontendModelPointerContext_RightRelease
+void FrontendModelPointerContext_RightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           FrontendModelPointerContextRuntimeState17C *callbackContext);
 
 /* 0x0050CC80 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_DispatchWorldCameraPointerInput
+void FrontendModelPointerContext_DispatchWorldCameraPointerInput
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext);
 
 /* 0x0050CED0 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_PointerWheel
+void FrontendModelPointerContext_PointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           WorldRuntimeContext *callbackContext);
 
 /* 0x0050CF50 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendModelPointerContext_KeyboardEvent
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerContextRuntimeState118 *control);
 
 /* 0x0050CF90 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext);
+void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext);
 
 /* 0x00514E40 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_UpdateCurrentFactionMetricCache(void);
+void FrontendRuntime_UpdateCurrentFactionMetricCache(void);
 
 /* 0x00547620 */
 void __cdecl FrontendRuntime_TimerCountdownTick(void);
@@ -216,16 +203,14 @@ void __cdecl FrontendRuntime_TimerCountdownTick(void);
 void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void);
 
 /* 0x00548030 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendRuntime_DispatchCommandByCodeAndModifierFlags
+bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
 /* 0x00548700 */
-void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
+void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 
 /* 0x00548910 */
-uint32_t __thandor_eax_preserve_ecx_edx
-FrontendRuntime_UpdatePointerContextAndSceneView
+uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
           void *pointedModelNode,FrontendPointerSceneRuntimeView43E8 *frontendRuntime);
 
@@ -240,8 +225,7 @@ void FrontendRuntimeCallback60_NoOp
                uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
 
 /* 0x00548C00 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendRuntimeCallback64_DispatchRecord1350
+void FrontendRuntimeCallback64_DispatchRecord1350
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
           FrontendCallbackArgument5 pointedModelNode,uint32_t pointerContext);
 
@@ -249,7 +233,7 @@ FrontendRuntimeCallback64_DispatchRecord1350
 void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t pointerContext);
 
 /* 0x00548CB0 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
+void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
 
 /* 0x00549100 */
 void FrontendCallback_ApplyGameSpeedOrDispatch02C0(uint32_t callbackArgument);
@@ -261,74 +245,64 @@ void FrontendCallback_ReleaseSelectedResourceOrDispatch0320(uint32_t callbackArg
 void FrontendCallback_NoOpArg1(void *source);
 
 /* 0x00549AB0 */
-void __thandor_preserve_eax FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument);
+void FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument);
 
 /* 0x0054A5A0 */
 void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument);
 
 /* 0x0054A7D0 */
-void __thandor_preserve_eax
-FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument);
+void FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument);
 
 /* 0x0054AAD0 */
-void __thandor_preserve_eax_edx FrontendUiAction2010_Handler(UiNodeBase *sourceNode);
+void FrontendUiAction2010_Handler(UiNodeBase *sourceNode);
 
 /* 0x0054AB70 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source);
+void FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source);
 
 /* 0x0054BA30 */
-void __thandor_void_preserve_eax_ecx
-FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode);
+void FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode);
 
 /* 0x0054D3F0 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction200C_Handler(UiPointerListControl *playerListControl);
+void FrontendUiAction200C_Handler(UiPointerListControl *playerListControl);
 
 /* 0x0054D460 */
-void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source);
+void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source);
 
 /* 0x0054D4A0 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList);
+void FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList);
 
 /* 0x00565A30 */
-void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void);
+void Frontend_PlaySelectedEndMovie(void);
 
 /* 0x00546700 */
-FrontendInitResult __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId initialRomRecordId);
+FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId);
 
 /* 0x00547630 */
-void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void);
+void Frontend_StateTick(void);
 
 /* 0x00543B70 */
-void __thandor_void_preserve_ecx_edx
-FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState);
+void FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState);
 
 /* 0x005445A0 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2044_IndexedSelectionHelper
+void FrontendUiAction2044_IndexedSelectionHelper
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x00544640 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2045_IndexedSelectionHelper
+void FrontendUiAction2045_IndexedSelectionHelper
           (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x005446A0 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction2046_IndexedSelectionHelper
+void FrontendUiAction2046_IndexedSelectionHelper
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x00546190 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void);
+void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void);
 
 /* 0x005474E0 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResourcesRegs(void);
+void FrontendRuntime_ShutdownAndReleaseResourcesRegs(void);
 
 /* 0x0050AD90 */
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context);

@@ -92,147 +92,113 @@
 #define UI_CATALOG_TEXT_STYLE_MEASURE 0x1000000
 
 /* 0x004BBE60 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListControl_HandleKeyboardNavigation
+bool UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control);
 
 /* 0x004BB100 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiListControl_HandleKeyboardNavigation
+bool UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control);
 
 /* 0x004BB480 */
-void __thandor_preserve_eax_edx
-UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control);
+void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control);
 
 /* 0x004B87A0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_BeginPrimaryScrollInteraction
+void UiScrollableControl_BeginPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
 /* 0x004B8A20 */
-void __thandor_preserve_eax
-UiScrollableControl_EndPrimaryScrollInteraction
+void UiScrollableControl_EndPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
 /* 0x004B8BF0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_UpdatePrimaryScrollDrag
+void UiScrollableControl_UpdatePrimaryScrollDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
 /* 0x004B8F90 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_UpdateSecondaryScrollDrag
+void UiScrollableControl_UpdateSecondaryScrollDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
 /* 0x004B9070 */
-void __thandor_void_preserve_ecx_edx
-UiScrollableControl_TickAutoScroll(UiScrollableControl *control);
+void UiScrollableControl_TickAutoScroll(UiScrollableControl *control);
 
 /* 0x004B90E0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_HandlePointerWheel
+void UiScrollableControl_HandlePointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
 /* 0x004BA500 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control);
+void UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control);
 
 /* 0x004BB020 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_SelectRowFromPointer
+void UiListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiListControl *control);
 
 /* 0x004BB7A0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByDwordPairFieldDescending
+void UiPointerList_SortByDwordPairFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
 /* 0x004BB8A0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByDwordFieldAscending
-          (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
+void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control);
 
 /* 0x004BBCD0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_SelectRowFromPointer
-          (int pointerButton,int pointerY,int pointerX,UiNodeBase *control);
+void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int pointerX,UiNodeBase *control);
 
 /* 0x004B11C0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
+void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 
 /* 0x004B1200 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
+void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 
 /* 0x004B2550 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_KeyboardEvent
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control);
 
 /* 0x004B26E0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
+void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
 /* 0x004B2710 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
+void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
 /* 0x004B2D30 */
-SelectableGroupNodeResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...);
+SelectableGroupNodeResult UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...);
 
 /* 0x004B2D70 */
-SelectableGroupIndexResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneSelected(UiControlCount controlCount,...);
+SelectableGroupIndexResult UiSelectableGroup_NoneSelected(UiControlCount controlCount,...);
 
 /* 0x004B2DA0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...);
+void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...);
 
 /* 0x004B2DE0 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_IsSelected(UiSelectableControl *control);
+uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control);
 
 /* 0x004B2E10 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control);
+void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control);
 
 /* 0x004B4920 */
-PageStackSearchResult __thandor_eax_cf_preserve_ecx_edx
-UiPageStack_ActivePageNotInList(UiPageStackControl *stack);
+PageStackSearchResult UiPageStack_ActivePageNotInList(UiPageStackControl *stack);
 
 /* 0x004B7970 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_RelocateChildren
-          (UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control);
+void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control);
 
 /* 0x004B79D0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_DrawFrameContentAndScrollbars
+void UiScrollableControl_DrawFrameContentAndScrollbars
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiScrollableControl *control);
 
 /* 0x004B8310 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control);
+void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control);
 
 /* 0x004B8AC0 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiScrollableControl_QueryPointerRegion
+GraphicsCursorFrameIndex UiScrollableControl_QueryPointerRegion
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control);
 
 /* 0x004B8B10 */
-void __thandor_void_preserve_ecx_edx
-UiScrollableControl_BeginSecondaryScrollInteraction
+void UiScrollableControl_BeginSecondaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control);
 
@@ -242,8 +208,7 @@ void UiScrollableControl_EndSecondaryScrollInteraction
                ,UiScrollableControl *control);
 
 /* 0x004B9000 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiScrollableControl_HitTestContentAndScrollbars
+UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control);
 
 /* 0x004BA4E0 */
@@ -253,128 +218,100 @@ void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control);
 UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *control);
 
 /* 0x004BADE0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_DrawRowsAndSelection
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control);
+void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control);
 
 /* 0x004BB310 */
-void __thandor_preserve_eax UiListControl_TickActivationPulse(UiListControl *control);
+void UiListControl_TickActivationPulse(UiListControl *control);
 
 /* 0x004BB350 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control);
+void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control);
 
 /* 0x004BB380 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control);
+void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control);
 
 /* 0x004BB3B0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_InitializeColumnLayout
-          (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
+void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
 
 /* 0x004BB460 */
 void ** UiPointerList_GetRowSlotsVariantB(UiPointerListControl *control);
 
 /* 0x004BB9E0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_RelocateChildren
-          (UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control);
+void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control);
 
 /* 0x004BBA00 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_DrawRowsAndSelection
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control);
+void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control);
 
 /* 0x004BC180 */
-void __thandor_preserve_eax UiTimedListControl_TickActionDelay(UiTimedListControl *control);
+void UiTimedListControl_TickActionDelay(UiTimedListControl *control);
 
 /* 0x004BC460 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWrappedTextControl_RelocateAndApplyDeferredOffset
+void UiWrappedTextControl_RelocateAndApplyDeferredOffset
           (UiSerializedRelocationDelta relocationDelta,UiWrappedTextControl *control);
 
 /* 0x00516580 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCatalogEntryControl_DrawClipped
+void UiCatalogEntryControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiCatalogEntryControl *control);
 
 /* 0x00516B90 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiCatalogEntryControl_PointerMove
+GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiCatalogEntryControl *control);
 
 /* 0x00516C50 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCatalogEntryControl_NonRightRelease
+void UiCatalogEntryControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCatalogEntryControl *control);
 
 /* 0x004BC360 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_SelectRecordAndScrollIntoView
+void UiTimedListControl_SelectRecordAndScrollIntoView
           (UiTimedListTreeRecord16 *selectedRecord,UiTimedListRuntimeExtendedView88 *control);
 
 /* 0x004BB4E0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control);
+void UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control);
 
 /* 0x004BB540 */
-ListSelectionResult __thandor_eax_cf_preserve_ecx_edx
-UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control);
+ListSelectionResult UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control);
 
 /* 0x004B9460 */
 UiScrollableContentDimensionsEdxEax8 UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control);
 
 /* 0x004BC310 */
-uint32_t __thandor_eax_preserve_ecx_edx
-UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock);
+uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock);
 
 /* 0x004B9170 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control);
+void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control);
 
 /* 0x004B9490 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_ClampOffsetsToViewport
+void UiScrollableControl_ClampOffsetsToViewport
           (UiPixelCoordinate targetBottom,UiPixelCoordinate targetRight,UiPixelCoordinate targetTop,
           UiPixelCoordinate targetLeft,UiScrollableControl *control);
 
 
 /* 0x0040FF70 */
-UiTimedListTreeRecord16 * __thandor_eax_preserve_ecx_edx
-UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock);
+UiTimedListTreeRecord16 * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock);
 
 /* 0x0040FFE0 */
-DirectoryRecordBlockResult __thandor_eax_cf_preserve_ecx_edx
-UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16);
+DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16);
 
 /* 0x00410380 */
-DirectoryHierarchyResult __thandor_eax_edx_cf_preserve_ecx
-UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16);
+DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16);
 
 /* 0x004104B0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
+bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
           (UiTimedListTreeRecord16 *targetRecord,UiTimedListTreeRecord16 *recordBlock);
 
 /* 0x00410520 */
-bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record);
+bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record);
 
 /* 0x00410670 */
-void __thandor_void_preserve_eax_ecx
-UiTimedListControl_ToggleDirectoryRecordExpansion
+void UiTimedListControl_ToggleDirectoryRecordExpansion
           (UiTimedListTreeRecord16 *record,UiTimedListRuntimeExtendedView88 *control);
 
 /* 0x00410700 */
-bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record);
+bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record);
 
 /* 0x004BC1C0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_SetRecordTreeAndRecomputeLayout
+void UiTimedListControl_SetRecordTreeAndRecomputeLayout
           (UiTimedListTreeRecord16 *recordTree,UiTimedListRuntimeExtendedView88 *control);
 
 /* 0x004BC2F0 */

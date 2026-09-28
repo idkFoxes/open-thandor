@@ -17,9 +17,7 @@
    tracked, walker, water and glider classes (1/2/3/19/17) to SelectBestAnchorAction. The class is read with a
    single dereference from the model at +0x4C.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_UpdateWorkspace01Entities
-          (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiUnitBehavior_UpdateWorkspace01Entities(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   uint8_t *cooldownCounterBytes;
@@ -77,8 +75,7 @@ AiUnitBehavior_UpdateWorkspace01Entities
    With kind 3 or no winner the unit is collected for the group assignment of
    AiUnitGroup_AssignCollectedEntitiesToBestTarget.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_SelectBestAnchorAction
+void AiUnitBehavior_SelectBestAnchorAction
           (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -132,9 +129,9 @@ AiUnitBehavior_SelectBestAnchorAction
    score = ((max(0, bias - Manhattan distance) * scale + site score) >> 12) * the unit's definitionClassValue80,
    so nearer and richer sites score higher. Returns currentBestScore and a NULL entry when none beats it.
    modelDefinition is not used.
+   Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
-AiWorkspace05DistanceSelectionRegs8 __thandor_eax_ebx_cf_preserve_ecx_edx
-AiUnitBehavior_ComputeWorkspace05DistanceScore
+AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeWorkspace05DistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot)
 
@@ -182,8 +179,7 @@ AiUnitBehavior_ComputeWorkspace05DistanceScore
    the general sites: ((max(0, bias - distance) * scale) >> 12) * definitionClassValue84, and returns the
    highest of these and currentBestScore. modelDefinition is not used.
 */
-AiCandidateScore32 __thandor_eax_preserve_ecx_edx
-AiUnitBehavior_ComputeFactionAnchorDistanceScore
+AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
           (FactionRuntimeIndex factionIndex,AiCandidateScore32 currentBestScore,
           MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot)
 
@@ -249,9 +245,9 @@ AiUnitBehavior_ComputeFactionAnchorDistanceScore
    when workspace 07 is empty: ((max(0, bias - Manhattan distance) * scale) >> 12) * definitionClassValue88.
    Returns the best entry if it beats currentBestScore, else currentBestScore and NULL. modelDefinition is not
    used.
+   Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
-AiSecondaryWorkspaceDistanceSelectionRegs8 __thandor_eax_ebx_cf_preserve_ecx_edx
-AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
+AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot)
 
@@ -309,9 +305,7 @@ AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
    AiUnitBehavior_ComputeWorkspace05DistanceScore adds for it, so the next unit is less drawn there) and queues
    the move. worldRuntimeContext is not used.
 */
-void __thandor_preserve_eax
-AiUnitCommand_AssignWorkspacePoint
-          (uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
+void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext)
 
 {
@@ -329,9 +323,7 @@ AiUnitCommand_AssignWorkspacePoint
    secondary one. Marks the unit as AI-commanded and no longer group-assigned, then queues the move.
    worldRuntimeContext is not used.
 */
-void __thandor_preserve_eax_edx
-AiUnitCommand_AssignFactionAnchorPoint
-          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime,
+void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext)
 
 {
@@ -359,9 +351,7 @@ AiUnitCommand_AssignFactionAnchorPoint
    AiUnitGroup_AssignCollectedEntitiesToBestTarget later sends them together to one target.
    worldRuntimeContext is not used.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_CollectUnassignedEntity
-          (ArmyRuntimeSlot *armyRuntimeSlot,WorldRuntimeContext *worldRuntimeContext)
+void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,WorldRuntimeContext *worldRuntimeContext)
 
 {
   if ((g_AiCollectedEntityCount < AI_WORKSPACE14_CAPACITY) &&
@@ -384,8 +374,7 @@ AiUnitBehavior_CollectUnassignedEntity
    Not arrived or flag set: sets the flag and resets the movement once within 0x1B03 of its fallback position
    on both axes.
 */
-void __thandor_void_preserve_eax_ecx_edx
-AiUnitBehavior_UpdateSpecialClass12Entity
+void AiUnitBehavior_UpdateSpecialClass12Entity
           (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 

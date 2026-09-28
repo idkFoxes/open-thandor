@@ -36,7 +36,7 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
    that captured the pointer with that button, which then loses the capture and the pointer position is
    dispatched again as motion. A release without a matching capture is dropped.
 */
-void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
+void UiPointer_DispatchPendingEvents(void)
 
 {
   UiNodeBase *control;
@@ -115,7 +115,7 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
    Takes the keyboard focus away from node (e.g. before it is hidden or removed): the focus moves on to the
    next focus target, or is cleared when node is the only one.
 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
+void UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
 
 {
   if (node == g_UiKeyboardFocusNode) {
@@ -134,7 +134,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase 
    receives the focus. Keys nobody takes, or pressed with no focus, go to the top root's keyboard
    fallback. While a node has captured the pointer (a mouse button is held), keys are discarded.
 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
+void UiKeyboard_DispatchPendingEvents(void)
 
 {
   bool wrappedOnce;
@@ -208,7 +208,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
    Gives the keyboard focus to the first node from root on that is a preferred focus target, else to the
    last fallback focus target found (suppressed nodes are skipped); without any the focus stays as it is.
 */
-void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *root)
+void UiKeyboardFocus_SelectInitial(UiNodeBase *root)
 
 {
   UiNodeBase *fallbackFocusNode;
@@ -253,7 +253,7 @@ void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *r
    Called when a control is unsuppressed or its page becomes active: gives it the keyboard focus if no node
    holds the focus yet and the control is a focus target.
 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
+void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 
 {
   if ((g_UiKeyboardFocusNode == UI_NODE_NONE) &&
@@ -270,8 +270,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBas
    actionId and redraws. Other keys, and all keys while suppressed, go to the default handler, which passes
    them on. CF clear when the key was consumed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiRangeSliderControl_HandleKeyboard
+bool UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control)
 
 {
@@ -326,8 +325,7 @@ UiRangeSliderControl_HandleKeyboard
    typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. CF clear when
    consumed.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiSingleLineTextControl_ForwardKeyboardEventToChild
+bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control)
 
 {
@@ -362,8 +360,7 @@ UiSingleLineTextControl_ForwardKeyboardEventToChild
    wheel event that comes back while forwarding (a child passing it to its parent) goes on to this
    control's parent instead.
 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
+void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control)
 
@@ -397,8 +394,7 @@ UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
    Default pointerMove slot of most UI vtables (range sliders, labels, lists, ...): the node asks for
    cursor frame 0 (GRAPHICS_CURSOR_FRAME_ARROW).
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
   return GRAPHICS_CURSOR_FRAME_ARROW;
@@ -410,8 +406,7 @@ UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
    (thumb centre) along the track onto minimumValue..maximumValue, rounded to nearest and mirrored for
    reversed sliders, then queues actionId and redraws.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_UpdateValueFromPointer
+void UiRangeSliderControl_UpdateValueFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control)
 
@@ -483,8 +478,7 @@ UiRangeSliderControl_UpdateValueFromPointer
    moves the value by stepValue * g_UiRangeSliderDragScale, clamped to the range; then actionId is queued
    and the slider redrawn.
 */
-void __thandor_void_preserve_eax_ecx
-UiRangeSliderControl_HandlePointerWheel
+void UiRangeSliderControl_HandlePointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control)
 
@@ -515,9 +509,7 @@ UiRangeSliderControl_HandlePointerWheel
    flags), the children and the focusChild offset are relocated, and a serialized text offset
    (UI_LABEL_TEXT_NEEDS_RELOCATION) is turned into a pointer once.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSingleLineTextControl_RelocateChild
-          (UiSerializedRelocationDelta relocationDelta,UiSingleLineTextControl *control)
+void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocationDelta,UiSingleLineTextControl *control)
 
 {
   /* EBX is the control, the same node as the stack argument; the relocate vtable slot passes
@@ -551,8 +543,7 @@ UiSingleLineTextControl_RelocateChild
    control has the keyboard focus, the child holds it for the duration of the call so it acts as focused.
    Redraws afterwards.
 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardNonRightPressToChild
+void UiSingleLineTextControl_ForwardNonRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control)
 
@@ -580,8 +571,7 @@ UiSingleLineTextControl_ForwardNonRightPressToChild
    nonRightRelease slot of g_UiFocusProxyControlVtable. Forwards the left release to the focus child,
    lending it the keyboard focus for the call like UiSingleLineTextControl_ForwardNonRightPressToChild.
 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardNonRightReleaseToChild
+void UiSingleLineTextControl_ForwardNonRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control)
 
@@ -610,8 +600,7 @@ UiSingleLineTextControl_ForwardNonRightReleaseToChild
    the keyboard focus), but not when the child's parent is this control: most rightPress handlers
    (UiNode_ForwardRightPressToParent) would hand the press straight back.
 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardRightPressToChild
+void UiSingleLineTextControl_ForwardRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control)
 
@@ -641,8 +630,7 @@ UiSingleLineTextControl_ForwardRightPressToChild
    rightRelease slot of g_UiFocusProxyControlVtable. Forwards the right release to the focus child,
    lending it the keyboard focus for the call.
 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardRightReleaseToChild
+void UiSingleLineTextControl_ForwardRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control)
 
@@ -670,8 +658,7 @@ UiSingleLineTextControl_ForwardRightReleaseToChild
    nonRightDrag slot of g_UiFocusProxyControlVtable. Forwards the left-button drag to the focus child,
    lending it the keyboard focus for the call.
 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardNonRightDragToChild
+void UiSingleLineTextControl_ForwardNonRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control)
 
@@ -699,8 +686,7 @@ UiSingleLineTextControl_ForwardNonRightDragToChild
    rightDrag slot of g_UiFocusProxyControlVtable. Forwards the right-button drag to the focus child,
    lending it the keyboard focus for the call.
 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardRightDragToChild
+void UiSingleLineTextControl_ForwardRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control)
 
@@ -728,8 +714,7 @@ UiSingleLineTextControl_ForwardRightDragToChild
    pointerMove slot of g_UiFocusProxyControlVtable. Returns the focus child's cursor frame (asked with the
    keyboard focus lent to it), or the arrow (0) without a child.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiSingleLineTextControl_ForwardPointerMoveToChild
+GraphicsCursorFrameIndex UiSingleLineTextControl_ForwardPointerMoveToChild
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control)
 
 {
@@ -759,8 +744,7 @@ UiSingleLineTextControl_ForwardPointerMoveToChild
    the proxy receives the input and forwards it; hits on the child or the control itself count as
    misses (UI_NODE_NONE) while the child is suppressed.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiSingleLineTextControl_HitTestChildProxy
+UiNodeBase * UiSingleLineTextControl_HitTestChildProxy
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control)
 
 {
@@ -789,7 +773,7 @@ UiSingleLineTextControl_HitTestChildProxy
    tick slot of g_UiFocusProxyControlVtable. Forwards the per-frame tick to the focus child, lending it the
    keyboard focus for the call, and redraws.
 */
-void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control)
+void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -816,8 +800,7 @@ void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSin
    is shown. Over a transparent pixel of a persistent-activation image, a child under the pointer supplies
    the cursor; without one, UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE while no image control is hovered.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiImageControl_PointerMove
+GraphicsCursorFrameIndex UiImageControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
 
 {
@@ -938,8 +921,7 @@ static __inline PackedArgb32 UiScaler_BlendBilinear
    texture count as 0), for 16- and 32-bit framebuffers. Only direct-colour subresources (negative
    paletteIndex) are drawn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectionGeometryControl_DrawClipped
+void UiSelectionGeometryControl_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiSelectionGeometryControl *control
           )
 
@@ -1189,8 +1171,7 @@ UiSelectionGeometryControl_DrawClipped
    texture space with the same rotation/scale as UiSelectionGeometryControl_DrawClipped, stores it in
    selectedSourceYQ12/XQ12 and queues actionId so the handler can read the picked source position.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
+void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSelectionGeometryControl *control)
 
@@ -1239,9 +1220,7 @@ UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
    first) captures the pointer for the left button, takes the keyboard focus when it is a focus target and
    gets nonRightPress followed by nonRightDrag. Ignored while any button holds a capture.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchLeftPress
-          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,
+void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
@@ -1326,8 +1305,7 @@ UiPointer_DispatchLeftPress
    nonRightDrag), but captures the pointer for the middle button and always marks the node's press as a
    repeated click (UI_NODE_REPEAT_OR_DOUBLE_CLICK), whatever buttonMask says.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchMiddlePress
+void UiPointer_DispatchMiddlePress
           (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX)
 
@@ -1408,8 +1386,7 @@ UiPointer_DispatchMiddlePress
    the right button, takes the keyboard focus when it is a focus target and gets rightPress followed by
    rightDrag. Ignored while any button holds a capture.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchRightPress
+void UiPointer_DispatchRightPress
           (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX)
 
@@ -1479,7 +1456,7 @@ UiPointer_DispatchRightPress
    wrapping around through the topmost ancestor and skipping suppressed nodes. Nothing changes when there is
    no focus or no other focus target.
 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void)
+void UiKeyboardFocus_MoveNext(void)
 
 {
   UiNodeBase *node;
@@ -1521,8 +1498,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void)
    non-zero wheel delta, pointerWheel. A root the pointer misses passes it on to the root below only when
    its pointerMissPolicy returns a negative value.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchMotionAndWheel
+void UiPointer_DispatchMotionAndWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
 
 {
@@ -1582,8 +1558,7 @@ UiPointer_DispatchMotionAndWheel
    Default pointerWheel slot of most UI vtables: passes the wheel event up to the parent node (if any), so
    it reaches the nearest ancestor that handles the wheel.
 */
-void __thandor_preserve_eax_edx
-UiNode_ForwardPointerWheelToParent
+void UiNode_ForwardPointerWheelToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control)
 
@@ -1603,8 +1578,7 @@ UiNode_ForwardPointerWheelToParent
    It always returns CF set (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
    then sets CF unconditionally (CMP; STC; RET 0xc), so the focus move its name suggests never happens.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiNode_DefaultKeyboardEventMoveFocusNext
+bool UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {
@@ -1616,7 +1590,7 @@ UiNode_DefaultKeyboardEventMoveFocusNext
    Moves the keyboard focus to node (UI_NODE_NONE clears it), keeping UI_NODE_HAS_KEYBOARD_FOCUS on the
    focused node only, and redraws every root (also when the focus did not change).
 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_Set(UiNodeBase *node)
+void UiKeyboardFocus_Set(UiNodeBase *node)
 
 {
   if (g_UiKeyboardFocusNode != node) {

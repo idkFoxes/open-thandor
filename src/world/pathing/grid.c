@@ -250,8 +250,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
    other marked edge cell left over means the ring fell apart and returns true (CF). A point outside the grid
    also returns true.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridReachability_RebuildConnectedRegionAroundWorldPoint
+bool GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
@@ -381,8 +380,7 @@ GridReachability_RebuildConnectedRegionAroundWorldPoint
    bits are a scratch-only namespace and never written back to FieldGridCell.flagsAndMaterial.
    The dilation pass reads four scratch rows before the first and after the last row, as in the original.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime)
+void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime)
 
 {
   FieldGridDimension fieldGridWidth;
@@ -671,8 +669,7 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
    second grid classification. Returns true (CF set) when the target cannot be reached. No caller in the C
    code or in the handler tables references it.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestRuntimePairReachabilityFromWorldPoint
+bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
           (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair)
 
 {
@@ -697,8 +694,7 @@ GridScratch_TestRuntimePairReachabilityFromWorldPoint
    (g_GridPathCostQueueBegin..End), each replacing and freeing the previous buffer. Returns the allocator
    error with CF set on failure.
 */
-GridScratchAllocResult __thandor_eax_cf_preserve_ecx_edx
-GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
+GridScratchAllocResult GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
 
 {
   GridScratchCell *previousSecondaryScratchBuffer;
@@ -755,7 +751,7 @@ GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
    Frees the path-cost queue and both scratch grids allocated by GridScratch_AllocateForFieldGrid and
    clears the three pointers, so a later session starts without stale buffers.
 */
-void __thandor_preserve_eax GridScratch_ReleaseBuffers(void)
+void GridScratch_ReleaseBuffers(void)
 
 {
   g_MemoryApi.free(g_GridPathCostQueueBegin);
@@ -772,8 +768,7 @@ void __thandor_preserve_eax GridScratch_ReleaseBuffers(void)
    of faction slots 1..7 into scratch bits 1..7 and ORs them into the cell's 4x4 scratch block and a ring of
    surrounding scratch cells, so faction presence is dilated into the scratch grid used by pathing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
+void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
 
 {
   uint32_t *lowerScratchCursor;
@@ -900,9 +895,7 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
    when it lies outside the scratch grid, the cell is GRID_SCRATCH_BLOCKED, or the cell has distance band bit
    8 + lowBandIndex or bit 24 + highBandIndex set.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestProjectedCellMaskBands
-          (Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
+bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
 
 {
   GridScratchStateMask cellStateMask;
@@ -1113,8 +1106,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
    upwards from the row above and downwards from the row below. Nothing happens off the grid or on a blocked
    centre cell.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridFootprint_ClearTraversalFlagsAroundWorldPoint
+void GridFootprint_ClearTraversalFlagsAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12)
 
 {
@@ -1227,8 +1219,7 @@ GridFootprint_ClearTraversalFlagsAroundWorldPoint
    a blocked line snaps it to the target cell's centre. Another model whose target changed gets it as new
    pending move target. Returns the target used.
 */
-WorldPositionXYEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
-EntityPathing_UpdateRouteSegment
+WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
           EntityPathingRouteEntityRuntimeView10 *routeEntityRuntime)
 
@@ -1383,9 +1374,7 @@ EntityPathing_UpdateRouteSegment
    (GridScratch_TestConnectedReachabilityRecursiveRegs), treating map-edge and visited cells as walls. Returns
    true (CF set) when the fill never reaches the target cell.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestWorldPointReachability
-          (uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
+bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
           GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
           GraphicsWorldCoordinateQ12 targetWorldXQ12)
 
@@ -1453,8 +1442,7 @@ GridScratch_TestWorldPointReachability
    one step is taken. Returns the row/column of the farthest such cell with CF clear, or CF set when that cell is
    the cost origin itself (cost 0, the target was reached).
 */
-PathBacktrackResult __thandor_eax_cf_preserve_edx
-GridPathCost_BacktrackBestHexRoute
+PathBacktrackResult GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell)
 
@@ -1588,7 +1576,7 @@ void __cdecl GridScratch_CopyPrimaryToSecondary(void)
    Swaps the primary and secondary scratch grid pointers (XCHG in the original), making the copy made by
    GridScratch_CopyPrimaryToSecondary the working grid, or restoring the original afterwards.
 */
-void __thandor_preserve_eax GridScratch_SwapPrimarySecondary(void)
+void GridScratch_SwapPrimarySecondary(void)
 
 {
   GridScratchCell *previousSecondaryBuffer;
@@ -1607,8 +1595,7 @@ void __thandor_preserve_eax GridScratch_SwapPrimarySecondary(void)
    traversalMask bit as visited, then recurses into every such cell of the row above and the row below that span.
    A blocked or already visited start cell does nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridScratch_FloodFillConnectedCellsRegs
+void GridScratch_FloodFillConnectedCellsRegs
           (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
@@ -1655,8 +1642,7 @@ GridScratch_FloodFillConnectedCellsRegs
    searching the row on the side of the target first. Cells with any traversalMask bit are walls. Returns false
    (CF clear) when the target was reached, true when this region does not contain it.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestConnectedReachabilityRecursiveRegs
+bool GridScratch_TestConnectedReachabilityRecursiveRegs
           (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell)
 
 {
@@ -1741,9 +1727,7 @@ GridScratch_TestConnectedReachabilityRecursiveRegs
    pass it stops once originCell (the mover's cell) or one of its neighbours has a cost, or after remainingPasses
    passes, or when the queue runs empty.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridPathCost_PropagateWeightedHexNeighbors
-          (GridPathPassCount remainingPasses,GridScratchCell *originCell,
+void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasses,GridScratchCell *originCell,
           FieldGridCellCoordinate startRow,FieldGridCellCoordinate startColumn)
 
 {
@@ -1972,8 +1956,7 @@ void GridScratch_ResetTraversalFlagsAndCosts(void)
    bestCost, and recurses into the unvisited open cells of the rows above and below. Returns the best distance
    and the best cell's byte offset in the scratch grid.
 */
-GridPathUnreachableRecursiveEdiEdx8 __thandor_eax_edx_cf_preserve_ecx
-GridPathRegion_MarkUnreachableRecursive
+GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
           (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
           uint32_t bestCellByteOffset)
 
@@ -2101,8 +2084,7 @@ GridPathRegion_MarkUnreachableRecursive
    loses its blocked and visited bits and has its pathCost counter incremented. Stops before a blocked cell.
    Returns the number of cells cleared, one less when the walk ended at a blocked cell (DEC in the original).
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridFootprint_ClearTraversalFlagsDiagonalNegative
+int GridFootprint_ClearTraversalFlagsDiagonalNegative
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord)
 
@@ -2135,8 +2117,7 @@ GridFootprint_ClearTraversalFlagsDiagonalNegative
    Mirror of GridFootprint_ClearTraversalFlagsDiagonalNegative walking upwards (two scratch rows up and one
    column right per step), with the same clearing and the same return value.
 */
-int __thandor_void_preserve_eax_ecx_edx
-GridFootprint_ClearTraversalFlagsDiagonalPositive
+int GridFootprint_ClearTraversalFlagsDiagonalPositive
           (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
           FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord)
 
@@ -2170,8 +2151,7 @@ GridFootprint_ClearTraversalFlagsDiagonalPositive
    rows above and below. A cell is open when none of GRID_REACHABILITY_OPEN_STOP_MASK is set (blocked, terrain
    classes 28..30, low bands 0..6, already visited).
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
+void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
   GridScratchCell *prevRowEnd;
@@ -2212,8 +2192,7 @@ GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell
    visited bit across the connected cells that are visited and inside the footprint (pathCost counter non-zero),
    with the same hex-adjacent recursion into the rows above and below.
 */
-void __thandor_void_preserve_eax_ecx_edx
-GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
+void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
   GridScratchCell *spanRightCell;
@@ -2259,8 +2238,7 @@ GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchC
    neighbours is free of g_GridPathBlockingMask and GRID_SCRATCH_BLOCKED, CF is clear. Otherwise CF is set and the
    nearest (hex distance) free cell within +-16 rows/columns is returned, or the cell itself when there is none.
 */
-NearestCellResult __thandor_eax_cf_preserve_ecx_edx
-GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn)
+NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn)
 
 {
   int cellIndexOrMinColumn;
@@ -2390,9 +2368,7 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridC
    when the whole line is clear. Despite the name, true means "blocked". The line is always walked left to right;
    upward lines step row by row, downward lines column by column.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GridPathLine_TestHexSegmentClear
-          (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+bool GridPathLine_TestHexSegmentClear(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell)
 
 {

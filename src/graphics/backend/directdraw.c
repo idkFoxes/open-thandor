@@ -85,9 +85,7 @@ static TH_LEGACY_HRESULT GraphicsDirectDraw_TestAidAttachWindowClipper(uint32_t 
    (true) when not. Used by UiDisplayModeSelection_RefreshEnumeratedOptions (ui/controls/misc.c) to offer only
    available modes. The table is assumed non-empty: the first entry is compared before the count is checked.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsDisplayMode_IsEnumerated
-          (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
+bool GraphicsDisplayMode_IsEnumerated(FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
 {
@@ -113,9 +111,7 @@ GraphicsDisplayMode_IsEnumerated
    the mode was enumerated. Used by FrontendDisplaySettingsPage_UpdateModeActionAvailability
    (ui/frontend/settings.c).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-DisplayModeTable_ContainsExactMode
-          (FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
+bool DisplayModeTable_ContainsExactMode(FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex)
 
 {
@@ -265,8 +261,7 @@ int32_t __stdcall DirectDraw_EnumDisplayModeCallback
    recreates the textures. A failing step returns its FATAL_ERROR_DIRECTDRAW_... or FATAL_ERROR_DIRECT3D_... code with CF
    set and leaves the number of completed steps as text in g_PackageLastErrorPath.
 */
-DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
+DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width)
 

@@ -20,8 +20,7 @@
    (+0x4C) an offset - 4 is the control's nodeFlags, + 0 its state flags and + 8 its text resource id.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *frontendRootPage)
+void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *frontendRootPage)
 
 {
   UiNodeFlags *menuRoomContextFlags;
@@ -263,8 +262,7 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
    g_FrontendUiActionHandlersPage20): takes the clicked button's width/height pair as the pending resolution and
    refreshes which choices are available. Nothing is applied before the apply action (0x2031).
 */
-void __thandor_preserve_eax_edx
-FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
+void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
 
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
@@ -281,8 +279,7 @@ FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
    g_FrontendUiActionHandlersPage20): takes the clicked button's bits per pixel as the pending colour depth and
    refreshes which choices are available.
 */
-void __thandor_preserve_eax
-FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
+void FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
 
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
@@ -299,7 +296,7 @@ FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
    to the new pixel format; on failure the previous mode is restored (fatal if that fails too), the error is
    reported and the pending selection is reset to the saved one.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void *control)
+void FrontendDisplaySettings_ApplyMode(void *control)
 
 {
   uint32_t previousWidth;
@@ -400,8 +397,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
    list decide about Join, and is saved as PERSISTENT_SETTING_PLAYER_NAME and copied to the local player's name
    (20 UTF-16 code units).
 */
-void __thandor_void_preserve_eax_ecx
-FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
+void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
 
 {
   UiNodeBase *parentCursor;
@@ -445,8 +441,7 @@ FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
    g_FrontendUiActionHandlersPage20): applies the percentage directly in a local game and as
    FRONTEND_COMMAND_SET_GAME_SPEED in a network game, and saves it as PERSISTENT_SETTING_GAME_SPEED_PERCENT.
 */
-void __thandor_preserve_eax
-FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
+void FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -466,8 +461,7 @@ FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
    PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL in the persistent map/mouse option flags, which the session
    reads when it starts.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
+void FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -491,8 +485,7 @@ FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *contro
    Handler of the options page's scroll-speed slider (scrollSpeedSlider, action 0x204B, slot 75 of
    g_FrontendUiActionHandlersPage20): saves the value as PERSISTENT_SETTING_CAMERA_SCROLL_STEP.
 */
-void __thandor_preserve_eax
-FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
+void FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 
 {
   PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
@@ -504,8 +497,7 @@ FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
    Handler of the "Automatic zoom off" checkbox (autoZoomOffCheckbox, action 0x203C, slot 60 of
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
+void FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -529,8 +521,7 @@ FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
    Handler of the "Automatic rotation off" checkbox (autoRotationOffCheckbox, action 0x203D, slot 61 of
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
+void FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -555,8 +546,7 @@ FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_LINK_OPTION_ROTATION_ZOOM. The two link
    options exclude each other, so while this one is set the "Link rotation/tilt" checkbox is hidden.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
+void FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -583,8 +573,7 @@ FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
    g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_LINK_OPTION_ROTATION_TILT and, while set,
    hides the "Link rotation/zoom" checkbox.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
+void FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -612,8 +601,7 @@ FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
    scroll" and the 0x2049 one "Hide panel", the opposite of what this handler and
    FrontendGameplaySettings_SetRightButtonDoesNotScroll store.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
+void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
@@ -638,8 +626,7 @@ FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
    persistent settings: map and mouse option checkboxes and the scroll speed. The two "link rotation" options
    exclude each other, so the one that is set hides the other checkbox.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
+void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
 
 {
   int32_t *menuRoomContextFlags;
@@ -680,8 +667,7 @@ FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *fronte
    persistent settings: the shading toggle (the shading levels are only offered while it is on), the shading
    level matching the saved grid size and depth, the texture quality and the polygon detail (LOD) slider.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageState167C *source)
+void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageState167C *source)
 
 {
   FrontendGraphicsRuntimeSettingsPageState167C *rootNode;
@@ -771,9 +757,7 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
    from the persistent settings. The effect and movie volumes are only offered with effects on, the music volume
    only with music on, and reverse stereo only while either is on. The movie-event slider is not loaded.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendAudioSettings_OpenAndSynchronize
-          (FrontendPersistentSettingsPageSourceNodePtr settingsSourceNode)
+void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSourceNodePtr settingsSourceNode)
 
 {
   UiNodeFlags *compactLayoutFlags;
@@ -833,8 +817,7 @@ FrontendAudioSettings_OpenAndSynchronize
    g_FrontendUiActionHandlersPage20): offers the shading levels only while shading is on and saves the state as
    PERSISTENT_SETTING_SHADING_ENABLED.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
+void FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
 
 {
   uint8_t isSelected;
@@ -864,8 +847,7 @@ FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
    it as the shading texture dimension and its depth / 4 as the subresource count, then selects the matching
    choice exclusively.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
+void FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
   int32_t shadingGridSize;
@@ -914,8 +896,7 @@ FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
    g_FrontendUiActionHandlersPage20): saves the Q8 model LOD depth threshold as
    PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD and applies it at once (g_ModelLodDepthThresholdQ8).
 */
-void __thandor_preserve_eax
-FrontendModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
+void FrontendModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -933,8 +914,7 @@ FrontendModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
    it at once: the downsample shift becomes level / 2 (only low halves the textures) and all staging textures
    are rebuilt.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendTextureSettings_SetQuality(UiSelectableControl *control)
+void FrontendTextureSettings_SetQuality(UiSelectableControl *control)
 
 {
   PersistentTextureQualityLevel qualityLevel;
@@ -972,8 +952,7 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
    sliders only while effects are on (the music slider and reverse stereo follow the saved music bit), and
    applies the saved effect, UI and movie gains, or silence while effects are off.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
+void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
@@ -1042,8 +1021,7 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
    music gain (busy cursor meanwhile; any failure just leaves the music off); switching off stops and releases
    it. Then saves PERSISTENT_SOUND_OPTION_MUSIC and offers the volume sliders and reverse stereo accordingly.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
+void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
@@ -1135,8 +1113,7 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
    g_FrontendUiActionHandlersPage20): applies it at once (g_ReverseStereoMask all ones or zero) and saves
    PERSISTENT_SOUND_OPTION_REVERSE_STEREO.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
+void FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
   uint32_t currentAudioFlags;
@@ -1164,7 +1141,7 @@ FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
    g_FrontendUiActionHandlersPage20): saves the Q15 gain as PERSISTENT_SETTING_EFFECTS_GAIN and applies it at
    once to the sound effects and the UI sounds.
 */
-void __thandor_preserve_eax FrontendAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
+void FrontendAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -1181,8 +1158,7 @@ void __thandor_preserve_eax FrontendAudioSettings_SetEffectsGain(UiSettingsValue
    Handler of the movie volume slider (FRONTEND_ACTION_MOVIE_GAIN, slot 28 of g_FrontendUiActionHandlersPage20):
    saves the Q15 gain as PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN and applies it at once.
 */
-void __thandor_preserve_eax
-FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
+void FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -1199,8 +1175,7 @@ FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
    g_FrontendUiActionHandlersPage20): saves the Q15 gain used by timed movie events as
    PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN and applies it at once.
 */
-void __thandor_preserve_eax
-FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
+void FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -1217,7 +1192,7 @@ FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
    saves the Q15 gain as PERSISTENT_SETTING_MUSIC_GAIN and sets it as left and right gain of the playing frontend
    music.
 */
-void __thandor_preserve_eax FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control)
+void FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -1234,7 +1209,7 @@ void __thandor_preserve_eax FrontendAudioSettings_SetMusicGain(UiSettingsValueCo
    g_FrontendUiActionHandlersPage20): saves the value as PERSISTENT_SETTING_NETWORK_PLAYER_COUNT and formats it
    into the slider's number text.
 */
-void __thandor_preserve_eax FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
+void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
@@ -1252,7 +1227,7 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetPlayerCount(UiSettingsVal
    Change handler of the host game setup page's game-name edit: the create button (FRONTEND_ACTION_CREATE_HOSTED_GAME)
    is only offered while the name is valid (non-empty), and a valid name is saved as PERSISTENT_SETTING_GAME_NAME.
 */
-void __thandor_preserve_eax FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
+void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
 
 {
   UiTextEditControl *rootNode;
@@ -1285,8 +1260,7 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetGameName(UiTextEditContro
    (presumably a double click), it is cleared and the join request is sent at once, as if Join had been pressed.
    The field names of FrontendNetworkSettingsControlView250 used here do not fit a list (text edit overlay).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
+void FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
           (FrontendNetworkSettingsControlView250 *networkSettings)
 
 {
@@ -1629,9 +1603,7 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
    (reached at +0x248 from the button, i.e. sessionList +0x60) and sends the join request (player descriptor
    packet 0x20002) to it. Returns the send's CF.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetworkSettings_PublishSelectedPlayerDescriptor
-          (FrontendNetworkSettingsControlView250 *networkSettings)
+bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView250 *networkSettings)
 
 {
   int remainingDwords;
@@ -1675,8 +1647,7 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptor
 */
 #define DISPLAY_MODE_STACK_BASE 19 /* room for the pushed matches above the 19 controls */
 #define DISPLAY_MODE_STACK_END (DISPLAY_MODE_STACK_BASE + 19)
-void __thandor_void_preserve_eax_ecx_edx
-FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
+void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
 
 {
   uint32_t adapterIndex;

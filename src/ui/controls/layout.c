@@ -15,8 +15,7 @@
    and frame (UI_ROOT_FRAME); UI_ROOT_ALTERNATE_BACKGROUND switches to the second background and adds the
    second frame on top. Then draws the children. A frame is four corners and four tiled edges between them.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
+void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiPanelControl *control)
 
@@ -130,8 +129,7 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
    top right) and then the children. Title bar and buttons use their inactive pieces while the window is not
    in the front root, the buttons their armed pieces while pressed under the pointer.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiResizableWindowControl_DrawFrameTitleAndChildren
+void UiResizableWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiResizableWindowControl *control)
 
@@ -256,8 +254,7 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
    top edge (between two caps, centred when titleFlags bit 0 is set, otherwise after the top-left corner),
    then the children. The top edge is tiled left of the title only when it is centred.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTitledWindowControl_DrawFrameTitleAndChildren
+void UiTitledWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiTitledWindowControl *control)
 
@@ -393,7 +390,7 @@ void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
    dispatches queued UI actions, draws and presents. Unlike UiFrame_ProcessAndPresentWithLockTransition it does
    not touch the UI frame lock itself.
 */
-void __thandor_void_preserve_eax_ecx_edx UiFrame_ProcessAndPresent(void)
+void UiFrame_ProcessAndPresent(void)
 
 {
   UiKeyboard_DispatchPendingEvents();
@@ -411,8 +408,7 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_ProcessAndPresent(void)
    (firstChild), so switching replaces that link, moving the keyboard focus out of the old page and into the
    new one, and redraws. Out-of-range indices and the already shown page are ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
+void UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
 
 {
   UiNodeBase *pageNode;
@@ -434,8 +430,7 @@ UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
    (or a middle-button press), like the control-menu box of old Windows versions. Releasing over the
    armed maximize button toggles between the full framebuffer and the saved rectangle.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
+void UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control)
 
@@ -494,8 +489,7 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
    focus-moving handler. The key events of Keyboard_OnKeyDown carry letters as KEYBOARD_KEY_CODE_CHAR
    (0x30000 + code), so the plain 'c' / 'z' compared here never arrive and the hotkeys do not fire.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiResizableWindowControl_HandleWindowHotkeys
+bool UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control)
 
 {
@@ -552,8 +546,7 @@ UiResizableWindowControl_HandleWindowHotkeys
    relocated. The previous top root loses UI_NODE_IN_FRONT_ROOT (windows draw as inactive), the new one is
    laid out, gets the flag and the initial keyboard focus; pointer capture and tooltip are reset.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
+void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
 
 {
   int64_t edgeAnchorPixelProductQ31;
@@ -606,7 +599,7 @@ UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
    initial focus, pointer capture and hover are reset and the whole screen is redrawn. The closed root is
    assumed to be the top one: only g_UiRootNode is replaced.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_Pop(UiRootNode *root)
+bool UiRootStack_Pop(UiRootNode *root)
 
 {
   bool closeCallbackVetoed;
@@ -647,9 +640,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_Pop(UiRootNode *root)
    control (UI_BUTTON_FRAME_INSET) grows its layout offsets by g_UiWindowFrameInset on every side, so the
    frame lies outside the authored box; then the children are relocated.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWindowControl_RelocateWithFrameInset
-          (UiSerializedRelocationDelta relocationDelta,UiWindowControl *control)
+void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocationDelta,UiWindowControl *control)
 
 {
   int frameInset;
@@ -671,8 +662,7 @@ UiWindowControl_RelocateWithFrameInset
    shrunk by the top-left corner (or the title height when that is taller) and the bottom-right corner,
    then restores the rectangle and grows layoutWidth/layoutHeight back to the full box.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control)
+void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control)
 
 {
   uint32_t leftInset;
@@ -719,8 +709,7 @@ UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control
    hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never
    hit (UI_NODE_NONE instead), so the pointer passes through the panel to what lies below it.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiContainer_HitTestChildrenOrNoneA
+UiNodeBase * UiContainer_HitTestChildrenOrNoneA
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
@@ -740,8 +729,7 @@ UiContainer_HitTestChildrenOrNoneA
    gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
    its two caps. Children are not drawn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiHorizontalGaugeControl_DrawFrameFillAndLabel
+void UiHorizontalGaugeControl_DrawFrameFillAndLabel
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiHorizontalGaugeControl *control)
 
@@ -847,9 +835,7 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
    from image offsets into pointers, relocates every page's tree by making it the stack's firstChild in
    turn, and leaves page 0 as the shown page. Like the other page-stack methods it assumes at least one page.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_RelocateChildren
-          (UiSerializedRelocationDelta relocationDelta,UiPageStackControl *control)
+void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
@@ -882,8 +868,7 @@ UiLayoutContainerControl_RelocateChildren
    layout of g_UiLayoutContainerControlVtable: lays out every page of the page stack, hidden ones included,
    by making each the stack's firstChild in turn; the shown page is restored afterwards.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
+void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
@@ -908,8 +893,7 @@ UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
    hitTest of g_UiLayoutContainerControlVtable (the page stack): hit-tests the shown page like
    UiContainer_HitTestChildren, but the stack itself is never hit (UI_NODE_NONE instead).
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiContainer_HitTestChildrenOrNoneB
+UiNodeBase * UiContainer_HitTestChildrenOrNoneB
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
@@ -927,8 +911,7 @@ UiContainer_HitTestChildrenOrNoneB
    suppressActionId of g_UiLayoutContainerControlVtable: suppresses the controls carrying actionId on every
    page of the page stack, hidden ones included (each page is made firstChild in turn).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
+void UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
@@ -953,8 +936,7 @@ UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageSta
    unsuppressActionId of g_UiLayoutContainerControlVtable: the counterpart of
    UiLayoutContainerControl_SuppressActionIdRecursive for every page of the page stack.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
+void UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
@@ -980,8 +962,7 @@ UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageS
    focus target only when it has a close or maximize button, i.e. hotkeys for
    UiResizableWindowControl_HandleWindowHotkeys.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiResizableWindowControl_RelocateAndRefreshInteractionState
+void UiResizableWindowControl_RelocateAndRefreshInteractionState
           (UiSerializedRelocationDelta relocationDelta,UiResizableWindowControl *control)
 
 {
@@ -1003,8 +984,7 @@ UiResizableWindowControl_RelocateAndRefreshInteractionState
    least UI_WINDOW_MINIMUM_SIZE wide and high, and relays it out when the rectangle changed. While the close
    or maximize button is pressed it only tracks whether the pointer is still over it (armed).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiResizableWindowControl_UpdateMoveOrResize
+void UiResizableWindowControl_UpdateMoveOrResize
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control)
 
@@ -1157,8 +1137,7 @@ UiResizableWindowControl_UpdateMoveOrResize
    relative to the parent's rectangle instead of the control's own by swapping the parent's edges in for
    the call; afterwards the own rectangle is restored and its size stored as layoutWidth/layoutHeight.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiImageControl_LayoutChildrenToParent(UiImageControl *control)
+void UiImageControl_LayoutChildrenToParent(UiImageControl *control)
 
 {
   int32_t *edgeField;
@@ -1210,7 +1189,7 @@ UiImageControl_LayoutChildrenToParent(UiImageControl *control)
    Discards all buffered keyboard and pointer input and the frame ticks that piled up, so a UI loop that starts
    (or resumes after a movie, session or error box) neither reacts to stale input nor catches up on old ticks.
 */
-void __thandor_void_preserve_eax_ecx_edx UiFrame_FlushInputAndResetPendingTicks(void)
+void UiFrame_FlushInputAndResetPendingTicks(void)
 
 {
   g_KeyboardFlushEvents();
@@ -1225,7 +1204,7 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_FlushInputAndResetPendingTicks(
    root stack is empty (the last window closed), then presents one more frame with the tooltip cleared.
    No caller in the recovered code (reached only through the function map).
 */
-void __thandor_void_preserve_eax_ecx_edx UiFrame_RunUntilRootClosedAndPresentFinalFrame(void)
+void UiFrame_RunUntilRootClosedAndPresentFinalFrame(void)
 
 {
   g_UiPointerCaptureTarget = UI_NODE_NONE;
@@ -1250,7 +1229,7 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_RunUntilRootClosedAndPresentFin
    the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front
    root to it and invalidates both. Always returns false (CF clear).
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root)
+bool UiRootStack_BringToFront(UiRootNode *root)
 
 {
   UiRootNode *belowRoot;
@@ -1286,7 +1265,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root
    (texte\winclass.str as text page 1), installs the root-stack actions as action-handler page 0 and starts
    with an empty root stack. A missing file is fatal.
 */
-void __thandor_preserve_eax UiWindowResources_Init(void)
+void UiWindowResources_Init(void)
 
 {
   TextureSourceLoadResult loadResult;
@@ -1313,7 +1292,7 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
    offsets (as UiRootStack_Push does) and lays it out again, from the front root down. Assumes at least one
    open root.
 */
-void __thandor_preserve_eax_edx UiRootStack_Relayout(void)
+void UiRootStack_Relayout(void)
 
 {
   int64_t edgeAnchorPixelProductQ31;
@@ -1352,8 +1331,7 @@ void __thandor_preserve_eax_edx UiRootStack_Relayout(void)
    bar under the pointer shows it where the caller applies the frame (the in-game and scenario hover code
    pass it to g_GraphicsCursorSetFrame; the generic pointer-move dispatch ignores it).
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiContainer_PointerMoveReturnCode6
+GraphicsCursorFrameIndex UiContainer_PointerMoveReturnCode6
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
@@ -1365,8 +1343,7 @@ UiContainer_PointerMoveReturnCode6
    applyFlags of g_UiLayoutContainerControlVtable: applies the node-flag masks (UiNode_ApplyFlagsRecursive)
    to every page of the page stack, hidden ones included, by making each the stack's firstChild in turn.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_ApplyFlagsRecursive
+void UiLayoutContainerControl_ApplyFlagsRecursive
           (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiPageStackControl *control)
 
 {
@@ -1394,8 +1371,7 @@ UiLayoutContainerControl_ApplyFlagsRecursive
    window (outside the inner area left by the frame corners) starts a resize of the grabbed edge or corner,
    and a press in the top UiWindowMoveHandleWidth rows of a movable window starts a move with the move cursor.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiResizableWindowControl_BeginMoveResizeOrWindowAction
+void UiResizableWindowControl_BeginMoveResizeOrWindowAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiResizableWindowControl *control)
 
@@ -1479,8 +1455,7 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
    resize cursor over the border of a resizable, non-maximized window (the same border zones as
    UiResizableWindowControl_BeginMoveResizeOrWindowAction), otherwise the arrow.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiResizableWindowControl_QueryResizeCursorCode
+GraphicsCursorFrameIndex UiResizableWindowControl_QueryResizeCursorCode
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiResizableWindowControl *control)
 
 {
@@ -1533,8 +1508,7 @@ UiResizableWindowControl_QueryResizeCursorCode
    4 * maxRows items in rows of 4, more in maxRows rows (fewer when the last rows would stay empty) of as
    many columns as needed.
 */
-UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
-UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
+UiGridDimensionsEdxEax8 UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
 
 {
   uint32_t columnCount;
@@ -1565,8 +1539,7 @@ UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
 /* Address: 0x00569AE0.
    The single-column counterpart of UiGrid_ComputeDimensionsPacked: EDX = itemCount rows, EAX = 1 column.
 */
-UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
-UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
+UiGridDimensionsEdxEax8 UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
 
 {
   return ((UiGridDimensionsEdxEax8)itemCount << 32) | 1;
@@ -1578,8 +1551,7 @@ UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
    g_UiResizableWindowControlVtable and most other container vtables): passes the request on to every child;
    the controls that carry an action id suppress themselves when it matches.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
+void UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
@@ -1596,8 +1568,7 @@ UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
    unsuppressActionId of the same container vtables as UiContainer_SuppressActionId: passes the request on to
    every child.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
+void UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
@@ -1616,8 +1587,7 @@ UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
    from image offsets into pointers by adding imageDelta, the transient click and focus flags are cleared,
    and the node's own relocate method runs (containers relocate their children from there).
 */
-void __thandor_void_preserve_eax_ecx
-UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *firstNode)
+void UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *firstNode)
 
 {
   for (; (firstNode != UI_NODE_NONE && (firstNode->layoutWidth == -1));
@@ -1644,8 +1614,7 @@ UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *
    Gives the keyboard focus, if nothing has it, to the first focus target below root (depth first), e.g. when
    a page becomes active.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
+void UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
 
 {
   UiNodeBase *node;
@@ -1662,7 +1631,7 @@ UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
    Takes the keyboard focus away from every node below root (depth first; see UiKeyboardFocus_ReleaseNode)
    before that subtree, e.g. a page, is deactivated.
 */
-void __thandor_void_preserve_eax_ecx_edx UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
+void UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
 
 {
   UiNodeBase *node;
@@ -1680,8 +1649,7 @@ void __thandor_void_preserve_eax_ecx_edx UiNodeSubtree_ReleaseKeyboardFocus(UiNo
    below the title bar when the window has one (UI_ROOT_TITLE_BAR), i.e. with top moved down by the bar
    height for the call, and adds that height back to layoutHeight afterwards.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *control)
+void UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *control)
 
 {
   uint32_t headerHeight;
@@ -1708,7 +1676,7 @@ UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *contr
    (sprite-button animations and frame callback of the front root, tick of the pointer-capture and
    keyboard-focus nodes, tooltip countdown) and refreshes the DirectInput mouse every 48 calls.
 */
-void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessageCode)
+void UiFrame_Update(UiStopMessageCode stopMessageCode)
 
 {
   uint32_t ticksToRun;
@@ -1758,7 +1726,7 @@ void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessag
    Draws the UI root stack from the bottom root up to the front root, each clipped to its rectangle within
    the framebuffer, and the tooltip on top.
 */
-void __thandor_void_preserve_eax_ecx_edx UiFrame_Draw(void)
+void UiFrame_Draw(void)
 
 {
   /* Rewritten from the assembly (0x004AF7E0): the original pushes every root on the machine stack
@@ -1840,9 +1808,7 @@ static UiNodeBase *UiContainer_HitTestEligibleSiblings
   return UI_NODE_NONE;
 }
 
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiContainer_HitTestChildren
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+UiNodeBase * UiContainer_HitTestChildren(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
   /* Rewritten from the assembly (0x004B0800): eligible children are pushed on the machine stack
@@ -1864,9 +1830,7 @@ UiContainer_HitTestChildren
    GraphicsTextureSource_BlitTiledSourceAlpha, which it forwards to, it takes the bottom/right values first.
    Called by the window, panel and button draw methods.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWindow_BlitTiledInterior
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+void UiWindow_BlitTiledInterior(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileBottom
           ,UiPixelCoordinate tileRight,UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,
           void *node)
@@ -1888,8 +1852,7 @@ UiWindow_BlitTiledInterior
    from image offsets into pointers and its transient click and focus flags cleared, then relocates its own
    subtree through its relocate method.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+void UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
@@ -1920,8 +1883,7 @@ UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeB
    child whose rectangle intersects the clip rectangle, first child first (later siblings on top). The clip
    rectangle is passed on unchanged.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiContainer_DrawIntersectingChildren
+void UiContainer_DrawIntersectingChildren
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,UiNodeBase *control)
 
@@ -1945,9 +1907,7 @@ UiContainer_DrawIntersectingChildren
    the vertical edges of window and button frames. Bottom/right values come first, as in
    GraphicsTextureSource_BlitTiledSourceAlpha.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWindow_BlitTiledVerticalEdge
-          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+void UiWindow_BlitTiledVerticalEdge(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileBottom,
           UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node)
 
@@ -1965,7 +1925,7 @@ UiWindow_BlitTiledVerticalEdge
    (parent extent * anchorQ31) >> 31 + offset from the parent's left/top, i.e. a fraction of the parent plus
    a pixel offset; then the child lays out its own children.
 */
-void __thandor_void_preserve_eax_ecx_edx UiContainer_LayoutChildren(UiNodeBase *control)
+void UiContainer_LayoutChildren(UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
@@ -2016,8 +1976,7 @@ void __thandor_void_preserve_eax_ecx_edx UiContainer_LayoutChildren(UiNodeBase *
    rectangle: horizontal frame edges, title bars and gauge tracks. Bottom/right values come first, as in
    GraphicsTextureSource_BlitTiledSourceAlpha.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWindow_BlitTiledHorizontalEdge
+void UiWindow_BlitTiledHorizontalEdge
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,
           UiPixelCoordinate tileRight,UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node)
@@ -2036,7 +1995,7 @@ UiWindow_BlitTiledHorizontalEdge
    Marks the whole screen for redraw: drops the collected dirty rectangles and invalidates every root on the UI
    root stack, top to bottom. Does nothing while invalidation is suppressed.
 */
-void __thandor_void_preserve_ecx_edx UiRootStack_InvalidateAll(void)
+void UiRootStack_InvalidateAll(void)
 
 {
   UiRootNode *root;

@@ -57,94 +57,74 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041D300 */
-RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
-RichTextCommandStream_MeasureWrappedBlockRegs
+RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
           (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth);
 
 /* 0x0041D7C0 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_DrawWrappedBlock
+void RichTextCommandStream_DrawWrappedBlock
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX);
 
 /* 0x0041D4A0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-RichTextCommandStream_DrawSingleLine
+bool RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX);
 
 /* 0x0041B100 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchPayloadBySelector
+void RichTextCommandStream_PatchPayloadBySelector
           (RichTextCommandSelector selector,void *replacementPayload,uint16_t *stream);
 
 /* 0x0041B200 */
-void __thandor_void_preserve_eax_ecx
-RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream);
+void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream);
 
 /* 0x0041B300 */
-bool __thandor_cf_preserve_eax_ecx_edx
-RichTextCommandStream_FindNthCommandPayloadPair
+bool RichTextCommandStream_FindNthCommandPayloadPair
           (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
           uint16_t *commandStream);
 
 /* 0x0041B420 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchNestedStreamPointerPayloads
+void RichTextCommandStream_PatchNestedStreamPointerPayloads
           (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,uint16_t *commandStream);
 
 /* 0x0041B520 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchOpcode1APayloadPair
-          (RichTextOpcode1APayloadValue32 imageSubresourceValue,
+void RichTextCommandStream_PatchOpcode1APayloadPair(RichTextOpcode1APayloadValue32 imageSubresourceValue,
           RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream);
 
 /* 0x0041B620 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_PatchInlinePayloads
-          (RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream);
+void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream);
 
 /* 0x0041B720 */
-bool __thandor_cf_preserve_eax_ecx_edx
-RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream);
+bool RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream);
 
 /* 0x0041B840 */
-RichTextCommandQueryResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream);
+RichTextCommandQueryResult RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream);
 
 /* 0x0041B950 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyToNarrow
+StatusResult RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 /* 0x0041BCB0 */
-RichTextAssetResult __thandor_eax_cf_preserve_edx
-RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes);
+RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes);
 
 /* 0x0041C8D0 */
-RichTextCopyResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyExpanded
+RichTextCopyResult RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source);
 
 /* 0x0041CF30 */
-RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
-RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream);
+RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream);
 
 /* 0x0041D0F0 */
-WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth);
+WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth);
 
 /* 0x0041D9F0 */
-WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_DrawNextWrappedLine
+WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX);
 
 /* 0x0041D840 */
-void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream);
+void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream);
 
 #endif /* THANDOR_ASSETS_TEXT_RICHTEXT_H */

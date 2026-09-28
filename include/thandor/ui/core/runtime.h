@@ -31,41 +31,36 @@
 #define UI_ACTION_HANDLER_PAGE_COUNT 256
 
 /* 0x004228F0 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root);
+bool UiRootCallbacks_Free(UiRootNode *root);
 
 /* 0x00422980 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *root);
+bool UiRootCallbacks_NoOpMethod08(UiRootNode *root);
 
 /* 0x00424270 */
-void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *root);
+void UiRuntime_FormatSignedValues140And144(void *root);
 
 /* 0x004244E0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRuntime_OpenFourValueDialog
-          (UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
+void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
           UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth);
 
 /* 0x004AEF00 */
-RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx
-UiRuntimeRecordRing_DiscardOldest(void);
+RecordRingDiscardResult UiRuntimeRecordRing_DiscardOldest(void);
 
 /* 0x004AF020 */
-void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void);
+void UiRuntimeRecordRing_Clear(void);
 
 /* 0x004AF030 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void);
+bool UiRuntimeRecordRing_HasPending(void);
 
 /* 0x004AF050 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
+bool UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
 
 /* 0x004AF0F0 */
-void __thandor_preserve_eax_edx
-UiRuntime_SetSynchronizationHooks
+void UiRuntime_SetSynchronizationHooks
           (UiRuntimePostUnlockCallbackProc *postUnlockCallback,RuntimeSpinLockValue *frameLock);
 
 /* 0x004AF210 */
-void __thandor_preserve_eax UiRuntime_Initialize(void);
+void UiRuntime_Initialize(void);
 
 /* 0x004AF2F0 */
 void UiRuntime_Shutdown(void);
@@ -77,66 +72,55 @@ void __cdecl UiRuntime_IncrementPeriodicTickCounter(void);
 void __cdecl UiActionQueue_DispatchPending(void);
 
 /* 0x004B05A0 */
-void __thandor_void_preserve_eax_ecx_edx UiNode_DefaultMethod04_NoOp(void *node);
+void UiNode_DefaultMethod04_NoOp(void *node);
 
 /* 0x004B0750 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_DefaultNonRightPress
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultNonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
 /* 0x004B0760 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_DefaultNonRightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultNonRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
 /* 0x004B0770 */
-void __thandor_preserve_eax_edx
-UiNode_ForwardRightPressToParent
+void UiNode_ForwardRightPressToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
 /* 0x004B07C0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_DefaultRightRelease
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
 /* 0x004B07D0 */
 void UiNode_DefaultNonRightDrag (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX ,UiNodeBase *control);
 
 /* 0x004B07E0 */
-void __thandor_preserve_eax_edx
-UiNode_DefaultRightDrag
-          (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+void UiNode_DefaultRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
 /* 0x004B08E0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control);
+void UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control);
 
 /* 0x004B09E0 */
 void UiNode_DefaultTick(UiNodeBase *control);
 
 /* 0x004B0FD0 */
-void __thandor_preserve_eax
-UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page);
+void UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page);
 
 /* 0x004B14B0 */
 UiNodeBase * UiNode_GetRoot(UiNodeBase *node);
 
 /* 0x004B1510 */
-void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node);
+void UiNode_InvalidateRoot(UiNodeBase *node);
 
 /* 0x004B1590 */
-void __thandor_void_preserve_eax_ecx_edx UiActionQueue_Enqueue(UiActionId actionId,void *source);
+void UiActionQueue_Enqueue(UiActionId actionId,void *source);
 
 /* 0x004BD160 */
 PackedArgb32 UiNode_GetStateTintArgb(UiNodeBase *node);
 
 
 /* 0x00422990 */
-int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root);
+int UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root);
 
 #endif /* THANDOR_UI_CORE_RUNTIME_H */

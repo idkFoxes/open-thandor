@@ -15,25 +15,21 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0054C260 */
-void __thandor_void_preserve_eax_ecx
-FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi);
+void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi);
 
 /* 0x005474A0 */
-void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root);
+void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root);
 
 /* 0x0054C7D0 */
-void __thandor_preserve_eax_edx
-FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit);
+void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit);
 
 /* 0x0054CE10 */
-void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source);
+void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source);
 
 /* 0x0054C830 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton);
+void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton);
 
 /* 0x0054CE80 */
-void __thandor_void_preserve_eax_ecx
-FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton);
+void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton);
 
 #endif /* THANDOR_UI_FRONTEND_NETWORK_H */

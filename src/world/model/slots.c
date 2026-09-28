@@ -22,8 +22,7 @@
    the definition's primary animated subresource (+0x1B8) and, only together with it, the secondary one (+0x1BC),
    both starting at texture offset 0.
 */
-void __thandor_preserve_eax_edx
-ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
+void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
           (ModelDefinitionRuntimeSemanticView280 *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot
           )
 
@@ -57,8 +56,7 @@ ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
    and derives a starting timer value (stored at +0x10 and +0xD0) from the definition values at +0x0C, +0x18,
    +0xC0 and +0xC4.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
+void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -101,8 +99,7 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
    +0x60 = 0x4000, +0x64 = the root's rotation angle 2, +0x68 / +0x6C = its world X / Y, +0x70 = 0x18, and
    bits 1 and 2 of +0xB8 when the root has more than two children.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
+void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -132,8 +129,7 @@ ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
    keys 0..7 of key class 2 in the model resource of the root's grandchild: the counter of every missing key
    (+0x60, +0x64, ... +0x7C) becomes -1, the others stay 0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
+void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -219,8 +215,7 @@ void ModelRuntimeSlotClassInit_ClearFields64_68_74_B8
    Unrebase handler of model class 13 (modelUnrebase[13], run by ModelRuntimePool_UnrebaseBeforeSave): before a
    save, turns the army pointer at +0x6C into a saved offset relative to g_ArmyRuntimeRebaseBaseMinusOne.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
+void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
 
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
@@ -238,8 +233,7 @@ ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
    Rebase handler of model class 13 (modelRebaseOrLoadRepair[13], run by ModelRuntimePool_RebaseAfterLoad): after
    a load, turns the saved army offset at +0x6C back into a pointer (offset + g_ArmyRuntimeRebaseBaseMinusOne).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
+void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
@@ -261,8 +255,7 @@ ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
    +0x6C), sets byte +0xBC to 1 and turns on texture scrolling of the root node for the subresource named at
    definition +0xC0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
+void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -294,8 +287,7 @@ ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
    ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation. Unless the owning army's +0xBC is 0x6000000, the
    root's fourth child node is unlinked and dropped.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
+void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -330,8 +322,7 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
    ArmyPlacement_ReleaseFactionCapacity. Unless the owning army's +0xBC is 0x6000000, the root's second child
    node is unlinked and dropped.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
+void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -364,8 +355,7 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
    generation capacity (+0xC0, Q4) to the owning faction's energyGenerationCapacityQ4. The stock power plant
    (ARM 310) links four such generator models with 200 each.
 */
-void __thandor_preserve_eax
-ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
+void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -385,8 +375,7 @@ ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
    ModelRuntimePool_DestroyHierarchyAndDetach): takes the definition's generation capacity (+0xC0) off the
    owning faction's energyGenerationCapacityQ4 again.
 */
-void __thandor_preserve_eax
-ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
+void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
@@ -406,8 +395,7 @@ ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
    before a save, turns the linked model runtime at +0x60 (presumably its base) into a saved offset (pointer -
    g_ModelRuntimeRebaseDelta).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
+void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
@@ -426,8 +414,7 @@ ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
    ModelRuntimePool_RebaseAfterLoad): after a load, turns the saved offset at +0x60 back into a pointer
    (offset + g_ModelRuntimeRebaseDelta).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntimeSlot)
+void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
@@ -467,8 +454,7 @@ void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
    state including the 13 slots at +0x78..+0xAB (the army asset ids ArmyPlacement_ReleaseClassStateReservation
    looks up) and turns on texture scrolling of the root node for the subresource named at definition +0xC0.
 */
-void __thandor_void_preserve_eax_ecx
-ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
+void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -507,8 +493,7 @@ ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
    ModelRuntimePool_RebaseAfterLoad): those classes keep no pointers in their class state, so this does nothing
    (RET 4).
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
+void ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   return;

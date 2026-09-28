@@ -284,7 +284,7 @@ static void Win32_ScriptTick(void)
    queue is empty. WM_QUIT or a window being destroyed (g_WindowDestroyDepth) shuts the game down and
    ends the process instead. open-thandor first runs its test aids (autoshot, input script).
 */
-void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void)
+void Win32_PumpMessages(void)
 
 {
   Win32_AutoShotTick();
@@ -319,7 +319,7 @@ Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest:
    handles itself (Backspace, Tab, Enter, Pause, Escape, Space through Delete, numpad and F1-F12) get no
    WM_CHAR, so text fields do not see them twice.
 */
-bool __thandor_void_preserve_eax_ecx Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
+bool Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
 
 {
   uint32_t messageCode;

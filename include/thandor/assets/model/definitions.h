@@ -15,22 +15,19 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051B3C0 */
-ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinition_SelectFactionUnlockedLinkedDefinition
+ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
 /* 0x0051DB00 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
+void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 /* 0x0051DA60 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 /* 0x00528950 */
-StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset);
+StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset);
 
 /* 0x004BE670 */
 ModelLookupPayloadResult
@@ -39,14 +36,11 @@ ModelLookupTable_FindPackedKeyEntryRegs
           ModelResourceHitTestAndRenderView210 *modelDefinition);
 
 /* 0x004BE6F0 */
-ModelLookupEntryResult __thandor_eax_cf_preserve_ecx_edx
-ModelLookupTable_ContainsPackedKey
-          (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition);
 
 /* 0x0050AEA0 */
-MeshRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
-ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle);
+MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle);
 
 /* 0x005289C0 */
 BuildMetricResult
@@ -56,27 +50,22 @@ ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog def
 ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId);
 
 /* 0x0051B430 */
-PckModelDefinitionIdCatalog __thandor_eax_preserve_ecx_edx
-ModelDefinition_SelectFactionUnlockedLinkedId
+PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
 /* 0x00528600 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinition_RegisterAndResolveReferences
+StatusResult ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset);
 
 /* 0x0052ADE0 */
-void __thandor_preserve_eax
-ModelDefinition_UnlockLinkedTechnologyForFaction
+void ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId);
 
 /* 0x0052AD90 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ModelDefinition_IsFactionTechnologyUnlocked
+bool ModelDefinition_IsFactionTechnologyUnlocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
 /* 0x00528E20 */
-ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId);
+ModelDefinitionResult ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId);
 
 #endif /* THANDOR_ASSETS_MODEL_DEFINITIONS_H */

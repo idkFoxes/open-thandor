@@ -16,8 +16,7 @@
    EffectDefinition_RegisterAndLoadSprite, stopping at the first failure. An invalid header leaves the asset
    path in g_PackageLastErrorPath and fails with FATAL_ERROR_EFFECT_ASSET_INVALID.
 */
-StatusResult __thandor_void_preserve_ecx_edx
-EffectAsset_PrepareEntries(EffectAssetHeader *asset)
+StatusResult EffectAsset_PrepareEntries(EffectAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
@@ -59,7 +58,7 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
    in every registered effect definition by pointers to those definitions. Fails with the lookup's error when
    an id is not registered.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossReferences(void)
+StatusResult EffectDefinitions_ResolveCrossReferences(void)
 
 {
   StatusResult successResult;
@@ -109,8 +108,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
    .spr and loads the sprite asset, reusing an already registered sprite with the same id (the fresh load is
    then released). CF/EAX report a duplicate id, a full registry or the path/package/sprite failure.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition)
+StatusResult EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition)
 
 {
   SpriteAssetHeader *assetOrError;
@@ -181,8 +179,7 @@ EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError:
    means "no effect" and yields NULL. An unknown id is written as decimal text to g_PackageLastErrorPath and
    fails with FATAL_ERROR_EFFECT_ID_NOT_FOUND.
 */
-EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-EffectDefinitionRegistry_FindByIdWithError(PckEffectDefinitionIdCatalog definitionId)
+EffectDefinitionResult EffectDefinitionRegistry_FindByIdWithError(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *candidateDefinition;

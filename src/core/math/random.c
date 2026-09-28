@@ -15,7 +15,7 @@
    twice and returns (first step << 14) ^ (second step >> 2), mixing both steps so the weak low bits of
    the LCG do not show up directly.
 */
-uint32_t __thandor_eax_preserve_ecx_edx Random_NextPrimary(void)
+uint32_t Random_NextPrimary(void)
 
 {
   int firstStepSeed;
@@ -31,7 +31,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Random_NextPrimary(void)
    and output mix as Random_NextPrimary, but on the separate secondary seed, so the session stream can be
    kept in step across machines independently of the primary one.
 */
-uint32_t __thandor_eax_preserve_ecx_edx Random_NextSecondary(void)
+uint32_t Random_NextSecondary(void)
 
 {
   int firstStepSeed;
@@ -47,7 +47,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Random_NextSecondary(void)
    session seeds both from one value, which network clients receive from the host, so that every machine
    draws the same numbers.
 */
-void __thandor_void_preserve_eax_ecx_edx Random_SetBothSeeds(RandomSeed seed)
+void Random_SetBothSeeds(RandomSeed seed)
 
 {
   g_RandomGeneratorState.primarySeed = seed;
@@ -69,7 +69,7 @@ uint32_t __cdecl Random_GetSecondarySeed(void)
    Makes Random_NextSecondary the active generator (g_RandomGeneratorState.next) without touching either seed;
    used together with Random_SetBothSeeds when a session starts.
 */
-void __thandor_void_preserve_eax_ecx_edx Random_SelectSecondaryStream(void)
+void Random_SelectSecondaryStream(void)
 
 {
   g_RandomGeneratorState.next = Random_NextSecondary;

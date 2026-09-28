@@ -21,8 +21,7 @@
      lower-casing its first letter. If no backend can be opened, the error is reported and the menu returns
      to the main page.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
+void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
 
 {
   uint8_t optionChar;
@@ -276,7 +275,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
    Frontend teardown: carries the status text id and the host address the player typed over into the frontend
    template, so the next frontend built from it (and the in-game template's info text) shows them again.
 */
-void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
+void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
 
 {
   int dwordsRemaining;
@@ -306,8 +305,7 @@ void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(Ui
    unparsable address only clears the edit's valid flag; a valid one sends the session discovery probe
    and writes the parsed endpoint back as normalised text.
 */
-void __thandor_preserve_eax_edx
-FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit)
+void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit)
 
 {
   bool endpointParseFailed;
@@ -334,7 +332,7 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddre
    returns to the network game page, stops the menu room rendering behind it on small screens, resumes
    browsing with the join button hidden and an empty session list, and sends a new session discovery probe.
 */
-void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
+void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
 
 {
   /* source is the frontend template's hostGameSetupBackButton (+0x4F94). */
@@ -361,8 +359,7 @@ void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBas
    tick interval 2n) preset the page, each consumed by lower-casing its first letter; when all three are
    given, the game is created at once (FrontendNetworkSetupPage_InitializeSingleLocalPlayer).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
+void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
 
 {
   /* hostButton is the frontend template's networkGameHostButton (+0x4920). */
@@ -457,8 +454,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
    player the only player of a new hosted session (player block 0 with the local name and endpoint, id 0, no
    timeout, "CD" capability, its 64x64 preview image as snapshot payload when it loads), then refreshes the lobby.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
+void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
 
 {
   /* createButton is the frontend template's hostGameCreateButton (+0x4FF4). */

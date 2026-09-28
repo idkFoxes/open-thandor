@@ -52,8 +52,7 @@ uint32_t WidePath_GetExtensionCode(uint16_t *path)
    Only three characters come out right: a fourth byte would be merged into the third code unit (all callers
    pass three-character codes).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
+bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
 
 {
   uint32_t *extensionWriteCursor;
@@ -91,8 +90,7 @@ WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path
    file name, parentOut the directory without the trailing backslash. Without a backslash the leaf is the
    whole path and the parent is empty. Always returns false (CF clear).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
+bool WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
 
 {
   /* Rewritten from the assembly (0x0040F320): the decompiler lost the start of the final component
@@ -149,8 +147,7 @@ WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path
    without a terminator in its first WIDE_PATH_MAX_CODE_UNITS units writes nothing; such a leaf leaves the
    directory part unterminated. The destination size is not checked (up to 2 * 256 units).
 */
-void __thandor_void_preserve_eax_ecx_edx
-WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory)
+void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory)
 
 {
   int codeUnitsRemaining;
@@ -211,7 +208,7 @@ WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *
    reads digits backwards from the fifth code unit before the terminator until a non-digit. The terminator
    search and the digit count share a limit of 32 code units. Returns the number in ECX, 0 if there is none.
 */
-uint32_t __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path)
+uint32_t WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path)
 
 {
   uint32_t parsedValue;

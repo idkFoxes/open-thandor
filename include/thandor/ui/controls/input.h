@@ -46,161 +46,136 @@
 #define UI_LABEL_SWALLOW_CHARACTERS 0x8000 /* typed characters with bit 0x10 or 0x20 are consumed, not forwarded */
 
 /* 0x004AF500 */
-void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void);
+void UiPointer_DispatchPendingEvents(void);
 
 /* 0x004B00F0 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase *node);
+void UiKeyboardFocus_ReleaseNode(UiNodeBase *node);
 
 /* 0x004AF3D0 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void);
+void UiKeyboard_DispatchPendingEvents(void);
 
 /* 0x004B0030 */
-void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *root);
+void UiKeyboardFocus_SelectInitial(UiNodeBase *root);
 
 /* 0x004B0120 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBase *node);
+void UiKeyboardFocus_AcquireIfNone(UiNodeBase *node);
 
 /* 0x004B4420 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiRangeSliderControl_HandleKeyboard
+bool UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control);
 
 /* 0x004B9CB0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiSingleLineTextControl_ForwardKeyboardEventToChild
+bool UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);
 
 /* 0x004B9DA0 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
+void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
 /* 0x004B07F0 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
+GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
 /* 0x004B42D0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_UpdateValueFromPointer
+void UiRangeSliderControl_UpdateValueFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control);
 
 /* 0x004B4570 */
-void __thandor_void_preserve_eax_ecx
-UiRangeSliderControl_HandlePointerWheel
+void UiRangeSliderControl_HandlePointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiRangeSliderControl *control);
 
 /* 0x004B9580 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSingleLineTextControl_RelocateChild
+void UiSingleLineTextControl_RelocateChild
           (UiSerializedRelocationDelta relocationDelta,UiSingleLineTextControl *control);
 
 /* 0x004B99A0 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardNonRightPressToChild
+void UiSingleLineTextControl_ForwardNonRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
 /* 0x004B9A00 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardNonRightReleaseToChild
+void UiSingleLineTextControl_ForwardNonRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
 /* 0x004B9A60 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardRightPressToChild
+void UiSingleLineTextControl_ForwardRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
 /* 0x004B9AD0 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardRightReleaseToChild
+void UiSingleLineTextControl_ForwardRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
 /* 0x004B9B30 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardNonRightDragToChild
+void UiSingleLineTextControl_ForwardNonRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
 /* 0x004B9B90 */
-void __thandor_preserve_eax_edx
-UiSingleLineTextControl_ForwardRightDragToChild
+void UiSingleLineTextControl_ForwardRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSingleLineTextControl *control);
 
 /* 0x004B9BF0 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiSingleLineTextControl_ForwardPointerMoveToChild
+GraphicsCursorFrameIndex UiSingleLineTextControl_ForwardPointerMoveToChild
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control);
 
 /* 0x004B9C50 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiSingleLineTextControl_HitTestChildProxy
+UiNodeBase * UiSingleLineTextControl_HitTestChildProxy
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control);
 
 /* 0x004B9D40 */
-void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control);
+void UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control);
 
 /* 0x004BCA70 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiImageControl_PointerMove
+GraphicsCursorFrameIndex UiImageControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control);
 
 /* 0x00515CC0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectionGeometryControl_DrawClipped
+void UiSelectionGeometryControl_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiSelectionGeometryControl *control
           );
 
 /* 0x005161A0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
+void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiSelectionGeometryControl *control);
 
 /* 0x004AFA60 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchLeftPress
-          (GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,
+void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerWheelDelta wheelDelta,
           UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
 
 /* 0x004AFBC0 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchMiddlePress
+void UiPointer_DispatchMiddlePress
           (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX);
 
 /* 0x004AFD10 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchRightPress
+void UiPointer_DispatchRightPress
           (UiPointerButtonMask buttonMask,UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,
           UiPixelCoordinate pointerX);
 
 /* 0x004AFFA0 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void);
+void UiKeyboardFocus_MoveNext(void);
 
 /* 0x004AFE40 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointer_DispatchMotionAndWheel
+void UiPointer_DispatchMotionAndWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX);
 
 /* 0x004B09F0 */
-void __thandor_preserve_eax_edx
-UiNode_ForwardPointerWheelToParent
+void UiNode_ForwardPointerWheelToParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiNodeBase *control);
 
 /* 0x004B08C0 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiNode_DefaultKeyboardEventMoveFocusNext
+bool UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
 
 /* 0x004AFF60 */
-void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_Set(UiNodeBase *node);
+void UiKeyboardFocus_Set(UiNodeBase *node);
 
 #endif /* THANDOR_UI_CONTROLS_INPUT_H */

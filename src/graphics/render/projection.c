@@ -17,8 +17,7 @@
    all three vertices in X or in Y, i.e. outside the triangle's bounding box; false when it is inside or on it.
    Nothing in the recovered code calls it (it is only listed in function_map.c).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsProjectedTriangle_PointOutsideBounds
+bool GraphicsProjectedTriangle_PointOutsideBounds
           (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,
           GraphicsProjectedCoordinate vertexBY,GraphicsProjectedCoordinate vertexBX,
           GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,
@@ -42,8 +41,7 @@ GraphicsProjectedTriangle_PointOutsideBounds
    family into a temporary depth buffer that replaces g_SoftwareDepthBuffer/g_SoftwareDepthEpoch for the call.
    Returns the asset (CF clear), or CF set with the allocation error.
 */
-OffscreenRenderResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsOffscreen_RenderModelListToTextureSource
+OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputHeight,
           GraphicsPixelDimension outputWidth,ModelRuntimeCount modelCount,
@@ -171,9 +169,7 @@ GraphicsOffscreen_RenderModelListToTextureSource
    winding is normalized first (vertex1/vertex2 swapped when the triangle's own cross product is not
    negative) so that "inside" means all three pointer cross products are negative.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsProjectedPoint_IsInsideTriangle
-          (int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
+bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2)
 
 {

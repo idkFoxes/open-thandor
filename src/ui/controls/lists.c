@@ -17,8 +17,7 @@
    g_UiTimedListActionDelayFrames frames (UiTimedListControl_TickActionDelay). Other keys go to the default
    focus handling; the keys handled here return false (CF clear).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListControl_HandleKeyboardNavigation
+bool UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control)
 
 {
@@ -205,8 +204,7 @@ UiTimedListControl_HandleKeyboardNavigation
    g_UiListActivationPulseFrames frames (UiListControl_TickActivationPulse). Other keys go to the default
    focus handling; the keys handled here return false (CF clear).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiListControl_HandleKeyboardNavigation
+bool UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control)
 
 {
@@ -291,8 +289,7 @@ UiListControl_HandleKeyboardNavigation
    parent re-layout (scroll range), re-applies the current selection so it stays visible and queues the
    list's action so its owner refreshes.
 */
-void __thandor_preserve_eax_edx
-UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
+void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
 
 {
   UiNodeBase *parentNode;
@@ -316,8 +313,7 @@ UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
    UiScrollableControl_TickAutoScroll), a thumb is grabbed for dragging, a track click pages by half a view
    at once and again on release. Pointer outside both bars: nothing happens.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_BeginPrimaryScrollInteraction
+void UiScrollableControl_BeginPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control)
 
@@ -471,8 +467,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
    Left-button release on a scroll frame (g_UiScrollableControlVtable nonRightRelease): a held track pages by
    another half view, then every scrollbar interaction ends and the frame is redrawn.
 */
-void __thandor_preserve_eax
-UiScrollableControl_EndPrimaryScrollInteraction
+void UiScrollableControl_EndPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control)
 
@@ -506,8 +501,7 @@ UiScrollableControl_EndPrimaryScrollInteraction
    arrow repeats (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) only while the pointer stays on it. A held track
    ignores the drag.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_UpdatePrimaryScrollDrag
+void UiScrollableControl_UpdatePrimaryScrollDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control)
 
@@ -681,8 +675,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
    pointer movement since the press (on the axes that have a bar) and puts the pointer back to the press
    position, so the pointer stays in place while the content moves.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_UpdateSecondaryScrollDrag
+void UiScrollableControl_UpdateSecondaryScrollDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control)
 
@@ -711,8 +704,7 @@ UiScrollableControl_UpdateSecondaryScrollDrag
    Per-frame tick of a scroll frame (g_UiScrollableControlVtable tick): while an arrow is held under the
    pointer, scrolls by autoScrollStepX/Y in the arrow's direction and redraws.
 */
-void __thandor_void_preserve_ecx_edx
-UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
+void UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
 
 {
   if ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0) {
@@ -740,8 +732,7 @@ UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
    wheelDelta steps, g_UiScrollWheelListStep pixels per step when the content is a list control, else
    g_UiScrollWheelDefaultStep. Ignored without a vertical bar, during a button interaction or when suppressed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_HandlePointerWheel
+void UiScrollableControl_HandlePointerWheel
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control)
 
@@ -774,8 +765,7 @@ UiScrollableControl_HandlePointerWheel
    Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
    parent so the row is visible. Out-of-range indices are ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control)
+void UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control)
 
 {
   int rowTop;
@@ -797,8 +787,7 @@ UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *con
    also marks the selection confirmed (UI_LIST_SELECTION_CONFIRMED) and re-queues even for the same row; a
    single click on the already selected row does nothing.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_SelectRowFromPointer
+void UiListControl_SelectRowFromPointer
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiListControl *control)
 
@@ -838,8 +827,7 @@ UiListControl_SelectRowFromPointer
    low dword; unsigned, descending) with an exchange sort, then selects the previously selected entry again
    and scrolls it into view. Equal keys are swapped too, so the sort is not stable.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByDwordPairFieldDescending
+void UiPointerList_SortByDwordPairFieldDescending
           (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
 {
@@ -911,9 +899,7 @@ UiPointerList_SortByDwordPairFieldDescending
    sort, then selects the previously selected entry again and scrolls it into view. Equal keys are swapped
    too, so the sort is not stable. Called by the scenario catalog (src/assets/scenario/catalog.c, field 0x50).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SortByDwordFieldAscending
-          (UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
+void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldOffset,UiPointerListControl *control)
 
 {
   void *swapEntry;
@@ -979,9 +965,7 @@ UiPointerList_SortByDwordFieldAscending
    scrolls it into view and queues the list's action, and a double click also calls recordSelectionCallback
    for a directory row.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_SelectRowFromPointer
-          (int pointerButton,int pointerY,int pointerX,UiNodeBase *control)
+void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int pointerX,UiNodeBase *control)
 
 {
   /* Rewritten from the assembly (0x004BBCD0-0x004BBE56): expanded records with children push
@@ -1078,8 +1062,7 @@ UiTimedListControl_SelectRowFromPointer
    256 code units including the terminator), or NULL. Used by UiTimedListTree_BuildDirectoryHierarchy to find
    the directory row of each path level.
 */
-UiTimedListTreeRecord16 * __thandor_eax_preserve_ecx_edx
-UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock)
+UiTimedListTreeRecord16 * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock)
 
 {
   uint16_t labelChar;
@@ -1129,8 +1112,7 @@ UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *
    then the 0x200-byte labels) is allocated from the arena; a row gets flag bit 0 when it has
    subdirectories, i.e. can be expanded. CF set on failure (allocation or enumeration).
 */
-DirectoryRecordBlockResult __thandor_eax_cf_preserve_ecx_edx
-UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
+DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
 
 {
   uint32_t *recordCursor;
@@ -1364,8 +1346,7 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
    set on failure (then the blocks built so far are freed, see the note at fail). No caller found in src/
    or image_data.c (only the function map).
 */
-DirectoryHierarchyResult __thandor_eax_edx_cf_preserve_ecx
-UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
+DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
 
 {
   /* The original keeps one (record, block) pair per level on the machine stack (PUSH record,
@@ -1476,8 +1457,7 @@ fail:
    CF whether targetRecord (the list's selected row) was one of the freed rows, so the caller can move the
    selection to the collapsed row.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
+bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
           (UiTimedListTreeRecord16 *targetRecord,UiTimedListTreeRecord16 *recordBlock)
 
 {
@@ -1512,8 +1492,7 @@ UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
    links the block below the row (the block header points back to the row and to the row's own block).
    The root "computer" row lists the drives. CF set when the path or the block cannot be built.
 */
-bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
+bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
 
 {
   uint32_t *directory;
@@ -1604,8 +1583,7 @@ UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
    the selected row moves the selection to the collapsed row and queues the list's action. No caller found
    in src/ or image_data.c (only the function map).
 */
-void __thandor_void_preserve_eax_ecx
-UiTimedListControl_ToggleDirectoryRecordExpansion
+void UiTimedListControl_ToggleDirectoryRecordExpansion
           (UiTimedListTreeRecord16 *record,UiTimedListRuntimeExtendedView88 *control)
 
 {
@@ -1644,8 +1622,7 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
    when the ancestor chain does not end in a drive row. No caller found in src/ or image_data.c (only the
    function map).
 */
-bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record)
+bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record)
 
 {
   uint32_t *directory;
@@ -1714,8 +1691,7 @@ UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord
    Re-enables the controls bound to actionId among firstNode and its following siblings: each node's
    unsuppressActionId method clears UI_NODE_SUPPRESSED when the action matches (containers recurse).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
+void UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
   for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
@@ -1729,8 +1705,7 @@ UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
    Disables (greys out) the controls bound to actionId among firstNode and its following siblings: each
    node's suppressActionId method sets UI_NODE_SUPPRESSED when the action matches (containers recurse).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
+void UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
   for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
@@ -1747,9 +1722,7 @@ UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
    activates it: a push button queues its action, a toggle flips its selected state, a radio-style control
    gets selected; optionally with the activation sound. Other keys go to the default focus handling.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_KeyboardEvent
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
+bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control)
 
 {
@@ -1820,8 +1793,7 @@ UiSelectableControl_KeyboardEvent
    g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
    _004BC570, _005162C0, _00516310, _00516530.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
+void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -1841,8 +1813,7 @@ UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *
    g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
    _004BC570, _005162C0, _00516310, _00516530.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
+void UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -1861,8 +1832,7 @@ UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl
    the enabled ones is selected: CF set when none is. Otherwise CF clear with the index (ECX) and node (EAX)
    of the first enabled, selected control.
 */
-SelectableGroupNodeResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
+SelectableGroupNodeResult UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
 
 {
   int controlAddress;
@@ -1897,8 +1867,7 @@ UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
    selected, suppressed ones included: CF set when none is, otherwise CF clear with the index (ECX) of the
    first selected control. Called by the frontend scenario page (src/ui/frontend/scenario.c).
 */
-SelectableGroupIndexResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
+SelectableGroupIndexResult UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
 
 {
   uint32_t controlIndex;
@@ -1927,8 +1896,7 @@ UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
    Radio-button behaviour for a group (controlCount control pointers follow selectedControl on the stack):
    selects selectedControl, deselects all other group members and redraws them.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...)
+void UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...)
 
 {
   UiSelectableControl *node;
@@ -1957,8 +1925,7 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
    Tells (in CF) whether a selectable control counts as selected/checked: only a visible (not suppressed)
    control can be.
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_IsSelected(UiSelectableControl *control)
+uint8_t UiSelectableControl_IsSelected(UiSelectableControl *control)
 
 {
   if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
@@ -1973,8 +1940,7 @@ UiSelectableControl_IsSelected(UiSelectableControl *control)
    Sets or clears the selected/checked state of a selectable control (checkbox, radio or toggle button)
    from code, without queueing its action, and redraws it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control)
+void UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control)
 
 {
   control->stateFlags = control->stateFlags & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -1990,8 +1956,7 @@ UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *c
    Looks up the page stack's shown page (its first child) in its page array: returns the page's index with
    CF clear, or CF set (index past the last page) when the shown page is none of the stack's pages.
 */
-PageStackSearchResult __thandor_eax_cf_preserve_ecx_edx
-UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
+PageStackSearchResult UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
 
 {
   uint32_t pageIndex;
@@ -2016,9 +1981,7 @@ UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
    relocates the children, takes the content size from the content child's right/bottom offsets and scrolls
    back to the origin.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_RelocateChildren
-          (UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control)
+void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiScrollableControl *control)
 
 {
   UiNodeBase *contentChild;
@@ -2042,8 +2005,7 @@ UiScrollableControl_RelocateChildren
    horizontal and vertical bars (arrows, track and thumb, pressed/active pieces while held), the optional
    frame style and interior fill, then the content child clipped to the remaining view.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_DrawFrameContentAndScrollbars
+void UiScrollableControl_DrawFrameContentAndScrollbars
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiScrollableControl *control)
 
@@ -2374,8 +2336,7 @@ UiScrollableControl_DrawFrameContentAndScrollbars
    The win.gfx subresources used for sizes: 0x6A/0x72 border styles (flags 0x400/0x800), 0x5A horizontal bar
    arrow, 0x5E vertical bar arrow, 0xC0/0xC2 horizontal/vertical thumb caps (half the minimum thumb).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
+void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
 
 {
   UiNodeBase *contentChild;
@@ -2614,8 +2575,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
    Cursor of a scroll frame (g_UiScrollableControlVtable pointerMove): while a right-button pan that started
    inside the content is active, the pan cursor for the axes that can scroll; otherwise the arrow.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiScrollableControl_QueryPointerRegion
+GraphicsCursorFrameIndex UiScrollableControl_QueryPointerRegion
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control)
 
 {
@@ -2645,8 +2605,7 @@ UiScrollableControl_QueryPointerRegion
    cursor (g_CursorUseOverridePosition), remembers the press position as the pan anchor and, when the press is
    inside the content view and the frame has a bar, shows the pan cursor for the axes that can scroll.
 */
-void __thandor_void_preserve_ecx_edx
-UiScrollableControl_BeginSecondaryScrollInteraction
+void UiScrollableControl_BeginSecondaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiScrollableControl *control)
 
@@ -2709,8 +2668,7 @@ void UiScrollableControl_EndSecondaryScrollInteraction
    the content's children, anywhere else (bars, frame) or during a right-button pan of the content the frame
    itself.
 */
-UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiScrollableControl_HitTestContentAndScrollbars
+UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control)
 
 {
@@ -2765,9 +2723,7 @@ UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *cont
    the selected row (with end caps while the list has the keyboard focus), then each column's text of the
    row record. A column with a negative width is right-aligned in |width| pixels.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_DrawRowsAndSelection
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control)
+void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control)
 
 {
   int columnWidth;
@@ -2865,7 +2821,7 @@ UiListControl_DrawRowsAndSelection
    keyboard selection change and queues the list's action when it reaches zero (clearing the pending and
    confirmed flags).
 */
-void __thandor_preserve_eax UiListControl_TickActivationPulse(UiListControl *control)
+void UiListControl_TickActivationPulse(UiListControl *control)
 
 {
   if (((control->listStateFlags & UI_LIST_DEFERRED_ACTION_PENDING) != 0) &&
@@ -2884,8 +2840,7 @@ void __thandor_preserve_eax UiListControl_TickActivationPulse(UiListControl *con
    Re-enables the column list when it is bound to actionId (g_UiListControlVtable unsuppressActionId), then
    passes the request on to its children like any container.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
+void UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -2904,8 +2859,7 @@ UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
    passes the request on to its children like any container. Unlike the selectable controls it keeps the
    keyboard focus.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
+void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
 
 {
   UiNodeFlags *controlNodeFlags;
@@ -2925,9 +2879,7 @@ UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
    widths (negative widths count by their magnitude) plus 6 pixels; the parent (the scrollable frame) is
    laid out again for the new size.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_InitializeColumnLayout
-          (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
+void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
 
 {
   int columnWidth;
@@ -2983,9 +2935,7 @@ void ** UiPointerList_GetRowSlotsVariantB(UiPointerListControl *control)
    Relocation of the tree list loaded from a serialized UI tree (g_UiTimedListControlVtable relocate): only
    relocates the children like any container.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_RelocateChildren
-          (UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control)
+void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control)
 
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);
@@ -2998,9 +2948,7 @@ UiTimedListControl_RelocateChildren
    of its ancestor levels, its branch and expand/collapse icons, its row icon, the highlight behind the
    selected row's label (with end caps while the list has the keyboard focus) and the label.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_DrawRowsAndSelection
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
 
 {
   /* Rewritten from the assembly (0x004BBA00-0x004BBCCC). Expanded records push (record,
@@ -3119,7 +3067,7 @@ UiTimedListControl_DrawRowsAndSelection
    Per-frame tick of the tree list (g_UiTimedListControlVtable tick): counts down the deferred action of a
    keyboard selection change and queues the list's action when it reaches zero.
 */
-void __thandor_preserve_eax UiTimedListControl_TickActionDelay(UiTimedListControl *control)
+void UiTimedListControl_TickActionDelay(UiTimedListControl *control)
 
 {
   if (((control->listStateAndDelay & UI_TIMED_LIST_ACTION_DELAY_PENDING) != 0) &&
@@ -3148,8 +3096,7 @@ UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control)
    g_UiListOffsetControlVtable and g_UiCommandVisibilityWrappedTextVtable): relocates the children and, when
    UI_LABEL_TEXT_NEEDS_RELOCATION marks the text pointer as a serialized offset, turns it into a pointer once.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiWrappedTextControl_RelocateAndApplyDeferredOffset
+void UiWrappedTextControl_RelocateAndApplyDeferredOffset
           (UiSerializedRelocationDelta relocationDelta,UiWrappedTextControl *control)
 
 {
@@ -3170,8 +3117,7 @@ UiWrappedTextControl_RelocateAndApplyDeferredOffset
    model state (top right, alert colour when that army has runtimeFlags bit 0). The entry is looked up by its offset in the in-game root in the
    group-42 and group-48 catalog tables.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCatalogEntryControl_DrawClipped
+void UiCatalogEntryControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiCatalogEntryControl *control)
 
@@ -3390,8 +3336,7 @@ UiCatalogEntryControl_DrawClipped
    or group-48 catalog tables, makes its record the hover selection and rebuilds the selection detail panel,
    so the panel describes the hovered asset. Returns cursor frame 10, or 12 while Ctrl is held.
 */
-GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiCatalogEntryControl_PointerMove
+GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiCatalogEntryControl *control)
 
 {
@@ -3436,8 +3381,7 @@ UiCatalogEntryControl_PointerMove
    the button, records the modifier keys held (g_KeyboardStateMask into activationInputState) for the action
    handler, plays the activation sound and queues the entry's action.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiCatalogEntryControl_NonRightRelease
+void UiCatalogEntryControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCatalogEntryControl *control)
 
@@ -3469,8 +3413,7 @@ UiCatalogEntryControl_NonRightRelease
    through its block and up through the ancestor rows, adding the rows of expanded blocks) to get its y.
    Does not queue the list's action.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_SelectRecordAndScrollIntoView
+void UiTimedListControl_SelectRecordAndScrollIntoView
           (UiTimedListTreeRecord16 *selectedRecord,UiTimedListRuntimeExtendedView88 *control)
 
 {
@@ -3508,8 +3451,7 @@ UiTimedListControl_SelectRecordAndScrollIntoView
    parent so the row is visible; the same as UiPointerList_SelectIndexVariantA. Out-of-range indices are
    ignored.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control)
+void UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control)
 
 {
   int rowTop;
@@ -3529,8 +3471,7 @@ UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *con
    Returns the index of the selected row of a pointer list; CF (confirmed) is set when the selection was
    confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
 */
-ListSelectionResult __thandor_eax_cf_preserve_ecx_edx
-UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control)
+ListSelectionResult UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control)
 
 {
   UiListRowIndex selectedRowIndex;
@@ -3576,8 +3517,7 @@ UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control)
    row count over all expanded blocks, width from the widest indented row label plus icon; then the parent
    scroll frame is laid out again for the new content size.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiTimedListControl_SetRecordTreeAndRecomputeLayout
+void UiTimedListControl_SetRecordTreeAndRecomputeLayout
           (UiTimedListTreeRecord16 *recordTree,UiTimedListRuntimeExtendedView88 *control)
 
 {
@@ -3654,8 +3594,7 @@ UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *c
    Counts the visible rows of a record block: its rows plus, recursively, the rows of every expanded child
    block (0 for NULL). Used to turn a row position into a row index for scrolling.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock)
+uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock)
 
 {
   uint32_t nestedRecordCount;
@@ -3687,8 +3626,7 @@ UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recor
    recomputes the thumb rectangles of the enabled scrollbars (thumb length proportional to the visible
    part, at least two thumb pieces). Scrolled content has offsets <= 0.
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
+void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
 
 {
   UiNodeBase *contentChild;
@@ -3833,8 +3771,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
    Relayouts when an offset changed and redraws. Does nothing unless control really is a
    g_UiScrollableControlVtable node (callers pass their parent without checking).
 */
-void __thandor_void_preserve_eax_ecx_edx
-UiScrollableControl_ClampOffsetsToViewport
+void UiScrollableControl_ClampOffsetsToViewport
           (UiPixelCoordinate targetBottom,UiPixelCoordinate targetRight,UiPixelCoordinate targetTop,
           UiPixelCoordinate targetLeft,UiScrollableControl *control)
 

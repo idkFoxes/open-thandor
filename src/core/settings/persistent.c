@@ -14,7 +14,7 @@
    Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
    last load or save, writes the 200-byte image back to the settings file. The save result is not checked.
 */
-void __thandor_preserve_eax PersistentSettings_Flush(void)
+void PersistentSettings_Flush(void)
 
 {
   if (g_PersistentSettings.image != NULL) {
@@ -33,7 +33,7 @@ void __thandor_preserve_eax PersistentSettings_Flush(void)
    PersistentSettings_Read beyond the loaded bytes falls back to its default. When the file is not found at
    its path it is looked up in the executable directory. Any failure leaves the image null (all defaults).
 */
-void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
+void PersistentSettings_Load(void)
 
 {
   uint32_t *clearCursor;
@@ -109,9 +109,7 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
    Returns the setting dword at settingsOffsetBytes, or defaultValue when no settings file was loaded or the
    file was too short to contain it.
 */
-uint32_t __thandor_eax_preserve_ecx_edx
-PersistentSettings_Read
-          (PersistentSettingsValue defaultValue,
+uint32_t PersistentSettings_Read(PersistentSettingsValue defaultValue,
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
@@ -127,9 +125,7 @@ PersistentSettings_Read
    Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when no settings
    file was loaded or the file was too short to contain the whole region. Used for the stored names.
 */
-void * __thandor_eax_preserve_ecx_edx
-PersistentSettings_GetRegionOrFallback
-          (PersistentSettingsByteCount regionByteCount,void *fallback,
+void * PersistentSettings_GetRegionOrFallback(PersistentSettingsByteCount regionByteCount,void *fallback,
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
@@ -146,9 +142,7 @@ PersistentSettings_GetRegionOrFallback
    dirty, even when nothing changed. The bound is the image capacity, not the loaded size, and the loaded
    size is not extended, so a block past the end of a short file is saved but not read back until reload.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PersistentSettings_WriteBlock
-          (PersistentSettingsByteCount regionByteCount,uint32_t *source,
+void PersistentSettings_WriteBlock(PersistentSettingsByteCount regionByteCount,uint32_t *source,
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
@@ -175,9 +169,7 @@ PersistentSettings_WriteBlock
    Stores one setting dword in the image and marks it dirty, but only when the value actually changes. Like
    WriteBlock it checks against the image capacity, not the loaded size.
 */
-void __thandor_void_preserve_eax_ecx_edx
-PersistentSettings_Write
-          (PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
+void PersistentSettings_Write(PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
   if (((g_PersistentSettings.image != NULL) &&

@@ -15,8 +15,7 @@
    non-zero one whose technology the faction has unlocked wins (the first id is the fallback), and it is
    looked up in the registry. CF is always clear, even when the lookup fails.
 */
-ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinition_SelectFactionUnlockedLinkedDefinition
+ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
 {
@@ -68,8 +67,7 @@ static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex
    (ModelDefinition_SelectFactionUnlockedLinkedId). Used when an army is created with
    ARMY_CREATE_UNLOCK_TECHNOLOGY.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
+void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
@@ -105,8 +103,7 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
    tree is unlocked, true (CF set) as soon as one is still locked: ModelDefinition_IsFactionTechnologyUnlocked
    reports a locked technology with CF set.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
@@ -123,7 +120,7 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
    model-definition records (starting at +0x200, each prefixed with its byte size) and resolves their
    references against the asset base. Stops with CF set at the first record that fails.
 */
-StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset)
+StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
@@ -205,9 +202,7 @@ ModelLookupTable_FindPackedKeyEntryRegs
    (keyIndex << 4) | keyClass and returns the matching entry with CF clear. When no entry matches, CF is set
    and EAX points just past the table.
 */
-ModelLookupEntryResult __thandor_eax_cf_preserve_ecx_edx
-ModelLookupTable_ContainsPackedKey
-          (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
+ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition)
 
 {
@@ -243,8 +238,7 @@ ModelLookupTable_ContainsPackedKey
    On a hit returns the Q12 distance with CF set; on a miss CF is clear and EAX holds scratch. Called for each
    triangle by ModelNodeRuntime_RaycastHierarchyNearest.
 */
-MeshRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
-ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle)
+MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle)
 
 {
   int edge1Z;
@@ -454,8 +448,7 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
    itself: the last non-zero of the eight linked ids at +0x20 whose technology the faction has unlocked,
    or the first id when none is. CF is always clear.
 */
-PckModelDefinitionIdCatalog __thandor_eax_preserve_ecx_edx
-ModelDefinition_SelectFactionUnlockedLinkedId
+PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
 {
@@ -540,8 +533,7 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
    terrain-class dependent placement values are copied from the grid tables. A duplicate id, a full
    registry or any failed load/lookup returns its error code with CF set.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinition_RegisterAndResolveReferences
+StatusResult ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset)
 
 {
@@ -762,8 +754,7 @@ ModelDefinition_ReturnReferenceResolutionResult:
    Unlocks for the faction the technology that the model definition grants (record +0x1C4), so building
    that model makes its successor technology available. An unknown id is silently ignored.
 */
-void __thandor_preserve_eax
-ModelDefinition_UnlockLinkedTechnologyForFaction
+void ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {
@@ -782,8 +773,7 @@ ModelDefinition_UnlockLinkedTechnologyForFaction
    must be set in the faction's 256-bit technology masks. Despite the name, true (CF set) means LOCKED
    (bit clear or unknown id); false (CF clear) means unlocked.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-ModelDefinition_IsFactionTechnologyUnlocked
+bool ModelDefinition_IsFactionTechnologyUnlocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {
@@ -804,8 +794,7 @@ ModelDefinition_IsFactionTechnologyUnlocked
    Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
    g_PackageLastErrorPath for the error message and returns FATAL_ERROR_MODEL_DEFINITION_MISSING with CF set.
 */
-ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId)
+ModelDefinitionResult ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;

@@ -20,19 +20,19 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004030B0 */
-uint32_t __thandor_eax_preserve_ecx_edx Random_NextPrimary(void);
+uint32_t Random_NextPrimary(void);
 
 /* 0x004030E0 */
-uint32_t __thandor_eax_preserve_ecx_edx Random_NextSecondary(void);
+uint32_t Random_NextSecondary(void);
 
 /* 0x00403110 */
-void __thandor_void_preserve_eax_ecx_edx Random_SetBothSeeds(RandomSeed seed);
+void Random_SetBothSeeds(RandomSeed seed);
 
 /* 0x00403130 */
 uint32_t __cdecl Random_GetSecondarySeed(void);
 
 /* 0x00403140 */
-void __thandor_void_preserve_eax_ecx_edx Random_SelectSecondaryStream(void);
+void Random_SelectSecondaryStream(void);
 
 /* 0x00403150 */
 void __cdecl Random_SelectPrimaryStream(void);

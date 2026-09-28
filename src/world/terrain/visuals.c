@@ -64,7 +64,7 @@ static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,
    planes 1 and 2 and then derives plane 0 from them. Returns the total image size, or the allocator error with
    CF set.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(void)
+StatusResult TerrainCompositeTexture_Create(void)
 
 {
   FieldGridAsset *terrainFieldGrid;
@@ -144,7 +144,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(vo
    byte asks for (row targets: see TERRAIN_BYTE_CLAMP_LOOKUP_BYTES). The table is 64-KiB aligned so the original
    can index it by loading the two bytes into AH/AL. CF set with the allocator error on failure.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
+StatusResult TerrainByteClampLookup_Initialize(void)
 
 {
   void *lookupAllocationBase;
@@ -301,8 +301,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize
    <primary>.dat/.gfx/.pal and <secondary>.pal/.dat, then initialises the field's runtime cells and the
    animated direction table. Advances the loading movie between steps; CF set with the error on failure.
 */
-StatusResult __thandor_void_preserve_ecx_edx
-TerrainVisualResources_LoadPrimary
+StatusResult TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field)
 
 {
@@ -471,8 +470,7 @@ TerrainVisualResources_LoadPrimary
    savegame): the same resources are loaded, but the cells only get their lookup pointers rebuilt, and
    flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
-TerrainVisualResources_LoadAndClearCellOverlayFlags
+StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field)
 
 {
@@ -651,7 +649,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
    texture set, both palettes and both .dat tables (their globals point 0x20 bytes into the loaded
    resource, past its header, so that offset is undone before Resource_Release).
 */
-void __thandor_void_preserve_eax_ecx TerrainVisualResources_Shutdown(void)
+void TerrainVisualResources_Shutdown(void)
 
 {
   int materialTextureSetsRemaining;
@@ -691,8 +689,7 @@ void __thandor_void_preserve_eax_ecx TerrainVisualResources_Shutdown(void)
    per colour channel (saturated at 0xFF, alpha taken from base), the directional-light LUT is filled with
    the base colour and the secondary colour is stored in g_TerrainDirectionalLightSecondaryColor.
 */
-void __thandor_void_preserve_eax_ecx_edx
-TerrainLighting_BuildColorRampAndSetBaseColor
+void TerrainLighting_BuildColorRampAndSetBaseColor
           (PackedArgb32 secondaryColorArgb,PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb
           )
 
@@ -756,7 +753,7 @@ TerrainLighting_BuildColorRampAndSetBaseColor
    Frees the terrain composite texture built by TerrainCompositeTexture_Create (through its allocation base).
    g_TerrainCompositeTexture and the in-game root keep the stale pointer.
 */
-void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void)
+void TerrainCompositeTexture_Destroy(void)
 
 {
   GraphicsTextureSourceAsset *allocationBase;
@@ -774,8 +771,7 @@ void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void)
    elevation (+0x17C of the world runtime, named fieldRegionOriginWorldYQ12_0BAC in the root) is kept between
    -0x4000 (straight down) and -0x1000, the azimuth (+0x178, fieldRegionOriginWorldXQ12_0BA8) wraps around.
 */
-void __thandor_preserve_eax_edx
-TerrainLighting_AdjustDirectionAndRecomputeField
+void TerrainLighting_AdjustDirectionAndRecomputeField
           (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
           uint32_t deltaAzimuthAngle)
 
@@ -803,7 +799,7 @@ TerrainLighting_AdjustDirectionAndRecomputeField
    dry cells get their material's panel colour shaded by terrain height, flooded cells the water colour
    (palette entry 0) shaded by water depth, both through g_PackedLightingLookupTable.
 */
-void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void)
+void TerrainCompositeTexture_FillPlane1(void)
 
 {
   AssetDimension textureWidth;
@@ -885,7 +881,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
    plain soil cells get their panel colours shaded by terrain height, and water is blended 50/50 over
    flooded cells.
 */
-void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void)
+void TerrainCompositeTexture_FillPlane2(void)
 
 {
   AssetDimension textureWidth;
@@ -1011,7 +1007,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
    alpha tint whose faction has a non-zero factionClassOrMode, in the panel colour of variant
    factionClassOrMode when selected, variant 0 otherwise (blended 50/50 for a tint alpha below 0xFF).
 */
-void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(void)
+void TerrainCompositeTexture_RebuildPlane0(void)
 
 {
   uint8_t visibilityFlags;

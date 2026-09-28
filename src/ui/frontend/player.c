@@ -17,8 +17,7 @@
    FRONTEND_COMMAND_CHAT_PUBLISH (without a network session the handlers are called directly), then empties
    the edit field. The in-game counterpart is InGameUiAction1024_Handler.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
+void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
 
 {
   int remainingPairs;
@@ -117,8 +116,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
    (FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80). Tokens are pointer offsets so they can travel in
    network commands; dword +4 of the target is non-zero while it is alive.
 */
-void __thandor_preserve_eax
-FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
+void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
           (FrontendPlayerIndex playerIndex,uint32_t reservedZero,RuntimeToken armyToken,
           RuntimeToken modelToken)
 
@@ -149,8 +147,7 @@ FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
    this player's consensus value with FRONTEND_COMMAND_SET_CONSENSUS_VALUE, or applies it directly without a
    network session.
 */
-void __thandor_preserve_eax
-FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source)
+void FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source)
 
 {
   uint32_t consensusValue;
@@ -174,8 +171,7 @@ FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 sou
    the lobby's expiry pass at once, which removes that player (and counts one extra tick for every other
    joined player). The first row, the host itself, cannot be kicked.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
+void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
 
 {
   UiNodeBase *parentCursor;
@@ -213,8 +209,7 @@ FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
    the announcements go out in reverse removal order (the original pushes each removed id on the stack and pops
    one per round); both are kept from the original.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
+void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 {
   FrontendPlayerRuntimeBlockCount sendRemaining;
@@ -286,8 +281,7 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
    (see FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80); the in-game HUD uses it to decide whether the
    technology window of a selected object is offered. CF set when such a player exists.
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
+bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId)
 
 {
@@ -313,8 +307,7 @@ FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
    Releases an assignment token: every frontend player whose selection player block (+0x80A0) still holds
    the token gets it cleared to 0. Assumes at least one frontend player block (do/while as in the original).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
+void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
 
 {
   uint32_t playerBlocksRemaining;
@@ -342,8 +335,7 @@ FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
    switched off (UI_NODE_SUPPRESSED). On the host the player is marked ready (readyOrWaitState 1); once every
    client (player blocks 1..n-1) is ready, the host's own "Begin" button is switched on.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
+void FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
@@ -397,8 +389,7 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
    Command handler with four dword arguments (local command 0x360, run on every peer in a network session);
    only the player id is used.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_MarkFlag08ById
+void FrontendPlayerRuntime_MarkFlag08ById
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
@@ -423,8 +414,7 @@ FrontendPlayerRuntime_MarkFlag08ById
    Command handler FRONTEND_COMMAND_XOR_PLAYER_STATE (run on every peer): toggles the stateMask bits in
    runtimeState64 of the player block with this player id. The two middle command arguments are unused.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_XorStateMaskByPlayerId
+void FrontendPlayerRuntime_XorStateMaskByPlayerId
           (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t stateMask)
 
 {
@@ -450,8 +440,7 @@ FrontendPlayerRuntime_XorStateMaskByPlayerId
    Command handler with four dword arguments (local command 0x410, run on every peer in a network session);
    only the player id is used.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_MarkFlag04ById
+void FrontendPlayerRuntime_MarkFlag04ById
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
@@ -477,8 +466,7 @@ FrontendPlayerRuntime_MarkFlag04ById
    Command handler with four dword arguments (local command 0x8D0, run on every peer in a network session);
    only the player id is used.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_MarkFlag02ById
+void FrontendPlayerRuntime_MarkFlag02ById
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
@@ -506,8 +494,7 @@ FrontendPlayerRuntime_MarkFlag02ById
    FrontendScenarioSession_LoadOrRequestLevelAsset consults later. The command sends the dwords high first.
    No handler is called directly: only network clients send it.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
+void FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
           (PlayerRuntimeId playerId,FrontendPlayerValue8C scenarioAvailabilityMask2,
           FrontendPlayerValue88 scenarioAvailabilityMask1,
           FrontendPlayerValue84 scenarioAvailabilityMask0)
@@ -541,7 +528,7 @@ FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
    round-robin (player n gets faction (n mod assignable count) + 1) and clears their ready and consensus state.
    The original also computes the local player's zero-based faction in EDX but restores EDX before returning.
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFactionAssignments(void)
+void FrontendPlayerRuntime_InitializeFactionAssignments(void)
 
 {
   FrontendLoadedLevelRuntimeImage370 *loadedLevel;
@@ -597,7 +584,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFaction
    local player alone (id 0, empty name, cleared state). The speed slider is reset from
    g_SessionNetworkTickInterval (the slider shows half the interval).
 */
-void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
+void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 
 {
   FrontendPlayerRuntimeRecord *firstPlayerBlock;
@@ -637,7 +624,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
    and sets g_SessionNetworkTickInterval to twice the slider value. The label buffer is the one named
    g_FrontendNetworkPlayerCountLabelUtf16.
 */
-void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
+void FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
 
 {
   TextResolveResult labelText;
@@ -656,8 +643,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeB
    players report FRONTEND_CAPABILITY_CD, i.e. run the game from the CD; otherwise hides it. Called whenever a
    player joins or a heartbeat updates the capabilities.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
+void FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
 
 {
   int cdPlayerCount;
@@ -689,8 +675,7 @@ FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
    (slowRenderingFlag is that bit or 0), which the player roster shows as a highlighted "W". Other session
    flags are kept.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_SetReadyFlagById
+void FrontendPlayerRuntime_SetReadyFlagById
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedArg04,uint32_t reservedArg08,
           FrontendReadyFlagMask slowRenderingFlag)
 
@@ -712,8 +697,7 @@ FrontendPlayerRuntime_SetReadyFlagById
    is ready; the host re-checks with player id 0xFFFFFFFF every frame. On a client the local player's own
    continue button disappears after pressing it (it then waits for the host).
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRuntimeId)
+void FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRuntimeId)
 
 {
   FrontendPlayerRuntimeBlockCount readyScanRemaining;
@@ -763,8 +747,7 @@ FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRun
    (UI_COMMAND_RUNTIME_FLAG_PAUSED and _WAITING_FOR_PLAYERS cleared). A client ends it when the host's
    (id 0) second report arrives.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
+void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
           (PlayerRuntimeId playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           uint32_t unusedArgument3)
 
@@ -835,8 +818,7 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
    Command handler INGAME_COMMAND_SELECTION_INSERT: adds up to three armies (saved offsets, 0 = none; armies
    without a model are skipped) to the player's selection and rebuilds the selection panels for the local player.
 */
-void __thandor_preserve_eax
-FrontendPlayerSelection_InsertThreeEntriesAndRefresh
+void FrontendPlayerSelection_InsertThreeEntriesAndRefresh
           (PlayerRuntimeId playerRuntimeId,ArmyRuntimeSavedOffset armyRuntimeOffset2,
           ArmyRuntimeSavedOffset armyRuntimeOffset1,ArmyRuntimeSavedOffset armyRuntimeOffset0)
 
@@ -875,8 +857,7 @@ FrontendPlayerSelection_InsertThreeEntriesAndRefresh
    player's selection and rebuilds the selection panels for the local player. Like the original it calls the
    removal once more for the last argument after the three checks (see the comment there).
 */
-void __thandor_preserve_eax
-FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
+void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
           (FrontendPlayerIndex playerRuntimeId,RuntimeToken armyRuntimeOffset2,
           RuntimeToken armyRuntimeOffset1,RuntimeToken armyRuntimeOffset0)
 
@@ -919,8 +900,7 @@ FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
    Command handler INGAME_COMMAND_SELECTION_CLEAR: empties the player's 32-entry selection and rebuilds the
    selection panels for the local player. Only the first command argument is used.
 */
-void __thandor_preserve_eax
-FrontendPlayerSelection_ClearAndRefreshLocalPanels
+void FrontendPlayerSelection_ClearAndRefreshLocalPanels
           (FrontendPlayerIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
@@ -939,8 +919,7 @@ FrontendPlayerSelection_ClearAndRefreshLocalPanels
    selection first removes its armies from all groups of the faction. For the local player it rebuilds the
    selection panels and, with SELECTION_TRANSFER_CENTER_VIEW, moves the camera to the selection's centre.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
+void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
           (PlayerRuntimeId playerRuntimeId,FactionRuntimeIndex factionIndex,
           FrontendSelectionTransferModeFlags transferModeFlags,
           FrontendFactionAssignmentIndex selectionGroupIndex)
@@ -1063,8 +1042,7 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
    InGameCommandAction_ClearSelectedArmyTokenAndClosePage) gives back the flag 0x80 that
    FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 took away when the page opened, and 0 does neither.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
+void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,
           TechnologyIndexOrRestoreCode technologyIndexOrRestore,ArmyRuntimeSavedOffset modelOffset)
 
@@ -1097,9 +1075,7 @@ FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
    (InGameUiAction1024_Handler): stores the recipient mask (bits 8+faction and 16+player, 0xFFFFFF00 for all)
    in the player's packedSelectionState809C and resets the staging write offset in its low byte to 0.
 */
-void __thandor_preserve_eax_edx
-FrontendPlayerTextCommand_SetPackedState
-          (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,
+void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,
           FrontendPackedTextCommandState packedState)
 
 {
@@ -1114,9 +1090,7 @@ FrontendPlayerTextCommand_SetPackedState
    the offset. The offset stops at 0x24, the last of the four 12-byte pieces of the 0x30-byte line, so extra
    pieces overwrite it instead of running past the buffer.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerTextCommand_AppendTripleClamped
-          (FrontendPlayerIndex playerIndex,FrontendTextCommandValue2 value2,
+void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerIndex,FrontendTextCommandValue2 value2,
           FrontendTextCommandValue1 value1,FrontendTextCommandValue0 value0)
 
 {
@@ -1145,8 +1119,7 @@ FrontendPlayerTextCommand_AppendTripleClamped
    player), shows "<sender>: <text>" (TEXT_ID_CHAT_MESSAGE) from the staged text in the in-game message
    history. The sender's name is the one kept at +0x80F0 of its block.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerTextCommand_PublishConditionalRichText
+void FrontendPlayerTextCommand_PublishConditionalRichText
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
@@ -1182,8 +1155,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
    of the 32-entry selection (ArmyRuntime_DestroyInstanceAndRefreshUi). The army is sent as a saved offset from
    g_ArmyRuntimeRebaseBaseMinusOne.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendPlayerSelection_ApplyEntryOrAll
+void FrontendPlayerSelection_ApplyEntryOrAll
           (FrontendPlayerIndex playerIndex,uint32_t reservedZero0,uint32_t reservedZero1,
           RuntimeToken armyRuntimeOffset)
 
@@ -1224,8 +1196,7 @@ FrontendPlayerSelection_ApplyEntryOrAll
    A client ends it when the host's (id 0) second report arrives. Same scheme as
    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
+void FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
@@ -1297,8 +1268,7 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
    button is switched off; when all have it checked the host's "Next" button is switched on. Then the page's
    faction and player controls are refreshed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_SetConsensusValueAndRefresh
+void FrontendPlayerRuntime_SetConsensusValueAndRefresh
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendConsensusValue consensusValue)
 
@@ -1348,8 +1318,7 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
    FRONTEND_COMMAND_CHAT_APPEND pieces fill its text from the start. In the lobby states (hosting, joined) the
    players are counted with g_FrontendPlayerRuntimeCount, otherwise with g_FrontendPlayerRuntimeBlockCount.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
+void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
           (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
@@ -1383,8 +1352,7 @@ FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
    sender's message record and advances its write offset. Unlike the in-game FrontendPlayerTextCommand_
    AppendTripleClamped the offset is not clamped: a ninth piece would run past the 100-byte record.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerMessageBuffer_AppendTripleById
+void FrontendPlayerMessageBuffer_AppendTripleById
           (PlayerRuntimeId playerId,FrontendMessageValueA valueA,FrontendMessageValueB valueB,
           FrontendMessageValueC valueC)
 
@@ -1424,8 +1392,7 @@ FrontendPlayerMessageBuffer_AppendTripleById
    text to UTF-16 and shows "<sender>: <text>" (TEXT_ID_CHAT_MESSAGE, the sender's player name) in the lobby's
    message history.
 */
-void __thandor_void_preserve_eax_ecx
-FrontendPlayerMessageBuffer_PublishTextById
+void FrontendPlayerMessageBuffer_PublishTextById
           (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
@@ -1471,9 +1438,7 @@ FrontendPlayerMessageBuffer_PublishTextById
    blocks, keeping the list selection on the same player (or the host row when the selected one left). Then the
    player count text is rewritten and the list refreshed.
 */
-void __thandor_void_preserve_eax_ecx_edx
-FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
-          (FrontendNetworkListsRuntimeView5650 *frontendRoot)
+void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsRuntimeView5650 *frontendRoot)
 
 {
   FrontendHeartbeatTickCount *heartbeatTicks;
@@ -1547,8 +1512,7 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
    0 does nothing, an army without a model leaves the selection empty) and rebuilds the selection panels for the
    local player. The two middle command arguments are unused.
 */
-void __thandor_preserve_eax
-FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
+void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
           (FactionRuntimeIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
           RuntimeToken armyRuntimeOffset)
 
@@ -1577,8 +1541,7 @@ FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
    and, if the record is live (dword +4 non-zero), records it for the player in assignmentToken80A0. Bit 0x80
    of the record's flags at +0xEC is moved into assignmentFlags80A4 (and cleared on the record).
 */
-void __thandor_void_preserve_eax_ecx
-FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
+void FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,ArmyRuntimeSavedOffset modelOffset)
 
 {

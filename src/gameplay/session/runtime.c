@@ -17,9 +17,7 @@
    player left, tears the session down along the matching path and returns to the frontend. A failed start or an
    emptied UI root stack returns an error code with CF set, which the caller hands to the fatal-error dispatcher.
 */
-SessionRunResult __thandor_eax_cf_preserve_ecx_edx
-InGameRuntime_RunSessionUntilExit
-          (LevelAssetRuntimeImagePrefix370 *levelAsset,
+SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimeImagePrefix370 *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16)
 
 {
@@ -110,8 +108,7 @@ InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCar
    the terrain texture refresh. Nothing but the network upkeep runs while waiting for players.
 */
 
-void __thandor_void_preserve_eax_ecx_edx
-EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
+void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
 {
   Q12 *motionCoordinate;
@@ -472,8 +469,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn:
    slot pointers, texture set and palette are re-selected per domain, and the sprite id is resolved again. Also
    restores the tail record pointer and the local player's faction assignment.
 */
-void __thandor_void_preserve_eax_ecx_edx
-ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage)
+void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage)
 
 {
   void *tailNestedPointer;
@@ -604,9 +600,7 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
    combination) and runs its action: chat, message window, menus, save, pause, game speed, side panel,
    screenshot, leaving the game and the three cheat keys (only while cheats are enabled).
 */
-bool __thandor_cf_preserve_eax_ecx_edx
-InGameHotkeys_DispatchCommandByFlags
-          (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
+bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
 {
@@ -835,7 +829,7 @@ InGameHotkeys_DispatchCommandByFlags
    the movie of the queue head ("flm\movie%03d.flm"), makes its payload the active notification and pops the
    four-entry queue.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
+void InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
 
 {
   uint32_t notificationMovieNumber;
@@ -925,8 +919,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
    screen while stepping until every player is ready, and finally queues the level's five intro notifications.
    CF set (failed) returns the error of the failing step.
 */
-NewSessionInitResult __thandor_eax_cf_preserve_ecx_edx
-InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,uint16_t *levelMoviePath)
+NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,uint16_t *levelMoviePath)
 
 {
   WorldRuntimeFlags *worldRuntimeFlags;
@@ -1314,8 +1307,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
    queued. The package and the level entry are released again at the end. CF set (failed) returns the error of the
    failing step.
 */
-LoadedSessionInitResult __thandor_eax_cf_preserve_ecx_edx
-InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
+LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
 
 {
   WorldRuntimeFlags *worldRuntimeFlags;
@@ -1683,7 +1675,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
    texture and the four panel texture packages, and resets the sprite registry and pending input so the frontend
    starts clean.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResources(void)
+void InGameRuntime_ShutdownAndReleaseResources(void)
 
 {
   WorldRuntimeContext *world;
@@ -1741,7 +1733,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
    Frees the two scratch buffers of each of the eight factions (sets A and B) at session shutdown and clears the
    pointers.
 */
-void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(void)
+void InGameRuntime_ReleaseFactionScratchBuffers(void)
 
 {
   int remainingFactions;
@@ -1775,7 +1767,7 @@ void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(
    Expression tokens: 0xFC end, 0xFD NOT, 0xFE AND, 0xFF OR, anything else pushes that condition's result bit
    (the value is a bit stack in kindOrExpressionValue).
 */
-void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledRecords(void)
+void InGameConditionRuntime_UpdateScheduledRecords(void)
 
 {
   ResourceExtractionDescriptor32 *cellExtractionFlags;
@@ -2502,7 +2494,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
    and, unless automatic rotation or zoom is switched off in the map settings, copies its heading and a zoom value derived from the committed distance
    (distance * 3/128) into the in-game root's view cache.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
+void InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
 
 {
   UQ12 committedDistance;
@@ -2535,8 +2527,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
    0x112..0x117, cycled by the player) in the in-game template and in the frontend template's status text, so the
    choice survives the next copy of the templates.
 */
-void __thandor_void_preserve_eax_ecx
-InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
+void InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
   g_InGameTemplateWorldViewInfoTextResourceId =
@@ -2582,7 +2573,7 @@ InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
    re-seats every model on the terrain every second step (g_ArmyPlacementContactKindDispatchTable) and refreshes
    the influence / classification grids every 16th step.
 */
-void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetworkTick(void)
+void InGameRuntime_UpdateSimulationAndNetworkTick(void)
 
 {
   uint32_t modelDefinition;
@@ -2784,8 +2775,7 @@ InGameRuntime_ReleaseSimulationTickLockAndReturn:
    Optional initialisation step of new and loaded sessions; it always succeeds (CF clear), so the callers' failure
    branches never run. The unreachable CF-set epilogue at 0x0050E0C4 is not part of the function.
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx
-InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument)
+uint8_t InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument)
 
 {
   return 0;
