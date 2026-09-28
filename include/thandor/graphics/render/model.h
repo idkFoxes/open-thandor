@@ -18,6 +18,10 @@
 #define MODEL_RUNTIME_FLAG_APPLY_SCALE 0x800 /* ModelRender_PrepareProjectedVertex scales every vertex by
                                                 modelScaleQ12 */
 #endif
+/* Set by the model class initializers (world/model/slots); the model renderer shifts the texture coordinates
+   of triangles using the node's primary / secondary animated subresource by its texture offsets */
+#define MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL 0x80
+#define MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL 0x400
 /* Model triangle renderFlags (triangle record +0x34), read by ModelRender_SubmitTriangle*,
    ModelRender_PrepareProjectedVertex* */
 #define MODEL_TRIANGLE_PALETTE_BANK_MASK 0x1FF /* material colour: index into the node's palette asset */

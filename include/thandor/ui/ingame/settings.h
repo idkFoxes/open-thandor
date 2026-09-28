@@ -17,6 +17,14 @@
 #define INGAME_ACTION_SAVE_GAME_WINDOW 0x120E /* gameMenuSaveButton; not offered in network games */
 #define INGAME_ACTION_LINK_ROTATION_ZOOM 0x1214 /* linkRotationZoomCheckbox, excludes the tilt link */
 #define INGAME_ACTION_LINK_ROTATION_TILT 0x1215 /* linkRotationTiltCheckbox, excludes the zoom link */
+/* Graphics and sound settings windows: controls that are disabled while their option is off */
+#define INGAME_ACTION_SHADING_LEVEL 0x1205 /* the six shading level buttons, need shading on */
+#define INGAME_ACTION_TEXTURE_QUALITY 0x1207 /* the three texture quality buttons, local games only */
+#define INGAME_ACTION_REVERSE_STEREO 0x120A /* reverseStereoCheckbox, needs effects or music on */
+#define INGAME_ACTION_EFFECTS_VOLUME 0x120B /* effectsVolumeSlider, needs effects on */
+#define INGAME_ACTION_MOVIE_VOLUME 0x120C /* movieVolumeSlider, needs effects on */
+#define INGAME_ACTION_MUSIC_VOLUME 0x120D /* musicVolumeSlider, needs music on */
+#define INGAME_ACTION_MESSAGE_MOVIE_VOLUME 0x121A /* messageMovieVolumeSlider, needs effects on */
 /* Highest per-player simulation step batch (InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks) */
 #define INGAME_SIMULATION_STEP_TICKS_MAX 5
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */

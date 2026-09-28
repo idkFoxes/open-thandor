@@ -55,6 +55,9 @@
 #define FRONTEND_PAGE_HOST_GAME_SETUP 2
 #define FRONTEND_PAGE_HOST_LOBBY 3
 #define FRONTEND_PAGE_OPTIONS 5
+#define FRONTEND_PAGE_DISPLAY_SETTINGS 6 /* adapter, resolution, colour depth (graphicsSettingsButton, 0x2011) */
+#define FRONTEND_PAGE_GRAPHICS_SETTINGS 7 /* "3D": shading, polygon detail, texture quality (0x2012) */
+#define FRONTEND_PAGE_AUDIO_SETTINGS 8 /* sound toggles and volume sliders (0x2013) */
 #define FRONTEND_PAGE_QUIT_CONFIRM 9
 #define FRONTEND_PAGE_FACTION_SETUP 11 /* FrontendTaskAssignmentPage_Initialize */
 #define FRONTEND_PAGE_MISSION_BRIEFING 12
@@ -79,6 +82,17 @@
 #define FRONTEND_ACTION_START_SELECTED_GAME 0x2038 /* gameSelectStartButton (FrontendScenarioSelection_ActivateSelectedRecord) */
 #define FRONTEND_ACTION_SELECT_SINGLE_GAME 0x203A /* missionsList */
 #define FRONTEND_ACTION_SELECT_CAMPAIGN 0x203B /* campaignsList */
+/* Settings pages (ui/frontend/settings) */
+#define FRONTEND_ACTION_SHADING_LEVEL 0x2015 /* the six shadingLevelGrid*Depth* choices */
+#define FRONTEND_ACTION_REVERSE_STEREO 0x201A /* reverseStereoCheckbox */
+#define FRONTEND_ACTION_EFFECTS_GAIN 0x201B /* effectsVolumeSlider */
+#define FRONTEND_ACTION_MOVIE_GAIN 0x201C /* movieVolumeSlider */
+#define FRONTEND_ACTION_MUSIC_GAIN 0x201D /* musicVolumeSlider */
+#define FRONTEND_ACTION_MOVIE_EVENT_GAIN 0x204E /* movieEventVolumeSlider */
+#define FRONTEND_ACTION_COLOR_DEPTH_OPTION1 0x201E /* displayColorDepthOption1..4: 0x201E..0x2021 */
+#define FRONTEND_ACTION_RESOLUTION_OPTION1 0x2022 /* displayResolutionOption1..10: 0x2022..0x202B */
+#define FRONTEND_ACTION_ADAPTER_OPTION1 0x202C /* displayAdapterOption1..5: 0x202C..0x2030 */
+#define FRONTEND_ACTION_APPLY_DISPLAY_MODE 0x2031 /* FrontendDisplaySettings_ApplyMode */
 /* g_FrontendNetworkState, dispatched by Frontend_StateTick (values 3..5 are set by network/protocol/transfer). */
 #define FRONTEND_NETWORK_STATE_IDLE 0
 #define FRONTEND_NETWORK_STATE_BROWSING 1 /* network game page: polls for sessions, handles join acks */
@@ -101,6 +115,9 @@
 #define TEXT_ID_MISSION_BRIEFING_TEMPLATE 0x219B /* combined with the level title */
 /* Host game setup page: networkSpeedLabel's caption id; the text for network speed n (1..7) is this + n. */
 #define TEXT_ID_NETWORK_SPEED_BASE 0x210D
+/* Display settings page: device name shown for an adapter without a 3D device (GRAPHICS_DEVICE_GUID_SOFTWARE,
+   the software rasterizer); FrontendUiAction2011_Handler. */
+#define TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME 0x212D
 
 /* g_FrontendRuntimeFlags bit set by Frontend_Init; cleared once every player has reported ready
    (FrontendPlayerRuntime_RecordReadyAndUpdateWaitState), which ends Frontend_Init's wait loop. */
@@ -266,7 +283,7 @@ FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode);
 
 /* 0x0054D3F0 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction200C_Handler(UiPointerListControl *sessionListControl);
+FrontendUiAction200C_Handler(UiPointerListControl *playerListControl);
 
 /* 0x0054D460 */
 void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source);
@@ -291,20 +308,20 @@ FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
 /* 0x005445A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2044_IndexedSelectionHelper
-          (FrontendIndexedSelectionArgument argument1,uint32_t argument2,uint32_t argument3,
-          FrontendFactionAssignmentIndex selectionIndex);
+          (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x00544640 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2045_IndexedSelectionHelper
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,
-          FrontendFactionAssignmentIndex selectionIndex);
+          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x005446A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2046_IndexedSelectionHelper
-          (FrontendIndexedSelectionArgument argument1,uint32_t argument2,uint32_t argument3,
-          FrontendFactionAssignmentIndex selectionIndex);
+          (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x00546190 */
 void __thandor_void_preserve_eax_ecx_edx

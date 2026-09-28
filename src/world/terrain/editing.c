@@ -64,14 +64,10 @@ TerrainRegionCollection_CollectConnectedCellsRecursive
 
 
 /* Address: 0x00561A10.
-   Ownership: world/terrain/editing.
-   Purpose: Clears the selected player material edit buffer, converts world coordinates to a field cell, captures
-   the original and replacement material bytes, marks the field dirty, and starts matching-region propagation. It
-   is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset
-   identifiers. Typed parameters: p4 worldYQ12→Q12, p5 worldXQ12→Q12. Nearby but non-identical semantic domains
-   were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: TerrainMaterialEdit_PropagateMatchingRegionReplacement.
+   Editor command INGAME_COMMAND_EDITOR_REPLACE_MATCHING (0x28E0; InGameUiCommand_* material mode, fill tool):
+   gives the connected region of cells that share the material of the clicked cell the replacement material.
+   The player's material edit plane is cleared first and receives old - new per changed cell, so
+   TerrainEditBuffer_CommitFlagsAndMaterialDeltas can undo the fill.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainMaterialEdit_SeedMatchingRegionReplacement
@@ -85,22 +81,23 @@ TerrainMaterialEdit_SeedMatchingRegionReplacement
   int countOrGridX;
   int gridY;
   uint32_t *editPlaneCursor;
-  
+
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
-  for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX = countOrGridX + -1) {
+  for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX--) {
     *editPlaneCursor = 0;
     editPlaneCursor = editPlaneCursor + 1;
   }
-  countOrGridX = worldXQ12 >> 0xc;
-  if ((((-1 < countOrGridX) && (gridY = worldYQ12 >> 0xc, -1 < gridY)) && (countOrGridX < (int)fieldGridAsset->gridWidth))
+  /* the caller passes grid coordinates in Q12 */
+  countOrGridX = worldXQ12 >> 12;
+  if ((((-1 < countOrGridX) && (gridY = worldYQ12 >> 12, -1 < gridY)) && (countOrGridX < (int)fieldGridAsset->gridWidth))
      && (gridY < (int)fieldGridAsset->gridHeight)) {
     referenceMaterial = fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + countOrGridX].flagsAndMaterial &
             FIELD_CELL_MATERIAL_ID_MASK;
     editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
     if (referenceMaterial != replacementMaterialByte) {
-      fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | 1;
+      fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
       g_TerrainMaterialEditReplacementMaterialByte = replacementMaterialByte;
       g_TerrainMaterialEditFieldGrid = fieldGridAsset;
       g_TerrainMaterialEditDeltaBuffer = editPlaneCursor;
@@ -113,14 +110,10 @@ TerrainMaterialEdit_SeedMatchingRegionReplacement
 
 
 /* Address: 0x00561AE0.
-   Ownership: world/terrain/editing.
-   Purpose: Clears the selected player material edit buffer, converts world coordinates to a field cell, records
-   the requested material byte, marks the field dirty, and starts propagation through connected non-target cells.
-   It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset
-   identifiers. Typed parameters: p4 worldYQ12→Q12, p5 worldXQ12→Q12. Nearby but non-identical semantic domains
-   were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: TerrainMaterialEdit_PropagateNonTargetRegionReplacement.
+   Editor command INGAME_COMMAND_EDITOR_REPLACE_NON_TARGET (0x29B0; material mode, second fill tool): gives
+   the connected region of cells that do not have referenceMaterialByte that material, i.e. fills up to the
+   borders made of it. Like the matching fill it clears the player's material edit plane and records the
+   undo deltas there.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainMaterialEdit_SeedNonTargetRegionReplacement
@@ -133,21 +126,22 @@ TerrainMaterialEdit_SeedNonTargetRegionReplacement
   int countOrGridX;
   int gridY;
   uint32_t *editPlaneCursor;
-  
+
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
-  for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX = countOrGridX + -1) {
+  for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX--) {
     *editPlaneCursor = 0;
     editPlaneCursor = editPlaneCursor + 1;
   }
-  countOrGridX = worldXQ12 >> 0xc;
-  if ((((-1 < countOrGridX) && (gridY = worldYQ12 >> 0xc, -1 < gridY)) && (countOrGridX < (int)fieldGridAsset->gridWidth))
+  /* the caller passes grid coordinates in Q12 */
+  countOrGridX = worldXQ12 >> 12;
+  if ((((-1 < countOrGridX) && (gridY = worldYQ12 >> 12, -1 < gridY)) && (countOrGridX < (int)fieldGridAsset->gridWidth))
      && (gridY < (int)fieldGridAsset->gridHeight)) {
     editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
     if ((fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + countOrGridX].flagsAndMaterial &
         FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
-      fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | 1;
+      fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
       g_TerrainMaterialEditReferenceMaterialByte = referenceMaterialByte;
       g_TerrainMaterialEditFieldGrid = fieldGridAsset;
       g_TerrainMaterialEditDeltaBuffer = editPlaneCursor;
@@ -159,11 +153,10 @@ TerrainMaterialEdit_SeedNonTargetRegionReplacement
 
 
 /* Address: 0x005616D0.
-   Ownership: world/terrain/editing.
-   Purpose: Commits per-cell terrain-height edit deltas from a player/runtime edit buffer into the FieldGrid and
-   recomputes affected triangle normals and directional lighting.
-   Cross-module calls: FieldGridCell_RecomputeTriangleNormalAngles [world/terrain/grid],
-   FieldGridCell_ComputeDirectionalLightColor [world/terrain/grid].
+   Editor command INGAME_COMMAND_EDITOR_COMMIT_HEIGHTS (0x25A0; U key in height mode): toggles the last height
+   edit. Each cell with a delta in the player's height plane is lowered by it (the water surface keeps its
+   level), the delta is negated so the next call redoes the edit, and the normals and lighting of the cell and
+   its lattice neighbours are recomputed. commandArg0 is the player runtime id.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
@@ -178,13 +171,13 @@ TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
   FieldGridCell *cell;
   FieldGridCell *fieldCell;
   int *heightDeltaCursor;
-  
+
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   heightDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainHeightScratchPlane8088;
   widthCells = fieldGridAsset->gridWidth;
   remainingCount = widthCells * fieldGridAsset->gridHeight;
-  fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | 1;
-  rowStrideBytes = widthCells * 0x80;
+  fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
+  rowStrideBytes = widthCells * 0x80; /* 0x80-byte FieldGridCell records */
   fieldCell = fieldGridAsset->cells;
   do {
     heightDelta = *heightDeltaCursor;
@@ -192,33 +185,36 @@ TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
       fieldCell->terrainHeight = fieldCell->terrainHeight - heightDelta;
       fieldCell->waterSurfaceDelta = fieldCell->waterSurfaceDelta + heightDelta;
       *heightDeltaCursor = -*heightDeltaCursor;
-      if ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
+      if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
         FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
         FieldGridCell_ComputeDirectionalLightColor(fieldCell);
-        if (((fieldCell[-1].flagsAndMaterial & 0x88006000) == 0) && (heightDeltaCursor[-1] == 0)) {
-          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + -1);
-          FieldGridCell_ComputeDirectionalLightColor(fieldCell + -1);
+        /* left and right neighbours; one with its own delta is refreshed on its own turn */
+        if (((fieldCell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (heightDeltaCursor[-1] == 0)) {
+          FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell - 1);
+          FieldGridCell_ComputeDirectionalLightColor(fieldCell - 1);
         }
-        if (((fieldCell[1].flagsAndMaterial & 0x88006000) == 0) && (heightDeltaCursor[1] == 0)) {
+        if (((fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) && (heightDeltaCursor[1] == 0)) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + 1);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell + 1);
         }
+        /* the two neighbours in the previous row (same column and the one to the right) */
         fieldCell = fieldCell + -widthCells;
-        if ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
+        if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell);
         }
-        if ((fieldCell[1].flagsAndMaterial & 0x88006000) == 0) {
+        if ((fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell + 1);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell + 1);
         }
+        /* the two neighbours in the next row (the one to the left and same column) */
         fieldCell = fieldCell + widthCells * 2 + -1;
-        if ((fieldCell->flagsAndMaterial & 0x88006000) == 0) {
+        if ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,fieldCell);
           FieldGridCell_ComputeDirectionalLightColor(fieldCell);
         }
         cell = fieldCell + 1;
-        if ((fieldCell[1].flagsAndMaterial & 0x88006000) == 0) {
+        if ((fieldCell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
           FieldGridCell_RecomputeTriangleNormalAngles(rowStrideBytes,cell);
           FieldGridCell_ComputeDirectionalLightColor(cell);
         }
@@ -227,17 +223,16 @@ TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
     }
     fieldCell = fieldCell + 1;
     heightDeltaCursor = heightDeltaCursor + 1;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
   return;
 }
 
 
 /* Address: 0x00561830.
-   Ownership: world/terrain/editing.
-   Purpose: Copies the low material byte from every 0x80-byte field cell into the selected player terrain-edit
-   buffer at runtime offset +0x808C. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player
-   identity, and PCK-backed asset identifiers.
+   Editor command INGAME_COMMAND_EDITOR_COPY_MATERIALS (0x2700; start of a material brush stroke): saves the
+   material byte of every cell in the player's material edit plane, so TerrainEditBuffer_SubtractCurrentCellMaterialBytes
+   can turn it into undo deltas when the stroke ends.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_CopyCellMaterialBytes
@@ -249,7 +244,7 @@ TerrainEditBuffer_CopyCellMaterialBytes
   int remainingCount;
   FieldGridCell *fieldCell;
   TerrainMaterialIndex *materialCursor;
-  
+
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   materialCursor = (TerrainMaterialIndex *)
            g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
@@ -259,16 +254,16 @@ TerrainEditBuffer_CopyCellMaterialBytes
     *materialCursor = fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
     fieldCell = fieldCell + 1;
     materialCursor = materialCursor + 1;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
   return;
 }
 
 
 /* Address: 0x00561930.
-   Ownership: world/terrain/editing.
-   Purpose: It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset
-   identifiers.
+   Editor command INGAME_COMMAND_EDITOR_SUBTRACT_MATERIALS (0x2800; end of a material brush stroke): subtracts
+   each cell's current material from the byte saved at the start of the stroke, leaving old - new per cell in
+   the player's material edit plane for TerrainEditBuffer_CommitFlagsAndMaterialDeltas (undo).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_SubtractCurrentCellMaterialBytes
@@ -280,7 +275,7 @@ TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   int remainingCount;
   FieldGridCell *fieldCell;
   uint32_t *materialDeltaCursor;
-  
+
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
@@ -289,16 +284,16 @@ TerrainEditBuffer_SubtractCurrentCellMaterialBytes
     *materialDeltaCursor = *materialDeltaCursor - (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK);
     fieldCell = fieldCell + 1;
     materialDeltaCursor = materialDeltaCursor + 1;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
   return;
 }
 
 
 /* Address: 0x005619A0.
-   Ownership: world/terrain/editing.
-   Purpose: Commits per-cell flags/material edit deltas from the corresponding player/runtime edit buffer into
-   FieldGridCell flags/material state.
+   Editor command INGAME_COMMAND_EDITOR_COMMIT_MATERIALS (0x2870; U key in material mode): toggles the last
+   material edit by adding the player's material deltas to the cells and negating them, so the next call
+   redoes the edit. commandArg0 is the player runtime id.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_CommitFlagsAndMaterialDeltas
@@ -309,10 +304,12 @@ TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   int remainingCount;
   FieldGridCell *fieldCell;
   uint32_t *materialDeltaCursor;
-  
+
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainMaterialEditPlane808C;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
+  /* The original ORs 1 into the dword 0x14C bytes before the field grid asset (OR [ESI-0x14C],1) instead of
+     its runtimeStateFlags at +0xB4, so the surface is not marked dirty here; kept as in the original. */
   *(uint32_t *)(fieldGridAsset[-1].sourcePath + 0x1a) = *(uint32_t *)(fieldGridAsset[-1].sourcePath + 0x1a) | 1;
   fieldCell = fieldGridAsset->cells;
   do {
@@ -320,17 +317,16 @@ TerrainEditBuffer_CommitFlagsAndMaterialDeltas
     *materialDeltaCursor = -*materialDeltaCursor;
     fieldCell = fieldCell + 1;
     materialDeltaCursor = materialDeltaCursor + 1;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
   return;
 }
 
 
 /* Address: 0x00561DC0.
-   Ownership: world/terrain/editing.
-   Purpose: Replaces each selected-player height-buffer value with fieldCell.terrainHeight minus the previous
-   buffer value. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed
-   asset identifiers.
+   Editor command INGAME_COMMAND_EDITOR_HEIGHTS_TO_DELTAS (0x2C90; end of a height brush stroke): replaces each
+   value of the player's height plane by the cell's terrain height minus that value, leaving the deltas that
+   TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting undoes.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_ConvertHeightsToDeltas
@@ -342,7 +338,7 @@ TerrainEditBuffer_ConvertHeightsToDeltas
   int remainingCount;
   FieldGridCell *fieldCell;
   int *heightCursor;
-  
+
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   heightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
@@ -351,7 +347,7 @@ TerrainEditBuffer_ConvertHeightsToDeltas
     *heightCursor = fieldCell->terrainHeight - *heightCursor;
     fieldCell = fieldCell + 1;
     heightCursor = heightCursor + 1;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
   return;
 }
@@ -395,11 +391,13 @@ TerrainRegionCollection_RecordConnectedCell
 
 
 /* Address: 0x00571600.
-   Ownership: world/terrain/editing.
-   Purpose: Recursively replaces a connected region whose material equals the captured original byte, updates the
-   paired delta buffer, and propagates through neighboring rows and columns. Typed parameters: p0
-   gridY→FieldGridCellCoordinate_V331, p1 gridX→FieldGridCellCoordinate_V331. Calling convention, parameter
-   storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Scanline flood fill of TerrainMaterialEdit_SeedMatchingRegionReplacement: from cell (gridY, gridX) gives
+   the run of cells whose material is g_TerrainMaterialEditReferenceMaterialByte the replacement material
+   (adding old - new to g_TerrainMaterialEditDeltaBuffer), then recurses into the previous row over the run's
+   columns and into the next row shifted one column left (triangular lattice neighbours).
+   The globals hold the field grid and the buffer as plain addresses, hence the raw offsets: +0xB8/+0xBC grid
+   width/height, +0x200 the 0x80-byte cells, cell +0x50 flagsAndMaterial (+0xD0 / -0x30: that of the next /
+   previous cell).
 */
 void __thandor_eax_preserve_ecx_edx
 TerrainMaterialEdit_PropagateMatchingRegionReplacement
@@ -415,7 +413,7 @@ TerrainMaterialEdit_PropagateMatchingRegionReplacement
   int *leftDeltaCursor;
   int *rightDeltaCursor;
   int spanStartColumn;
-  
+
   referenceMaterial = g_TerrainMaterialEditReferenceMaterialByte;
   if ((((-1 < gridY) && (-1 < gridX)) &&
       (widthOrColumn = *(int *)(g_TerrainMaterialEditFieldGrid + 0xb8),
@@ -423,28 +421,28 @@ TerrainMaterialEdit_PropagateMatchingRegionReplacement
     cellIndexOrColumn = gridY * widthOrColumn + gridX;
     rightDeltaCursor = (int *)(g_TerrainMaterialEditDeltaBuffer + cellIndexOrColumn * 4);
     cellIndexOrColumn = cellIndexOrColumn * 0x80 + 0x200 + g_TerrainMaterialEditFieldGrid;
-    cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0x50) & 0xff;
+    cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0x50) & FIELD_CELL_MATERIAL_ID_MASK;
     columnOrMaterialDelta = gridX;
     leftCellAddress = cellIndexOrColumn;
     leftDeltaCursor = rightDeltaCursor;
     if (g_TerrainMaterialEditReferenceMaterialByte == cellMaterial) {
+      /* the start cell and the matching cells to its left */
       do {
         spanStartColumn = columnOrMaterialDelta;
         columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
         *(int *)(leftCellAddress + 0x50) = *(int *)(leftCellAddress + 0x50) - columnOrMaterialDelta;
         *leftDeltaCursor = *leftDeltaCursor + columnOrMaterialDelta;
         if (spanStartColumn < 1) break;
-        cellMaterial = *(uint32_t *)(leftCellAddress + -0x30) & 0xff;
-        columnOrMaterialDelta = spanStartColumn + -1;
-        leftCellAddress = leftCellAddress + -0x80;
-        leftDeltaCursor = leftDeltaCursor + -1;
+        cellMaterial = *(uint32_t *)(leftCellAddress - 0x30) & FIELD_CELL_MATERIAL_ID_MASK;
+        columnOrMaterialDelta = spanStartColumn - 1;
+        leftCellAddress = leftCellAddress - 0x80;
+        leftDeltaCursor = leftDeltaCursor - 1;
       } while (referenceMaterial == cellMaterial);
-      LOCK();
-      UNLOCK();
+      /* the matching cells to its right; gridX ends one past the run */
       while( true ) {
         gridX = gridX + 1;
         rightDeltaCursor = rightDeltaCursor + 1;
-        if ((widthOrColumn <= gridX) || (cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0xd0) & 0xff, referenceMaterial != cellMaterial)) break;
+        if ((widthOrColumn <= gridX) || (cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0xd0) & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial != cellMaterial)) break;
         columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
         *(int *)(cellIndexOrColumn + 0xd0) = *(int *)(cellIndexOrColumn + 0xd0) - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
@@ -453,10 +451,10 @@ TerrainMaterialEdit_PropagateMatchingRegionReplacement
       widthOrColumn = spanStartColumn;
       do {
         cellIndexOrColumn = widthOrColumn + 1;
-        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + -1,widthOrColumn);
+        TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY - 1,widthOrColumn);
         widthOrColumn = cellIndexOrColumn;
       } while (cellIndexOrColumn <= gridX);
-      widthOrColumn = spanStartColumn + -1;
+      widthOrColumn = spanStartColumn - 1;
       do {
         cellIndexOrColumn = widthOrColumn + 1;
         TerrainMaterialEdit_PropagateMatchingRegionReplacement(gridY + 1,widthOrColumn);
@@ -469,11 +467,10 @@ TerrainMaterialEdit_PropagateMatchingRegionReplacement
 
 
 /* Address: 0x00571730.
-   Ownership: world/terrain/editing.
-   Purpose: Recursively replaces connected cells whose material differs from the requested target byte, updates the
-   paired delta buffer, and propagates through neighboring rows and columns. Typed parameters: p0
-   gridY→FieldGridCellCoordinate_V331, p1 gridX→FieldGridCellCoordinate_V331. Calling convention, parameter
-   storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Scanline flood fill of TerrainMaterialEdit_SeedNonTargetRegionReplacement: the same walk as
+   TerrainMaterialEdit_PropagateMatchingRegionReplacement, but over the cells whose material differs from
+   g_TerrainMaterialEditReferenceMaterialByte, which all receive that material (old - new goes to
+   g_TerrainMaterialEditDeltaBuffer).
 */
 void __thandor_eax_preserve_ecx_edx
 TerrainMaterialEdit_PropagateNonTargetRegionReplacement
@@ -489,7 +486,7 @@ TerrainMaterialEdit_PropagateNonTargetRegionReplacement
   int *leftDeltaCursor;
   int *rightDeltaCursor;
   int spanStartColumn;
-  
+
   referenceMaterial = g_TerrainMaterialEditReferenceMaterialByte;
   if ((((-1 < gridY) && (-1 < gridX)) &&
       (widthOrColumn = *(int *)(g_TerrainMaterialEditFieldGrid + 0xb8),
@@ -497,7 +494,7 @@ TerrainMaterialEdit_PropagateNonTargetRegionReplacement
     cellIndexOrColumn = gridY * widthOrColumn + gridX;
     rightDeltaCursor = (int *)(g_TerrainMaterialEditDeltaBuffer + cellIndexOrColumn * 4);
     cellIndexOrColumn = cellIndexOrColumn * 0x80 + 0x200 + g_TerrainMaterialEditFieldGrid;
-    cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0x50) & 0xff;
+    cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0x50) & FIELD_CELL_MATERIAL_ID_MASK;
     columnOrMaterialDelta = gridX;
     leftCellAddress = cellIndexOrColumn;
     leftDeltaCursor = rightDeltaCursor;
@@ -507,17 +504,15 @@ TerrainMaterialEdit_PropagateNonTargetRegionReplacement
         *(int *)(leftCellAddress + 0x50) = *(int *)(leftCellAddress + 0x50) - (cellMaterial - referenceMaterial);
         *leftDeltaCursor = *leftDeltaCursor + (cellMaterial - referenceMaterial);
         if (spanStartColumn < 1) break;
-        cellMaterial = *(uint32_t *)(leftCellAddress + -0x30) & 0xff;
-        columnOrMaterialDelta = spanStartColumn + -1;
-        leftCellAddress = leftCellAddress + -0x80;
-        leftDeltaCursor = leftDeltaCursor + -1;
+        cellMaterial = *(uint32_t *)(leftCellAddress - 0x30) & FIELD_CELL_MATERIAL_ID_MASK;
+        columnOrMaterialDelta = spanStartColumn - 1;
+        leftCellAddress = leftCellAddress - 0x80;
+        leftDeltaCursor = leftDeltaCursor - 1;
       } while (referenceMaterial != cellMaterial);
-      LOCK();
-      UNLOCK();
       while( true ) {
         gridX = gridX + 1;
         rightDeltaCursor = rightDeltaCursor + 1;
-        if ((widthOrColumn <= gridX) || (cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0xd0) & 0xff, referenceMaterial == cellMaterial)) break;
+        if ((widthOrColumn <= gridX) || (cellMaterial = *(uint32_t *)(cellIndexOrColumn + 0xd0) & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial == cellMaterial)) break;
         columnOrMaterialDelta = cellMaterial - referenceMaterial;
         *(int *)(cellIndexOrColumn + 0xd0) = *(int *)(cellIndexOrColumn + 0xd0) - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
@@ -526,10 +521,10 @@ TerrainMaterialEdit_PropagateNonTargetRegionReplacement
       widthOrColumn = spanStartColumn;
       do {
         cellIndexOrColumn = widthOrColumn + 1;
-        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + -1,widthOrColumn);
+        TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY - 1,widthOrColumn);
         widthOrColumn = cellIndexOrColumn;
       } while (cellIndexOrColumn <= gridX);
-      widthOrColumn = spanStartColumn + -1;
+      widthOrColumn = spanStartColumn - 1;
       do {
         cellIndexOrColumn = widthOrColumn + 1;
         TerrainMaterialEdit_PropagateNonTargetRegionReplacement(gridY + 1,widthOrColumn);

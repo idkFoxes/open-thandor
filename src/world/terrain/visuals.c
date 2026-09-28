@@ -769,28 +769,30 @@ void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void)
 
 
 /* Address: 0x00561EA0.
-   Ownership: world/terrain/visuals.
-   Purpose: Handles terrain lighting adjust direction and recompute field.
-   Cross-module calls: WorldRuntime_RecomputeFieldRegionNormalsAndLighting [world/runtime/core].
+   In-game command 0x2D70 (INGAME_COMMAND_EDITOR_TURN_LIGHT; issued by Ctrl editor hotkeys in
+   ui/ingame/runtime.c with steps of +-0x400): turns the terrain light and relights the field region. The
+   elevation (+0x17C of the world runtime, named fieldRegionOriginWorldYQ12_0BAC in the root) is kept between
+   -0x4000 (straight down) and -0x1000, the azimuth (+0x178, fieldRegionOriginWorldXQ12_0BA8) wraps around.
 */
 void __thandor_preserve_eax_edx
 TerrainLighting_AdjustDirectionAndRecomputeField
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
+          (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
+          uint32_t deltaAzimuthAngle)
 
 {
-  Q12 originWorldYQ12;
-  
-  originWorldYQ12 = commandArg2 + g_InGameRuntimeRoot->fieldRegionOriginWorldYQ12_0BAC;
-  if (-0x1000 < originWorldYQ12) {
-    originWorldYQ12 = -0x1000;
+  Q12 lightElevationAngle;
+
+  lightElevationAngle = deltaElevationAngle + g_InGameRuntimeRoot->fieldRegionOriginWorldYQ12_0BAC;
+  if (-0x1000 < lightElevationAngle) {
+    lightElevationAngle = -0x1000;
   }
-  if (originWorldYQ12 < -0x4000) {
-    originWorldYQ12 = -0x4000;
+  if (lightElevationAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+    lightElevationAngle = -FIXED_ANGLE16_QUARTER_TURN;
   }
   WorldRuntime_RecomputeFieldRegionNormalsAndLighting
             ((g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionHeight,
-             (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionWidth,originWorldYQ12,
-             commandArg3 + g_InGameRuntimeRoot->fieldRegionOriginWorldXQ12_0BA8 & 0xffff,
+             (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionWidth,lightElevationAngle,
+             deltaAzimuthAngle + g_InGameRuntimeRoot->fieldRegionOriginWorldXQ12_0BA8 & 0xffff,
              &g_InGameRuntimeRoot->worldRuntime0A30);
   return;
 }

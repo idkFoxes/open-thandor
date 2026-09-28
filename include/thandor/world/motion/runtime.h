@@ -22,6 +22,9 @@
 #define WORLD_CURSOR_SCROLL_DOWN_LEFT 0x34
 #define WORLD_CURSOR_SCROLL_LEFT 0x35
 #define WORLD_CURSOR_SCROLL_UP_LEFT 0x36
+/* Hard lower limit (0.25 in Q12) of the camera distance and position magnitude set by the WorldMotion_Adjust*
+   functions, applied after the configurable limits. */
+#define WORLD_MOTION_MINIMUM_DISTANCE_Q12 0x400
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0050D050 */

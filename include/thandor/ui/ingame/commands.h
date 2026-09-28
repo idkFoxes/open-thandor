@@ -75,6 +75,18 @@
 #define UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED 0x80 /* a command-mode click captured the pointer
                                                                  (InGameWorldInput_BeginPointerCapture); the
                                                                  release then issues the mode command */
+/* g_UiCommandModeG: active tab of the map editor (InGameCommandModeG_Select0..5, InGameUiImage.editorModeTab*);
+   the tools of each tab are g_UiCommandModeC (height), D (material), E (smoothing), A (unit placement) and
+   B (object placement). */
+#define EDITOR_MODE_TERRAIN_HEIGHT 0
+#define EDITOR_MODE_TERRAIN_MATERIAL 1
+#define EDITOR_MODE_TERRAIN_SMOOTHING 2
+#define EDITOR_MODE_UNIT_PLACEMENT 3
+#define EDITOR_MODE_OBJECT_PLACEMENT 4
+#define EDITOR_MODE_REGION 5
+/* Bit of the last argument of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState (command
+   INGAME_COMMAND_EDITOR_ACTIVE_STATE): set leaves the editor, clear enters it. */
+#define EDITOR_ACTIVE_STATE_LEAVE 0x04
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
@@ -266,7 +278,7 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
           GameEntityCommandFlags flags);
 
 /* 0x0056D980 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(void *visualState);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime);
 
 /* 0x0056DA50 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(WorldRuntimeContext *context);
@@ -306,7 +318,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(Wo
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context);
 
 /* 0x0056D9F0 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(void *visualState);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(void *worldRuntime);
 
 /* 0x0056DA70 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(WorldRuntimeContext *context);

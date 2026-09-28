@@ -77,20 +77,20 @@ TerrainGrid_RunDirectionalRelaxationPasses
 /* 0x005610A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyPositiveCellDeltas
-          (PlayerRuntimeId playerRuntimeId,Q12 anchorWorldYQ12,Q12 anchorWorldXQ12,
+          (PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
 /* 0x005613C0 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyNegativeCellDeltas
-          (PlayerRuntimeId playerRuntimeId,Q12 anchorWorldYQ12,Q12 anchorWorldXQ12,
+          (PlayerRuntimeId playerRuntimeId,Q12 anchorRowQ12,Q12 anchorColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
 /* 0x00561C10 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_RebuildLocalInfluenceState
           (PlayerRuntimeId playerRuntimeId,FieldGridCommandReservedValue reservedCommandValue,
-          Q12 worldYQ12,Q12 worldXQ12);
+          Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00505620 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -110,30 +110,30 @@ FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
 /* 0x005618A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyLocalCellUpdate
-          (PlayerRuntimeId playerRuntimeId,FieldGridTransitionValue transitionValue,Q12 worldYQ12,
-          Q12 worldXQ12);
+          (PlayerRuntimeId playerRuntimeId,FieldGridTransitionValue transitionValue,Q12 gridRowQ12,
+          Q12 gridColumnQ12);
 
 /* 0x00562390 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyEncodedCellUpdate
-          (PlayerRuntimeId playerRuntimeId,Q12 worldYQ12,Q12 worldXQ12,
+          (PlayerRuntimeId playerRuntimeId,Q12 gridRowQ12,Q12 gridColumnQ12,
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
 /* 0x005623D0 */
 void __thandor_preserve_eax
 FieldGrid_ApplyMaskDFFFFFFF
-          (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 worldYQ12,Q12 worldXQ12);
+          (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00562410 */
 void __thandor_preserve_eax
 FieldGrid_ApplyMaskBFFFFFFF
-          (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 worldYQ12,Q12 worldXQ12);
+          (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00562450 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyCallerMask
-          (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 worldYQ12,
-          Q12 worldXQ12);
+          (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 gridRowQ12,
+          Q12 gridColumnQ12);
 
 /* 0x004FEA80 */
 TerrainPointResult
@@ -186,7 +186,7 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
 /* 0x004FFB80 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FieldGrid_TestWorldPointBlocked
-          (FieldGridByteOffset stateByteOffset,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
+          (FieldGridByteOffset factionSlot,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           );
 
 /* 0x00503C90 */
@@ -226,7 +226,7 @@ FieldGrid_RaycastSecondarySurfaceDistance
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
-          Q12 rayOriginZQ12,Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
+          Q12 rayOriginZQ12,Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00505120 */
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid);
@@ -272,7 +272,7 @@ FieldGrid_ResetLocalInfluenceState
 /* 0x00571EC0 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyEncodedUpdateCore
-          (FieldGridHeightDeltaUnits heightDeltaUnits,Q12 worldYQ12,Q12 worldXQ12,
+          (FieldGridHeightDeltaUnits heightDeltaUnits,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x005058A0 */
@@ -301,26 +301,26 @@ TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid);
 /* 0x00571090 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ProcessHorizontalSpan
-          (Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
-          FieldGridRadiusUnits radiusUnits,Q12 centerWorldYQ12,Q12 centerWorldXQ12,
+          (Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldGridHeightDeltaUnits heightDeltaUnits,
+          FieldGridRadiusUnits radiusUnits,Q12 centerRowQ12,Q12 centerColumnQ12,
           FieldGridAccumulatorValue *accumulatorPlane,FieldGridAsset *fieldGrid);
 
 /* 0x00571250 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ProcessVerticalSpan
           (FieldGridHeightDeltaUnits heightDeltaUnits,FieldGridRadiusUnits radiusUnits,
-          Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAccumulatorValue *accumulatorPlane,
+          Q12 centerRowQ12,Q12 centerColumnQ12,FieldGridAccumulatorValue *accumulatorPlane,
           FieldGridAsset *fieldGrid);
 
 /* 0x005713E0 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplySingleCellTransition
-          (FieldGridTransitionValue transitionValue,Q12 worldYQ12,Q12 worldXQ12,
+          (FieldGridTransitionValue transitionValue,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x00571860 */
 void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyRectangularTransition(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
+FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FEA50 */
 FieldGridCoordinatesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx_mm0
@@ -329,7 +329,7 @@ FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX);
 /* 0x00571FE0 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyMaskedRegionCore
-          (FieldGridRegionMask preserveMask,FieldGridRegionMask setMask,Q12 worldYQ12,Q12 worldXQ12,
+          (FieldGridRegionMask preserveMask,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x005052E0 */

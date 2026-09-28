@@ -80,10 +80,9 @@ WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
 
 
 /* Address: 0x0050C7F0.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion translate current and target by input elevation and heading quarter turn.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Camera drag sideways (right-button drag of the model pointer context in camera scheme 0x8000,
+   ui/frontend/runtime.c): moves camera position and target together by screenDelta scaled with
+   k_CameraScreenDeltaDistanceScaleQ16 along the heading minus a quarter turn, at the elevation passed in EDX.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
@@ -92,9 +91,9 @@ WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
 {
   Q12 *coordinateField;
   FixedDirection translationDelta;
-  
+
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
-                    (elevationAngle,(worldRuntime->motion).headingAngle + 0xc000 & 0xffff,
+                    (elevationAngle,(worldRuntime->motion).headingAngle + FIXED_ANGLE16_THREE_QUARTER_TURN & 0xffff,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
   (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 + translationDelta.x;
   coordinateField = &(worldRuntime->motion).positionYQ12;
@@ -113,10 +112,10 @@ WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
 
 
 /* Address: 0x0050C850.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion translate current and target by pitch quarter turn.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Camera drag up/down (left+right-button drag of the model pointer context in camera scheme 0x8000,
+   ui/frontend/runtime.c): moves camera position and target together by the scaled screenDelta along the camera's
+   up direction (pitch minus a quarter turn; past straight down the direction is mirrored with the heading turned
+   by half a turn).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn
@@ -127,12 +126,12 @@ WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn
   AngleTurn32 azimuthAngle;
   AngleTurn32 elevationAngle;
   FixedDirection translationDelta;
-  
+
   azimuthAngle = (worldRuntime->motion).headingAngle;
-  elevationAngle = (worldRuntime->motion).pitchAngle - 0x4000;
-  if ((int)elevationAngle < -0x4000) {
-    elevationAngle = -(worldRuntime->motion).pitchAngle - 0x4000;
-    azimuthAngle = azimuthAngle + 0x8000 & 0xffff;
+  elevationAngle = (worldRuntime->motion).pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
+  if ((int)elevationAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+    elevationAngle = -(worldRuntime->motion).pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
+    azimuthAngle = azimuthAngle + FIXED_ANGLE16_HALF_TURN & 0xffff;
   }
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
                     (elevationAngle,azimuthAngle,screenDelta * _k_CameraScreenDeltaDistanceScaleQ16)
@@ -154,10 +153,9 @@ WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn
 
 
 /* Address: 0x0050C8C0.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion translate current and target by negated pitch reverse heading.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Camera drag forward/back (right-button drag of the model pointer context in camera scheme 0x8000, together with
+   the sideways move; ui/frontend/runtime.c): moves camera position and target together by the scaled
+   screenDelta against the viewing direction (negated pitch, heading plus half a turn).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
@@ -166,10 +164,10 @@ WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
 {
   Q12 *coordinateField;
   FixedDirection translationDelta;
-  
+
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
                     (-(worldRuntime->motion).pitchAngle,
-                     (worldRuntime->motion).headingAngle + 0x8000 & 0xffff,
+                     (worldRuntime->motion).headingAngle + FIXED_ANGLE16_HALF_TURN & 0xffff,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
   (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 + translationDelta.x;
   coordinateField = &(worldRuntime->motion).positionYQ12;
@@ -188,10 +186,9 @@ WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
 
 
 /* Address: 0x0050C920.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion adjust heading and recompute position.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Orbits the camera around its target (right-button drag of the model pointer context in camera schemes 0x100 and
+   0x200, ui/frontend/runtime.c): turns the heading by headingDeltaInput * g_WorldMotionHeadingInputScale and puts
+   the camera back at targetDistanceQ12 from the unchanged target.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotion_AdjustHeadingAndRecomputePosition
@@ -216,9 +213,9 @@ WorldMotion_AdjustHeadingAndRecomputePosition
 
 
 /* Address: 0x0050C990.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion adjust heading and clear field grid dirty.
-   Cross-module calls: WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Turns the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
+   ui/frontend/runtime.c): changes only the heading, in the opposite sense of
+   WorldMotion_AdjustHeadingAndRecomputePosition; position and target stay.
 */
 void __thandor_void_preserve_eax_ecx
 WorldMotion_AdjustHeadingAndClearFieldGridDirty
@@ -234,10 +231,10 @@ WorldMotion_AdjustHeadingAndClearFieldGridDirty
 
 
 /* Address: 0x0050C9C0.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion adjust distance clamp and recompute position.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Camera zoom (mouse wheel and camera drags of the model pointer context, ui/frontend/runtime.c): changes
+   the camera distance by distanceDeltaInput * g_WorldMotionDistanceInputScaleQ12, clamps it to the world's camera
+   distance range (with WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA only with flag 0x200, to the alternate range) and to at
+   least WORLD_MOTION_MINIMUM_DISTANCE_Q12, and puts the camera at that distance from its target.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotion_AdjustDistanceClampAndRecomputePosition
@@ -247,11 +244,11 @@ WorldMotion_AdjustDistanceClampAndRecomputePosition
   UQ12 requestedDistanceQ12;
   UQ12 clampedDistanceQ12;
   FixedDirection cameraOffset;
-  
+
   requestedDistanceQ12 = distanceDeltaInput * g_WorldMotionDistanceInputScaleQ12 +
           (worldRuntime->motion).committedDistanceQ12;
   clampedDistanceQ12 = requestedDistanceQ12;
-  if ((worldRuntime->runtimeFlags & 0x40000) == 0) {
+  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)worldRuntime->maximumCameraDistanceQ12 < (int)requestedDistanceQ12) {
       clampedDistanceQ12 = worldRuntime->maximumCameraDistanceQ12;
     }
@@ -265,8 +262,8 @@ WorldMotion_AdjustDistanceClampAndRecomputePosition
           (clampedDistanceQ12 = requestedDistanceQ12, (int)requestedDistanceQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
     clampedDistanceQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
   }
-  if ((int)clampedDistanceQ12 < 0x400) {
-    clampedDistanceQ12 = 0x400;
+  if ((int)clampedDistanceQ12 < WORLD_MOTION_MINIMUM_DISTANCE_Q12) {
+    clampedDistanceQ12 = WORLD_MOTION_MINIMUM_DISTANCE_Q12;
   }
   (worldRuntime->motion).targetDistanceQ12 = clampedDistanceQ12;
   (worldRuntime->motion).committedDistanceQ12 = clampedDistanceQ12;
@@ -281,9 +278,9 @@ WorldMotion_AdjustDistanceClampAndRecomputePosition
 
 
 /* Address: 0x0050CA80.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion adjust position magnitude clamp.
-   Cross-module calls: WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Ctrl + left+right-button drag of the model pointer context in camera scheme 0x8000 (ui/frontend/runtime.c):
+   changes positionMagnitudeQ12 against magnitudeDeltaInput with the same clamps as
+   WorldMotion_AdjustDistanceClampAndRecomputePosition, without moving the camera.
 */
 void __thandor_void_preserve_eax_ecx
 WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeContext *worldRuntime)
@@ -291,11 +288,11 @@ WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeCon
 {
   UQ12 requestedMagnitudeQ12;
   UQ12 clampedMagnitudeQ12;
-  
+
   requestedMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12 -
           magnitudeDeltaInput * g_WorldMotionPositionMagnitudeInputScaleQ12;
   clampedMagnitudeQ12 = requestedMagnitudeQ12;
-  if ((worldRuntime->runtimeFlags & 0x40000) == 0) {
+  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)worldRuntime->maximumCameraDistanceQ12 < (int)requestedMagnitudeQ12) {
       clampedMagnitudeQ12 = worldRuntime->maximumCameraDistanceQ12;
     }
@@ -309,8 +306,8 @@ WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeCon
           (clampedMagnitudeQ12 = requestedMagnitudeQ12, (int)requestedMagnitudeQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
     clampedMagnitudeQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
   }
-  if ((int)clampedMagnitudeQ12 < 0x400) {
-    clampedMagnitudeQ12 = 0x400;
+  if ((int)clampedMagnitudeQ12 < WORLD_MOTION_MINIMUM_DISTANCE_Q12) {
+    clampedMagnitudeQ12 = WORLD_MOTION_MINIMUM_DISTANCE_Q12;
   }
   (worldRuntime->motion).positionMagnitudeQ12 = clampedMagnitudeQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
@@ -319,10 +316,10 @@ WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRuntimeCon
 
 
 /* Address: 0x0050CB10.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion adjust pitch clamp and recompute position.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Camera tilt around its target (Ctrl + mouse wheel and camera drags of the model pointer context,
+   ui/frontend/runtime.c): changes the pitch by pitchDeltaInput * g_WorldMotionPitchInputScale, clamps it like
+   the distance in WorldMotion_AdjustDistanceClampAndRecomputePosition (world pitch range or, unlimited with flag
+   0x200, the alternate range) and always to +-a quarter turn, and puts the camera back around the target.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotion_AdjustPitchClampAndRecomputePosition
@@ -332,10 +329,10 @@ WorldMotion_AdjustPitchClampAndRecomputePosition
   AngleTurn32 requestedPitchAngle;
   AngleTurn32 clampedPitchAngle;
   FixedDirection cameraOffset;
-  
+
   requestedPitchAngle = (worldRuntime->motion).pitchAngle + pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
-  if ((worldRuntime->runtimeFlags & 0x40000) == 0) {
+  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)(worldRuntime->motion).maximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = (worldRuntime->motion).maximumPitchAngle;
     }
@@ -349,13 +346,13 @@ WorldMotion_AdjustPitchClampAndRecomputePosition
           (clampedPitchAngle = requestedPitchAngle, (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
     clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
   }
-  if ((int)clampedPitchAngle < 0x4001) {
-    if ((int)clampedPitchAngle < -0x4000) {
-      clampedPitchAngle = 0xffffc000;
+  if ((int)clampedPitchAngle < FIXED_ANGLE16_QUARTER_TURN + 1) {
+    if ((int)clampedPitchAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+      clampedPitchAngle = -FIXED_ANGLE16_QUARTER_TURN;
     }
   }
   else {
-    clampedPitchAngle = 0x4000;
+    clampedPitchAngle = FIXED_ANGLE16_QUARTER_TURN;
   }
   (worldRuntime->motion).pitchAngle = clampedPitchAngle;
   cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
@@ -370,9 +367,9 @@ WorldMotion_AdjustPitchClampAndRecomputePosition
 
 
 /* Address: 0x0050CBE0.
-   Ownership: world/motion/runtime.
-   Purpose: Handles world motion adjust pitch clamp and clear field grid dirty.
-   Cross-module calls: WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Tilts the camera in place (Ctrl + right-button drag of the model pointer context in camera scheme 0x8000,
+   ui/frontend/runtime.c): changes only the pitch, in the opposite sense of
+   WorldMotion_AdjustPitchClampAndRecomputePosition and with the same clamps; position and target stay.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotion_AdjustPitchClampAndClearFieldGridDirty
@@ -381,10 +378,10 @@ WorldMotion_AdjustPitchClampAndClearFieldGridDirty
 {
   AngleTurn32 requestedPitchAngle;
   AngleTurn32 clampedPitchAngle;
-  
+
   requestedPitchAngle = (worldRuntime->motion).pitchAngle - pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
-  if ((worldRuntime->runtimeFlags & 0x40000) == 0) {
+  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)(worldRuntime->motion).maximumPitchAngle < (int)requestedPitchAngle) {
       clampedPitchAngle = (worldRuntime->motion).maximumPitchAngle;
     }
@@ -398,13 +395,13 @@ WorldMotion_AdjustPitchClampAndClearFieldGridDirty
           (clampedPitchAngle = requestedPitchAngle, (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
     clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
   }
-  if ((int)clampedPitchAngle < 0x4001) {
-    if ((int)clampedPitchAngle < -0x4000) {
-      clampedPitchAngle = 0xffffc000;
+  if ((int)clampedPitchAngle < FIXED_ANGLE16_QUARTER_TURN + 1) {
+    if ((int)clampedPitchAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+      clampedPitchAngle = -FIXED_ANGLE16_QUARTER_TURN;
     }
   }
   else {
-    clampedPitchAngle = 0x4000;
+    clampedPitchAngle = FIXED_ANGLE16_QUARTER_TURN;
   }
   (worldRuntime->motion).pitchAngle = clampedPitchAngle;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);

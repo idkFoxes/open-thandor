@@ -12,16 +12,11 @@
 /* Implementation ownership: ui/ingame/runtime. */
 
 /* Address: 0x0056E3C0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Handles in game ui root keyboard fallback dispatch command by code and modifier flags carry-flag
-   result.
-   Local calls: InGameUiCommand_SaveFieldAndLevelAssetImages,
-   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState, InGameSelectionDetailPanel_Rebuild.
-   Cross-module calls: UiPageStack_ActivePageNotInList [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], UiContainer_LayoutChildren [ui/controls/layout],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting [world/terrain/editing],
-   TerrainEditBuffer_CommitFlagsAndMaterialDeltas [world/terrain/editing].
+   Keyboard handler of the map editor (installed as g_UiRootCallbacks_0054FBC0.keyboardFallback by
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState while the editor is active): looks the key up in
+   g_InGameKeyboardDispatchRecords and runs the matching hotkey - tool and tab selection, cycling materials and
+   placement armies, moving the field origin or the light direction, saving the map, screenshots and leaving
+   the editor. Editor commands go through the command queue in network games.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
@@ -50,8 +45,9 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
   FatalErrorCheckResult hoverRecordResult;
   FramebufferCaptureResult capturedFramebuffer;
   
-  /* Records are {key code, required modifier mask, handler}; a zero mask matches only while no modifier in
-     0x3C is held. The table ends with a zero key code. */
+  /* Records are {key code, required modifier mask, handler}; a zero mask matches only while neither Ctrl
+     nor Alt is held. The table ends with a zero key code. The cases below are the original handler
+     addresses stored in the records. */
   for (dispatchRecord = (uint32_t *)THANDOR_ADDR(g_InGameKeyboardDispatchRecords,0); ;
       dispatchRecord = dispatchRecord + 3) {
     if (*dispatchRecord == 0) {
@@ -59,20 +55,19 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
     }
     if (*dispatchRecord != keyboardEventCode) continue;
     if (dispatchRecord[1] == 0) {
-      if ((keyboardStateMask & 0x3c) == 0) break;
+      if ((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0) break;
     }
     else if ((keyboardStateMask & dispatchRecord[1]) != 0) break;
   }
-                    // WARNING: Switch is manually overridden
   switch(dispatchRecord[2]) {
-  case 0x56e5e0:
+  case 0x56e5e0: /* Alt+I: show or hide the side panel */
     stack = (struct UiNodeVtable * *)INGAME_UI(uiRoot,sidePanelStack);
     pageNotInListResult = UiPageStack_ActivePageNotInList((UiPageStackControl *)stack);
     if (pageNotInListResult.pageIndex == 0) {
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)stack);
       UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,resourceBarModeStack));
       UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,gamePanelsModeStack));
-      INGAME_UI_FIELD(uiRoot,worldViewArea,0x28,struct UiNodeVtable *) = (UiNodeVtable *)0x0;
+      INGAME_UI_FIELD(uiRoot,worldViewArea,0x28,struct UiNodeVtable *) = NULL;
       UiContainer_LayoutChildren(&uiRoot->base);
     }
     else {
@@ -83,67 +78,70 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       UiContainer_LayoutChildren(&uiRoot->base);
     }
     break;
-  case 0x56e670:
+  case 0x56e670: /* Ctrl+I: next of the info texts 0x112..0x117 in the world view */
     counterField = &INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,int32_t);
     *counterField = *counterField + 1;
     if (0x117 < (uint32_t)INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,int32_t)) {
       INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,int32_t) = 0x112;
     }
     break;
-  case 0x56e6a0:
+  case 0x56e6a0: /* F2: save the map */
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameUiCommand_SaveFieldAndLevelAssetImages(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x31c0,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_SAVE_MAP,0,0,0);
     }
     break;
-  case 0x56e6e0:
+  case 0x56e6e0: /* Alt+E: leave the editor */
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,4);
+      InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,
+                                                                  EDITOR_ACTIVE_STATE_LEAVE);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x18c0,0,0,4);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_ACTIVE_STATE,0,0,
+                                                  EDITOR_ACTIVE_STATE_LEAVE);
     }
     break;
-  case 0x56e720:
-    if (g_UiCommandModeG == 0) {
+  case 0x56e720: /* U / Alt+U: commit the height or material edits */
+    if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_HEIGHT) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x25a0,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_COMMIT_HEIGHTS,0,0,0);
       }
     }
-    else if (g_UiCommandModeG == 1) {
+    else if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         TerrainEditBuffer_CommitFlagsAndMaterialDeltas(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2870,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_COMMIT_MATERIALS,0,0,0);
       }
     }
     break;
-  case 0x56e7c0:
-    if ((keyboardStateMask & 0xf) == 0) {
-      if (g_UiCommandModeG == 1) {
+  case 0x56e7c0: /* Left: previous material / army; Ctrl: turn the light, Shift: move the field origin */
+    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+      if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
+        /* previous material that has a texture set, wrapping around */
         materialIndex = g_UiCommandAbsoluteSelectionIndex - 1;
         if ((int)materialIndex < 0) {
-          materialIndex = 0x19;
+          materialIndex = TERRAIN_MATERIAL_COUNT - 1;
         }
-        while (g_TerrainMaterialTextureSets[materialIndex] == (GraphicsTextureSet *)0x0) {
+        while (g_TerrainMaterialTextureSets[materialIndex] == NULL) {
           materialIndex = materialIndex - 1;
           if ((int)materialIndex < 0) {
-            materialIndex = 0x19;
+            materialIndex = TERRAIN_MATERIAL_COUNT - 1;
           }
         }
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
-      else if (g_UiCommandModeG == 3) {
+      else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
         previousModeGArmy = ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped
                            (g_UiCommandModeGArmyAssetId);
         g_UiCommandModeGArmyAssetId = previousModeGArmy.armyAssetId;
@@ -155,7 +153,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
-      else if (g_UiCommandModeG == 4) {
+      else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
         previousMode4Army = ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped
                            (g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = previousMode4Army.armyAssetId;
@@ -164,42 +162,42 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       }
     }
     else {
-      if ((keyboardStateMask & 0xc) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           TerrainLighting_AdjustDirectionAndRecomputeField(g_LocalPlayerRuntimeId,0,0,0xfffffc00);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d70,0,0,0xfffffc00);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_LIGHT,0,0,0xfffffc00);
         }
       }
-      if ((keyboardStateMask & 3) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,0,-0x400);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d00,0,0,0xfffffc00);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,0,0xfffffc00);
         }
       }
     }
     break;
-  case 0x56e930:
-    if ((keyboardStateMask & 0xf) == 0) {
-      if (g_UiCommandModeG == 1) {
+  case 0x56e930: /* Right: next material / army; Ctrl: turn the light, Shift: move the field origin */
+    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+      if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         materialIndex = g_UiCommandAbsoluteSelectionIndex + 1;
-        if (0x19 < materialIndex) {
+        if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex) {
           materialIndex = 0;
         }
-        while (g_TerrainMaterialTextureSets[materialIndex] == (GraphicsTextureSet *)0x0) {
+        while (g_TerrainMaterialTextureSets[materialIndex] == NULL) {
           materialIndex = materialIndex + 1;
-          if (0x19 < materialIndex) {
+          if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex) {
             materialIndex = 0;
           }
         }
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
-      else if (g_UiCommandModeG == 3) {
+      else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
         nextModeGArmy = ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(g_UiCommandModeGArmyAssetId)
         ;
         g_UiCommandModeGArmyAssetId = nextModeGArmy.armyAssetId;
@@ -211,7 +209,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
-      else if (g_UiCommandModeG == 4) {
+      else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
         nextMode4Army = ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = nextMode4Army.armyAssetId;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
@@ -219,44 +217,44 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       }
     }
     else {
-      if ((keyboardStateMask & 0xc) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           TerrainLighting_AdjustDirectionAndRecomputeField(g_LocalPlayerRuntimeId,0,0,0x400);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d70,0,0,0x400);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_LIGHT,0,0,0x400);
         }
       }
-      if ((keyboardStateMask & 3) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,0,0x400);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d00,0,0,0x400);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,0,0x400);
         }
       }
     }
     break;
-  case 0x56eaa0:
-    if ((keyboardStateMask & 0xf) == 0) {
-      if (g_UiCommandModeG == 1) {
+  case 0x56eaa0: /* Up: third material back / step the army list; Ctrl: light, Shift: field origin */
+    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+      if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         materialIndex = g_UiCommandAbsoluteSelectionIndex - 1;
         remainingSteps = 3;
         if ((int)materialIndex < 0) {
-          materialIndex = 0x19;
+          materialIndex = TERRAIN_MATERIAL_COUNT - 1;
         }
-        while ((g_TerrainMaterialTextureSets[materialIndex] == (GraphicsTextureSet *)0x0 ||
+        while ((g_TerrainMaterialTextureSets[materialIndex] == NULL ||
                (remainingSteps = remainingSteps + -1, remainingSteps != 0))) {
           materialIndex = materialIndex - 1;
           if ((int)materialIndex < 0) {
-            materialIndex = 0x19;
+            materialIndex = TERRAIN_MATERIAL_COUNT - 1;
           }
         }
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
-      else if (g_UiCommandModeG == 3) {
+      else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
         steppedForwardModeGArmy = ArmyAssetRegistry_StepForwardFlag0100Without0200(g_UiCommandModeGArmyAssetId);
         g_UiCommandModeGArmyAssetId = steppedForwardModeGArmy.armyAssetId;
         modeGPreviewTexture = (UiNodeVtable *)
@@ -267,7 +265,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
-      else if (g_UiCommandModeG == 4) {
+      else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
         steppedForwardMode4Army = ArmyAssetRegistry_StepForwardFlags0100And0200(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = steppedForwardMode4Army.armyAssetId;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
@@ -275,44 +273,44 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       }
     }
     else {
-      if ((keyboardStateMask & 0xc) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           TerrainLighting_AdjustDirectionAndRecomputeField(g_LocalPlayerRuntimeId,0,0xfffffc00,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d70,0,0xfffffc00,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_LIGHT,0,0xfffffc00,0);
         }
       }
-      if ((keyboardStateMask & 3) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,-0x400,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d00,0,0xfffffc00,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,0xfffffc00,0);
         }
       }
     }
     break;
-  case 0x56ec10:
-    if ((keyboardStateMask & 0xf) == 0) {
-      if (g_UiCommandModeG == 1) {
+  case 0x56ec10: /* Down: third material ahead / step the army list; Ctrl: light, Shift: field origin */
+    if ((keyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
+      if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
         materialIndex = g_UiCommandAbsoluteSelectionIndex + 1;
         remainingSteps = 3;
-        if (0x19 < materialIndex) {
+        if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex) {
           materialIndex = 0;
         }
-        while ((g_TerrainMaterialTextureSets[materialIndex] == (GraphicsTextureSet *)0x0 ||
+        while ((g_TerrainMaterialTextureSets[materialIndex] == NULL ||
                (remainingSteps = remainingSteps + -1, remainingSteps != 0))) {
           materialIndex = materialIndex + 1;
-          if (0x19 < materialIndex) {
+          if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex) {
             materialIndex = 0;
           }
         }
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
-      else if (g_UiCommandModeG == 3) {
+      else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
         steppedBackwardModeGArmy = ArmyAssetRegistry_StepBackwardFlag0100Without0200(g_UiCommandModeGArmyAssetId);
         g_UiCommandModeGArmyAssetId = steppedBackwardModeGArmy.armyAssetId;
         modeGPreviewTexture = (UiNodeVtable *)
@@ -323,7 +321,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
-      else if (g_UiCommandModeG == 4) {
+      else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
         steppedBackwardMode4Army = ArmyAssetRegistry_StepBackwardFlags0100And0200(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = steppedBackwardMode4Army.armyAssetId;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
@@ -331,28 +329,28 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       }
     }
     else {
-      if ((keyboardStateMask & 0xc) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           TerrainLighting_AdjustDirectionAndRecomputeField(g_LocalPlayerRuntimeId,0,0x400,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d70,0,0x400,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_LIGHT,0,0x400,0);
         }
       }
-      if ((keyboardStateMask & 3) != 0) {
+      if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,0x400,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2d00,0,0x400,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,0x400,0);
         }
       }
     }
     break;
-  case 0x56ed80:
-    if (g_UiCommandModeG == 3) {
+  case 0x56ed80: /* Page Up: next owner faction for unit placement */
+    if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
       g_UiCommandModeGOwnerFactionIndex = g_UiCommandModeGOwnerFactionIndex + 1;
       if (g_GameFactionRuntimeImage.tail.activeFactionCount <
           (uint32_t)g_UiCommandModeGOwnerFactionIndex) {
@@ -361,29 +359,30 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uint32_t)uiRoot);
     }
     break;
-  case 0x56edc0:
-    if (g_UiCommandModeG == 3) {
-      g_UiCommandModeGOwnerFactionIndex = g_UiCommandModeGOwnerFactionIndex + -1;
+  case 0x56edc0: /* Page Down: previous owner faction for unit placement */
+    if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
+      g_UiCommandModeGOwnerFactionIndex = g_UiCommandModeGOwnerFactionIndex - 1;
       if (g_UiCommandModeGOwnerFactionIndex == 0) {
         g_UiCommandModeGOwnerFactionIndex = g_GameFactionRuntimeImage.tail.activeFactionCount;
       }
       ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uint32_t)uiRoot);
     }
     break;
-  case 0x56ee00:
+  /* Letter keys: editor tab and tool */
+  case 0x56ee00: /* A */
     InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
     InGameCommandModeC_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption0));
     break;
-  case 0x56ee20:
+  case 0x56ee20: /* H */
     InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
     InGameCommandModeC_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption1));
     break;
-  case 0x56ee40:
+  case 0x56ee40: /* G */
     InGameCommandModeG_Select0((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainHeight));
     InGameCommandModeC_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption2));
     break;
-  case 0x56ee60:
-    if (g_UiCommandModeG == 1) {
+  case 0x56ee60: /* S */
+    if (g_UiCommandModeG == EDITOR_MODE_TERRAIN_MATERIAL) {
       InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
       InGameCommandModeD_Select3((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption3));
     }
@@ -392,40 +391,40 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameCommandModeC_Select3((UiSpriteButtonControl *)INGAME_UI(uiRoot,heightToolOption3));
     }
     break;
-  case 0x56eeb0:
+  case 0x56eeb0: /* P */
     InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
     InGameCommandModeD_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption0));
     break;
-  case 0x56eed0:
+  case 0x56eed0: /* F */
     InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
     InGameCommandModeD_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption1));
     break;
-  case 0x56eef0:
+  case 0x56eef0: /* T */
     InGameCommandModeG_Select1((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainMaterial));
     InGameCommandModeD_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,materialToolOption2));
     break;
-  case 0x56ef10:
+  case 0x56ef10: /* W */
     InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
     InGameCommandModeE_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,smoothingToolOption0));
     break;
-  case 0x56ef30:
+  case 0x56ef30: /* Q */
     InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
     InGameCommandModeE_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,smoothingToolOption1));
     break;
-  case 0x56ef50:
+  case 0x56ef50: /* Y */
     InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
     InGameCommandModeE_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,smoothingToolOption2));
     break;
-  case 0x56ef70:
+  case 0x56ef70: /* C */
     InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
     InGameCommandRange_DispatchState0((UiNodeBase *)INGAME_UI(uiRoot,smoothingRelaxGatedButton));
     break;
-  case 0x56ef90:
+  case 0x56ef90: /* D */
     InGameCommandModeG_Select2((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabTerrainSmoothing));
     InGameCommandRange_DispatchState1(INGAME_UI(uiRoot,smoothingRelaxLandButton));
     break;
-  case 0x56efb0:
-    if (g_UiCommandModeG == 4) {
+  case 0x56efb0: /* N */
+    if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
       InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
       InGameCommandModeB_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption0));
     }
@@ -438,8 +437,8 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
-  case 0x56f020:
-    if (g_UiCommandModeG == 4) {
+  case 0x56f020: /* L */
+    if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
       InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
       InGameCommandModeB_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption1));
     }
@@ -452,8 +451,8 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
-  case 0x56f090:
-    if (g_UiCommandModeG == 4) {
+  case 0x56f090: /* V */
+    if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
       InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
       InGameCommandModeB_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,objectPlacementOption2));
     }
@@ -466,16 +465,16 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       InGameSelectionDetailPanel_Rebuild();
     }
     break;
-  case 0x56f100:
+  case 0x56f100: /* E */
     InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
     break;
-  case 0x56f120:
+  case 0x56f120: /* B */
     InGameCommandModeG_Select4((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabObjectPlacement));
     break;
-  case 0x56f140:
+  case 0x56f140: /* R */
     InGameCommandModeG_Select5((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabRegion));
     break;
-  case 0x56f160:
+  case 0x56f160: /* Ctrl+P: screenshot to screenNN.pcx, counting the two digits up */
     /* The original calls this without pushing arguments (stale stack, RET 0x10); capture the whole
        framebuffer like the end-game and end-movie screenshot commands. */
     capturedFramebuffer = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
@@ -495,20 +494,22 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       }
     }
     break;
-  case 0x56f1c0:
+  case 0x56f1c0: /* Alt+Q: leave the editor and the session */
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,4);
+      InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,
+                                                                  EDITOR_ACTIVE_STATE_LEAVE);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x18c0,0,0,4);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_ACTIVE_STATE,0,0,
+                                                  EDITOR_ACTIVE_STATE_LEAVE);
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameCommand150_HandlePlayerDepartureAndOwnership(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x150,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_DEPARTURE,0,0,0);
     }
   }
   return;
@@ -516,11 +517,9 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 
 
 /* Address: 0x0056BAD0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Calls UiAction1004_SubmitSevenSlotCommand and then UiAction1002_CloseCommandPage for the same source
-   node. Queued UI action handler for INGAME_PAGE10[5] (0x1005). Return datatype is preserved for non-queue direct
-   callers.
-   Local calls: InGameSevenSlotCommand_SubmitTextAndSelectionMask, InGameSevenSlotCommand_ClosePage.
+   UI action 0x1005 (g_InGameUiActionHandlersPage10[5], InGameUiImage.messageSendAndCloseButton): sends the
+   typed message to the chosen recipients (InGameSevenSlotCommand_SubmitTextAndSelectionMask) and closes the
+   message window.
 */
 void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
 
@@ -531,46 +530,43 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
 }
 
 /* Address: 0x0056A610.
-   Ownership: ui/ingame/runtime.
-   Purpose: Recovered action-table target INGAME_PAGE10[36] (0x1024).
-   Local calls: InGameRecentTextHistory_InsertAndRebuild8.
-   Cross-module calls: UiTextControl_UpdateNonEmptyValidity [ui/controls/text],
-   RichTextCommandStream_CopyToNarrow [assets/text/richtext], UiSelectableGroup_NoneVisibleSelected
-   [ui/controls/lists], UiSelectableControl_IsSelected [ui/controls/lists],
-   FrontendPlayerTextCommand_SetPackedState [ui/frontend/player], InGameCommandQueue_AppendLocalPlayerCommand
-   [network/protocol/commands].
+   UI action 0x1024 (g_InGameUiActionHandlersPage10[36]): Enter in the in-game chat line. In a local game the
+   line is only compared with the cheat phrase g_DeveloperChatPhraseUtf16, which toggles the cheats and answers
+   with a message. In a network game the text is sent to the recipients chosen in the message window (all, the
+   ticked factions or the ticked session players) and the line is cleared. Either way the command page closes.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
 
 {
-  int remainingDwords;
+  int countOrTabOffset;
   uint32_t slotIndex;
-  CommandPayloadDword04 packedState;
+  CommandPayloadDword04 recipientMask;
   uint32_t slotBit;
-  int *phraseCursor;
+  int *dwordCursor;
   uint16_t *textCursor;
   bool isMatch;
   SelectableGroupNodeResult visibleSelection;
-  
+
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)commandTextEdit);
   if ((commandTextEdit->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      remainingDwords = 0x10;
+      /* REPE CMPSD over the 32 UTF-16 units of the cheat phrase */
+      countOrTabOffset = 0x10;
       isMatch = true;
-      phraseCursor = (int *)THANDOR_ADDR(g_DeveloperChatPhraseUtf16,0);
+      dwordCursor = (int *)THANDOR_ADDR(g_DeveloperChatPhraseUtf16,0);
       textCursor = commandTextEdit->textBuffer;
       do {
-        if (remainingDwords == 0) break;
-        remainingDwords = remainingDwords + -1;
-        isMatch = *phraseCursor == *(int *)textCursor;
-        phraseCursor = phraseCursor + 1;
+        if (countOrTabOffset == 0) break;
+        countOrTabOffset = countOrTabOffset + -1;
+        isMatch = *dwordCursor == *(int *)textCursor;
+        dwordCursor = dwordCursor + 1;
         textCursor = textCursor + 2;
       } while (isMatch);
       if (isMatch) {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ 0x40000;
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x80000;
+        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED;
+        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x80000; /* no reader of this bit found */
         InGameRecentTextHistory_InsertAndRebuild8((uint16_t *)u_Hmmm__na_gut________0056321e);
       }
     }
@@ -581,46 +577,50 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientAllTab),
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientGroupsTab),
       THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientPlayersTab));
-      remainingDwords = (int)visibleSelection.node - (int)commandTextEdit;
-      if (remainingDwords == 0x1dd4) {
+      /* Recipient mask: bit 9+n when box n of the faction tab is ticked (messageRecipientPlayersTab,
+         +0x1DD4 from the chat line), bit 16+n for box n of the session player tab
+         (messageRecipientGroupsTab, +0x1E34), 0xFFFFFF00 for everyone. The seven check boxes sit at
+         g_UiSevenSlotSelectionControlOffsets from the root, i.e. -0xB0 from the chat line. */
+      countOrTabOffset = (int)visibleSelection.node - (int)commandTextEdit;
+      if (countOrTabOffset == 0x1dd4) {
         slotIndex = 0;
-        packedState = 0;
+        recipientMask = 0;
         slotBit = 0x100;
         do {
-          phraseCursor = g_UiSevenSlotSelectionControlOffsets + slotIndex;
+          dwordCursor = g_UiSevenSlotSelectionControlOffsets + slotIndex;
           slotBit = slotBit * 2;
           slotIndex = slotIndex + 1;
           isMatch = (bool)UiSelectableControl_IsSelected
-                                  ((UiSelectableControl *)(*phraseCursor + -0xb0 + (int)commandTextEdit));
+                                  ((UiSelectableControl *)(*dwordCursor + -0xb0 + (int)commandTextEdit));
           if (isMatch) {
-            packedState = packedState | slotBit;
+            recipientMask = recipientMask | slotBit;
           }
         } while (slotIndex < 7);
       }
-      else if (remainingDwords == 0x1e34) {
+      else if (countOrTabOffset == 0x1e34) {
         slotIndex = 0;
-        packedState = 0;
+        recipientMask = 0;
         slotBit = 0x8000;
         do {
-          phraseCursor = g_UiSevenSlotSelectionControlOffsets + slotIndex;
+          dwordCursor = g_UiSevenSlotSelectionControlOffsets + slotIndex;
           slotBit = slotBit * 2;
           slotIndex = slotIndex + 1;
           isMatch = (bool)UiSelectableControl_IsSelected
-                                  ((UiSelectableControl *)(*phraseCursor + -0xb0 + (int)commandTextEdit));
+                                  ((UiSelectableControl *)(*dwordCursor + -0xb0 + (int)commandTextEdit));
           if (isMatch) {
-            packedState = packedState | slotBit;
+            recipientMask = recipientMask | slotBit;
           }
         } while (slotIndex < 7);
       }
       else {
-        packedState = 0xffffff00;
+        recipientMask = 0xffffff00;
       }
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerTextCommand_SetPackedState(g_LocalPlayerRuntimeId,0,0,packedState);
+        FrontendPlayerTextCommand_SetPackedState(g_LocalPlayerRuntimeId,0,0,recipientMask);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(6000,0,0,packedState);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CHAT_SET_RECIPIENTS,0,0,recipientMask);
       }
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -631,7 +631,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x17a0,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
+                  (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
                    g_UiSevenSlotCommandPayloadText.triples[0].payloadDword08,
                    g_UiSevenSlotCommandPayloadText.triples[0].payloadDword04);
       }
@@ -644,7 +644,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x17a0,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
+                  (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
                    g_UiSevenSlotCommandPayloadText.triples[1].payloadDword08,
                    g_UiSevenSlotCommandPayloadText.triples[1].payloadDword04);
       }
@@ -657,7 +657,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x17a0,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
+                  (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
                    g_UiSevenSlotCommandPayloadText.triples[2].payloadDword08,
                    g_UiSevenSlotCommandPayloadText.triples[2].payloadDword04);
       }
@@ -670,7 +670,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x17a0,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
+                  (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
                    g_UiSevenSlotCommandPayloadText.triples[3].payloadDword08,
                    g_UiSevenSlotCommandPayloadText.triples[3].payloadDword04);
       }
@@ -679,13 +679,13 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
         FrontendPlayerTextCommand_PublishConditionalRichText(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x1810,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CHAT_PUBLISH,0,0,0);
       }
       commandTextEdit->cursorIndex = 0;
       commandTextEdit->selectionStart = 0;
       commandTextEdit->selectionEnd = 0;
       textCursor = commandTextEdit->textBuffer;
-      for (remainingDwords = 0x18; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      for (countOrTabOffset = 0x18; countOrTabOffset != 0; countOrTabOffset = countOrTabOffset + -1) {
         textCursor[0] = 0;
         textCursor[1] = 0;
         textCursor = textCursor + 2;
@@ -698,17 +698,15 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
 
 
 /* Address: 0x0050ECE0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Carry-flag success/failure semantics are preserved in the comment rather than fabricated as an ordinary
-   return.
-   Cross-module calls: GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid [gameplay/faction/runtime],
-   ResourceRegistration_OpenSource [assets/resource/runtime], WidePath_SplitParentAndLeaf [core/text/path],
-   ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs [gameplay/army/runtime], Package_UpsertEntry
-   [assets/package/runtime], ArmyRuntimePool_RebaseAfterLoad [gameplay/army/runtime].
+   Writes a save game (called by InGameSaveGame_SaveSelectedOrTypedName with the world view): opens or creates
+   the package at savePath (creating its directory if needed) and stores every runtime segment as a
+   Huffman/RLE entry - army, modul, shot, effect, widget, light, field, level, daten, campagne (deleted without
+   a campaign), stat and oldunit (deleted when empty). Pointer-holding images are converted to offsets for
+   writing and rebased afterwards. Finally the 0x200-byte package header gets the save name, date and time
+   and the level title and campaign index. Returns true (CF set) on failure; the busy count is raised meanwhile.
 */
-
 bool __thandor_cf_preserve_eax_ecx_edx
-InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath)
+InGameUiAction1210_ResourceRegistrationHelper(void *worldView,void *savePath)
 
 {
   uint16_t *timeTextDestination;
@@ -735,21 +733,22 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   ResourceRegistrationImagePair domainImagePair;
   uint32_t upsertFailed;
   
-  g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + '\x01';
+  g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + 1;
+  /* first hand every player's pending army asset back to its faction */
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   for (remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount; remainingPlayerBlocks != 0; remainingPlayerBlocks = remainingPlayerBlocks - 1) {
     GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
               (playerBlock->playerRuntimeId,0,0,(playerBlock->factionAssignment).factionAssignmentIndex);
     playerBlock = playerBlock + 1;
   }
-  upsertStatus = ResourceRegistration_OpenSource(resourcePath);
+  upsertStatus = ResourceRegistration_OpenSource(savePath);
   handle = (void *)upsertStatus.valueOrError;
   if (upsertStatus.failed) {
-    WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),resourcePath);
+    WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),savePath);
     upsertStatus = g_FileSystemCreateDirectoryRecursive
                       (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
     if (upsertStatus.failed) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-    upsertStatus = ResourceRegistration_OpenSource(resourcePath);
+    upsertStatus = ResourceRegistration_OpenSource(savePath);
     handle = (void *)upsertStatus.valueOrError;
     if (upsertStatus.failed) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   }
@@ -783,12 +782,12 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   EffectRuntime_RebaseSlotsAfterLoad();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  domainImagePair = ResourceRegistration_SelectDomainPair(runtimeBase);
+  domainImagePair = ResourceRegistration_SelectDomainPair(worldView);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_widget_hex_0050e02a,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
-  ResourceRegistrationRuntime_RebaseLoadedRecords(runtimeBase);
+  ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   pointerImage = RuntimeHexSegment_GetLightImageAndToggleFlagRegs();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 0x20),
@@ -796,15 +795,15 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   RuntimeHexSegment_ToggleLightImageFlag();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  domainImagePair = RuntimeHexSegment_GetFieldImageRegs(runtimeBase);
+  domainImagePair = RuntimeHexSegment_GetFieldImageRegs(worldView);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_field_hex_0050e002,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
-  RuntimeHexSegment_AfterFieldImageNoOp(runtimeBase);
+  RuntimeHexSegment_AfterFieldImageNoOp(worldView);
   sourceData = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  ResourceRegistration_ResolveRuntimeRecord(runtimeBase);
+  ResourceRegistration_ResolveRuntimeRecord(worldView);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (sourceData->levelImage).header.resourceTables.
                               runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)sourceData
@@ -817,7 +816,7 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   GameFactionRuntime_RebaseLoadedArmyReferences();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  if (g_FrontendLoadedCampaignAsset == (uint32_t *)0x0) {
+  if (g_FrontendLoadedCampaignAsset == 0) {
     Package_DeleteEntry((uint16_t *)u_campagne_hex_0050e068,(EngineFileHandle)handle);
   }
   else {
@@ -870,44 +869,46 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle);
   if ((!seekResult.failed) &&
      (readResult = g_FileSystemReadExact(0x200,destination,handle), !readResult.failed)){
+    /* Header fields: +0x100 save name (file name of savePath; the directory lands behind the header),
+       +0x170 level title text id, +0x190 campaign index (-1 without campaign), +0x1C0 "date, time" text,
+       +0x1F0 packed date, +0x1F4 packed time. */
     WidePath_SplitParentAndLeaf
-              ((uint16_t *)(destination + 0x100),(uint16_t *)(destination + 0x200),resourcePath);
+              ((uint16_t *)(destination + 0x100),(uint16_t *)(destination + 0x200),savePath);
     localeValue = g_LocaleGetPackedCurrentDate();
     *(uint32_t *)(destination + 0x1f0) = localeValue;
     localeValue = g_LocaleGetPackedCurrentTime();
-    *(uint32_t *)(destination + 500) = localeValue;
+    *(uint32_t *)(destination + 0x1f4) = localeValue;
     localeValue = g_LocaleFormatCurrentDateUtf16((uint16_t *)(destination + 0x1c0));
     timeTextDestination = (uint16_t *)(localeValue + 4 + (int)(destination + 0x1c0));
-    timeTextDestination[-2] = 0x2c; /* ", " between date and time */
-    timeTextDestination[-1] = 0x20;
+    timeTextDestination[-2] = L','; /* ", " between date and time */
+    timeTextDestination[-1] = L' ';
     g_LocaleFormatCurrentTimeUtf16(timeTextDestination);
     localeValue = g_InGameLevelCampaignAssociationIndex;
-    if (g_FrontendLoadedCampaignAsset == (uint32_t *)0x0) {
+    if (g_FrontendLoadedCampaignAsset == 0) {
       localeValue = 0xffffffff;
     }
-    headerDwords[0x5c] = g_InGameLevelTitleTextResourceIndex;
-    headerDwords[100] = localeValue;
+    headerDwords[0x170 / 4] = g_InGameLevelTitleTextResourceIndex;
+    headerDwords[0x190 / 4] = localeValue;
     seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,handle);
     if ((!seekResult.failed) &&
        (writeResult = g_FileSystemWriteExactOrFlush(0x200,headerDwords,handle), !writeResult.failed)){
       Package_Unmount((EngineFileHandle)handle);
-      g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
+      g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount - 1;
       return false;
     }
   }
 InGameResourceRegistration_DecrementBusyCountAndReturn:
-  g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + -1;
+  g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount - 1;
   return true;
 }
 
 
 /* Address: 0x0053D9F0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Binary entry is anchored by g_UiActionPage10InitializedHandlers[0]@005624A0. Queued UI action handler
-   for INGAME_PAGE10[0] (0x1000). Return datatype is preserved for non-queue direct callers. Typed parameters: p0
-   mapControl→InGameMapViewControlAddress32_V345. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView,
+   root+0x9A1C). Latches the clicked grid
+   cell (+0x68/+0x6C into +0x50/+0x54), converts it to world coordinates and moves both camera points of the
+   world runtime (which lies 0x8FEC bytes before the map control) by the distance to the new centre, then clears
+   the field grid dirty flag.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
@@ -920,6 +921,7 @@ InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 ma
   yComponent = *(int *)(mapControl + 0x6c);
   *(int *)(mapControl + 0x50) = *(int *)(mapControl + 0x68);
   *(int *)(mapControl + 0x54) = yComponent;
+  /* isometric grid to world: x = (2*gx + gy) * 0x901 / 2^13, y = gy * -1999 / 2^12 (64-bit products) */
   scaledProduct = (int64_t)(yComponent + *(int *)(mapControl + 0x68) * 2) * 0x901;
   xDelta = ((int)((uint64_t)scaledProduct >> 0x20) << 0x13 | (uint32_t)scaledProduct >> 0xd) -
           *(int *)(mapControl + -0x8f6c);
@@ -3706,10 +3708,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *
 
 
 /* Address: 0x0056AD00.
-   Ownership: ui/ingame/runtime.
-   Purpose: Recovered action-table target INGAME_PAGE10[28] (0x101C).
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists],
-   UiSelectableGroup_NoneVisibleSelected [ui/controls/lists], UiPageStack_SetActiveIndex [ui/controls/layout].
+   UI action 0x101C (g_InGameUiActionHandlersPage10[28]): one of the three chart tabs of the results screen
+   (resultsTabThird / Economy / Military) was clicked. Selects it exclusively and shows the chart page of the
+   selected tab.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
@@ -3719,11 +3720,12 @@ InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
   int parentNodeAddress;
   void *rootNodeCursor;
   
+  /* climb to the UI root (parent -1) */
   parentNodeAddress = (int)(selectableControl->base).parent;
   rootNodeCursor = selectableControl;
   while (parentNodeAddress != -1) {
     rootNodeCursor = (((UiSelectableControl *)rootNodeCursor)->base).parent;
-    parentNodeAddress = *(int *)((int)rootNodeCursor + 8);
+    parentNodeAddress = *(int *)((int)rootNodeCursor + 8); /* ->parent */
   }
   UiSelectableGroup_SelectExclusive(3,&selectableControl->base,
       INGAME_UI(rootNodeCursor,resultsTabThird),
@@ -3741,14 +3743,10 @@ InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
 
 
 /* Address: 0x0056AD80.
-   Ownership: ui/ingame/runtime.
-   Purpose: Handles numeric action 0x1012 for one of seven fixed variant-A controls. It resolves the control
-   through g_UiAction1012ControlOffsets, loads the corresponding runtime payload, and chooses a backend operation
-   from activationInputState bits. Queued UI action handler for INGAME_PAGE10[18] (0x1012). Return datatype is
-   preserved for non-queue direct callers.
-   Cross-module calls: GameFactionRuntime_AdvancePairwiseRelationState [gameplay/faction/runtime],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   GameFactionRuntime_ResetPairwiseRelationState [gameplay/faction/runtime].
+   UI action 0x1012 (g_InGameUiActionHandlersPage10[18]): one of the seven relation buttons of the diplomacy
+   rows. Finds the button's row through g_UiAction1012ControlOffsets and advances the relation of the local
+   faction towards that row's faction (g_UiAction1012TargetPlayerIndices), or resets it when the activation
+   carries UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK. Ignored while paused or with world input disabled.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control)
@@ -3759,11 +3757,12 @@ InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *co
   CommandPayloadDword08 payloadDword08;
   GraphicsTextureSourceAsset *rootFactionValue;
   int slotIndex;
-  
-  if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
+
+  if ((g_UiCommandRuntimeFlags &
+       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
     ancestorParent = (control->sprite).selectable.base.parent;
     rootControl = control;
-    while (ancestorParent != (UiNodeBase *)0xffffffff) {
+    while (ancestorParent != UI_NODE_NONE) {
       rootControl = (UiCommandSpriteButtonControl *)(rootControl->sprite).selectable.base.parent;
       ancestorParent = (rootControl->sprite).selectable.base.parent;
     }
@@ -3775,6 +3774,8 @@ InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *co
       }
     }
     payloadDword08 = g_UiAction1012TargetPlayerIndices[slotIndex];
+    /* rootControl[0x15].sprite.primaryTextureSource is root+0xA80, the activeFactionRuntimeIndex of the
+       world runtime at root+0xA30: the local faction */
     if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0) {
       rootFactionValue = rootControl[0x15].sprite.primaryTextureSource;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -3784,7 +3785,7 @@ InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *co
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x660,0,payloadDword08,(CommandPayloadDword04)rootFactionValue);
+                  (INGAME_COMMAND_ADVANCE_RELATION,0,payloadDword08,(CommandPayloadDword04)rootFactionValue);
       }
     }
     else {
@@ -3796,7 +3797,7 @@ InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *co
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x7e0,0,payloadDword08,(CommandPayloadDword04)rootFactionValue);
+                  (INGAME_COMMAND_RESET_RELATION,0,payloadDword08,(CommandPayloadDword04)rootFactionValue);
       }
     }
   }
@@ -3860,15 +3861,11 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
 
 
 /* Address: 0x0056B5D0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Finds the UI root, initializes the three selection-mode controls, selects subpage 0, populates up to
-   seven fixed controls from active player slots, updates labels and visibility, recomputes the scroll extent, and
-   hides unused controls. Queued UI action handler for INGAME_PAGE10[6] (0x1006). Return datatype is preserved for
-   non-queue direct callers.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], UiScrollableControl_RebuildViewportAndScrollbars [ui/controls/lists],
-   UiScrollableControl_ClampOffsetsToViewport [ui/controls/lists].
+   UI action 0x1006 (g_InGameUiActionHandlersPage10[6]): the recipient tab InGameUiImage.messageRecipientPlayersTab
+   of the message window. Selects the tab, shows the check box page and gives one check box to each faction
+   still in the game (factions 1..7),
+   labelled with the faction name (label texts 0x216D.. patched with name text 0x2173 + name index); the list
+   is sized to the used rows and the unused check boxes are hidden.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
@@ -3887,7 +3884,7 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   
   ancestorParent = source->parent;
   uiRootNode = source;
-  while (ancestorParent != (UiNodeBase *)0xffffffff) {
+  while (ancestorParent != UI_NODE_NONE) {
     uiRootNode = uiRootNode->parent;
     ancestorParent = uiRootNode->parent;
   }
@@ -3899,6 +3896,7 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   resourceId = 0x216d;
   filledSlotCount = 0;
   factionIndexCursor = 1;
+  /* faction records are 0x740 bytes; +0x38 is the faction's name index */
   factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexCursor] != 0) {
@@ -3906,8 +3904,9 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
       stream = resolvedText.text;
       factionNameIndex = *(int *)(factionRecordAddress + 0x38);
       resourceId = resourceId + 1;
+      /* nodeFlags of the check box: g_UiSevenSlotSelectionControlOffsets is relative to the root */
       controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
-      *controlFlags = *controlFlags & 0xfffffff7;
+      *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       filledSlotCount = filledSlotCount + 1;
       resolvedText = TextResource_Resolve(factionNameIndex + 0x2173);
       RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,stream);
@@ -3915,29 +3914,23 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
     factionIndexCursor = factionIndexCursor + 1;
     factionRecordAddress = factionRecordAddress + 0x740;
   } while (factionIndexCursor < 8);
-  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 0x18;
+  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
   UiScrollableControl_RebuildViewportAndScrollbars
             ((UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   UiScrollableControl_ClampOffsetsToViewport
             (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   for (; filledSlotCount < 7; filledSlotCount = filledSlotCount + 1) {
     controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
-    *controlFlags = *controlFlags | 8;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   }
   return;
 }
 
 
 /* Address: 0x0056B6E0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Finds the UI root, initializes the same selection controls, selects subpage 0, populates up to seven
-   fixed controls from the runtime record catalog, updates localized labels and visibility, recomputes the scroll
-   extent, and hides unused controls. Queued UI action handler for INGAME_PAGE10[7] (0x1007). Return datatype is
-   preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], UiScrollableControl_RebuildViewportAndScrollbars [ui/controls/lists],
-   UiScrollableControl_ClampOffsetsToViewport [ui/controls/lists].
+   UI action 0x1007 (g_InGameUiActionHandlersPage10[7]): the recipient tab InGameUiImage.messageRecipientGroupsTab
+   of the message window. Like action 0x1006, but gives one check box to each of the first seven session
+   players (g_FrontendPlayerRuntimeBlocks), labelled with the player name from the player's selection block.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
@@ -3953,7 +3946,7 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
   
   ancestorParent = source->parent;
   uiRootNode = source;
-  while (ancestorParent != (UiNodeBase *)0xffffffff) {
+  while (ancestorParent != UI_NODE_NONE) {
     uiRootNode = uiRootNode->parent;
     ancestorParent = uiRootNode->parent;
   }
@@ -3970,42 +3963,39 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
              [g_FrontendPlayerRuntimeBlocks[filledSlotCount].playerRuntimeId];
     resourceId = resourceId + 1;
     controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
-    *controlFlags = *controlFlags & 0xfffffff7;
+    *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
     filledSlotCount = filledSlotCount + 1;
+    /* +0x80F0 of the selection block: the player name */
     RichTextCommandStream_PatchPayloadBySelector(0,selectionBlock->reserved80B0_8117 + 0x40,resolvedText.text);
     if (6 < filledSlotCount) break;
   } while (filledSlotCount < g_FrontendPlayerRuntimeBlockCount);
-  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 0x18;
+  INGAME_UI(uiRootNode,messageRecipientList)->bottomOffset = filledSlotCount * 24; /* 24-pixel rows */
   UiScrollableControl_RebuildViewportAndScrollbars
             ((UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   UiScrollableControl_ClampOffsetsToViewport
             (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   for (; filledSlotCount < 7; filledSlotCount = filledSlotCount + 1) {
     controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
-    *controlFlags = *controlFlags | 8;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
   }
   return;
 }
 
 
 /* Address: 0x0056B7E0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Finds the UI root, initializes the three selection-mode controls, and selects subpage 1 in the page
-   stack at root+0x1FA4. Queued UI action handler for INGAME_PAGE10[8] (0x1008). Return datatype is preserved for
-   non-queue direct callers.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout].
+   UI action 0x1008 (g_InGameUiActionHandlersPage10[8]): the recipient tab InGameUiImage.messageRecipientAllTab
+   of the message window (send to everyone). Selects the tab and shows page 1 of the recipient page stack,
+   which has no check boxes.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNodeBase *source)
 
 {
-  int selectionGroupAddress;
   UiNodeBase *parentNode;
   UiNodeBase *rootNodeCursor;
-  
+
   parentNode = source->parent;
   rootNodeCursor = source;
-  while (parentNode != (UiNodeBase *)0xffffffff) {
+  while (parentNode != UI_NODE_NONE) {
     rootNodeCursor = rootNodeCursor->parent;
     parentNode = rootNodeCursor->parent;
   }
@@ -4019,12 +4009,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNode
 
 
 /* Address: 0x0056D500.
-   Ownership: ui/ingame/runtime.
-   Purpose: Removes the oldest serial-tagged recent-text entries until the displayed count is reduced to three,
-   then sorts the shared eight slots and rebuilds the caller's index list with capacity eight. Queued UI action
-   handler for INGAME_PAGE10[15] (0x100F). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: RecentTextHistory_RemoveOldest [ui/support/runtime],
-   RecentTextHistory_SortAndBuildPointerList [ui/support/runtime].
+   UI action 0x100F (g_InGameUiActionHandlersPage10[15], InGameUiImage.messageHistoryPanel): a click on the
+   message lines drops the oldest ones so that at most three remain - and always at least one, even when
+   three or fewer are shown - then rebuilds the eight-line list.
 */
 void __thandor_void_preserve_eax_ecx
 InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
@@ -4043,15 +4030,11 @@ InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
 
 
 /* Address: 0x0056F7F0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Typed parameters: p0 pointerRegionCode→UiPointerRegionCode_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p4 armyRuntimeUnderPointer→ArmyRuntimeSlot *. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime],
-   ArmyRuntimeNode_DispatchTypedCallback [gameplay/army/runtime], ArmyRuntime_DestroyInstanceAndRefreshUi
-   [gameplay/army/runtime].
+   Map editor pointer callback (installed as both selection.resolveContextAction*Callback of the world
+   runtime by InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState): returns the cursor frame for the
+   active editor tab and tool. For placing, a temporary army instance is created at the pointer and tested
+   with ArmyRuntimeNode_DispatchTypedCallback to show whether it fits; with an army already picked up the
+   picked army is tested instead.
 */
 uint32_t InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,
@@ -4064,13 +4047,13 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
   bool callbackAccepted;
   ArmyRuntimeCreateResult previewArmyRuntime;
   
-  if ((armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) &&
+  if ((armyRuntimeUnderPointer != NULL) &&
      (armyRuntimeUnderPointer->runtimeStateA4 != 0)) {
-    armyRuntimeUnderPointer = (ArmyRuntimeSlot *)0x0;
+    armyRuntimeUnderPointer = NULL;
   }
-                    // WARNING: Switch is manually overridden
+  /* The values are cursor frames of the editor tools (0x15..0x24). */
   switch(g_UiCommandModeG) {
-  case 0:
+  case EDITOR_MODE_TERRAIN_HEIGHT:
     if (g_UiCommandModeC == 0) {
       return 0x1c;
     }
@@ -4081,7 +4064,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
       return 0x20;
     }
     break;
-  case 1:
+  case EDITOR_MODE_TERRAIN_MATERIAL:
     if (g_UiCommandModeD != 3) {
       if (g_UiCommandModeD == 1) {
         return 0x24;
@@ -4092,7 +4075,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
       return 0x22;
     }
     break;
-  case 2:
+  case EDITOR_MODE_TERRAIN_SMOOTHING:
     if (g_UiCommandModeE == 0) {
       return 0x1d;
     }
@@ -4100,17 +4083,19 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
       return 0x1f;
     }
     return 0x22;
-  case 3:
-  case 4:
-    /* Mode 3 uses sub-mode A, mode 4 sub-mode B; the rest is shared. */
-    if (g_UiCommandModeG == 3) {
+  case EDITOR_MODE_UNIT_PLACEMENT:
+  case EDITOR_MODE_OBJECT_PLACEMENT:
+    /* Mode 3 uses sub-mode A, mode 4 sub-mode B; the rest is shared. The preview instance below is
+       created from the unit-placement army (g_UiCommandModeGArmyAssetId) in object placement too, as in
+       the original. Sub-mode 0 places, 1 deletes, 2 moves. */
+    if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
       cursorCodeOrSubMode = g_UiCommandModeA;
     }
     else {
       cursorCodeOrSubMode = g_UiCommandModeB;
     }
     if (cursorCodeOrSubMode == 0) {
-      if (pointerRegionCode == 0x7fffffff) {
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return 0x18;
       }
       localSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
@@ -4132,7 +4117,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
     }
     else {
       if (cursorCodeOrSubMode == 1) {
-        if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
+        if (armyRuntimeUnderPointer != NULL) {
           return 0x19;
         }
         return 0x1a;
@@ -4140,7 +4125,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
       localSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
       cursorCodeOrSubMode = 0x15;
       if (localSelectionBlock->primarySelectionEntityOffset8094 == 0) {
-        if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
+        if (armyRuntimeUnderPointer != NULL) {
           return 0x15;
         }
         return 0x16;
@@ -4154,7 +4139,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
       return cursorCodeOrSubMode + 1;
     }
     return cursorCodeOrSubMode;
-  case 5:
+  case EDITOR_MODE_REGION:
     return 0x21;
   }
   return 0;
@@ -4162,16 +4147,11 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
 
 
 /* Address: 0x0056FA70.
-   Ownership: ui/ingame/runtime.
-   Purpose: Typed parameters: p0 pointerRegionCode→UiPointerRegionCode_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p4 armyRuntimeUnderPointer→ArmyRuntimeSlot *. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p5 mapControl→WorldRuntimeExtendedMapControlAddress32_V345.
-   Cross-module calls: FieldGrid_GetNearestTerrainPoint [world/terrain/grid], FieldGrid_ClearPlayerScratchPlane
-   [world/terrain/grid], InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   FieldGrid_ResetLocalInfluenceState [world/terrain/grid], TerrainMaterialEdit_SeedMatchingRegionReplacement
-   [world/terrain/editing], TerrainMaterialEdit_SeedNonTargetRegionReplacement [world/terrain/editing].
+   Map editor pointer press (selection.beginPointerCaptureCallback of the world runtime while the editor is
+   active): starts the action of the active tab and tool - anchors a height or smoothing drag at the grid
+   point under the pointer, seeds a material replacement, samples the fluid or region flag the drag will
+   toggle, places, deletes or picks up an army, or (other tools) starts a rectangle selection. Editor
+   commands go through the command queue in network games.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_BeginInteractionByMode
@@ -4192,22 +4172,23 @@ InGameUiCommand_BeginInteractionByMode
   int cellY;
   TerrainPointResult nearestTerrainPoint;
   
-  if ((armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) &&
+  if ((armyRuntimeUnderPointer != NULL) &&
      (armyRuntimeUnderPointer->runtimeStateA4 != 0)) {
-    armyRuntimeUnderPointer = (ArmyRuntimeSlot *)0x0;
+    armyRuntimeUnderPointer = NULL;
   }
-                    // WARNING: Switch is manually overridden
   switch(g_UiCommandModeG) {
-  case 0:
+  case EDITOR_MODE_TERRAIN_HEIGHT:
     if (g_UiCommandModeC == 0) {
-      mapControl->runtimeFlags = mapControl->runtimeFlags & 0xffefffff;
-      if (pointerRegionCode == 0x7fffffff) {
-        g_UiCommandDragStartScreenX = 0x7fffffff;
+      mapControl->runtimeFlags = mapControl->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
+        g_UiCommandDragStartScreenX = WORLD_POINTER_NO_HIT;
         return;
       }
       g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
       g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
+      /* World point to grid point (Q12), used throughout the editor callbacks: t = y * -0x20C8CC / 2^21,
+         gx = x * 0x1C6E9C / 2^20 - t, gy = 2t (64-bit products); + 0x3FF & ~0xFFF snaps to the grid. */
       scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
       scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
       worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
@@ -4220,13 +4201,13 @@ InGameUiCommand_BeginInteractionByMode
         FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
         return;
       }
-      InGameCommandQueue_AppendLocalPlayerCommand(0x1f20,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SCRATCH,0,0,0);
       return;
     }
     if (g_UiCommandModeC == 1) {
-      mapControl->runtimeFlags = mapControl->runtimeFlags & 0xffefffff;
-      if (pointerRegionCode == 0x7fffffff) {
-        g_UiCommandDragStartScreenX = 0x7fffffff;
+      mapControl->runtimeFlags = mapControl->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
+        g_UiCommandDragStartScreenX = WORLD_POINTER_NO_HIT;
         return;
       }
       g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
@@ -4244,7 +4225,7 @@ InGameUiCommand_BeginInteractionByMode
         FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
         return;
       }
-      InGameCommandQueue_AppendLocalPlayerCommand(0x1f20,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SCRATCH,0,0,0);
       return;
     }
     if (g_UiCommandModeC == 2) {
@@ -4253,14 +4234,14 @@ InGameUiCommand_BeginInteractionByMode
         FieldGrid_ResetLocalInfluenceState(g_LocalPlayerRuntimeId,0,0,0);
         return;
       }
-      InGameCommandQueue_AppendLocalPlayerCommand(0x2a80,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_RESET_INFLUENCE,0,0,0);
       return;
     }
     break;
-  case 1:
+  case EDITOR_MODE_TERRAIN_MATERIAL:
     if (g_UiCommandModeD != 3) {
       if (g_UiCommandModeD == 1) {
-        if (pointerRegionCode == 0x7fffffff) {
+        if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
           return;
         }
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4277,7 +4258,7 @@ InGameUiCommand_BeginInteractionByMode
           return;
         }
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x28e0,g_UiCommandAbsoluteSelectionIndex,snappedWorldY,worldCoordinateTerm);
+                  (INGAME_COMMAND_EDITOR_REPLACE_MATCHING,g_UiCommandAbsoluteSelectionIndex,snappedWorldY,worldCoordinateTerm);
         return;
       }
       if (g_UiCommandModeD != 2) {
@@ -4286,10 +4267,10 @@ InGameUiCommand_BeginInteractionByMode
           TerrainEditBuffer_CopyCellMaterialBytes(g_LocalPlayerRuntimeId,0,0,0);
           return;
         }
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2700,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_COPY_MATERIALS,0,0,0);
         return;
       }
-      if (pointerRegionCode != 0x7fffffff) {
+      if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
         scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
         scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
@@ -4304,15 +4285,15 @@ InGameUiCommand_BeginInteractionByMode
           return;
         }
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x29b0,g_UiCommandAbsoluteSelectionIndex,snappedWorldY,worldCoordinateTerm);
+                  (INGAME_COMMAND_EDITOR_REPLACE_NON_TARGET,g_UiCommandAbsoluteSelectionIndex,snappedWorldY,worldCoordinateTerm);
         return;
       }
       return;
     }
     break;
-  case 2:
+  case EDITOR_MODE_TERRAIN_SMOOTHING:
     if (g_UiCommandModeE == 0) {
-      if (pointerRegionCode != 0x7fffffff) {
+      if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
         g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
         g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4325,13 +4306,15 @@ InGameUiCommand_BeginInteractionByMode
         g_UiCommandDragAnchorWorldYQ12 = worldCoordinateTerm * 2 + 0x3ff & 0xfffff000;
         return;
       }
-      g_UiCommandDragStartScreenX = 0x7fffffff;
+      g_UiCommandDragStartScreenX = WORLD_POINTER_NO_HIT;
       return;
     }
     if (g_UiCommandModeE == 1) {
-      if (pointerRegionCode == 0x7fffffff) {
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
+      /* The drag sets the flag when the pressed cell lacks it and clears it otherwise; outside the
+         field it sets it. */
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
       scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
       scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
@@ -4340,12 +4323,12 @@ InGameUiCommand_BeginInteractionByMode
       cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff
                    ) >> 0xc;
       if (cellX < 0) {
-        g_UiCommandTerrainMaskToggleValue = 0x20000000;
+        g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
         return;
       }
       cellY = (int)(worldCoordinateTerm * 2 + 0x3ff) >> 0xc;
       if (cellY < 0) {
-        g_UiCommandTerrainMaskToggleValue = 0x20000000;
+        g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
         return;
       }
       if (cellX < (int)mapFieldGrid->gridWidth) {
@@ -4355,13 +4338,13 @@ InGameUiCommand_BeginInteractionByMode
                FIELD_CELL_FLUID_RECEIVER_EXCLUDED ^ FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
           return;
         }
-        g_UiCommandTerrainMaskToggleValue = 0x20000000;
+        g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
         return;
       }
-      g_UiCommandTerrainMaskToggleValue = 0x20000000;
+      g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
       return;
     }
-    if (pointerRegionCode == 0x7fffffff) {
+    if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4372,12 +4355,12 @@ InGameUiCommand_BeginInteractionByMode
     cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
             >> 0xc;
     if (cellX < 0) {
-      g_UiCommandTerrainMaskToggleValue = 0x40000000;
+      g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_SOURCE_EXCLUDED;
       return;
     }
     cellY = (int)(worldCoordinateTerm * 2 + 0x3ff) >> 0xc;
     if (cellY < 0) {
-      g_UiCommandTerrainMaskToggleValue = 0x40000000;
+      g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_SOURCE_EXCLUDED;
       return;
     }
     if (cellX < (int)mapFieldGrid->gridWidth) {
@@ -4387,15 +4370,15 @@ InGameUiCommand_BeginInteractionByMode
              FIELD_CELL_FLUID_SOURCE_EXCLUDED ^ FIELD_CELL_FLUID_SOURCE_EXCLUDED;
         return;
       }
-      g_UiCommandTerrainMaskToggleValue = 0x40000000;
+      g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_SOURCE_EXCLUDED;
       return;
     }
-    g_UiCommandTerrainMaskToggleValue = 0x40000000;
+    g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_SOURCE_EXCLUDED;
     return;
-  case 3:
-  case 4:
+  case EDITOR_MODE_UNIT_PLACEMENT:
+  case EDITOR_MODE_OBJECT_PLACEMENT:
     /* Mode 3 places the mode-G army for its owner faction (sub-mode A), mode 4 the mode-4 army (sub-mode B). */
-    if (g_UiCommandModeG == 3) {
+    if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
       commandPayload = g_UiCommandModeGOwnerFactionIndex;
       lookupToken = g_UiCommandModeGArmyAssetId;
       placementSubMode = g_UiCommandModeA;
@@ -4406,13 +4389,13 @@ InGameUiCommand_BeginInteractionByMode
       placementSubMode = g_UiCommandModeB;
     }
     if (placementSubMode == 0) {
-      if (pointerRegionCode != 0x7fffffff) {
+      if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           PlayerRuntime_SetState8090(g_LocalPlayerRuntimeId,0,0,commandPayload);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2ec0,0,0,commandPayload);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_SET_FACTION,0,0,commandPayload);
         }
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -4420,7 +4403,7 @@ InGameUiCommand_BeginInteractionByMode
                     (g_LocalPlayerRuntimeId,pointerX,pointerY,lookupToken);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2e50,pointerX,pointerY,lookupToken);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_CREATE_ARMY,pointerX,pointerY,lookupToken);
         }
         g_UiCommandDragReferenceX = pointerY;
         g_UiCommandDragReferenceY = pointerX;
@@ -4431,10 +4414,10 @@ InGameUiCommand_BeginInteractionByMode
       return;
     }
     if (placementSubMode == 1) {
-      if (pointerRegionCode == 0x7fffffff) {
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
-      if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
+      if (armyRuntimeUnderPointer != NULL) {
         commandPayload = *(int *)(armyRuntimeUnderPointer->runtimeState48 + 8) -
                 (int)g_ArmyRuntimeRebaseBaseMinusOne;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4442,15 +4425,15 @@ InGameUiCommand_BeginInteractionByMode
           FrontendPlayerSelection_ApplyEntryOrAll(g_LocalPlayerRuntimeId,0,0,commandPayload);
           return;
         }
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2de0,0,0,commandPayload);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_DESTROY_ARMIES,0,0,commandPayload);
         return;
       }
     }
     else {
-      if (pointerRegionCode == 0x7fffffff) {
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
-      if (armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) {
+      if (armyRuntimeUnderPointer != NULL) {
         g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
         g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
         commandPayload = *(int *)(armyRuntimeUnderPointer->runtimeState48 + 8) -
@@ -4460,23 +4443,24 @@ InGameUiCommand_BeginInteractionByMode
           PlayerRuntime_SetState8094(g_LocalPlayerRuntimeId,0,0,commandPayload);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x2ef0,0,0,commandPayload);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_SET_ARMY,0,0,commandPayload);
         }
         g_UiCommandDragReferenceX = pointerY;
         g_UiCommandDragReferenceY = pointerX;
         return;
       }
     }
-    mapControl->runtimeFlags = mapControl->runtimeFlags | 0x80;
+    /* no army under the pointer: start a drag selection instead */
+    mapControl->runtimeFlags = mapControl->runtimeFlags | WORLD_RUNTIME_FLAG_DRAG_SELECTING;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
       return;
     }
-    InGameCommandQueue_AppendLocalPlayerCommand(0xba0,0,0,0);
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
     return;
-  case 5:
-    if (pointerRegionCode == 0x7fffffff) {
+  case EDITOR_MODE_REGION:
+    if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4500,6 +4484,7 @@ InGameUiCommand_BeginInteractionByMode
         g_UiCommandCallerMaskHighBit = 0;
         return;
       }
+      /* region g_UiCommandModeF owns cell flag 0x800 << region; bit 31 makes the drag remove it again */
       if ((mapFieldGrid->cells[cellY * mapFieldGrid->gridWidth + cellX].flagsAndMaterial &
           0x800 << ((uint8_t)g_UiCommandModeF & 0x1f)) != 0) {
         g_UiCommandCallerMaskHighBit = 0x80000000;
@@ -4511,15 +4496,16 @@ InGameUiCommand_BeginInteractionByMode
     g_UiCommandCallerMaskHighBit = 0;
     return;
   }
-  g_UiCommandSelectionAnchorWorldXQ12 = 0x7fffffff;
-  if (pointerRegionCode != 0x7fffffff) {
-    if ((g_KeyboardStateMask & 0xf) == 0) {
+  /* remaining tools: rectangle selection of grid cells; without Shift/Ctrl a new selection replaces the old */
+  g_UiCommandSelectionAnchorWorldXQ12 = WORLD_POINTER_NO_HIT;
+  if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
+    if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) == 0) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x1ed0,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SELECTION,0,0,0);
       }
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4537,18 +4523,12 @@ InGameUiCommand_BeginInteractionByMode
 
 
 /* Address: 0x005703D0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Typed parameters: p2 pointerRegionCode→UiPointerRegionCode_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p3 pointerX→GraphicsScreenCoordinate_V307, p4
-   pointerY→GraphicsScreenCoordinate_V307. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p7
-   mapControl→WorldRuntimeExtendedMapControlAddress32_V345.
-   Cross-module calls: WorldRuntimeNode_IsPositionInsideBounds [world/runtime/core], SelectionInfo_FindEntry
-   [gameplay/selection/runtime], InGameCommandQueue_ContainsTripletValue [network/protocol/commands],
-   FrontendPlayerSelection_RemoveThreeEntriesAndRefresh [ui/frontend/player],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   FrontendPlayerSelection_InsertThreeEntriesAndRefresh [ui/frontend/player].
+   Map editor pointer drag (selection.updateDragSelectionCallback of the world runtime while the editor is
+   active). During an army drag selection it adds the own armies inside the rectangle to the selection and
+   removes those outside, three per command and skipping armies already queued. Otherwise it continues the
+   action of the active tool: raises, lowers or smooths heights by the screen drag, paints material,
+   rebuilds the influence, toggles fluid or region flags, moves or rotates a picked-up army, or grows the
+   cell rectangle selection (deselecting the old rectangle, selecting the new one row by row).
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_UpdateInteractionByMode
@@ -4577,7 +4557,8 @@ InGameUiCommand_UpdateInteractionByMode
   TerrainPointResult nearestTerrainPoint;
   GameEntityRuntime *entry;
   
-  if ((mapControl->runtimeFlags & 0x80) != 0) {
+  if ((mapControl->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
+    /* clears both triplet buffers with their counts (0x1A dwords) */
     tripletClearCursor = (uint32_t *)&g_InGameSelectionInsertTripletDwords;
     for (workValue = 0x1a; workValue != 0; workValue = workValue + -1) {
       *tripletClearCursor = 0;
@@ -4585,7 +4566,7 @@ InGameUiCommand_UpdateInteractionByMode
     }
     runtimeNode = (WorldOwnerListNode100 *)mapControl->ownerListHead;
     workValue = mapControl->activeFactionRuntimeIndex;
-    if (runtimeNode == (WorldOwnerListNode100 *)0x0) {
+    if (runtimeNode == NULL) {
       return;
     }
     do {
@@ -4599,7 +4580,8 @@ InGameUiCommand_UpdateInteractionByMode
           conditionResult = SelectionInfo_FindEntry(entry);
           encodedValue = g_InGameSelectionInsertTripletDwordCount;
           if (((conditionResult) &&
-              (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,0x55fb90), !conditionResult))
+              (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,
+                                   INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_INSERT), !conditionResult))
              && (*(InGameCommandPayloadTripletValue32 *)
                   (&g_InGameSelectionInsertTripletDwords + encodedValue * 4) = payloadValue, encodedValue < 0xb))
           {
@@ -4610,7 +4592,8 @@ InGameUiCommand_UpdateInteractionByMode
           conditionResult = SelectionInfo_FindEntry(entry);
           encodedValue = g_InGameSelectionRemoveTripletDwordCount;
           if (((!conditionResult) &&
-              (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,0x55fc30), !conditionResult))
+              (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,
+                                   INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_REMOVE), !conditionResult))
              && (*(InGameCommandPayloadTripletValue32 *)
                   (&g_InGameSelectionRemoveTripletDwords + encodedValue * 4) = payloadValue, encodedValue < 0xb))
           {
@@ -4619,7 +4602,7 @@ InGameUiCommand_UpdateInteractionByMode
         }
       }
       runtimeNode = runtimeNode->nextNode;
-    } while (runtimeNode != (WorldOwnerListNode100 *)0x0);
+    } while (runtimeNode != NULL);
     if (g_InGameSelectionRemoveTripletDwordCount != 0) {
       tripletEntry = (CommandPayloadDword04 *)&g_InGameSelectionRemoveTripletDwords;
       do {
@@ -4629,7 +4612,7 @@ InGameUiCommand_UpdateInteractionByMode
                     (g_LocalPlayerRuntimeId,tripletEntry[2],tripletEntry[1],*tripletEntry);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0xb00,tripletEntry[2],tripletEntry[1],*tripletEntry);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_REMOVE,tripletEntry[2],tripletEntry[1],*tripletEntry);
         }
         encodedValue = g_InGameSelectionRemoveTripletDwordCount;
         tripletEntry = tripletEntry + 3;
@@ -4647,7 +4630,7 @@ InGameUiCommand_UpdateInteractionByMode
                   (g_LocalPlayerRuntimeId,tripletEntry[2],tripletEntry[1],*tripletEntry);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0xa60,tripletEntry[2],tripletEntry[1],*tripletEntry);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_INSERT,tripletEntry[2],tripletEntry[1],*tripletEntry);
       }
       encodedValue = g_InGameSelectionInsertTripletDwordCount;
       tripletEntry = tripletEntry + 3;
@@ -4655,15 +4638,14 @@ InGameUiCommand_UpdateInteractionByMode
     } while (g_InGameSelectionInsertTripletDwordCount != 0 && 2 < (int)encodedValue);
     return;
   }
-                    // WARNING: Switch is manually overridden
   switch(g_UiCommandModeG) {
-  case 0:
+  case EDITOR_MODE_TERRAIN_HEIGHT:
     if (g_UiCommandModeC == 0) {
-      if (g_UiCommandDragStartScreenX == 0x7fffffff) {
+      if (g_UiCommandDragStartScreenX == WORLD_POINTER_NO_HIT) {
         return;
       }
       encodedValue = 0xffff;
-      if ((g_KeyboardStateMask & 0xf) != 0) {
+      if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
         encodedValue = 0;
       }
       encodedValue = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX & encodedValue |
@@ -4671,7 +4653,7 @@ InGameUiCommand_UpdateInteractionByMode
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x1f70,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,encodedValue);
+                  (INGAME_COMMAND_EDITOR_RAISE_HEIGHTS,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,encodedValue);
         return;
       }
       FieldGrid_ApplyPositiveCellDeltas
@@ -4680,11 +4662,11 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     if (g_UiCommandModeC == 1) {
-      if (g_UiCommandDragStartScreenX == 0x7fffffff) {
+      if (g_UiCommandDragStartScreenX == WORLD_POINTER_NO_HIT) {
         return;
       }
       encodedValue = 0xffff;
-      if ((g_KeyboardStateMask & 0xf) != 0) {
+      if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
         encodedValue = 0;
       }
       encodedValue = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX & encodedValue |
@@ -4692,7 +4674,7 @@ InGameUiCommand_UpdateInteractionByMode
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x2290,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,encodedValue);
+                  (INGAME_COMMAND_EDITOR_LOWER_HEIGHTS,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,encodedValue);
         return;
       }
       FieldGrid_ApplyNegativeCellDeltas
@@ -4701,7 +4683,7 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     if (g_UiCommandModeC == 2) {
-      if (pointerRegionCode == 0x7fffffff) {
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4713,17 +4695,17 @@ InGameUiCommand_UpdateInteractionByMode
       columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2ae0,0,columnValue,encodedValue);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_REBUILD_INFLUENCE,0,columnValue,encodedValue);
         return;
       }
       FieldGrid_RebuildLocalInfluenceState(g_LocalPlayerRuntimeId,0,columnValue,encodedValue);
       return;
     }
     break;
-  case 1:
+  case EDITOR_MODE_TERRAIN_MATERIAL:
     if (g_UiCommandModeD != 3) {
       if (g_TerrainMaterialTextureSets[g_UiCommandAbsoluteSelectionIndex] ==
-          (GraphicsTextureSet *)0x0) {
+          NULL) {
         return;
       }
       if (g_UiCommandModeD == 1) {
@@ -4732,7 +4714,7 @@ InGameUiCommand_UpdateInteractionByMode
       if (g_UiCommandModeD == 2) {
         return;
       }
-      if (pointerRegionCode == 0x7fffffff) {
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4745,7 +4727,7 @@ InGameUiCommand_UpdateInteractionByMode
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x2770,g_UiCommandAbsoluteSelectionIndex,columnValue,encodedValue);
+                  (INGAME_COMMAND_EDITOR_PAINT_MATERIAL,g_UiCommandAbsoluteSelectionIndex,columnValue,encodedValue);
         return;
       }
       FieldGrid_ApplyLocalCellUpdate
@@ -4753,13 +4735,13 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     break;
-  case 2:
+  case EDITOR_MODE_TERRAIN_SMOOTHING:
     if (g_UiCommandModeE == 0) {
-      if (g_UiCommandDragStartScreenX == 0x7fffffff) {
+      if (g_UiCommandDragStartScreenX == WORLD_POINTER_NO_HIT) {
         return;
       }
       encodedValue = 0xffff;
-      if ((g_KeyboardStateMask & 0xf) != 0) {
+      if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
         encodedValue = 0;
       }
       columnValue = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX;
@@ -4770,7 +4752,7 @@ InGameUiCommand_UpdateInteractionByMode
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x3260,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,encodedValue);
+                  (INGAME_COMMAND_EDITOR_SMOOTH,g_UiCommandDragAnchorWorldYQ12,g_UiCommandDragAnchorWorldXQ12,encodedValue);
         return;
       }
       FieldGrid_ApplyEncodedCellUpdate
@@ -4779,7 +4761,7 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     if (g_UiCommandModeE != 1) {
-      if (pointerRegionCode == 0x7fffffff) {
+      if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4792,14 +4774,14 @@ InGameUiCommand_UpdateInteractionByMode
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (0x32e0,g_UiCommandTerrainMaskToggleValue,columnValue,encodedValue);
+                  (INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED,g_UiCommandTerrainMaskToggleValue,columnValue,encodedValue);
         return;
       }
       FieldGrid_ApplyMaskBFFFFFFF
                 (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,columnValue,encodedValue);
       return;
     }
-    if (pointerRegionCode == 0x7fffffff) {
+    if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4812,15 +4794,15 @@ InGameUiCommand_UpdateInteractionByMode
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameCommandQueue_AppendLocalPlayerCommand
-                (0x32a0,g_UiCommandTerrainMaskToggleValue,columnValue,encodedValue);
+                (INGAME_COMMAND_EDITOR_SET_RECEIVER_EXCLUDED,g_UiCommandTerrainMaskToggleValue,columnValue,encodedValue);
       return;
     }
     FieldGrid_ApplyMaskDFFFFFFF
               (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,columnValue,encodedValue);
     return;
-  case 3:
-  case 4:
-    if (g_UiCommandModeG == 3) {
+  case EDITOR_MODE_UNIT_PLACEMENT:
+  case EDITOR_MODE_OBJECT_PLACEMENT:
+    if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
       placementSubMode = g_UiCommandModeA;
     }
     else {
@@ -4829,7 +4811,7 @@ InGameUiCommand_UpdateInteractionByMode
     if (placementSubMode == 1) {
       return;
     }
-    if (pointerRegionCode == 0x7fffffff) {
+    if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
     if ((g_CursorButtonState & 4) != 0) {
@@ -4841,7 +4823,7 @@ InGameUiCommand_UpdateInteractionByMode
       g_UiCommandDragReferenceY = g_UiCommandDragReferenceY + rowOrDeltaValue;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2f20,0,rowOrDeltaValue,payloadDword04);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_MOVE,0,rowOrDeltaValue,payloadDword04);
         return;
       }
       SelectionPlayerRuntime_MovePrimarySelectionBy
@@ -4854,13 +4836,13 @@ InGameUiCommand_UpdateInteractionByMode
     g_PointerSetPosition(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
         SESSION_NETWORK_ROLE_LOCAL) {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x30f0,0,0,workValue << 6);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_ROTATE,0,0,workValue << 6);
       return;
     }
     SelectionPlayerRuntime_RotatePrimarySelectionBy(g_LocalPlayerRuntimeId,0,0,workValue << 6);
     return;
-  case 5:
-    if (pointerRegionCode == 0x7fffffff) {
+  case EDITOR_MODE_REGION:
+    if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
@@ -4873,20 +4855,23 @@ InGameUiCommand_UpdateInteractionByMode
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameCommandQueue_AppendLocalPlayerCommand
-                (0x3320,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,columnValue,encodedValue);
+                (INGAME_COMMAND_EDITOR_APPLY_REGION_MASK,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,columnValue,encodedValue);
       return;
     }
     FieldGrid_ApplyCallerMask
               (g_LocalPlayerRuntimeId,g_UiCommandModeF | g_UiCommandCallerMaskHighBit,columnValue,encodedValue);
     return;
   }
-  if ((pointerRegionCode != 0x7fffffff) && (g_UiCommandSelectionAnchorWorldXQ12 != 0x7fffffff)) {
+  if ((pointerRegionCode != WORLD_POINTER_NO_HIT) && (g_UiCommandSelectionAnchorWorldXQ12 != WORLD_POINTER_NO_HIT)) {
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
     scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
     scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
     encodedValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     boundWorldY = ((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - encodedValue;
     workValue = encodedValue * 2;
+    /* boundWorldY/workValue hold the new corner here. The original exchanges it (XCHG) with
+       g_UiCommandSelectionCurrentWorld*; the rectangle anchor..old corner is deselected row by row, then
+       anchor..new corner is selected. */
     LOCK();
     UNLOCK();
     LOCK();
@@ -4914,7 +4899,7 @@ InGameUiCommand_UpdateInteractionByMode
           PlayerPairList_RemoveRange(g_LocalPlayerRuntimeId,columnValue,rowOrDeltaValue,encodedValue);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x1d40,columnValue,rowOrDeltaValue,encodedValue);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_DESELECT_RANGE,columnValue,rowOrDeltaValue,encodedValue);
         }
       }
     }
@@ -4940,7 +4925,7 @@ InGameUiCommand_UpdateInteractionByMode
           PlayerPairList_InsertRange(g_LocalPlayerRuntimeId,columnValue,rowOrDeltaValue,encodedValue);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x1d00,columnValue,rowOrDeltaValue,encodedValue);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_SELECT_RANGE,columnValue,rowOrDeltaValue,encodedValue);
         }
       }
     }
@@ -4950,12 +4935,10 @@ InGameUiCommand_UpdateInteractionByMode
 
 
 /* Address: 0x00570D60.
-   Ownership: ui/ingame/runtime.
-   Purpose: Handles in game ui command end interaction by mode.
-   Cross-module calls: TerrainEditBuffer_ConvertHeightsToDeltas [world/terrain/editing],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   TerrainEditBuffer_SubtractCurrentCellMaterialBytes [world/terrain/editing], PlayerRuntime_ClearState8094
-   [gameplay/faction/runtime].
+   Map editor pointer release (selection.commitPointerActionCallback of the world runtime while the editor is
+   active): ends the drag selection and finishes the tool's action - shows the surface point marker again
+   after a height drag, converts the influence edit to height deltas, subtracts the painted materials, or drops the
+   placed or moved army.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_EndInteractionByMode
@@ -4967,15 +4950,14 @@ InGameUiCommand_EndInteractionByMode
   uint32_t placementSubMode;
 
   activeMode = g_UiCommandModeG;
-  worldRuntime->runtimeFlags = worldRuntime->runtimeFlags & 0xffffff7f;
-                    // WARNING: Switch is manually overridden
+  worldRuntime->runtimeFlags = worldRuntime->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAG_SELECTING;
   switch(activeMode) {
-  case 0:
+  case EDITOR_MODE_TERRAIN_HEIGHT:
     if (g_UiCommandModeC == 0) {
-      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags | 0x100000;
+      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
     }
     else if (g_UiCommandModeC == 1) {
-      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags | 0x100000;
+      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
     }
     else if (g_UiCommandModeC == 2) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4983,24 +4965,24 @@ InGameUiCommand_EndInteractionByMode
         TerrainEditBuffer_ConvertHeightsToDeltas(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2c90,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_HEIGHTS_TO_DELTAS,0,0,0);
       }
     }
     break;
-  case 1:
+  case EDITOR_MODE_TERRAIN_MATERIAL:
     if (((g_UiCommandModeD != 3) && (g_UiCommandModeD != 1)) && (g_UiCommandModeD != 2)) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         TerrainEditBuffer_SubtractCurrentCellMaterialBytes(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x2800,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_SUBTRACT_MATERIALS,0,0,0);
       }
     }
     break;
-  case 3:
-  case 4:
-    if (activeMode == 3) {
+  case EDITOR_MODE_UNIT_PLACEMENT:
+  case EDITOR_MODE_OBJECT_PLACEMENT:
+    if (activeMode == EDITOR_MODE_UNIT_PLACEMENT) {
       placementSubMode = g_UiCommandModeA;
     }
     else {
@@ -5012,7 +4994,7 @@ InGameUiCommand_EndInteractionByMode
         PlayerRuntime_ClearState8094(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x3190,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_CLEAR_ARMY,0,0,0);
       }
     }
   }
@@ -5021,43 +5003,40 @@ InGameUiCommand_EndInteractionByMode
 
 
 /* Address: 0x00570F30.
-   Ownership: ui/ingame/runtime.
-   Purpose: Handles in game ui command reset interaction by mode.
-   Cross-module calls: SelectionPlayerRuntime_ClearTerrainEditSelectionState [gameplay/selection/runtime],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   FrontendPlayerSelection_ClearAndRefreshLocalPanels [ui/frontend/player].
+   Map editor context action (selection.dispatchWorldContextActionCallback of the world runtime while the
+   editor is active): clears the cell selection on the height and material tabs and the army selection on
+   the unit placement tab.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
 
 {
-                    // WARNING: Switch is manually overridden
   switch(g_UiCommandModeG) {
-  case 0:
+  case EDITOR_MODE_TERRAIN_HEIGHT:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x1ed0,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SELECTION,0,0,0);
     }
     break;
-  case 1:
+  case EDITOR_MODE_TERRAIN_MATERIAL:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       SelectionPlayerRuntime_ClearTerrainEditSelectionState(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x1ed0,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_CLEAR_SELECTION,0,0,0);
     }
     break;
-  case 3:
+  case EDITOR_MODE_UNIT_PLACEMENT:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0xba0,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
     }
   }
   return;
@@ -5065,20 +5044,18 @@ InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
 
 
 /* Address: 0x005609F0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Activates or deactivates the in-game command/UI interaction subsystem. The immutable body synchronizes
-   page-stack active state, installs the command/camera dispatch roots, rebuilds command-mode/grid state and
-   selection presentation, and tears the subsystem down on the inactive path.
-   Local calls: InGameSelectionDetailPanel_Rebuild.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiPageStack_ActivePageNotInList
-   [ui/controls/lists], Movie_Close [movie/runtime/playback], UiCommandMatrix_SelectIndex [ui/ingame/commands],
-   ArmyAssetRegistry_NormalizeIdForFlag0100Without0200 [assets/army/catalog],
-   ArmyAssetRegistry_ResolveOrCreatePreviewTexture [assets/army/catalog].
+   In-game command INGAME_COMMAND_EDITOR_ACTIVE_STATE: enters or (EDITOR_ACTIVE_STATE_LEAVE) leaves the map
+   editor. Entering pauses the game, switches the side panel, resource bar and game panels to the editor
+   pages, installs the editor callbacks (InGameUiCommand_*ByMode, camera keys, editor hotkeys) on the world
+   runtime and the UI root, selects the current editor tab, clears the notification queue, stops the movie,
+   restores the material and army previews and resets the terrain lighting and per-cell army/resource
+   offsets. Leaving restores the game pages and callbacks, frees the army preview textures, rebuilds occupancy
+   and terrain display flags and the lighting, and clears the hovered record. Each path runs only when the
+   state actually changes (UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE).
 */
-
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
+          (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t activeStateFlags)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
@@ -5101,12 +5078,14 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
   
   modeOrValue = g_UiCommandModeG;
   root = g_InGameRuntimeRoot;
-  if ((commandArg3 & 4) == 0) {
-    if ((g_UiCommandRuntimeFlags & 4) == 0) {
+  if ((activeStateFlags & EDITOR_ACTIVE_STATE_LEAVE) == 0) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
       pageStackBlock = g_InGameRuntimeRoot->opaque9A74_9B4B;
-      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 5;
+      g_UiCommandRuntimeFlags =
+           g_UiCommandRuntimeFlags |
+           (UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
       runtimeFlagsField = &(g_InGameRuntimeRoot->worldRuntime0A30).runtimeFlags;
-      *runtimeFlagsField = *runtimeFlagsField | 0x400000;
+      *runtimeFlagsField = *runtimeFlagsField | 0x400000; /* editor world flag, cleared on leaving */
       UiPageStack_SetActiveIndex
                 (g_UiCommandModeGPrimaryPageIndices[modeOrValue],(UiPageStackControl *)(pageStackBlock + 0x18));
       UiPageStack_SetActiveIndex
@@ -5121,7 +5100,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
         UiPageStack_SetActiveIndex(1,&root->optionalUiPageStack4644);
       }
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)(root->opaque4100_452F + 0x22c));
-      root->worldOverlayCallback0B8C = (InGameWorldOverlayRebuildCallbackProc *)0x0;
+      root->worldOverlayCallback0B8C = NULL;
       (root->worldRuntime0A30).selection.dispatchCommandCallback =
            InGameCameraCommand_DispatchByCodeAndModifierFlags;
       (root->worldRuntime0A30).selection.resolveContextActionPrimaryCallback =
@@ -5144,6 +5123,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       (*(void (*)(UiSelectableControl *))g_UiCommandModeGHandlers[modeOrValue])
                 ((UiSelectableControl *)
                  (root->opaque0058_017B + g_UiCommandModeGControlOffsets[modeOrValue] + -0x58));
+      /* zeroes the first 0x20 dwords of the notification queue (the cursor steps 4 bytes, not a record) */
       queueSlotCursor = root->notificationQueue9E60;
       for (remainingCount = 0x20; remainingCount != 0; remainingCount = remainingCount + -1) {
         queueSlotCursor->notificationMovieId00 = 0;
@@ -5157,8 +5137,9 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       }
       materialTextureSet = g_TerrainMaterialTextureSets[modeOrValue];
       root->observedSessionNotificationValue9B50 = (uint32_t)textureSourceValue;
-      textureSourceValue = (GraphicsTextureSourceAsset *)0x0;
-      if (materialTextureSet != (GraphicsTextureSet *)0x0) {
+      /* preview texture of the selected material */
+      textureSourceValue = NULL;
+      if (materialTextureSet != NULL) {
         textureSourceValue = materialTextureSet->entries[0].sourceAsset;
       }
       root->notificationPlaybackCompletionCode9B54 = 0x25;
@@ -5202,8 +5183,10 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       } while (remainingCount != 0);
     }
   }
-  else if ((g_UiCommandRuntimeFlags & 4) != 0) {
-    g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xfffffffa;
+  else if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) != 0) {
+    g_UiCommandRuntimeFlags =
+         g_UiCommandRuntimeFlags &
+         ~(UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
     UiPageStack_SetActiveIndex
               (0,(UiPageStackControl *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x18));
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)root->opaque9EE0_9FAB);
@@ -5233,21 +5216,21 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     (root->worldRuntime0A30).selection.dispatchWorldContextActionCallback =
          InGameUiRuntime_DispatchWorldContextActionCallback;
     runtimeFlagsField = &(root->worldRuntime0A30).runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField | 0x400;
-    g_UiRootCallbacks_0054FBC0.keyboardFallback = InGameHotkeys_DispatchCommandByFlags
-    ;
+    *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
+    g_UiRootCallbacks_0054FBC0.keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
+    /* free the cached preview textures of all 0x300 army asset records */
     registrySlot = g_ArmyAssetRecordRegistry;
     remainingCount = 0x300;
     do {
       armyAsset = *registrySlot;
-      if (armyAsset != (ArmyAssetRecordPrefix *)0x0) {
+      if (armyAsset != NULL) {
         g_MemoryApi.free((void *)armyAsset[2].byteSize);
         armyAsset[2].byteSize = 0;
       }
       registrySlot = registrySlot + 1;
       remainingCount = remainingCount + -1;
     } while (remainingCount != 0);
-    if ((g_UiCommandRuntimeFlags & 8) == 0) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) == 0) {
       FieldGrid_ClearOccupancyMaskByteBit0AllCells
                 ((root->worldRuntime0A30).activeFactionRuntimeIndex,
                  (root->worldRuntime0A30).fieldGrid);
@@ -5267,9 +5250,9 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     UiCommandModeG_ClearNodeFlag00800000(node);
     UiCommandModeG_ClearNodeFlag02000000(node);
     runtimeFlagsField = &(root->worldRuntime0A30).runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField & 0xffbfffff;
+    *runtimeFlagsField = *runtimeFlagsField & 0xffbfffff; /* ~0x400000, set on entering */
     TerrainDirectionTable_AdvanceAndRebuildVectors();
-    g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)0x0;
+    g_UiHoverSelectionRecord = NULL;
     InGameSelectionDetailPanel_Rebuild();
   }
   return;
@@ -5277,15 +5260,13 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
 
 
 /* Address: 0x005622F0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Command helper that saves the current field-grid/runtime asset image and the level-runtime asset image,
-   routing carry-flag failures through the installed fatal-error path.
-   Cross-module calls: FieldGrid_SaveAssetImageFromRuntimeState [world/terrain/grid],
-   InGameLevelRuntime_SaveLevelAssetImageFromWorldState [gameplay/session/level].
+   In-game command INGAME_COMMAND_EDITOR_SAVE_MAP (editor hotkey F2): writes the edited map back - the field
+   grid asset image and the level asset image - from the current world state. A failure of either is
+   reported through FatalError_ReportIfFailed without stopping the game.
 */
 void __thandor_preserve_eax
 InGameUiCommand_SaveFieldAndLevelAssetImages
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
+          (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -5324,39 +5305,31 @@ void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuil
 
 
 /* Address: 0x0056B850.
-   Ownership: ui/ingame/runtime.
-   Purpose: Finds the UI root, clears suppression on the command-page container at root+0xA78, and selects page 0
-   in the page stack at root+0xBD0. Queued UI action handler for INGAME_PAGE10[2] (0x1002). Return datatype is
-   preserved for non-queue direct callers.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout].
+   UI action 0x1002 (g_InGameUiActionHandlersPage10[2], InGameUiImage.messageCancelButton): closes the message
+   window - shows the world view again and switches the game window page stack back to page 0.
 */
 void __thandor_preserve_eax InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
-  
+
   parentCursor = source->parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     source = source->parent;
     parentCursor = source->parent;
   }
-  INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & 0xfffffff7;
+  INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(source,gameWindowPageStack));
   return;
 }
 
 
 /* Address: 0x0056B890.
-   Ownership: ui/ingame/runtime.
-   Purpose: Finds the UI root, converts the rich UTF-16 command text at root+0x1D04 into a 48-byte payload, derives
-   a seven-slot mask from the selected mode, sends the mask and four twelve-byte payload chunks through the active
-   backend, finalizes the command, and clears the form state. Queued UI action handler for INGAME_PAGE10[4]
-   (0x1004). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: RichTextCommandStream_CopyToNarrow [assets/text/richtext],
-   UiSelectableGroup_NoneVisibleSelected [ui/controls/lists], UiSelectableControl_IsSelected
-   [ui/controls/lists], FrontendPlayerTextCommand_SetPackedState [ui/frontend/player],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   FrontendPlayerTextCommand_AppendTripleClamped [ui/frontend/player].
+   UI action 0x1004 (g_InGameUiActionHandlersPage10[4], InGameUiImage.messageSendButton; also called by
+   InGameSevenSlotCommand_SubmitAndClosePage): sends the text of the message window. The text is narrowed to
+   48 bytes, the recipient mask is built from the selected tab and its check boxes (as in
+   InGameUiAction1024_Handler), then the mask, the text as four 12-byte chat commands and the publish command
+   are issued, and the text field is cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
@@ -5367,17 +5340,19 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   UiNodeBase *ancestorParent;
   int offsetOrCount;
   uint32_t slotIndex;
-  CommandPayloadDword04 packedState;
+  CommandPayloadDword04 recipientMask;
   uint32_t slotBit;
   UiAnchorFractionQ31 *textCursor;
   bool isSelected;
   SelectableGroupNodeResult visibleSelection;
   
   ancestorParent = source->parent;
-  while (ancestorParent != (UiNodeBase *)0xffffffff) {
+  while (ancestorParent != UI_NODE_NONE) {
     source = source->parent;
     ancestorParent = source->parent;
   }
+  /* offsets below are relative to the text field (root+0x1C98): +0x1EC the faction tab
+     (messageRecipientPlayersTab), +0x24C the session player tab (messageRecipientGroupsTab) */
   formBase = (int32_t *)INGAME_UI(source,messageTextEdit);
   RichTextCommandStream_CopyToNarrow
             (0x30,g_UiSevenSlotCommandPayloadText.textBytes,((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textPrefix6C);
@@ -5388,7 +5363,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   offsetOrCount = (int)visibleSelection.node - (int)formBase;
   if (offsetOrCount == 0x1ec) {
     slotIndex = 0;
-    packedState = 0;
+    recipientMask = 0;
     slotBit = 0x100;
     do {
       controlOffsetEntry = g_UiSevenSlotSelectionControlOffsets + slotIndex;
@@ -5397,13 +5372,13 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
       isSelected = (bool)UiSelectableControl_IsSelected
                               ((UiSelectableControl *)(*controlOffsetEntry + -0x1c98 + (int)formBase));
       if (isSelected) {
-        packedState = packedState | slotBit;
+        recipientMask = recipientMask | slotBit;
       }
     } while (slotIndex < 7);
   }
   else if (offsetOrCount == 0x24c) {
     slotIndex = 0;
-    packedState = 0;
+    recipientMask = 0;
     slotBit = 0x8000;
     do {
       controlOffsetEntry = g_UiSevenSlotSelectionControlOffsets + slotIndex;
@@ -5412,19 +5387,19 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
       isSelected = (bool)UiSelectableControl_IsSelected
                               ((UiSelectableControl *)(*controlOffsetEntry + -0x1c98 + (int)formBase));
       if (isSelected) {
-        packedState = packedState | slotBit;
+        recipientMask = recipientMask | slotBit;
       }
     } while (slotIndex < 7);
   }
   else {
-    packedState = 0xffffff00;
+    recipientMask = 0xffffff00;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerTextCommand_SetPackedState(g_LocalPlayerRuntimeId,0,0,packedState);
+    FrontendPlayerTextCommand_SetPackedState(g_LocalPlayerRuntimeId,0,0,recipientMask);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(6000,0,0,packedState);
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CHAT_SET_RECIPIENTS,0,0,recipientMask);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
@@ -5435,7 +5410,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand
-              (0x17a0,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
+              (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
                g_UiSevenSlotCommandPayloadText.triples[0].payloadDword08,
                g_UiSevenSlotCommandPayloadText.triples[0].payloadDword04);
   }
@@ -5448,7 +5423,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand
-              (0x17a0,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
+              (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
                g_UiSevenSlotCommandPayloadText.triples[1].payloadDword08,
                g_UiSevenSlotCommandPayloadText.triples[1].payloadDword04);
   }
@@ -5461,7 +5436,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand
-              (0x17a0,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
+              (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
                g_UiSevenSlotCommandPayloadText.triples[2].payloadDword08,
                g_UiSevenSlotCommandPayloadText.triples[2].payloadDword04);
   }
@@ -5474,7 +5449,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand
-              (0x17a0,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
+              (INGAME_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
                g_UiSevenSlotCommandPayloadText.triples[3].payloadDword08,
                g_UiSevenSlotCommandPayloadText.triples[3].payloadDword04);
   }
@@ -5483,7 +5458,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
     FrontendPlayerTextCommand_PublishConditionalRichText(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(0x1810,0,0,0);
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CHAT_PUBLISH,0,0,0);
   }
   ((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->cursorIndex = 0;
   ((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->selectionStart = 0;

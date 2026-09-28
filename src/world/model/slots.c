@@ -8,14 +8,19 @@
 #include <thandor/world/model/slots.h>
 #include <thandor/thandor.h>
 
-/* Implementation ownership: world/model/slots. */
+/* Implementation ownership: world/model/slots.
+
+   Per-class model runtime callbacks from g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes (0x0051FC98), indexed
+   by the model definition's class id (+0x4C): modelClassInitialize (run by
+   ModelRuntimePool_CreateInstanceByDefinitionId), modelReleaseOrCommit (ModelRuntimePool_DestroyHierarchyAndDetach),
+   modelUnrebase (ModelRuntimePool_UnrebaseBeforeSave) and modelRebaseOrLoadRepair
+   (ModelRuntimePool_RebaseAfterLoad). The class state at +0x60..+0xEC of a ModelRuntimeSlot means something
+   different for every class. */
 
 /* Address: 0x005200C0.
-   Ownership: world/model/slots.
-   Purpose: Applies definition animation indices to the root model node. Class-initialization callback table slot
-   selected by model runtime class id. Role: Applies primary and optional secondary animated texture subresource
-   indices from the MDL definition. Inputs: Class-selected model definition fields and root ModelRuntimeNode.
-   Outputs: Root animation flags, subresource indices and zeroed UV offsets.
+   Class initializer of model class 2 (modelClassInitialize[2]). Turns on texture scrolling for the root node:
+   the definition's primary animated subresource (+0x1B8) and, only together with it, the secondary one (+0x1BC),
+   both starting at texture offset 0.
 */
 void __thandor_preserve_eax_edx
 ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
@@ -26,17 +31,17 @@ ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
   ModelRuntimeNode *rootModelNode;
   ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
   AssetRecordByteCount secondaryAnimatedSubresourceIndex;
-  
+
   rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   primaryAnimatedSubresourceIndex = modelDefinition->primaryAnimatedSubresourceIndex1B8;
   secondaryAnimatedSubresourceIndex = modelDefinition->secondaryAnimatedSubresourceIndex1BC;
   if (primaryAnimatedSubresourceIndex != 0) {
-    rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | 0x80;
+    rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL;
     rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
     rootModelNode->primaryTextureOffsetU = 0;
     rootModelNode->primaryTextureOffsetV = 0;
     if (secondaryAnimatedSubresourceIndex != 0) {
-      rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | 0x400;
+      rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL;
       rootModelNode->secondaryAnimatedSubresourceIndex = secondaryAnimatedSubresourceIndex;
       rootModelNode->secondaryTextureOffsetU = 0;
       rootModelNode->secondaryTextureOffsetV = 0;
@@ -47,22 +52,24 @@ ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
 
 
 /* Address: 0x00522A90.
-   Ownership: world/model/slots.
-   Purpose: Initializes class-specific sentinels, bounds, and timing fields. Class-initialization callback table
-   slot selected by model runtime class id.
+   Class initializer of model class 3 (modelClassInitialize[3]). Marks the class fields +0x68..+0x74 as unset
+   (0x80000000) and +0x78 / +0xE8 as 0x7FFFFFFF, records the local Y of the root's first child and grandchild,
+   and derives a starting timer value (stored at +0x10 and +0xD0) from the definition values at +0x0C, +0x18,
+   +0xC0 and +0xC4.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint32_t definitionField1;
-  AssetRecordByteCount definitionField10;
+  uint32_t definitionValue0C;
+  AssetRecordByteCount definitionValueC0;
   int initialTimingValue;
   ModelRuntimeNode *rootChild0Node;
   Q12 grandchildLocalYQ12;
-  
-  definitionField1 = modelDefinition[1].byteSize;
+
+  /* modelDefinition[i] is 12 bytes: [1].byteSize is +0x0C, [2].byteSize +0x18, [0x10] +0xC0 / +0xC4 */
+  definitionValue0C = modelDefinition[1].byteSize;
   (modelRuntimeSlot->classLinkState).classState68 = 0x80000000;
   (modelRuntimeSlot->classLinkState).armyLinkOrState6C.classState = 0x80000000;
   (modelRuntimeSlot->classLinkState).classState70 = 0x80000000;
@@ -75,13 +82,13 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   grandchildLocalYQ12 = (rootChild0Node->childNodes[0]->modelPayload).localTranslationYQ12;
   (modelRuntimeSlot->classState).classStateB0 = (rootChild0Node->modelPayload).localTranslationYQ12;
   (modelRuntimeSlot->classState).classStateB4 = grandchildLocalYQ12;
-  definitionField10 = modelDefinition[0x10].byteSize;
+  definitionValueC0 = modelDefinition[0x10].byteSize;
   initialTimingValue = (int)(((int64_t)
-                 (int)(((int64_t)(int)definitionField1 << 0xc) /
-                      (int64_t)(int)definitionField10) * (int64_t)(int)(modelDefinition[0x10].flags + definitionField10))
-               / (int64_t)(int)definitionField10) -
-          (int)(((int64_t)(int)definitionField10 * (int64_t)(int)modelDefinition[2].byteSize) /
-               (int64_t)(int)(definitionField1 << 2));
+                 (int)(((int64_t)(int)definitionValue0C << 12) /
+                      (int64_t)(int)definitionValueC0) * (int64_t)(int)(modelDefinition[0x10].flags + definitionValueC0))
+               / (int64_t)(int)definitionValueC0) -
+          (int)(((int64_t)(int)definitionValueC0 * (int64_t)(int)modelDefinition[2].byteSize) /
+               (int64_t)(int)(definitionValue0C << 2));
   *(int *)modelRuntimeSlot->reserved10_37 = initialTimingValue;
   (modelRuntimeSlot->classState).classStateD0 = initialTimingValue;
   (modelRuntimeSlot->classState).enabledStateE8 = 0x7fffffff;
@@ -90,9 +97,9 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
 
 
 /* Address: 0x00522B90.
-   Ownership: world/model/slots.
-   Purpose: Seeds class fields from the root model transform. Class-initialization callback table slot selected by
-   model runtime class id.
+   Class initializer of model class 17 (modelClassInitialize[17]). Seeds the class state from the root node:
+   +0x60 = 0x4000, +0x64 = the root's rotation angle 2, +0x68 / +0x6C = its world X / Y, +0x70 = 0x18, and
+   bits 1 and 2 of +0xB8 when the root has more than two children.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
@@ -102,7 +109,7 @@ ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
   uint32_t *classStateFlags;
   ModelRuntimeNode *rootModelNode;
   Q12 rootWorldYQ12;
-  
+
   rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   (modelRuntimeSlot->classLinkState).modelLinkOrState60.classState = 0x4000;
   (modelRuntimeSlot->classLinkState).classState64 =
@@ -121,10 +128,9 @@ ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
 
 
 /* Address: 0x00523CA0.
-   Ownership: world/model/slots.
-   Purpose: Builds eight model-key presence counters in the class-state overlay. Class-initialization callback
-   table slot selected by model runtime class id.
-   Cross-module calls: ModelLookupTable_FindPackedKeyEntryRegs [assets/model/definitions].
+   Class initializer of model class 9 (modelClassInitialize[9]). Clears +0x60..+0x80, then checks the eight packed
+   keys 0..7 of key class 2 in the model resource of the root's grandchild: the counter of every missing key
+   (+0x60, +0x64, ... +0x7C) becomes -1, the others stay 0.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
@@ -135,58 +141,57 @@ ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
   ModelRuntimeArmyLinkOrState4 *armyLinkCounterField;
   ModelLookupPayloadResult keyLookupResult;
   uint32_t *matchedClassCounterField;
-  ModelRuntimeArmyLinkOrState4 *class6CCounterField;
-  ModelRuntimeNode *modelKeyLookupNode;
-  ModelRuntimeNode *modelNode1;
-  
-  modelKeyLookupNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
+  ModelRuntimeNode *rootModelNode;
+  ModelRuntimeNode *rootGrandchildNode;
+
+  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   (modelRuntimeSlot->classLinkState).classState80 = 0;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = (ModelRuntimeSlot *)0x0;
-  modelNode1 = modelKeyLookupNode->childNodes[0];
+  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  rootGrandchildNode = rootModelNode->childNodes[0];
   (modelRuntimeSlot->classLinkState).classState64 = 0;
   (modelRuntimeSlot->classLinkState).classState68 = 0;
-  modelNode1 = modelNode1->childNodes[0];
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = (ArmyRuntimeSlot *)0x0;
+  rootGrandchildNode = rootGrandchildNode->childNodes[0];
+  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = NULL;
   (modelRuntimeSlot->classLinkState).classState70 = 0;
   (modelRuntimeSlot->classLinkState).classState74 = 0;
   (modelRuntimeSlot->classLinkState).classState78 = 0;
   (modelRuntimeSlot->classLinkState).classState7C = 0;
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(0,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(0,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime =
          (ModelRuntimeSlot *)((modelRuntimeSlot->classLinkState).modelLinkOrState60.classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(1,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(1,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     matchedClassCounterField = &(modelRuntimeSlot->classLinkState).classState64;
     *matchedClassCounterField = *matchedClassCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(2,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(2,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState68;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(3,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(3,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     armyLinkCounterField = &(modelRuntimeSlot->classLinkState).armyLinkOrState6C;
     armyLinkCounterField->armyRuntime = (ArmyRuntimeSlot *)(armyLinkCounterField->classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(4,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(4,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState70;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(5,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(5,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState74;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(6,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(6,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState78;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(7,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(7,2,(rootGrandchildNode->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState7C;
     *classCounterField = *classCounterField - 1;
@@ -196,9 +201,8 @@ ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
 
 
 /* Address: 0x005243D0.
-   Ownership: world/model/slots.
-   Purpose: Clears four class-state fields. Class-initialization callback table slot selected by model runtime
-   class id.
+   Class initializer of model class 11 (modelClassInitialize[11]): clears the class fields +0x64, +0x68, +0x74
+   and +0xB8.
 */
 void ModelRuntimeSlotClassInit_ClearFields64_68_74_B8
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
@@ -212,18 +216,17 @@ void ModelRuntimeSlotClassInit_ClearFields64_68_74_B8
 }
 
 /* Address: 0x00524CB0.
-   Ownership: world/model/slots.
-   Purpose: Converts the class-specific army link at offset 0x6C to a saved pool offset. Model-unrebase partition
-   slots 48-71 receive one ModelRuntimeSlot pointer.
+   Unrebase handler of model class 13 (modelUnrebase[13], run by ModelRuntimePool_UnrebaseBeforeSave): before a
+   save, turns the army pointer at +0x6C into a saved offset relative to g_ArmyRuntimeRebaseBaseMinusOne.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
 
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
-  
+
   linkedArmyRuntime = (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime;
-  if (linkedArmyRuntime != (ArmyRuntimeSlot *)0x0) {
+  if (linkedArmyRuntime != NULL) {
     (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime =
          (ArmyRuntimeSlot *)((int)linkedArmyRuntime - (int)g_ArmyRuntimeRebaseBaseMinusOne);
   }
@@ -232,18 +235,18 @@ ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime)
 
 
 /* Address: 0x00524CE0.
-   Ownership: world/model/slots.
-   Purpose: Rebases the class-specific army link at offset 0x6C. Pointer-rebase callback table slot selected by
-   model runtime class id.
+   Rebase handler of model class 13 (modelRebaseOrLoadRepair[13], run by ModelRuntimePool_RebaseAfterLoad): after
+   a load, turns the saved army offset at +0x6C back into a pointer (offset + g_ArmyRuntimeRebaseBaseMinusOne).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
-  
+
   linkedArmyRuntime = (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime;
-  if (linkedArmyRuntime != (ArmyRuntimeSlot *)0x0) {
+  if (linkedArmyRuntime != NULL) {
+    /* the address of modelRuntimeOrSavedOffset (+0) is the pointer value itself, i.e. the saved offset */
     (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime =
          (ArmyRuntimeSlot *)
          ((int)&linkedArmyRuntime->modelRuntimeOrSavedOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne)
@@ -254,11 +257,9 @@ ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntimeSlot)
 
 
 /* Address: 0x00524D10.
-   Ownership: world/model/slots.
-   Purpose: Enables root animation and copies the definition C0 value. Class-initialization callback table slot
-   selected by model runtime class id. Role: Clears class state, copies MDL +0xC0 into the root primary animation
-   selector and enables animation. Inputs: Class-selected MDL definition and new ModelRuntimeSlot. Outputs:
-   Initialized class state and root animated subresource.
+   Class initializer of model class 13 (modelClassInitialize[13]). Clears the class state (no linked army at
+   +0x6C), sets byte +0xBC to 1 and turns on texture scrolling of the root node for the subresource named at
+   definition +0xC0.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
@@ -267,7 +268,7 @@ ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
 {
   ModelRuntimeNode *rootModelNode;
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
-  
+
   rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   (modelRuntimeSlot->classState).classStateB8 = 0;
   (modelRuntimeSlot->classState).reservedBC_BF[0] = 1;
@@ -275,96 +276,93 @@ ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
   (modelRuntimeSlot->classState).reservedBC_BF[2] = 0;
   (modelRuntimeSlot->classState).reservedBC_BF[3] = 0;
   (modelRuntimeSlot->classLinkState).classState74 = 0;
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = (ArmyRuntimeSlot *)0x0;
+  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = NULL;
   (modelRuntimeSlot->classLinkState).classState64 = 0;
   (modelRuntimeSlot->classLinkState).classState68 = 0;
   primaryAnimatedSubresourceIndex = modelDefinition[0x10].byteSize;
   rootModelNode->primaryTextureOffsetU = 0;
   rootModelNode->primaryTextureOffsetV = 0;
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
-  rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | 0x80;
+  rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL;
   return;
 }
 
 
 /* Address: 0x005251C0.
-   Ownership: world/model/slots.
-   Purpose: Accumulates a faction metric and detaches root child slot 3. Class-initialization callback table slot
-   selected by model runtime class id.
-   Cross-module calls: WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core].
+   Class initializer of model class 14, the resource extractor (modelClassInitialize[14]). Adds the model's
+   storage (definition +0xC4) to its faction's Xenite or Tritium storage limit (selector +0xC0); undone by
+   ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation. Unless the owning army's +0xBC is 0x6000000, the
+   root's fourth child node is unlinked and dropped.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint8_t *factionMetricField;
+  uint8_t *storageLimit;
   int factionRecordOffset;
-  int metricRecordOffset;
-  ArmyRuntimeSlot *armySlot1;
-  ModelRuntimeNode *modelNode1;
-  
-  armySlot1 = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = (ModelRuntimeSlot *)0x0;
-  factionRecordOffset = armySlot1->factionIndex * 0x740;
-  metricRecordOffset = factionRecordOffset + 4;
+  int storageLimitOffset;
+  ArmyRuntimeSlot *ownerArmy;
+  ModelRuntimeNode *rootModelNode;
+
+  ownerArmy = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
+  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
+  storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
   if (modelDefinition[0x10].byteSize != 0) {
-    metricRecordOffset = factionRecordOffset + 0x14;
+    storageLimitOffset = factionRecordOffset + 0x14; /* tritiumStorageLimitQ4 */
   }
-  modelNode1 = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  factionMetricField = g_GameFactionRuntimeImage.records[0].reserved78_87 + metricRecordOffset + -0x78;
-  *(uint32_t *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
-  if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
-      (3 < modelNode1->childCount)) && (modelNode1->childNodes[3] != (ModelRuntimeNode *)0x0)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[3]);
-    modelNode1->childNodes[3] = (ModelRuntimeNode *)0x0;
+  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
+  storageLimit = g_GameFactionRuntimeImage.records[0].reserved78_87 + storageLimitOffset - 0x78;
+  *(uint32_t *)storageLimit = *(int *)storageLimit + modelDefinition[0x10].flags;
+  if ((((ownerArmy->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
+      (3 < rootModelNode->childCount)) && (rootModelNode->childNodes[3] != NULL)) {
+    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)rootModelNode->childNodes[3]);
+    rootModelNode->childNodes[3] = NULL;
   }
   return;
 }
 
 
 /* Address: 0x00525250.
-   Ownership: world/model/slots.
-   Purpose: Class initializer selected by model class 15. Accumulates definition C4 into the owning faction metric
-   and detaches root child slot 1. The normal EDX:EAX value is preserved pass-through state and is not consumed by
-   the table caller. Class-initialization callback table slot selected by model runtime class id.
-   Cross-module calls: WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core].
+   Class initializer of model class 15, the resource storage (modelClassInitialize[15]). Adds the model's storage
+   (definition +0xC4) to its faction's Xenite or Tritium storage limit (selector +0xC0); undone by
+   ArmyPlacement_ReleaseFactionCapacity. Unless the owning army's +0xBC is 0x6000000, the root's second child
+   node is unlinked and dropped.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint8_t *factionMetricField;
+  uint8_t *storageLimit;
   int factionRecordOffset;
-  int metricRecordOffset;
-  ArmyRuntimeSlot *armySlot1;
-  ModelRuntimeNode *modelNode1;
-  
-  armySlot1 = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
-  factionRecordOffset = armySlot1->factionIndex * 0x740;
-  metricRecordOffset = factionRecordOffset + 4;
+  int storageLimitOffset;
+  ArmyRuntimeSlot *ownerArmy;
+  ModelRuntimeNode *rootModelNode;
+
+  ownerArmy = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
+  factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
+  storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
   if (modelDefinition[0x10].byteSize != 0) {
-    metricRecordOffset = factionRecordOffset + 0x14;
+    storageLimitOffset = factionRecordOffset + 0x14; /* tritiumStorageLimitQ4 */
   }
-  modelNode1 = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  factionMetricField = g_GameFactionRuntimeImage.records[0].reserved78_87 + metricRecordOffset + -0x78;
-  *(uint32_t *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
-  if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
-      (1 < modelNode1->childCount)) && (modelNode1->childNodes[1] != (ModelRuntimeNode *)0x0)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[1]);
-    modelNode1->childNodes[1] = (ModelRuntimeNode *)0x0;
+  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
+  storageLimit = g_GameFactionRuntimeImage.records[0].reserved78_87 + storageLimitOffset - 0x78;
+  *(uint32_t *)storageLimit = *(int *)storageLimit + modelDefinition[0x10].flags;
+  if ((((ownerArmy->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
+      (1 < rootModelNode->childCount)) && (rootModelNode->childNodes[1] != NULL)) {
+    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)rootModelNode->childNodes[1]);
+    rootModelNode->childNodes[1] = NULL;
   }
   return;
 }
 
 
 /* Address: 0x005252E0.
-   Ownership: world/model/slots.
-   Purpose: Accumulates the definition value into the owning faction progress limit. Class-initialization callback
-   table slot selected by model runtime class id. [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Model class 16
-   Energy-generator init callback. Adds class-16 MDL +0xC0 to owning faction energyGenerationCapacityQ4. Stock
-   Power plant (ARM 310) has four linked class-16 generator MDLs with +0xC0=200 Q4 each.
+   Class initializer of model class 16, the energy generator (modelClassInitialize[16]): adds the definition's
+   generation capacity (+0xC0, Q4) to the owning faction's energyGenerationCapacityQ4. The stock power plant
+   (ARM 310) links four such generator models with 200 each.
 */
 void __thandor_preserve_eax
 ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
@@ -372,7 +370,7 @@ ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
 
 {
   FactionProgressAmountQ4 *factionProgressLimitQ4;
-  
+
   factionProgressLimitQ4 =
        &g_GameFactionRuntimeImage.records
         [((modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex].
@@ -383,11 +381,9 @@ ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
 
 
 /* Address: 0x005254B0.
-   Ownership: world/model/slots.
-   Purpose: Binary entry is anchored by g_CodePointerTable_0051FE78[16]@0051FE78. Model release partition slots
-   0-23 receive (modelDefinition, modelRuntime). [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Model class 16
-   release callback. Subtracts class-16 MDL +0xC0 from owning faction energyGenerationCapacityQ4; exact inverse of
-   the class-16 initialization callback.
+   Release handler of model class 16, the energy generator (modelReleaseOrCommit[16], run by
+   ModelRuntimePool_DestroyHierarchyAndDetach): takes the definition's generation capacity (+0xC0) off the
+   owning faction's energyGenerationCapacityQ4 again.
 */
 void __thandor_preserve_eax
 ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
@@ -395,7 +391,7 @@ ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
 
 {
   FactionProgressAmountQ4 *factionProgressLimitQ4;
-  
+
   factionProgressLimitQ4 =
        &g_GameFactionRuntimeImage.records
         [((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex].
@@ -406,18 +402,18 @@ ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
 
 
 /* Address: 0x00526340.
-   Ownership: world/model/slots.
-   Purpose: Converts the class-specific model-runtime link at offset 0x60 to a saved pool offset. Model-unrebase
-   partition slots 48-71 receive one ModelRuntimeSlot pointer.
+   Unrebase handler of model class 21, the aircraft (modelUnrebase[21], run by ModelRuntimePool_UnrebaseBeforeSave):
+   before a save, turns the linked model runtime at +0x60 (presumably its base) into a saved offset (pointer -
+   g_ModelRuntimeRebaseDelta).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
-  
+
   linkedModelRuntime = (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime;
-  if (linkedModelRuntime != (ModelRuntimeSlot *)0x0) {
+  if (linkedModelRuntime != NULL) {
     (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime =
          (ModelRuntimeSlot *)((int)linkedModelRuntime - g_ModelRuntimeRebaseDelta);
   }
@@ -426,20 +422,21 @@ ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntime)
 
 
 /* Address: 0x00526370.
-   Ownership: world/model/slots.
-   Purpose: Rebases the class-specific model-runtime link at offset 0x60. Pointer-rebase callback table slot
-   selected by model runtime class id.
+   Rebase handler of model class 21, the aircraft (modelRebaseOrLoadRepair[21], run by
+   ModelRuntimePool_RebaseAfterLoad): after a load, turns the saved offset at +0x60 back into a pointer
+   (offset + g_ModelRuntimeRebaseDelta).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   ModelRuntimeSlot *linkedModelRuntime;
-  
+
   linkedModelRuntime = (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime;
-  if (linkedModelRuntime != (ModelRuntimeSlot *)0x0) {
+  if (linkedModelRuntime != NULL) {
+    /* reserved10_37 - 0x10 is the saved offset itself (byte pointer arithmetic) */
     (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime =
-         (ModelRuntimeSlot *)(linkedModelRuntime->reserved10_37 + g_ModelRuntimeRebaseDelta + -0x10)
+         (ModelRuntimeSlot *)(linkedModelRuntime->reserved10_37 + g_ModelRuntimeRebaseDelta - 0x10)
     ;
   }
   return;
@@ -447,31 +444,28 @@ ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntimeSlot
 
 
 /* Address: 0x005263A0.
-   Ownership: world/model/slots.
-   Purpose: Clears class state and sets root child 0 local Z to 0x1000. Class-initialization callback table slot
-   selected by model runtime class id.
+   Class initializer of model class 21, the aircraft (modelClassInitialize[21]): no base linked yet at +0x60,
+   +0xB8 cleared, and the local Z of the root's first child set to Q12_ONE.
 */
 void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  ModelRuntimeNode *rootGrandchildNode;
-  ModelRuntimeNode *rootChildNode;
-  
-  rootChildNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = (ModelRuntimeSlot *)0x0;
-  rootGrandchildNode = rootChildNode->childNodes[0];
+  ModelRuntimeNode *rootChild0Node;
+  ModelRuntimeNode *rootModelNode;
+
+  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
+  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  rootChild0Node = rootModelNode->childNodes[0];
   (modelRuntimeSlot->classState).classStateB8 = 0;
-  (rootGrandchildNode->modelPayload).localTranslationZQ12 = 0x1000;
+  (rootChild0Node->modelPayload).localTranslationZQ12 = Q12_ONE;
   return;
 }
 
 /* Address: 0x00526E00.
-   Ownership: world/model/slots.
-   Purpose: Clears extended class state and enables root animation. Class-initialization callback table slot
-   selected by model runtime class id. Role: Clears extended class state and enables the root animation channel.
-   Inputs: Class-selected model definition and new ModelRuntimeSlot. Outputs: Reset class state plus root animation
-   flags/selector.
+   Class initializer of model class 22 (modelClassInitialize[22]), presumably the aircraft base: clears the class
+   state including the 13 slots at +0x78..+0xAB (the army asset ids ArmyPlacement_ReleaseClassStateReservation
+   looks up) and turns on texture scrolling of the root node for the subresource named at definition +0xC0.
 */
 void __thandor_void_preserve_eax_ecx
 ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
@@ -482,7 +476,7 @@ ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   uint32_t *stateClearCursor;
   ModelRuntimeNode *rootModelNode;
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
-  
+
   rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   primaryAnimatedSubresourceIndex = modelDefinition[0x10].byteSize;
   (modelRuntimeSlot->classState).classStateAC = 0;
@@ -491,16 +485,16 @@ ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   (modelRuntimeSlot->classLinkState).classState74 = 0;
   (modelRuntimeSlot->classLinkState).classState64 = 0;
   (modelRuntimeSlot->classLinkState).classState68 = 0;
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = (ArmyRuntimeSlot *)0x0;
+  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = NULL;
   (modelRuntimeSlot->classLinkState).classState70 = 0;
   (modelRuntimeSlot->classState).classStateDC = 0;
-  rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | 0x80;
+  rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL;
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
   rootModelNode->primaryTextureOffsetU = 0;
   rootModelNode->primaryTextureOffsetV = 0;
   stateClearCursor = &(modelRuntimeSlot->classLinkState).classState78;
-  for (stateDwordsRemaining = 0xd; stateDwordsRemaining != 0;
-      stateDwordsRemaining = stateDwordsRemaining + -1) {
+  for (stateDwordsRemaining = 13; stateDwordsRemaining != 0;
+      stateDwordsRemaining = stateDwordsRemaining - 1) {
     *stateClearCursor = 0;
     stateClearCursor = stateClearCursor + 1;
   }
@@ -509,9 +503,9 @@ ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
 
 
 /* Address: 0x00527B80.
-   Ownership: world/model/slots.
-   Purpose: Fourth exact one-argument no-op reused across many unified runtime object method-table entries. It
-   returns with ret 0x04. Pointer-rebase callback table slot selected by model runtime class id.
+   Default rebase/load-repair handler (modelRebaseOrLoadRepair, every class except 13 and 21, run by
+   ModelRuntimePool_RebaseAfterLoad): those classes keep no pointers in their class state, so this does nothing
+   (RET 4).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
@@ -522,9 +516,8 @@ ModelRuntimeSlotPointerRebase_NoOp(ModelRuntimeSlot *modelRuntimeSlot)
 
 
 /* Address: 0x00527B90.
-   Ownership: world/model/slots.
-   Purpose: Exact two-argument no-op reused across unified runtime object method tables. It returns with ret 0x08.
-   Class-initialization callback table slot selected by model runtime class id.
+   Default class initializer (modelClassInitialize of classes 0, 1, 4-8, 10 and 18-20): those classes need no
+   class state, so this does nothing (RET 8).
 */
 void ModelRuntimeSlotClassInit_NoOp
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
@@ -534,28 +527,24 @@ void ModelRuntimeSlotClassInit_NoOp
 }
 
 /* Address: 0x005283B0.
-   Ownership: world/model/slots.
-   Purpose: Clears class-state field 0x60. Class-initialization callback table slot selected by model runtime class
-   id.
+   Class initializer of model class 12 (modelClassInitialize[12]): clears the link at +0x60.
 */
 void ModelRuntimeSlotClassInit_ClearField60
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = (ModelRuntimeSlot *)0x0;
+  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
   return;
 }
 
 /* Address: 0x005285D0.
-   Ownership: world/model/slots.
-   Purpose: Clears class-state fields 0x60 and 0xB8. Class-initialization callback table slot selected by model
-   runtime class id.
+   Class initializer of model class 23 (modelClassInitialize[23]): clears the class fields +0x60 and +0xB8.
 */
 void ModelRuntimeSlotClassInit_ClearFields60AndB8
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
   (modelRuntimeSlot->classState).classStateB8 = 0;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = (ModelRuntimeSlot *)0x0;
+  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
   return;
 }

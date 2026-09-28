@@ -11,121 +11,102 @@
 /* Implementation ownership: ui/ingame/commands. */
 
 /* Address: 0x0056DB40.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1028. Selects six-choice command mode G value 0, synchronizes the three related page stacks,
-   and applies the verified auxiliary visual-state combination for mode 0. Original user-facing label is not
-   preserved. Queued UI action handler for INGAME_COMMAND_MODE_PAGE11[0] (0x1100). Return datatype is preserved for
-   non-queue direct callers.
-   Local calls: UiCommandModeG_SelectAndSyncPages, UiCommandModeG_SetNodeFlag00100000,
-   UiCommandModeG_SetNodeFlag00200000, UiCommandModeG_ClearNodeFlags00000480, UiCommandModeG_SetNodeFlag00800000,
-   UiCommandModeG_SetNodeFlag01000000, UiCommandModeG_ApplyRawColorVariant, UiCommandModeG_ClearNodeFlag02000000.
+   Editor mode tab G0, terrain height tool (action 0x1100: g_InGameUiCommandModeActionHandlers30[0],
+   g_UiCommandModeGHandlers[0]; also called by the editor hotkeys in ui/ingame/runtime.c). Selects the tab, shows
+   the tool's pages and switches the world view to the height tool overlays: surface point, terrain point, grid
+   vertex and secondary surface markers, with the unmasked terrain colour ramp.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select0(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
-  WorldRuntimeContext *node;
-  
-  runtimeRoot = UiCommandModeG_SelectAndSyncPages(0,source);
-  node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000(node);
-  UiCommandModeG_SetNodeFlag00200000(node);
-  UiCommandModeG_ClearNodeFlags00000480(node);
-  UiCommandModeG_SetNodeFlag00800000(node);
-  UiCommandModeG_SetNodeFlag01000000(node);
-  UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000(node);
+  WorldRuntimeContext *worldRuntime;
+
+  runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_TERRAIN_HEIGHT,source);
+  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  UiCommandModeG_SetNodeFlag00100000(worldRuntime);
+  UiCommandModeG_SetNodeFlag00200000(worldRuntime);
+  UiCommandModeG_ClearNodeFlags00000480(worldRuntime);
+  UiCommandModeG_SetNodeFlag00800000(worldRuntime);
+  UiCommandModeG_SetNodeFlag01000000(worldRuntime);
+  UiCommandModeG_ApplyRawColorVariant(worldRuntime);
+  UiCommandModeG_ClearNodeFlag02000000(worldRuntime);
   return;
 }
 
 
 /* Address: 0x0056DB90.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1029. Selects six-choice command mode G value 1, synchronizes the three related page stacks,
-   and applies the verified auxiliary visual-state combination for mode 1. Original user-facing label is not
-   preserved. Queued UI action handler for INGAME_COMMAND_MODE_PAGE11[1] (0x1101). Return datatype is preserved for
-   non-queue direct callers.
-   Local calls: UiCommandModeG_SelectAndSyncPages, UiCommandModeG_SetNodeFlag00100000,
-   UiCommandModeG_SetNodeFlag00200000, UiCommandModeG_ClearNodeFlags00000480, UiCommandModeG_SetNodeFlag00800000,
-   UiCommandModeG_ClearNodeFlag01000000, UiCommandModeG_ApplyRawColorVariant, UiCommandModeG_ClearNodeFlag02000000.
+   Editor mode tab G1, terrain material tool (action 0x1101: g_InGameUiCommandModeActionHandlers30[1],
+   g_UiCommandModeGHandlers[1]; also called by the editor hotkeys in ui/ingame/runtime.c). Like G0, but without the
+   secondary surface markers.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select1(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
-  WorldRuntimeContext *node;
-  
-  runtimeRoot = UiCommandModeG_SelectAndSyncPages(1,source);
-  node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000(node);
-  UiCommandModeG_SetNodeFlag00200000(node);
-  UiCommandModeG_ClearNodeFlags00000480(node);
-  UiCommandModeG_SetNodeFlag00800000(node);
-  UiCommandModeG_ClearNodeFlag01000000(node);
-  UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000(node);
+  WorldRuntimeContext *worldRuntime;
+
+  runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_TERRAIN_MATERIAL,source);
+  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  UiCommandModeG_SetNodeFlag00100000(worldRuntime);
+  UiCommandModeG_SetNodeFlag00200000(worldRuntime);
+  UiCommandModeG_ClearNodeFlags00000480(worldRuntime);
+  UiCommandModeG_SetNodeFlag00800000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag01000000(worldRuntime);
+  UiCommandModeG_ApplyRawColorVariant(worldRuntime);
+  UiCommandModeG_ClearNodeFlag02000000(worldRuntime);
   return;
 }
 
 
 /* Address: 0x0056DBE0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x102A. Selects six-choice command mode G value 2, synchronizes the three related page stacks,
-   and applies the verified auxiliary visual-state combination for mode 2. Original user-facing label is not
-   preserved. Queued UI action handler for INGAME_COMMAND_MODE_PAGE11[2] (0x1102). Return datatype is preserved for
-   non-queue direct callers.
-   Local calls: UiCommandModeG_SelectAndSyncPages, UiCommandModeG_SetNodeFlag00100000,
-   UiCommandModeG_ClearNodeFlag00200000, UiCommandModeG_ClearNodeFlags00000480, UiCommandModeG_SetNodeFlag00800000,
-   UiCommandModeG_SetNodeFlag01000000, UiCommandModeG_ApplyMaskedColorVariant,
-   UiCommandModeG_ClearNodeFlag02000000.
+   Editor mode tab G2, terrain smoothing tool (action 0x1102: g_InGameUiCommandModeActionHandlers30[2],
+   g_UiCommandModeGHandlers[2]; also called by the editor hotkeys in ui/ingame/runtime.c). Shows the surface point,
+   grid vertex and secondary surface markers and is the only mode with the masked terrain colours
+   (UiCommandModeG_ApplyMaskedColorVariant).
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select2(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
-  WorldRuntimeContext *node;
-  
-  runtimeRoot = UiCommandModeG_SelectAndSyncPages(2,source);
-  node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000(node);
-  UiCommandModeG_ClearNodeFlag00200000(node);
-  UiCommandModeG_ClearNodeFlags00000480(node);
-  UiCommandModeG_SetNodeFlag00800000(node);
-  UiCommandModeG_SetNodeFlag01000000(node);
-  UiCommandModeG_ApplyMaskedColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000(node);
+  WorldRuntimeContext *worldRuntime;
+
+  runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_TERRAIN_SMOOTHING,source);
+  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  UiCommandModeG_SetNodeFlag00100000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag00200000(worldRuntime);
+  UiCommandModeG_ClearNodeFlags00000480(worldRuntime);
+  UiCommandModeG_SetNodeFlag00800000(worldRuntime);
+  UiCommandModeG_SetNodeFlag01000000(worldRuntime);
+  UiCommandModeG_ApplyMaskedColorVariant(worldRuntime);
+  UiCommandModeG_ClearNodeFlag02000000(worldRuntime);
   return;
 }
 
 
 /* Address: 0x0056DC30.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x102D. Selects six-choice command mode G value 3, synchronizes the three related page stacks,
-   applies its auxiliary visual state, updates the verified shared timestamp/state word, and refreshes the command-
-   detail panel. Original user-facing label remains unresolved.
-   Local calls: UiCommandModeG_SelectAndSyncPages, UiCommandModeG_ClearNodeFlag00100000,
-   UiCommandModeG_ClearNodeFlag00200000, UiCommandModeG_SetNodeFlag00000400, UiCommandModeG_SetNodeFlag00800000,
-   UiCommandModeG_ClearNodeFlag01000000, UiCommandModeG_ApplyRawColorVariant, UiCommandModeG_ClearNodeFlag02000000.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog], InGameSelectionDetailPanel_Rebuild
-   [ui/ingame/runtime].
+   Editor mode tab G3, unit placement tool (action 0x1105: g_InGameUiCommandModeActionHandlers30[5],
+   g_UiCommandModeGHandlers[3]; also called by the editor hotkeys in ui/ingame/runtime.c). Shows the army metrics
+   and grid vertex markers and puts the army asset g_UiCommandModeGArmyAssetId into the selection detail panel;
+   an unknown asset id is fatal.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
-  WorldRuntimeContext *node;
+  WorldRuntimeContext *worldRuntime;
   ArmyAssetLookupResult armyAssetLookup;
   FatalErrorCheckResult checkedAssetLookup;
-  
-  runtimeRoot = UiCommandModeG_SelectAndSyncPages(3,source);
-  node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_ClearNodeFlag00100000(node);
-  UiCommandModeG_ClearNodeFlag00200000(node);
-  UiCommandModeG_SetNodeFlag00000400(node);
-  UiCommandModeG_SetNodeFlag00800000(node);
-  UiCommandModeG_ClearNodeFlag01000000(node);
-  UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000(node);
+
+  runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_UNIT_PLACEMENT,source);
+  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  UiCommandModeG_ClearNodeFlag00100000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag00200000(worldRuntime);
+  UiCommandModeG_SetNodeFlag00000400(worldRuntime);
+  UiCommandModeG_SetNodeFlag00800000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag01000000(worldRuntime);
+  UiCommandModeG_ApplyRawColorVariant(worldRuntime);
+  UiCommandModeG_ClearNodeFlag02000000(worldRuntime);
   armyAssetLookup = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
   checkedAssetLookup = FatalError_ExitIfFailed((uint32_t)armyAssetLookup.recordOrError,armyAssetLookup.notFound);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.valueOrError;
@@ -135,69 +116,59 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
 
 
 /* Address: 0x0056DCA0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x102E. Selects six-choice command mode G value 4, synchronizes the three related page stacks,
-   and applies the verified auxiliary visual-state combination for mode 4. Original user-facing label is not
-   preserved.
-   Local calls: UiCommandModeG_SelectAndSyncPages, UiCommandModeG_ClearNodeFlag00100000,
-   UiCommandModeG_ClearNodeFlag00200000, UiCommandModeG_SetNodeFlag00000400, UiCommandModeG_SetNodeFlag00800000,
-   UiCommandModeG_ClearNodeFlag01000000, UiCommandModeG_ApplyRawColorVariant, UiCommandModeG_ClearNodeFlag02000000.
+   Editor mode tab G4, object placement tool (action 0x1106: g_InGameUiCommandModeActionHandlers30[6],
+   g_UiCommandModeGHandlers[4]; also called by the editor hotkeys in ui/ingame/runtime.c). Same overlays as G3
+   (army metrics and grid vertex markers) without the detail panel update.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select4(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
-  WorldRuntimeContext *node;
-  
-  runtimeRoot = UiCommandModeG_SelectAndSyncPages(4,source);
-  node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_ClearNodeFlag00100000(node);
-  UiCommandModeG_ClearNodeFlag00200000(node);
-  UiCommandModeG_SetNodeFlag00000400(node);
-  UiCommandModeG_SetNodeFlag00800000(node);
-  UiCommandModeG_ClearNodeFlag01000000(node);
-  UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000(node);
+  WorldRuntimeContext *worldRuntime;
+
+  runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_OBJECT_PLACEMENT,source);
+  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  UiCommandModeG_ClearNodeFlag00100000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag00200000(worldRuntime);
+  UiCommandModeG_SetNodeFlag00000400(worldRuntime);
+  UiCommandModeG_SetNodeFlag00800000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag01000000(worldRuntime);
+  UiCommandModeG_ApplyRawColorVariant(worldRuntime);
+  UiCommandModeG_ClearNodeFlag02000000(worldRuntime);
   return;
 }
 
 
 /* Address: 0x0056DCF0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x102C. Selects six-choice command mode G value 5, synchronizes the three related page stacks,
-   applies its auxiliary visual state, and mirrors g_UiCommandModeF into the root-resident derived-control field at
-   mode-control base +0xB4. Original user-facing label remains unresolved.
-   Local calls: UiCommandModeG_SelectAndSyncPages, UiCommandModeG_SetNodeFlag00100000,
-   UiCommandModeG_ClearNodeFlag00200000, UiCommandModeG_SetNodeFlag00000400, UiCommandModeG_SetNodeFlag00800000,
-   UiCommandModeG_ClearNodeFlag01000000, UiCommandModeG_ApplyRawColorVariant, UiCommandModeG_SetNodeFlag02000000.
+   Editor mode tab G5, region tool (action 0x1104: g_InGameUiCommandModeActionHandlers30[4],
+   g_UiCommandModeGHandlers[5]; also called by ui/ingame/runtime.c). Shows the surface point, army metrics, grid
+   vertex and region markers; the region markers draw the variant chosen by mode F, so g_UiCommandModeF is copied
+   into the world runtime (+0xB4) as well.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select5(UiSelectableControl *source)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
-  WorldRuntimeContext *node;
-  
-  runtimeRoot = UiCommandModeG_SelectAndSyncPages(5,source);
-  node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000(node);
-  UiCommandModeG_ClearNodeFlag00200000(node);
-  UiCommandModeG_SetNodeFlag00000400(node);
-  UiCommandModeG_SetNodeFlag00800000(node);
-  UiCommandModeG_ClearNodeFlag01000000(node);
-  UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_SetNodeFlag02000000(node);
+  WorldRuntimeContext *worldRuntime;
+
+  runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_REGION,source);
+  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  UiCommandModeG_SetNodeFlag00100000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag00200000(worldRuntime);
+  UiCommandModeG_SetNodeFlag00000400(worldRuntime);
+  UiCommandModeG_SetNodeFlag00800000(worldRuntime);
+  UiCommandModeG_ClearNodeFlag01000000(worldRuntime);
+  UiCommandModeG_ApplyRawColorVariant(worldRuntime);
+  UiCommandModeG_SetNodeFlag02000000(worldRuntime);
   (runtimeRoot->worldRuntime0A30).fieldRegion.reservedCallbackState04 = g_UiCommandModeF;
   return;
 }
 
 
 /* Address: 0x0056AC50.
-   Ownership: ui/ingame/commands.
-   Purpose: Binary entry is anchored by g_UiActionPage10InitializedHandlers[27]@005624A0. Queued UI action handler
-   for INGAME_PAGE10[27] (0x101B). Return datatype is preserved for non-queue direct callers.
-   Local calls: UiCommandRuntimeFlags_ApplyClearSetToggleMasks.
-   Cross-module calls: InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B [ui/frontend/player].
+   Results screen continue button (action 0x101B, g_InGameUiActionHandlersPage10[27]). A local game or network host
+   sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED (the host through command 0x310 so every machine sees it); a network
+   client instead reports itself ready, which lets the host show its own continue button.
 */
 void __thandor_preserve_eax InGameCommandAction_SetFlag1000OrMarkReady(void *source)
 
@@ -205,10 +176,12 @@ void __thandor_preserve_eax InGameCommandAction_SetFlag1000OrMarkReady(void *sou
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      UiCommandRuntimeFlags_ApplyClearSetToggleMasks(g_LocalPlayerRuntimeId,0,0x1000,0);
+      UiCommandRuntimeFlags_ApplyClearSetToggleMasks
+                (g_LocalPlayerRuntimeId,0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x310,0,0x1000,0);
+      InGameCommandQueue_AppendLocalPlayerCommand
+                (INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
     }
   }
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -216,53 +189,47 @@ void __thandor_preserve_eax InGameCommandAction_SetFlag1000OrMarkReady(void *sou
     FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(g_LocalPlayerRuntimeId);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(0x470,0,0,0);
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_MARK_PLAYER_READY_101B,0,0,0);
   }
   return;
 }
 
 
 /* Address: 0x0056ACC0.
-   Ownership: ui/ingame/commands.
-   Purpose: Binary entry is anchored by g_UiActionPage10InitializedHandlers[9]@005624A0. Queued UI action handler
-   for INGAME_PAGE10[9] (0x1009). Return datatype is preserved for non-queue direct callers.
-   Local calls: UiCommandRuntimeFlags_ApplyClearSetToggleMasks.
-   Cross-module calls: InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   End movie view click (action 0x1009, g_InGameUiActionHandlersPage10[9]): skips the end movie. Despite the name
+   it does not toggle but clears UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING (clear mask of command 0x310, sent to
+   every machine in a network game).
 */
 void __thandor_preserve_eax InGameCommandAction_ToggleRuntimeFlag0800(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiCommandRuntimeFlags_ApplyClearSetToggleMasks(g_LocalPlayerRuntimeId,0,0,0x800);
+    UiCommandRuntimeFlags_ApplyClearSetToggleMasks
+              (g_LocalPlayerRuntimeId,0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(0x310,0,0,0x800);
+    InGameCommandQueue_AppendLocalPlayerCommand
+              (INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,0,UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING);
   }
   return;
 }
 
 
 /* Address: 0x0056D6C0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1027. Finds the UI root, clears the selectable control at root offset 0x4388, invokes
-   UiAction1003_ToggleInGameSettingsPage to close the settings page, then dispatches numeric operation 0x150
-   through the queued or local path according to shared runtime mode bits. Original operation label remains
-   unresolved. Queued UI action handler for INGAME_PAGE10[39] (0x1027). Return datatype is preserved for non-queue
-   direct callers.
-   Local calls: InGameCommand150_HandlePlayerDepartureAndOwnership.
-   Cross-module calls: UiSelectableControl_SetSelected [ui/controls/lists],
-   InGameSettingsPage_ToggleAndSynchronizeControls [ui/ingame/settings],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   Quit game window restart button (action INGAME_ACTION_QUIT_RESTART_MISSION 0x1027,
+   g_InGameUiActionHandlersPage10[39]): deselects and closes the in-game menu, then issues command 0x150 with
+   INGAME_COMMAND150_FLAG_CLOSE_SESSION, which ends the session.
 */
 void __thandor_preserve_eax
 InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source)
 
 {
   UiNodeBase *parentCursor;
-  
+
+  /* source becomes the in-game UI root (parent -1) */
   parentCursor = source->parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     source = source->parent;
     parentCursor = source->parent;
   }
@@ -270,21 +237,21 @@ InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source)
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand150_HandlePlayerDepartureAndOwnership(g_LocalPlayerRuntimeId,0,0,2);
+    InGameCommand150_HandlePlayerDepartureAndOwnership
+              (g_LocalPlayerRuntimeId,0,0,INGAME_COMMAND150_FLAG_CLOSE_SESSION);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(0x150,0,0,2);
+    InGameCommandQueue_AppendLocalPlayerCommand
+              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_COMMAND150_FLAG_CLOSE_SESSION);
   }
   return;
 }
 
 
 /* Address: 0x0056DFD0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1038. Finds the source offset in the verified twelve-entry command-control table, adds the
-   active twelve-entry page base, and delegates selection to UiCommandMatrix_SelectIndex. Unmapped controls are
-   ignored.
-   Local calls: UiCommandMatrix_SelectIndex.
+   Terrain material swatch click (action 0x1110, g_InGameUiCommandModeActionHandlers30[16]): finds which of the
+   twelve swatch controls (g_UiMappedCommandControlOffsets) was clicked and selects the material at that position
+   of the current page. Clicks on other controls are ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandMatrix_SelectMappedControl(UiNodeBase *source)
 
@@ -293,15 +260,15 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandMatrix_SelectMappedControl
   int mappingsRemaining;
   int mappingIndex;
   UiNodeBase *ancestorCursor;
-  
+
   ancestorCursor = source->parent;
   root = source;
-  while (ancestorCursor != (UiNodeBase *)0xffffffff) {
+  while (ancestorCursor != UI_NODE_NONE) {
     root = root->parent;
     ancestorCursor = root->parent;
   }
   mappingIndex = 0;
-  mappingsRemaining = 0xc;
+  mappingsRemaining = 12;
   do {
     if ((int)source - (int)root == g_UiMappedCommandControlOffsets[mappingIndex]) {
       UiCommandMatrix_SelectIndex(mappingIndex + g_UiCommandSelectionPageBaseIndex,root);
@@ -315,10 +282,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandMatrix_SelectMappedControl
 
 
 /* Address: 0x00516360.
-   Ownership: ui/ingame/commands.
-   Purpose: Begins pointer activation for command-sprite controls: clears activationInputState, sets selected
-   state, invalidates the root, and records the repeat/double-click marker when applicable.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Pointer press of the command sprite buttons (nonRightPress and rightPress of g_UiNodeVtable_005162C0,
+   g_UiNodeVtable_00516310 and g_UiNodeVtable_00516530): shows the button pressed and starts a new
+   activationInputState, marking a double click when the node reports one.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCommandSpriteButtonControl_BeginPress
@@ -343,10 +309,10 @@ UiCommandSpriteButtonControl_BeginPress
 
 
 /* Address: 0x005163A0.
-   Ownership: ui/ingame/commands.
-   Purpose: Completes a non-right pointer activation, clears selected state, merges the filtered global input-state
-   word into activationInputState, optionally plays the inherited sound, queues actionId, and invalidates the root.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   Left/middle button release of the command sprite buttons (nonRightRelease of g_UiNodeVtable_005162C0 and
+   g_UiNodeVtable_00516310): when the press started on this button, adds the modifier keys held now to
+   activationInputState, plays the activation sound if enabled and queues the button's action; the action
+   handler reads activationInputState to choose what to do.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCommandSpriteButtonControl_NonRightRelease
@@ -364,6 +330,7 @@ UiCommandSpriteButtonControl_NonRightRelease
     stateFlagsField = &(control->sprite).selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = control->activationInputState | inputStateBits;
+    /* stateFlags 0x200: play the activation sound on release */
     if ((((control->sprite).selectable.stateFlags & 0x200) != 0) &&
        ((control->sprite).activationSoundId != 0)) {
       g_SoundPlayOneShot
@@ -378,10 +345,9 @@ UiCommandSpriteButtonControl_NonRightRelease
 
 
 /* Address: 0x00516410.
-   Ownership: ui/ingame/commands.
-   Purpose: Completes a right-button activation, captures the global input-state word with the alternate-activation
-   marker, optionally plays the inherited activation sound, queues actionId, and invalidates the root.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   Right button release of the command sprite buttons (rightRelease of g_UiNodeVtable_005162C0,
+   g_UiNodeVtable_00516310 and g_UiNodeVtable_00516530): like the left release, but replaces activationInputState
+   with the modifier keys plus UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON (which also drops the double-click marker).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCommandSpriteButtonControl_RightRelease
@@ -398,6 +364,7 @@ UiCommandSpriteButtonControl_RightRelease
     stateFlagsField = &(control->sprite).selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = inputStateBits | UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON;
+    /* stateFlags 0x200: play the activation sound on release */
     if ((((control->sprite).selectable.stateFlags & 0x200) != 0) &&
        ((control->sprite).activationSoundId != 0)) {
       g_SoundPlayOneShot
@@ -412,10 +379,9 @@ UiCommandSpriteButtonControl_RightRelease
 
 
 /* Address: 0x00516490.
-   Ownership: ui/ingame/commands.
-   Purpose: Maps one of up to 24 variant-A controls through the active control-offset table, stores the matching
-   runtime record as the hover selection, refreshes the dependent UI, and returns cursor identifier 10 or 12.
-   Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime].
+   Pointer move over an army stock slot (pointerMove of g_UiNodeVtable_005162C0): shows the slot's army asset in
+   the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then sells the army,
+   see InGameCommandSprite_DispatchVariantAControl24), 10 otherwise.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiCommandSpriteVariantA_PointerMove
@@ -425,9 +391,9 @@ UiCommandSpriteVariantA_PointerMove
 {
   GraphicsCursorFrameIndex cursorFrame;
   int recordIndex;
-  
+
   if (((control->sprite).selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    recordIndex = 0x17;
+    recordIndex = 23;
     do {
       if ((int)control - (int)g_InGameRuntimeRoot ==
           g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][recordIndex])
@@ -440,17 +406,17 @@ UiCommandSpriteVariantA_PointerMove
     } while (-1 < recordIndex);
   }
   cursorFrame = 10;
-  if ((g_KeyboardStateMask & 0xc) != 0) {
-    cursorFrame = 0xc;
+  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+    cursorFrame = 12;
   }
   return cursorFrame;
 }
 
 
 /* Address: 0x00517F60.
-   Ownership: ui/ingame/commands.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00517F10[2]@00517F10.
-   Cross-module calls: UiWrappedTextControl_DrawClipped [ui/controls/text].
+   drawClipped of g_UiCommandVisibilityWrappedTextVtable (the wrapped world view status text): draws the text
+   unless g_UiCommandRuntimeFlags bit 0x200 hides all these texts; with label flag 0x800 only while the game is
+   paused.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCommandVisibilityWrappedText_DrawWhenAllowed
@@ -458,8 +424,10 @@ UiCommandVisibilityWrappedText_DrawWhenAllowed
           UiPixelCoordinate clipRight,UiNodeBase *control)
 
 {
+  /* bit 0x200 has no writer with a constant mask; it can only come from command 0x310 */
   if (((g_UiCommandRuntimeFlags & 0x200) == 0) &&
-     ((((((UiWrappedTextControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)) &&
+     ((((((UiWrappedTextControl *)control)->labelFlags & 0x800) == 0 ||
+        ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0)) &&
       ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0)))) {
     UiWrappedTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiWrappedTextControl *)control);
   }
@@ -468,9 +436,9 @@ UiCommandVisibilityWrappedText_DrawWhenAllowed
 
 
 /* Address: 0x00518010.
-   Ownership: ui/ingame/commands.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00517FC0[2]@00517FC0.
-   Cross-module calls: UiSingleLineTextControl_DrawClipped [ui/controls/text].
+   drawClipped of g_UiCommandVisibilitySingleLineTextVtable (the single-line world view texts): same visibility
+   rules as the wrapped text; label flag 0x1000 additionally needs g_InGameSimulationStepTicks > 1 and draws the
+   text shifted by ticks - 2 bytes (the text pointer is restored afterwards).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCommandVisibilitySingleLineText_DrawWhenAllowed
@@ -479,10 +447,11 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
 
 {
   int drawOffsetAdjust;
-  
+
   drawOffsetAdjust = 0;
   if ((((g_UiCommandRuntimeFlags & 0x200) == 0) &&
-      (((((UiSingleLineTextControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)))) &&
+      (((((UiSingleLineTextControl *)control)->labelFlags & 0x800) == 0 ||
+        ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0)))) &&
      (((((UiSingleLineTextControl *)control)->labelFlags & 0x1000) == 0 ||
       (drawOffsetAdjust = g_InGameSimulationStepTicks - 2, 1 < g_InGameSimulationStepTicks)))) {
     ((UiSingleLineTextControl *)control)->text = (uint16_t *)((int)((UiSingleLineTextControl *)control)->text + drawOffsetAdjust);
@@ -721,14 +690,10 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
 
 
 /* Address: 0x0056AFD0.
-   Ownership: ui/ingame/commands.
-   Purpose: Binary entry is anchored by g_UiActionPage10InitializedHandlers[17]@005624A0. Queued UI action handler
-   for INGAME_PAGE10[17] (0x1011). Return datatype is preserved for non-queue direct callers. Typed parameters: p0
-   control→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], SelectionInfo_GetFirstEntry
-   [gameplay/selection/runtime], FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
-   [ui/frontend/player], InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   Technology window close button (action 0x1011, g_InGameUiActionHandlersPage10[17]): shows the world view again,
+   closes the window (page 0 of the game window page stack) and, if something is selected, sends
+   INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE with -1 (cancel) for the first selected building, which gives back what
+   opening the page took away.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
@@ -737,16 +702,17 @@ InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
   UiNodeBase *parentCursor;
   GameEntityRuntime *firstSelectedEntity;
   CommandPayloadDword04 modelOffset;
-  
+
+  /* control becomes the in-game UI root (parent -1) */
   parentCursor = control->parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     control = control->parent;
     parentCursor = control->parent;
   }
   INGAME_UI(control,worldView)->nodeFlags = INGAME_UI(control,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(control,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  if (firstSelectedEntity != (GameEntityRuntime *)0x0) {
+  if (firstSelectedEntity != NULL) {
     modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                   g_ModelRuntimeRebaseDelta;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -755,7 +721,7 @@ InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
                 (g_LocalPlayerRuntimeId,0,0xffffffff,modelOffset);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x1700,0,0xffffffff,modelOffset);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE,0,0xffffffff,modelOffset);
     }
   }
   return;
@@ -794,32 +760,29 @@ InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSourceAddre
 
 
 /* Address: 0x0056CFA0.
-   Ownership: ui/ingame/commands.
-   Purpose: Finds the UI root, resolves the source catalog control through the active 48-entry grid offset table,
-   obtains the matching UiCommandRuntimeRecordPrefix.backendPayload, and submits backend command variant 0x0FE0 or
-   0x1030 according to activationInputState bits 0x0C. Runtime flags 0x0101 inhibit submission. Queued UI action
-   handler for INGAME_PAGE10[11] (0x100B). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: GameFactionRuntime_RegisterArmyAssetPointers [gameplay/faction/runtime],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   GameFactionRuntime_CancelQueuedArmyAssetsAndRefund [gameplay/faction/runtime].
+   Build catalog entry click (action 0x100B, g_InGameUiActionHandlersPage10[11]): finds the entry among the 48
+   build catalog slots of the current column layout and queues its army asset for the active faction, or with Ctrl
+   (activationInputState & KEYBOARD_STATE_CTRL) cancels a queued one with refund. Ignored while paused or while the
+   world input is disabled.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
 
 {
-  UiNodeBase *parentOrFactionIndex;
+  UiNodeBase *parentOrFactionIndex; /* ancestor cursor, then the active faction index (one register) */
   UiCatalogEntryControl *root;
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
-  
-  if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
+
+  if ((g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
     parentOrFactionIndex = (source->command).sprite.selectable.base.parent;
     root = source;
-    while (parentOrFactionIndex != (UiNodeBase *)0xffffffff) {
+    while (parentOrFactionIndex != UI_NODE_NONE) {
       root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
       parentOrFactionIndex = (root->command).sprite.selectable.base.parent;
     }
-    entryIndex = 0x2f;
+    entryIndex = 47;
     while ((int)source - (int)root !=
            g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][entryIndex]) {
       entryIndex = entryIndex + -1;
@@ -829,7 +792,8 @@ InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
     }
     if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
         == 0) {
-      parentOrFactionIndex = root[0x15].command.sprite.selectable.base.nextSibling;
+      parentOrFactionIndex =
+           (UiNodeBase *)((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -837,11 +801,13 @@ InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
                   (g_LocalPlayerRuntimeId,1,assetId,(FactionRuntimeIndex)parentOrFactionIndex);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0xfe0,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
       }
     }
     else {
-      parentOrFactionIndex = root[0x15].command.sprite.selectable.base.nextSibling;
+      parentOrFactionIndex =
+           (UiNodeBase *)((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup48Records[entryIndex]->armyAssetId;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -849,7 +815,8 @@ InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
                   (g_LocalPlayerRuntimeId,1,assetId,(FactionRuntimeIndex)parentOrFactionIndex);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x1030,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
       }
     }
   }
@@ -858,32 +825,27 @@ InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
 
 
 /* Address: 0x0056D090.
-   Ownership: ui/ingame/commands.
-   Purpose: Finds the UI root, resolves the source catalog control through the active 42-entry grid offset table,
-   obtains the matching UiCommandRuntimeRecordPrefix.backendPayload, and submits backend command variant 0x0FE0 or
-   0x1030 according to activationInputState bits 0x0C. Runtime flags 0x0101 inhibit submission. Queued UI action
-   handler for INGAME_PAGE10[12] (0x100C). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: GameFactionRuntime_RegisterArmyAssetPointers [gameplay/faction/runtime],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   GameFactionRuntime_CancelQueuedArmyAssetsAndRefund [gameplay/faction/runtime].
+   Special build catalog entry click (action 0x100C, g_InGameUiActionHandlersPage10[12]): the same as
+   InGameCommandCatalog_SubmitGroup48Entry for the 42 slots of the special build catalog.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
 
 {
-  UiNodeBase *parentOrFactionIndex;
+  UiNodeBase *parentOrFactionIndex; /* ancestor cursor, then the active faction index (one register) */
   UiCatalogEntryControl *root;
   PckArmyAssetIdCatalog assetId;
   int entryIndex;
-  
-  if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
+
+  if ((g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
     parentOrFactionIndex = (source->command).sprite.selectable.base.parent;
     root = source;
-    while (parentOrFactionIndex != (UiNodeBase *)0xffffffff) {
+    while (parentOrFactionIndex != UI_NODE_NONE) {
       root = (UiCatalogEntryControl *)(root->command).sprite.selectable.base.parent;
       parentOrFactionIndex = (root->command).sprite.selectable.base.parent;
     }
-    entryIndex = 0x29;
+    entryIndex = 41;
     while ((int)source - (int)root !=
            g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][entryIndex]) {
       entryIndex = entryIndex + -1;
@@ -893,7 +855,8 @@ InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
     }
     if (((source->command).activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK)
         == 0) {
-      parentOrFactionIndex = root[0x15].command.sprite.selectable.base.nextSibling;
+      parentOrFactionIndex =
+           (UiNodeBase *)((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -901,11 +864,13 @@ InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
                   (g_LocalPlayerRuntimeId,1,assetId,(FactionRuntimeIndex)parentOrFactionIndex);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0xfe0,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
       }
     }
     else {
-      parentOrFactionIndex = root[0x15].command.sprite.selectable.base.nextSibling;
+      parentOrFactionIndex =
+           (UiNodeBase *)((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       assetId = g_UiCatalogGroup42Records[entryIndex]->armyAssetId;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -913,7 +878,8 @@ InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
                   (g_LocalPlayerRuntimeId,1,assetId,(FactionRuntimeIndex)parentOrFactionIndex);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x1030,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayloadDword04)parentOrFactionIndex);
       }
     }
   }
@@ -922,15 +888,10 @@ InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
 
 
 /* Address: 0x0056D180.
-   Ownership: ui/ingame/commands.
-   Purpose: Handles numeric action 0x1001 for a variant-A command-sprite control. It resolves the control index
-   through the active 24-slot offset table, loads the matching runtime record, and chooses a backend operation from
-   activationInputState bits. Queued UI action handler for INGAME_PAGE10[1] (0x1001). Return datatype is preserved
-   for non-queue direct callers.
-   Cross-module calls: GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid [gameplay/faction/runtime],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer [gameplay/faction/runtime],
-   GameFactionRuntime_SellArmyAssetAndRefundSevenEighths [gameplay/faction/runtime].
+   Army stock slot click (action 0x1001, g_InGameUiActionHandlersPage10[1]): first drops any army still waiting
+   for placement (command 0x14F0), then takes the slot's army for placement on the map, or sells it with Ctrl
+   (activationInputState & KEYBOARD_STATE_CTRL). Ignored while paused, while the world input is disabled and while
+   world runtime flag 0x10 is set.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *control)
@@ -940,22 +901,24 @@ InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *cont
   UiNodeBase *parentCursor;
   UiCommandSpriteButtonControl *root;
   UiCommandRuntimeRecordPrefix *runtimeRecord;
-  GraphicsTextureSourceAsset *factionToken;
+  GraphicsTextureSourceAsset *factionToken; /* holds the active faction index */
   PckArmyAssetIdCatalog assetId;
   int slotIndex;
-  
-  if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
+
+  if ((g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
     parentCursor = (control->sprite).selectable.base.parent;
     root = control;
-    while (parentCursor != (UiNodeBase *)0xffffffff) {
+    while (parentCursor != UI_NODE_NONE) {
       root = (UiCommandSpriteButtonControl *)(root->sprite).selectable.base.parent;
       parentCursor = (root->sprite).selectable.base.parent;
     }
-    g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-    flagsField = &root[0x122].sprite.selectable.base.leftOffset;
+    /* end any hover of the stock panel (image control) */
+    g_UiImageControlHoverTarget = NULL;
+    flagsField = (int32_t *)&((UiImageControl *)INGAME_UI(root,armyStockPanel))->selectable.stateFlags;
     *flagsField = *flagsField & 0xfffff9fc;
-    if ((root[0x15].sprite.selectable.actionId & 0x10U) == 0) {
-      slotIndex = 0x17;
+    if ((((WorldRuntimeContext *)INGAME_UI(root,worldView))->runtimeFlags & 0x10U) == 0) {
+      slotIndex = 23;
       while ((int)control - (int)root !=
              g_UiCommandSpriteVariantAOffsetTables[g_UiCommandSpriteVariantAColumnCount][slotIndex]) {
         slotIndex = slotIndex + -1;
@@ -964,18 +927,21 @@ InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *cont
         }
       }
       runtimeRecord = g_UiCommandSpriteVariantARecords[slotIndex];
-      factionToken = root[0x15].sprite.primaryTextureSource;
+      factionToken = (GraphicsTextureSourceAsset *)
+                     ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
                   (g_LocalPlayerRuntimeId,0,0,(FactionRuntimeIndex)factionToken);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x14f0,0,0,(CommandPayloadDword04)factionToken);
+        InGameCommandQueue_AppendLocalPlayerCommand
+                  (INGAME_COMMAND_CONSUME_PENDING_ARMY,0,0,(CommandPayloadDword04)factionToken);
       }
       if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0)
       {
-        factionToken = root[0x15].sprite.primaryTextureSource;
+        factionToken = (GraphicsTextureSourceAsset *)
+                       ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
         assetId = runtimeRecord->armyAssetId;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -983,11 +949,13 @@ InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *cont
                     (g_LocalPlayerRuntimeId,0,assetId,(FactionRuntimeIndex)factionToken);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x12d0,0,assetId,(CommandPayloadDword04)factionToken);
+          InGameCommandQueue_AppendLocalPlayerCommand
+                    (INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT,0,assetId,(CommandPayloadDword04)factionToken);
         }
       }
       else {
-        factionToken = root[0x15].sprite.primaryTextureSource;
+        factionToken = (GraphicsTextureSourceAsset *)
+                       ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
         assetId = runtimeRecord->armyAssetId;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -995,7 +963,8 @@ InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *cont
                     (g_LocalPlayerRuntimeId,0,assetId,(FactionRuntimeIndex)factionToken);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x1570,0,assetId,(CommandPayloadDword04)factionToken);
+          InGameCommandQueue_AppendLocalPlayerCommand
+                    (INGAME_COMMAND_SELL_ARMY,0,assetId,(CommandPayloadDword04)factionToken);
         }
       }
     }
@@ -1005,14 +974,11 @@ InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *cont
 
 
 /* Address: 0x0056D540.
-   Ownership: ui/ingame/commands.
-   Purpose: Handles numeric action 0x100A for one of eight fixed command-sprite controls. It resolves the control
-   through g_UiAction100AControlOffsets, decodes low-nibble, alternate, and repeat markers from
-   activationInputState, and dispatches the backend command. Queued UI action handler for INGAME_PAGE10[10]
-   (0x100A). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: SelectionInfo_AllEntriesEmptyOrMatchOwner [gameplay/selection/runtime],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh [ui/frontend/player].
+   Selection group button click (action 0x100A, g_InGameUiActionHandlersPage10[10]; the 8 buttons of
+   g_UiAction100AControlOffsets): the mouse version of the 1..8 group keys. A plain click recalls the group, a
+   modifier key merges (SELECTION_TRANSFER_MERGE), the right button stores the selection into the group
+   (SELECTION_TRANSFER_TO_GROUP) and a double click also centres the view. Every variant except the plain recall
+   is refused when SelectionInfo_AllEntriesEmptyOrMatchOwner reports so for the active faction.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *control)
@@ -1020,77 +986,75 @@ InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *control)
 {
   UiNodeBase *parentCursor;
   UiCommandSpriteButtonControl *root;
-  GraphicsTextureSourceAsset *payloadDword0C;
-  CommandPayloadDword04 payloadDword04;
+  GraphicsTextureSourceAsset *factionToken; /* holds the active faction index */
+  CommandPayloadDword04 groupIndex;
   CommandPayloadDword08 transferModeFlags;
   bool selectionBlocked;
-  
-  if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
+
+  if ((g_UiCommandRuntimeFlags &
+      (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) {
     parentCursor = (control->sprite).selectable.base.parent;
     root = control;
-    while (parentCursor != (UiNodeBase *)0xffffffff) {
+    while (parentCursor != UI_NODE_NONE) {
       root = (UiCommandSpriteButtonControl *)(root->sprite).selectable.base.parent;
       parentCursor = (root->sprite).selectable.base.parent;
     }
-    payloadDword04 = 7;
+    groupIndex = SELECTION_GROUP_COUNT - 1;
     do {
-      if ((int)control - (int)root == g_UiAction100AControlOffsets[payloadDword04]) {
+      if ((int)control - (int)root == g_UiAction100AControlOffsets[groupIndex]) {
         transferModeFlags = 0;
         if ((control->activationInputState & UI_COMMAND_ACTIVATION_LOW_INPUT_NIBBLE_MASK) != 0) {
-          transferModeFlags = 2;
+          transferModeFlags = SELECTION_TRANSFER_MERGE;
         }
         if ((control->activationInputState & UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON) != 0) {
-          transferModeFlags = transferModeFlags | 1;
+          transferModeFlags = transferModeFlags | SELECTION_TRANSFER_TO_GROUP;
         }
         if ((control->activationInputState & UI_COMMAND_ACTIVATION_REPEAT_OR_DOUBLE_CLICK) != 0) {
-          transferModeFlags = transferModeFlags | 4;
+          transferModeFlags = transferModeFlags | SELECTION_TRANSFER_CENTER_VIEW;
         }
         if ((transferModeFlags != 0) &&
            (selectionBlocked = SelectionInfo_AllEntriesEmptyOrMatchOwner
-                              ((FactionRuntimeIndex)root[0x15].sprite.primaryTextureSource), selectionBlocked
-           )) {
+                              ((FactionRuntimeIndex)
+                               ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex),
+           selectionBlocked)) {
           return;
         }
-        payloadDword0C = root[0x15].sprite.primaryTextureSource;
+        factionToken = (GraphicsTextureSourceAsset *)
+                       ((WorldRuntimeContext *)INGAME_UI(root,worldView))->activeFactionRuntimeIndex;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
             SESSION_NETWORK_ROLE_LOCAL) {
           InGameCommandQueue_AppendLocalPlayerCommand
-                    (0xbe0,(CommandPayloadDword0C)payloadDword0C,transferModeFlags,payloadDword04);
+                    (INGAME_COMMAND_SELECTION_GROUP,(CommandPayloadDword0C)factionToken,transferModeFlags,
+                     groupIndex);
           return;
         }
         FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
-                  (g_LocalPlayerRuntimeId,(FactionRuntimeIndex)payloadDword0C,transferModeFlags,
-                   payloadDword04);
+                  (g_LocalPlayerRuntimeId,(FactionRuntimeIndex)factionToken,transferModeFlags,
+                   groupIndex);
         return;
       }
-      payloadDword04 = payloadDword04 - 1;
-    } while (-1 < (int)payloadDword04);
+      groupIndex = groupIndex - 1;
+    } while (-1 < (int)groupIndex);
   }
   return;
 }
 
 
 /* Address: 0x0056D620.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1025. Sets bit 0x00001000 in g_UiCommandRuntimeFlags. The source argument is unused. The
-   original user-facing label and broader bit meaning are not preserved. Queued UI action handler for
-   INGAME_PAGE10[37] (0x1025).
+   Second results screen button (action 0x1025, g_InGameUiActionHandlersPage10[37]; resultsSecondaryExitButton,
+   only offered in network games): sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED on this machine only.
 */
 void InGameCommandState_SetRuntimeFlag1000(UiNodeBase *source)
 
 {
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x1000;
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED;
   return;
 }
 
 /* Address: 0x0056D640.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1026. Finds the UI root, exclusively selects the source among the two results chart mode
-   buttons, obtains the visible selected index 0 or 1, and mirrors that index into the modeFlags of the three
-   results charts (root offsets 0x454, 0x4D0, 0x54C) and the subresource of the results screen panel (0x3A8). Queued UI action handler for
-   INGAME_PAGE10[38] (0x1026). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists],
-   UiSelectableGroup_NoneVisibleSelected [ui/controls/lists].
+   Results chart mode buttons (action 0x1026, g_InGameUiActionHandlersPage10[38]): selects the clicked one of the
+   two buttons and copies the chosen mode (0 or 1) into the modeFlags of the three results charts (graph or table
+   drawing) and into the image subresource of the results screen background.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
@@ -1103,7 +1067,7 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
   
   parentCursor = (source->base).parent;
   root = source;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     root = (UiSelectableControl *)(root->base).parent;
     parentCursor = (root->base).parent;
   }
@@ -1128,22 +1092,20 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
 
 
 /* Address: 0x0056D920.
-   Ownership: ui/ingame/commands.
-   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x00800000. The original visual-state label is not preserved.
+   Hides the grid vertex markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); called
+   when the editor is switched off (InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState).
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags & 0xff7fffff;
+  context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS;
   return;
 }
 
 
 /* Address: 0x0056DD50.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1030. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode C value 0. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Height tool option 0 (action 0x1108, g_InGameUiCommandModeActionHandlers30[8]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects heightToolOption0 among the four height tool buttons and sets g_UiCommandModeC = 0.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select0(UiSpriteButtonControl *source)
 
@@ -1159,10 +1121,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select0(UiSpriteButt
 
 
 /* Address: 0x0056DDA0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1031. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode C value 1. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Height tool option 1 (action 0x1109, g_InGameUiCommandModeActionHandlers30[9]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects heightToolOption1 among the four height tool buttons and sets g_UiCommandModeC = 1.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select1(UiSpriteButtonControl *source)
 
@@ -1178,10 +1138,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select1(UiSpriteButt
 
 
 /* Address: 0x0056DDF0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1032. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode C value 2. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Height tool option 2 (action 0x110A, g_InGameUiCommandModeActionHandlers30[10]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects heightToolOption2 among the four height tool buttons and sets g_UiCommandModeC = 2.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select2(UiSpriteButtonControl *source)
 
@@ -1197,10 +1155,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select2(UiSpriteButt
 
 
 /* Address: 0x0056DE40.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1033. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode C value 3. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Height tool option 3 (action 0x110B, g_InGameUiCommandModeActionHandlers30[11]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects heightToolOption3 among the four height tool buttons and sets g_UiCommandModeC = 3.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select3(UiSpriteButtonControl *source)
 
@@ -1216,10 +1172,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select3(UiSpriteButt
 
 
 /* Address: 0x0056DE90.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1034. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode D value 0. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Material tool option 0 (action 0x110C, g_InGameUiCommandModeActionHandlers30[12]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects materialToolOption0 among the four material tool buttons and sets
+   g_UiCommandModeD = 0.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select0(UiSpriteButtonControl *source)
 
@@ -1235,10 +1190,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select0(UiSpriteButt
 
 
 /* Address: 0x0056DEE0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1035. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode D value 1. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Material tool option 1 (action 0x110D, g_InGameUiCommandModeActionHandlers30[13]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects materialToolOption1 among the four material tool buttons and sets
+   g_UiCommandModeD = 1.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select1(UiSpriteButtonControl *source)
 
@@ -1254,10 +1208,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select1(UiSpriteButt
 
 
 /* Address: 0x0056DF30.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1036. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode D value 2. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Material tool option 2 (action 0x110E, g_InGameUiCommandModeActionHandlers30[14]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects materialToolOption2 among the four material tool buttons and sets
+   g_UiCommandModeD = 2.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select2(UiSpriteButtonControl *source)
 
@@ -1273,10 +1226,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select2(UiSpriteButt
 
 
 /* Address: 0x0056DF80.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1037. Exclusively selects the source within a four-control UiSpriteButtonControl group and
-   stores command mode D value 3. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Material tool option 3 (action 0x110F, g_InGameUiCommandModeActionHandlers30[15]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects materialToolOption3 among the four material tool buttons and sets
+   g_UiCommandModeD = 3.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select3(UiSpriteButtonControl *source)
 
@@ -1292,10 +1244,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeD_Select3(UiSpriteButt
 
 
 /* Address: 0x0056E050.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1039. Exclusively selects the source within a three-control UiSpriteButtonControl group and
-   stores command mode A value 0. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Unit placement option 0 (action 0x1111, g_InGameUiCommandModeActionHandlers30[17]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects unitPlacementOption0 among the three unit placement buttons and sets
+   g_UiCommandModeA = 0.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select0(UiSpriteButtonControl *source)
 
@@ -1310,10 +1261,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select0(UiSpriteButt
 
 
 /* Address: 0x0056E090.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x103A. Exclusively selects the source within a three-control UiSpriteButtonControl group and
-   stores command mode A value 1. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Unit placement option 1 (action 0x1112, g_InGameUiCommandModeActionHandlers30[18]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects unitPlacementOption1 among the three unit placement buttons and sets
+   g_UiCommandModeA = 1.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select1(UiSpriteButtonControl *source)
 
@@ -1328,10 +1278,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select1(UiSpriteButt
 
 
 /* Address: 0x0056E0D0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x103B. Exclusively selects the source within a three-control UiSpriteButtonControl group and
-   stores command mode A value 2. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Unit placement option 2 (action 0x1113, g_InGameUiCommandModeActionHandlers30[19]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects unitPlacementOption2 among the three unit placement buttons and sets
+   g_UiCommandModeA = 2.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select2(UiSpriteButtonControl *source)
 
@@ -1346,10 +1295,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeA_Select2(UiSpriteButt
 
 
 /* Address: 0x0056E110.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x103C. Exclusively selects the source within a three-control UiSpriteButtonControl group and
-   stores command mode B value 0. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Object placement option 0 (action 0x1114, g_InGameUiCommandModeActionHandlers30[20]; also the editor hotkeys
+   in ui/ingame/runtime.c): selects objectPlacementOption0 among the three object placement buttons and sets
+   g_UiCommandModeB = 0.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select0(UiSpriteButtonControl *source)
 
@@ -1364,10 +1312,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select0(UiSpriteButt
 
 
 /* Address: 0x0056E150.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x103D. Exclusively selects the source within a three-control UiSpriteButtonControl group and
-   stores command mode B value 1. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Object placement option 1 (action 0x1115, g_InGameUiCommandModeActionHandlers30[21]; also the editor hotkeys
+   in ui/ingame/runtime.c): selects objectPlacementOption1 among the three object placement buttons and sets
+   g_UiCommandModeB = 1.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select1(UiSpriteButtonControl *source)
 
@@ -1382,10 +1329,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select1(UiSpriteButt
 
 
 /* Address: 0x0056E190.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x103E. Exclusively selects the source within a three-control UiSpriteButtonControl group and
-   stores command mode B value 2. Original user-facing mode label is not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Object placement option 2 (action 0x1116, g_InGameUiCommandModeActionHandlers30[22]; also the editor hotkeys
+   in ui/ingame/runtime.c): selects objectPlacementOption2 among the three object placement buttons and sets
+   g_UiCommandModeB = 2.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select2(UiSpriteButtonControl *source)
 
@@ -1400,10 +1346,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeB_Select2(UiSpriteButt
 
 
 /* Address: 0x0056E1D0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x103F. Selects mode E value 0. It clears the two other contiguous mode-E controls and one
-   linked control at source+0x1E0, then stores zero in g_UiCommandModeE. Original labels are not preserved.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Smoothing tool option 0 (action 0x1117, g_InGameUiCommandModeActionHandlers30[23]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects smoothingToolOption0 and sets g_UiCommandModeE = 0. Unlike options 1 and 2 its
+   exclusive group also contains smoothingRelaxLandButton.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select0(UiSpriteButtonControl *source)
 
@@ -1419,10 +1364,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select0(UiSpriteButt
 
 
 /* Address: 0x0056E220.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1040. Exclusively selects the source within the three contiguous mode-E sprite controls and
-   stores value 1 in g_UiCommandModeE.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Smoothing tool option 1 (action 0x1118, g_InGameUiCommandModeActionHandlers30[24]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects smoothingToolOption1 among the three smoothing tool buttons and sets
+   g_UiCommandModeE = 1.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select1(UiSpriteButtonControl *source)
 
@@ -1437,10 +1381,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select1(UiSpriteButt
 
 
 /* Address: 0x0056E260.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1041. Exclusively selects the source within the three contiguous mode-E sprite controls and
-   stores value 2 in g_UiCommandModeE.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Smoothing tool option 2 (action 0x1119, g_InGameUiCommandModeActionHandlers30[25]; also the editor hotkeys in
+   ui/ingame/runtime.c): selects smoothingToolOption2 among the three smoothing tool buttons and sets
+   g_UiCommandModeE = 2.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select2(UiSpriteButtonControl *source)
 
@@ -1455,12 +1398,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeE_Select2(UiSpriteButt
 
 
 /* Address: 0x0056E2A0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1042. Dispatches fixed range length 0x80 with binary state value 0. When shared runtime mode
-   bits 0 or 1 are set, it queues numeric opcode 0x3200; otherwise it applies the local range operation to the
-   active context. The source argument is unused. Original labels remain unresolved.
-   Cross-module calls: TerrainGrid_RunDirectionalRelaxationPasses [world/terrain/grid],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   Smoothing page button smoothingRelaxGatedButton (action 0x111A, g_InGameUiCommandModeActionHandlers30[26]; also
+   an editor hotkey in ui/ingame/runtime.c): runs 128 sign-gated terrain relaxation passes over the field, in a
+   network game through command 0x3200 on every machine.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState0(UiNodeBase *source)
 
@@ -1468,22 +1408,20 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState0(UiNod
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     TerrainGrid_RunDirectionalRelaxationPasses
-              (g_LocalPlayerRuntimeId,0,0x80,TERRAIN_RELAXATION_SIGN_GATED);
+              (g_LocalPlayerRuntimeId,0,128,TERRAIN_RELAXATION_SIGN_GATED);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(0x3200,0,0x80,0);
+    InGameCommandQueue_AppendLocalPlayerCommand
+              (INGAME_COMMAND_TERRAIN_RELAXATION,0,128,TERRAIN_RELAXATION_SIGN_GATED);
   }
   return;
 }
 
 
 /* Address: 0x0056E2E0.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1043. Dispatches fixed range length 0x80 with binary state value 1. When shared runtime mode
-   bits 0 or 1 are set, it queues numeric opcode 0x3200; otherwise it applies the local range operation to the
-   active context. The source argument is unused. Original labels remain unresolved.
-   Cross-module calls: TerrainGrid_RunDirectionalRelaxationPasses [world/terrain/grid],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   Smoothing page button smoothingRelaxLandButton (action 0x111B, g_InGameUiCommandModeActionHandlers30[27]; also
+   an editor hotkey in ui/ingame/runtime.c): like InGameCommandRange_DispatchState0 with the ungated land tool
+   relaxation mode.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState1(UiNodeBase *source)
 
@@ -1491,20 +1429,20 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandRange_DispatchState1(UiNod
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     TerrainGrid_RunDirectionalRelaxationPasses
-              (g_LocalPlayerRuntimeId,0,0x80,TERRAIN_RELAXATION_UNGATED_LAND_TOOL);
+              (g_LocalPlayerRuntimeId,0,128,TERRAIN_RELAXATION_UNGATED_LAND_TOOL);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(0x3200,0,0x80,1);
+    InGameCommandQueue_AppendLocalPlayerCommand
+              (INGAME_COMMAND_TERRAIN_RELAXATION,0,128,TERRAIN_RELAXATION_UNGATED_LAND_TOOL);
   }
   return;
 }
 
 
 /* Address: 0x0056E320.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1044. Selects the first of two mode-F sprite controls, stores zero in g_UiCommandModeF, and
-   mirrors zero into the shared owner-relative state field.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Region tool option 0 (action 0x111C, g_InGameUiCommandModeActionHandlers30[28]): selects regionToolOption0 of the
+   two region tool buttons, sets g_UiCommandModeF = 0 and copies it into the world runtime (+0xB4), where the
+   region markers of the world view read it.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select0(UiSpriteButtonControl *source)
 
@@ -1520,10 +1458,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select0(UiSpriteButt
 
 
 /* Address: 0x0056E370.
-   Ownership: ui/ingame/commands.
-   Purpose: Action 0x1045. Selects the second of two mode-F sprite controls, stores one in g_UiCommandModeF, and
-   mirrors one into the same shared owner-relative state field.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Region tool option 1 (action 0x111D, g_InGameUiCommandModeActionHandlers30[29]): selects regionToolOption1 and
+   sets g_UiCommandModeF and its world runtime copy (+0xB4) to 1.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select1(UiSpriteButtonControl *source)
 
@@ -1539,9 +1475,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeF_Select1(UiSpriteButt
 
 
 /* Address: 0x00570F20.
-   Ownership: ui/ingame/commands.
-   Purpose: One-argument no-op callback installed into the UI command runtime record at offset 0xB0 during
-   initialization. The exact callback-slot label remains unresolved.
+   Empty callback: InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState installs it as
+   fieldRegion.clearTransientStateCallback of the world runtime while the editor is active.
 */
 void UiCommandRuntime_CallbackNoOp(void)
 
@@ -1636,23 +1571,21 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
 
 
 /* Address: 0x0056D980.
-   Ownership: ui/ingame/commands.
-   Purpose: Applies the command-mode color variant using 24-bit-masked fields at +0x120/+0x124, forces the high
-   byte of the +0x12C field, updates the object through helpers 00505780 and 00505700, sets global bit 0x1000, and
-   stores limit 0x7FFFFFFF.
-   Cross-module calls: TerrainLighting_BuildColorRampAndSetBaseColor [world/terrain/visuals],
-   FieldGrid_RecomputeInteriorDirectionalLighting [world/terrain/grid].
+   Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
+   from the world runtime's lighting colours (+0x120 ramp, +0x124 base) with their alpha removed and the secondary
+   colour (+0x12C) made opaque, relights the field grid with the light angles at +0x178/+0x17C, then sets bit 0x1000
+   of g_UiCommandModeGColorVariantFlags and the limit 0x7FFFFFFF read by the terrain triangle and marker drawing.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(void *visualState)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (*(uint32_t *)((int)visualState + 300) | 0xff000000,
-             *(uint32_t *)((int)visualState + 0x124) & 0xffffff,
-             *(uint32_t *)((int)visualState + 0x120) & 0xffffff);
+            (*(uint32_t *)((int)worldRuntime + 0x12c) | 0xff000000,
+             *(uint32_t *)((int)worldRuntime + 0x124) & 0xffffff,
+             *(uint32_t *)((int)worldRuntime + 0x120) & 0xffffff);
   FieldGrid_RecomputeInteriorDirectionalLighting
-            (*(AngleTurn32 *)((int)visualState + 0x17c),*(AngleTurn32 *)((int)visualState + 0x178),
-             *(FieldGridAsset **)((int)visualState + 0x54));
+            (*(AngleTurn32 *)((int)worldRuntime + 0x17c),*(AngleTurn32 *)((int)worldRuntime + 0x178),
+             *(FieldGridAsset **)((int)worldRuntime + 0x54));
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags | 0x1000;
   g_UiCommandModeGColorVariantLimit = 0x7fffffff;
   return;
@@ -1660,25 +1593,22 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(
 
 
 /* Address: 0x0056DA50.
-   Ownership: ui/ingame/commands.
-   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x02000000. The original visual-state label is not preserved.
+   Shows the region markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); only the region tool
+   (InGameCommandModeG_Select5) uses it.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags | 0x2000000;
+  context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS;
   return;
 }
 
 
 /* Address: 0x00571440.
-   Ownership: ui/ingame/commands.
-   Purpose: Selects one absolute command-matrix index, updates the active twelve-entry page, refreshes the twelve
-   root-resident display values, and exclusively selects the corresponding mapped control. Original catalog labels
-   are not preserved. Typed parameters: p0 absoluteIndex→UiCommandModeIndex_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists].
+   Selects terrain material absoluteIndex for the material tool (InGameCommandMatrix_SelectMappedControl and the
+   editor hotkeys/initialisation in ui/ingame/runtime.c): shows its texture in materialToolSelectedSwatch,
+   scrolls the twelve-swatch page in rows of three until the material is visible, fills the twelve swatches from
+   g_TerrainMaterialTextureSets (empty entries show nothing) and selects the material's swatch.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
@@ -1693,8 +1623,9 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   g_UiCommandAbsoluteSelectionIndex = absoluteIndex;
   ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource =
        g_TerrainMaterialTextureSets[absoluteIndex]->entries[0].sourceAsset;
-  pageEnd = g_UiCommandSelectionPageBaseIndex + 0xc;
+  pageEnd = g_UiCommandSelectionPageBaseIndex + 12;
   pageBase = g_UiCommandSelectionPageBaseIndex;
+  /* move the page by rows of three swatches until absoluteIndex lies in [pageBase, pageEnd) */
   while( true ) {
     for (; absoluteIndex < pageBase; pageBase = pageBase - 3) {
       pageEnd = pageEnd - 3;
@@ -1703,74 +1634,75 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
     pageBase = pageBase + 3;
     pageEnd = pageEnd + 3;
   }
-  firstTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase] != (GraphicsTextureSet *)0x0) {
+  firstTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase] != NULL) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase]->entries[0].sourceAsset;
   }
-  secondTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 1] != (GraphicsTextureSet *)0x0) {
+  secondTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 1] != NULL) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 1]->entries[0].sourceAsset;
   }
   g_UiCommandSelectionPageBaseIndex = pageBase;
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch00))->textureSource = firstTexture;
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch01))->textureSource = secondTexture;
-  firstTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 2] != (GraphicsTextureSet *)0x0) {
+  firstTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 2] != NULL) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 2]->entries[0].sourceAsset;
   }
-  secondTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 3] != (GraphicsTextureSet *)0x0) {
+  secondTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 3] != NULL) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 3]->entries[0].sourceAsset;
   }
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch02))->textureSource = firstTexture;
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch03))->textureSource = secondTexture;
-  firstTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 4] != (GraphicsTextureSet *)0x0) {
+  firstTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 4] != NULL) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 4]->entries[0].sourceAsset;
   }
-  secondTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 5] != (GraphicsTextureSet *)0x0) {
+  secondTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 5] != NULL) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 5]->entries[0].sourceAsset;
   }
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch04))->textureSource = firstTexture;
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch05))->textureSource = secondTexture;
-  firstTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 6] != (GraphicsTextureSet *)0x0) {
+  firstTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 6] != NULL) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 6]->entries[0].sourceAsset;
   }
-  secondTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 7] != (GraphicsTextureSet *)0x0) {
+  secondTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 7] != NULL) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 7]->entries[0].sourceAsset;
   }
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch06))->textureSource = firstTexture;
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch07))->textureSource = secondTexture;
-  firstTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 8] != (GraphicsTextureSet *)0x0) {
+  firstTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 8] != NULL) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 8]->entries[0].sourceAsset;
   }
-  secondTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 9] != (GraphicsTextureSet *)0x0) {
+  secondTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 9] != NULL) {
     secondTexture = g_TerrainMaterialTextureSets[pageBase + 9]->entries[0].sourceAsset;
   }
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch08))->textureSource = firstTexture;
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch09))->textureSource = secondTexture;
-  firstTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 10] != (GraphicsTextureSet *)0x0) {
+  firstTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 10] != NULL) {
     firstTexture = g_TerrainMaterialTextureSets[pageBase + 10]->entries[0].sourceAsset;
   }
-  secondTexture = (GraphicsTextureSourceAsset *)0x0;
-  if (g_TerrainMaterialTextureSets[pageBase + 0xb] != (GraphicsTextureSet *)0x0) {
-    secondTexture = g_TerrainMaterialTextureSets[pageBase + 0xb]->entries[0].sourceAsset;
+  secondTexture = NULL;
+  if (g_TerrainMaterialTextureSets[pageBase + 11] != NULL) {
+    secondTexture = g_TerrainMaterialTextureSets[pageBase + 11]->entries[0].sourceAsset;
   }
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch10))->textureSource = firstTexture;
   ((UiImagePanelControl *)INGAME_UI(root,materialSwatch11))->textureSource = secondTexture;
-  controlIndex = 0xb;
+  /* empty remainder of the original loop that pushes the twelve swatch controls */
+  controlIndex = 11;
   do {
     controlIndex = controlIndex + -1;
   } while (-1 < controlIndex);
   /* The original pushes all twelve command controls (offsets 11..0) as the variadic list. */
   UiSelectableGroup_SelectExclusive
-            (0xc,(UiNodeBase *)
+            (12,(UiNodeBase *)
                  ((int)&root->nextSibling + g_UiMappedCommandControlOffsets[absoluteIndex - pageBase]),
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[0]),
       THANDOR_UI_AT(root,g_UiMappedCommandControlOffsets[1]),
@@ -1806,118 +1738,118 @@ UiCommandRuntimeFlags_ApplyClearSetToggleMasks
 
 
 /* Address: 0x0056D860.
-   Ownership: ui/ingame/commands.
-   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x00100000. The original visual-state label is not preserved.
+   Hides the surface point marker of the world view (clears WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
+   mode tabs G3/G4 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00100000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags & 0xffefffff;
+  context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
   return;
 }
 
 
 /* Address: 0x0056D880.
-   Ownership: ui/ingame/commands.
-   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00200000. The original visual-state label is not preserved.
+   Shows the terrain point markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
+   mode tabs G0/G1 (height and material tools).
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00200000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags | 0x200000;
+  context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS;
   return;
 }
 
 
 /* Address: 0x0056D940.
-   Ownership: ui/ingame/commands.
-   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x01000000. The original visual-state label is not preserved.
+   Sets WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY (view ray and markers use only the secondary field surface);
+   editor mode tabs G0 and G2.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag01000000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags | 0x1000000;
+  context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY;
   return;
 }
 
 
 /* Address: 0x0056D8C0.
-   Ownership: ui/ingame/commands.
-   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00000400. The original visual-state label is not preserved.
+   Shows the army metrics overlay of the world view (sets WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS); editor mode tabs
+   G3-G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the editor is switched off.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00000400(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags | 0x400;
+  context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
   return;
 }
 
 
 /* Address: 0x0056D8E0.
-   Ownership: ui/ingame/commands.
-   Purpose: Clears WorldRuntimeContext.runtimeFlags bits 0x00000400 and 0x00000080, exactly matching mask 0xFFFFFB7F. The
-   combined original meaning is unresolved.
+   Hides the army metrics overlay and ends a drag selection (clears WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS and
+   WORLD_RUNTIME_FLAG_DRAG_SELECTING, which also draws the selection frame); editor mode tabs G0-G2.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlags00000480(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags & 0xfffffb7f;
+  context->runtimeFlags =
+       context->runtimeFlags & ~(WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS | WORLD_RUNTIME_FLAG_DRAG_SELECTING);
   return;
 }
 
 
 /* Address: 0x0056D840.
-   Ownership: ui/ingame/commands.
-   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00100000. The original visual-state label is not preserved.
+   Shows the surface point marker of the world view (sets WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER); editor
+   mode tabs G0, G1, G2 and G5.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00100000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags | 0x100000;
+  context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER;
   return;
 }
 
 
 /* Address: 0x0056D8A0.
-   Ownership: ui/ingame/commands.
-   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x00200000. The original visual-state label is not preserved.
+   Hides the terrain point markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS); editor
+   mode tabs G2-G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags & 0xffdfffff;
+  context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS;
   return;
 }
 
 
 /* Address: 0x0056D960.
-   Ownership: ui/ingame/commands.
-   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x01000000. The original visual-state label is not preserved.
+   Clears WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY; editor mode tabs G1, G3-G5 and
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags & 0xfeffffff;
+  context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY;
   return;
 }
 
 
 /* Address: 0x0056D9F0.
-   Ownership: ui/ingame/commands.
-   Purpose: Applies the command-mode color variant using the unmasked fields at +0x120/+0x124/+0x12C, updates the
-   object through helpers 00505780 and 00505700, clears global bit 0x1000, and stores limit 0x00FFFFFF.
-   Cross-module calls: TerrainLighting_BuildColorRampAndSetBaseColor [world/terrain/visuals],
-   FieldGrid_RecomputeInteriorDirectionalLighting [world/terrain/grid].
+   Terrain colours of every editor mode except smoothing (and of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
+   when the editor is switched off): rebuilds the terrain colour ramp from the world runtime's lighting colours
+   (+0x120 ramp, +0x124 base, +0x12C secondary) unchanged, relights the field grid with the light angles at
+   +0x178/+0x17C, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
+   counterpart of UiCommandModeG_ApplyMaskedColorVariant.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(void *visualState)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (*(PackedArgb32 *)((int)visualState + 300),*(PackedArgb32 *)((int)visualState + 0x124),
-             *(PackedArgb32 *)((int)visualState + 0x120));
+            (*(PackedArgb32 *)((int)worldRuntime + 0x12c),*(PackedArgb32 *)((int)worldRuntime + 0x124),
+             *(PackedArgb32 *)((int)worldRuntime + 0x120));
   FieldGrid_RecomputeInteriorDirectionalLighting
-            (*(AngleTurn32 *)((int)visualState + 0x17c),*(AngleTurn32 *)((int)visualState + 0x178),
-             *(FieldGridAsset **)((int)visualState + 0x54));
+            (*(AngleTurn32 *)((int)worldRuntime + 0x17c),*(AngleTurn32 *)((int)worldRuntime + 0x178),
+             *(FieldGridAsset **)((int)worldRuntime + 0x54));
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags & 0xffffefff;
   g_UiCommandModeGColorVariantLimit = 0xffffff;
   return;
@@ -1925,38 +1857,33 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(voi
 
 
 /* Address: 0x0056DA70.
-   Ownership: ui/ingame/commands.
-   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x02000000. The original visual-state label is not preserved.
+   Hides the region markers of the world view (clears WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS); every editor mode tab
+   except G5 and InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags & 0xfdffffff;
+  context->runtimeFlags = context->runtimeFlags & ~WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS;
   return;
 }
 
 
 /* Address: 0x0056D900.
-   Ownership: ui/ingame/commands.
-   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00800000. The original visual-state label is not preserved.
+   Shows the grid vertex markers of the world view (sets WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS); every
+   editor mode tab.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(WorldRuntimeContext *context)
 
 {
-  context->runtimeFlags = context->runtimeFlags | 0x800000;
+  context->runtimeFlags = context->runtimeFlags | WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS;
   return;
 }
 
 
 /* Address: 0x0056DA90.
-   Ownership: ui/ingame/commands.
-   Purpose: Finds the UI root, tests and exclusively selects one of six controls, synchronizes three root-resident
-   page stacks using the selected mode's three page-index tables, and stores the active mode in g_UiCommandModeG.
-   The helper preserves the exclusive-selection EAX value, but no caller in this executable consumes it. Typed
-   parameters: p0 modeIndex→UiCommandModeIndex_V342. Calling convention, exact VariableStorage serialization,
-   function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiSelectableGroup_NoneVisibleSelected [ui/controls/lists],
-   UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex [ui/controls/layout].
+   Common part of the editor mode tabs InGameCommandModeG_Select0..5: selects the clicked tab among the six, shows
+   the mode's pages in modePreviewPageStack, modeDetailPageStack and modeCommandPageStack (page tables
+   g_UiCommandModeG*PageIndices) and stores the mode in g_UiCommandModeG. Returns the in-game root.
 */
 InGameRuntimeRootImageC3E4 * __thandor_eax_edx_cf_preserve_ecx
 UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source)
@@ -1964,10 +1891,10 @@ UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableContr
 {
   UiNodeBase *parentCursor;
   InGameRuntimeRootImageC3E4 *root;
-  
+
   parentCursor = (source->base).parent;
   root = (InGameRuntimeRootImageC3E4 *)source;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     root = (InGameRuntimeRootImageC3E4 *)(root->rootUi0000).base.parent;
     parentCursor = (root->rootUi0000).base.parent;
   }
@@ -1987,13 +1914,13 @@ UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableContr
       INGAME_UI(root,editorModeTabTerrainHeight));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGPrimaryPageIndices[modeIndex],
-             (UiPageStackControl *)(root->opaque9A74_9B4B + 0x18));
+             (UiPageStackControl *)INGAME_UI(root,modePreviewPageStack));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGSecondaryPageIndices[modeIndex],
-             (UiPageStackControl *)root->opaque9EE0_9FAB);
+             (UiPageStackControl *)INGAME_UI(root,modeDetailPageStack));
   UiPageStack_SetActiveIndex
             (g_UiCommandModeGTertiaryPageIndices[modeIndex],
-             (UiPageStackControl *)(root->opaqueA06C_C3E3 + 0x1130));
+             (UiPageStackControl *)INGAME_UI(root,modeCommandPageStack));
   g_UiCommandModeG = modeIndex;
   return root;
 }

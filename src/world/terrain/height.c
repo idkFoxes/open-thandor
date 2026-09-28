@@ -11,15 +11,12 @@
 /* Implementation ownership: world/terrain/height. */
 
 /* Address: 0x00508000.
-   Ownership: world/terrain/height.
-   Purpose: Converts a world point to the hexagonal grid, verifies the center cell against the configured relative-
-   height band, and dispatches all six wedge tests within the bounded radius. Terrain-class placement test
-   callback; CF carries acceptance and EAX carries the direct-call result. Typed parameters: p0
-   radiusWorldUnits→FieldGridRadiusUnits. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
-   Local calls: TerrainHeightBand_TestWedge0, TerrainHeightBand_TestWedge1, TerrainHeightBand_TestWedge2,
-   TerrainHeightBand_TestWedge3, TerrainHeightBand_TestWedge4, TerrainHeightBand_TestWedge5.
-   Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
+   Terrain placement test for every terrain class except 1 (g_TerrainClassPlacementAndOverlayCallbacks10
+   .placementTests[0, 2..4], also called directly by the army placement code): maps the world point to its field
+   cell and checks the hexagon of radius radiusWorldUnits around it. Returns true (CF set, rejected) when a cell is
+   a map-edge cell, lies under water, or its height relative to referenceHeightQ12 leaves
+   [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; also when fieldGrid is NULL or the point is
+   off the grid.
 */
 bool __thandor_void_preserve_ecx_edx
 TerrainHeightBand_TestAroundWorldPoint
@@ -34,44 +31,44 @@ TerrainHeightBand_TestAroundWorldPoint
   uint32_t rowFractionQ12;
   int centerCellIndex;
   FieldGridCell *wedgeCell;
-  FieldGridCell *centerOrWedgeCell;
+  FieldGridCell *otherWedgeCell;
   bool wedgeBlocked;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   uint32_t cellRow;
   uint32_t cellColumn;
-  
-  if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
+
+  if (fieldGrid != NULL) {
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
-    else if (0xff < g_TerrainScanStepLimit) {
-      g_TerrainScanStepLimit = 0xff;
+    else if (TERRAIN_SCAN_STEP_LIMIT_MAX < g_TerrainScanStepLimit) {
+      g_TerrainScanStepLimit = TERRAIN_SCAN_STEP_LIMIT_MAX;
     }
     g_TerrainScanReferenceHeight = referenceHeightQ12;
     gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
-    baseColumn = gridCoordinates.columnQ12 >> 0xc;
-    cellRow = gridCoordinates.rowQ12 >> 0xc;
+    baseColumn = gridCoordinates.columnQ12 >> 12;
+    cellRow = gridCoordinates.rowQ12 >> 12;
     columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
     cellColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {
       if (0xfff < columnFractionQ12 + rowFractionQ12 * 2) {
-        cellRow = cellRow + 1;
+        cellRow++;
       }
     }
     else if (fractionSumOrGridWidth < 0x2001) {
       cellColumn = baseColumn + 1;
       if (columnFractionQ12 < rowFractionQ12) {
-        cellRow = cellRow + 1;
+        cellRow++;
         cellColumn = baseColumn;
       }
     }
     else {
       cellColumn = baseColumn + 1;
       if (0x1fff < columnFractionQ12 + rowFractionQ12 * 2) {
-        cellRow = cellRow + 1;
+        cellRow++;
       }
     }
     fractionSumOrGridWidth = fieldGrid->gridWidth;
@@ -79,22 +76,22 @@ TerrainHeightBand_TestAroundWorldPoint
     if ((((-1 < (int)cellColumn) && (-1 < (int)cellRow)) && (cellRow < fieldGrid->gridHeight)) &&
        (cellColumn < (fractionSumOrGridWidth & 0x1ffffff))) {
       centerCellIndex = cellRow * (fractionSumOrGridWidth & 0x1ffffff) + cellColumn;
-      if ((((fieldGrid->cells[centerCellIndex].flagsAndMaterial & 0x88006000) == 0) &&
+      if ((((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) &&
           (relativeHeightQ12 = fieldGrid->cells[centerCellIndex].terrainHeight - g_TerrainScanReferenceHeight,
           fieldGrid->cells[centerCellIndex].waterSurfaceDelta < 1)) &&
          ((relativeHeightQ12 <= (int)g_TerrainHeightBandMaximumDelta && ((int)g_TerrainHeightBandMinimumDelta <= relativeHeightQ12))))
       {
-        centerOrWedgeCell = (FieldGridCell *)
-                 (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 centerCellIndex * 0x80 + -0x28);
-        wedgeCell = centerOrWedgeCell + -fractionSumOrGridWidth;
-        wedgeBlocked = TerrainHeightBand_TestWedge0(0,centerOrWedgeCell);
+        /* sector n starts at the centre's neighbour in direction n (W = grid width):
+           C+1, C+1-W, C-W, C-1, C-1+W, C+W */
+        otherWedgeCell = &fieldGrid->cells[centerCellIndex + 1];
+        wedgeCell = otherWedgeCell - fractionSumOrGridWidth;
+        wedgeBlocked = TerrainHeightBand_TestWedge0(0,otherWedgeCell);
         if (!wedgeBlocked) {
-          centerOrWedgeCell = wedgeCell + -1;
+          otherWedgeCell = wedgeCell - 1;
           wedgeBlocked = TerrainHeightBand_TestWedge1(0,wedgeCell);
           if (!wedgeBlocked) {
-            wedgeCell = centerOrWedgeCell + (fractionSumOrGridWidth - 1);
-            wedgeBlocked = TerrainHeightBand_TestWedge2(0,centerOrWedgeCell);
+            wedgeCell = otherWedgeCell + (fractionSumOrGridWidth - 1);
+            wedgeBlocked = TerrainHeightBand_TestWedge2(0,otherWedgeCell);
             if (!wedgeBlocked) {
               wedgeBlocked = TerrainHeightBand_TestWedge3(0,(uint8_t *)wedgeCell);
               if (!wedgeBlocked) {
@@ -115,16 +112,11 @@ TerrainHeightBand_TestAroundWorldPoint
 
 
 /* Address: 0x00508920.
-   Ownership: world/terrain/height.
-   Purpose: Converts a world point to the hexagonal grid, validates the center cell auxiliary height, and
-   dispatches all six threshold wedge tests within the bounded radius. Terrain-class placement test callback; CF
-   carries acceptance and EAX carries the direct-call result. Typed parameters: p0
-   radiusWorldUnits→FieldGridRadiusUnits. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
-   Local calls: TerrainAuxHeightThreshold_TestWedge0, TerrainAuxHeightThreshold_TestWedge1,
-   TerrainAuxHeightThreshold_TestWedge2, TerrainAuxHeightThreshold_TestWedge3,
-   TerrainAuxHeightThreshold_TestWedge4, TerrainAuxHeightThreshold_TestWedge5.
-   Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
+   Terrain placement test for terrain class 1 / water-surface contact (g_TerrainClassPlacementAndOverlayCallbacks10
+   .placementTests[1], also called directly by the army placement code): maps the world point to its field cell and
+   checks the hexagon of radius radiusWorldUnits around it. Returns true (CF set, rejected) when a cell is a map-edge
+   cell, has a negative waterSurfaceDelta, or the high word of its packed normal angles is below
+   g_TerrainAuxHeightMinimum; also when fieldGrid is NULL or the point is off the grid.
 */
 bool __thandor_void_preserve_ecx_edx
 TerrainAuxHeightThreshold_TestAroundWorldPoint
@@ -138,44 +130,44 @@ TerrainAuxHeightThreshold_TestAroundWorldPoint
   uint32_t rowFractionQ12;
   int centerCellIndex;
   FieldGridCell *wedgeCell;
-  FieldGridCell *centerOrWedgeCell;
+  FieldGridCell *otherWedgeCell;
   bool wedgeBlocked;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   uint32_t cellRow;
   uint32_t cellColumn;
-  
-  if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
+
+  if (fieldGrid != NULL) {
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
-    else if (0xff < g_TerrainScanStepLimit) {
-      g_TerrainScanStepLimit = 0xff;
+    else if (TERRAIN_SCAN_STEP_LIMIT_MAX < g_TerrainScanStepLimit) {
+      g_TerrainScanStepLimit = TERRAIN_SCAN_STEP_LIMIT_MAX;
     }
     g_TerrainScanReferenceHeight = referenceHeightQ12;
     gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
-    baseColumn = gridCoordinates.columnQ12 >> 0xc;
-    cellRow = gridCoordinates.rowQ12 >> 0xc;
+    baseColumn = gridCoordinates.columnQ12 >> 12;
+    cellRow = gridCoordinates.rowQ12 >> 12;
     columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
     cellColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {
       if (0xfff < columnFractionQ12 + rowFractionQ12 * 2) {
-        cellRow = cellRow + 1;
+        cellRow++;
       }
     }
     else if (fractionSumOrGridWidth < 0x2001) {
       cellColumn = baseColumn + 1;
       if (columnFractionQ12 < rowFractionQ12) {
-        cellRow = cellRow + 1;
+        cellRow++;
         cellColumn = baseColumn;
       }
     }
     else {
       cellColumn = baseColumn + 1;
       if (0x1fff < columnFractionQ12 + rowFractionQ12 * 2) {
-        cellRow = cellRow + 1;
+        cellRow++;
       }
     }
     fractionSumOrGridWidth = fieldGrid->gridWidth;
@@ -183,21 +175,23 @@ TerrainAuxHeightThreshold_TestAroundWorldPoint
     if ((((-1 < (int)cellColumn) && (-1 < (int)cellRow)) && (cellRow < fieldGrid->gridHeight)) &&
        (cellColumn < (fractionSumOrGridWidth & 0x1ffffff))) {
       centerCellIndex = cellRow * (fractionSumOrGridWidth & 0x1ffffff) + cellColumn;
-      if ((((fieldGrid->cells[centerCellIndex].flagsAndMaterial & 0x88006000) == 0) &&
+      /* the centre cell's threshold test reads triangle0NormalAngles (+0x08); the sector tests read
+         triangle1NormalAngles (+0x78). Both as in the original. */
+      if ((((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) &&
           (-1 < fieldGrid->cells[centerCellIndex].waterSurfaceDelta)) &&
-         ((int)g_TerrainAuxHeightMinimum <= (int)fieldGrid->cells[centerCellIndex].triangle0NormalAngles >> 0x10))
+         ((int)g_TerrainAuxHeightMinimum <= (int)fieldGrid->cells[centerCellIndex].triangle0NormalAngles >> 16))
       {
-        centerOrWedgeCell = (FieldGridCell *)
-                 (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 centerCellIndex * 0x80 + -0x28);
-        wedgeCell = centerOrWedgeCell + -fractionSumOrGridWidth;
-        wedgeBlocked = TerrainAuxHeightThreshold_TestWedge0(0,centerOrWedgeCell);
+        /* sector n starts at the centre's neighbour in direction n (W = grid width):
+           C+1, C+1-W, C-W, C-1, C-1+W, C+W */
+        otherWedgeCell = &fieldGrid->cells[centerCellIndex + 1];
+        wedgeCell = otherWedgeCell - fractionSumOrGridWidth;
+        wedgeBlocked = TerrainAuxHeightThreshold_TestWedge0(0,otherWedgeCell);
         if (!wedgeBlocked) {
-          centerOrWedgeCell = wedgeCell + -1;
+          otherWedgeCell = wedgeCell - 1;
           wedgeBlocked = TerrainAuxHeightThreshold_TestWedge1(0,wedgeCell);
           if (!wedgeBlocked) {
-            wedgeCell = centerOrWedgeCell + (fractionSumOrGridWidth - 1);
-            wedgeBlocked = TerrainAuxHeightThreshold_TestWedge2(0,centerOrWedgeCell);
+            wedgeCell = otherWedgeCell + (fractionSumOrGridWidth - 1);
+            wedgeBlocked = TerrainAuxHeightThreshold_TestWedge2(0,otherWedgeCell);
             if (!wedgeBlocked) {
               wedgeBlocked = TerrainAuxHeightThreshold_TestWedge3(0,wedgeCell);
               if (!wedgeBlocked) {
@@ -883,14 +877,10 @@ TerrainRay_AdvanceGridTraversal
 
 
 /* Address: 0x00507AB0.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 0, stops when a cell leaves the configured height band or
-   becomes excluded, and preserves the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p3
-   cell→FieldGridCell *. Calling convention, complete VariableStorage serialization, function bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightBand_TestDirection0, TerrainHeightBand_TestDirection1.
+   Height-band placement test, sector 0 of the hexagon (see TerrainHeightBand_TestAroundWorldPoint): walks the
+   sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the straight
+   tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first cell outside the height
+   band, false when the step limit is reached.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -900,25 +890,27 @@ TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *
   int relativeHeightQ12;
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+      if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
            (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
            ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
          (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
       directionStartCell = cell + 1;
-      directionFailed = TerrainHeightBand_TestDirection0(scanStep + 4,directionStartCell);
+      directionFailed = TerrainHeightBand_TestDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)((int)directionStartCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      /* the in-between cell is one row up from directionStartCell (flags +0x50, height +0x48, water delta
+         +0x4C) */
+      if ((*(uint32_t *)((int)directionStartCell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       relativeHeightQ12 = *(int *)((int)directionStartCell + (0x48 - rowStrideBytes)) - g_TerrainScanReferenceHeight;
@@ -932,7 +924,7 @@ TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *
         return true;
       }
       cell = (FieldGridCell *)((int)directionStartCell + (0x80 - rowStrideBytes));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       directionFailed = TerrainHeightBand_TestDirection1
                         (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
       if (directionFailed) {
@@ -945,12 +937,8 @@ TerrainHeightBand_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *
 
 
 /* Address: 0x00507BA0.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 1, stops when a cell leaves the configured height band or
-   becomes excluded, and preserves the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightBand_TestDirection1, TerrainHeightBand_TestDirection2.
+   Height-band placement test, sector 1: like TerrainHeightBand_TestWedge0, running the straight tests of
+   directions 1 and 2.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -960,26 +948,27 @@ TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *
   int relativeHeightQ12;
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+      if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
            (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
            ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
          (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
       directionFailed = TerrainHeightBand_TestDirection1
-                        (scanStep + 4,
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
                          (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      /* the in-between cell is the one above (flags +0x50, height +0x48, water delta +0x4C) */
+      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       relativeHeightQ12 = *(int *)((int)cell + (0x48 - rowStrideBytes)) - g_TerrainScanReferenceHeight;
@@ -993,7 +982,7 @@ TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *
         return true;
       }
       directionStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = directionStartCell + 1;
       directionFailed = TerrainHeightBand_TestDirection2(scanStep,directionStartCell);
       if (directionFailed) {
@@ -1006,14 +995,8 @@ TerrainHeightBand_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *
 
 
 /* Address: 0x00507C80.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 2, stops when a cell leaves the configured height band or
-   becomes excluded, and preserves the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p3
-   cell→FieldGridCell *. Calling convention, complete VariableStorage serialization, function bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightBand_TestDirection2, TerrainHeightBand_TestDirection3.
+   Height-band placement test, sector 2: like TerrainHeightBand_TestWedge0, running the straight tests of
+   directions 2 and 3.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1022,24 +1005,24 @@ TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *
   FieldGridCell *directionStartCell;
   int relativeHeightQ12;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+      if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
            (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
            ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
          (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
       directionFailed = TerrainHeightBand_TestDirection2
-                        (scanStep + 4,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       relativeHeightQ12 = cell[-1].terrainHeight - g_TerrainScanReferenceHeight;
@@ -1052,8 +1035,8 @@ TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *
       if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      directionStartCell = cell + -2;
-      scanStep = scanStep + 7;
+      directionStartCell = cell - 2;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
       directionFailed = TerrainHeightBand_TestDirection3(scanStep,directionStartCell);
       if (directionFailed) {
@@ -1066,12 +1049,8 @@ TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *
 
 
 /* Address: 0x00507D60.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 3, stops when a cell leaves the configured height band or
-   becomes excluded, and preserves the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightBand_TestDirection3, TerrainHeightBand_TestDirection4.
+   Height-band placement test, sector 3: like TerrainHeightBand_TestWedge0, running the straight tests of
+   directions 3 and 4.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
@@ -1081,11 +1060,12 @@ TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
   int relativeHeightQ12;
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if (((((*(uint32_t *)(cell + 0x50) & 0x88006000) != 0) ||
+      /* cell is a byte pointer here: flags +0x50, water delta +0x4C, terrain height +0x48 */
+      if (((((*(uint32_t *)(cell + 0x50) & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
            (0 < (int)*(PackedArgb32 *)(cell + 0x4c))) ||
           ((int)g_TerrainHeightBandMaximumDelta <
            (int)(*(FieldCellPersistedAux *)(cell + 0x48) - g_TerrainScanReferenceHeight))) ||
@@ -1093,19 +1073,21 @@ TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
           (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
-      directionStartCell = (FieldGridCell *)(cell + -0x80);
-      directionFailed = TerrainHeightBand_TestDirection3(scanStep + 4,directionStartCell);
+      directionStartCell = (FieldGridCell *)(cell - 0x80);
+      directionFailed = TerrainHeightBand_TestDirection3(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      /* the in-between cell is the one below directionStartCell: runtime60_6B (+0x60) + stride -0x10/-0x18/-0x14
+         reaches its flags (+0x50), height (+0x48) and water delta (+0x4C) */
+      if ((*(uint32_t *)(directionStartCell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
-      relativeHeightQ12 = *(int *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x18) - g_TerrainScanReferenceHeight;
-      if (0 < *(int *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x14)) {
+      relativeHeightQ12 = *(int *)(directionStartCell->runtime60_6B + rowStrideBytes - 0x18) - g_TerrainScanReferenceHeight;
+      if (0 < *(int *)(directionStartCell->runtime60_6B + rowStrideBytes - 0x14)) {
         return true;
       }
       if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
@@ -1114,8 +1096,9 @@ TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
       if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
-      cell = directionStartCell[-1].runtime0C_3F + rowStrideBytes + -0xc;
-      scanStep = scanStep + 7;
+      /* runtime0C_3F - 0xC is a cell's own address: directionStartCell[-1] one row down */
+      cell = directionStartCell[-1].runtime0C_3F + rowStrideBytes - 0xc;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       directionFailed = TerrainHeightBand_TestDirection4
                         (scanStep,(FieldGridCell *)(cell + g_TerrainScanRowStrideBytes));
       if (directionFailed) {
@@ -1128,12 +1111,8 @@ TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell)
 
 
 /* Address: 0x00507E40.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 4, stops when a cell leaves the configured height band or
-   becomes excluded, and preserves the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightBand_TestDirection4, TerrainHeightBand_TestDirection5.
+   Height-band placement test, sector 4: like TerrainHeightBand_TestWedge0, running the straight tests of
+   directions 4 and 5.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1143,31 +1122,32 @@ TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *
   int rowStrideBytes;
   int relativeHeightQ12;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+      if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
            (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
            ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
          (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
       directionFailed = TerrainHeightBand_TestDirection4
-                        (scanStep + 4,
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
                          (FieldGridCell *)
-                         (cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+                         (cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      /* the in-between cell is the one below (runtime60_6B + stride reaches its fields as in wedge 3) */
+      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
-      relativeHeightQ12 = *(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) - g_TerrainScanReferenceHeight;
-      if (0 < *(int *)(cell->runtime60_6B + rowStrideBytes + -0x14)) {
+      relativeHeightQ12 = *(int *)(cell->runtime60_6B + rowStrideBytes - 0x18) - g_TerrainScanReferenceHeight;
+      if (0 < *(int *)(cell->runtime60_6B + rowStrideBytes - 0x14)) {
         return true;
       }
       if ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12) {
@@ -1176,12 +1156,13 @@ TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *
       if (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta) {
         return true;
       }
+      /* two rows down: the next diagonal cell one left of the direction 5 start */
       cellRuntimeBase = cell->runtime0C_3F;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) + -1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc) - 1;
       directionFailed = TerrainHeightBand_TestDirection5
                         (scanStep,(FieldGridCell *)
-                                  (cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+                                  (cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc));
       if (directionFailed) {
         return true;
       }
@@ -1192,14 +1173,8 @@ TerrainHeightBand_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *
 
 
 /* Address: 0x00507F20.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 5, stops when a cell leaves the configured height band or
-   becomes excluded, and preserves the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p3
-   cell→FieldGridCell *. Calling convention, complete VariableStorage serialization, function bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightBand_TestDirection5, TerrainHeightBand_TestDirection0.
+   Height-band placement test, sector 5: like TerrainHeightBand_TestWedge0, running the straight tests of
+   directions 5 and 0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1208,26 +1183,26 @@ TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *
   FieldGridCell *directionStartCell;
   int relativeHeightQ12;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+      if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
            (relativeHeightQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight, 0 < cell->waterSurfaceDelta)
            ) || ((int)g_TerrainHeightBandMaximumDelta < relativeHeightQ12)) ||
          (relativeHeightQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
         return true;
       }
       directionFailed = TerrainHeightBand_TestDirection5
-                        (scanStep + 4,
-                         (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc))
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                         (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc))
       ;
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       relativeHeightQ12 = cell[1].terrainHeight - g_TerrainScanReferenceHeight;
@@ -1241,8 +1216,8 @@ TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *
         return true;
       }
       directionStartCell = cell + 2;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
       directionFailed = TerrainHeightBand_TestDirection0(scanStep,directionStartCell);
       if (directionFailed) {
         return true;
@@ -1254,12 +1229,10 @@ TerrainHeightBand_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *
 
 
 /* Address: 0x00508470.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 0 against the shared auxiliary-height threshold, stopping
-   at excluded or invalid cells and preserving the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainAuxHeightThreshold_TestDirection0, TerrainAuxHeightThreshold_TestDirection1.
+   Water-surface placement test, sector 0 of the hexagon (see TerrainAuxHeightThreshold_TestAroundWorldPoint):
+   walks the sector's diagonal, tests each diagonal cell and the cell between it and the next one, and runs the
+   straight tests of directions 0 and 1 that cover the sector. Returns true (CF set) at the first failing cell,
+   false when the step limit is reached.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1268,33 +1241,35 @@ TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGr
   int rowStrideBytes;
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
+      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
       directionStartCell = cell + 1;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection0(scanStep + 4,directionStartCell);
+      directionFailed = TerrainAuxHeightThreshold_TestDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)((int)directionStartCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      /* the in-between cell is one row up from directionStartCell (flags +0x50, height +0x48, water delta
+         +0x4C, normal angles +0x78) */
+      if ((*(uint32_t *)((int)directionStartCell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       if (*(int *)((int)directionStartCell + (0x4c - rowStrideBytes)) < 0) {
         return true;
       }
-      if (*(int *)((int)directionStartCell + (0x78 - rowStrideBytes)) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)((int)directionStartCell + (0x78 - rowStrideBytes)) >> 16 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
       cell = (FieldGridCell *)((int)directionStartCell + (0x80 - rowStrideBytes));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       directionFailed = TerrainAuxHeightThreshold_TestDirection1
                         (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
       if (directionFailed) {
@@ -1307,12 +1282,8 @@ TerrainAuxHeightThreshold_TestWedge0(TerrainDirectionalScanStep scanStep,FieldGr
 
 
 /* Address: 0x00508540.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 1 against the shared auxiliary-height threshold, stopping
-   at excluded or invalid cells and preserving the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainAuxHeightThreshold_TestDirection1, TerrainAuxHeightThreshold_TestDirection2.
+   Water-surface placement test, sector 1: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+   of directions 1 and 2.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1321,34 +1292,35 @@ TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGr
   int rowStrideBytes;
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
+      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
       directionFailed = TerrainAuxHeightThreshold_TestDirection1
-                        (scanStep + 4,
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
                          (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      /* the in-between cell is the one above (flags +0x50, height +0x48, water delta +0x4C, normal angles +0x78) */
+      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       if (*(int *)((int)cell + (0x4c - rowStrideBytes)) < 0) {
         return true;
       }
-      if (*(int *)((int)cell + (0x78 - rowStrideBytes)) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)((int)cell + (0x78 - rowStrideBytes)) >> 16 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
       directionStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = directionStartCell + 1;
       directionFailed = TerrainAuxHeightThreshold_TestDirection2(scanStep,directionStartCell);
       if (directionFailed) {
@@ -1361,12 +1333,8 @@ TerrainAuxHeightThreshold_TestWedge1(TerrainDirectionalScanStep scanStep,FieldGr
 
 
 /* Address: 0x00508600.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 2 against the shared auxiliary-height threshold, stopping
-   at excluded or invalid cells and preserving the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainAuxHeightThreshold_TestDirection2, TerrainAuxHeightThreshold_TestDirection3.
+   Water-surface placement test, sector 2: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+   of directions 2 and 3.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1374,32 +1342,32 @@ TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGr
 {
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
+      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
       directionFailed = TerrainAuxHeightThreshold_TestDirection2
-                        (scanStep + 4,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       if (cell[-1].waterSurfaceDelta < 0) {
         return true;
       }
-      if ((int)cell[-1].triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if ((int)cell[-1].triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      directionStartCell = cell + -2;
-      scanStep = scanStep + 7;
+      directionStartCell = cell - 2;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
       directionFailed = TerrainAuxHeightThreshold_TestDirection3(scanStep,directionStartCell);
       if (directionFailed) {
@@ -1412,12 +1380,8 @@ TerrainAuxHeightThreshold_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGr
 
 
 /* Address: 0x005086C0.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 3 against the shared auxiliary-height threshold, stopping
-   at excluded or invalid cells and preserving the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainAuxHeightThreshold_TestDirection3, TerrainAuxHeightThreshold_TestDirection4.
+   Water-surface placement test, sector 3: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+   of directions 3 and 4.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1426,36 +1390,39 @@ TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGr
   int rowStrideBytes;
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
+      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
-      directionStartCell = cell + -1;
-      directionFailed = TerrainAuxHeightThreshold_TestDirection3(scanStep + 4,directionStartCell);
+      directionStartCell = cell - 1;
+      directionFailed = TerrainAuxHeightThreshold_TestDirection3(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      /* the in-between cell is the one below directionStartCell: runtime60_6B (+0x60) + stride -0x10/-0x14/+0x18
+         reaches its flags (+0x50), height (+0x48), water delta (+0x4C) or normal angles (+0x78) */
+      if ((*(uint32_t *)(directionStartCell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
-      if (*(int *)(directionStartCell->runtime60_6B + rowStrideBytes + -0x14) < 0) {
+      if (*(int *)(directionStartCell->runtime60_6B + rowStrideBytes - 0x14) < 0) {
         return true;
       }
-      if (*(int *)(directionStartCell->runtime60_6B + rowStrideBytes + 0x18) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)(directionStartCell->runtime60_6B + rowStrideBytes + 0x18) >> 16 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
-      cell = (FieldGridCell *)(directionStartCell[-1].runtime0C_3F + rowStrideBytes + -0xc);
-      scanStep = scanStep + 7;
+      /* runtime0C_3F - 0xC is a cell's own address: directionStartCell[-1] one row down */
+      cell = (FieldGridCell *)(directionStartCell[-1].runtime0C_3F + rowStrideBytes - 0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       directionFailed = TerrainAuxHeightThreshold_TestDirection4
                         (scanStep,(FieldGridCell *)
-                                  (cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+                                  (cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       if (directionFailed) {
         return true;
       }
@@ -1466,12 +1433,8 @@ TerrainAuxHeightThreshold_TestWedge3(TerrainDirectionalScanStep scanStep,FieldGr
 
 
 /* Address: 0x00508790.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 4 against the shared auxiliary-height threshold, stopping
-   at excluded or invalid cells and preserving the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainAuxHeightThreshold_TestDirection4, TerrainAuxHeightThreshold_TestDirection5.
+   Water-surface placement test, sector 4: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+   of directions 4 and 5.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1480,39 +1443,41 @@ TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGr
   uint8_t *cellRuntimeBase;
   int rowStrideBytes;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
+      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
       directionFailed = TerrainAuxHeightThreshold_TestDirection4
-                        (scanStep + 4,
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
                          (FieldGridCell *)
-                         (cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+                         (cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      /* the in-between cell is the one below (runtime60_6B + stride reaches its fields as in wedge 3) */
+      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
-      if (*(int *)(cell->runtime60_6B + rowStrideBytes + -0x14) < 0) {
+      if (*(int *)(cell->runtime60_6B + rowStrideBytes - 0x14) < 0) {
         return true;
       }
-      if (*(int *)(cell->runtime60_6B + rowStrideBytes + 0x18) >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if (*(int *)(cell->runtime60_6B + rowStrideBytes + 0x18) >> 16 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
+      /* two rows down: the next diagonal cell one left of the direction 5 start */
       cellRuntimeBase = cell->runtime0C_3F;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) + -1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc) - 1;
       directionFailed = TerrainAuxHeightThreshold_TestDirection5
                         (scanStep,(FieldGridCell *)
-                                  (cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+                                  (cellRuntimeBase + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc));
       if (directionFailed) {
         return true;
       }
@@ -1523,12 +1488,8 @@ TerrainAuxHeightThreshold_TestWedge4(TerrainDirectionalScanStep scanStep,FieldGr
 
 
 /* Address: 0x00508850.
-   Ownership: world/terrain/height.
-   Purpose: Tests both directional legs of terrain wedge 5 against the shared auxiliary-height threshold, stopping
-   at excluded or invalid cells and preserving the verified carry-style failure path. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainAuxHeightThreshold_TestDirection5, TerrainAuxHeightThreshold_TestDirection0.
+   Water-surface placement test, sector 5: like TerrainAuxHeightThreshold_TestWedge0, running the straight tests
+   of directions 5 and 0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1536,35 +1497,35 @@ TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGr
 {
   FieldGridCell *directionStartCell;
   bool directionFailed;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-         ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) {
+      if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+         ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
         return true;
       }
       directionFailed = TerrainAuxHeightThreshold_TestDirection5
-                        (scanStep + 4,
-                         (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc))
+                        (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                         (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc))
       ;
       if (directionFailed) {
         return true;
       }
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return false;
       }
-      if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return true;
       }
       if (cell[1].waterSurfaceDelta < 0) {
         return true;
       }
-      if ((int)cell[1].triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum) {
+      if ((int)cell[1].triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum) {
         return true;
       }
       directionStartCell = cell + 2;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
       directionFailed = TerrainAuxHeightThreshold_TestDirection0(scanStep,directionStartCell);
       if (directionFailed) {
         return true;
@@ -1576,55 +1537,50 @@ TerrainAuxHeightThreshold_TestWedge5(TerrainDirectionalScanStep scanStep,FieldGr
 
 
 /* Address: 0x005077F0.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 0 while cells are eligible, have no positive surface delta, and their
-   terrain height relative to the shared origin stays inside the configured lower and upper band. Typed parameters:
-   p2 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Height-band placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
+   cell that is a map-edge cell, lies under water (waterSurfaceDelta > 0) or whose height relative to
+   g_TerrainScanReferenceHeight leaves [g_TerrainHeightBandMinimumDelta, g_TerrainHeightBandMaximumDelta]; false
+   once the step limit is reached (4 scan steps per cell).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
-  
+
   while( true ) {
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
          (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
          0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
        || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
-    scanStep = scanStep + 4;
-    cell = cell + 1;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell++;
   }
   return true;
 }
 
 
 /* Address: 0x00507860.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 1 while cells are eligible, have no positive surface delta, and their
-   terrain height relative to the shared origin stays inside the configured lower and upper band. Typed parameters:
-   p2 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Height-band placement test, straight leg along direction 1 (C+1-W, up and right); see TerrainHeightBand_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
-  
+
   while( true ) {
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
          (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
          0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
        || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
-    scanStep = scanStep + 4;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes));
   }
   return true;
@@ -1632,27 +1588,23 @@ TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCe
 
 
 /* Address: 0x005078E0.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 2 while cells are eligible, have no positive surface delta, and their
-   terrain height relative to the shared origin stays inside the configured lower and upper band. Typed parameters:
-   p2 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Height-band placement test, straight leg along direction 2 (C-W, up); see TerrainHeightBand_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
-  
+
   while( true ) {
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
          (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
          0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
        || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
-    scanStep = scanStep + 4;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
   }
   return true;
@@ -1660,95 +1612,81 @@ TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCe
 
 
 /* Address: 0x00507950.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 3 while cells are eligible, have no positive surface delta, and their
-   terrain height relative to the shared origin stays inside the configured lower and upper band. Typed parameters:
-   p2 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Height-band placement test, straight leg along direction 3 (C-1, left); see TerrainHeightBand_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
-  
+
   while( true ) {
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
          (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
          0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
        || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
-    scanStep = scanStep + 4;
-    cell = cell + -1;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell--;
   }
   return true;
 }
 
 
 /* Address: 0x005079C0.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 4 while cells are eligible, have no positive surface delta, and their
-   terrain height relative to the shared origin stays inside the configured lower and upper band. Typed parameters:
-   p2 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Height-band placement test, straight leg along direction 4 (C-1+W, down and left); see TerrainHeightBand_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
-  
+
   while( true ) {
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
          (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
          0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
        || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
-    scanStep = scanStep + 4;
-    cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
   }
   return true;
 }
 
 
 /* Address: 0x00507A40.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 5 while cells are eligible, have no positive surface delta, and their
-   terrain height relative to the shared origin stays inside the configured lower and upper band. Typed parameters:
-   p2 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Height-band placement test, straight leg along direction 5 (C+W, down); see TerrainHeightBand_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int terrainHeightDeltaQ12;
-  
+
   while( true ) {
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if (((((cell->flagsAndMaterial & 0x88006000) != 0) ||
+    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
          (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
          0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
        || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
-    scanStep = scanStep + 4;
-    cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
   }
   return true;
 }
 
 
 /* Address: 0x005081D0.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 0 while cells are eligible, have a nonnegative surface delta, and the
-   signed high word of the auxiliary height field remains at or above the shared threshold. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Water-surface placement test, straight leg along direction 0 (C+1, right): returns true (CF set) at the first
+   cell that is a map-edge cell, has a negative waterSurfaceDelta or whose triangle1NormalAngles high word is below
+   g_TerrainAuxHeightMinimum; false once the step limit is reached (4 scan steps per cell).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1758,21 +1696,18 @@ TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,Fie
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) break;
-    scanStep = scanStep + 4;
-    cell = cell + 1;
+    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell++;
   }
   return true;
 }
 
 
 /* Address: 0x00508240.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 1 while cells are eligible, have a nonnegative surface delta, and the
-   signed high word of the auxiliary height field remains at or above the shared threshold. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Water-surface placement test, straight leg along direction 1 (C+1-W, up and right); see
+   TerrainAuxHeightThreshold_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1782,9 +1717,9 @@ TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,Fie
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) break;
-    scanStep = scanStep + 4;
+    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes));
   }
   return true;
@@ -1792,11 +1727,8 @@ TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,Fie
 
 
 /* Address: 0x005082B0.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 2 while cells are eligible, have a nonnegative surface delta, and the
-   signed high word of the auxiliary height field remains at or above the shared threshold. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Water-surface placement test, straight leg along direction 2 (C-W, up); see
+   TerrainAuxHeightThreshold_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1806,9 +1738,9 @@ TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,Fie
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) break;
-    scanStep = scanStep + 4;
+    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
   }
   return true;
@@ -1816,11 +1748,8 @@ TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,Fie
 
 
 /* Address: 0x00508320.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 3 while cells are eligible, have a nonnegative surface delta, and the
-   signed high word of the auxiliary height field remains at or above the shared threshold. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Water-surface placement test, straight leg along direction 3 (C-1, left); see
+   TerrainAuxHeightThreshold_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1830,21 +1759,18 @@ TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,Fie
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) break;
-    scanStep = scanStep + 4;
-    cell = cell + -1;
+    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell--;
   }
   return true;
 }
 
 
 /* Address: 0x00508390.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 4 while cells are eligible, have a nonnegative surface delta, and the
-   signed high word of the auxiliary height field remains at or above the shared threshold. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Water-surface placement test, straight leg along direction 4 (C-1+W, down and left); see
+   TerrainAuxHeightThreshold_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1854,21 +1780,18 @@ TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,Fie
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) break;
-    scanStep = scanStep + 4;
-    cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
   }
   return true;
 }
 
 
 /* Address: 0x00508400.
-   Ownership: world/terrain/height.
-   Purpose: Walks directional terrain run 5 while cells are eligible, have a nonnegative surface delta, and the
-   signed high word of the auxiliary height field remains at or above the shared threshold. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Water-surface placement test, straight leg along direction 5 (C+W, down); see
+   TerrainAuxHeightThreshold_TestDirection0.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -1878,10 +1801,10 @@ TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,Fie
     if (g_TerrainScanStepLimit <= scanStep) {
       return false;
     }
-    if ((((cell->flagsAndMaterial & 0x88006000) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 0x10 < (int)g_TerrainAuxHeightMinimum)) break;
-    scanStep = scanStep + 4;
-    cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
+       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
+    scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+    cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
   }
   return true;
 }

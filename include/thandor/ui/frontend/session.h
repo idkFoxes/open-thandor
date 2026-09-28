@@ -17,8 +17,8 @@
 /* 0x00544270 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
-          (FrontendReturnCallbackContext32 callbackContext,uint32_t argument2,uint32_t argument3,
-          uint32_t argument4);
+          (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          uint32_t unusedArgument3);
 
 /* 0x00548FE0 */
 void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source);
@@ -36,7 +36,8 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source);
 /* 0x00544250 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_SetGameSpeedPercent
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,GameSpeedPercent gameSpeedPercent);
+          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          GameSpeedPercent gameSpeedPercent);
 
 /* 0x0054A790 */
 void __thandor_preserve_eax FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi);
@@ -63,8 +64,8 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
 /* 0x00544210 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ApplyGameSpeedAndReturnToMainPage
-          (FrontendReturnCallbackContext32 callbackContext,uint32_t argument2,uint32_t argument3,
-          FrontendStatusCode stateCode);
+          (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendStatusCode romActionIndex);
 
 /* 0x00544D10 */
 void __thandor_void_preserve_eax_ecx_edx

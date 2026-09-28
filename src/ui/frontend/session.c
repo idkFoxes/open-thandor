@@ -11,45 +11,39 @@
 /* Implementation ownership: ui/frontend/session. */
 
 /* Address: 0x00544270.
-   Ownership: ui/frontend/session.
-   Purpose: Releases the selected frontend package resource, clears its pointer and companion state dword, then
-   returns to the main page with state code 2. EAX is preserved. Typed parameters: p0
-   callbackContext→FrontendReturnCallbackContext32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: FrontendSession_ReturnToMainPage.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Handler of frontend command FRONTEND_COMMAND_RELEASE_CAMPAIGN (0x320): releases the loaded campaign asset,
+   resets the scenario initialisation count and returns to the main page with ROM action record 2. Called
+   directly by FrontendCallback_ReleaseSelectedResourceOrDispatch0320 in a local game, through the command queue
+   in a network game. Only the player id is forwarded; the other three arguments are unused.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
-          (FrontendReturnCallbackContext32 callbackContext,uint32_t argument2,uint32_t argument3,
-          uint32_t argument4)
+          (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          uint32_t unusedArgument3)
 
 {
   Resource_Release(g_FrontendLoadedCampaignAsset);
-  g_FrontendLoadedCampaignAsset = (void *)0x0;
+  g_FrontendLoadedCampaignAsset = NULL;
   g_FrontendScenarioInitializationCount = 0;
-  FrontendSession_ReturnToMainPage(callbackContext,0,0,2);
+  FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,2);
   return;
 }
 
 
 /* Address: 0x00548FE0.
-   Ownership: ui/frontend/session.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[72]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[72] (0x2048). Return datatype is preserved for non-queue direct callers. Typed parameters:
-   p0 source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control
-   flow, globals, locals, and executable data remain unchanged.
-   Local calls: FrontendSession_ReturnToMainPage.
-   Cross-module calls: Movie_Close [movie/runtime/playback], UiPageStack_SetActiveIndex [ui/controls/layout],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2048 (slot 72 of g_FrontendUiActionHandlersPage20.handlers00_54), a click on the movie
+   view: closes the playing movie, switches the view-mode stack back to the menu room, frees the movie's texture
+   source and its two frame buffers, shows the pointer cursor again and returns to the main page (directly in a
+   local game, as FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a network game).
 */
 void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
 
 {
   int parentNodeAddress;
-  
+
+  /* climb to the frontend root */
   parentNodeAddress = (int)source->parent;
-  while ((UiNodeBase *)parentNodeAddress != (UiNodeBase *)0xffffffff) {
+  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
     source = source->parent;
     parentNodeAddress = (int)source->parent;
   }
@@ -59,28 +53,26 @@ void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(
             (FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *));
   g_MemoryApi.free(FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *));
   g_MemoryApi.free(FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *));
-  FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *) = (GraphicsTextureSourceAsset *)0x0;
-  FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *) = (void *)0x0;
-  FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *) = (void *)0x0;
-  g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+  FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *) = NULL;
+  FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *) = NULL;
+  FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *) = NULL;
+  g_CursorVisibilityToken++;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
   }
   return;
 }
 
 
 /* Address: 0x00549090.
-   Ownership: ui/frontend/session.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[71]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[71] (0x2047). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendSession_ApplyGameSpeedAndReturnToMainPage.
-   Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands],
-   FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08 [ui/frontend/player].
+   Handler of action 0x2047 (slot 71 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
+   "Begin" button. A host or local player applies the game-speed slider and leaves with ROM action record 1
+   (FRONTEND_COMMAND_APPLY_GAME_SPEED in a network game); a client only reports that it is ready
+   (FRONTEND_COMMAND_BRIEFING_READY).
 */
 void __thandor_preserve_eax FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
 
@@ -91,40 +83,38 @@ void __thandor_preserve_eax FrontendSessionAction_ApplySpeedOrToggleReady(void *
       FrontendSession_ApplyGameSpeedAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,1);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x2c0,0,0,1);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_APPLY_GAME_SPEED,0,0,1);
     }
   }
+  /* the client branch repeats the network test although a client is always networked */
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
            SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0x1e0,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_BRIEFING_READY,0,0,0);
   }
   return;
 }
 
 
 /* Address: 0x0054C770.
-   Ownership: ui/frontend/session.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[0]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[0] (0x2000). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendSession_ReturnToMainPage.
-   Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands],
-   Random_SelectPrimaryStream [core/math/random].
+   Handler of action 0x2000 (slot 0 of g_FrontendUiActionHandlersPage20.handlers00_54), leaving the network
+   game page: closes and cleans up the network backend, sets the frontend network state back to idle, returns
+   to the main page and switches the random generator back to the primary stream.
 */
 void __thandor_preserve_eax FrontendSessionAction_ResetNetworkAndReturnToMainPage(void *source)
 
 {
-  g_NetworkBackendSlot3();
-  g_FrontendNetworkState = 0;
-  g_NetworkBackendSlot1();
+  g_NetworkBackendSlot3(); /* close */
+  g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
+  g_NetworkBackendSlot1(); /* cleanup */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
   }
   Random_SelectPrimaryStream();
   return;
@@ -132,15 +122,10 @@ void __thandor_preserve_eax FrontendSessionAction_ResetNetworkAndReturnToMainPag
 
 
 /* Address: 0x0054D0B0.
-   Ownership: ui/frontend/session.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[6]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[6] (0x2006). Return datatype is preserved for non-queue direct callers. Typed parameters: p0
-   source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Local calls: FrontendSession_ReturnToMainPage.
-   Cross-module calls: Random_NextPrimary [core/math/random], Random_SetBothSeeds [core/math/random],
-   Random_SelectSecondaryStream [core/math/random], FrontendCommandQueue_EnqueueLocalPlayerCommand
-   [network/protocol/commands].
+   Handler of action FRONTEND_ACTION_START_NETWORK_GAME (0x2006, slot 6 of
+   g_FrontendUiActionHandlersPage20.handlers00_54), the host lobby's start button: takes the player count from
+   the lobby list, reseeds both random streams from the primary one and selects the secondary stream, clears the handshake state of all eight player blocks, arms the player-snapshot transfer and returns to the
+   main page with ROM action record 1.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
@@ -150,9 +135,10 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
   uint32_t seed;
   int recordsRemaining;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
-  
+
+  /* climb to the frontend root */
   parentNode = source->parent;
-  while (parentNode != (UiNodeBase *)0xffffffff) {
+  while (parentNode != UI_NODE_NONE) {
     source = source->parent;
     parentNode = source->parent;
   }
@@ -168,7 +154,7 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
     (playerRecordCursor->factionAssignment).roleStateFlags = 0;
     playerRecordCursor->runtimeState64 = 0;
     playerRecordCursor = playerRecordCursor + 1;
-    recordsRemaining = recordsRemaining + -1;
+    recordsRemaining = recordsRemaining - 1;
   } while (recordsRemaining != 0);
   g_FrontendHostSnapshotTransferCountdown = 4;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -176,21 +162,21 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,1);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,1);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,1);
   }
   return;
 }
 
 
 /* Address: 0x00544250.
-   Ownership: ui/frontend/session.
-   Purpose: Stores the fourth callback argument into the active frontend runtime dword at +0xA80. EAX is preserved.
-   Typed parameters: p3 gameSpeedPercent→GameSpeedPercent_V305. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Handler of frontend command FRONTEND_COMMAND_SET_GAME_SPEED (0x300): stores the game-speed percent in the
+   mission briefing's gameSpeedSlider value (+0x58). Called directly by
+   FrontendGameplaySettings_SetGameSpeedPercent in a local game, through the command queue in a network game.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_SetGameSpeedPercent
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,GameSpeedPercent gameSpeedPercent)
+          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          GameSpeedPercent gameSpeedPercent)
 
 {
   FRONTEND_UI_FIELD(g_FrontendRootNode,gameSpeedSlider,0x58,GameSpeedPercent) = gameSpeedPercent;
@@ -214,15 +200,11 @@ void __thandor_preserve_eax FrontendSession_ShowQuitConfirmPage(FrontendUiImage 
 
 
 /* Address: 0x0054D2E0.
-   Ownership: ui/frontend/session.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[10]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[10] (0x200A). Return datatype is preserved for non-queue direct callers. Typed parameters:
-   p0 source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control
-   flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiNodeList_SuppressActionId
-   [ui/controls/lists], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   UiTransferMailbox_RandomizeSequenceToken [network/protocol/transfer], UiTransfer_SendPacketType10000Value2931
-   [network/protocol/transfer].
+   Handler of action 0x200A (slot 10 of g_FrontendUiActionHandlersPage20.handlers00_54), the client lobby's
+   Leave button; FrontendTransfer_TickRequestTimeoutAndResetPage also calls it when the host stops answering.
+   Reopens the network game page with an empty session list and the Join button hidden, leaves the network
+   session, takes a new session identity and sends a fresh discovery probe; the local player becomes the only
+   player again, with id 0.
 */
 void __thandor_preserve_eax
 FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
@@ -233,14 +215,14 @@ FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   /* source is the frontend template's clientLobbyLeaveButton (+0x5784). */
   FrontendUiImage *frontendUi;
 
-  g_FrontendNetworkState = 1;
+  g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x5784);
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
-  if ((int)g_FramebufferWidth < 0x281) {
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | 0x2000;
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  UiNodeList_SuppressActionId(0x2002,FRONTEND_UI(frontendUi,frontendRoot));
+  UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
             (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
@@ -261,10 +243,10 @@ FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
 
 
 /* Address: 0x0054E3A0.
-   Ownership: ui/frontend/session.
-   Purpose: Ticks the frontend session-list expiry values, compacts expired 0xB0-byte rows, repairs selection
-   offsets, and refreshes the associated pointer list.
-   Cross-module calls: UiPointerList_RefreshSelectionAndQueueAction [ui/controls/lists].
+   Network game page tick (FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState while g_FrontendNetworkState
+   is FRONTEND_NETWORK_STATE_BROWSING): counts down the expiry of every discovered session, drops the sessions
+   whose expiry ran out by compacting the 0xB0-byte records in place, rebuilds the row pointers,
+   keeps the selection on the same session (row 0 when the selected one went away) and refreshes the list.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSessionList_DecrementExpiryAndCompactRows
@@ -288,6 +270,7 @@ FrontendSessionList_DecrementExpiryAndCompactRows
   sourceRecord = g_FrontendSessionDiscoveryRecords;
   destinationRecord = g_FrontendSessionDiscoveryRecords;
   rowPointerCursor = g_FrontendSessionListRows;
+  /* the record field typed payloadByteCount holds the session's expiry ticks */
   for (rowsRemaining = (frontendRuntime->sessionDiscoveryList).rowCount; rowsRemaining != 0; rowsRemaining = rowsRemaining - 1) {
     expiryTicks = &(sourceRecord->advertisement).payloadByteCount;
     *expiryTicks = *expiryTicks - 1;
@@ -303,7 +286,7 @@ FrontendSessionList_DecrementExpiryAndCompactRows
       }
       else if (rowSlotCursor <= currentSelectedSlot) {
         selectedSlotField = &(frontendRuntime->sessionDiscoveryList).selectedRowSlot;
-        *selectedSlotField = *selectedSlotField + -1;
+        *selectedSlotField = *selectedSlotField - 1;
       }
     }
     else {
@@ -314,7 +297,8 @@ FrontendSessionList_DecrementExpiryAndCompactRows
       if (destinationDwordCursor != sourceDwordCursor) {
         sourceDwordCursor = (uint32_t *)sourceRecord;
         destinationDwordCursor = (uint32_t *)destinationRecord;
-        for (dwordsRemaining = 0x2c; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+        for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecordB0) / sizeof(uint32_t); dwordsRemaining != 0;
+            dwordsRemaining = dwordsRemaining - 1) {
           *destinationDwordCursor = *sourceDwordCursor;
           sourceDwordCursor = sourceDwordCursor + 1;
           destinationDwordCursor = destinationDwordCursor + 1;
@@ -575,31 +559,29 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
 
 
 /* Address: 0x00544210.
-   Ownership: ui/frontend/session.
-   Purpose: Closes the active movie, converts the frontend game-speed percentage at +0xA80 to the runtime Q8 value
-   using multiplier 0x28F5C and shift 16, sets runtime flag 0x08 at +0x8FC, then returns to the main frontend page
-   while forwarding the callback state code. EAX is preserved. Typed parameters: p3
-   stateCode→FrontendStatusCode_V306. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: FrontendSession_ReturnToMainPage.
-   Cross-module calls: Movie_Close [movie/runtime/playback].
+   Handler of frontend command FRONTEND_COMMAND_APPLY_GAME_SPEED (0x2C0), leaving the mission briefing: closes
+   any playing movie, converts the gameSpeedSlider percent into the simulation's Q8 game speed, sets flag 0x08
+   of the briefing image and returns to the main page with ROM action record romActionIndex. Called directly by
+   FrontendSessionAction_ApplySpeedOrToggleReady and FrontendCallback_ApplyGameSpeedOrDispatch02C0 in a local
+   game, through the command queue in a network game.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ApplyGameSpeedAndReturnToMainPage
-          (FrontendReturnCallbackContext32 callbackContext,uint32_t argument2,uint32_t argument3,
-          FrontendStatusCode stateCode)
+          (FrontendReturnCallbackContext32 playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendStatusCode romActionIndex)
 
 {
-  uint32_t *runtimeFlags;
+  uint32_t *displayFlags;
   int frontendRootAddress;
-  
+
   frontendRootAddress = g_FrontendRootNode;
   Movie_Close();
+  /* percent * 0x28F5C >> 16 = percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint32_t)(FRONTEND_UI_FIELD(frontendRootAddress,gameSpeedSlider,0x58,int) * 0x28f5c) >> 0x10;
-  runtimeFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
-  *runtimeFlags = *runtimeFlags | 8;
-  FrontendSession_ReturnToMainPage(callbackContext,0,0,stateCode);
+       (uint32_t)(FRONTEND_UI_FIELD(frontendRootAddress,gameSpeedSlider,0x58,int) * 0x28f5c) >> 16;
+  displayFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
+  *displayFlags = *displayFlags | 8;
+  FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);
   return;
 }
 

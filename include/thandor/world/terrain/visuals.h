@@ -63,7 +63,8 @@ void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void);
 /* 0x00561EA0 */
 void __thandor_preserve_eax_edx
 TerrainLighting_AdjustDirectionAndRecomputeField
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
+          (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
+          uint32_t deltaAzimuthAngle);
 
 /* 0x0053D560 */
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void);

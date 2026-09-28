@@ -259,18 +259,9 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
 
 
 /* Address: 0x0054BA90.
-   Ownership: ui/frontend/settings.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[34]@00545938;
-   g_UiActionPage20InitializedHandlers[35]@00545938; g_UiActionPage20InitializedHandlers[36]@00545938;
-   g_UiActionPage20InitializedHandlers[37]@00545938; g_UiActionPage20InitializedHandlers[38]@00545938;
-   g_UiActionPage20InitializedHandlers[39]@00545938; g_UiActionPage20InitializedHandlers[40]@00545938;
-   g_UiActionPage20InitializedHandlers[41]@00545938; g_UiActionPage20InitializedHandlers[42]@00545938;
-   g_UiActionPage20InitializedHandlers[43]@00545938. Queued UI action handler for FRONTEND_PAGE20[34],FRONTEND_PAGE
-   20[35],FRONTEND_PAGE20[36],FRONTEND_PAGE20[37],FRONTEND_PAGE20[38],FRONTEND_PAGE20[39],FRONTEND_PAGE20[40],FRONT
-   END_PAGE20[41],FRONTEND_PAGE20[42],FRONTEND_PAGE20[43]
-   (0x2022,0x2023,0x2024,0x2025,0x2026,0x2027,0x2028,0x2029,0x202A,0x202B). Return datatype is preserved for non-
-   queue direct callers.
-   Local calls: FrontendDisplaySettingsPage_UpdateModeActionAvailability.
+   Handler of the ten resolution choices of the display settings page (actions 0x2022..0x202B, slots 34-43 of
+   g_FrontendUiActionHandlersPage20): takes the clicked button's width/height pair as the pending resolution and
+   refreshes which choices are available. Nothing is applied before the apply action (0x2031).
 */
 void __thandor_preserve_eax_edx
 FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
@@ -286,13 +277,9 @@ FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
 
 
 /* Address: 0x0054BAC0.
-   Ownership: ui/frontend/settings.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[30]@00545938;
-   g_UiActionPage20InitializedHandlers[31]@00545938; g_UiActionPage20InitializedHandlers[32]@00545938;
-   g_UiActionPage20InitializedHandlers[33]@00545938. Queued UI action handler for
-   FRONTEND_PAGE20[30],FRONTEND_PAGE20[31],FRONTEND_PAGE20[32],FRONTEND_PAGE20[33] (0x201E,0x201F,0x2020,0x2021).
-   Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendDisplaySettingsPage_UpdateModeActionAvailability.
+   Handler of the four colour-depth choices of the display settings page (actions 0x201E..0x2021, slots 30-33 of
+   g_FrontendUiActionHandlersPage20): takes the clicked button's bits per pixel as the pending colour depth and
+   refreshes which choices are available.
 */
 void __thandor_preserve_eax
 FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
@@ -306,13 +293,11 @@ FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
 
 
 /* Address: 0x0054BAF0.
-   Ownership: ui/frontend/settings.
-   Purpose: Attempts the selected display mode, persists adapter/width/height/bits-per-pixel at offsets 0x00
-   through 0x0C on success, and restores the prior mode on failure. Queued UI action handler for
-   FRONTEND_PAGE20[49] (0x2031). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendDisplaySettingsPage_UpdateModeActionAvailability.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], PersistentSettings_WriteDword
-   [core/settings/persistent], UiRootStack_Relayout [ui/controls/layout].
+   Handler of the display settings page's apply action (FRONTEND_ACTION_APPLY_DISPLAY_MODE, slot 49 of
+   g_FrontendUiActionHandlersPage20): switches to the pending adapter/resolution/colour depth. On success the mode
+   is saved in the persistent settings, the UI is laid out again and the palette-based UI textures are converted
+   to the new pixel format; on failure the previous mode is restored (fatal if that fails too), the error is
+   reported and the pending selection is reset to the saved one.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void *control)
 
@@ -340,7 +325,8 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   previousAdapterIndex = g_ActiveGraphicsAdapterIndex;
   previousHeight = g_FramebufferHeight;
   previousWidth = g_FramebufferWidth;
-  g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
+  g_CursorVisibilityToken--;
+  /* the current colour depth: the RGB bits of the pixel format, rounded up to a multiple of 16 below */
   colorBitsCounterOrParentLink = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
           g_SoftwarePixelFormatConfig.blueBitCount;
   selectedModeResult = g_GraphicsSetDisplayMode
@@ -355,23 +341,24 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   if (selectedModeResult.failed) {
     restoredModeResult = g_GraphicsSetDisplayMode(previousAdapterIndex,colorBitsCounterOrParentLink + 0xfU & 0xfffffff0,previousHeight,previousWidth);
     FatalError_ExitIfFailed(restoredModeResult.valueOrError,restoredModeResult.failed);
-    g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+    g_CursorVisibilityToken++;
     FatalError_ReportIfFailed(selectedModeResult.valueOrError,true);
+    /* note the default adapter 1 here (ProcessEntry uses 0) */
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-    adapterIndex = PersistentSettings_Read(1,0);
+    adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
-         PersistentSettings_Read(0x280,4);
+         PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
-         PersistentSettings_Read(0x1e0,8);
+         PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-    bitsPerPixel = PersistentSettings_Read(0x10,0xc);
+    bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
     FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
     return;
   }
-  PersistentSettings_Write(selectedAdapterIndex,0);
-  PersistentSettings_Write(selectedWidth,4);
-  PersistentSettings_Write(selectedHeight,8);
-  PersistentSettings_Write(selectedBitsPerPixel,0xc);
+  PersistentSettings_Write(selectedAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
+  PersistentSettings_Write(selectedWidth,PERSISTENT_SETTING_DISPLAY_WIDTH);
+  PersistentSettings_Write(selectedHeight,PERSISTENT_SETTING_DISPLAY_HEIGHT);
+  PersistentSettings_Write(selectedBitsPerPixel,PERSISTENT_SETTING_BITS_PER_PIXEL);
   UiRootStack_Relayout();
   g_GraphicsTextureSourceConvertPaletteEntries
             ((GraphicsPaletteTextureSourceAsset *)g_FrontendMenuTextureSource);
@@ -380,68 +367,67 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   g_GraphicsTextureSourceConvertPaletteEntries
             ((GraphicsPaletteTextureSourceAsset *)g_UiWindowClassTextureSource);
   fontTextureSource = g_FontTextureSources;
-  colorBitsCounterOrParentLink = 2;
+  colorBitsCounterOrParentLink = 2; /* both fonts */
   do {
     g_GraphicsTextureSourceConvertPaletteEntries((GraphicsPaletteTextureSourceAsset *)*fontTextureSource);
     fontTextureSource = fontTextureSource + 1;
     colorBitsCounterOrParentLink = colorBitsCounterOrParentLink + -1;
   } while (colorBitsCounterOrParentLink != 0);
-  g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+  g_CursorVisibilityToken++;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
+  /* walk up the parent links (+0x08) to the frontend template root */
   colorBitsCounterOrParentLink = *(int *)((int)control + 8);
   while (colorBitsCounterOrParentLink != -1) {
     control = *(void **)((int)control + 8);
     colorBitsCounterOrParentLink = *(int *)((int)control + 8);
   }
-  /* control is now the frontend template root. */
-  if ((int)g_FramebufferWidth < 0x281) {
+  /* the new resolution decides whether the dialog pages cover the menu room */
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) | 0x2000;
+         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   else {
     FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
+         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) & ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   return;
 }
 
 
 /* Address: 0x0054CD70.
-   Ownership: ui/frontend/settings.
-   Purpose: When the player-name edit is accepted, writes 0x28 bytes to settings offset 0x60 and mirrors the same
-   twenty UTF-16 code units to the active player-name buffer. Queued UI action handler for FRONTEND_PAGE20[50]
-   (0x2032). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish.
-   Cross-module calls: UiTextControl_UpdateNonEmptyValidity [ui/controls/text], UiNodeList_SuppressActionId
-   [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists], PersistentSettings_WriteDwords
-   [core/settings/persistent].
+   Change handler of the network game page's player-name edit (playerNameEdit, action 0x2032, slot 50 of
+   g_FrontendUiActionHandlersPage20). An empty name hides Host and Join; a valid one shows Host, lets the session
+   list decide about Join, and is saved as PERSISTENT_SETTING_PLAYER_NAME and copied to the local player's name
+   (20 UTF-16 code units).
 */
 void __thandor_void_preserve_eax_ecx
 FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
 
 {
   UiNodeBase *parentCursor;
-  UiTextEditControl *firstNode;
+  UiTextEditControl *rootNode;
   int remainingDwords;
   uint32_t *sourceDwordCursor;
   uint32_t *playerNameDwordCursor;
-  
+
   parentCursor = (control->base).parent;
-  firstNode = control;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
-    firstNode = (UiTextEditControl *)(firstNode->base).parent;
-    parentCursor = (firstNode->base).parent;
+  rootNode = control;
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
+    rootNode = (UiTextEditControl *)(rootNode->base).parent;
+    parentCursor = (rootNode->base).parent;
   }
   UiTextControl_UpdateNonEmptyValidity(control);
   if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
-    UiNodeList_SuppressActionId(0x2001,&firstNode->base);
-    UiNodeList_SuppressActionId(0x2002,&firstNode->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&rootNode->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2001,&firstNode->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
     FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
-              ((FrontendNetworkSettingsControlView250 *)&firstNode[0x96].activationSound);
-    PersistentSettings_WriteBlock(0x28,(uint32_t *)control->textPrefix6C,0x60);
+              ((FrontendNetworkSettingsControlView250 *)FRONTEND_UI(rootNode,sessionList));
+    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textPrefix6C,
+                                  PERSISTENT_SETTING_PLAYER_NAME);
     sourceDwordCursor = (uint32_t *)control->textPrefix6C;
     playerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
     for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
@@ -455,13 +441,9 @@ FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
 
 
 /* Address: 0x00548E70.
-   Ownership: ui/frontend/settings.
-   Purpose: Applies control+0x58 to the frontend game-speed service and persists gameSpeedPercent at settings
-   offset 0x44. Queued UI action handler for FRONTEND_PAGE20[74] (0x204A). Return datatype is preserved for non-
-   queue direct callers.
-   Cross-module calls: FrontendSession_SetGameSpeedPercent [ui/frontend/session],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands], PersistentSettings_WriteDword
-   [core/settings/persistent].
+   Handler of the mission briefing page's game speed slider (FRONTEND_ACTION_GAME_SPEED, slot 74 of
+   g_FrontendUiActionHandlersPage20): applies the percentage directly in a local game and as
+   FRONTEND_COMMAND_SET_GAME_SPEED in a network game, and saves it as PERSISTENT_SETTING_GAME_SPEED_PERCENT.
 */
 void __thandor_preserve_eax
 FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
@@ -472,9 +454,9 @@ FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
     FrontendSession_SetGameSpeedPercent(g_LocalPlayerRuntimeId,0,0,control->boundValue);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0x300,0,0,control->boundValue);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SET_GAME_SPEED,0,0,control->boundValue);
   }
-  PersistentSettings_Write(control->boundValue,0x44);
+  PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_GAME_SPEED_PERCENT);
   return;
 }
 
@@ -506,26 +488,21 @@ FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *contro
 
 
 /* Address: 0x0054A850.
-   Ownership: ui/frontend/settings.
-   Purpose: Persists control+0x58 as cameraScrollStep at settings offset 0x48. Queued UI action handler for
-   FRONTEND_PAGE20[75] (0x204B). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the options page's scroll-speed slider (scrollSpeedSlider, action 0x204B, slot 75 of
+   g_FrontendUiActionHandlersPage20): saves the value as PERSISTENT_SETTING_CAMERA_SCROLL_STEP.
 */
 void __thandor_preserve_eax
 FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 
 {
-  PersistentSettings_Write(control->boundValue,0x48);
+  PersistentSettings_Write(control->boundValue,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
   return;
 }
 
 
 /* Address: 0x0054A870.
-   Ownership: ui/frontend/settings.
-   Purpose: Registered as UI action 0x203C. The original user-facing label remains unresolved. Queued UI action
-   handler for FRONTEND_PAGE20[60] (0x203C). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
-   [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the "Automatic zoom off" checkbox (autoZoomOffCheckbox, action 0x203C, slot 60 of
+   g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
@@ -534,26 +511,23 @@ FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   uint32_t optionFlags;
   PersistentSettingsValue value;
   bool isSelected;
-  
-  optionFlags = PersistentSettings_Read(0,0x40);
+
+  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    value = optionFlags | 1;
+    value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
   }
   else {
-    value = optionFlags & 0xfffffffe;
+    value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
   }
-  PersistentSettings_Write(value,0x40);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   return;
 }
 
 
 /* Address: 0x0054A8B0.
-   Ownership: ui/frontend/settings.
-   Purpose: Registered as UI action 0x203D. The original user-facing label remains unresolved. Queued UI action
-   handler for FRONTEND_PAGE20[61] (0x203D). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
-   [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the "Automatic rotation off" checkbox (autoRotationOffCheckbox, action 0x203D, slot 61 of
+   g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
@@ -562,28 +536,24 @@ FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
   uint32_t optionFlags;
   PersistentSettingsValue value;
   bool isSelected;
-  
-  optionFlags = PersistentSettings_Read(0,0x40);
+
+  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    value = optionFlags | 2;
+    value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
   }
   else {
-    value = optionFlags & 0xfffffffd;
+    value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
   }
-  PersistentSettings_Write(value,0x40);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   return;
 }
 
 
 /* Address: 0x0054A8F0.
-   Ownership: ui/frontend/settings.
-   Purpose: Registered as UI action 0x203E. Updates bit 0 of optionFlags5C. Selecting it suppresses the paired
-   action 0x203F; clearing it restores that action. The original label remains unresolved. Queued UI action handler
-   for FRONTEND_PAGE20[62] (0x203E).
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
-   [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
-   [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the "Link rotation/zoom" checkbox (FRONTEND_ACTION_LINK_ROTATION_ZOOM, slot 62 of
+   g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_LINK_OPTION_ROTATION_ZOOM. The two link
+   options exclude each other, so while this one is set the "Link rotation/tilt" checkbox is hidden.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
@@ -592,30 +562,26 @@ FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
   uint32_t optionFlags;
   PersistentSettingsValue value;
   bool isSelected;
-  
-  optionFlags = PersistentSettings_Read(0,0x5c);
+
+  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    value = optionFlags | 1;
-    UiNodeList_SuppressActionId(0x203f,(control->base).parent);
+    value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,(control->base).parent);
   }
   else {
-    value = optionFlags & 0xfffffffe;
-    UiNodeList_UnsuppressActionId(0x203f,(control->base).parent);
+    value = optionFlags & ~PERSISTENT_LINK_OPTION_ROTATION_ZOOM;
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_LINK_ROTATION_TILT,(control->base).parent);
   }
-  PersistentSettings_Write(value,0x5c);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   return;
 }
 
 
 /* Address: 0x0054A950.
-   Ownership: ui/frontend/settings.
-   Purpose: Registered as UI action 0x203F. Updates bit 1 of optionFlags5C. Selecting it suppresses the paired
-   action 0x203E; clearing it restores that action. The original label remains unresolved. Queued UI action handler
-   for FRONTEND_PAGE20[63] (0x203F).
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
-   [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
-   [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the "Link rotation/tilt" checkbox (FRONTEND_ACTION_LINK_ROTATION_TILT, slot 63 of
+   g_FrontendUiActionHandlersPage20): stores its state as PERSISTENT_LINK_OPTION_ROTATION_TILT and, while set,
+   hides the "Link rotation/zoom" checkbox.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
@@ -624,28 +590,27 @@ FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
   uint32_t optionFlags;
   PersistentSettingsValue value;
   bool isSelected;
-  
-  optionFlags = PersistentSettings_Read(0,0x5c);
+
+  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    value = optionFlags | 2;
-    UiNodeList_SuppressActionId(0x203e,(control->base).parent);
+    value = optionFlags | PERSISTENT_LINK_OPTION_ROTATION_TILT;
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,(control->base).parent);
   }
   else {
-    value = optionFlags & 0xfffffffd;
-    UiNodeList_UnsuppressActionId(0x203e,(control->base).parent);
+    value = optionFlags & ~PERSISTENT_LINK_OPTION_ROTATION_TILT;
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_LINK_ROTATION_ZOOM,(control->base).parent);
   }
-  PersistentSettings_Write(value,0x5c);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   return;
 }
 
 
 /* Address: 0x0054A9B0.
-   Ownership: ui/frontend/settings.
-   Purpose: Registered as UI action 0x2051. The original user-facing label remains unresolved. Queued UI action
-   handler for FRONTEND_PAGE20[81] (0x2051). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
-   [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of action 0x2051 (slot 81 of g_FrontendUiActionHandlersPage20): stores the checkbox state as
+   PERSISTENT_LINK_OPTION_HIDE_PANEL. The frontend template calls the 0x2051 checkbox "Right button does not
+   scroll" and the 0x2049 one "Hide panel", the opposite of what this handler and
+   FrontendGameplaySettings_SetRightButtonDoesNotScroll store.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
@@ -654,16 +619,16 @@ FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
   uint32_t optionFlags;
   PersistentSettingsValue value;
   bool isSelected;
-  
-  optionFlags = PersistentSettings_Read(0,0x5c);
+
+  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    value = optionFlags | 4;
+    value = optionFlags | PERSISTENT_LINK_OPTION_HIDE_PANEL;
   }
   else {
-    value = optionFlags & 0xfffffffb;
+    value = optionFlags & ~PERSISTENT_LINK_OPTION_HIDE_PANEL;
   }
-  PersistentSettings_Write(value,0x5c);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   return;
 }
 
@@ -710,18 +675,16 @@ FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *fronte
 
 
 /* Address: 0x0054B740.
-   Ownership: ui/frontend/settings.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[18] (0x2012).
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], PersistentSettings_ReadDword
-   [core/settings/persistent], UiSelectableControl_SetSelected [ui/controls/lists], UiNodeList_SuppressActionId
-   [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists], UiSelectableGroup_SelectExclusive
-   [ui/controls/lists].
+   Handler of the options page's "3D" button (settings3DButton, action 0x2012, slot 18 of
+   g_FrontendUiActionHandlersPage20): opens the graphics settings page and loads its controls from the
+   persistent settings: the shading toggle (the shading levels are only offered while it is on), the shading
+   level matching the saved grid size and depth, the texture quality and the polygon detail (LOD) slider.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageState167C *source)
 
 {
-  FrontendGraphicsRuntimeSettingsPageState167C *firstNode;
+  FrontendGraphicsRuntimeSettingsPageState167C *rootNode;
   uint32_t persistedValue;
   uint32_t shadingDepthQuarter;
   int shadingDepth;
@@ -730,40 +693,44 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
   FrontendUiImage *frontendUi;
   
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x2794);
-  UiPageStack_SetActiveIndex(7,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
-  if ((int)g_FramebufferWidth < 0x281) {
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_GRAPHICS_SETTINGS,
+                             (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  persistedValue = PersistentSettings_Read(1,0x1c);
+  persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
   UiSelectableControl_SetSelected(persistedValue,&source->shadingEnabledControl);
   parentCursorOrSelectedRow = (source->base).parent;
-  firstNode = source;
-  while (parentCursorOrSelectedRow != (UiNodeBase *)0xffffffff) {
-    firstNode = (FrontendGraphicsRuntimeSettingsPageState167C *)(firstNode->base).parent;
-    parentCursorOrSelectedRow = (firstNode->base).parent;
+  rootNode = source;
+  /* climb to the root of the control's UI tree */
+  while (parentCursorOrSelectedRow != UI_NODE_NONE) {
+    rootNode = (FrontendGraphicsRuntimeSettingsPageState167C *)(rootNode->base).parent;
+    parentCursorOrSelectedRow = (rootNode->base).parent;
   }
   if (persistedValue == 0) {
-    UiNodeList_SuppressActionId(0x2015,&firstNode->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_SHADING_LEVEL,&rootNode->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2015,&firstNode->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SHADING_LEVEL,&rootNode->base);
   }
-  persistedValue = PersistentSettings_Read(0x20,0x10);
-  shadingDepthQuarter = PersistentSettings_Read(0x10,0x18);
+  /* the six shading level rows: grid/depth 32/32, 32/64, 32/128, 64/64, 64/128, 128/128 (the saved depth is
+     stored divided by four) */
+  persistedValue = PersistentSettings_Read(32,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+  shadingDepthQuarter = PersistentSettings_Read(16,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   shadingDepth = shadingDepthQuarter * 4;
-  if (persistedValue == 0x20) {
+  if (persistedValue == 32) {
     parentCursorOrSelectedRow = (UiNodeBase *)&source->shadingResolutionRows;
-    if (shadingDepth == 0x40) {
+    if (shadingDepth == 64) {
       parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 1);
     }
-    else if (shadingDepth == 0x80) {
+    else if (shadingDepth == 128) {
       parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 2);
     }
   }
-  else if (persistedValue == 0x40) {
+  else if (persistedValue == 64) {
     parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 3);
-    if (shadingDepth == 0x80) {
+    if (shadingDepth == 128) {
       parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 4);
     }
   }
@@ -777,11 +744,12 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
       FRONTEND_UI(frontendUi,shadingLevelGrid32Depth128),
       FRONTEND_UI(frontendUi,shadingLevelGrid32Depth64),
       FRONTEND_UI(frontendUi,shadingLevelGrid32Depth32));
-  persistedValue = PersistentSettings_Read(1,0x30);
-  if (persistedValue == 0) {
+  /* texture rows: low, medium, high */
+  persistedValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
+  if (persistedValue == TEXTURE_QUALITY_HIGH) {
     parentCursorOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
   }
-  else if (persistedValue == 1) {
+  else if (persistedValue == TEXTURE_QUALITY_MEDIUM) {
     parentCursorOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 1);
   }
   else {
@@ -791,18 +759,17 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
       FRONTEND_UI(frontendUi,textureQualityHigh),
       FRONTEND_UI(frontendUi,textureQualityMedium),
       FRONTEND_UI(frontendUi,textureQualityLow));
-  persistedValue = PersistentSettings_Read(0x10000,0x34);
+  persistedValue = PersistentSettings_Read(0x10000,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
   return;
 }
 
 
 /* Address: 0x0054B8D0.
-   Ownership: ui/frontend/settings.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[19] (0x2013).
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], PersistentSettings_ReadDword
-   [core/settings/persistent], UiSelectableControl_SetSelected [ui/controls/lists], UiNodeList_SuppressActionId
-   [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
+   Handler of the options page's "Sound" button (soundSettingsButton, action 0x2013, slot 19 of
+   g_FrontendUiActionHandlersPage20): opens the audio settings page and loads its toggles and volume sliders
+   from the persistent settings. The effect and movie volumes are only offered with effects on, the music volume
+   only with music on, and reverse stereo only while either is on. The movie-event slider is not loaded.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendAudioSettings_OpenAndSynchronize
@@ -813,61 +780,58 @@ FrontendAudioSettings_OpenAndSynchronize
   UiNodeBase *parentCursor;
   uint32_t audioFlags;
   uint32_t gainValue;
-  
-  UiPageStack_SetActiveIndex(8,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->settingsPageStack);
-  if ((int)g_FramebufferWidth < 0x281) {
+
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_AUDIO_SETTINGS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->settingsPageStack);
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     compactLayoutFlags = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->pageRoot.nodeFlags;
-    *compactLayoutFlags = *compactLayoutFlags | 0x2000;
+    *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  audioFlags = PersistentSettings_Read(3,0x20);
-  UiSelectableControl_SetSelected(audioFlags & 1,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & 2,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicEnabledControl);
-  UiSelectableControl_SetSelected(audioFlags & 4,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->reverseStereoControl);
-  gainValue = PersistentSettings_Read(0x8000,0x24);
+  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsEnabledControl);
+  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicEnabledControl);
+  UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->reverseStereoControl);
+  gainValue = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN); /* Q15 1.0 */
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsGainControl).currentValue = gainValue;
-  gainValue = PersistentSettings_Read(0x8000,0x28);
+  gainValue = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->movieDefaultAudioGainControl).currentValue = gainValue;
-  gainValue = PersistentSettings_Read(0x8000,0x2c);
+  gainValue = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MUSIC_GAIN);
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicGainControl).currentValue = gainValue;
   parentCursor = settingsSourceNode->parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
     settingsSourceNode = settingsSourceNode->parent;
     parentCursor = settingsSourceNode->parent;
   }
-  if ((audioFlags & 1) == 0) {
-    UiNodeList_SuppressActionId(0x201b,settingsSourceNode);
-    UiNodeList_SuppressActionId(0x201c,settingsSourceNode);
-    UiNodeList_SuppressActionId(0x204e,settingsSourceNode);
+  if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,settingsSourceNode);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,settingsSourceNode);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,settingsSourceNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201b,settingsSourceNode);
-    UiNodeList_UnsuppressActionId(0x201c,settingsSourceNode);
-    UiNodeList_UnsuppressActionId(0x204e,settingsSourceNode);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,settingsSourceNode);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,settingsSourceNode);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,settingsSourceNode);
   }
-  if ((audioFlags & 2) == 0) {
-    UiNodeList_SuppressActionId(0x201d,settingsSourceNode);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x201d,settingsSourceNode);
-  }
-  if ((audioFlags & 3) == 0) {
-    UiNodeList_SuppressActionId(0x201a,settingsSourceNode);
+  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,settingsSourceNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201a,settingsSourceNode);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,settingsSourceNode);
+  }
+  if ((audioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC)) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,settingsSourceNode);
+  }
+  else {
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,settingsSourceNode);
   }
   return;
 }
 
 
 /* Address: 0x0054BCB0.
-   Ownership: ui/frontend/settings.
-   Purpose: Updates the user-facing Shading toggle, persists shadingEnabled at settings offset 0x1C, and mirrors it
-   to frontend runtime bit 0x00020000. Queued UI action handler for FRONTEND_PAGE20[20] (0x2014). Return datatype
-   is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiNodeList_SuppressActionId
-   [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists], PersistentSettings_WriteDword
-   [core/settings/persistent].
+   Handler of the graphics settings page's shading toggle (shadingEnabledCheckbox, action 0x2014, slot 20 of
+   g_FrontendUiActionHandlersPage20): offers the shading levels only while shading is on and saves the state as
+   PERSISTENT_SETTING_SHADING_ENABLED.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
@@ -875,31 +839,30 @@ FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
 {
   uint8_t isSelected;
   UiNodeBase *parentCursor;
-  
+
   isSelected = UiSelectableControl_IsSelected(control);
   parentCursor = (control->base).parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
     control = (UiSelectableControl *)(control->base).parent;
     parentCursor = (control->base).parent;
   }
   if ((isSelected & 1) == 0) {
-    UiNodeList_SuppressActionId(0x2015,&control->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_SHADING_LEVEL,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2015,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SHADING_LEVEL,&control->base);
   }
-  PersistentSettings_Write(isSelected & 1,0x1c);
+  PersistentSettings_Write(isSelected & 1,PERSISTENT_SETTING_SHADING_ENABLED);
   return;
 }
 
 
 /* Address: 0x0054BD10.
-   Ownership: ui/frontend/settings.
-   Purpose: Applies the selected Shading Level. Persists the selected grid value at 0x10, twice that value at 0x14,
-   and the selected depth divided by four at 0x18. Queued UI action handler for FRONTEND_PAGE20[21] (0x2015).
-   Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent], UiSelectableGroup_SelectExclusive
-   [ui/controls/lists].
+   Handler of the six shading level choices (FRONTEND_ACTION_SHADING_LEVEL, slot 21 of
+   g_FrontendUiActionHandlersPage20): saves the clicked button's grid size as the shading grid half size, twice
+   it as the shading texture dimension and its depth / 4 as the subresource count, then selects the matching
+   choice exclusively.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
@@ -909,26 +872,26 @@ FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   UiNodeBase *shadingLevelGroup;
   uint32_t shadingDepthQuarter;
   UiNodeBase *selectedControl;
-  
+
   shadingGridSize = ((UiNumericPairTextButton *)control)->firstValue;
   shadingDepthQuarter = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
-  PersistentSettings_Write((int)shadingGridSize * 2,0x14);
-  PersistentSettings_Write((PersistentSettingsValue)shadingGridSize,0x10);
-  PersistentSettings_Write(shadingDepthQuarter,0x18);
+  PersistentSettings_Write((int)shadingGridSize * 2,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
+  PersistentSettings_Write((PersistentSettingsValue)shadingGridSize,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+  PersistentSettings_Write(shadingDepthQuarter,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   /* The parent is the frontend template's shadingLevelGroup (+0x385C). */
   shadingLevelGroup = (control->base).parent;
-  if (shadingGridSize == 0x20) {
+  if (shadingGridSize == 32) {
     selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x54) /* shadingLevelGrid32Depth32 */;
-    if (shadingDepthQuarter == 0x10) {
+    if (shadingDepthQuarter == 64 / 4) {
       selectedControl = THANDOR_UI_AT(shadingLevelGroup,0xbc) /* shadingLevelGrid32Depth64 */;
     }
-    else if (shadingDepthQuarter == 0x20) {
+    else if (shadingDepthQuarter == 128 / 4) {
       selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x124) /* shadingLevelGrid32Depth128 */;
     }
   }
-  else if (shadingGridSize == 0x40) {
+  else if (shadingGridSize == 64) {
     selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x18c) /* shadingLevelGrid64Depth64 */;
-    if (shadingDepthQuarter == 0x20) {
+    if (shadingDepthQuarter == 128 / 4) {
       selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x1f4) /* shadingLevelGrid64Depth128 */;
     }
   }
@@ -947,32 +910,28 @@ FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 
 /* Address: 0x0054BDE0.
-   Ownership: ui/frontend/settings.
-   Purpose: Persists the custom-slider Q8 model-LOD depth threshold at settings offset 0x34 and mirrors it to
-   g_ModelLodDepthThresholdQ8. Queued UI action handler for FRONTEND_PAGE20[22] (0x2016). Return datatype is
-   preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the graphics settings page's polygon detail slider (polygonDetailSlider, action 0x2016, slot 22 of
+   g_FrontendUiActionHandlersPage20): saves the Q8 model LOD depth threshold as
+   PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD and applies it at once (g_ModelLodDepthThresholdQ8).
 */
 void __thandor_preserve_eax
 FrontendModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
-  
+
   value = control->boundValue;
-  PersistentSettings_Write(value,0x34);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   g_ModelLodDepthThresholdQ8 = value;
   return;
 }
 
 
 /* Address: 0x0054BE10.
-   Ownership: ui/frontend/settings.
-   Purpose: Maps the Texture Quality choices High, Medium, and Low to persisted values 0, 1, and 2 at settings
-   offset 0x30, then rebuilds texture staging resources. Queued UI action handler for FRONTEND_PAGE20[23] (0x2017).
-   Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], PersistentSettings_WriteDword
-   [core/settings/persistent].
+   Handler of the three texture quality choices (action 0x2017, slot 23 of g_FrontendUiActionHandlersPage20):
+   selects the clicked one, saves it as PERSISTENT_SETTING_TEXTURE_QUALITY (high 0, medium 1, low 2) and applies
+   it at once: the downsample shift becomes level / 2 (only low halves the textures) and all staging textures
+   are rebuilt.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendTextureSettings_SetQuality(UiSelectableControl *control)
@@ -1000,7 +959,7 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
       THANDOR_UI_AT((control->base).parent,0x114) /* textureQualityHigh */,
       THANDOR_UI_AT((control->base).parent,0xb4) /* textureQualityMedium */,
       THANDOR_UI_AT((control->base).parent,0x54) /* textureQualityLow */);
-  PersistentSettings_Write(qualityLevel,0x30);
+  PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel >> 1;
   g_GraphicsRebuildAllStagingTextures();
   return;
@@ -1008,12 +967,10 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
 
 
 /* Address: 0x0054BE90.
-   Ownership: ui/frontend/settings.
-   Purpose: Queued UI action handler for FRONTEND_PAGE20[24] (0x2018). Return datatype is preserved for non-queue
-   direct callers.
-   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], PersistentSettings_ReadDword
-   [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
-   UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
+   Handler of the audio settings page's effects toggle (soundEffectsEnabledCheckbox, action 0x2018, slot 24 of
+   g_FrontendUiActionHandlersPage20): saves PERSISTENT_SOUND_OPTION_EFFECTS, offers the effect and movie volume
+   sliders only while effects are on (the music slider and reverse stereo follow the saved music bit), and
+   applies the saved effect, UI and movie gains, or silence while effects are off.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
@@ -1025,51 +982,54 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   MovieAudioGainQ15 movieDefaultGain;
   MovieAudioGainQ15 movieAlternateGain;
   bool isSelected;
-  
+
   isSelected = (bool)UiSelectableControl_IsSelected(control);
-  audioFlags = PersistentSettings_Read(3,0x20);
-  PersistentSettings_Write((uint32_t)isSelected | audioFlags & 0xfffffffe,0x20);
+  audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  /* isSelected is the PERSISTENT_SOUND_OPTION_EFFECTS bit */
+  PersistentSettings_Write((uint32_t)isSelected | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
+                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   parentCursor = (control->base).parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
     control = (UiSelectableControl *)(control->base).parent;
     parentCursor = (control->base).parent;
   }
   if (isSelected) {
-    UiNodeList_UnsuppressActionId(0x201b,&control->base);
-    UiNodeList_UnsuppressActionId(0x201c,&control->base);
-    UiNodeList_UnsuppressActionId(0x204e,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
   else {
-    UiNodeList_SuppressActionId(0x201b,&control->base);
-    UiNodeList_SuppressActionId(0x201c,&control->base);
-    UiNodeList_SuppressActionId(0x204e,&control->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,&control->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
-  if ((audioFlags & 2) == 0) {
-    UiNodeList_SuppressActionId(0x201d,&control->base);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x201d,&control->base);
-  }
-  if (isSelected == 0 && (audioFlags & 2) == 0) {
-    UiNodeList_SuppressActionId(0x201a,&control->base);
+  if ((audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201a,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
+  }
+  if (isSelected == 0 && (audioFlags & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
+  }
+  else {
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
   }
   effectsGain = 0;
   if (isSelected) {
-    effectsGain = PersistentSettings_Read(0x8000,0x24);
+    effectsGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN);
   }
   movieDefaultGain = 0;
   g_UiSoundGainQ15 = effectsGain;
   g_SoundEffectsGainQ15 = effectsGain;
   if (isSelected) {
-    movieDefaultGain = PersistentSettings_Read(0x8000,0x28);
+    movieDefaultGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   }
   movieAlternateGain = 0;
   g_MovieDefaultAudioGainQ15 = movieDefaultGain;
   if (isSelected) {
-    movieAlternateGain = PersistentSettings_Read(0x8000,0x4c);
+    movieAlternateGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   }
   g_MovieAlternateAudioGainQ15 = movieAlternateGain;
   return;
@@ -1077,14 +1037,10 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 
 /* Address: 0x0054BFD0.
-   Ownership: ui/frontend/settings.
-   Purpose: Updates SOUND_OPTIONS_MUSIC_ENABLED, creates or stops the frontend looping-music voice, applies
-   musicGainQ15, and updates related frontend controls. Queued UI action handler for FRONTEND_PAGE20[25] (0x2019).
-   Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], Resource_Load
-   [assets/resource/runtime], Resource_Release [assets/resource/runtime], PersistentSettings_ReadDword
-   [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
-   UiNodeList_SuppressActionId [ui/controls/lists].
+   Handler of the audio settings page's music toggle (musicEnabledCheckbox, action 0x2019, slot 25 of
+   g_FrontendUiActionHandlersPage20). Switching on loads sound\music00.sam and starts it looping at the saved
+   music gain (busy cursor meanwhile; any failure just leaves the music off); switching off stops and releases
+   it. Then saves PERSISTENT_SOUND_OPTION_MUSIC and offers the volume sliders and reverse stereo accordingly.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
@@ -1101,12 +1057,12 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   SampleVoiceSetResult createVoiceResult;
   SoundPlayResult playResult;
   ResourceLoadResult loadResult;
-  
+
   musicEnabledBit = 0;
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    musicEnabledBit = 2;
-    g_GraphicsCursorSetFrame(6);
+    musicEnabledBit = PERSISTENT_SOUND_OPTION_MUSIC;
+    g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
     loadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
     musicSample = (SoundSampleAsset *)loadResult.bufferOrError;
     activeMusicBuffer = g_FrontendMusicActiveBuffer;
@@ -1120,65 +1076,64 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
       else {
         g_FrontendMusicVoiceSet = musicVoiceSet;
         Resource_Release(musicSample);
-        gainOrAudioFlags = PersistentSettings_Read(0x8000,0x2c);
+        gainOrAudioFlags = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MUSIC_GAIN);
         playResult = g_SoundPlayLooping(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
         activeMusicBuffer = playResult.soundBuffer;
         if (playResult.failed) {
           g_SoundReleaseSampleVoiceSet(musicVoiceSet);
-          g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
+          g_FrontendMusicVoiceSet = NULL;
           activeMusicBuffer = g_FrontendMusicActiveBuffer;
         }
       }
     }
     g_FrontendMusicActiveBuffer = activeMusicBuffer;
-    g_GraphicsCursorSetFrame(0);
+    g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   }
   else {
     g_SoundStopVoice(g_FrontendMusicActiveBuffer);
     g_SoundReleaseSampleVoiceSet(g_FrontendMusicVoiceSet);
-    g_FrontendMusicActiveBuffer = (IDirectSoundBuffer *)0x0;
-    g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
+    g_FrontendMusicActiveBuffer = NULL;
+    g_FrontendMusicVoiceSet = NULL;
   }
-  gainOrAudioFlags = PersistentSettings_Read(3,0x20);
-  newAudioFlags = musicEnabledBit | gainOrAudioFlags & 0xfffffffd;
-  PersistentSettings_Write(newAudioFlags,0x20);
+  gainOrAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+  newAudioFlags = musicEnabledBit | gainOrAudioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC;
+  PersistentSettings_Write(newAudioFlags,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   parentCursor = (control->base).parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
     control = (UiSelectableControl *)(control->base).parent;
     parentCursor = (control->base).parent;
   }
-  if ((newAudioFlags & 1) == 0) {
-    UiNodeList_SuppressActionId(0x201b,&control->base);
-    UiNodeList_SuppressActionId(0x201c,&control->base);
-    UiNodeList_SuppressActionId(0x204e,&control->base);
+  if ((newAudioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,&control->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201b,&control->base);
-    UiNodeList_UnsuppressActionId(0x201c,&control->base);
-    UiNodeList_UnsuppressActionId(0x204e,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_EFFECTS_GAIN,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_GAIN,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MOVIE_EVENT_GAIN,&control->base);
   }
-  if ((musicEnabledBit & 2) == 0) {
-    UiNodeList_SuppressActionId(0x201d,&control->base);
-  }
-  else {
-    UiNodeList_UnsuppressActionId(0x201d,&control->base);
-  }
-  if ((newAudioFlags & 3) == 0) {
-    UiNodeList_SuppressActionId(0x201a,&control->base);
+  if ((musicEnabledBit & PERSISTENT_SOUND_OPTION_MUSIC) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201a,&control->base);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_MUSIC_GAIN,&control->base);
+  }
+  if ((newAudioFlags & (PERSISTENT_SOUND_OPTION_EFFECTS | PERSISTENT_SOUND_OPTION_MUSIC)) == 0) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
+  }
+  else {
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_REVERSE_STEREO,&control->base);
   }
   return;
 }
 
 
 /* Address: 0x0054C150.
-   Ownership: ui/frontend/settings.
-   Purpose: Updates SOUND_OPTIONS_REVERSE_STEREO and writes g_ReverseStereoMask as zero or 0xFFFFFFFF. Queued UI
-   action handler for FRONTEND_PAGE20[26] (0x201A). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], PersistentSettings_ReadDword
-   [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the audio settings page's reverse stereo toggle (FRONTEND_ACTION_REVERSE_STEREO, slot 26 of
+   g_FrontendUiActionHandlersPage20): applies it at once (g_ReverseStereoMask all ones or zero) and saves
+   PERSISTENT_SOUND_OPTION_REVERSE_STEREO.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
@@ -1188,35 +1143,34 @@ FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
   uint32_t reverseStereoBit;
   int32_t reverseStereoMask;
   bool isSelected;
-  
+
   reverseStereoBit = 0;
   reverseStereoMask = 0;
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    reverseStereoBit = 4;
+    reverseStereoBit = PERSISTENT_SOUND_OPTION_REVERSE_STEREO;
     reverseStereoMask = -1;
   }
-  currentAudioFlags = PersistentSettings_Read(3,0x20);
+  currentAudioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   g_ReverseStereoMask = reverseStereoMask;
-  PersistentSettings_Write(reverseStereoBit | currentAudioFlags & 0xfffffffb,0x20);
+  PersistentSettings_Write(reverseStereoBit | currentAudioFlags & ~PERSISTENT_SOUND_OPTION_REVERSE_STEREO,
+                           PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   return;
 }
 
 
 /* Address: 0x0054C1A0.
-   Ownership: ui/frontend/settings.
-   Purpose: Writes soundEffectsGainQ15 from control+0x58 and updates the positional/effect and UI-sound gain
-   globals. Queued UI action handler for FRONTEND_PAGE20[27] (0x201B). Return datatype is preserved for non-queue
-   direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the effects volume slider (FRONTEND_ACTION_EFFECTS_GAIN, slot 27 of
+   g_FrontendUiActionHandlersPage20): saves the Q15 gain as PERSISTENT_SETTING_EFFECTS_GAIN and applies it at
+   once to the sound effects and the UI sounds.
 */
 void __thandor_preserve_eax FrontendAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
-  
+
   value = control->boundValue;
-  PersistentSettings_Write(value,0x24);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_EFFECTS_GAIN);
   g_SoundEffectsGainQ15 = value;
   g_UiSoundGainQ15 = value;
   return;
@@ -1224,77 +1178,69 @@ void __thandor_preserve_eax FrontendAudioSettings_SetEffectsGain(UiSettingsValue
 
 
 /* Address: 0x0054C1D0.
-   Ownership: ui/frontend/settings.
-   Purpose: Writes movieDefaultAudioGainQ15 from control+0x58 and updates the movie default-gain global. Queued UI
-   action handler for FRONTEND_PAGE20[28] (0x201C). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the movie volume slider (FRONTEND_ACTION_MOVIE_GAIN, slot 28 of g_FrontendUiActionHandlersPage20):
+   saves the Q15 gain as PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN and applies it at once.
 */
 void __thandor_preserve_eax
 FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
-  
+
   value = control->boundValue;
-  PersistentSettings_Write(value,0x28);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   g_MovieDefaultAudioGainQ15 = value;
   return;
 }
 
 
 /* Address: 0x0054C200.
-   Ownership: ui/frontend/settings.
-   Purpose: Writes movieAlternateAudioGainQ15 from control+0x58 and updates the alternate movie-gain global used by
-   timed movie playback events. Queued UI action handler for FRONTEND_PAGE20[78] (0x204E). Return datatype is
-   preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the movie event volume slider (FRONTEND_ACTION_MOVIE_EVENT_GAIN, slot 78 of
+   g_FrontendUiActionHandlersPage20): saves the Q15 gain used by timed movie events as
+   PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN and applies it at once.
 */
 void __thandor_preserve_eax
 FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
-  
+
   value = control->boundValue;
-  PersistentSettings_Write(value,0x4c);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   g_MovieAlternateAudioGainQ15 = value;
   return;
 }
 
 
 /* Address: 0x0054C230.
-   Ownership: ui/frontend/settings.
-   Purpose: Writes musicGainQ15 from control+0x58 and immediately applies equal left/right gains to the active
-   frontend music voice. Queued UI action handler for FRONTEND_PAGE20[29] (0x201D). Return datatype is preserved
-   for non-queue direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the music volume slider (FRONTEND_ACTION_MUSIC_GAIN, slot 29 of g_FrontendUiActionHandlersPage20):
+   saves the Q15 gain as PERSISTENT_SETTING_MUSIC_GAIN and sets it as left and right gain of the playing frontend
+   music.
 */
 void __thandor_preserve_eax FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
-  uint32_t musicGainQ15;
-  
+
   value = control->boundValue;
-  PersistentSettings_Write(value,0x2c);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MUSIC_GAIN);
   g_SoundSetVoiceGains(value,value,g_FrontendMusicActiveBuffer);
   return;
 }
 
 
 /* Address: 0x0054D170.
-   Ownership: ui/frontend/settings.
-   Purpose: Persists control+0x58 as networkPlayerCount at settings offset 0x3C. Queued UI action handler for
-   FRONTEND_PAGE20[7] (0x2007). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the host game setup page's player-count slider (maxPlayersSlider, action 0x2007, slot 7 of
+   g_FrontendUiActionHandlersPage20): saves the value as PERSISTENT_SETTING_NETWORK_PLAYER_COUNT and formats it
+   into the slider's number text.
 */
 void __thandor_preserve_eax FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
 
 {
   PersistentSettingsValue value;
-  
+
   value = control->boundValue;
-  PersistentSettings_Write(value,0x3c);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_NETWORK_PLAYER_COUNT);
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,value,
              (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
@@ -1332,13 +1278,12 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetGameName(UiTextEditContro
 
 
 /* Address: 0x0054D250.
-   Ownership: ui/frontend/settings.
-   Purpose: Updates action 0x2002 availability from the network-settings control state and player-name presence,
-   then publishes the player descriptor when the control dirty bit requires it. Queued UI action handler for
-   FRONTEND_PAGE20[9] (0x2009). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendNetworkSettings_PublishSelectedPlayerDescriptor.
-   Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
-   [ui/controls/lists].
+   Handler of the network game page's session list (sessionList, action 0x2009, slot 9 of
+   g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_SetPlayerName). Join
+   (FRONTEND_ACTION_JOIN_GAME) is offered only while the list has rows (+0x54), its selected row (+0x60) holds
+   a session (row +0x14) and the local player has a name; if then bit 2 of the list's flags at +0x4C is set
+   (presumably a double click), it is cleared and the join request is sent at once, as if Join had been pressed.
+   The field names of FrontendNetworkSettingsControlView250 used here do not fit a list (text edit overlay).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
@@ -1347,27 +1292,28 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
 {
   UiNodeBase **dirtyFlagsSlot;
   UiNodeBase *parentCursor;
-  FrontendNetworkSettingsControlView250 *firstNode;
-  
+  FrontendNetworkSettingsControlView250 *rootNode;
+
   parentCursor = (networkSettings->commonState).commonPrefix.parent;
-  firstNode = networkSettings;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
-    firstNode = (FrontendNetworkSettingsControlView250 *)
-                (firstNode->commonState).commonPrefix.parent;
-    parentCursor = (firstNode->commonState).commonPrefix.parent;
+  rootNode = networkSettings;
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
+    rootNode = (FrontendNetworkSettingsControlView250 *)
+                (rootNode->commonState).commonPrefix.parent;
+    parentCursor = (rootNode->commonState).commonPrefix.parent;
   }
   if ((((networkSettings->textEditView).textEdit.base.left == 0) ||
       (*(int *)(*(int *)(networkSettings->textEditView).textEdit.base.bottom + 0x14) == 0)) ||
      (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
-    UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&firstNode->commonState);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2002,(UiNodeBase *)&firstNode->commonState);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
     if (((uint32_t)(networkSettings->textEditView).textEdit.base.parent & 4) != 0) {
       dirtyFlagsSlot = &(networkSettings->textEditView).textEdit.base.parent;
       *dirtyFlagsSlot = (UiNodeBase *)((uint32_t)*dirtyFlagsSlot & 0xfffffffb);
       FrontendNetworkSettings_PublishSelectedPlayerDescriptor
-                ((FrontendNetworkSettingsControlView250 *)FRONTEND_UI(firstNode,networkGameJoinButton));
+                ((FrontendNetworkSettingsControlView250 *)FRONTEND_UI(rootNode,networkGameJoinButton));
     }
   }
   return;
@@ -1677,12 +1623,11 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
 
 
 /* Address: 0x0054CD20.
-   Ownership: ui/frontend/settings.
-   Purpose: Copies the selected frontend player endpoint descriptor into the active transfer endpoint, publishes
-   its sender context, resets the sequence token to -1, and invokes UiTransfer_SendPlayerDescriptorPacket20002
-   while preserving the backend CF result. Queued UI action handler for FRONTEND_PAGE20[2] (0x2002). Return
-   datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiTransfer_SendPlayerDescriptorPacket20002 [network/protocol/transfer].
+   Handler of the network game page's Join button (FRONTEND_ACTION_JOIN_GAME, slot 2 of
+   g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish):
+   takes the session token (+0x04) and host endpoint (+0xA0, 16 bytes) of the session list's selected row
+   (reached at +0x248 from the button, i.e. sessionList +0x60) and sends the join request (player descriptor
+   packet 0x20002) to it. Returns the send's CF.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendNetworkSettings_PublishSelectedPlayerDescriptor
@@ -1709,13 +1654,12 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptor
 
 
 /* Address: 0x0054B160.
-   Ownership: ui/frontend/settings.
-   Purpose: Walks to the display-settings root, checks the pending adapter, width, height, and bit-depth tuple
-   against enumerated modes, updates actions 0x201E through 0x2030, selects the matching groups, and gates action
-   0x2031 when settings are unchanged.
-   Cross-module calls: DisplayModeTable_ContainsExactMode [graphics/backend/directdraw],
-   UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists],
-   UiSelectableGroup_SelectExclusive [ui/controls/lists], PersistentSettings_ReadDword [core/settings/persistent].
+   Refreshes the display settings page after the pending mode changed (called by the colour-depth, resolution
+   and apply handlers here and by ui/frontend/runtime). Every colour-depth, resolution and adapter choice is
+   hidden unless the adapter offers it together with the other two pending values, the choices matching the
+   pending mode are selected, and the apply button is only offered while the pending mode differs from the saved
+   one. Note: for each group this C only selects the first choice (or the adapter 0 choice) on a match; the
+   original compares every choice and pushes the matching one (see the stage-2 notes).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
@@ -1726,8 +1670,6 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   uint32_t pendingHeight;
   uint32_t bitsPerPixel;
   uint32_t persistedValue;
-  FrontendDisplayDimensionPixels width;
-  FrontendDisplayDimensionPixels height;
   bool modeCheckCarry;
   UiNodeBase *parentCursorOrSelectedRow;
   
@@ -1741,7 +1683,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
                  persistentSelection.adapterIndex;
   /* called with any node of the page: walk up to the frontend root */
   parentCursorOrSelectedRow = frontendRoot->parent;
-  while (parentCursorOrSelectedRow != (UiNodeBase *)0xffffffff) {
+  while (parentCursorOrSelectedRow != UI_NODE_NONE) {
     frontendRoot = frontendRoot->parent;
     parentCursorOrSelectedRow = frontendRoot->parent;
   }
@@ -1755,10 +1697,10 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
                      persistentSelection.adapterIndex);
   parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x201e,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201e,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
   }
   if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t)) {
     parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
@@ -1767,26 +1709,26 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
                     ((FrontendColorDepthBits)FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption2,0x60,struct UiNodeBase *),pendingHeight,pendingWidth
                      ,adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x201f,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x201f,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,int32_t),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2020,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2020,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,uint32_t),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2021,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2021,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
   }
   UiSelectableGroup_SelectExclusive(4,parentCursorOrSelectedRow,
       FRONTEND_UI(frontendRoot,displayColorDepthOption4),
@@ -1798,10 +1740,10 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t),adapterIndex);
   parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2022,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2022,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
   }
   if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t)) &&
      (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags))) {
@@ -1811,19 +1753,19 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,int32_t),
                      adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2023,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2023,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,uint32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,uint32_t),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2024,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2024,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,
@@ -1831,64 +1773,64 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
                      (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x60,struct UiNodeBase *),
                      adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2025,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2025,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2026,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2026,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,uint32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,uint32_t),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2027,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2027,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,(FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x64,struct UiNodeVtable *),
                      (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x60,struct UiNodeBase *),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2028,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2028,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2029,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2029,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202a,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202a,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,int32_t),
                      adapterIndex);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202b,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202b,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
   }
   UiSelectableGroup_SelectExclusive(10,parentCursorOrSelectedRow,
       FRONTEND_UI(frontendRoot,displayResolutionOption10),
@@ -1904,41 +1846,41 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,0);
   parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202c,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202c,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);
   }
   if (adapterIndex == 0) {
     parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,1);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202d,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 1,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202d,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 1,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,2);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202e,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 2,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202e,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 2,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,3);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x202f,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 3,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x202f,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 3,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,4);
   if (modeCheckCarry) {
-    UiNodeList_SuppressActionId(0x2030,frontendRoot);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 4,frontendRoot);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2030,frontendRoot);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 4,frontendRoot);
   }
   UiSelectableGroup_SelectExclusive(5,parentCursorOrSelectedRow,
       FRONTEND_UI(frontendRoot,displayAdapterOption5),
@@ -1946,15 +1888,15 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
       FRONTEND_UI(frontendRoot,displayAdapterOption3),
       FRONTEND_UI(frontendRoot,displayAdapterOption2),
       FRONTEND_UI(frontendRoot,displayAdapterOption1));
-  persistedValue = PersistentSettings_Read(1,0);
+  persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
   if ((((persistedValue == adapterIndex) &&
-       (persistedValue = PersistentSettings_Read(0x280,4), persistedValue == pendingWidth)) &&
-      (persistedValue = PersistentSettings_Read(0x1e0,8), persistedValue == pendingHeight)) &&
-     (persistedValue = PersistentSettings_Read(0x10,0xc), persistedValue == bitsPerPixel)) {
-    UiNodeList_SuppressActionId(0x2031,frontendRoot);
+       (persistedValue = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH), persistedValue == pendingWidth)) &&
+      (persistedValue = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT), persistedValue == pendingHeight)) &&
+     (persistedValue = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL), persistedValue == bitsPerPixel)) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_APPLY_DISPLAY_MODE,frontendRoot);
     return;
   }
-  UiNodeList_UnsuppressActionId(0x2031,frontendRoot);
+  UiNodeList_UnsuppressActionId(FRONTEND_ACTION_APPLY_DISPLAY_MODE,frontendRoot);
   return;
 }
 

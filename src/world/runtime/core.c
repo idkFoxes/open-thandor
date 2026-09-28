@@ -351,30 +351,30 @@ WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *wor
 
 
 /* Address: 0x00561E30.
-   Ownership: world/runtime/core.
-   Purpose: Adjusts the active field origin by signed Y and X deltas, wraps X to sixteen bits, clamps Y to the
-   verified range -0x4000 through -0x1000, and reapplies the world-runtime origin state. Typed parameters: p4
-   deltaWorldY→Q12, p5 deltaWorldX→Q12. Calling convention, complete VariableStorage serialization, function bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Local calls: WorldRuntime_RecomputeFieldRegionNormalsAndLighting.
+   Keyboard command of the in-game root (called directly in a local game, in a networked one queued as
+   command 0x2D00 from InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags): turns the
+   auxiliary angle pair (stored in fieldRegion.regionHeight/regionWidth, see
+   WorldRuntime_RecomputeFieldRegionNormalsAndLighting) by the given deltas, the elevation clamped to
+   -0x4000..-0x1000 and the azimuth wrapped to 16 bits, and relights the field with the unchanged light
+   direction. The name is historical: nothing here is a field origin.
 */
 void __thandor_preserve_eax_edx
 WorldRuntime_AdjustFieldOriginWrappedClamped
-          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaWorldY,Q12 deltaWorldX)
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle)
 
 {
-  FieldGridDimensionCells gridHeight;
-  
-  gridHeight = deltaWorldY + (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionHeight;
-  if (-0x1000 < gridHeight) {
-    gridHeight = -0x1000;
+  FieldGridDimensionCells auxiliaryElevationAngle;
+
+  auxiliaryElevationAngle = deltaElevationAngle + (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionHeight;
+  if (-0x1000 < auxiliaryElevationAngle) {
+    auxiliaryElevationAngle = -0x1000;
   }
-  if (gridHeight < -0x4000) {
-    gridHeight = -0x4000;
+  if (auxiliaryElevationAngle < -0x4000) {
+    auxiliaryElevationAngle = -0x4000;
   }
   WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-            (gridHeight,
-             deltaWorldX + (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionWidth & 0xffff,
+            (auxiliaryElevationAngle,
+             deltaAzimuthAngle + (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionWidth & 0xffff,
              g_InGameRuntimeRoot->fieldRegionOriginWorldYQ12_0BAC,
              g_InGameRuntimeRoot->fieldRegionOriginWorldXQ12_0BA8,
              &g_InGameRuntimeRoot->worldRuntime0A30);
@@ -383,9 +383,8 @@ WorldRuntime_AdjustFieldOriginWrappedClamped
 
 
 /* Address: 0x004BE760.
-   Ownership: world/runtime/core.
-   Purpose: Semantic ABI remains deferred.
-   Cross-module calls: FieldGrid_InterpolateTerrainHeight [world/terrain/grid].
+   Returns the field grid's terrain height at a world point, or WORLD_HEIGHT_NO_FIELD_GRID when the world
+   has no field grid. No caller found in src/ or the image tables.
 */
 Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel
               (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
@@ -393,9 +392,9 @@ Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel
 {
   Q12 interpolatedHeightQ12;
   HeightSampleResult heightResult;
-  
-  interpolatedHeightQ12 = 0x7ffff000;
-  if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
+
+  interpolatedHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
+  if (worldRuntime->fieldGrid != NULL) {
     heightResult = FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
     interpolatedHeightQ12 = heightResult.heightQ12;
   }
@@ -404,9 +403,8 @@ Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel
 
 
 /* Address: 0x004BE790.
-   Ownership: world/runtime/core.
-   Purpose: Semantic ABI remains deferred.
-   Cross-module calls: FieldGrid_InterpolateWaterSurfaceHeight [world/terrain/grid].
+   Returns the field grid's water surface height at a world point, or WORLD_HEIGHT_NO_FIELD_GRID when the
+   world has no field grid. No caller found in src/ or the image tables.
 */
 Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
               (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
@@ -414,9 +412,9 @@ Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
 {
   Q12 waterSurfaceHeightQ12;
   HeightSampleResult heightResult;
-  
-  waterSurfaceHeightQ12 = 0x7ffff000;
-  if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
+
+  waterSurfaceHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
+  if (worldRuntime->fieldGrid != NULL) {
     heightResult = FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
     waterSurfaceHeightQ12 = heightResult.heightQ12;
   }
@@ -525,8 +523,10 @@ WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime)
 
 
 /* Address: 0x0050D330.
-   Ownership: world/runtime/core.
-   Purpose: Handles world runtime motion state matches snapshot carry-flag result.
+   Compares the camera with the one saved by WorldRuntime_CaptureMotionStateToSnapshot (position, magnitude,
+   heading, pitch, and the target distance against the saved committed distance). The original returns CF
+   clear when all of them match and CF set otherwise; this version returns nothing (no caller found in src/
+   or the image tables).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
@@ -574,10 +574,8 @@ WorldRuntime_AttachObjectArray
 
 
 /* Address: 0x0050D540.
-   Ownership: world/runtime/core.
-   Purpose: Replaces the dword at context offset 0xCC with flags. Typed parameters: p0 flags→WorldRuntimeFlags.
-   Nearby but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Replaces the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in src/ or the
+   image tables.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_SetFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
@@ -589,10 +587,8 @@ WorldRuntime_SetFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 
 /* Address: 0x0050D560.
-   Ownership: world/runtime/core.
-   Purpose: ORs flags into the dword at context offset 0xCC. Typed parameters: p0 flags→WorldRuntimeFlags. Nearby
-   but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
+   Sets the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found in
+   src/ or the image tables.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_AddFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
@@ -604,10 +600,8 @@ WorldRuntime_AddFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 
 /* Address: 0x0050D580.
-   Ownership: world/runtime/core.
-   Purpose: Clears every bit selected by flags from the dword at context offset 0xCC. Typed parameters: p0
-   flags→WorldRuntimeFlags. Nearby but non-identical semantic domains were explicitly deferred. Calling convention,
-   parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Clears the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found
+   in src/ or the image tables.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
@@ -619,10 +613,8 @@ WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 
 /* Address: 0x0050D5A0.
-   Ownership: world/runtime/core.
-   Purpose: XORs flags into the dword at context offset 0xCC. Typed parameters: p0 flags→WorldRuntimeFlags. Nearby
-   but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
+   Toggles the given bits in the world's secondary control flags (runtimeControlFlags, +0xCC). No caller found
+   in src/ or the image tables.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
@@ -665,8 +657,8 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
 
 
 /* Address: 0x0050D650.
-   Ownership: world/runtime/core.
-   Purpose: Returns the dword at context offset 0xCC in EAX and explicitly clears CF.
+   Returns the world's secondary control flags (runtimeControlFlags, +0xCC) in EAX with CF clear. No caller
+   found in src/ or the image tables.
 */
 WorldFlagsResult __thandor_eax_cf_preserve_ecx_edx
 WorldRuntime_GetFlags(WorldRuntimeContext *world)
@@ -681,8 +673,8 @@ WorldRuntime_GetFlags(WorldRuntimeContext *world)
 
 
 /* Address: 0x0050D6A0.
-   Ownership: world/runtime/core.
-   Purpose: Returns the FieldGridAsset pointer stored at context offset 0x54.
+   Returns the field grid attached by WorldRuntime_AttachFieldGridAsset (+0x54). No caller found in src/ or
+   the image tables.
 */
 FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world)
 
@@ -691,8 +683,8 @@ FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world)
 }
 
 /* Address: 0x0050D6D0.
-   Ownership: world/runtime/core.
-   Purpose: Returns the dword at context offset 0x5C without modifying it.
+   Returns the world's pending token (+0x5C) without consuming it (see WorldRuntime_TakePendingToken). No
+   caller found in src/ or the image tables.
 */
 uint32_t WorldRuntime_GetPendingToken(WorldRuntimeContext *world)
 
@@ -701,8 +693,8 @@ uint32_t WorldRuntime_GetPendingToken(WorldRuntimeContext *world)
 }
 
 /* Address: 0x0050D6F0.
-   Ownership: world/runtime/core.
-   Purpose: Atomically exchanges the dword at context offset 0x5C with zero and returns the previous value in EAX.
+   Consumes the world's pending token (+0x5C): returns it and leaves 0 behind. The original swaps it out with
+   XCHG, i.e. atomically; here the swap is spelled out. No caller found in src/ or the image tables.
 */
 uint32_t WorldRuntime_TakePendingToken(WorldRuntimeContext *world)
 
@@ -736,8 +728,8 @@ WorldRuntime_AttachAndClearDwordArray
 
 
 /* Address: 0x0050D740.
-   Ownership: world/runtime/core.
-   Purpose: Returns the dword-array pointer stored at context offset 0xC0.
+   Returns the dword workspace attached by WorldRuntime_AttachAndClearDwordArray (+0xC0). No caller found in
+   src/ or the image tables.
 */
 uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
 
@@ -856,9 +848,10 @@ WorldRuntime_ForEachNodeInOwnerListD8
 
 
 /* Address: 0x0050EC80.
-   Ownership: world/runtime/core.
-   Purpose: Returns g_GraphicsShadingRuntimeRecords in EAX and byte count 0x4000 in EDX, then inverts record zero
-   serializationToggleDword before light.hex serialization.
+   Pre-serializer provider of the light.hex save segment (called by
+   InGameUiAction1210_ResourceRegistrationHelper): returns the shading runtime records (EAX) and their byte
+   size 0x4000 (EDX), and inverts serializationToggleDword of record 0 so the saved image carries the
+   inverted value; RuntimeHexSegment_ToggleLightImageFlag inverts it back after saving.
 */
 RuntimeImagePointerByteSizeEdxEax8 __cdecl RuntimeHexSegment_GetLightImageAndToggleFlagRegs(void)
 
@@ -883,9 +876,10 @@ void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
 }
 
 /* Address: 0x0050ECB0.
-   Ownership: world/runtime/core.
-   Purpose: Missed pre-serializer provider for field.hex. From context +0x54 it returns the attached field-image
-   pointer in EAX and that image's complete allocation size at +0x04 in EDX.
+   Pre-serializer provider of the field.hex save segment (called by
+   InGameUiAction1210_ResourceRegistrationHelper): returns the attached field grid (+0x54) and its whole
+   allocation size (asset +0x04), so the field image is saved as one block. The original returns the image
+   in EAX and the size in EDX.
 */
 ResourceRegistrationImagePair
 RuntimeHexSegment_GetFieldImageRegs(InGameFieldImageSaveContext58 *fieldImageContext)
@@ -897,9 +891,8 @@ RuntimeHexSegment_GetFieldImageRegs(InGameFieldImageSaveContext58 *fieldImageCon
 }
 
 /* Address: 0x0050ECD0.
-   Ownership: world/runtime/core.
-   Purpose: One-argument field.hex post-serializer hook. It is an exact no-op invoked while the caller preserves
-   the serializer CF result with PUSHF/POPF.
+   Post-serializer hook of the field.hex save segment (called by InGameUiAction1210_ResourceRegistrationHelper):
+   does nothing; the field image needs no restoring after saving. The caller keeps the serializer flags.
 */
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext)
 
@@ -996,10 +989,8 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
 
 
 /* Address: 0x005233F0.
-   Ownership: world/runtime/core.
-   Purpose: Exact two-argument no-op installed in unified runtime table method slot 5. It preserves the existing
-   EAX and flags contract and returns with ret 0x08. Runtime-update partition slots 0-23 receive (worldRuntime,
-   armyRuntime).
+   Per-tick update of army class 5 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5]):
+   that class has nothing to update, so this does nothing.
 */
 void UnifiedRuntimeTable_Method5_TwoArgNoOp
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
@@ -1010,10 +1001,8 @@ void UnifiedRuntimeTable_Method5_TwoArgNoOp
 
 
 /* Address: 0x00523400.
-   Ownership: world/runtime/core.
-   Purpose: Exact two-argument no-op installed in unified runtime table method slot 6. It preserves the existing
-   EAX and flags contract and returns with ret 0x08. Runtime-update partition slots 0-23 receive (worldRuntime,
-   armyRuntime).
+   Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
+   that class has nothing to update, so this does nothing.
 */
 void UnifiedRuntimeTable_Method6_TwoArgNoOp
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
@@ -1024,9 +1013,8 @@ void UnifiedRuntimeTable_Method6_TwoArgNoOp
 
 
 /* Address: 0x00527B70.
-   Ownership: world/runtime/core.
-   Purpose: Third exact one-argument no-op reused across many unified runtime object method-table entries. It
-   returns with ret 0x04. Model-unrebase partition slots 48-71 receive one ModelRuntimeSlot pointer.
+   Default model-unrebase handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase, every class
+   except 13 and 21): those classes keep no pointers that need unrebasing, so this does nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
@@ -1037,9 +1025,9 @@ UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime)
 
 
 /* Address: 0x00527BA0.
-   Ownership: world/runtime/core.
-   Purpose: Second exact two-argument no-op reused across unified runtime object method tables. It returns with ret
-   0x08. Model release partition slots 0-23 receive (modelDefinition, modelRuntime).
+   Default model release/commit handler (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit,
+   every class except 14-16 and 21): those classes hold no faction capacity or placement reservation to release,
+   so this does nothing.
 */
 void UnifiedRuntimeDefault_TwoArgNoOpB
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
@@ -1049,8 +1037,8 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
 }
 
 /* Address: 0x00527BB0.
-   Ownership: world/runtime/core.
-   Purpose: Exact one-argument default that clears EAX and returns zero with ret 0x04.
+   One-argument default handler that returns 0. It sits next to the other defaults of
+   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, but no table slot or caller in src/ uses it.
 */
 uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(void *context)
 
@@ -1060,9 +1048,8 @@ uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(v
 
 
 /* Address: 0x00527BE0.
-   Ownership: world/runtime/core.
-   Purpose: Exact two-argument default that returns CF clear with ret 0x08 while preserving EAX. Placement-
-   validation partition slots 24-47 receive (worldRuntime, armyRuntime), with CF carrying acceptance.
+   Default placement validation (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation, classes
+   0, 5-9, 12 and 21): accepts every placement (CF clear).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UnifiedRuntimeDefault_TwoArgSuccess
@@ -1074,9 +1061,9 @@ UnifiedRuntimeDefault_TwoArgSuccess
 
 
 /* Address: 0x00527BF0.
-   Ownership: world/runtime/core.
-   Purpose: Fourth exact two-argument no-op reused across unified runtime object method tables. It returns with ret
-   0x08. Class method-D partition slots 24-47 receive (worldRuntime, armyRuntime).
+   Default class method D (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD, classes 0, 9, 12,
+   15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
+   have none, so this does nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)

@@ -80,12 +80,12 @@ ModelRuntimePool_RepairDeferredChild
 
 
 /* Address: 0x004BDDB0.
-   Ownership: world/model/runtime.
-   Purpose: Performs frustum and depth tests, chooses the model LOD, renders the accepted node, and recursively
-   traverses its child hierarchy.
-   Cross-module calls: FixedVec3_DotQ28 [core/math/fixed], FixedMath_Length3 [core/math/fixed],
-   FixedTransform_ApplyPoint [core/math/fixed], GraphicsShadingRuntime_CollectNearbyRecords
-   [graphics/render/shading], ModelRender_DrawMeshGroupsWithTemporaryTransform [graphics/render/model].
+   Renders a model node and its children for the main view: clears the node's MODEL_NODE_FLAG_RENDERED, culls it
+   against the four side planes of the view frustum and the near plane, and draws it when it lies fully in front
+   of the near plane, picking the level of detail by depth. A node outside a plane by more than its subtree radius
+   ends the walk; otherwise the children are visited even when the node itself was culled. Called for every
+   model by the offscreen preview renderer (src/graphics/render/projection.c) and by the frontend/in-game world
+   view (src/ui/frontend/runtime.c).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
@@ -100,9 +100,9 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
   ModelMeshGroupRelativeOffset *meshGroup;
   int nodeRadius;
   Q12 projectedRadiusScale;
-  
-  if (modelNodeRuntime != (ModelRuntimeNode *)0x0) {
-    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags & 0xfffffffd;
+
+  if (modelNodeRuntime != NULL) {
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED;
     g_ModelCullViewRelativeX =
          (modelNodeRuntime->worldTransform).translation.x - g_ViewOriginFixed.x;
     g_ModelCullViewRelativeY =
@@ -112,6 +112,8 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
     renderView = (modelNodeRuntime->modelPayload).modelResource;
     subtreeRadiusOrChildIndex = modelNodeRuntime->subtreeBoundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
     nodeRadius = renderView->boundingRadiusQ12 + modelNodeRuntime->renderDepthBiasOrState;
+    /* plane distance above the subtree radius: the whole subtree is outside; above the node radius: only the
+       node is culled */
     planeDistance = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
                              (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
     if (planeDistance <= subtreeRadiusOrChildIndex) {
@@ -137,24 +139,26 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
               distanceOrChildrenRemaining = FixedMath_Length3(g_ModelCullViewRelativeZ,g_ModelCullViewRelativeY,
                                         g_ModelCullViewRelativeX);
               radiusOrMeshGroupCount = renderView->boundingRadiusQ12;
+              /* radius / distance in Q28, 1.0 when the view origin is inside the bounding sphere */
               if ((int)distanceOrChildrenRemaining < (int)radiusOrMeshGroupCount) {
                 projectedRadiusScale = 0x10000000;
               }
               else {
-                projectedRadiusScale = (Q12)(((uint64_t)radiusOrMeshGroupCount << 0x1c) / (uint64_t)distanceOrChildrenRemaining); /* unsigned DIV */
+                projectedRadiusScale = (Q12)(((uint64_t)radiusOrMeshGroupCount << 28) / (uint64_t)distanceOrChildrenRemaining); /* unsigned DIV */
               }
               FixedTransform_ApplyPoint
                         ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
                          &(modelNodeRuntime->worldTransform).translation,
                          &g_ViewProjectionMatrixFixed);
               renderView = (modelNodeRuntime->modelPayload).modelResource;
+              /* g_ModelCullViewRelativeZ is now the view depth; g_ProjectionScaleFixed is the near plane */
               if ((int)g_ModelCullViewRelativeZ <= (int)g_ProjectionScaleFixed) {
                 return;
               }
               boundingRadiusField = &renderView->boundingRadiusQ12;
               if (g_ModelCullViewRelativeZ - g_ProjectionScaleFixed != *boundingRadiusField &&
                   *boundingRadiusField <= (int)(g_ModelCullViewRelativeZ - g_ProjectionScaleFixed)) {
-                modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 2;
+                modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | MODEL_NODE_FLAG_RENDERED;
                 g_GraphicsShadingNearbyRecordCount = 0;
                 GraphicsShadingRuntime_CollectNearbyRecords
                           (renderView->boundingRadiusQ12,g_ModelCullViewRelativeZ,
@@ -162,6 +166,8 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
                 renderView = (modelNodeRuntime->modelPayload).modelResource;
                 radiusOrMeshGroupCount = renderView->meshGroupCount;
                 meshGroup = &renderView->firstMeshGroupRelativeOffset;
+                /* level of detail: the next mesh group beyond g_ModelLodDepthThresholdQ8, the third beyond twice
+                   that depth (each group starts with the offset to the next) */
                 if (((((uint32_t)g_ModelLodDepthThresholdQ8 < (int)g_ModelCullViewRelativeZ) && (1 < radiusOrMeshGroupCount))
                     && (meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup),
                        (uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)((int)g_ModelCullViewRelativeZ >> 1)
@@ -179,25 +185,23 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
       if (distanceOrChildrenRemaining != 0) {
         subtreeRadiusOrChildIndex = 0;
         do {
-          if (modelNodeRuntime->childNodes[subtreeRadiusOrChildIndex] != (ModelRuntimeNode *)0x0) {
+          if (modelNodeRuntime->childNodes[subtreeRadiusOrChildIndex] != NULL) {
             ModelRuntime_CullAndRenderHierarchyRecursive(modelNodeRuntime->childNodes[subtreeRadiusOrChildIndex]);
           }
-          subtreeRadiusOrChildIndex = subtreeRadiusOrChildIndex + 1;
-          distanceOrChildrenRemaining = distanceOrChildrenRemaining - 1;
+          subtreeRadiusOrChildIndex++;
+          distanceOrChildrenRemaining--;
         } while (distanceOrChildrenRemaining != 0);
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x004BE270.
-   Ownership: world/model/runtime.
-   Purpose: Handles model runtime render hierarchy recursive alternate path.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], FixedMath_Length3 [core/math/fixed],
-   GraphicsShadingRuntime_CollectNearbyRecords [graphics/render/shading], ModelRender_DrawMeshGroupsAlternatePath
-   [graphics/render/model].
+   Alternate model renderer of the frontend/in-game world view (src/ui/frontend/runtime.c, chosen when the
+   pointer context compares hits by metric only): draws a node and all its children without culling. The centre
+   of the node's local bounds is transformed into g_ModelCullViewRelativeX/Y/Z to collect the nearby shading
+   records; every drawn node gets MODEL_NODE_FLAG_RENDERED.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
@@ -206,15 +210,16 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
   ModelResourceHitTestAndRenderView210 *modelResourceView;
   uint32_t boundsLengthOrChildrenRemaining;
   int childIndex;
-  
-  modelResourceView = (modelNode->modelPayload).modelResource;
-  if (modelNode != (ModelRuntimeNode *)0x0) {
-    modelNode->runtimeFlags = modelNode->runtimeFlags | 2;
-    iRam004bcf50 = modelResourceView->localBoundsX0Q12 + modelResourceView->localBoundsX1Q12 >> 1;
-    iRam004bcf54 = modelResourceView->localBoundsY0Q12 + modelResourceView->localBoundsY1Q12 >> 1;
-    iRam004bcf58 = modelResourceView->localBoundsZ0Q12 + modelResourceView->localBoundsZ1Q12 >> 1;
+
+  modelResourceView = (modelNode->modelPayload).modelResource; /* read before the NULL test, as in the original */
+  if (modelNode != NULL) {
+    modelNode->runtimeFlags = modelNode->runtimeFlags | MODEL_NODE_FLAG_RENDERED;
+    /* g_GraphicsDirectionWorld only serves as scratch vector here */
+    g_GraphicsDirectionWorld.x = (modelResourceView->localBoundsX0Q12 + modelResourceView->localBoundsX1Q12) >> 1;
+    g_GraphicsDirectionWorld.y = (modelResourceView->localBoundsY0Q12 + modelResourceView->localBoundsY1Q12) >> 1;
+    g_GraphicsDirectionWorld.z = (modelResourceView->localBoundsZ0Q12 + modelResourceView->localBoundsZ1Q12) >> 1;
     FixedTransform_ApplyPoint
-              ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,(GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),
+              ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,&g_GraphicsDirectionWorld,
                &g_ViewProjectionMatrixFixed);
     boundsLengthOrChildrenRemaining = FixedMath_Length3(modelResourceView->localBoundsZ1Q12 - modelResourceView->localBoundsZ0Q12,
                               modelResourceView->localBoundsY1Q12 - modelResourceView->localBoundsY0Q12,
@@ -224,27 +229,24 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
                g_ModelCullViewRelativeX);
     ModelRender_DrawMeshGroupsAlternatePath(modelNode->runtimeStateA0,modelNode);
     childIndex = 0;
-    for (boundsLengthOrChildrenRemaining = modelNode->childCount; boundsLengthOrChildrenRemaining != 0; boundsLengthOrChildrenRemaining = boundsLengthOrChildrenRemaining - 1) {
-      if (modelNode->childNodes[childIndex] != (ModelRuntimeNode *)0x0) {
+    for (boundsLengthOrChildrenRemaining = modelNode->childCount; boundsLengthOrChildrenRemaining != 0;
+        boundsLengthOrChildrenRemaining--) {
+      if (modelNode->childNodes[childIndex] != NULL) {
         ModelRuntime_RenderHierarchyRecursiveAlternatePath(modelNode->childNodes[childIndex]);
       }
-      childIndex = childIndex + 1;
+      childIndex++;
     }
   }
-  return;
 }
 
 
 /* Address: 0x0050B440.
-   Ownership: world/model/runtime.
-   Purpose: Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags.
-   Explicit Q12 fixed-point value proved by the accepted parameter name and fixed-math/geometry consumer. Storage
-   remains one signed 32-bit word. Typed parameters: p0 elevationAngle→AngleTurn32, p1 azimuthAngle→AngleTurn32, p2
-   maximumDistanceQ12→Q12. Calling convention, storage, body bytes, control flow, and executable data remain
-   unchanged.
-   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], FixedMath_WriteDirectionQ28
-   [core/math/fixed], DepthBinMasks_Overlap [graphics/render/primitives],
-   ModelNodeRuntime_RaycastHierarchyNearest [world/model/hierarchy].
+   Casts a ray from the origin in the direction (elevationAngle, azimuthAngle), at most maximumDistanceQ12 long,
+   against the models in worldRuntime's owner list whose owner class is requiredOwnerId, skipping excludedNode and
+   ray-transparent models (MODEL_NODE_FLAG_RAY_TRANSPARENT) and pre-filtering by the depth bin masks of the X and Y
+   ranges the ray can reach. Returns the nearest hit node and its distance; hit (CF) is false when nothing was
+   hit. Used by the army combat code (src/gameplay/army/combat.c) and the shot updates
+   (src/world/shots/maintenance.c).
 */
 ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
 ModelRuntime_RaycastCandidateListNearest
@@ -254,32 +256,31 @@ ModelRuntime_RaycastCandidateListNearest
 
 {
   ModelRuntimeNode *modelNodeRuntime;
-  DepthBinMask32 secondMaskHigh;
-  DepthBinMask32 secondMaskLow;
-  DepthIntervalCenter32 centerDepth;
+  DepthBinMask32 rayXBinMask;
+  DepthBinMask32 rayYBinMask;
   int bestDistanceQ12;
   ModelRuntimeNode *nearestModelNode;
   bool masksOverlap;
   ModelRaycastResult raycastHit;
-  
+
   g_ModelRaycastOriginX = originXQ12;
   g_ModelRaycastOriginY = originYQ12;
   g_ModelRaycastOriginZ = originZQ12;
   g_ModelRaycastMaximumDistance = maximumDistanceQ12;
-  secondMaskHigh = DepthInterval_BuildBinMask(maximumDistanceQ12,originXQ12);
-  secondMaskLow = DepthInterval_BuildBinMask(maximumDistanceQ12,originYQ12);
+  rayXBinMask = DepthInterval_BuildBinMask(maximumDistanceQ12,originXQ12);
+  rayYBinMask = DepthInterval_BuildBinMask(maximumDistanceQ12,originYQ12);
   FixedMath_WriteDirectionQ28
             ((GraphicsFixedVec3 *)&g_ModelRaycastWorldDirectionXQ28,elevationAngle,azimuthAngle);
-  nearestModelNode = (ModelRuntimeNode *)0x0;
-  bestDistanceQ12 = 0x7fffffff;
+  nearestModelNode = NULL;
+  bestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
   for (modelNodeRuntime = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-      modelNodeRuntime != (ModelRuntimeNode *)0x0;
+      modelNodeRuntime != NULL;
       modelNodeRuntime = (ModelRuntimeNode *)(modelNodeRuntime->common).nextNode) {
     if ((((modelNodeRuntime != excludedNode) && (modelNodeRuntime->ownerClassId == requiredOwnerId))
-        && ((modelNodeRuntime->runtimeFlags & 0x2000) == 0)) &&
+        && ((modelNodeRuntime->runtimeFlags & MODEL_NODE_FLAG_RAY_TRANSPARENT) == 0)) &&
        (masksOverlap = DepthBinMasks_Overlap
                           (modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
-                           secondMaskLow,secondMaskHigh), masksOverlap)) {
+                           rayYBinMask,rayXBinMask), masksOverlap)) {
       raycastHit = ModelNodeRuntime_RaycastHierarchyNearest(modelNodeRuntime);
       if (raycastHit.nearestDistanceQ12 <= bestDistanceQ12) {
         bestDistanceQ12 = raycastHit.nearestDistanceQ12;
@@ -289,22 +290,21 @@ ModelRuntime_RaycastCandidateListNearest
   }
   raycastHit.nearestNodeOrScratch.nearestModelNode = nearestModelNode;
   raycastHit.nearestDistanceQ12 = bestDistanceQ12;
-  raycastHit.hit = bestDistanceQ12 != 0x7fffffff;
+  raycastHit.hit = bestDistanceQ12 != MODEL_RAYCAST_NO_HIT_DISTANCE;
   return raycastHit;
 }
 
 
 /* Address: 0x0051C240.
-   Ownership: world/model/runtime.
-   Purpose: EXACT_SCALAR_TWIN_OF_MODEL_SCALE_RATIO_REGISTER_WRAPPER.
-   Cross-module calls: ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs [world/model/hierarchy].
+   Returns the condition ratio (Q12) of an army's model hierarchy: the EAX half of
+   ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs; EDX is preserved. No caller in the C code (function map only).
 */
 Q12 __thandor_eax_preserve_ecx_edx
 ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   ModelRuntimeScaleRatioRegisterPairQ12 scaleRatioPairQ12;
-  
+
   scaleRatioPairQ12 = ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
   return (Q12)scaleRatioPairQ12;
 }
@@ -341,18 +341,16 @@ ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
 
 
 /* Address: 0x0051C2A0.
-   Ownership: world/model/runtime.
-   Purpose: Queries the root model runtime hierarchy and preserves both active and total metric results returned in
-   the verified register pair. Queries the linked ModelRuntimeSlot and preserves both active and total hierarchy
-   metrics in the verified EDX:EAX pair.
-   Cross-module calls: ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs [world/model/hierarchy].
+   Returns the energy demand of an army's model hierarchy as ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs
+   does: EAX the active part, EDX the total. The selection panel (src/gameplay/selection/runtime.c) draws it as a
+   stepped meter.
 */
 ModelRuntimeActiveTotalMetricRegisterPair
 ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   ModelRuntimeActiveTotalMetricRegisterPair activeTotalMetrics;
-  
+
   activeTotalMetrics =
        ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(runtimeEntry->modelRuntime);
   return activeTotalMetrics;
@@ -443,12 +441,12 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefi
 
 
 /* Address: 0x00528B30.
-   Ownership: world/model/runtime.
-   Purpose: Converts the live model-runtime pool back to serialized offsets and dispatches the 24-entry per-class
-   unrebase callback partition before save. Function-specific scalar serialized model-slot and attachment views
-   expose direct saved-id/offset dwords and eliminate union-member selection from save/unrebase writes; live
-   ModelRuntimeSlot remains unchanged. Saved ids, relocated pointers, attachment selectors, and runtime class ids
-   remain separate.
+   Before the model runtime pool is written to a savegame (in-game save, src/ui/ingame/runtime.c): turns the
+   pointers of every used slot into offsets (owner and linked army against g_ArmyRuntimeRebaseBaseMinusOne, root
+   and attachment parent nodes against g_RuntimeObjectRebaseBaseMinusOne, linked model runtime and attachment
+   children against g_ModelRuntimeRebaseDelta; NULL stays 0), replaces the definition pointer by its id and runs
+   the class's modelUnrebase handler. Unused slots are zeroed. The original returns the pool (EAX) and its size
+   0x400000 (EDX) for the save. Counterpart of ModelRuntimePool_RebaseAfterLoad.
 */
 void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 
@@ -461,19 +459,19 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
   ModelNodePoolRelativeOffset parentNodeOffset;
   ModelRuntimeSlotUnrebaseSemanticView200 *attachmentCursor;
   ModelRuntimeSlotUnrebaseSemanticView200 *modelRuntime;
-  
-  slotsRemaining = 0x2000;
+
+  slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
   modelRuntime = (ModelRuntimeSlotUnrebaseSemanticView200 *)g_ModelRuntimeSlots;
   do {
     while( true ) {
       if (modelRuntime->rootModelNodeSavedOffset != 0) break;
-      for (dwordsRemaining = 0x80; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
-        (modelRuntime->definitionReferenceOrSavedId).definition = (ModelDefinitionRecordPrefix *)0x0
-        ;
+      /* unused slot: zero its 0x80 dwords, one dword step at a time (REP STOSD in the original) */
+      for (dwordsRemaining = 0x80; dwordsRemaining != 0; dwordsRemaining--) {
+        (modelRuntime->definitionReferenceOrSavedId).definition = NULL;
         modelRuntime = (ModelRuntimeSlotUnrebaseSemanticView200 *)
                        &modelRuntime->rootModelNodeSavedOffset;
       }
-      slotsRemaining = slotsRemaining + -1;
+      slotsRemaining--;
       if (slotsRemaining == 0) {
         return;
       }
@@ -484,7 +482,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     modelRuntime->ownerArmyRuntimeSavedOffset = offsetClassOrCount;
     linkedModelOffset = (ModelRuntimeSlotSerializedScalarView200 *)modelRuntime->linkedModelRuntimeSavedOffset;
     offsetClassOrCount = (modelRuntime->classState).linkedArmyRuntimeSavedOffset;
-    if (linkedModelOffset != (ModelRuntimeSlotSerializedScalarView200 *)0x0) {
+    if (linkedModelOffset != NULL) {
       linkedModelOffset = (ModelRuntimeSlotSerializedScalarView200 *)((int)linkedModelOffset - g_ModelRuntimeRebaseDelta);
     }
     if (offsetClassOrCount != 0) {
@@ -492,13 +490,13 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     }
     modelRuntime->linkedModelRuntimeSavedOffset = (uint32_t)linkedModelOffset;
     (modelRuntime->classState).linkedArmyRuntimeSavedOffset = offsetClassOrCount;
-    offsetClassOrCount = (modelRuntime->definitionReferenceOrSavedId).definition[6].flags;
+    offsetClassOrCount = (modelRuntime->definitionReferenceOrSavedId).definition[6].flags; /* runtime class, +0x4C */
     modelRuntime->definitionReferenceOrSavedId =
          THANDOR_BITCAST(PckModelDefinitionIdCatalog, ModelDefinitionReferenceOrSavedId4, ((modelRuntime->definitionReferenceOrSavedId).definition)->definitionId);
     g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[offsetClassOrCount]
               ((ModelRuntimeSlot *)modelRuntime);
     attachmentCursor = modelRuntime;
-    for (offsetClassOrCount = modelRuntime->attachmentCount0C; offsetClassOrCount != 0; offsetClassOrCount = offsetClassOrCount - 1) {
+    for (offsetClassOrCount = modelRuntime->attachmentCount0C; offsetClassOrCount != 0; offsetClassOrCount--) {
       childRuntimeOffset = attachmentCursor->attachments140[0].childModelRuntimeSavedOffset00;
       parentNodeOffset = attachmentCursor->attachments140[0].parentModelNodeSavedOffset08;
       if (childRuntimeOffset != 0) {
@@ -509,12 +507,12 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
       }
       attachmentCursor->attachments140[0].childModelRuntimeSavedOffset00 = childRuntimeOffset;
       attachmentCursor->attachments140[0].parentModelNodeSavedOffset08 = parentNodeOffset;
+      /* next attachment descriptor: 0x20 bytes on */
       attachmentCursor = (ModelRuntimeSlotUnrebaseSemanticView200 *)(attachmentCursor->reserved10_37 + 0x10);
     }
-    modelRuntime = modelRuntime + 1;
-    slotsRemaining = slotsRemaining + -1;
+    modelRuntime++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
-  return;
 }
 
 
@@ -716,15 +714,11 @@ ModelRuntimePool_DestroyHierarchyAndDetach
 
 
 /* Address: 0x00529690.
-   Ownership: world/model/runtime.
-   Purpose: Eight stack arguments are authoritative from RET 0x20; prior EAX/EDX synthetic parameters and return
-   were preserved-register noise. Scans catalog kind-2 records matched as (launchMode << 4 | 2), transforms each
-   launch point to world, and creates projectiles. Role: Emits projectiles from every SPR attachment record whose
-   low nibble is kind 2. Inputs: Current model hierarchy, SpriteAsset attachment table, ShotDefinition and target
-   coordinates. Outputs: One ShotRuntime per matching launch attachment.
-   Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
-   ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], ShotRuntimePool_CreateProjectileFromDefinition
-   [world/shots/runtime].
+   Fires a shot from every launch point of a model node: rebuilds the node transforms, then for each point record
+   of the node's sprite asset with kind 2 (low nibble of packedLookupKey) creates a projectile from shotDefinition
+   at the point's world position, aimed at the target shifted by the point's X/Y offset from the node, so that
+   side-by-side launchers fire parallel shots. Called by the army weapon code (src/gameplay/army/movement.c,
+   src/gameplay/army/runtime.c).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntime_EmitProjectilesFromAttachmentPoints
@@ -735,16 +729,16 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
 {
   int modelPointRecordsRemaining;
   ModelPackedPointRecord *localPointRecord;
-  WorldPositionXYRegisterPairQ12 attachmentWorldPointPairQ12;
   ModelWorldPoint launchPointWorld;
   AssetRecordByteCount modelPointTableBase;
-  
+
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+  /* sprite asset: +0xE4 offset of the point records, +0xE8 their count */
   modelPointTableBase = (definitionNode->spriteAssetReference).savedId;
   localPointRecord =
        (ModelPackedPointRecord *)(modelPointTableBase + *(int *)(modelPointTableBase + 0xe4));
   for (modelPointRecordsRemaining = *(int *)(modelPointTableBase + 0xe8);
-      modelPointRecordsRemaining != 0; modelPointRecordsRemaining = modelPointRecordsRemaining + -1)
+      modelPointRecordsRemaining != 0; modelPointRecordsRemaining--)
   {
     if ((localPointRecord->packedLookupKey & 0xf) == 2) {
       launchPointWorld = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
@@ -757,9 +751,8 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
                  (launchPointWorld.xQ12 - (modelNodeRuntime->worldTransform).translation.x) + targetWorldXQ12,
                  launchPointWorld.zQ12,launchPointWorld.yQ12,launchPointWorld.xQ12,shotDefinition,worldRuntime);
     }
-    localPointRecord = localPointRecord + 1;
+    localPointRecord++;
   }
-  return;
 }
 
 

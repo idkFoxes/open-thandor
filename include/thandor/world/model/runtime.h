@@ -17,6 +17,12 @@
 #define MODEL_RUNTIME_SLOT_COUNT 0x2000
 /* pointer slots in g_ModelDefinitionRegistry */
 #define MODEL_DEFINITION_REGISTRY_SLOT_COUNT 0x300
+/* ModelRuntimeNode.runtimeFlags bits */
+#define MODEL_NODE_FLAG_RENDERED 0x2 /* drawn in the current frame (set by the model renderers) */
+#define MODEL_NODE_FLAG_RAY_TRANSPARENT 0x2000 /* skipped by ModelRuntime_RaycastCandidateListNearest; set at
+                                                 creation when the definition has flag 0x100 at +0x68 */
+/* nearest distance of a ray that hit nothing (ModelRuntime_RaycastCandidateListNearest) */
+#define MODEL_RAYCAST_NO_HIT_DISTANCE 0x7fffffff
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

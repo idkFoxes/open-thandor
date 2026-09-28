@@ -102,9 +102,9 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text
 
 
 /* Address: 0x0050F2E0.
-   Ownership: ui/support/runtime.
-   Purpose: Finds the smallest nonzero recent-text serial and clears that slot's serial, leaving the text storage
-   unchanged.
+   Drops the oldest chat message from the recent-text history by emptying its slot (serial 0; on ties the last
+   one); the text itself stays. Used when the message lines are clicked away (InGameRecentText_TrimHistoryToThree,
+   FrontendRecentText_TrimAndSortTopFive).
 */
 void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void)
 
@@ -114,20 +114,20 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void)
   int currentIndex;
   int oldestIndex;
   uint32_t *serialCursor;
-  
+
   serialCursor = g_RecentTextEntrySerials;
   oldestSerial = 0xffffffff;
   currentIndex = 0;
   oldestIndex = -1;
-  entriesRemaining = 8;
+  entriesRemaining = RECENT_TEXT_HISTORY_SLOT_COUNT;
   do {
     if ((*serialCursor != 0) && (*serialCursor <= oldestSerial)) {
       oldestSerial = *serialCursor;
       oldestIndex = currentIndex;
     }
-    serialCursor = serialCursor + 1;
-    currentIndex = currentIndex + 1;
-    entriesRemaining = entriesRemaining + -1;
+    serialCursor++;
+    currentIndex++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = 0;

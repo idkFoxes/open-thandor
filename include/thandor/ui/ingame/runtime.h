@@ -35,7 +35,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
 
 /* 0x0050ECE0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath); /* CF: true = failed */
+InGameUiAction1210_ResourceRegistrationHelper(void *worldView,void *savePath); /* CF: true = failed */
 
 /* 0x0053D9F0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -143,12 +143,12 @@ InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime);
 /* 0x005609F0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
+          (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t activeStateFlags);
 
 /* 0x005622F0 */
 void __thandor_preserve_eax
 InGameUiCommand_SaveFieldAndLevelAssetImages
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
+          (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04);
 
 /* 0x00567040 */
 void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text);

@@ -11,18 +11,11 @@
 /* Implementation ownership: ui/frontend/scenario. */
 
 /* Address: 0x00547D60.
-   Ownership: ui/frontend/scenario.
-   Purpose: This function object claims Listing ownership for a previously unowned multi-entry/shared-
-   tail/computed-dispatch region; it does not assert that every member entry is an independent ABI-level function.
-   Body boundaries remain exact and are not split into speculative ABI functions. Frontend root callback contract:
-   one UiRootNode* callback-context argument at stack +4, callee cleanup 4, void return. EAX and EDX are
-   preserved/incidental state, not a semantic qword result.
-   Cross-module calls: RecentTextHistory_SortAndBuildPointerList [ui/support/runtime],
-   FrontendSessionList_DecrementExpiryAndCompactRows [ui/frontend/session],
-   FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks [ui/frontend/player],
-   FrontendTransfer_TickRequestTimeoutAndResetPage [network/protocol/transfer],
-   FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers [ui/frontend/player],
-   FrontendNetwork_TickDisconnectTimeoutAndResetSession [network/backend/runtime].
+   Frame update of the frontend root: the frameUpdate callback of g_UiRootCallbacks_0053DA70, which Frontend_Init
+   pushes on the UI root stack. Sorts the chat history, runs the timeout tick of the current network state,
+   plays the briefing movie in a loop and the movie view's mask pattern, shows the chat line only in network
+   games, updates the 3D menu room and the cursor from the hovered control, and on the game selection page
+   (single games tab) marks each level title that some other player does not have.
 */
 
 void __thandor_void_preserve_eax_ecx_edx
@@ -49,48 +42,48 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   networkState = g_FrontendNetworkState;
   frontendRoot = g_FrontendRootNode;
   RecentTextHistory_SortAndBuildPointerList
-            (5,(RecentTextHistoryPointerList *)(((struct FrontendNetworkListsRuntimeView5650 *)(uintptr_t)g_FrontendRootNode)->opaqueGap0000_4B67 + 0x350));
-                    // WARNING: Switch is manually overridden
+            (5,&FRONTEND_UI_FIELD(g_FrontendRootNode,chatMessageHistory,0x58,RecentTextHistoryPointerList));
   switch(networkState) {
-  case 1:
+  case FRONTEND_NETWORK_STATE_BROWSING:
     FrontendSessionList_DecrementExpiryAndCompactRows(frontendRoot);
     break;
-  case 2:
+  case FRONTEND_NETWORK_STATE_HOSTING:
     FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(frontendRoot);
     break;
-  case 3:
+  case FRONTEND_NETWORK_STATE_JOINED:
     FrontendTransfer_TickRequestTimeoutAndResetPage(frontendRoot);
     break;
-  case 4:
+  case FRONTEND_NETWORK_STATE_HOST_STARTING:
     FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers();
     break;
-  case 5:
+  case FRONTEND_NETWORK_STATE_CLIENT_STARTING:
     FrontendNetwork_TickDisconnectTimeoutAndResetSession();
   }
-  if ((g_FrontendRuntimeFlags & 0x10) == 0) {
-    if ((*(int *)(frontendRoot->opaqueGap0000_4B67 + 0x904) != 0) &&
+  if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
+    /* the briefing image's movie (set by FrontendMissionBriefingPage_Initialize) plays in a loop */
+    if ((FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int) != 0) &&
        (movieFrame = Movie_AdvanceFrame(), movieFrame.ended)) {
       Movie_Rewind();
     }
-    if (*(int *)(frontendRoot->opaqueGap0000_4B67 + 0x224) != 0) {
+    if (FRONTEND_UI_FIELD(frontendRoot,moviePlaybackView,0x50,int) != 0) {
       SoftwareMaskBuffer_AdvancePatternByPercentTick
-                ((SoftwareMaskRuntimeView *)(frontendRoot->opaqueGap0000_4B67 + 0x1d4));
+                ((SoftwareMaskRuntimeView *)FRONTEND_UI(frontendRoot,moviePlaybackView));
     }
   }
+  /* bottom bar: empty page in a local game, the chat input line in a network game */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0xb0));
+    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
   }
   else {
-    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0xb0));
+    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendRoot,chatInputSlot));
   }
   g_FrontendModelPointerContextUpdateCallback
             (g_CursorOverrideY,g_CursorOverrideX,
-             (FrontendModelPointerContextRuntimeState118 *)
-             (frontendRoot->opaqueGap0000_4B67 + 0x368));
+             (FrontendModelPointerContextRuntimeState118 *)FRONTEND_UI(frontendRoot,menuRoomModelView));
   hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
                     (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
-  if (hoveredNode == (UiNodeBase *)0xffffffff) {
+  if (hoveredNode == (UiNodeBase *)0xffffffff) { /* nothing hit */
     g_GraphicsCursorSetFrame(0);
   }
   else {
@@ -98,20 +91,23 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
     g_GraphicsCursorSetFrame(cursorFrame);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    g_FrontendPlayerRuntimeBlocks->capabilityFlags = 0x100;
+    g_FrontendPlayerRuntimeBlocks->capabilityFlags = FRONTEND_CAPABILITY_CD;
   }
   activePageStatus = UiPageStack_ActivePageNotInList
-                     ((UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0x508));
-  if (activePageStatus.pageIndex == 10) {
+                     ((UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
+  if (activePageStatus.pageIndex == FRONTEND_PAGE_STACK_CHOOSE_GAME) {
     selectedGroup = UiSelectableGroup_NoneSelected(3,
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
-    if (((!selectedGroup.noneSelected) && (selectedGroup.selectedIndexOrCount == 1)) &&
-       (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0)) {
+    if (((!selectedGroup.noneSelected) &&
+        (selectedGroup.selectedIndexOrCount == SCENARIO_SELECTION_TAB_SINGLE_GAMES)) &&
+       (g_ScenarioCatalog != NULL)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
       levelRecordAddress = (int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset;
       if (levelsRemaining != 0) {
+        /* level n has bit n of the players' scenarioAvailabilityMask0..2; its title starts with the rich-text
+           code 0x8001 (highlighted) when one of the other players (records 1..) lacks it, else 0x8000 */
         levelMaskBit = 1;
         maskWordIndex = 0;
         do {
@@ -126,10 +122,11 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
             }
             nextPlayer = playerCursor + 1;
             playerCursor = playerCursor + 1;
-          } while ((*(uint32_t *)(nextPlayer->reserved78_7F + maskWordIndex * 4 + 0xc) & levelMaskBit) != 0);
-          markerText = TextResource_Resolve(*(int *)(levelRecordAddress + 0x70) + 0x2230);
+          } while (((&nextPlayer->scenarioAvailabilityMask0)[maskWordIndex] & levelMaskBit) != 0);
+          /* +0x70: the level's title index */
+          markerText = TextResource_Resolve(*(int *)(levelRecordAddress + 0x70) + TEXT_ID_LEVEL_TITLE_BASE);
           *markerText.text = availabilityMarker;
-          levelRecordAddress = levelRecordAddress + 0x100;
+          levelRecordAddress = levelRecordAddress + SCENARIO_CATALOG_RECORD_SIZE;
           levelMaskBit = levelMaskBit * 2;
           if (levelMaskBit == 0) {
             maskWordIndex = maskWordIndex + 1;

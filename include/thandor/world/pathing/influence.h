@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/pathing/influence. */
+
+/* Byte offset of the model radius in a model definition record (definitionOrClassRecord); 0 = no grid influence.
+   Placement and selection read the same field. */
+#define MODEL_DEFINITION_RADIUS_OFFSET 0xdc
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00527330 */
@@ -77,43 +81,43 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
 /* 0x005355E0 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalNegative
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 /* 0x005356B0 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalPositive
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 /* 0x00535B20 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalNegative
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 /* 0x00535BF0 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalPositive
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 /* 0x00535F70 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalNegative
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 /* 0x00536040 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalPositive
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 #endif /* THANDOR_WORLD_PATHING_INFLUENCE_H */

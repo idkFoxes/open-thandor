@@ -445,9 +445,13 @@ FrontendMainLoop_InitializeRequestedPage:
 
 
 /* Address: 0x0050C380.
-   Ownership: ui/frontend/runtime.
-   Purpose: Handles frontend model pointer context select best model hit target and resolve action.
-   Local calls: FrontendModelPointerContext_FindBestEligibleModelHitTarget.
+   Pointer-move handler of the model pointer context (pointerMove of g_FrontendModelPointerContextVtable): stores
+   the best model hit under the pointer, then returns the cursor frame. While a non-right button is held
+   (ROUTE_TO_SECONDARY_CALLBACK) resolvedActionCallback108 decides it, with no button resolvedActionCallback104;
+   while the right button drags the camera (ROUTE_TO_BUILTIN_ACTION_RESOLUTION) the frame shows the camera
+   motion FrontendModelPointerContext_DispatchWorldCameraPointerInput will perform for the camera scheme bits,
+   the left button and the modifier keys (1 move, 0x0F pitch, 0x10 heading and pitch, 0x11 distance, 0x25
+   heading, 0x0E heading and distance, 0x12..0x14 the variants of scheme 0x8000).
 */
 GraphicsCursorFrameIndex
 FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
@@ -457,12 +461,12 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   uint32_t callbackResult;
   GraphicsCursorFrameIndex cursorFrameIndex;
   uint64_t bestHit;
-  
+
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget(pointerY,pointerX,context);
   context->selectedHitMetric = (int)bestHit;
-  context->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 0x20);
+  context->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK) != 0) {
-    if (context->resolvedActionCallback108 != (FrontendModelPointerResolvedActionCallbackProc *)0x0)
+    if (context->resolvedActionCallback108 != NULL)
     {
       callbackResult = context->resolvedActionCallback108
                         (context->callbackArgumentF0,context->callbackArgumentEC,
@@ -474,7 +478,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   }
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION) ==
       0) {
-    if (context->resolvedActionCallback104 != (FrontendModelPointerResolvedActionCallbackProc *)0x0)
+    if (context->resolvedActionCallback104 != NULL)
     {
       callbackResult = context->resolvedActionCallback104
                         (context->callbackArgumentF0,context->callbackArgumentEC,
@@ -490,20 +494,20 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   }
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_OBSERVED_ACTION_BRANCH_00000100) != 0)
   {
-    if ((g_CursorButtonState & 1) != 0) {
+    if ((g_CursorButtonState & LEFT) != 0) {
       return 0x11;
     }
     return 0x10;
   }
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_OBSERVED_ACTION_BRANCH_00008000) != 0)
   {
-    if ((g_KeyboardStateMask & 0xc) != 0) {
-      if ((g_CursorButtonState & 1) != 0) {
+    if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+      if ((g_CursorButtonState & LEFT) != 0) {
         return 0x11;
       }
       return 0x12;
     }
-    if ((g_CursorButtonState & 1) != 0) {
+    if ((g_CursorButtonState & LEFT) != 0) {
       return 0x14;
     }
     return 0x13;
@@ -512,16 +516,16 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   {
     return 0;
   }
-  if ((g_KeyboardStateMask & 0xc) != 0) {
+  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
     return 0xf;
   }
-  if ((g_KeyboardStateMask & 0x30) == 0) {
-    if ((g_KeyboardStateMask & 3) != 0) {
+  if ((g_KeyboardStateMask & KEYBOARD_STATE_ALT) == 0) {
+    if ((g_KeyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
       return 0x25;
     }
     if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_OBSERVED_BUTTON_BRANCH_04000000) ==
         0) {
-      if ((g_CursorButtonState & 1) == 0) {
+      if ((g_CursorButtonState & LEFT) == 0) {
         return 1;
       }
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_40000000)
@@ -534,7 +538,7 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
       }
     }
     else {
-      if ((g_CursorButtonState & 1) != 0) {
+      if ((g_CursorButtonState & LEFT) != 0) {
         if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_40000000)
             != 0) {
           return 0xf;
@@ -563,10 +567,10 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
 }
 
 /* Address: 0x0050C5A0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Local calls: FrontendModelPointerContext_FindBestEligibleModelHitTarget.
+   Press of a non-right button on the model pointer context (nonRightPress of
+   g_FrontendModelPointerContextVtable): remembers the press point (corner of the drag frame), stores the best
+   model hit, routes the following pointer moves to resolvedActionCallback108 and reports the press to
+   resolvedActionCallback10C.
 */
 void __thandor_preserve_eax_edx
 FrontendModelPointerContext_NonRightPress
@@ -581,12 +585,12 @@ FrontendModelPointerContext_NonRightPress
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
                     (pointerY,pointerX,(FrontendModelPointerContextRuntimeState118 *)callbackContext
                     );
-  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 0x20);
+  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   callbackContext->contextFlags =
        callbackContext->contextFlags | FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
   if (callbackContext->resolvedActionCallback10C !=
-      (FrontendModelPointerResolvedActionCallbackProc *)0x0) {
+      NULL) {
     callbackContext->resolvedActionCallback10C
               (callbackContext->callbackArgumentF0,callbackContext->callbackArgumentEC,
                callbackContext->callbackArgumentE8,callbackContext->selectedHitMetric,
@@ -598,10 +602,9 @@ FrontendModelPointerContext_NonRightPress
 
 
 /* Address: 0x0050C610.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Local calls: FrontendModelPointerContext_FindBestEligibleModelHitTarget.
+   Release of a non-right button on the model pointer context (nonRightRelease of
+   g_FrontendModelPointerContextVtable): stores the best model hit, routes pointer moves back to the hover
+   callback and reports the release to resolvedActionCallback114.
 */
 void __thandor_preserve_eax_edx
 FrontendModelPointerContext_NonRightRelease
@@ -613,12 +616,12 @@ FrontendModelPointerContext_NonRightRelease
   
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
                     (pointerY,pointerX,callbackContext);
-  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 0x20);
+  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   callbackContext->contextFlags =
        callbackContext->contextFlags & ~FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
   if (callbackContext->resolvedActionCallback114 !=
-      (FrontendModelPointerResolvedActionCallbackProc *)0x0) {
+      NULL) {
     callbackContext->resolvedActionCallback114
               (callbackContext->callbackArgumentF0,callbackContext->callbackArgumentEC,
                callbackContext->callbackArgumentE8,callbackContext->selectedHitMetric,
@@ -629,10 +632,9 @@ FrontendModelPointerContext_NonRightRelease
 
 
 /* Address: 0x0050C670.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Local calls: FrontendModelPointerContext_FindBestEligibleModelHitTarget.
+   Drag with a non-right button on the model pointer context (nonRightDrag of
+   g_FrontendModelPointerContextVtable): remembers the current point (the other corner of the drag frame),
+   stores the best model hit and reports the drag to resolvedActionCallback110.
 */
 void __thandor_preserve_eax_edx
 FrontendModelPointerContext_NonRightDrag
@@ -647,10 +649,10 @@ FrontendModelPointerContext_NonRightDrag
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
                     (pointerY,pointerX,(FrontendModelPointerContextRuntimeState118 *)callbackContext
                     );
-  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 0x20);
+  callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   if (callbackContext->resolvedActionCallback110 !=
-      (FrontendModelPointerResolvedActionCallbackProc *)0x0) {
+      NULL) {
     callbackContext->resolvedActionCallback110
               (callbackContext->callbackArgumentF0,callbackContext->callbackArgumentEC,
                callbackContext->callbackArgumentE8,callbackContext->selectedHitMetric,
@@ -662,99 +664,99 @@ FrontendModelPointerContext_NonRightDrag
 
 
 /* Address: 0x00549B40.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[68] (0x2044).
-   Local calls: FrontendUiAction2044_IndexedSelectionHelper.
-   Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2044 (slot 68 of g_FrontendUiActionHandlersPage20.handlers00_54), the colour buttons of
+   the faction setup page: finds the row of the pressed button in the factionControls offset table and cycles
+   that faction's colour (FrontendUiAction2044_IndexedSelectionHelper directly in a local game,
+   FRONTEND_COMMAND_CYCLE_FACTION_COLOUR in a network game).
 */
 void __thandor_void_preserve_eax_ecx FrontendUiAction2044_Handler(UiNodeBase *factionControl)
 
 {
-  CommandPayloadDword04 payloadDword04;
+  CommandPayloadDword04 rowIndex;
   
-  payloadDword04 = 0;
+  rowIndex = 0;
   do {
     if ((int)factionControl - g_FrontendRootNode ==
-        g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[payloadDword04 + 1]) {
+        g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex + 1]) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendUiAction2044_IndexedSelectionHelper(g_LocalPlayerRuntimeId,0,0,payloadDword04);
+        FrontendUiAction2044_IndexedSelectionHelper(g_LocalPlayerRuntimeId,0,0,rowIndex);
       }
       else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(0x650,0,0,payloadDword04);
+        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CYCLE_FACTION_COLOUR,0,0,rowIndex);
       }
       return;
     }
-    payloadDword04 = payloadDword04 + 1;
-  } while (payloadDword04 < 7);
+    rowIndex++;
+  } while (rowIndex < 7);
   return;
 }
 
 
 /* Address: 0x00549BC0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[69] (0x2045).
-   Local calls: FrontendUiAction2045_IndexedSelectionHelper.
-   Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2045 (slot 69 of g_FrontendUiActionHandlersPage20.handlers00_54), the mode buttons of
+   the faction setup page: finds the row of the pressed button in the playerControls offset table and toggles
+   whether that faction takes part (FrontendUiAction2045_IndexedSelectionHelper directly in a local game,
+   FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE in a network game).
 */
 void __thandor_void_preserve_eax_ecx FrontendUiAction2045_Handler(UiNodeBase *playerControl)
 
 {
-  CommandPayloadDword04 payloadDword04;
+  CommandPayloadDword04 rowIndex;
   
-  payloadDword04 = 0;
+  rowIndex = 0;
   do {
     if ((int)playerControl - g_FrontendRootNode ==
-        g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[payloadDword04 + 1]) {
+        g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndex + 1]) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendUiAction2045_IndexedSelectionHelper(g_LocalPlayerRuntimeId,0,0,payloadDword04);
+        FrontendUiAction2045_IndexedSelectionHelper(g_LocalPlayerRuntimeId,0,0,rowIndex);
       }
       else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(0x6f0,0,0,payloadDword04);
+        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE,0,0,rowIndex);
       }
       return;
     }
-    payloadDword04 = payloadDword04 + 1;
-  } while (payloadDword04 < 7);
+    rowIndex++;
+  } while (rowIndex < 7);
   return;
 }
 
 
 /* Address: 0x00549C40.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[70] (0x2046).
-   Local calls: FrontendUiAction2046_IndexedSelectionHelper.
-   Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2046 (slot 70 of g_FrontendUiActionHandlersPage20.handlers00_54), the "play" checkboxes
+   of the faction setup page: finds the row of the pressed checkbox in the selectionRows offset table and makes
+   that faction the local player's (FrontendUiAction2046_IndexedSelectionHelper directly in a local game,
+   FRONTEND_COMMAND_CHOOSE_FACTION in a network game).
 */
 void __thandor_void_preserve_eax_ecx FrontendUiAction2046_Handler(UiNodeBase *selectionRowControl)
 
 {
-  CommandPayloadDword04 payloadDword04;
+  CommandPayloadDword04 rowIndex;
   
-  payloadDword04 = 0;
+  rowIndex = 0;
   do {
     if ((int)selectionRowControl - g_FrontendRootNode ==
-        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[payloadDword04 + 1]) {
+        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex + 1]) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendUiAction2046_IndexedSelectionHelper(g_LocalPlayerRuntimeId,0,0,payloadDword04);
+        FrontendUiAction2046_IndexedSelectionHelper(g_LocalPlayerRuntimeId,0,0,rowIndex);
       }
       else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(0x750,0,0,payloadDword04);
+        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CHOOSE_FACTION,0,0,rowIndex);
       }
       return;
     }
-    payloadDword04 = payloadDword04 + 1;
-  } while (payloadDword04 < 7);
+    rowIndex++;
+  } while (rowIndex < 7);
   return;
 }
 
 
 /* Address: 0x0050BB80.
-   Ownership: ui/frontend/runtime.
-   Purpose: UNREFERENCED_FRAMED_RUNTIME_INITIALIZER_PROVISIONAL.
-   Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
+   Relocate method of the model pointer context (relocate of g_FrontendModelPointerContextVtable), run when the
+   control is built from its template: puts the camera target at the origin, gives camera limits the template
+   left at 0 their defaults, starts with no candidate models and no overlay entity, then relocates the children.
 */
 void FrontendModelPointerContext_Relocate
                (UiSerializedRelocationDelta relocationDelta,
@@ -764,12 +766,14 @@ void FrontendModelPointerContext_Relocate
   control->targetPositionXQ12 = 0;
   control->targetPositionYQ12 = 0;
   control->targetPositionZQ12 = 0;
+  /* angles in 1/0x10000 of a turn: pitch -90..+90 degrees */
   if (control->minimumPitchAngle == 0) {
     control->minimumPitchAngle = 0xffffc000;
   }
   if (control->maximumPitchAngle == 0) {
     control->maximumPitchAngle = 0x4000;
   }
+  /* camera distance 0.25..127 (Q12) */
   if (control->minimumDistanceQ12 == 0) {
     control->minimumDistanceQ12 = 0x400;
   }
@@ -778,19 +782,17 @@ void FrontendModelPointerContext_Relocate
   }
   control->contextValue58 = 0;
   control->objectCountOrFrontendStateAC = 0;
-  control->candidateModelListHead = (ModelRuntimeNode *)0x0;
-  control->selectedOverlayEntity = (GameEntityRuntime *)0x0;
+  control->candidateModelListHead = NULL;
+  control->selectedOverlayEntity = NULL;
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   return;
 }
 
 
 /* Address: 0x0050BC30.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Cross-module calls: WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core], UiContainer_LayoutChildren
-   [ui/controls/layout].
+   Layout method of the model pointer context (layout of g_FrontendModelPointerContextVtable): a new size
+   invalidates the reusable terrain projection (WorldRuntime_ClearFieldGridDirtyFlag clears
+   TERRAIN_RENDER_REUSE_PROJECTION), then the children are laid out.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
@@ -803,13 +805,13 @@ FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
 
 
 /* Address: 0x0050BC60.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Cross-module calls: Graphics_SetProjectionClipRect [graphics/core/runtime], Graphics_SetViewProjectionParameters
-   [graphics/core/runtime], SpatialSound_RebuildListenerTransformFromPose [audio/spatial/runtime],
-   Graphics_SetProjectionViewport [graphics/core/runtime], Graphics_SetAuxiliaryOrientation
-   [graphics/core/runtime], Graphics_SetSceneBounds [graphics/core/runtime].
+   Draw method of the model pointer context (drawClipped of g_FrontendModelPointerContextVtable), the 3D view of
+   the menu room and of the in-game world: clamps the clip rectangle to the control, sets up camera, projection
+   and (optionally) the sound listener, then renders the candidate models in up to four primitive-queue passes
+   (models with flag 0x200, the terrain, the shading pass of models with flag 0x100, the remaining models),
+   releasing and re-acquiring the render spin lock between passes. Afterwards the enabled selection
+   overlays are drawn and the child controls on top. Nothing is drawn while FRONTEND_MENU_ROOM_RENDER_SUPPRESSED
+   is set (a dialog page covers the room).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendModelPointerContext_RenderWorldViewQueuesClipped
@@ -834,7 +836,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
   bool entryFound;
   PrimitiveQueueResult queueResult;
 
-  if ((control->contextFlags & 0x2000) != 0) {
+  if ((control->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
     return;
   }
   if (clipRight < (control->base).left) {
@@ -853,13 +855,13 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
   g_SpinLockAcquire(control->renderSpinLock);
   cursorOverrideY = g_CursorOverrideY;
   cursorOverrideX = g_CursorOverrideX;
-  control->selectedModelNode = (ModelRuntimeNode *)0x0;
-  control->selectedHitMetric = 0x7fffffff;
-  control->callbackArgumentE8 = 0x7fffffff;
-  control->callbackArgumentEC = 0x7fffffff;
-  control->callbackArgumentF0 = 0x7fffffff;
-  overlayClipTop = cursorOverrideY << 0xc;
-  control->cursorWorldXQ12 = cursorOverrideX << 0xc;
+  control->selectedModelNode = NULL;
+  control->selectedHitMetric = WORLD_POINTER_NO_HIT;
+  control->callbackArgumentE8 = WORLD_POINTER_NO_HIT;
+  control->callbackArgumentEC = WORLD_POINTER_NO_HIT;
+  control->callbackArgumentF0 = WORLD_POINTER_NO_HIT;
+  overlayClipTop = cursorOverrideY << 12;
+  control->cursorWorldXQ12 = cursorOverrideX << 12;
   control->cursorWorldYQ12 = overlayClipTop;
   control->renderedPrimitiveCount = 0;
   Graphics_SetProjectionClipRect(clipTop,clipLeft,clipBottom,clipRight);
@@ -868,7 +870,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
              control->projectionScale,control->hitReferenceWorldZQ12,control->hitReferenceWorldYQ12,
              control->hitReferenceWorldXQ12);
   originY = clipLeft;
-  if ((control->contextFlags & 0x10000) != 0) {
+  if ((control->contextFlags & WORLD_RUNTIME_FLAG_SOUND_LISTENER) != 0) {
     originY = control->targetPositionYQ12;
     overlayClipTop = ((int)control->committedDistanceOrSoundZOffset >> 2) + control->targetPositionZQ12;
     SpatialSound_RebuildListenerTransformFromPose
@@ -894,7 +896,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
   if (!queueResult.failed) {
     Graphics_SetActivePrimitiveQueue(queueResult.queue);
     control->activePrimitiveQueue = queueResult.queue;
-    if (control->renderPhaseCallback15C != (InGameWorldOverlayPhaseCallbackProc *)0x0) {
+    if (control->renderPhaseCallback15C != NULL) {
       control->renderPhaseCallback15C(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
     }
     renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
@@ -902,7 +904,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
       renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
     }
     overlayClipTop = (UiPixelCoordinate)(uintptr_t)renderHierarchyProc;
-    for (modelNode = control->candidateModelListHead; modelNode != (ModelRuntimeNode *)0x0;
+    for (modelNode = control->candidateModelListHead; modelNode != NULL;
         modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
       if ((((modelNode->runtimeFlags & 0x40) == 0) && ((modelNode->runtimeFlags & 0x200) != 0)) &&
          (modelNode->runtimeFlags = modelNode->runtimeFlags & 0xfffffffd,
@@ -910,7 +912,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
         renderHierarchyProc(modelNode);
       }
     }
-    if (control->renderPhaseCallback15C != (InGameWorldOverlayPhaseCallbackProc *)0x0) {
+    if (control->renderPhaseCallback15C != NULL) {
       control->renderPhaseCallback15C(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
     }
     PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
@@ -922,7 +924,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
     g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
     g_SpinLockAcquire(control->renderSpinLock);
     overlayClipBottom = 0; /* EDI: the model loop ran to its NULL terminator */
-    if (((control->contextFlags & 0x4000) != 0) && (control->fieldGrid != (FieldGridAsset *)0x0)) {
+    if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL)) {
       queueResult = GraphicsPrimitiveQueue_ResetGlobal();
       if (queueResult.failed) goto EndSceneAndDrawOverlays;
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
@@ -937,14 +939,14 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
     }
     g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
     g_SpinLockAcquire(control->renderSpinLock);
-    if ((control->contextFlags & 0x20000) != 0) {
+    if ((control->contextFlags & WORLD_RUNTIME_FLAG_SHADING_ENABLED) != 0) {
       modelNode = control->candidateModelListHead;
       overlayClipBottom = (UiPixelCoordinate)(uintptr_t)modelNode; /* EDI */
       queueResult = GraphicsPrimitiveQueue_ResetGlobal();
       if (queueResult.failed) goto EndSceneAndDrawOverlays;
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
       control->activePrimitiveQueue = queueResult.queue;
-      if (modelNode != (ModelRuntimeNode *)0x0) {
+      if (modelNode != NULL) {
         GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
         do {
           if ((((modelNode->runtimeFlags & 0x40) == 0) && ((modelNode->runtimeFlags & 0x100) != 0)) &&
@@ -953,7 +955,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
                       (modelNode,(GeneratedTextureRenderContextView *)control);
           }
           modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
-        } while (modelNode != (ModelRuntimeNode *)0x0);
+        } while (modelNode != NULL);
         GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources();
         overlayClipBottom = 0;
       }
@@ -970,7 +972,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
     if (!queueResult.failed) {
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
       control->activePrimitiveQueue = queueResult.queue;
-      if (control->renderPhaseCallback15C != (InGameWorldOverlayPhaseCallbackProc *)0x0) {
+      if (control->renderPhaseCallback15C != NULL) {
         control->renderPhaseCallback15C(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
       }
       renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
@@ -978,7 +980,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
       {
         renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
       }
-      for (modelNode = control->candidateModelListHead; modelNode != (ModelRuntimeNode *)0x0;
+      for (modelNode = control->candidateModelListHead; modelNode != NULL;
           modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
         if (((modelNode->runtimeFlags & 0x240) == 0) &&
            (modelNode->runtimeFlags = modelNode->runtimeFlags & 0xfffffffd,
@@ -986,7 +988,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
           renderHierarchyProc(modelNode);
         }
       }
-      if (control->renderPhaseCallback15C != (InGameWorldOverlayPhaseCallbackProc *)0x0) {
+      if (control->renderPhaseCallback15C != NULL) {
         control->renderPhaseCallback15C(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
       }
       PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
@@ -1003,13 +1005,14 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
       overlayClipBottom = clipBottom;
       if ((((clipRight == (control->base).left) && (clipLeft == (control->base).right)) &&
           (clipBottom == (control->base).top)) && (clipTop == (control->base).bottom)) {
-        control->contextFlags = control->contextFlags | 0x800;
+        /* the whole view was drawn: the next terrain pass may reuse this projection */
+        control->contextFlags = control->contextFlags | TERRAIN_RENDER_REUSE_PROJECTION;
       }
     }
   }
 EndSceneAndDrawOverlays:
   g_GraphicsEndScene();
-  g_RenderedFrameCountSinceDebugRefresh = g_RenderedFrameCountSinceDebugRefresh + 1;
+  g_RenderedFrameCountSinceDebugRefresh++;
   if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledSourceAlpha;
@@ -1019,53 +1022,53 @@ EndSceneAndDrawOverlays:
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
   }
   if ((g_UiCommandRuntimeFlags & 0x8000) == 0) {
-    if ((((control->contextFlags & 0x400) != 0) &&
+    if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) &&
         (SelectionOverlay_RenderSelectedArmyMetrics
                    (overlayClipTop,originY,overlayClipBottom,
                     overlayClipRight),
-        control->selectedOverlayEntity != (GameEntityRuntime *)0x0)) &&
+        control->selectedOverlayEntity != NULL)) &&
        (entryFound = SelectionInfo_FindEntry(control->selectedOverlayEntity), entryFound)) {
       SelectionOverlay_RenderArmyMetricsForEntity
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->selectedOverlayEntity);
     }
-    if ((control->contextFlags & 0x80) != 0) {
+    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
       SelectionOverlay_DrawBoundsFrame
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->scratchCoordinate16C,
                  control->scratchCoordinate168,control->scratchCoordinate164,
                  control->scratchCoordinate160);
     }
-    if ((control->contextFlags & 0x200000) != 0) {
+    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS) != 0) {
       SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->terrainMarkerPointCount174,
                  control->terrainMarkerCoordinatePairs170,control->fieldGrid);
     }
-    if (((control->contextFlags & 0x100000) != 0) && (control->callbackArgumentF0 != 0x7fffffff)) {
+    if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER) != 0) && (control->callbackArgumentF0 != WORLD_POINTER_NO_HIT)) {
       SelectionOverlay_DrawMarkerACForWorldSurfacePoint
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,
                  (uint32_t)((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0),
                  control->callbackArgumentEC,control->callbackArgumentE8,control->fieldGrid);
     }
-    if ((control->contextFlags & 0x800000) != 0) {
+    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS) != 0) {
       SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->fieldGrid);
     }
-    if ((control->contextFlags & 0x1000000) != 0) {
+    if ((control->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) != 0) {
       SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->fieldGrid);
     }
-    if ((control->contextFlags & 0x2000000) != 0) {
+    if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS) != 0) {
       SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,(uint8_t)control->overlayMarkerStateB4,
                  control->fieldGrid);
     }
-    if ((((control->contextFlags & 0x4000) != 0) && (control->fieldGrid != (FieldGridAsset *)0x0))
+    if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL))
        && ((g_UiCommandRuntimeFlags & 0x40) != 0)) {
       SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
                 (overlayClipTop,originY,overlayClipBottom,
@@ -1075,9 +1078,9 @@ EndSceneAndDrawOverlays:
   g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;
   g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledSourceAlpha;
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
-  if ((control->selectedModelNode != (ModelRuntimeNode *)0x0) &&
+  if ((control->selectedModelNode != NULL) &&
      ((int)control->callbackArgumentF0 < control->selectedHitMetric)) {
-    control->selectedModelNode = (ModelRuntimeNode *)0x0;
+    control->selectedModelNode = NULL;
   }
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
   return;
@@ -1085,9 +1088,10 @@ EndSceneAndDrawOverlays:
 
 
 /* Address: 0x0050C6E0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
+   Right-button press on the model pointer context (rightPress of g_FrontendModelPointerContextVtable): starts a
+   camera drag. Remembers the press point (the pointer is put back there after every drag step), routes pointer
+   moves to the camera cursor resolution, restarts the held-tick counter (rightButtonState11C, counted by
+   FrontendModelPointerContext_Tick) and pins the drawn cursor.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendModelPointerContext_RightPress
@@ -1102,15 +1106,15 @@ FrontendModelPointerContext_RightPress
        callbackContext->contextFlags |
        FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION;
   callbackContext->rightButtonState11C = 0;
-  g_CursorUseOverridePosition = g_CursorUseOverridePosition + 1;
+  g_CursorUseOverridePosition++;
   return;
 }
 
 
 /* Address: 0x0050C730.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
+   Right-button release on the model pointer context (rightRelease of g_FrontendModelPointerContextVtable): ends
+   the camera drag and unpins the cursor. A release within 7 ticks of the press counts as a click and is
+   reported to rightReleaseCallback118 (the menu room stops its camera flight with it).
 */
 void __thandor_preserve_eax_edx
 FrontendModelPointerContext_RightRelease
@@ -1119,6 +1123,7 @@ FrontendModelPointerContext_RightRelease
 
 {
   g_CursorUseOverridePosition = 0;
+  /* clears ROUTE_TO_BUILTIN_ACTION_RESOLUTION and the camera motion bits 0..3 */
   callbackContext->contextFlags = callbackContext->contextFlags & 0xffffffb0;
   if ((callbackContext->rightButtonState11C < 7) &&
      (callbackContext->rightReleaseCallback118 != NULL)) {
@@ -1129,15 +1134,12 @@ FrontendModelPointerContext_RightRelease
 
 
 /* Address: 0x0050CC80.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Cross-module calls: WorldMotion_AdjustHeadingAndRecomputePosition [world/motion/runtime],
-   WorldMotion_AdjustPitchClampAndRecomputePosition [world/motion/runtime],
-   WorldMotion_AdjustDistanceClampAndRecomputePosition [world/motion/runtime],
-   WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn [world/motion/runtime],
-   WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading [world/motion/runtime],
-   WorldMotion_AdjustHeadingAndClearFieldGridDirty [world/motion/runtime].
+   Right-button drag on the model pointer context (rightDrag of g_FrontendModelPointerContextVtable): moves the
+   camera by the pointer's offset from the press point, then puts the pointer back there, snapshots the camera
+   state and calls the view's clearTransientStateCallback. The motion depends on the camera scheme bit of the
+   view (0x100, 0x8000 or 0x200), the left button and the modifier keys: move, heading, pitch, distance or a
+   combination; 0x10 blocks camera input. FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
+   shows the matching cursor.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendModelPointerContext_DispatchWorldCameraPointerInput
@@ -1146,91 +1148,93 @@ FrontendModelPointerContext_DispatchWorldCameraPointerInput
 
 {
   InGameWorldTransientStateClearCallbackProc *clearTransientCallback;
-  uint32_t screenDeltaY;
-  AngleTurn32 elevationAngle;
-  
-  screenDeltaY = pointerX - callbackContext->pointerCaptureX;
-  elevationAngle = pointerY - callbackContext->pointerCaptureY;
+  uint32_t pointerDeltaX;
+  AngleTurn32 pointerDeltaY;
+
+  /* The low four runtimeFlags bits record the motion in progress: 1 move, 2 heading, 4 distance, 8 pitch.
+     The pointer's X offset drives the heading, its Y offset pitch, distance and moves. */
+  pointerDeltaX = pointerX - callbackContext->pointerCaptureX;
+  pointerDeltaY = pointerY - callbackContext->pointerCaptureY;
   if ((callbackContext->runtimeFlags & 0x10) != 0) {
     return;
   }
   if ((callbackContext->runtimeFlags & 0x100) != 0) {
-    if ((g_CursorButtonState & 1) == 0) {
+    if ((g_CursorButtonState & LEFT) == 0) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffffa;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 10;
-      WorldMotion_AdjustHeadingAndRecomputePosition(screenDeltaY,callbackContext);
-      WorldMotion_AdjustPitchClampAndRecomputePosition(elevationAngle,callbackContext);
+      WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
+      WorldMotion_AdjustPitchClampAndRecomputePosition(pointerDeltaY,callbackContext);
     }
     else {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff4;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 4;
-      WorldMotion_AdjustDistanceClampAndRecomputePosition(elevationAngle,callbackContext);
+      WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
     }
   }
   else if ((callbackContext->runtimeFlags & 0x8000) != 0) {
-    if ((g_CursorButtonState & 1) == 0) {
-      if ((g_KeyboardStateMask & 0xc) == 0) {
+    if ((g_CursorButtonState & LEFT) == 0) {
+      if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff1;
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | 1;
         WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
-                  (elevationAngle,screenDeltaY,callbackContext);
+                  (pointerDeltaY,pointerDeltaX,callbackContext);
         WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
-                  (elevationAngle,callbackContext);
+                  (pointerDeltaY,callbackContext);
       }
       else {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffffa;
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | 10;
-        WorldMotion_AdjustHeadingAndClearFieldGridDirty(screenDeltaY,callbackContext);
+        WorldMotion_AdjustHeadingAndClearFieldGridDirty(pointerDeltaX,callbackContext);
         /* EDX: the pointer Y delta, as in the other pitch branches (the decompile lost it). */
-        WorldMotion_AdjustPitchClampAndClearFieldGridDirty(elevationAngle,callbackContext);
+        WorldMotion_AdjustPitchClampAndClearFieldGridDirty(pointerDeltaY,callbackContext);
       }
     }
-    else if ((g_KeyboardStateMask & 0xc) == 0) {
+    else if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff1;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 1;
-      WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(elevationAngle,callbackContext);
+      WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(pointerDeltaY,callbackContext);
     }
     else {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff4;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 4;
-      WorldMotion_AdjustPositionMagnitudeClamp(elevationAngle,callbackContext);
+      WorldMotion_AdjustPositionMagnitudeClamp(pointerDeltaY,callbackContext);
     }
   }
   else {
     if ((callbackContext->runtimeFlags & 0x200) == 0) {
       return;
     }
-    if ((g_KeyboardStateMask & 0xc) != 0) {
+    if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff8;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 8;
-      WorldMotion_AdjustPitchClampAndRecomputePosition(elevationAngle,callbackContext);
+      WorldMotion_AdjustPitchClampAndRecomputePosition(pointerDeltaY,callbackContext);
     }
-    else if ((g_KeyboardStateMask & 0x30) != 0) {
+    else if ((g_KeyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff4;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 4;
-      WorldMotion_AdjustDistanceClampAndRecomputePosition(elevationAngle,callbackContext);
+      WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
     }
-    else if ((g_KeyboardStateMask & 3) != 0) {
+    else if ((g_KeyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff2;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 2;
-      WorldMotion_AdjustHeadingAndRecomputePosition(screenDeltaY,callbackContext);
+      WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
     }
-    else if (((callbackContext->runtimeFlags & 0x4000000) != 0) && ((g_CursorButtonState & 1) != 0)) {
+    else if (((callbackContext->runtimeFlags & 0x4000000) != 0) && ((g_CursorButtonState & LEFT) != 0)) {
       /* Flag 0x4000000 with the button held: 0x40000000 selects pitch, 0x80000000 distance. */
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff0;
       if ((callbackContext->runtimeFlags & 0x40000000) != 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | 8;
-        WorldMotion_AdjustPitchClampAndRecomputePosition(elevationAngle,callbackContext);
+        WorldMotion_AdjustPitchClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
       else if ((callbackContext->runtimeFlags & 0x80000000) != 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | 4;
-        WorldMotion_AdjustDistanceClampAndRecomputePosition(elevationAngle,callbackContext);
+        WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
     }
-    else if (((callbackContext->runtimeFlags & 0x4000000) == 0) && ((g_CursorButtonState & 1) == 0)) {
+    else if (((callbackContext->runtimeFlags & 0x4000000) == 0) && ((g_CursorButtonState & LEFT) == 0)) {
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff1;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 1;
-      WorldRuntime_TranslateCameraByScreenDelta(elevationAngle,screenDeltaY,callbackContext);
+      WorldRuntime_TranslateCameraByScreenDelta(pointerDeltaY,pointerDeltaX,callbackContext);
       WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(callbackContext);
     }
     else {
@@ -1238,21 +1242,21 @@ FrontendModelPointerContext_DispatchWorldCameraPointerInput
          0x80000000 a pitch step (flags re-read after the heading call). */
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff2;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 2;
-      WorldMotion_AdjustHeadingAndRecomputePosition(screenDeltaY,callbackContext);
+      WorldMotion_AdjustHeadingAndRecomputePosition(pointerDeltaX,callbackContext);
       if ((callbackContext->runtimeFlags & 0x40000000) != 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | 4;
-        WorldMotion_AdjustDistanceClampAndRecomputePosition(elevationAngle,callbackContext);
+        WorldMotion_AdjustDistanceClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
       else if ((callbackContext->runtimeFlags & 0x80000000) != 0) {
         callbackContext->runtimeFlags = callbackContext->runtimeFlags | 8;
-        WorldMotion_AdjustPitchClampAndRecomputePosition(elevationAngle,callbackContext);
+        WorldMotion_AdjustPitchClampAndRecomputePosition(pointerDeltaY,callbackContext);
       }
     }
   }
   g_PointerSetPosition(callbackContext->pointerCaptureY,callbackContext->pointerCaptureX);
   clearTransientCallback = (callbackContext->fieldRegion).clearTransientStateCallback;
   WorldRuntime_CaptureMotionStateToSnapshot(callbackContext);
-  if (clearTransientCallback != (InGameWorldTransientStateClearCallbackProc *)0x0) {
+  if (clearTransientCallback != NULL) {
     clearTransientCallback(callbackContext);
   }
   return;
@@ -1260,12 +1264,9 @@ FrontendModelPointerContext_DispatchWorldCameraPointerInput
 
 
 /* Address: 0x0050CED0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Cross-module calls: WorldMotion_AdjustDistanceClampAndRecomputePosition [world/motion/runtime],
-   WorldRuntime_CaptureMotionStateToSnapshot [world/runtime/core], WorldMotion_AdjustPitchClampAndRecomputePosition
-   [world/motion/runtime].
+   Wheel handler of the model pointer context (pointerWheel of g_FrontendModelPointerContextVtable): unless
+   camera input is blocked (0x10) or the view has no camera scheme (0x100/0x200/0x8000), the scaled wheel
+   delta changes the camera distance, with Ctrl the pitch, and the camera state is snapshotted.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendModelPointerContext_PointerWheel
@@ -1277,7 +1278,7 @@ FrontendModelPointerContext_PointerWheel
   
   if (((callbackContext->runtimeFlags & 0x10) == 0) &&
      ((callbackContext->runtimeFlags & 0x8300) != 0)) {
-    if ((g_KeyboardStateMask & 0xc) == 0) {
+    if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) == 0) {
       scaledWheelDelta = wheelDelta * g_WorldMotionPointerWheelInputScale;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags & 0xfffffff4;
       callbackContext->runtimeFlags = callbackContext->runtimeFlags | 4;
@@ -1297,10 +1298,9 @@ FrontendModelPointerContext_PointerWheel
 
 
 /* Address: 0x0050CF50.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
+   Keyboard handler of the model pointer context (keyboardEvent of g_FrontendModelPointerContextVtable): offers
+   the key to the view's keyboardFallback first; when there is none or it returns CF set, the default handling
+   (UiNode_DefaultKeyboardEventMoveFocusNext) decides. Returns CF.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendModelPointerContext_KeyboardEvent
@@ -1310,7 +1310,7 @@ FrontendModelPointerContext_KeyboardEvent
 {
   bool keyboardEventCarry;
   
-  if ((control->keyboardFallback != (UiRootKeyboardFallback *)0x0) &&
+  if ((control->keyboardFallback != NULL) &&
      (keyboardEventCarry = control->keyboardFallback(keyboardStateMask,keyCode,(UiRootNode *)control),
      !keyboardEventCarry)) {
     return keyboardEventCarry;
@@ -1321,11 +1321,11 @@ FrontendModelPointerContext_KeyboardEvent
 
 
 /* Address: 0x0050CF90.
-   Ownership: ui/frontend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   WorldRuntime_ClearFieldGridDirtyFlag [world/runtime/core].
+   Tick method of the model pointer context (tick of g_FrontendModelPointerContextVtable): counts the ticks the
+   right button is held (rightButtonState11C, read by FrontendModelPointerContext_RightRelease) and, in a view
+   without camera scheme 0x100/0x8000, camera input block (0x10) and WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA, eases
+   the camera distance by one convergence step per tick until it is within 15/16..17/16 of the clamped committed
+   distance, placing the camera behind the target.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
@@ -1337,6 +1337,8 @@ FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
   UQ12 clampedCommittedDistance;
   FixedDirection cameraOffset;
   
+  /* 0x40: right button held (ROUTE_TO_BUILTIN_ACTION_RESOLUTION); +0x11C is rightButtonState11C of the
+     pointer-context view of this record */
   if ((callbackContext->runtimeFlags & 0x40) != 0) {
     callbackStateCounter = &(callbackContext->selection).reservedCallbackState40;
     *callbackStateCounter = *callbackStateCounter + 1;
@@ -1358,6 +1360,7 @@ FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
       convergenceStep = -g_WorldMotionTargetDistanceConvergenceStepQ12;
     }
     (callbackContext->motion).targetDistanceQ12 = targetDistance + convergenceStep;
+    /* heading ^ 0x8000 turns half round: the camera sits behind the target */
     cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
                       (-(callbackContext->motion).pitchAngle,
                        (callbackContext->motion).headingAngle ^ 0x8000,targetDistance + convergenceStep);
@@ -1810,13 +1813,9 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebu
 
 
 /* Address: 0x00549100.
-   Ownership: ui/frontend/runtime.
-   Purpose: One-argument frontend action callback. Local mode invokes
-   FrontendSession_ApplyGameSpeedAndReturnToMainPage with zero state; network modes dispatch message offset 0x2C0.
-   Existing register results are preserved. Queued UI action handler for FRONTEND_PAGE20[67] (0x2043). Return
-   datatype is preserved for non-queue direct callers.
-   Cross-module calls: FrontendSession_ApplyGameSpeedAndReturnToMainPage [ui/frontend/session],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2043 (slot 67 of g_FrontendUiActionHandlersPage20.handlers00_54), the mission briefing's
+   "Back" button: applies the game speed and returns to the main page with ROM action record 0
+   (FRONTEND_COMMAND_APPLY_GAME_SPEED in a network game).
 */
 void FrontendCallback_ApplyGameSpeedOrDispatch02C0(uint32_t callbackArgument)
 
@@ -1826,19 +1825,16 @@ void FrontendCallback_ApplyGameSpeedOrDispatch02C0(uint32_t callbackArgument)
     FrontendSession_ApplyGameSpeedAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0x2c0,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_APPLY_GAME_SPEED,0,0,0);
   }
   return;
 }
 
 
 /* Address: 0x00549140.
-   Ownership: ui/frontend/runtime.
-   Purpose: One-argument frontend action callback. Local mode releases the selected resource and returns to the
-   main page; network modes dispatch message offset 0x320. Existing register results are preserved. Queued UI
-   action handler for FRONTEND_PAGE20[79] (0x204F). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: FrontendSession_ReleaseSelectedResourceAndReturnToMainPage [ui/frontend/session],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x204F (slot 79 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Exit" button of
+   the in-game variant of the mission briefing: releases the loaded campaign and returns to the main page
+   (FRONTEND_COMMAND_RELEASE_CAMPAIGN in a network game).
 */
 void FrontendCallback_ReleaseSelectedResourceOrDispatch0320(uint32_t callbackArgument)
 
@@ -1848,17 +1844,15 @@ void FrontendCallback_ReleaseSelectedResourceOrDispatch0320(uint32_t callbackArg
     FrontendSession_ReleaseSelectedResourceAndReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(800,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RELEASE_CAMPAIGN,0,0,0);
   }
   return;
 }
 
 
 /* Address: 0x00549180.
-   Ownership: ui/frontend/runtime.
-   Purpose: One-argument no-op callback referenced by the large frontend callback table. The exact original action
-   label remains unresolved. Queued UI action handler for FRONTEND_PAGE20[80] (0x2050). Return datatype is
-   preserved for non-queue direct callers.
+   Handler of action 0x2050 (slot 80 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Save" button of
+   the in-game variant of the mission briefing: does nothing.
 */
 void FrontendCallback_NoOpArg1(void *source)
 
@@ -1868,12 +1862,9 @@ void FrontendCallback_NoOpArg1(void *source)
 
 
 /* Address: 0x00549AB0.
-   Ownership: ui/frontend/runtime.
-   Purpose: One-argument frontend action callback. Local mode returns to the main page with state zero; network
-   modes dispatch message offset 0xDC0. Existing register results are preserved. Queued UI action handler for
-   FRONTEND_PAGE20[64] (0x2040). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: FrontendSession_ReturnToMainPage [ui/frontend/session],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2040 (slot 64 of g_FrontendUiActionHandlersPage20.handlers00_54), the faction setup
+   page's "Back" button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE
+   in a network game).
 */
 void __thandor_preserve_eax FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument)
 
@@ -1883,24 +1874,21 @@ void __thandor_preserve_eax FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
   }
   return;
 }
 
 
 /* Address: 0x0054A5A0.
-   Ownership: ui/frontend/runtime.
-   Purpose: One-argument frontend action callback. It selects state zero or four from the frontend mode path, then
-   either returns locally to the main page or dispatches message offset 0xDC0. Existing register results are
-   preserved. Queued UI action handler for FRONTEND_PAGE20[52] (0x2034). Return datatype is preserved for non-queue
-   direct callers.
-   Cross-module calls: FrontendSession_ReturnToMainPage [ui/frontend/session],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2034 (slot 52 of g_FrontendUiActionHandlersPage20.handlers00_54), the "Choose game"
+   page's "Cancel" button: returns to the main page with ROM action record 0 in a local game and with record 4
+   (as FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE) in a network game.
 */
 void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument)
 
 {
+  /* the inner tests repeat the outer one, so only the local-direct and network-queued paths are reachable */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1908,7 +1896,7 @@ void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument
       FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
     }
   }
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1916,19 +1904,16 @@ void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,4);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,4);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,4);
   }
   return;
 }
 
 
 /* Address: 0x0054A7D0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Second one-argument callback slot with the same verified local-main-page versus network-0xDC0 behavior.
-   Existing register results are preserved. Queued UI action handler for FRONTEND_PAGE20[51] (0x2033). Return
-   datatype is preserved for non-queue direct callers.
-   Cross-module calls: FrontendSession_ReturnToMainPage [ui/frontend/session],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x2033 (slot 51 of g_FrontendUiActionHandlersPage20.handlers00_54), the quit dialog's "no"
+   button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a
+   network game).
 */
 void __thandor_preserve_eax
 FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument)
@@ -1939,18 +1924,16 @@ FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgum
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
   }
   return;
 }
 
 
 /* Address: 0x0054AAD0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[16] (0x2010).
-   Cross-module calls: FrontendSession_ReturnToMainPage [ui/frontend/session],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands], UiPageStack_SetActiveIndex
-   [ui/controls/layout].
+   Handler of action 0x2010 (slot 16 of g_FrontendUiActionHandlersPage20.handlers00_54), shared by the options
+   page's "Ok" button and the display settings page's "Back" button: "Ok" returns to the main page (ROM action
+   record 0, FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a network game), "Back" reopens the options page.
 */
 void __thandor_preserve_eax_edx FrontendUiAction2010_Handler(UiNodeBase *sourceNode)
 
@@ -1961,7 +1944,7 @@ void __thandor_preserve_eax_edx FrontendUiAction2010_Handler(UiNodeBase *sourceN
   
   parentNodeAddress = (int)sourceNode->parent;
   frontendRootPage = (FrontendRootPageState26C4 *)sourceNode;
-  while ((UiNodeBase *)parentNodeAddress != (UiNodeBase *)0xffffffff) {
+  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
     frontendRootPage = (FrontendRootPageState26C4 *)(frontendRootPage->rootNode).parent;
     parentNodeAddress = (int)(frontendRootPage->rootNode).parent;
   }
@@ -1971,25 +1954,25 @@ void __thandor_preserve_eax_edx FrontendUiAction2010_Handler(UiNodeBase *sourceN
       FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
     }
     return;
   }
-  if ((int)g_FramebufferWidth < 0x281) {
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     compactLayoutFlags = &(frontendRootPage->compactLayoutControl).nodeFlags;
-    *compactLayoutFlags = *compactLayoutFlags | 0x2000;
+    *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  UiPageStack_SetActiveIndex(5,&frontendRootPage->primaryPageStack);
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,&frontendRootPage->primaryPageStack);
   return;
 }
 
 
 /* Address: 0x0054AB70.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[17] (0x2011).
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], TextResource_Resolve
-   [assets/text/resources], PersistentSettings_ReadDword [core/settings/persistent],
-   FrontendDisplaySettingsPage_UpdateModeActionAvailability [ui/frontend/settings].
+   Handler of action 0x2011 (slot 17 of g_FrontendUiActionHandlersPage20.handlers00_54), the options page's
+   "Graphics" button: opens the display settings page and fills its choices: the four smallest distinct colour
+   depths and the ten smallest distinct resolutions (width << 16 | height) of g_GraphicsDisplayModes, each
+   collected by an insertion into a sorted list with 0xFFFFFFFF as the empty mark, and the name and device of
+   up to five adapters. The saved adapter, resolution and colour depth become the current selection.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
@@ -2006,10 +1989,10 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   TextResolveResult fallbackNameResult;
   
   UiPageStack_SetActiveIndex
-            (6,(UiPageStackControl *)(source[-3].resolutionRows.rows[9].reserved0008_0067 + 0x48));
-  if ((int)g_FramebufferWidth < 0x281) {
+            (FRONTEND_PAGE_DISPLAY_SETTINGS,(UiPageStackControl *)(source[-3].resolutionRows.rows[9].reserved0008_0067 + 0x48));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     compactLayoutFlagBytes = source[-3].resolutionRows.rows[6].reserved0008_0067 + 0x2c;
-    *(uint32_t *)compactLayoutFlagBytes = *(uint32_t *)compactLayoutFlagBytes | 0x2000;
+    *(uint32_t *)compactLayoutFlagBytes = *(uint32_t *)compactLayoutFlagBytes | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[0] =
        0xffffffff;
@@ -2019,6 +2002,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
        0xffffffff;
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[3] =
        0xffffffff;
+  /* LOCK/UNLOCK mark the XCHG swaps of the original insertion (no other thread uses this scratch) */
   remainingModes = g_GraphicsDisplayModeCount;
   displayMode = g_GraphicsDisplayModes;
   do {
@@ -2083,8 +2067,8 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   adapters = g_GraphicsAdapters;
   (source->adapterRows).rows[0].adapterDescriptionUtf16 = g_GraphicsAdapters->driverDescriptionUtf16
   ;
-  if ((adapters->deviceGuid).Data1 == 0) {
-    fallbackNameResult = TextResource_Resolve(0x212d);
+  if ((adapters->deviceGuid).Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+    fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
     deviceNameText = fallbackNameResult.text;
   }
   else {
@@ -2095,8 +2079,8 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   if (1 < g_GraphicsAdapterCount) {
     (source->adapterRows).rows[1].adapterDescriptionUtf16 =
          g_GraphicsAdapters[1].driverDescriptionUtf16;
-    if (adapters[1].deviceGuid.Data1 == 0) {
-      fallbackNameResult = TextResource_Resolve(0x212d);
+    if (adapters[1].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
       deviceNameText = fallbackNameResult.text;
     }
     else {
@@ -2108,8 +2092,8 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   if (2 < g_GraphicsAdapterCount) {
     (source->adapterRows).rows[2].adapterDescriptionUtf16 =
          g_GraphicsAdapters[2].driverDescriptionUtf16;
-    if (adapters[2].deviceGuid.Data1 == 0) {
-      fallbackNameResult = TextResource_Resolve(0x212d);
+    if (adapters[2].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
       deviceNameText = fallbackNameResult.text;
     }
     else {
@@ -2121,8 +2105,8 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   if (3 < g_GraphicsAdapterCount) {
     (source->adapterRows).rows[3].adapterDescriptionUtf16 =
          g_GraphicsAdapters[3].driverDescriptionUtf16;
-    if (adapters[3].deviceGuid.Data1 == 0) {
-      fallbackNameResult = TextResource_Resolve(0x212d);
+    if (adapters[3].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
       deviceNameText = fallbackNameResult.text;
     }
     else {
@@ -2134,8 +2118,8 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   if (4 < g_GraphicsAdapterCount) {
     (source->adapterRows).rows[4].adapterDescriptionUtf16 =
          g_GraphicsAdapters[4].driverDescriptionUtf16;
-    if (adapters[4].deviceGuid.Data1 == 0) {
-      fallbackNameResult = TextResource_Resolve(0x212d);
+    if (adapters[4].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+      fallbackNameResult = TextResource_Resolve(TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME);
       deviceNameText = fallbackNameResult.text;
     }
     else {
@@ -2291,89 +2275,78 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[0] &
           0xffff;
   (source->resolutionRows).rows[0].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[0] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[0] >> 16;
   (source->resolutionRows).rows[0].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[1] &
           0xffff;
   (source->resolutionRows).rows[1].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[1] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[1] >> 16;
   (source->resolutionRows).rows[1].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[2] &
           0xffff;
   (source->resolutionRows).rows[2].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[2] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[2] >> 16;
   (source->resolutionRows).rows[2].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[3] &
           0xffff;
   (source->resolutionRows).rows[3].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[3] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[3] >> 16;
   (source->resolutionRows).rows[3].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[4] &
           0xffff;
   (source->resolutionRows).rows[4].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[4] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[4] >> 16;
   (source->resolutionRows).rows[4].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[5] &
           0xffff;
   (source->resolutionRows).rows[5].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[5] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[5] >> 16;
   (source->resolutionRows).rows[5].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[6] &
           0xffff;
   (source->resolutionRows).rows[6].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[6] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[6] >> 16;
   (source->resolutionRows).rows[6].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[7] &
           0xffff;
   (source->resolutionRows).rows[7].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[7] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[7] >> 16;
   (source->resolutionRows).rows[7].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[8] &
           0xffff;
   (source->resolutionRows).rows[8].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[8] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[8] >> 16;
   (source->resolutionRows).rows[8].height = modeValue;
   modeValue = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[9] &
           0xffff;
   (source->resolutionRows).rows[9].width =
-       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[9] >>
-       0x10;
+       g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayModeScratch.candidateValues10[9] >> 16;
   (source->resolutionRows).rows[9].height = modeValue;
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  adapterIndex = PersistentSettings_Read(1,0);
+  adapterIndex = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
-       PersistentSettings_Read(0x280,4);
+       PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
-       PersistentSettings_Read(0x1e0,8);
+       PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  bitsPerPixel = PersistentSettings_Read(0x10,0xc);
+  bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
   FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)source);
   return;
 }
 
 
 /* Address: 0x0054BA30.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target
-   FRONTEND_PAGE20[44],FRONTEND_PAGE20[45],FRONTEND_PAGE20[46],FRONTEND_PAGE20[47],FRONTEND_PAGE20[48]
-   (0x202C,0x202D,0x202E,0x202F,0x2030).
-   Cross-module calls: FrontendDisplaySettingsPage_UpdateModeActionAvailability [ui/frontend/settings].
+   Handler of actions 0x202C..0x2030 (slots 44..48 of g_FrontendUiActionHandlersPage20.handlers00_54), the five
+   adapter choices of the display settings page: selects the adapter whose button was pressed (identified by
+   its offset in the parent container, 0x68 bytes apart) and refreshes which modes can be chosen.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode)
 
 {
   int controlOffsetFromParent;
-  
+
+  /* the index is stored before each comparison, as in the original */
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
   adapterIndex = 0;
   controlOffsetFromParent = (int)sourceNode - (int)sourceNode->parent;
@@ -2393,41 +2366,36 @@ FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode)
 
 
 /* Address: 0x0054D3F0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[12] (0x200C).
-   Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
-   [ui/controls/lists].
+   Handler of action 0x200C (slot 12 of g_FrontendUiActionHandlersPage20.handlers00_54), a selection change in
+   the host lobby's player list: the Kick button (FRONTEND_ACTION_KICK_PLAYER) is hidden while the first row,
+   the host itself, is selected and shown for any other player.
 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendUiAction200C_Handler(UiPointerListControl *sessionListControl)
+FrontendUiAction200C_Handler(UiPointerListControl *playerListControl)
 
 {
-  UiPointerListControl *firstNode;
+  UiPointerListControl *frontendRoot;
   UiNodeBase *parentCursor;
   
-  parentCursor = (sessionListControl->base).parent;
-  firstNode = sessionListControl;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
-    firstNode = (UiPointerListControl *)(firstNode->base).parent;
-    parentCursor = (firstNode->base).parent;
+  parentCursor = (playerListControl->base).parent;
+  frontendRoot = playerListControl;
+  while (parentCursor != UI_NODE_NONE) {
+    frontendRoot = (UiPointerListControl *)(frontendRoot->base).parent;
+    parentCursor = (frontendRoot->base).parent;
   }
-  if (sessionListControl->selectedRowSlot == sessionListControl->rowSlots) {
-    UiNodeList_SuppressActionId(0x200b,&firstNode->base);
+  if (playerListControl->selectedRowSlot == playerListControl->rowSlots) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendRoot->base);
     return;
   }
-  UiNodeList_UnsuppressActionId(0x200b,&firstNode->base);
+  UiNodeList_UnsuppressActionId(FRONTEND_ACTION_KICK_PLAYER,&frontendRoot->base);
   return;
 }
 
 
 /* Address: 0x0054D460.
-   Ownership: ui/frontend/runtime.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[14]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[14] (0x200E). Return datatype is preserved for non-queue direct callers. Typed parameters:
-   p0 source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control
-   flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: RecentTextHistory_RemoveOldest [ui/support/runtime],
-   RecentTextHistory_SortAndBuildPointerList [ui/support/runtime].
+   Handler of action 0x200E (slot 14 of g_FrontendUiActionHandlersPage20.handlers00_54), a click on the chat
+   strip at the top left: drops the oldest chat lines until four are left, then one more (a click removes the
+   oldest line shown), and rebuilds the strip's pointer list of at most five lines.
 */
 void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source)
 
@@ -2435,7 +2403,7 @@ void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNod
   uint32_t currentEntryCount;
   
   for (currentEntryCount = ((UiConditionalActionControl *)source)->lineCount; 4 < currentEntryCount;
-      currentEntryCount = currentEntryCount - 1) {
+      currentEntryCount--) {
     RecentTextHistory_RemoveOldest();
   }
   RecentTextHistory_RemoveOldest();
@@ -2446,12 +2414,11 @@ void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNod
 
 
 /* Address: 0x0054D4A0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Recovered action-table target FRONTEND_PAGE20[15] (0x200F).
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantA [ui/controls/lists], UiNodeList_SuppressActionId
-   [ui/controls/lists], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer], FrontendSession_ReturnToMainPage
-   [ui/frontend/session], FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of action 0x200F (slot 15 of g_FrontendUiActionHandlersPage20.handlers00_54), a choice in the network
+   game page's protocol list: closes the current backend and opens the chosen one on NETWORK_GAME_UDP_PORT. On
+   success the local endpoint is copied to g_FrontendNetworkEndpointScratch and formatted into
+   g_FrontendNetworkEndpointTextUtf16, the session list is emptied, Join hidden and a discovery probe sent. A failure is reported and the backend opened once more without a report; if that
+   fails too, the menu returns to the main page and the random generator to the primary stream.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
@@ -2464,26 +2431,22 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
   NetworkSetSessionResult setSessionResult;
   FatalErrorCheckResult fatalCheckResult;
   NetworkOpenBindResult openBindResult;
-  NetworkSessionContext *staleSessionContext;
-  UiListRowIndex staleBackendIndex;
   
   selectedBackendIndex = UiPointerList_GetSelectedIndexVariantA(backendList);
-  staleSessionContext = g_NetworkBackendSessionContext;
   if (g_NetworkBackendInstanceCount <= selectedBackendIndex) {
     return;
   }
-  g_NetworkBackendSlot3();
-  g_NetworkBackendSlot1();
-  staleBackendIndex = selectedBackendIndex;
+  g_NetworkBackendSlot3(); /* close */
+  g_NetworkBackendSlot1(); /* cleanup */
   setSessionResult = g_NetworkBackendSlot0(selectedBackendIndex);
   fatalCheckResult = FatalError_ReportIfFailed(setSessionResult.valueOrError,setSessionResult.failed);
   if (!fatalCheckResult.failed) {
-    openBindResult = g_NetworkBackendSlot2(0x3a1);
+    openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
     fatalCheckResult = FatalError_ReportIfFailed(openBindResult.valueOrError,openBindResult.failed);
     if (!fatalCheckResult.failed) {
       endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
-      for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
         *endpointDestinationDwordCursor = *endpointSourceDwordCursor;
         endpointSourceDwordCursor = endpointSourceDwordCursor + 1;
         endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
@@ -2491,28 +2454,28 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
       g_NetworkBackendSlot7
                 (&g_FrontendNetworkEndpointTextUtf16,
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
-      UiNodeList_SuppressActionId(0x2002,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState4BCC, backendList)->rootNode);
+      UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState4BCC, backendList)->rootNode);
       UiPointerList_InitializeColumnLayout
                 (0,g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState4BCC, backendList)->sessionList);
       UiTransfer_SendPacketType10000Value2931();
       return;
     }
-    g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed stale staleBackendIndex */
+    g_NetworkBackendSlot1(); /* cleanup */
   }
   setSessionResult = g_NetworkBackendSlot0(selectedBackendIndex);
   if (!setSessionResult.failed) {
-    openBindResult = g_NetworkBackendSlot2(0x3a1);
+    openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
     if (!openBindResult.failed) {
       return;
     }
-    g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed stale staleSessionContext */
+    g_NetworkBackendSlot1(); /* cleanup */
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
   }
   Random_SelectPrimaryStream();
   return;
@@ -3288,18 +3251,16 @@ FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
 
 
 /* Address: 0x005445A0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Typed parameters: p3 selectionIndex→FrontendFactionAssignmentIndex_V306. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged. Typed parameters: p0
-   argument1→FrontendIndexedSelectionArgument_V344. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Handler of frontend command FRONTEND_COMMAND_CYCLE_FACTION_COLOUR (0x650), called directly by
+   FrontendUiAction2044_Handler in a local game: advances the colour of faction row rowIndex + 1 (0-based index)
+   by one, wrapping after 7 colours (8 when the requesting player has runtimeState64 bit 0); the row's caption
+   (faction colour name) and the level player slot's colour index (the field typed aiClassOrMode) move together.
+   Nothing happens for an unknown player id.
 */
-
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2044_IndexedSelectionHelper
-          (FrontendIndexedSelectionArgument argument1,uint32_t argument2,uint32_t argument3,
-          FrontendFactionAssignmentIndex selectionIndex)
+          (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendFactionAssignmentIndex rowIndex)
 
 {
   int *levelCycleCounterField;
@@ -3309,7 +3270,6 @@ FrontendUiAction2044_IndexedSelectionHelper
   uint32_t playerRecordsRemaining;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
   int selectionControlAddress;
-  int factionAssetRecordAddress;
   int selectionTextCycleLength;
   int *selectionCycleCounterField;
   
@@ -3318,20 +3278,20 @@ FrontendUiAction2044_IndexedSelectionHelper
   playerRecordsRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecordCursor = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (argument1 == playerRecordCursor->playerRuntimeId) {
+    if (playerRuntimeId == playerRecordCursor->playerRuntimeId) {
       if ((playerRecordCursor->runtimeState64 & 1) != 0) {
         selectionTextCycleLength = 8;
       }
-      playerSlotOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[selectionIndex];
+      playerSlotOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowIndex];
       selectionControlAddress =
            g_FrontendRootNode +
-           g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[selectionIndex + 1];
+           g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndex + 1];
       nextSelectionTextId = *(int *)(selectionControlAddress + 0x54) + 1;
       selectionCycleCounterField =
            (int *)((int)&g_FrontendLoadedLevelAsset->playerSlots[0].aiClassOrMode + playerSlotOffset);
       *selectionCycleCounterField = *selectionCycleCounterField + 1;
-      if (selectionTextCycleLength + 0x2174U <= nextSelectionTextId) {
-        nextSelectionTextId = 0x2174;
+      if (selectionTextCycleLength + (TEXT_ID_FACTION_NAME_BASE + 1U) <= nextSelectionTextId) {
+        nextSelectionTextId = TEXT_ID_FACTION_NAME_BASE + 1;
         levelCycleCounterField = (int *)((int)&loadedLevelAsset->playerSlots[0].aiClassOrMode + playerSlotOffset);
         *levelCycleCounterField = *levelCycleCounterField - selectionTextCycleLength;
       }
@@ -3346,16 +3306,15 @@ FrontendUiAction2044_IndexedSelectionHelper
 
 
 /* Address: 0x00544640.
-   Ownership: ui/frontend/runtime.
-   Purpose: Typed parameters: p3 selectionIndex→FrontendFactionAssignmentIndex_V306. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Cross-module calls: FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls [ui/frontend/settings].
+   Handler of frontend command FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE (0x6F0), called directly by
+   FrontendUiAction2045_Handler in a local game: unless a player has chosen faction rowIndex + 1, toggles
+   whether that faction takes part (FACTION_RUNTIME_LIFECYCLE_ACTIVE: computer or nobody) and refreshes the
+   faction setup page.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2045_IndexedSelectionHelper
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,
-          FrontendFactionAssignmentIndex selectionIndex)
+          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendFactionAssignmentIndex rowIndex)
 
 {
   FactionRuntimeLifecycleObservedState *lifecycleState;
@@ -3365,13 +3324,13 @@ FrontendUiAction2045_IndexedSelectionHelper
   remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if (selectionIndex + 1 == (playerBlock->factionAssignment).factionAssignmentIndex) {
+    if (rowIndex + 1 == (playerBlock->factionAssignment).factionAssignmentIndex) {
       return;
     }
     playerBlock = playerBlock + 1;
     remainingPlayerBlocks = remainingPlayerBlocks - 1;
   } while (remainingPlayerBlocks != 0);
-  lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates + selectionIndex + 1;
+  lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates + rowIndex + 1;
   *lifecycleState = *lifecycleState ^ FACTION_RUNTIME_LIFECYCLE_ACTIVE;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(g_FrontendRootNode);
   return;
@@ -3379,19 +3338,16 @@ FrontendUiAction2045_IndexedSelectionHelper
 
 
 /* Address: 0x005446A0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Typed parameters: p3 selectionIndex→FrontendFactionAssignmentIndex_V306. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged. Typed parameters: p0
-   argument1→FrontendIndexedSelectionArgument_V344. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists],
-   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls [ui/frontend/settings].
+   Handler of frontend command FRONTEND_COMMAND_CHOOSE_FACTION (0x750), called directly by
+   FrontendUiAction2046_Handler in a local game: unless the row is inactive (FRONTEND_CONTROL_INACTIVE), the
+   player chooses faction rowIndex + 1. For the local player the row's checkbox becomes the only one checked.
+   The player's record (the first one in a local game) gets the faction and the next ready-state generation,
+   which orders the choices, then the faction setup page is refreshed.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2046_IndexedSelectionHelper
-          (FrontendIndexedSelectionArgument argument1,uint32_t argument2,uint32_t argument3,
-          FrontendFactionAssignmentIndex selectionIndex)
+          (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendFactionAssignmentIndex rowIndex)
 
 {
   SessionNetworkRoleFlags remainingBlockCount;
@@ -3404,10 +3360,10 @@ FrontendUiAction2046_IndexedSelectionHelper
   
   selectedControl =
        THANDOR_UI_AT(g_FrontendRootNode,
-                     g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[selectionIndex + 1]);
+                     g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndex + 1]);
   generationCursor = 7;
-  if ((((UiSelectableControl *)selectedControl)->stateFlags & 0x400) == 0) {
-    if (argument1 == g_LocalPlayerRuntimeId) {
+  if ((((UiSelectableControl *)selectedControl)->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+    if (playerRuntimeId == g_LocalPlayerRuntimeId) {
       do {
         generationCursor = generationCursor - SESSION_NETWORK_ROLE_CLIENT;
       } while (generationCursor != SESSION_NETWORK_ROLE_LOCAL);
@@ -3430,19 +3386,19 @@ FrontendUiAction2046_IndexedSelectionHelper
     }
     readyStateGeneration = g_FrontendFactionAssignmentReadyStateGeneration;
     remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
+    /* network game: search the player's record; when the count runs out first, the first record is used */
     pendingBlockCountOrRoleMask = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
     for (playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
         (matchedPlayerBlock = g_FrontendPlayerRuntimeBlocks, pendingBlockCountOrRoleMask != SESSION_NETWORK_ROLE_LOCAL &&
-        (generationCursor = remainingBlockCount, matchedPlayerBlock = playerBlockCursor, argument1 != playerBlockCursor->playerRuntimeId));
+        (generationCursor = remainingBlockCount, matchedPlayerBlock = playerBlockCursor, playerRuntimeId != playerBlockCursor->playerRuntimeId));
         playerBlockCursor = playerBlockCursor + 1) {
       generationCursor = remainingBlockCount - SESSION_NETWORK_ROLE_CLIENT;
       remainingBlockCount = generationCursor;
       pendingBlockCountOrRoleMask = generationCursor;
     }
-    (matchedPlayerBlock->factionAssignment).factionAssignmentIndex = selectionIndex + 1;
+    (matchedPlayerBlock->factionAssignment).factionAssignmentIndex = rowIndex + 1;
     (matchedPlayerBlock->factionAssignment).readyOrWaitState = readyStateGeneration;
-    g_FrontendFactionAssignmentReadyStateGeneration =
-         g_FrontendFactionAssignmentReadyStateGeneration + 1;
+    g_FrontendFactionAssignmentReadyStateGeneration++;
     FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(g_FrontendRootNode);
   }
   return;
@@ -3583,9 +3539,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResou
 
 
 /* Address: 0x0050AD90.
-   Ownership: ui/frontend/runtime.
-   Purpose: EDX returns selected ModelRuntimeNode and EAX its hit metric.
-   Cross-module calls: ModelRuntimeNode_HitTestProjectedBoundsAndChildren [world/model/hierarchy].
+   Finds the model under the pointer for the model pointer context's press, release, drag and move handlers:
+   hit-tests every candidate model node with flag 2 that is a runtime model (and has flag 0x20 unless the
+   context allows models without it). The winner is the nearest hit, or, unless the context compares by metric
+   only, the hit whose model class has the highest priority, the nearer one on equal priority. Returns the
+   node in EDX and its hit metric in EAX (NULL and WORLD_POINTER_NO_HIT without a hit).
 */
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
                 (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context)
@@ -3598,9 +3556,9 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   int candidatePriority;
   int bestPriority;
 
-  bestModelNode = (ModelRuntimeNode *)0x0;
-  bestHitMetric = 0x7fffffff;
-  for (modelNode = context->candidateModelListHead; modelNode != (ModelRuntimeNode *)0x0;
+  bestModelNode = NULL;
+  bestHitMetric = WORLD_POINTER_NO_HIT;
+  for (modelNode = context->candidateModelListHead; modelNode != NULL;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if ((((modelNode->runtimeFlags & 2) != 0) && (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)
         ) && (((context->contextFlags &
@@ -3612,7 +3570,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
         if ((int)bestHitMetric <= (int)hitTestResult.distanceQ12) continue;
       }
-      else if (bestModelNode != (ModelRuntimeNode *)0x0) {
+      else if (bestModelNode != NULL) {
         /* Higher model-class priority wins; equal priority falls back to the smaller hit metric. */
         candidatePriority =
              (int)(&g_RuntimeModelClassPriorityByModelClassId.modelClass00Priority)

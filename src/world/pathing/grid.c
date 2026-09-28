@@ -666,9 +666,10 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
 
 
 /* Address: 0x00533E70.
-   Ownership: world/pathing/grid.
-   Purpose: Handles grid scratch test runtime pair reachability from world point carry-flag result.
-   Local calls: GridScratch_TestWorldPointReachability.
+   Tests whether the army of targetRuntimePair could walk from sourceWorldPoint to its model node's position:
+   the cells blocked for it are the low distance band of its grid class and the terrain class bit of its
+   second grid classification. Returns true (CF set) when the target cannot be reached. No caller in the C
+   code or in the handler tables references it.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestRuntimePairReachabilityFromWorldPoint
@@ -677,12 +678,12 @@ GridScratch_TestRuntimePairReachabilityFromWorldPoint
 {
   bool unreachable;
   ModelDefinitionRuntimeSemanticView280 *targetModelDefinition;
-  
+
   targetModelDefinition = (ModelDefinitionRuntimeSemanticView280 *)
           (targetRuntimePair->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   unreachable = GridScratch_TestWorldPointReachability
-                    (0x100 << ((uint8_t)targetModelDefinition->gridClassification260 & 0x1f) |
-                     0x1000000 << ((uint8_t)targetModelDefinition->gridClassification264 & 0x1f),
+                    (GRID_SCRATCH_LOW_BAND0 << ((uint8_t)targetModelDefinition->gridClassification260 & 0x1f) |
+                     GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)targetModelDefinition->gridClassification264 & 0x1f),
                      sourceWorldPoint->worldYQ12,sourceWorldPoint->worldXQ12,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.y,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.x);
@@ -1377,9 +1378,10 @@ EntityPathing_UpdateRouteSegment
 
 
 /* Address: 0x00533D60.
-   Ownership: world/pathing/grid.
-   Purpose: Handles grid scratch test world point reachability carry-flag result.
-   Local calls: GridScratch_TestConnectedReachabilityRecursiveRegs.
+   Tests whether a mover blocked by traversalMask can get from the source world point to the target world
+   point: converts both to primary scratch cells, clears every visited bit and flood-fills from the source
+   (GridScratch_TestConnectedReachabilityRecursiveRegs), treating map-edge and visited cells as walls. Returns
+   true (CF set) when the fill never reaches the target cell.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestWorldPointReachability
@@ -1395,22 +1397,25 @@ GridScratch_TestWorldPointReachability
   GridScratchCell *targetCell;
   GridScratchCell *clearCursor;
   bool unreachable;
-  
+
   scratchWidth = g_GridScratchWidth;
-  scaledRowTerm = (int)((uint64_t)((int64_t)sourceWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint32_t)((int64_t)sourceWorldYQ12 * -0x20c8cc) >> 0x15;
+  /* world -> scratch cell as described at GRID_SCRATCH_CELL_Q12 */
+  scaledRowTerm = (int)((uint64_t)((int64_t)sourceWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
+          (uint32_t)((int64_t)sourceWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
   sourceCell = g_GridScratchPrimary +
-               ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
-               ((int)((((int)((uint64_t)((int64_t)sourceWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                       (uint32_t)((int64_t)sourceWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10
+               ((int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT) * g_GridScratchWidth +
+               ((int)((((int)((uint64_t)((int64_t)sourceWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
+                       (uint32_t)((int64_t)sourceWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 20) - scaledRowTerm) +
+                      GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT
                );
-  scaledRowTerm = (int)((uint64_t)((int64_t)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint32_t)((int64_t)targetWorldYQ12 * -0x20c8cc) >> 0x15;
+  scaledRowTerm = (int)((uint64_t)((int64_t)targetWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
+          (uint32_t)((int64_t)targetWorldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
   targetCell = g_GridScratchPrimary +
-                ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
-                ((int)((((int)((uint64_t)((int64_t)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                        (uint32_t)((int64_t)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
-                10);
+                ((int)(scaledRowTerm * 2 + GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT) * g_GridScratchWidth +
+                ((int)((((int)((uint64_t)((int64_t)targetWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
+                        (uint32_t)((int64_t)targetWorldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 20) - scaledRowTerm) +
+                       GRID_SCRATCH_INDEX_BIAS_Q12) >> GRID_SCRATCH_CELL_SHIFT);
+  /* clear the visited bits, 16 cells per iteration as in the original */
   cellsRemaining = g_GridScratchHeight * g_GridScratchWidth;
   clearCursor = g_GridScratchPrimary;
   do {
@@ -1425,17 +1430,18 @@ GridScratch_TestWorldPointReachability
     clearCursor[8].stateMask = clearCursor[8].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
     clearCursor[9].stateMask = clearCursor[9].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
     clearCursor[10].stateMask = clearCursor[10].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[0xb].stateMask = clearCursor[0xb].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[0xc].stateMask = clearCursor[0xc].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[0xd].stateMask = clearCursor[0xd].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[0xe].stateMask = clearCursor[0xe].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor[0xf].stateMask = clearCursor[0xf].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    clearCursor = clearCursor + 0x10;
-    cellsRemaining = cellsRemaining + -0x10;
+    clearCursor[11].stateMask = clearCursor[11].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[12].stateMask = clearCursor[12].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[13].stateMask = clearCursor[13].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[14].stateMask = clearCursor[14].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor[15].stateMask = clearCursor[15].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+    clearCursor = clearCursor + 16;
+    cellsRemaining = cellsRemaining - 16;
   } while (cellsRemaining != 0);
+  /* the row stride is passed in bytes (8-byte GridScratchCell records) */
   unreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
-                    (traversalMask | 0x80000001,scratchWidth << 3,&targetCell->stateMask,
-                     &sourceCell->stateMask);
+                    (traversalMask | (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED),scratchWidth << 3,
+                     &targetCell->stateMask,&sourceCell->stateMask);
   return unreachable;
 }
 
@@ -1643,8 +1649,11 @@ GridScratch_FloodFillConnectedCellsRegs
 
 
 /* Address: 0x00533C50.
-   Ownership: world/pathing/grid.
-   Purpose: Handles grid scratch test connected reachability recursive carry-flag result register result.
+   Scanline flood fill that stops as soon as it reaches targetCell (the same walk as
+   GridScratch_FloodFillConnectedCellsRegs, on the stateMask words of 8-byte scratch cells): marks the run of
+   open cells around currentCell as visited, then recurses into the open cells of the neighbouring rows,
+   searching the row on the side of the target first. Cells with any traversalMask bit are walls. Returns false
+   (CF clear) when the target was reached, true when this region does not contain it.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestConnectedReachabilityRecursiveRegs
@@ -1656,19 +1665,20 @@ GridScratch_TestConnectedReachabilityRecursiveRegs
   uint32_t *spanLeftCell;
   uint32_t *firstRowCursor;
   bool subRegionUnreachable;
-  
-  *currentCell = *currentCell | 1;
+
+  *currentCell = *currentCell | GRID_SCRATCH_TRAVERSAL_VISITED;
   spanLeftCell = currentCell;
   if (targetCell == currentCell) {
     return false;
   }
+  /* each cell is two dwords, so +-2 is the next/previous cell of the row */
   while( true ) {
-    spanLeftBoundary = spanLeftCell + -2;
+    spanLeftBoundary = spanLeftCell - 2;
     if (targetCell == spanLeftBoundary) {
       return false;
     }
     if ((*spanLeftBoundary & traversalMask) != 0) break;
-    *spanLeftBoundary = *spanLeftBoundary | 1;
+    *spanLeftBoundary = *spanLeftBoundary | GRID_SCRATCH_TRAVERSAL_VISITED;
     spanLeftCell = spanLeftBoundary;
   }
   while( true ) {
@@ -1677,9 +1687,10 @@ GridScratch_TestConnectedReachabilityRecursiveRegs
       return false;
     }
     if ((*currentCell & traversalMask) != 0) break;
-    *currentCell = *currentCell | 1;
+    *currentCell = *currentCell | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
   if (targetCell <= spanLeftBoundary) {
+    /* the target lies in an earlier row: search the previous row first, then the next one */
     secondRowCursor = (uint32_t *)(rowStrideBytes + (int)spanLeftBoundary);
     firstRowCursor = (uint32_t *)((int)spanLeftBoundary + (8 - rowStrideBytes));
     while (((*firstRowCursor & traversalMask) != 0 ||
@@ -1700,6 +1711,7 @@ GridScratch_TestConnectedReachabilityRecursiveRegs
     }
     return false;
   }
+  /* the target lies in a later row: search the next row first, then the previous one */
   secondRowCursor = (uint32_t *)((int)spanLeftCell - rowStrideBytes);
   firstRowCursor = (uint32_t *)((int)spanLeftBoundary + rowStrideBytes);
   while (((*firstRowCursor & traversalMask) != 0 ||

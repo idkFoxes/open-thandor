@@ -32,6 +32,12 @@
 #define INGAME_COMMAND_ASSIGN_ARMY_TOKEN 0x16B0 /* FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 */
 #define INGAME_COMMAND_APPLY_UI_FLAG_MASKS 0x310 /* UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
 #define INGAME_COMMAND_MARK_PLAYER_READY_101B 0x470 /* FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B */
+/* Commands issued by the in-game command buttons (ui/ingame/commands) */
+#define INGAME_COMMAND_PLAYER_DEPARTURE 0x150 /* InGameCommand150_HandlePlayerDepartureAndOwnership */
+#define INGAME_COMMAND_SELECTION_GROUP 0xBE0 /* FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh */
+#define INGAME_COMMAND_QUEUE_ARMY 0xFE0 /* GameFactionRuntime_RegisterArmyAssetPointers */
+#define INGAME_COMMAND_CONSUME_PENDING_ARMY 0x14F0 /* GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid */
+#define INGAME_COMMAND_TERRAIN_RELAXATION 0x3200 /* TerrainGrid_RunDirectionalRelaxationPasses */
 /* Army lists and army placement (gameplay/faction/runtime) */
 #define INGAME_COMMAND_CANCEL_QUEUED_ARMY 0x1030 /* GameFactionRuntime_CancelQueuedArmyAssetsAndRefund */
 #define INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT 0x12D0 /* GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer */
@@ -46,6 +52,35 @@
 #define INGAME_COMMAND_CHAT_APPEND 0x17A0 /* FrontendPlayerTextCommand_AppendTripleClamped */
 #define INGAME_COMMAND_CHAT_PUBLISH 0x1810 /* FrontendPlayerTextCommand_PublishConditionalRichText */
 #define INGAME_COMMAND_DESTROY_ARMIES 0x2DE0 /* FrontendPlayerSelection_ApplyEntryOrAll */
+/* Relations, map editor and editor hotkeys (ui/ingame/runtime) */
+#define INGAME_COMMAND_ADVANCE_RELATION 0x660 /* GameFactionRuntime_AdvancePairwiseRelationState */
+#define INGAME_COMMAND_RESET_RELATION 0x7E0 /* GameFactionRuntime_ResetPairwiseRelationState */
+#define INGAME_COMMAND_EDITOR_ACTIVE_STATE 0x18C0 /* InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState */
+#define INGAME_COMMAND_EDITOR_SELECT_RANGE 0x1D00 /* PlayerPairList_InsertRange */
+#define INGAME_COMMAND_EDITOR_DESELECT_RANGE 0x1D40 /* PlayerPairList_RemoveRange */
+#define INGAME_COMMAND_EDITOR_CLEAR_SELECTION 0x1ED0 /* SelectionPlayerRuntime_ClearTerrainEditSelectionState */
+#define INGAME_COMMAND_EDITOR_CLEAR_SCRATCH 0x1F20 /* FieldGrid_ClearPlayerScratchPlane */
+#define INGAME_COMMAND_EDITOR_RAISE_HEIGHTS 0x1F70 /* FieldGrid_ApplyPositiveCellDeltas */
+#define INGAME_COMMAND_EDITOR_LOWER_HEIGHTS 0x2290 /* FieldGrid_ApplyNegativeCellDeltas */
+#define INGAME_COMMAND_EDITOR_COMMIT_HEIGHTS 0x25A0 /* TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting */
+#define INGAME_COMMAND_EDITOR_COPY_MATERIALS 0x2700 /* TerrainEditBuffer_CopyCellMaterialBytes */
+#define INGAME_COMMAND_EDITOR_PAINT_MATERIAL 0x2770 /* FieldGrid_ApplyLocalCellUpdate */
+#define INGAME_COMMAND_EDITOR_SUBTRACT_MATERIALS 0x2800 /* TerrainEditBuffer_SubtractCurrentCellMaterialBytes */
+#define INGAME_COMMAND_EDITOR_COMMIT_MATERIALS 0x2870 /* TerrainEditBuffer_CommitFlagsAndMaterialDeltas */
+#define INGAME_COMMAND_EDITOR_REPLACE_MATCHING 0x28E0 /* TerrainMaterialEdit_SeedMatchingRegionReplacement */
+#define INGAME_COMMAND_EDITOR_REPLACE_NON_TARGET 0x29B0 /* TerrainMaterialEdit_SeedNonTargetRegionReplacement */
+#define INGAME_COMMAND_EDITOR_RESET_INFLUENCE 0x2A80 /* FieldGrid_ResetLocalInfluenceState */
+#define INGAME_COMMAND_EDITOR_REBUILD_INFLUENCE 0x2AE0 /* FieldGrid_RebuildLocalInfluenceState */
+#define INGAME_COMMAND_EDITOR_HEIGHTS_TO_DELTAS 0x2C90 /* TerrainEditBuffer_ConvertHeightsToDeltas */
+#define INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN 0x2D00 /* WorldRuntime_AdjustFieldOriginWrappedClamped */
+#define INGAME_COMMAND_EDITOR_TURN_LIGHT 0x2D70 /* TerrainLighting_AdjustDirectionAndRecomputeField */
+#define INGAME_COMMAND_PLACEMENT_MOVE 0x2F20 /* SelectionPlayerRuntime_MovePrimarySelectionBy */
+#define INGAME_COMMAND_PLACEMENT_ROTATE 0x30F0 /* SelectionPlayerRuntime_RotatePrimarySelectionBy */
+#define INGAME_COMMAND_EDITOR_SAVE_MAP 0x31C0 /* InGameUiCommand_SaveFieldAndLevelAssetImages */
+#define INGAME_COMMAND_EDITOR_SMOOTH 0x3260 /* FieldGrid_ApplyEncodedCellUpdate */
+#define INGAME_COMMAND_EDITOR_SET_RECEIVER_EXCLUDED 0x32A0 /* FieldGrid_ApplyMaskDFFFFFFF */
+#define INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED 0x32E0 /* FieldGrid_ApplyMaskBFFFFFFF */
+#define INGAME_COMMAND_EDITOR_APPLY_REGION_MASK 0x3320 /* FieldGrid_ApplyCallerMask */
 /* Frontend command codes work the same way, relative to FrontendCommandQueue_EnqueueLocalPlayerCommand
    (0x00543F50). */
 #define FRONTEND_COMMAND_CODE_BASE 0x00543F50
@@ -72,6 +107,13 @@
 #define FRONTEND_COMMAND_SELECT_SAVED_GAME 0x11F0 /* ScenarioCatalog_RefreshSelectedRecordLocalizedText */
 #define FRONTEND_COMMAND_SELECT_SINGLE_GAME 0x12A0 /* ScenarioCatalog_RefreshSelectedRecordField70DisplayId */
 #define FRONTEND_COMMAND_SELECT_CAMPAIGN 0x12F0 /* ScenarioCatalog_RefreshSelectedRecordField50DisplayId */
+/* Faction setup page, mission briefing and leaving pages (ui/frontend/runtime, ui/frontend/session) */
+#define FRONTEND_COMMAND_CYCLE_FACTION_COLOUR 0x650 /* FrontendUiAction2044_IndexedSelectionHelper */
+#define FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE 0x6F0 /* FrontendUiAction2045_IndexedSelectionHelper */
+#define FRONTEND_COMMAND_CHOOSE_FACTION 0x750 /* FrontendUiAction2046_IndexedSelectionHelper */
+#define FRONTEND_COMMAND_APPLY_GAME_SPEED 0x2C0 /* FrontendSession_ApplyGameSpeedAndReturnToMainPage */
+#define FRONTEND_COMMAND_SET_GAME_SPEED 0x300 /* FrontendSession_SetGameSpeedPercent */
+#define FRONTEND_COMMAND_RELEASE_CAMPAIGN 0x320 /* FrontendSession_ReleaseSelectedResourceAndReturnToMainPage */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00543F50 */

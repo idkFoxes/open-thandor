@@ -13,10 +13,11 @@ static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node);
 /* Implementation ownership: world/model/hierarchy. */
 
 /* Address: 0x004BD1F0.
-   Ownership: world/model/hierarchy.
-   Purpose: Derives a packed ARGB tint from model state flags and the global tint lookup table, then propagates the
-   changed tint through the model runtime hierarchy.
-   Local calls: ModelNodeRuntime_ApplyTintRecursive.
+   Fades the model's tint one step toward the target its state flags ask for and applies it to the whole
+   hierarchy (called by the army terrainStateRefresh maintenance phase in gameplay/army/runtime.c). Targets:
+   flag 4 white and opaque; else flag 8 with 0x10 white and transparent, flag 8 alone grey 0x87 and opaque,
+   neither black and transparent; flag 0x1000 always makes it transparent. The step limit comes from the
+   intensity clamp table (GraphicsIntensityClampTable_Initialize).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
@@ -30,18 +31,18 @@ ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
   PackedArgb32 tintArgb;
   int alphaIntensity;
   
-  colorIntensity = 0xff;
-  alphaIntensity = 0xff;
+  colorIntensity = 255;
+  alphaIntensity = 255;
   flagsOrPreviousTint = modelNodeRuntime->runtimeFlags;
   if ((flagsOrPreviousTint & 4) == 0) {
     colorIntensity = 0;
     alphaIntensity = 0;
     if ((flagsOrPreviousTint & 8) != 0) {
-      colorIntensity = 0xff;
+      colorIntensity = 255;
       alphaIntensity = 0;
       if ((flagsOrPreviousTint & 0x10) == 0) {
         colorIntensity = 0x87;
-        alphaIntensity = 0xff;
+        alphaIntensity = 255;
       }
     }
   }
@@ -56,6 +57,8 @@ ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
   clampedAlphaByte = clampTable[(flagsOrPreviousTint >> 0x18) << 8 | (uint32_t)alphaIntensity];
   tintArgb = (uint32_t)clampedAlphaByte << 0x18 | (uint32_t)clampedColorByte << 0x10 | (uint32_t)clampedColorByte << 8 |
              (uint32_t)clampedColorByte;
+  /* The original compares with the previous tint shifted right by 16 (CMP EDX,ECX at 0x004BD27F), so the new
+     tint is applied on practically every call, not only when it changed. */
   if (tintArgb != flagsOrPreviousTint >> 0x10) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNodeRuntime);
   }
@@ -82,8 +85,8 @@ ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRuntime)
 
 
 /* Address: 0x0051D870.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively applies palette and texture-set state through a model hierarchy.
+   Gives a model node and all its descendants the palette and texture set. Only
+   called by itself in the executable; the faction code uses ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
@@ -91,13 +94,14 @@ ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
 
 {
   uint32_t childrenRemaining;
-  
-  if (node != (ModelRuntimeNode *)0x0) {
+
+  if (node != NULL) {
     (node->modelPayload).textureSet = textureSet;
     (node->modelPayload).paletteAsset = paletteAsset;
     for (childrenRemaining = node->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
       ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
                 (paletteAsset,textureSet,node->childNodes[0]);
+      /* the original steps the node pointer by 4 bytes, so childNodes[0] walks through all children */
       node = (ModelRuntimeNode *)&(node->common).nextNode;
     }
   }
@@ -180,11 +184,9 @@ ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNod
 
 
 /* Address: 0x004BD8D0.
-   Ownership: world/model/hierarchy.
-   Purpose: Builds the model rotation basis from the node position, current camera origin, stored orientation, and
-   the calculated view-facing angle.
-   Cross-module calls: FixedTransform_ApplyEulerRotationToVectorRegs [core/math/fixed], FixedMath_Atan2Angle16
-   [core/math/fixed], FixedTransform_BuildRotationBasis [core/math/fixed].
+   Turns a mesh group towards the camera around the model's own up axis (mesh group flag 1 in
+   ModelRender_DrawMeshGroupsWithTemporaryTransform): rotates the camera-to-node vector into the model's frame
+   (keeping its two stored rotation angles) and replaces the third angle by the view direction plus a quarter turn.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime)
@@ -192,16 +194,16 @@ ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime)
 {
   uint32_t viewFacingAngle16;
   FixedVectorEaxEcxEdx12 viewRelativeVector;
-  
+
   viewRelativeVector = FixedTransform_ApplyEulerRotationToVectorRegs
                     ((modelNodeRuntime->worldTransform).translation.z - g_ViewOriginFixed.z,
                      (modelNodeRuntime->worldTransform).translation.y - g_ViewOriginFixed.y,
                      (modelNodeRuntime->worldTransform).translation.x - g_ViewOriginFixed.x,0,
                      (modelNodeRuntime->modelPayload).worldRotationAngle1,
-                     (modelNodeRuntime->modelPayload).worldRotationAngle0 - 0x8000);
+                     (modelNodeRuntime->modelPayload).worldRotationAngle0 - FIXED_ANGLE16_HALF_TURN);
   viewFacingAngle16 = FixedMath_Atan2Angle16(viewRelativeVector.yQ12,viewRelativeVector.xQ12);
   FixedTransform_BuildRotationBasis
-            (&modelNodeRuntime->worldTransform,viewFacingAngle16 + 0x4000 & 0xffff,
+            (&modelNodeRuntime->worldTransform,viewFacingAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff,
              (modelNodeRuntime->modelPayload).worldRotationAngle1,
              (modelNodeRuntime->modelPayload).worldRotationAngle0);
   return;
@@ -209,11 +211,9 @@ ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime)
 
 
 /* Address: 0x004BD950.
-   Ownership: world/model/hierarchy.
-   Purpose: Derives camera-relative vector angles and constructs the alternate billboard-style model rotation
-   basis.
-   Cross-module calls: FixedMath_VectorToAngles3Regs [core/math/fixed], FixedTransform_BuildRotationBasis
-   [core/math/fixed].
+   Turns a mesh group fully towards the camera, a billboard (mesh group flag 2 in
+   ModelRender_DrawMeshGroupsWithTemporaryTransform): the rotation basis is built from the direction of the
+   camera-to-node vector (azimuth + half turn, negated elevation).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
@@ -221,12 +221,12 @@ ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
 {
   uint32_t angle0;
   FixedVectorAngles viewAngles;
-  
+
   viewAngles = FixedMath_VectorToAngles3Regs
                     ((modelNodeRuntime->worldTransform).translation.z - g_ViewOriginFixed.z,
                      (modelNodeRuntime->worldTransform).translation.y - g_ViewOriginFixed.y,
                      (modelNodeRuntime->worldTransform).translation.x - g_ViewOriginFixed.x);
-  angle0 = viewAngles.azimuthAngle + 0x8000 & 0xffff;
+  angle0 = viewAngles.azimuthAngle + FIXED_ANGLE16_HALF_TURN & 0xffff;
   FixedTransform_BuildRotationBasis(&modelNodeRuntime->worldTransform,angle0,-viewAngles.elevationAngle,angle0);
   return;
 }
@@ -320,13 +320,10 @@ ModelNodeRuntime_TransformLocalPointRegs
 
 
 /* Address: 0x004BEBC0.
-   Ownership: world/model/hierarchy.
-   Purpose: Builds and rotates a scaled direction using node orientation fields, converts the transformed vector
-   back to angles, adds the node angle at +0x2C, and returns the wrapped relative direction angle. Typed
-   parameters: p0 modelNodeRuntime→ModelRuntimeNode *. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: FixedTransform_RotateDirectionScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
-   [core/math/fixed].
+   Converts a world direction (elevation, azimuth) into the frame of a model node for aiming turrets and weapons
+   (ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA/B, ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments):
+   rotates a unit vector by the inverse of the node's world rotation and returns its angles, the yaw made
+   relative by adding the node's local rotation angle 2 (+0x2C).
 */
 
 ModelRelativeDirectionAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
@@ -341,9 +338,10 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
 
   negatedAngle2 = -(modelNodeRuntime->modelPayload).worldRotationAngle2;
   rotatedDirection = FixedTransform_RotateDirectionScaledRegs
-                    (0x1000,elevationAngle,azimuthAngle,negatedAngle2 & 0xffff,
+                    (Q12_ONE,elevationAngle,azimuthAngle,negatedAngle2 & 0xffff,
                      (modelNodeRuntime->modelPayload).worldRotationAngle1,
-                     (modelNodeRuntime->modelPayload).worldRotationAngle0 + 0x8000 + negatedAngle2 & 0xffff)
+                     (modelNodeRuntime->modelPayload).worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
+                     negatedAngle2 & 0xffff)
   ;
   directionAngles = FixedMath_VectorToAngles3Regs(rotatedDirection.zQ12,rotatedDirection.yQ12,rotatedDirection.xQ12);
   relativeAngles.relativeYawAngle =
@@ -354,11 +352,11 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
 
 
 /* Address: 0x0050A7A0.
-   Ownership: world/model/hierarchy.
-   Purpose: CF clear returns EAX distance metric; CF set reports miss.
-   Cross-module calls: FixedTransform_Compose [core/math/fixed], FixedTransform_ApplyPoint [core/math/fixed],
-   Graphics_ProjectViewPoint [graphics/core/runtime], GraphicsProjectedPoint_IsInsideTriangle
-   [graphics/render/projection], FixedMath_Length3 [core/math/fixed].
+   Pointer hit test of a model hierarchy (FrontendModelPointerContext_FindBestEligibleModelHitTarget): projects the
+   eight corners of the node's local bounding box and tests the pointer against the twelve triangles of its faces
+   (faces with a corner behind the near plane are skipped). On a hit returns the distance from the context's
+   reference point to the node (to the box centre with context flag 0x80000); otherwise the children are tested
+   in order. missed is set (CF) when nothing was hit.
 */
 ModelHitTestResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimeNode_HitTestProjectedBoundsAndChildren
@@ -385,6 +383,8 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildren
      ((resourceView->hitTestFlags20C & MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST) == 0)) {
     FixedTransform_Compose
               (&g_GraphicsTransformScratchMatrix3x4,transformA,&g_ViewProjectionMatrixFixed);
+    /* corner i = (x i&1, y i&2, z i&4) of the bounds; bit i of clippedCornerMask: corner i behind the near
+       plane (z < g_ProjectionScaleFixed), else g_ModelProjectedBoundsCornerScratch8[i] holds its screen point */
     g_GraphicsTransformInputScratchVec3.x = resourceView->localBoundsX0Q12;
     boundsX1 = resourceView->localBoundsX1Q12;
     g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY0Q12;
@@ -545,7 +545,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                               g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 2), cornerVisibleOrHit)) ||
-         (((clippedCornerMask & 200) == 0 &&
+         (((clippedCornerMask & 0xc8) == 0 &&
           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                               g_ModelProjectedBoundsCornerScratch8 + 6,
@@ -584,7 +584,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildren
       return missResult;
     }
     childNode = *(ModelRuntimeNode **)((int)modelNode->childNodes + childByteOffset);
-    if (childNode != (ModelRuntimeNode *)0x0) {
+    if (childNode != NULL) {
       hitOrChildResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                          (pointerY,pointerX,childNode,context);
       transformA = (GraphicsFixedMatrix3x4 *)hitOrChildResult.distanceQ12;
@@ -599,11 +599,11 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildren
 
 
 /* Address: 0x0050B1D0.
-   Ownership: world/model/hierarchy.
-   Purpose: Returns nearest Q12 ray distance with CF set. EDX is the nearest ModelRuntimeNode side channel on
-   success; CF clear returns 0x7fffffff.
-   Cross-module calls: FixedTransform_BuildRotationBasis [core/math/fixed], FixedTransform_ApplyPoint
-   [core/math/fixed], ModelMesh_IntersectTriangleRayDistance [assets/model/definitions].
+   Ray test of a model hierarchy against the ray in g_ModelRaycastOriginX/Y/Z and
+   g_ModelRaycastWorldDirectionX/Y/ZQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's bounding sphere within
+   g_ModelRaycastMaximumDistance, it is moved into the node's frame and tested against every triangle of the
+   node's mesh group, then the children are tested. Returns the nearest distance and node (hit, CF set), or
+   MODEL_RAYCAST_NO_HIT_DISTANCE.
 */
 ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
 ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
@@ -656,7 +656,8 @@ ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
         FixedTransform_BuildRotationBasis
                   (&g_GraphicsTransformScratchMatrix3x4,negatedAngle2 & 0xffff,
                    (modelNodeRuntime->modelPayload).worldRotationAngle1,
-                   (modelNodeRuntime->modelPayload).worldRotationAngle0 + 0x8000 + negatedAngle2 & 0xffff);
+                   (modelNodeRuntime->modelPayload).worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
+                   negatedAngle2 & 0xffff);
         resourceView = (modelNodeRuntime->modelPayload).modelResource;
         g_GraphicsTransformScratchMatrix3x4.translation.x = 0;
         g_GraphicsTransformScratchMatrix3x4.translation.y = 0;
@@ -686,7 +687,7 @@ ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
                    (GraphicsFixedVec3 *)&g_ModelRaycastWorldDirectionXQ28,
                    &g_GraphicsTransformScratchMatrix3x4);
         triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
-        radiusNodeXOrNearest = 0x7fffffff;
+        radiusNodeXOrNearest = MODEL_RAYCAST_NO_HIT_DISTANCE;
         for (meshRecordsRemaining = meshGroupCursor[1]; meshRecordsRemaining != 0; meshRecordsRemaining = meshRecordsRemaining - 1) {
           triangleCountField = &triangle->vertex1;
           triangle = (ModelRaycastTriangleDescriptor *)
@@ -701,10 +702,10 @@ ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
             triangle = triangle + 1;
           }
         }
-        edxCarrier.nearestModelNode = (ModelRuntimeNode *)0x0;
+        edxCarrier.nearestModelNode = NULL;
         nearestModelNode = modelNodeRuntime;
         for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
-          if (modelNodeRuntime->childNodes[childrenRemaining - 1] != (ModelRuntimeNode *)0x0) {
+          if (modelNodeRuntime->childNodes[childrenRemaining - 1] != NULL) {
             childOrNearestHit = ModelNodeRuntime_RaycastHierarchyNearest
                                (modelNodeRuntime->childNodes[childrenRemaining - 1]);
             edxCarrier = childOrNearestHit.nearestNodeOrScratch;
@@ -714,7 +715,7 @@ ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
             }
           }
         }
-        if (radiusNodeXOrNearest != 0x7fffffff) {
+        if (radiusNodeXOrNearest != MODEL_RAYCAST_NO_HIT_DISTANCE) {
           childOrNearestHit.nearestNodeOrScratch.nearestModelNode = nearestModelNode;
           childOrNearestHit.nearestDistanceQ12 = radiusNodeXOrNearest;
           childOrNearestHit.hit = true;
@@ -724,7 +725,7 @@ ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
     }
   }
   missResult.nearestNodeOrScratch.nearestModelNode = edxCarrier.nearestModelNode;
-  missResult.nearestDistanceQ12 = 0x7fffffff;
+  missResult.nearestDistanceQ12 = MODEL_RAYCAST_NO_HIT_DISTANCE;
   missResult.hit = false;
   return missResult;
 }
@@ -1288,9 +1289,11 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
 }
 
 /* Address: 0x0052AAC0.
-   Ownership: world/model/hierarchy.
-   Purpose: Smooths the model yaw field at offset 0x2C toward the target angle with bounded acceleration and
-   deceleration, then marks the transform dirty.
+   Turns a weapon or turret node's yaw (localRotationAngle2) toward targetYawAngle16 over the shorter way, for
+   the army aim updates (ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA/B,
+   ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments): the turn velocity grows by the weapon definition's
+   acceleration up to its rate limit and is reset when it points away; the target is taken exactly once it is
+   within one step. outsideTolerance (CF) is set while the remaining difference exceeds +-0x3FF.
 */
 
 AimSmoothResult __thandor_eax_cf_preserve_ecx_edx
@@ -1315,7 +1318,7 @@ ModelNodeRuntime_SmoothYawTowardTarget
   yawDelta = targetYawAngle16 - yawAngle & 0xffff;
   yawStep = smoothingState->yawTurnVelocityAngle16 * g_InGameSimulationStepTicks;
   snapToTarget = false;
-  if (yawDelta < 0x8001) {
+  if (yawDelta < FIXED_ANGLE16_HALF_TURN + 1) {
     /* target ahead in the positive direction */
     if ((int)yawStep < 0) {
       smoothingState->yawTurnVelocityAngle16 = 0; /* turning away: stop */
@@ -1337,7 +1340,7 @@ ModelNodeRuntime_SmoothYawTowardTarget
   else if (0 < (int)yawStep) {
     smoothingState->yawTurnVelocityAngle16 = 0; /* turning away: stop */
   }
-  else if (yawStep + 0x10000 <= yawDelta) {
+  else if (yawStep + FIXED_ANGLE16_FULL_TURN <= yawDelta) {
     snapToTarget = true;
   }
   else {
@@ -1376,9 +1379,9 @@ ModelNodeRuntime_SmoothYawTowardTarget
 
 
 /* Address: 0x0052AC00.
-   Ownership: world/model/hierarchy.
-   Purpose: Clamps the target pitch to the definition bounds, smooths the model pitch field at offset 0x28 with
-   bounded acceleration and deceleration, then marks the transform dirty.
+   Pitch counterpart of ModelNodeRuntime_SmoothYawTowardTarget (same callers): clamps the target to the weapon
+   definition's pitch range, then moves localRotationAngle1 toward it with the same accelerate/limit/stop rules,
+   without wrap-around. outsideTolerance (CF) is set while the remaining difference exceeds +-0x3FF.
 */
 
 AimSmoothResult __thandor_eax_cf_preserve_ecx_edx

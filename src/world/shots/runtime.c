@@ -41,94 +41,91 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
 }
 
 /* Address: 0x0052CC60.
-   Ownership: world/shots/runtime.
-   Purpose: Processes a shot hit against an ArmyRuntimeSlot, updates pairwise faction pressure and relation
-   timestamps, applies verified relation-state transitions, and emits the associated runtime notifications. The
-   function preserves normal return registers and returns with RET 0x08. Nested raw-callee closure: command
-   interruption, faction impact-anchor notification, and the exact post-impact no-op hook are now separately owned
-   and typed. Role: Applies faction-relation/target interruption and notification side effects for an army hit.
-   Inputs: Hit ArmyRuntimeSlot and ShotRuntimeSlot including owner/faction.
-   Local calls: ShotRuntime_PostImpactRelationNotificationNoOp.
-   Cross-module calls: ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime],
-   ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration [gameplay/army/movement],
-   GameFactionRuntime_TestCapabilityBitClear [gameplay/faction/runtime],
-   GameFactionRuntime_UpdateImpactAlertAnchorAndNotify [gameplay/faction/runtime],
-   GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime],
-   GameFactionRuntime_ApplyPairwiseRelationTransition [gameplay/faction/runtime].
+   Diplomatic side effects of a shot hitting an army (called by the projectile maintenance in
+   world/shots/maintenance.c). A repair shot (negative impact damage) that finds its target fully repaired
+   ends the shooter's command on it. Any other hit adds to the pair pressure of target and shooter faction;
+   if the target's faction already treats the shooter as hostile, the pair's relation tick is renewed and
+   the "under attack" alert runs, otherwise friendly fire declares hostility (relation state 0 both ways),
+   unless the shooter's active command targets another faction or the pair's last relation change is too
+   recent (the ticks elapsed in both directions add up to less than 100).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ShotRuntime_ApplyArmyHitRelationAndNotifications
           (ArmyRuntimeSlot *targetArmyRuntime,ShotRuntimeSlot *shotRuntime)
 
 {
-  ArmyRuntimeSlot *armyRuntime;
+  ArmyRuntimeSlot *shooterArmy;
   InGameSimulationTick currentTick;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   FactionRelationState relationState;
-  bool capabilityBitClear;
-  ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
+  bool alreadyHostile;
+  ModelRuntimeScaleRatioRegisterPairQ12 conditionRatio;
   FactionNotificationCodeBase activeFactionCodeForFirst;
   FactionNotificationCodeBase activeFactionCodeForSecond;
   FactionRelationStateNibble stateFirstTowardSecond;
   FactionRelationStateNibble stateSecondTowardFirst;
-  uint32_t capabilityBitIndex;
-  uint32_t factionIndex;
-  GameEntityRuntime *runtimeEntry;
+  uint32_t targetFactionIndex;
+  uint32_t shooterFactionIndex;
+  GameEntityRuntime *targetEntity;
   
-  armyRuntime = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
-  runtimeEntry = targetArmyRuntime->linkedEntityRuntime;
-  if (armyRuntime != (ArmyRuntimeSlot *)0x0) {
+  shooterArmy = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
+  targetEntity = targetArmyRuntime->linkedEntityRuntime;
+  if (shooterArmy != NULL) {
     if (((shotRuntime->definitionOrSavedId).definition)->targetClassImpactDamageQ12[0] < 0) {
-      scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs
-                        ((RuntimeModelFactionPrefix10 *)runtimeEntry);
-      if ((((int)scaleRatio == (int)(scaleRatio >> 0x20)) && ((armyRuntime->commandModeFlags & 1) != 0)) &&
-         (runtimeEntry == (GameEntityRuntime *)armyRuntime->commandTargetArmyRuntime)) {
-        ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(armyRuntime);
-        armyRuntime->commandGeneration = 1;
+      /* EAX = condition ratio, EDX = 0x1000: equal means the target is fully repaired */
+      conditionRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs
+                        ((RuntimeModelFactionPrefix10 *)targetEntity);
+      if ((((int)conditionRatio == (int)(conditionRatio >> 0x20)) && ((shooterArmy->commandModeFlags & 1) != 0)) &&
+         (targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime)) {
+        ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
+        shooterArmy->commandGeneration = 1;
       }
     }
     else {
-      factionIndex = armyRuntime->factionIndex;
-      capabilityBitIndex =
-           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&runtimeEntry->common)[3].savedIdOrOffset;
+      shooterFactionIndex = shooterArmy->factionIndex;
+      /* the target's owning faction (entity +0xC) */
+      targetFactionIndex =
+           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&targetEntity->common)[3].savedIdOrOffset;
       g_GameDataAuxState.pairPressureMatrix8x8
-      [((ModelRuntimeSlotReferenceOrSavedOffset4 *)&runtimeEntry->common)[3].savedIdOrOffset * 8 +
-       factionIndex] =
+      [((ModelRuntimeSlotReferenceOrSavedOffset4 *)&targetEntity->common)[3].savedIdOrOffset * 8 +
+       shooterFactionIndex] =
            g_GameDataAuxState.pairPressureMatrix8x8
-           [((ModelRuntimeSlotReferenceOrSavedOffset4 *)&runtimeEntry->common)[3].savedIdOrOffset *
-            8 + factionIndex] + 0x100;
-      if (((factionIndex != 0) && (capabilityBitIndex != 0)) && (factionIndex != capabilityBitIndex)
+           [((ModelRuntimeSlotReferenceOrSavedOffset4 *)&targetEntity->common)[3].savedIdOrOffset *
+            8 + shooterFactionIndex] + 0x100;
+      if (((shooterFactionIndex != 0) && (targetFactionIndex != 0)) && (shooterFactionIndex != targetFactionIndex)
          ) {
-        capabilityBitClear = GameFactionRuntime_TestCapabilityBitClear(capabilityBitIndex,factionIndex);
+        alreadyHostile = GameFactionRuntime_TestCapabilityBitClear(targetFactionIndex,shooterFactionIndex);
         inGameRoot = g_InGameRuntimeRoot;
         currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
-        if (capabilityBitClear) {
-          *(InGameSimulationTick *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + capabilityBitIndex * 4) =
+        /* faction record +0x700 + 4 * other faction: tick of the pair's last relation change */
+        if (alreadyHostile) {
+          *(InGameSimulationTick *)(shooterFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + targetFactionIndex * 4) =
                g_GameFactionRuntimeImage.tail.simulationTick;
-          *(InGameSimulationTick *)(capabilityBitIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + factionIndex * 4) =
+          *(InGameSimulationTick *)(targetFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + shooterFactionIndex * 4) =
                currentTick;
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
                     (targetArmyRuntime,&inGameRoot->worldRuntime0A30);
           ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime0A30);
         }
-        else if ((((armyRuntime->commandModeFlags & 1) == 0) ||
-                 ((armyRuntime->commandTargetArmyRuntime != (ArmyRuntimeSlot *)0x0 &&
-                  (capabilityBitIndex == armyRuntime->commandTargetArmyRuntime->factionIndex)))) &&
+        else if ((((shooterArmy->commandModeFlags & 1) == 0) ||
+                 ((shooterArmy->commandTargetArmyRuntime != NULL &&
+                  (targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)))) &&
                 (99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -
-                            *(int *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + capabilityBitIndex * 4)) -
-                           *(int *)(capabilityBitIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + factionIndex * 4)))) {
+                            *(int *)(shooterFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + targetFactionIndex * 4)) -
+                           *(int *)(targetFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + shooterFactionIndex * 4)))) {
           stateSecondTowardFirst = 0;
           stateFirstTowardSecond = 0;
+          /* notification text code 11, or 12 when the relation was at state 8 or above */
           activeFactionCodeForSecond = 0xb;
           activeFactionCodeForFirst = 0xb;
-          relationState = GameFactionRuntime_GetPackedStateNibble(capabilityBitIndex,factionIndex);
+          relationState = GameFactionRuntime_GetPackedStateNibble(targetFactionIndex,shooterFactionIndex);
           if (7 < relationState) {
             activeFactionCodeForFirst = 0xc;
             activeFactionCodeForSecond = 0xc;
           }
           GameFactionRuntime_ApplyPairwiseRelationTransition
                     (activeFactionCodeForFirst,activeFactionCodeForSecond,stateFirstTowardSecond,
-                     stateSecondTowardFirst,capabilityBitIndex,factionIndex);
+                     stateSecondTowardFirst,targetFactionIndex,shooterFactionIndex);
         }
       }
     }
@@ -333,17 +330,15 @@ void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
 
 
 /* Address: 0x0052BDB0.
-   Ownership: world/shots/runtime.
-   Purpose: Allocates one ShotRuntimeSlot and projectile model from a typed ShotDefinition; launch coordinates are
-   fixed-point scalars and ownerArmyRuntime is an ArmyRuntimeSlot pointer. EAX/CF remain the nonstandard result
-   channels. Fire-chain terminus: allocates a shot runtime record from the pool, seeds trajectory from the
-   transformed launch point, and links it for the projectile motion maintenance pass. CF-style allocation failure.
-   Role: Allocates and initializes a live projectile from a ShotDefinition.
-   Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core],
-   WorldRuntime_LinkNodeIntoOwnerListD8 [world/runtime/core], ShotDefinition_ComputeLaunchAnglesRegs
-   [assets/shot/catalog], FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   ModelLookupTable_ContainsPackedKey [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs
-   [world/model/hierarchy].
+   Fires one projectile of shotDefinition from the launch point towards the target point: takes the first
+   free slot of the shot pool and a world object record for its model node, links the node into the world's
+   owner list and seeds position, launch angles, velocity (plus half the ballistic divisor upwards for
+   ballistic shots), lifetime, animation, optional shading light, occupancy class flags and tint; a launch
+   effect is spawned when the model has a launch point (lookup key 3). Called by the army and model weapon
+   code (ArmyRuntime_ResolveShotLaunchFromModelAttachment, ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate,
+   ArmyRuntime_UpdateTimedShotAndEffectEmitters, ModelRuntime_EmitProjectilesFromAttachmentPoints) and by
+   EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions. The original sets CF when no slot
+   or record is free; this version just returns.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ShotRuntimePool_CreateProjectileFromDefinition
@@ -365,7 +360,6 @@ ShotRuntimePool_CreateProjectileFromDefinition
   PackedArgb32 nodeTintArgb;
   ShotRuntimeSlot *slotsRemaining;
   Q12 runtimeLaunchSpeedQ12;
-  Q12 worldXQ12;
   uint32_t directionZOrNeighborhoodMask;
   ShotRuntimeSlot *shotRuntimeCursor;
   uint64_t tintProduct;
@@ -378,17 +372,16 @@ ShotRuntimePool_CreateProjectileFromDefinition
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   char runtimeClassIndex;
   
-  slotsRemaining = (ShotRuntimeSlot *)0x1000;
+  slotsRemaining = (ShotRuntimeSlot *)SHOT_RUNTIME_SLOT_COUNT; /* a counter kept in a pointer-typed variable */
   shotRuntimeCursor = g_ShotRuntimeSlots;
   slotsRemainingOrPool = g_ShotRuntimeSlots;
   while( true ) {
-    if (slotsRemainingOrPool == (ShotRuntimeSlot *)0x0) {
+    if (slotsRemainingOrPool == NULL) {
       return;
     }
-    if ((shotRuntimeCursor->modelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) break;
+    if ((shotRuntimeCursor->modelNodeOrSavedOffset).modelNode == NULL) break;
     shotRuntimeCursor = shotRuntimeCursor + 1;
-    slotsRemaining = (ShotRuntimeSlot *)
-              ((int)&slotsRemaining[-1].ownerAndTrajectory.secondaryEffectCountdownTicks + 3);
+    slotsRemaining = (ShotRuntimeSlot *)((int)slotsRemaining - 1);
     slotsRemainingOrPool = slotsRemaining;
   }
   allocatedRecord = WorldObjectArray_AllocateFreeRecord(worldRuntime);
@@ -447,10 +440,11 @@ ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | 1;
   (shotRuntimeCursor->ownerAndTrajectory).secondaryEffectCountdownTicks = secondaryEffectInterval;
   shotModelNode->textureSubresourceBaseIndex = 0;
-  shotModelNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
+  shotModelNode->modelRuntimeLinkOrSavedOffset = NULL;
+  /* optional light point of the model (lookup key 4): allocates a shading record there */
   lookupEntry = ModelLookupTable_ContainsPackedKey(0,4,shotDefinition->ownedNestedResource);
   if (lookupEntry.notFound) {
-    shotModelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
+    shotModelNode->shadingRecord = NULL;
   }
   else {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
@@ -461,7 +455,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
                         shotDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
     shotModelNode->shadingRecord = shadingAllocation.record;
   }
-  shotModelNode->parentNode = (ModelRuntimeNode *)0x0;
+  shotModelNode->parentNode = NULL;
   shotModelNode->childCount = 0;
   runtimeClassIndex = (char)worldRuntime->activeFactionRuntimeIndex;
   directionZOrNeighborhoodMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
@@ -482,12 +476,11 @@ ShotRuntimePool_CreateProjectileFromDefinition
   if (!lookupEntry.notFound) {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
-    worldXQ12 = localPoint.yQ12;
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                (shotModelNode->modelPayload).worldRotationAngle2,
                (shotModelNode->modelPayload).worldRotationAngle1,
-               (shotModelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,worldXQ12,localPoint.xQ12,
+               (shotModelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
                shotDefinition->launchEffectDefinition,worldRuntime);
   }
   return;
@@ -495,9 +488,8 @@ ShotRuntimePool_CreateProjectileFromDefinition
 
 
 /* Address: 0x00514710.
-   Ownership: world/shots/runtime.
-   Purpose: Exact two-argument post-impact relation hook. The archived implementation preserves the normal
-   registers, performs no state change, and returns with RET 0x08.
+   Hook called by ShotRuntime_ApplyArmyHitRelationAndNotifications after the "under attack" alert of a hit on
+   a hostile army; it does nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ShotRuntime_PostImpactRelationNotificationNoOp

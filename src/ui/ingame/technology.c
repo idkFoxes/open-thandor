@@ -11,25 +11,22 @@
 /* Implementation ownership: ui/ingame/technology. */
 
 /* Address: 0x0056AE70.
-   Ownership: ui/ingame/technology.
-   Purpose: Recovered action-table target INGAME_PAGE10[20],INGAME_PAGE10[21],INGAME_PAGE10[22],INGAME_PAGE10[23],I
-   NGAME_PAGE10[24],INGAME_PAGE10[25],INGAME_PAGE10[26] (0x1014,0x1015,0x1016,0x1017,0x1018,0x1019,0x101A).
-   Local calls: InGameTechnologyPanel_Rebuild.
-   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiSelectableGroup_SelectExclusive
-   [ui/controls/lists].
+   Handler of the seven technology area tabs, actions INGAME_ACTION_TECHNOLOGY_AREA_TAB1..7 (0x1014..0x101A,
+   slots 20..26 of g_InGameUiActionHandlersPage10): a tab that is now selected deselects the other six, then the
+   technology window is rebuilt for the chosen area (or the general text when the tab was deselected).
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
 
 {
   UiRootNode *inGameRoot;
-  bool sourceIsSelected;
   bool isSelected;
   UiNodeBase *parentCursor;
-  
+
+  /* climb to the in-game root */
   parentCursor = (selectableControl->base).parent;
   inGameRoot = (UiRootNode *)selectableControl;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     inGameRoot = (UiRootNode *)(inGameRoot->base).parent;
     parentCursor = (inGameRoot->base).parent;
   }
@@ -398,12 +395,10 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
 
 
 /* Address: 0x0056AEF0.
-   Ownership: ui/ingame/technology.
-   Purpose: Recovered action-table target INGAME_PAGE10[19] (0x1013).
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], SelectionInfo_GetFirstEntry
-   [gameplay/selection/runtime], UiSelectableGroup_NoneVisibleSelected [ui/controls/lists],
-   FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology [ui/frontend/player],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   Handler of the technology window's research button, action INGAME_ACTION_TECHNOLOGY_RESEARCH (0x1013, slot 19
+   of g_InGameUiActionHandlersPage10): closes the window (world view shown again, game-window page 0) and sends
+   INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE for the first selected building with the technology of the selected area
+   tab, which starts that research; with no tab selected the technology argument is 0 and nothing starts.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(void *source)
 
@@ -413,7 +408,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
   uint32_t doubledTechnologyId;
   CommandPayloadDword04 modelOffset;
   SelectableGroupNodeResult selectedArea;
-  
+
+  /* climb to the in-game root (+8 is UiNodeBase.parent, -1 marks the root) */
   parentLink = *(int *)((int)source + 8);
   while (parentLink != -1) {
     source = *(void **)((int)source + 8);
@@ -423,7 +419,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
        INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(source,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  if (firstSelectedEntity != (GameEntityRuntime *)0x0) {
+  if (firstSelectedEntity != NULL) {
     modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                   g_ModelRuntimeRebaseDelta;
     doubledTechnologyId = 0;
@@ -436,8 +432,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
       INGAME_UI(source,technologyAreaTab2),
       INGAME_UI(source,technologyAreaTab1));
     if (!selectedArea.noneSelected) {
-      /* the dword 8 bytes before the selected area tab (see InGameTechnologyPanel_Rebuild) */
-      doubledTechnologyId = THANDOR_UI_FIELD(selectedArea.node,-8,int32_t) - 0x300000;
+      /* the dword 8 bytes before the selected area tab holds its name text id, TECHNOLOGY_TEXT_ID_BASE +
+         2 * technology id (see InGameTechnologyPanel_Rebuild) */
+      doubledTechnologyId = THANDOR_UI_FIELD(selectedArea.node,-8,int32_t) - TECHNOLOGY_TEXT_ID_BASE;
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -445,7 +442,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
                 (g_LocalPlayerRuntimeId,0,doubledTechnologyId >> 1,modelOffset);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x1700,0,doubledTechnologyId >> 1,modelOffset);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE,0,doubledTechnologyId >> 1,
+                                                  modelOffset);
     }
   }
   return;

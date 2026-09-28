@@ -18,6 +18,28 @@
    (projectedPointB, the offset secondary point) is not beyond the near plane and got no screen position. */
 #define TERRAIN_VERTEX_POINT_A_NOT_PROJECTED 0x200000
 #define TERRAIN_VERTEX_POINT_B_NOT_PROJECTED 0x4000000
+/* The other projectionFlags bits of the terrain vertex pass: the low byte is the soil material (0xFF = no
+   terrain at this vertex, nothing is drawn); per projected point one bit per side of g_ProjectionClipRect the
+   point lies on the inner side of (x >= minX, y >= minY, x < maxX, y < maxY), so the OR over a triangle's
+   vertices tells whether its screen bounding box can overlap the clip rectangle; SECONDARY_VISIBLE is set on
+   the vertices of a queued secondary-surface triangle and makes TerrainProjectedVertex_TransformProjectAndShadeVariantB
+   project point B again. */
+#define TERRAIN_VERTEX_MATERIAL_MASK 0xff
+#define TERRAIN_VERTEX_MATERIAL_NONE 0xff
+#define TERRAIN_VERTEX_POINT_A_INSIDE_MIN_X 0x20000
+#define TERRAIN_VERTEX_POINT_A_INSIDE_MIN_Y 0x40000
+#define TERRAIN_VERTEX_POINT_A_INSIDE_MAX_X 0x80000
+#define TERRAIN_VERTEX_POINT_A_INSIDE_MAX_Y 0x100000
+#define TERRAIN_VERTEX_POINT_B_INSIDE_MIN_X 0x400000
+#define TERRAIN_VERTEX_POINT_B_INSIDE_MIN_Y 0x800000
+#define TERRAIN_VERTEX_POINT_B_INSIDE_MAX_X 0x1000000
+#define TERRAIN_VERTEX_POINT_B_INSIDE_MAX_Y 0x2000000
+#define TERRAIN_VERTEX_SECONDARY_VISIBLE 0x10000000
+/* Render context flag of TerrainProjectedGrid_TransformShadeAndQueue. The context is the world runtime and this is
+   the bit named WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY there: FrontendModelPointerContext_RenderWorldViewQueuesClipped
+   sets it after a frame that covered the whole view, every camera change clears it. While it is set (and the field
+   grid is unchanged) the row spans and point-A projections of the previous frame are reused. */
+#define TERRAIN_RENDER_REUSE_PROJECTION 0x800
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00506CD0 */
@@ -30,14 +52,14 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
 bool __thandor_cf_preserve_eax_ecx_edx
 FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
-          FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
+          FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x0050A190 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
-          FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
+          FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x00500F50 */

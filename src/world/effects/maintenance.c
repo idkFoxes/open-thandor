@@ -10,14 +10,15 @@
 
 /* Implementation ownership: world/effects/maintenance. */
 
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift.
+   With shift 4 each colour channel becomes a Q12 factor (0xFF -> 0x0FFF) for the PMULHW tint modulation. */
 static __inline uint64_t EffectTint_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
@@ -33,7 +34,7 @@ static __inline uint32_t EffectTint_PackWordsUnsignedSaturate(uint64_t words)
 
   lanes.q = words;
   packed = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     packed = packed |
              (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
   }
@@ -41,13 +42,10 @@ static __inline uint32_t EffectTint_PackWordsUnsignedSaturate(uint64_t words)
 }
 
 /* Address: 0x0051E790.
-   Ownership: world/effects/maintenance.
-   Purpose: Binary entry is anchored by g_ArmyRuntimeCallbackTable12[5]@00562DEC. Maintenance table phase
-   terrainStateRefresh, object kind effect. The 4x3 table bytes, target body, calling convention, and RET 0x08
-   contract remain unchanged.
-   Cross-module calls: TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint [world/terrain/occupancy],
-   TerrainOccupancyMask_ResolveRuntimeClassFlags [world/terrain/occupancy], ModelNodeRuntime_RefreshStateTint
-   [ui/controls/misc].
+   Effect entry of the terrainStateRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
+   table, from InGameRuntime_UpdateSimulationAndNetworkTick). Classifies the terrain occupancy around the effect,
+   replaces the node's PRESENT/SEEN_BEFORE visibility flags with the resolved ones and refreshes the state tint;
+   while the resulting tint is not fully transparent it becomes the effect tint modulated by the definition tint.
 */
 void __thandor_void_preserve_eax_ecx_edx
 EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
@@ -57,15 +55,16 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
   PackedArgb32 effectTintArgb;
   PackedArgb32 definitionTintArgb;
   uint32_t primaryOccupancyMask;
-  uint64_t mm0PackedValue0;
+  uint64_t modulatedLanes;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   EffectRuntimeSlot *effectRuntime;
-  
+
   primaryOccupancyMask =
        TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                 (0x1000,(modelNode->worldTransform).translation.y,
+                 (Q12_ONE,(modelNode->worldTransform).translation.y,
                   (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-  modelNode->runtimeFlags = modelNode->runtimeFlags & 0xfffffff3;
+  modelNode->runtimeFlags =
+       modelNode->runtimeFlags & ~(TERRAIN_OCCUPANCY_FLAG_PRESENT | TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE);
   effectRuntime = modelNode->effectRuntime;
   resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                      (modelNode->runtimeFlags,0,primaryOccupancyMask,
@@ -77,20 +76,19 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
     effectTintArgb = effectRuntime->stateTintArgb;
     definitionTintArgb = ((effectRuntime->definitionOrSavedId).definition)->stateTintArgb;
     /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
-    mm0PackedValue0 =
+    modulatedLanes =
          pmulhw(EffectTint_UnpackBytesShiftRight(effectTintArgb,4),
                 EffectTint_UnpackBytesShiftRight(definitionTintArgb,4));
-    modelNode->tintArgb = EffectTint_PackWordsUnsignedSaturate(mm0PackedValue0);
+    modelNode->tintArgb = EffectTint_PackWordsUnsignedSaturate(modulatedLanes);
   }
   return;
 }
 
 
 /* Address: 0x0051E830.
-   Ownership: world/effects/maintenance.
-   Purpose: Exact two-argument no-op installed in the effect column of the unified model, shot, and effect method
-   table. It returns with ret 0x08. Maintenance table phase occupancyRebuild, object kind effect. The 4x3 table
-   bytes, target body, calling convention, and RET 0x08 contract remain unchanged.
+   Effect entry of the occupancyRebuild phase of g_RuntimeMaintenanceCallbackPhases (only reached through that
+   table, from InGameRuntime_UpdateSimulationAndNetworkTick): effects take no part in the occupancy rebuild, so this
+   does nothing (RET 8).
 */
 void __thandor_void_preserve_eax_ecx_edx
 EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
@@ -101,10 +99,9 @@ EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,
 
 
 /* Address: 0x0051E840.
-   Ownership: world/effects/maintenance.
-   Purpose: Second exact two-argument no-op installed in the effect column of the unified model, shot, and effect
-   method table. It returns with ret 0x08. Maintenance table phase audioRefresh, object kind effect. The 4x3 table
-   bytes, target body, calling convention, and RET 0x08 contract remain unchanged.
+   Effect entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
+   from the every-8th-frame spatial sound pass in EndGameResultsUiRuntime_UpdateAndHandleInput): effects add no
+   spatial sound, so this does nothing (RET 8).
 */
 void __thandor_void_preserve_eax_ecx_edx
 EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)
@@ -115,18 +112,12 @@ EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void
 
 
 /* Address: 0x0051E850.
-   Ownership: world/effects/maintenance.
-   Purpose: Maintenance slot 2 receives WorldRuntimeContext and ModelRuntimeNode, advances the effect runtime
-   payload lifecycle, animation/tint state, and effect transitions. The exact seven-range body, three RET 0x08
-   terminals, and five-entry switch table are sealed against the immutable original binary. Conservative slot
-   identity is retained until subtype fields are closed. Advances effect lifecycle timers and animation, updates
-   shading ownership, tint and scale interpolation, and dispatches the sealed effect transition modes. Maintenance
-   table phase primaryUpdate, object kind effect.
-   Cross-module calls: InterpolationState_SetNegatedTargetAndRescaleProgress [core/math/interpolation],
-   WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core], ModelLookupTable_ContainsPackedKey
-   [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy],
-   GraphicsShadingRuntime_AllocateRecordRegs [graphics/render/shading],
-   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
+   Effect entry of the primaryUpdate phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
+   from InGameRuntime_UpdateSimulationAndNetworkTick). Runs once per simulation step of the batch: advances the
+   animation frames (the effect ends and unlinks itself when they run out), starts and stops its shading record,
+   fades the alpha in and out, interpolates the model scale, spawns periodic child effects and then performs the
+   definition's transition kind (linked effect, shots and completion action, linear motion, or terrain-relative
+   motion that ends on ground contact).
 */
 void __thandor_void_preserve_eax_ecx_edx
 EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
@@ -153,9 +144,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   uint32_t frameAgeOrTintValue;
   int32_t normalDotMotion;
   uint32_t fadeOutStartTicks;
-  Q12 worldXQ12;
   int frameAdvancedOrScratch;
-  Q12 worldZQ12;
   GameEntityRuntime *spawnArmyCompletionEntity;
   EffectCompletionLinkedHandlerOwnerColumns104 *linkedHandlerCompletionOwner;
   void *completionOwnerCarrier;
@@ -169,7 +158,6 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   GraphicsFixedVec3 terrainNormalDirection;
   GraphicsFixedVec3 motionDirection;
   EffectDefinition *periodicDefinition;
-  WorldRuntimeContext *spawnWorldRuntime;
   InGameSimulationStepBatchTicks remainingStepTicks;
   EffectDefinition *effectDefinition;
   ModelRuntimeNode *ownerModelNode;
@@ -179,6 +167,8 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   do {
     effectSlot = modelNode->effectRuntime;
     effectDefinition = (effectSlot->definitionOrSavedId).definition;
+    /* one step adds 1.0 (Q4) to the frame accumulator; a frame advances when it reaches the definition's
+       threshold */
     frameAgeOrTintValue = (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 + 0x10;
     frameAdvancedOrScratch = 0;
     (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 = frameAgeOrTintValue;
@@ -193,33 +183,34 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                   (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
                   );
         WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
-        (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+        (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
         return;
       }
     }
     if (frameAdvancedOrScratch != 0) {
-      modelNode->textureSubresourceBaseIndex = modelNode->textureSubresourceBaseIndex + 1;
+      modelNode->textureSubresourceBaseIndex++;
       shadingCountdownPtr = &effectSlot->shadingStartCountdownTicksRemaining;
       *shadingCountdownPtr = *shadingCountdownPtr - 1;
-      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord == (GraphicsShadingRuntimeRecord *)0x0)) {
+      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord == NULL)) {
         lookupResult = ModelLookupTable_ContainsPackedKey(0,4,effectDefinition->ownedNestedResource);
         if (!lookupResult.notFound) {
           localPoint = ModelNodeRuntime_TransformLocalPointRegs
                              (lookupResult.entry,(ModelRuntimeNode *)modelNode);
+          /* the alpha byte of the shading colour is the radius in 1/16 world units */
           shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
                              (effectDefinition->shadingTransitionDurationTicks,
-                              (effectDefinition->shadingColorArgb >> 0x18) << 8,
+                              (effectDefinition->shadingColorArgb >> 24) << 8,
                               effectDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
           modelNode->shadingRecord = shadingAllocation.record;
         }
       }
       shadingCountdownPtr = &effectSlot->shadingStopCountdownTicksRemaining;
       *shadingCountdownPtr = *shadingCountdownPtr - 1;
-      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord != (GraphicsShadingRuntimeRecord *)0x0)) {
+      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord != NULL)) {
         InterpolationState_SetNegatedTargetAndRescaleProgress
                   (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
                   );
-        modelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
+        modelNode->shadingRecord = NULL;
       }
     }
     if ((effectDefinition->transitionPrefix).transitionKind !=
@@ -227,12 +218,13 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       frameAgeOrTintValue = effectSlot->effectAgeTicks;
       fadeOutStartTicks = (effectDefinition->animationFrameCount * effectDefinition->frameAdvanceThresholdQ4
                >> 4) - effectDefinition->alphaFadeOutTicks;
+      /* alpha ramps 0 -> 255 over the fade-in and 255 -> 0 over the fade-out at the end of the animation */
       if (frameAgeOrTintValue < effectDefinition->alphaFadeInTicks) {
         fadeDurationTicks = effectDefinition->alphaFadeInTicks;
         effectSlot->stateTintArgb = effectSlot->stateTintArgb & 0xffffff;
         effectSlot->stateTintArgb =
              effectSlot->stateTintArgb |
-             (int)(((int64_t)(int)frameAgeOrTintValue * 0xff) / (int64_t)(int)fadeDurationTicks) << 0x18;
+             (int)(((int64_t)(int)frameAgeOrTintValue * 255) / (int64_t)(int)fadeDurationTicks) << 24;
       }
       else if ((fadeOutStartTicks < frameAgeOrTintValue) && (0 < (int)effectDefinition->alphaFadeOutTicks)) {
         fadeDurationTicks = effectDefinition->alphaFadeOutTicks;
@@ -240,13 +232,14 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         effectSlot->stateTintArgb = effectSlot->stateTintArgb & 0xffffff;
         effectSlot->stateTintArgb =
              effectSlot->stateTintArgb |
-             (int)(((int64_t)(int)((frameAgeOrTintValue - fadeOutStartTicks) - fadeDurationTicks) * -0xff) / (int64_t)(int)fadeOutDivisorTicks) <<
-             0x18;
+             (int)(((int64_t)(int)((frameAgeOrTintValue - fadeOutStartTicks) - fadeDurationTicks) * -255) /
+                   (int64_t)(int)fadeOutDivisorTicks) << 24;
       }
       else {
         effectSlot->stateTintArgb = effectSlot->stateTintArgb | 0xff000000;
       }
-      if ((modelNode->runtimeFlags & 4) == 0) {
+      /* not visible to the local faction: fully transparent */
+      if ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) {
         modelNode->tintArgb = 0xffffff;
       }
       else {
@@ -258,7 +251,8 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         modelNode->tintArgb = EffectTint_PackWordsUnsignedSaturate(modulatedLanes);
       }
     }
-    if ((modelNode->runtimeFlags & 0x800) != 0) {
+    /* the scale runs linearly from start to end over the whole animation */
+    if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
       modelNode->modelScaleQ12 =
            (int)(((int64_t)
                   (effectDefinition->modelScaleEndQ12 - effectDefinition->modelScaleStartQ12) *
@@ -268,7 +262,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                       effectDefinition->frameAdvanceThresholdQ4 >> 4)) +
            effectDefinition->modelScaleStartQ12;
     }
-    effectSlot->effectAgeTicks = effectSlot->effectAgeTicks + 1;
+    effectSlot->effectAgeTicks++;
     periodicCountdownPtr = &effectSlot->periodicEffectCountdownTicks;
     *periodicCountdownPtr = *periodicCountdownPtr - 1;
     if (*periodicCountdownPtr == 0) {
@@ -276,17 +270,14 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       lookupResult = ModelLookupTable_ContainsPackedKey(1,3,effectDefinition->ownedNestedResource);
       if (!lookupResult.notFound) {
         periodicDefinition = effectDefinition->periodicEffectDefinition;
-        spawnWorldRuntime = worldRuntime;
         localPoint = ModelNodeRuntime_TransformLocalPointRegs
                            (lookupResult.entry,(ModelRuntimeNode *)modelNode);
-        worldZQ12 = localPoint.zQ12;
-        worldXQ12 = localPoint.yQ12;
+        /* the periodic child effect always starts with rotation angle 1 at 0x4000 (a quarter turn) */
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
-                   worldZQ12,worldXQ12,localPoint.xQ12,periodicDefinition,spawnWorldRuntime);
+                   localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,periodicDefinition,worldRuntime);
       }
     }
-                    // WARNING: Switch is manually overridden
     switch((effectDefinition->transitionPrefix).transitionKind) {
     case EFFECT_TRANSITION_SPAWN_LINKED_EFFECT_AFTER_COUNTDOWN:
       if (frameAdvancedOrScratch != 0) {
@@ -322,7 +313,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             ShotRuntimePool_CreateProjectileFromDefinition
-                      (0,(ArmyRuntimeSlot *)0x0,
+                      (0,NULL,
                        (localPoint.zQ12 - (modelNode->worldTransform).translation.z) * 2 +
                        (modelNode->worldTransform).translation.z,
                        (localPoint.yQ12 - (modelNode->worldTransform).translation.y) * 2 +
@@ -355,7 +346,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
           if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
 EffectModelRuntimeMaintenance_TransitionType1DestroyModel:
-            if (completionOwnerCarrier != (void *)0x0) {
+            if (completionOwnerCarrier != NULL) {
               ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,completionOwnerCarrier);
             }
           }
@@ -363,9 +354,12 @@ EffectModelRuntimeMaintenance_TransitionType1DestroyModel:
             spawnArmyCompletionEntity = completionOwnerCarrier;
             if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
 EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
-              if (spawnArmyCompletionEntity != (GameEntityRuntime *)0x0) {
+              if (spawnArmyCompletionEntity != NULL) {
                 ownerClassRecord = (spawnArmyCompletionEntity->common).ownership.definitionOrClassRecord;
                 ownerModelNode = (spawnArmyCompletionEntity->common).ownership.modelNode;
+                /* frameAdvancedOrScratch now holds the owner's model definition: only class 0x12 (+0x4C) turns
+                   into the army asset named at +0xC0. The new model keeps the owner's armour points (+0x3C) in
+                   proportion, rescaled by the two definitions' values at +0x60 (presumably the full armour). */
                 frameAdvancedOrScratch = *ownerClassRecord;
                 if (*(int *)(frameAdvancedOrScratch + 0x4c) == 0x12) {
                   armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
@@ -407,8 +401,9 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
       translationAxisPtr = &(modelNode->worldTransform).translation.z;
       *translationAxisPtr = *translationAxisPtr + scaledDirection.z;
       ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
+      /* each step moves rotation angle 1 a 64th of the way towards 0x4000 (a quarter turn) */
       (modelNode->modelPayload).worldRotationAngle1 = (int)(previousRotationAngle1 * 0x3f + 0x4000) >> 6;
-      if (activeShadingRecord != (GraphicsShadingRuntimeRecord *)0x0) {
+      if (activeShadingRecord != NULL) {
         activeShadingRecord->worldXQ12 = activeShadingRecord->worldXQ12 + scaledDirection.x;
         activeShadingRecord->worldYQ12 = activeShadingRecord->worldYQ12 + scaledDirection.y;
         activeShadingRecord->worldZQ12 = activeShadingRecord->worldZQ12 + scaledDirection.z;
@@ -420,9 +415,10 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
       if (!terrainSample.failed) {
         /* Both register-returned directions are spilled to the stack in the binary; Ghidra showed
-           them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. */
+           them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. Both are unit vectors
+           (0x10000000 = 1.0 in Q28); the motion elevation drops with the square of the effect's age. */
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
-                  ((int)terrainSample.packedNormalAngles >> 0x10,terrainSample.packedNormalAngles & 0xffff,
+                  ((int)terrainSample.packedNormalAngles >> 16,terrainSample.packedNormalAngles & 0xffff,
                    0x10000000);
         terrainNormalDirection.x = scaledDirection.x;
         terrainNormalDirection.y = scaledDirection.y;
@@ -436,20 +432,21 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
         motionDirection.z = scaledDirection.z;
         normalDotMotion = FixedVec3_DotQ28(&terrainNormalDirection,&motionDirection);
         if (normalDotMotion < 0) {
+          /* moving into the ground: fade the alpha by unknown5C per step, end once it is already 0 */
           if (effectSlot->stateTintArgb < 0x1000000) {
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (effectDefinition->shadingReleaseTransitionDurationTicks,
                        modelNode->shadingRecord);
             WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
-            (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+            (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
             return;
           }
-          frameAgeOrTintValue = effectSlot->stateTintArgb >> 0x18;
+          frameAgeOrTintValue = effectSlot->stateTintArgb >> 24;
           frameAdvancedOrScratch = frameAgeOrTintValue - effectDefinition->unknown5C;
           if (frameAgeOrTintValue < effectDefinition->unknown5C) {
             frameAdvancedOrScratch = 0;
           }
-          frameAgeOrTintValue = effectSlot->stateTintArgb & 0xffffff | frameAdvancedOrScratch << 0x18;
+          frameAgeOrTintValue = effectSlot->stateTintArgb & 0xffffff | frameAdvancedOrScratch << 24;
         }
         else {
           frameAgeOrTintValue = 0xffffffff;
@@ -458,7 +455,7 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
                               effectDefinition->unknown58;
         }
         effectSlot->stateTintArgb = frameAgeOrTintValue;
-        if ((modelNode->runtimeFlags & 4) != 0) {
+        if ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) != 0) {
           effectOrDefinitionTintArgb = effectDefinition->stateTintArgb;
           /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
           modulatedLanes = pmulhw(EffectTint_UnpackBytesShiftRight(frameAgeOrTintValue,4),
@@ -477,8 +474,8 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
           linkedHandlerCompletionOwner = completionOwnerCarrier;
           if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) {
 EffectModelRuntimeMaintenance_TransitionType2InvokeLinkedHandler:
-            if ((linkedHandlerCompletionOwner != (EffectCompletionLinkedHandlerOwnerColumns104 *)0x0
-                ) && (0 < (int)linkedHandlerCompletionOwner->auxiliaryValue80)) {
+            if ((linkedHandlerCompletionOwner != NULL) &&
+                (0 < (int)linkedHandlerCompletionOwner->auxiliaryValue80)) {
               FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
                         (linkedHandlerCompletionOwner->terrainMaterialIndex100,
                          linkedHandlerCompletionOwner->auxiliaryValue80,
