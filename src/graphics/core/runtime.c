@@ -55,6 +55,12 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
   if ((!frameAdvanced) && (g_MouseEventsProcessed == 0)) {
     return;
   }
+  /* Windowed test aid (not in the original): the primary surface is the whole desktop, so drawing the cursor
+     at framebuffer coordinates would paint over the desktop's top left corner. GraphicsFramebuffer_Present
+     composes the cursor into the back surface every frame, so the timer refresh is skipped. */
+  if (Thandor_TestAidWindowed()) {
+    return;
+  }
   /* try-lock: the original swaps 1 into the access state (XCHG) and only draws when it was 0 */
   if (g_CursorSourceAsset != NULL) {
     previousAccessState = (int32_t)THANDOR_ATOMIC_EXCHANGE(&g_GraphicsBackendAccessState,1);
@@ -648,10 +654,13 @@ StatusResult __cdecl Graphics_Init(void)
         if (!allocResult.failed) {
           g_GraphicsDisplayModeCount = 0;
           g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocResult.payloadOrError;
-          /* Glide is optional, unless -GLIDE asks for it */
-          glideResult = Glide3_InitAndEnumerate();
-          if ((glideResult.failed) && (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide), !optionResult.notFound)) {
-            FatalError_ExitIfFailed(glideResult.valueOrError,true);
+          /* Glide is optional, unless -GLIDE asks for it. The windowed test aid (OPEN_THANDOR_WINDOWED, not in
+             the original) runs only the software renderer, so it enumerates neither Glide nor Direct3D. */
+          if (!Thandor_TestAidWindowed()) {
+            glideResult = Glide3_InitAndEnumerate();
+            if ((glideResult.failed) && (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide), !optionResult.notFound)) {
+              FatalError_ExitIfFailed(glideResult.valueOrError,true);
+            }
           }
           moduleLoad = DynDLL_Load(dynapi_2);
           adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;
@@ -680,8 +689,10 @@ StatusResult __cdecl Graphics_Init(void)
                         hresult = directDraw->lpVtbl->QueryInterface
                                           (directDraw,&IID_IDirect3D2_Local,&direct3D2);
                         if (hresult == 0) {
-                          direct3D2->lpVtbl->EnumDevices
-                                    (direct3D2,Direct3D_EnumDeviceCallback,adapterOrModule);
+                          if (!Thandor_TestAidWindowed()) {
+                            direct3D2->lpVtbl->EnumDevices
+                                      (direct3D2,Direct3D_EnumDeviceCallback,adapterOrModule);
+                          }
                           direct3D2->lpVtbl->Release(direct3D2);
                         }
                         directDraw->lpVtbl->Release(directDraw);

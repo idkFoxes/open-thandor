@@ -41,6 +41,10 @@ static void Win32_AutoShotTick(void)
   }
   last = now;
   capture = g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
+  if (capture.failed || capture.capture == NULL) {
+    Thandor_Log("autoshot failed: error %08x, backend access state %d, frame heartbeat %u",
+                (unsigned)(uintptr_t)capture.capture, (int)g_GraphicsBackendAccessState, g_ThandorFrameHeartbeat);
+  }
   if (!capture.failed && capture.capture != NULL) {
     GraphicsTextureSourceEntry *entry = &capture.capture->sourceEntry;
     const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture.capture + entry->dataOffset);

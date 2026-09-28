@@ -139,6 +139,9 @@
 #ifndef DISCL_FOREGROUND
 #define DISCL_FOREGROUND 0x00000004
 #endif
+#ifndef DISCL_NONEXCLUSIVE
+#define DISCL_NONEXCLUSIVE 0x00000002 /* windowed test aid only */
+#endif
 #ifndef DIPROP_BUFFERSIZE
 #define DIPROP_BUFFERSIZE ((TH_LEGACY_GUID *)1) /* MAKEDIPROP(1) */
 #endif
@@ -586,6 +589,9 @@
 #endif
 #ifndef DDBLTFAST_WAIT
 #define DDBLTFAST_WAIT 0x00000010
+#endif
+#ifndef DDBLT_WAIT
+#define DDBLT_WAIT 0x01000000 /* windowed test aid only (IDirectDrawSurface::Blt) */
 #endif
 #ifndef DDFLIP_WAIT
 #define DDFLIP_WAIT 0x00000001

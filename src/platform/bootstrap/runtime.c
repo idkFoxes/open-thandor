@@ -44,7 +44,7 @@ void __cdecl ProcessEntry(void)
   processOrThreadHandle = GetCurrentThread();
   SetThreadPriority(processOrThreadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
-  if (FindWindowA(sz_MainWindowClass,NULL) == NULL) {
+  if ((FindWindowA(sz_MainWindowClass,NULL) == NULL) || Thandor_TestAidAllowSecondInstance()) {
     g_MainWindowClass.instance = g_hInstance;
     g_MainWindowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
     g_MainWindowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
@@ -52,8 +52,15 @@ void __cdecl ProcessEntry(void)
       windowInstance = g_hInstance; /* read before the GetSystemMetrics calls, as in the original */
       screenHeight = GetSystemMetrics(SM_CYSCREEN);
       screenWidth = GetSystemMetrics(SM_CXSCREEN);
-      g_MainWindow = CreateWindowExA(WS_EX_TOPMOST,sz_MainWindowClass,sz_MainWindowTitle,WS_POPUP | WS_SYSMENU,
-                                     0,0,screenWidth,screenHeight,NULL,NULL,windowInstance,NULL);
+      if (Thandor_TestAidWindowed()) {
+        /* test aid (not in the original): a normal window instead of the full-screen topmost popup */
+        g_MainWindow = (HWND)Thandor_TestAidCreateWindowedMainWindow(sz_MainWindowClass,sz_MainWindowTitle,
+                                                                     windowInstance);
+      }
+      else {
+        g_MainWindow = CreateWindowExA(WS_EX_TOPMOST,sz_MainWindowClass,sz_MainWindowTitle,WS_POPUP | WS_SYSMENU,
+                                       0,0,screenWidth,screenHeight,NULL,NULL,windowInstance,NULL);
+      }
       if (g_MainWindow != NULL) {
         ShowWindow(g_MainWindow,SW_SHOWNORMAL);
         UpdateWindow(g_MainWindow);

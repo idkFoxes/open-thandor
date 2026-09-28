@@ -7,8 +7,73 @@
 
 #include <thandor/graphics/backend/directdraw.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: graphics/backend/directdraw. */
+
+/* Windowed test aid (OPEN_THANDOR_WINDOWED, not in the original): the few IDirectDrawClipper methods it
+   uses, in vtable order (the generated types only know the clipper as an opaque pointer). */
+typedef struct TestAidDirectDrawClipper TestAidDirectDrawClipper;
+typedef struct TestAidDirectDrawClipperVtbl {
+  void *QueryInterface;
+  void *AddRef;
+  TH_LEGACY_ULONG (__stdcall *Release)(TestAidDirectDrawClipper *);
+  void *GetClipList;
+  void *GetHWnd;
+  void *Initialize;
+  void *IsClipListChanged;
+  void *SetClipList;
+  TH_LEGACY_HRESULT (__stdcall *SetHWnd)(TestAidDirectDrawClipper *, TH_LEGACY_DWORD, void *);
+} TestAidDirectDrawClipperVtbl;
+struct TestAidDirectDrawClipper {
+  TestAidDirectDrawClipperVtbl *lpVtbl;
+};
+
+/* Windowed test aid: a Direct3D or Glide adapter cannot run in a window here, so fall back to a plain
+   DirectDraw record of the primary display driver (software renderer). Returns the adapter to use. */
+static FrontendDisplayAdapterIndex
+GraphicsDirectDraw_TestAidWindowedAdapter(FrontendDisplayAdapterIndex adapterIndex)
+{
+  FrontendDisplayAdapterIndex index;
+
+  if ((g_GraphicsAdapters[adapterIndex].adapterGuid.Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) &&
+      (g_GraphicsAdapters[adapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE)) {
+    return adapterIndex;
+  }
+  for (index = 0; (uint32_t)index < g_GraphicsAdapterCount; index++) {
+    if ((g_GraphicsAdapters[index].adapterGuid.Data1 == 0) &&
+        (g_GraphicsAdapters[index].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE)) {
+      Thandor_Log("test aid: windowed mode supports only the software renderer: adapter %u instead of %u",
+                  (unsigned)index, (unsigned)adapterIndex);
+      return index;
+    }
+  }
+  Thandor_Log("test aid: windowed mode supports only the software renderer, but no software adapter "
+              "exists; keeping adapter %u", (unsigned)adapterIndex);
+  return adapterIndex;
+}
+
+/* Windowed test aid: sizes the window to the mode and clips the primary surface to it. */
+static TH_LEGACY_HRESULT GraphicsDirectDraw_TestAidAttachWindowClipper(uint32_t width,uint32_t height)
+{
+  TestAidDirectDrawClipper *clipper;
+  TH_LEGACY_HRESULT result;
+
+  Thandor_TestAidSetWindowClientSize(g_MainWindow,width,height);
+  clipper = NULL;
+  result = g_DirectDraw2->lpVtbl->CreateClipper(g_DirectDraw2,0,(TH_LEGACY_LPVOID *)&clipper,NULL);
+  if (result == 0) {
+    result = clipper->lpVtbl->SetHWnd(clipper,0,g_MainWindow);
+    if (result == 0) {
+      result = g_PrimarySurface3->lpVtbl->SetClipper(g_PrimarySurface3,clipper);
+    }
+    clipper->lpVtbl->Release(clipper); /* the primary surface keeps its own reference */
+  }
+  if (result != 0) {
+    Thandor_Log("test aid: windowed mode could not attach a clipper (%08x)", (unsigned)result);
+  }
+  return result;
+}
 
 /* Address: 0x00423CF0.
    Tells whether the display mode (width, height, bitsPerPixel, adapterIndex) was enumerated
@@ -219,6 +284,9 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
   int completedStages;
 
   completedStages = 0;
+  if (Thandor_TestAidWindowed()) {
+    adapterIndex = GraphicsDirectDraw_TestAidWindowedAdapter(adapterIndex);
+  }
   /* EAX as the Glide path returns it. GraphicsGlide3_ApplyDisplayModeAndInitializeResources preserves EAX, so the
      original hands back whatever EAX held before the call (the caller's EAX on the first call, otherwise the last
      COM Release result). The caller only reads it with CF set; 0x1a is the mode error the Glide callee computes
@@ -336,6 +404,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
     stageOrLoopCounter = 2;
     if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
     comResult = g_DirectDraw2->lpVtbl->SetCooperativeLevel(g_DirectDraw2,g_MainWindow,
+                                                        Thandor_TestAidWindowed() ? DDSCL_NORMAL :
                                                         DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE);
     errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE;
     stageOrLoopCounter = 3;
@@ -343,7 +412,12 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
     completedStages = 4;
     g_ActiveGraphicsAdapterIndex = adapterIndex;
   }
-  comResult = g_DirectDraw2->lpVtbl->SetDisplayMode(g_DirectDraw2,width,height,bitsPerPixel,0,0);
+  if (Thandor_TestAidWindowed()) {
+    comResult = 0; /* windowed test aid: the desktop keeps its mode (and colour depth) */
+  }
+  else {
+    comResult = g_DirectDraw2->lpVtbl->SetDisplayMode(g_DirectDraw2,width,height,bitsPerPixel,0,0);
+  }
   adapterRecord = g_GraphicsAdapters;
   errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_SET_DISPLAY_MODE;
   stageOrLoopCounter = completedStages;
@@ -369,6 +443,9 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
       errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
       stageOrLoopCounter = completedStages + 2;
       if (comResult == 0) {
+        if (Thandor_TestAidWindowed()) {
+          GraphicsDirectDraw_TestAidAttachWindowClipper(width,height);
+        }
         Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
         stageOrLoopCounter = completedStages + 3;
         if (adapterRecord[adapterIndex].deviceGuid.Data1 == 0) {
@@ -406,6 +483,14 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
         if ((((comResult == 0) && (stageOrLoopCounter = completedStages + 1, g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0)
              ) && (stageOrLoopCounter = completedStages + 2, g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0)) &&
            (stageOrLoopCounter = completedStages + 3, g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0)) {
+          if (Thandor_TestAidWindowed() && (bitsPerPixel != g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount)) {
+            /* windowed test aid: the surfaces have the desktop's depth, and the blitters chosen below, the
+               renderer's queue (bytesPerPixel) and the pixel packing must all follow the surfaces */
+            Thandor_Log("test aid: windowed %ux%u uses the desktop depth of %u bits instead of %u",
+                        (unsigned)width,(unsigned)height,(unsigned)g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount,
+                        (unsigned)bitsPerPixel);
+            bitsPerPixel = g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount;
+          }
           g_SoftwarePixelFormatConfig.redMask = g_SurfaceDesc.ddpfPixelFormat.dwRBitMask;
           g_SoftwarePixelFormatConfig.greenMask = g_SurfaceDesc.ddpfPixelFormat.dwGBitMask;
           g_SoftwarePixelFormatConfig.blueMask = g_SurfaceDesc.ddpfPixelFormat.dwBBitMask;

@@ -7,9 +7,17 @@
 
 #include <thandor/platform/input/devices.h>
 #include <thandor/thandor.h>
+#include <thandor/platform/bootstrap/image.h>
 #include <intrin.h>
 
 /* Implementation ownership: platform/input/devices. */
+
+/* DirectInput mouse cooperative level: exclusive in the foreground like the original, non-exclusive for the
+   windowed test aid (OPEN_THANDOR_WINDOWED) so the desktop mouse is not grabbed. */
+static TH_LEGACY_DWORD DirectInputMouse_CooperativeLevel(void)
+{
+  return Thandor_TestAidWindowed() ? (DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) : (DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+}
 
 /* Address: 0x00417280.
    Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of
@@ -137,7 +145,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
       if (directInputResult == 0) {
         initStage = 3;
         directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                          (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+                          (g_MouseDevice,g_MainWindow,DirectInputMouse_CooperativeLevel());
         if (directInputResult == 0) {
           initStage = 4;
           directInputResult = g_MouseDevice->lpVtbl->SetProperty
@@ -268,7 +276,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
         deviceConfigResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
         if (deviceConfigResult == DI_OK) {
           deviceConfigResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
-                              (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+                              (g_MouseDevice,g_MainWindow,DirectInputMouse_CooperativeLevel());
           if (deviceConfigResult == DI_OK) {
             deviceConfigResult = g_MouseDevice->lpVtbl->SetProperty
                               (g_MouseDevice,DIPROP_BUFFERSIZE,&MouseBufferProperty.diph);
@@ -336,6 +344,11 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
   int processedCount;
   
   processedCount = 0;
+  /* test aid (not in the original): while an input script (OPEN_THANDOR_SCRIPT) drives the game, the real
+     mouse is ignored so it cannot move the cursor between a scripted move and click */
+  if (Thandor_TestAidScriptActive()) {
+    return;
+  }
   /* XCHG: the timer callback and the main thread (UiPointer_DispatchPendingEvents) both come here */
   wasBusyOrEventIndex = THANDOR_ATOMIC_EXCHANGE(&g_MousePollBusy,1);
   errorAttempts = 0;
