@@ -236,7 +236,8 @@ static void Thandor_SelfTestStretchCompare(void)
 /* OPEN_THANDOR_SELFTEST=scanaddr decodes every entry of the packages next to the executable (all
    but FILME.PCK) and writes each aligned dword in the original image range 0x401000-0x58C000 to
    scanaddr.txt: package, entry path, type tag, offset, value. Used to find assets that store
-   original code or data addresses. */
+   original code or data addresses. With OPEN_THANDOR_DUMPTEXT=<dir> it also writes every decoded
+   text page (*.str, *.txt) to <dir>\<package>_<entry path>. */
 /* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
 static ArenaAllocResult SelfTest_Alloc(uint32_t bytes)
 {
@@ -334,6 +335,26 @@ static void Thandor_SelfTestScanAddresses(void)
                 fprintf(out, "%s %s DECODE-FAILED\n", list[p], name);
             }
             else {
+                const char *dumpDirectory = getenv("OPEN_THANDOR_DUMPTEXT");
+                size_t nameLength = strlen(name);
+                if (dumpDirectory != NULL && nameLength > 4 &&
+                    (_stricmp(name + nameLength - 4, ".str") == 0 || _stricmp(name + nameLength - 4, ".txt") == 0)) {
+                    /* <dir>\<package>_<entry path with '\' as '_'> holds the decoded entry */
+                    char dumpPath[600];
+                    FILE *dump;
+                    int j;
+                    sprintf(dumpPath, "%s\\%s_%s", dumpDirectory, list[p], name);
+                    for (j = (int)strlen(dumpDirectory) + 1; dumpPath[j] != 0; j++) {
+                        if (dumpPath[j] == '\\' || dumpPath[j] == '/') {
+                            dumpPath[j] = '_';
+                        }
+                    }
+                    dump = fopen(dumpPath, "wb");
+                    if (dump != NULL) {
+                        fwrite(unpacked, 1, header.unpackedSize, dump);
+                        fclose(dump);
+                    }
+                }
                 for (i = 0; i + 4 <= header.unpackedSize; i += 4) {
                     uint32_t value = *(uint32_t *)(unpacked + i);
                     if ((value >= 0x401000 && value < 0x58c000) || (value >= 0x10000000 && value < 0x10300000)) {
