@@ -14,10 +14,15 @@
 /* Submodule: audio/codec/sam. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* A .sam block: 256 transform coefficients <-> 256 PCM samples per channel. */
+#define SAM_BLOCK_SAMPLE_COUNT 256
+/* The MMX cosine transforms compute 4 outputs (one qword, four 256-entry cosine rows) per loop pass. */
+#define SAM_MMX_OUTPUTS_PER_PASS 4
+
 /* 0x00417700 */
 PreservedEaxEdxRegisterPair64 __fastcall
 SoundCoefficientTransform_ApplyCosineBanksMmx
-          (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputSamples,
+          (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputMonoPcm,
           SoundCoefficientBlock256 *coefficientBlock);
 
 /* 0x00418560 */
@@ -26,7 +31,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
 
 /* 0x004193D0 */
 void __thandor_void_preserve_eax_ecx_edx
-SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coefficients);
+SoundSample_TransformPcmBlockToCoefficientsMmx(short *outputCoefficients,short *inputPcm);
 
 /* 0x0041A430 */
 uint32_t __thandor_eax_preserve_ecx_edx

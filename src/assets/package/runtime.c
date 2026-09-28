@@ -68,19 +68,19 @@ bool __thandor_cf_preserve_eax_ecx_edx LevelPackage_ValidateAndMount(uint16_t *l
 
 
 /* Address: 0x0040E840.
-   Ownership: assets/package/runtime.
-   Purpose: Replaces an existing path when present, then appends a new 0x200-byte entry header and encoded payload.
-   compressionMethod indexes the verified three-entry encoder table; method 1 writes a four-byte-aligned stored
-   payload directly. The first payload dword becomes typeTag. CF reports failure and the mounted directory is
-   refreshed after success.
-   Local calls: Package_FindEntryInMount, Package_DeleteEntry, Package_ReadDirectory.
+   Writes path into the writable mounted package fileHandle, replacing an existing entry of that name: the
+   archive header in g_PackageScratchBuffer gets one more entry and the new size, then the entry header and
+   its payload are appended at the end of the file. compressionMethod indexes g_PckEncoderTable, except
+   PCK_COMPRESSION_STORED, which appends the source dword-aligned as it is; the first source dword becomes
+   the entry's typeTag. The in-memory directory is reloaded afterwards; CF set with an error code on failure.
+   Called directly by the save-game writer in ui/ingame/runtime.c (no callback table).
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle)
 
 {
-  uint8_t *destination;
+  uint8_t *destination; /* archive header, then the new entry header, then (encoded) its payload */
   uint32_t errorCode;
   FileIoByteCount byteCount;
   uint32_t alignedByteCount;
@@ -92,7 +92,7 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
   FileSystemReadResult readResult;
   PckCodecResult encodeResult;
   FileSystemWriteResult writeResult;
-  
+
   destination = g_PackageScratchBuffer;
   findResult = Package_FindEntryInMount(path,fileHandle);
   if (!findResult.notFound) {
@@ -103,32 +103,36 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
   seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
   errorCode = seekResult.positionOrError;
   if (!seekResult.failed) {
-    readResult = g_FileSystemReadExact(0x200,destination,(void *)fileHandle);
+    readResult = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
     errorCode = readResult.valueOrError;
     if (!readResult.failed) {
       seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
       errorCode = seekResult.positionOrError;
       if (!seekResult.failed) {
-        *(int *)(destination + 0xb0) = *(int *)(destination + 0xb0) + 1;
+        ((PckArchiveHeader *)destination)->entryCount++;
         if (compressionMethod == PCK_COMPRESSION_STORED) {
           alignedByteCount = unpackedSize + 3 & 0xfffffffc;
-          *(uint32_t *)(destination + 0x3f8) = alignedByteCount;
-          destination[0x3fc] = 1;
-          destination[0x3fd] = 0;
-          destination[0x3fe] = 0;
-          destination[0x3ff] = 0;
-          *(uint32_t *)(destination + 4) = *(int *)(destination + 4) + alignedByteCount + 0x200;
-          destination[0x3ec] = 0;
-          destination[0x3ed] = 0;
-          destination[0x3ee] = 0;
-          destination[0x3ef] = 0;
-          *(uint32_t *)(destination + 0x3f4) = *sourceData;
-          *(PckDecodedByteCount *)(destination + 0x3f0) = unpackedSize;
-          writeResult = g_FileSystemWriteExactOrFlush(0x200,destination,(void *)fileHandle);
+          *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = alignedByteCount;
+          /* compressionMethod = PCK_COMPRESSION_STORED and runtimePayloadOffset = 0, byte by byte (a dword
+             store schedules differently) */
+          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD] = PCK_COMPRESSION_STORED;
+          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 1] = 0;
+          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 2] = 0;
+          destination[PCK_NEW_ENTRY_COMPRESSION_METHOD + 3] = 0;
+          *(uint32_t *)(destination + PCK_ARCHIVE_SIZE) =
+               *(int *)(destination + PCK_ARCHIVE_SIZE) + alignedByteCount + PCK_ENTRY_HEADER_BYTES;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
+          *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
+          *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
+          writeResult = g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
           errorCode = writeResult.valueOrError;
           if (writeResult.failed) goto Package_UpsertEntry_Fail;
-          nameDestination = destination + 0x200;
-          for (dwordsRemaining = 0x7b; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+          /* PckEntryHeader.path: 0x7B dwords = PCK_ENTRY_PATH_UNITS code units */
+          nameDestination = destination + PCK_ENTRY_HEADER_BYTES;
+          for (dwordsRemaining = 0x7b; dwordsRemaining != 0; dwordsRemaining--) {
             *(uint32_t *)nameDestination = *(uint32_t *)path;
             path = path + 2;
             nameDestination = nameDestination + 4;
@@ -136,7 +140,8 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
           seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_END,0,(void *)fileHandle);
           errorCode = seekResult.positionOrError;
           if (seekResult.failed) goto Package_UpsertEntry_Fail;
-          writeResult = g_FileSystemWriteExactOrFlush(0x200,destination + 0x200,(void *)fileHandle);
+          writeResult = g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination + PCK_ENTRY_HEADER_BYTES,
+                                                      (void *)fileHandle);
           errorCode = writeResult.valueOrError;
           if (writeResult.failed) goto Package_UpsertEntry_Fail;
           writeResult = g_FileSystemWriteExactOrFlush(alignedByteCount,sourceData,(void *)fileHandle);
@@ -144,25 +149,27 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
           if (writeResult.failed) goto Package_UpsertEntry_Fail;
         }
         else {
+          /* encode straight behind the new entry header, so both are written in one go */
           encodeResult = g_PckEncoderTable[compressionMethod]
-                            (0x7ffc00,destination + 0x400,unpackedSize,(uint8_t *)sourceData);
+                            (PACKAGE_SCRATCH_BUFFER_BYTES - 2 * PCK_ENTRY_HEADER_BYTES,
+                             destination + 2 * PCK_ENTRY_HEADER_BYTES,unpackedSize,(uint8_t *)sourceData);
           errorCode = encodeResult.byteCountOrError;
           if (encodeResult.failed) goto Package_UpsertEntry_Fail;
-          *(uint32_t *)(destination + 0x3f8) = errorCode;
-          byteCount = errorCode + 0x200;
-          *(PckCompressionMethod *)(destination + 0x3fc) = compressionMethod;
-          *(FileIoByteCount *)(destination + 4) = *(int *)(destination + 4) + byteCount;
-          destination[0x3ec] = 0;
-          destination[0x3ed] = 0;
-          destination[0x3ee] = 0;
-          destination[0x3ef] = 0;
-          *(uint32_t *)(destination + 0x3f4) = *sourceData;
-          *(PckDecodedByteCount *)(destination + 0x3f0) = unpackedSize;
-          writeResult = g_FileSystemWriteExactOrFlush(0x200,destination,(void *)fileHandle);
+          *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = errorCode;
+          byteCount = errorCode + PCK_ENTRY_HEADER_BYTES;
+          *(PckCompressionMethod *)(destination + PCK_NEW_ENTRY_COMPRESSION_METHOD) = compressionMethod;
+          *(FileIoByteCount *)(destination + PCK_ARCHIVE_SIZE) = *(int *)(destination + PCK_ARCHIVE_SIZE) + byteCount;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET] = 0;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 1] = 0;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 2] = 0;
+          destination[PCK_NEW_ENTRY_PAYLOAD_OFFSET + 3] = 0;
+          *(uint32_t *)(destination + PCK_NEW_ENTRY_TYPE_TAG) = *sourceData;
+          *(PckDecodedByteCount *)(destination + PCK_NEW_ENTRY_UNPACKED_SIZE) = unpackedSize;
+          writeResult = g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
           errorCode = writeResult.valueOrError;
           if (writeResult.failed) goto Package_UpsertEntry_Fail;
-          nameDestination = destination + 0x200;
-          for (dwordsRemaining = 0x7b; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+          nameDestination = destination + PCK_ENTRY_HEADER_BYTES;
+          for (dwordsRemaining = 0x7b; dwordsRemaining != 0; dwordsRemaining--) {
             *(uint32_t *)nameDestination = *(uint32_t *)path;
             path = path + 2;
             nameDestination = nameDestination + 4;
@@ -171,7 +178,7 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
           errorCode = seekResult.positionOrError;
           if (seekResult.failed) goto Package_UpsertEntry_Fail;
           writeResult = g_FileSystemWriteExactOrFlush
-                            (byteCount,destination + 0x200,(void *)fileHandle);
+                            (byteCount,destination + PCK_ENTRY_HEADER_BYTES,(void *)fileHandle);
           errorCode = writeResult.valueOrError;
           if (writeResult.failed) goto Package_UpsertEntry_Fail;
         }
@@ -335,23 +342,23 @@ Package_MountLowPriority_Fail:
 
 
 /* Address: 0x0040E6F0.
-   Ownership: assets/package/runtime.
-   Purpose: Deletes one exact path from a writable mounted PCK. Missing entries are treated as success. The routine
-   rewrites the archive header, compacts all following bytes through the shared scratch buffer, truncates the file,
-   and reloads the in-memory directory. CF reports file or rewrite failure.
-   Local calls: Package_FindEntryInMount, Package_ReadDirectory.
+   Deletes the entry named path from the writable mounted package fileHandle (a missing entry counts as
+   deleted): the archive header loses one entry and its size, everything behind the entry is moved down over
+   it through g_PackageScratchBuffer, the file is truncated there and the in-memory directory is reloaded.
+   CF set with an error code on failure. Called directly by Package_UpsertEntry and the save-game writer in
+   ui/ingame/runtime.c (no callback table).
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle)
 
 {
   PckStoredByteCount entryPackedSize;
-  int archiveEndOffset;
+  int archiveEndOffset; /* archive size before the delete */
   uint8_t *destination;
   PckEntryHeader *foundEntry;
-  FileSystemFilePosition distance;
+  FileSystemFilePosition tailOffset; /* first byte behind the deleted entry */
   PckEntryHeader *statusOrError;
-  uint32_t byteCount;
+  uint32_t tailByteCount;
   PackageMountEntryResult findResult;
   FileSystemSeekResult seekResult;
   FileSystemReadResult readResult;
@@ -364,7 +371,7 @@ Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle)
   foundEntry = findResult.entry;
   statusOrError = foundEntry;
   if (findResult.notFound) {
-    /* A missing entry counts as deleted. */
+    /* a missing entry counts as deleted */
     successResult.failed = false;
     successResult.valueOrError = (uint32_t)statusOrError;
     return successResult;
@@ -373,36 +380,40 @@ Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle)
   statusOrError = (PckEntryHeader *)seekResult.positionOrError;
   if (!seekResult.failed) {
     entryPackedSize = foundEntry->packedSize;
-    readResult = g_FileSystemReadExact(0x200,destination,(void *)fileHandle);
+    readResult = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
     statusOrError = (PckEntryHeader *)readResult.valueOrError;
     if (!readResult.failed) {
-      archiveEndOffset = *(int *)(destination + 4);
-      *(int *)(destination + 0xb0) = *(int *)(destination + 0xb0) + -1;
-      *(PckStoredByteCount *)(destination + 4) = *(int *)(destination + 4) - (entryPackedSize + 0x200);
+      archiveEndOffset = *(int *)(destination + PCK_ARCHIVE_SIZE);
+      ((PckArchiveHeader *)destination)->entryCount--;
+      *(PckStoredByteCount *)(destination + PCK_ARCHIVE_SIZE) =
+           *(int *)(destination + PCK_ARCHIVE_SIZE) - (entryPackedSize + PCK_ENTRY_HEADER_BYTES);
       seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
       statusOrError = (PckEntryHeader *)seekResult.positionOrError;
       if (!seekResult.failed) {
-        writeResult = g_FileSystemWriteExactOrFlush(0x200,destination,(void *)fileHandle);
+        writeResult = g_FileSystemWriteExactOrFlush(PCK_ENTRY_HEADER_BYTES,destination,(void *)fileHandle);
         statusOrError = (PckEntryHeader *)writeResult.valueOrError;
         if (!writeResult.failed) {
-          distance = foundEntry->runtimePayloadOffset + foundEntry->packedSize + 0x200;
-          byteCount = archiveEndOffset - distance;
-          if (byteCount == 0) {
+          /* runtimePayloadOffset is the file offset of the entry header */
+          tailOffset = foundEntry->runtimePayloadOffset + foundEntry->packedSize + PCK_ENTRY_HEADER_BYTES;
+          tailByteCount = archiveEndOffset - tailOffset;
+          if (tailByteCount == 0) {
             seekResult = g_FileSystemSeek
                               (FILESYSTEM_SEEK_BEGIN,foundEntry->runtimePayloadOffset,(void *)fileHandle
                               );
             statusOrError = (PckEntryHeader *)seekResult.positionOrError;
             if (seekResult.failed) goto Package_DeleteEntry_Fail;
-            writeResult = g_FileSystemWriteExactOrFlush(0,(void *)0x0,(void *)fileHandle);
+            /* a zero-byte write truncates the file at the current position */
+            writeResult = g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)writeResult.valueOrError;
             if (writeResult.failed) goto Package_DeleteEntry_Fail;
           }
           else {
-            seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle);
+            seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,tailOffset,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)seekResult.positionOrError;
-            if ((seekResult.failed) || (statusOrError = (PckEntryHeader *)0x14, 0x800000 < byteCount))
+            if ((seekResult.failed) || (statusOrError = (PckEntryHeader *)FATAL_ERROR_GENERAL_FAILURE,
+                                         PACKAGE_SCRATCH_BUFFER_BYTES < tailByteCount))
             goto Package_DeleteEntry_Fail;
-            readResult = g_FileSystemReadExact(byteCount,g_PackageScratchBuffer,(void *)fileHandle);
+            readResult = g_FileSystemReadExact(tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)readResult.valueOrError;
             if (readResult.failed) goto Package_DeleteEntry_Fail;
             seekResult = g_FileSystemSeek
@@ -411,10 +422,10 @@ Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle)
             statusOrError = (PckEntryHeader *)seekResult.positionOrError;
             if (seekResult.failed) goto Package_DeleteEntry_Fail;
             writeResult = g_FileSystemWriteExactOrFlush
-                              (byteCount,g_PackageScratchBuffer,(void *)fileHandle);
+                              (tailByteCount,g_PackageScratchBuffer,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)writeResult.valueOrError;
             if (writeResult.failed) goto Package_DeleteEntry_Fail;
-            writeResult = g_FileSystemWriteExactOrFlush(0,(void *)0x0,(void *)fileHandle);
+            writeResult = g_FileSystemWriteExactOrFlush(0,NULL,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)writeResult.valueOrError;
             if (writeResult.failed) goto Package_DeleteEntry_Fail;
           }
@@ -861,15 +872,16 @@ void __thandor_void_preserve_eax_ecx_edx Package_SetLastErrorPath(uint16_t *path
 
 
 /* Address: 0x0040E640.
-   Ownership: assets/package/runtime.
-   Purpose: Finds one exact lowercase UTF-16 path in the selected mounted archive. CF clear returns a
-   PckEntryHeader pointer; CF set indicates failure.
+   Finds the entry whose name equals path exactly (no wildcards, case-sensitive: package paths are stored in
+   lower case) in the package mounted as fileHandle. notFound (CF) is also set for a path longer than an
+   entry name, an unmounted handle or an empty package. Called directly by Package_UpsertEntry and
+   Package_DeleteEntry (no callback table).
 */
 PackageMountEntryResult __thandor_eax_cf_preserve_ecx_edx
 Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
 
 {
-  int lengthRemaining;
+  int lengthRemaining; /* PCK_ENTRY_PATH_UNITS minus the path length, terminator included */
   int remainingCount;
   PckEntryCount entriesRemaining;
   PckMountSlot *mountSlot;
@@ -884,26 +896,26 @@ Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
   PckEntryHeader *currentEntry;
   
   matched = true;
-  lengthRemaining = 0xf6;
+  lengthRemaining = PCK_ENTRY_PATH_UNITS;
   pathCursor = path;
   do {
     if (lengthRemaining == 0) break;
-    lengthRemaining = lengthRemaining + -1;
+    lengthRemaining--;
     matched = *pathCursor == 0;
-    pathCursor = pathCursor + 1;
+    pathCursor++;
   } while (!matched);
   if (!matched) {
-    pathTooLongResult.entry = (PckEntryHeader *)0x0;
+    pathTooLongResult.entry = NULL;
     pathTooLongResult.notFound = true;
     return pathTooLongResult;
   }
   mountSlot = g_PackageMountSlots;
-  remainingCount = 0x400;
+  remainingCount = PACKAGE_MOUNT_SLOT_COUNT;
   while (fileHandle != mountSlot->fileHandle) {
-    mountSlot = mountSlot + 1;
-    remainingCount = remainingCount + -1;
+    mountSlot++;
+    remainingCount--;
     if (remainingCount == 0) {
-      noMountResult.entry = (PckEntryHeader *)0x0;
+      noMountResult.entry = NULL;
       noMountResult.notFound = true;
       return noMountResult;
     }
@@ -911,21 +923,21 @@ Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
   currentEntry = mountSlot->entryHeaders;
   entriesRemaining = mountSlot->entryCount;
   if (entriesRemaining == 0) {
-    emptyMountResult.entry = (PckEntryHeader *)0x0;
+    emptyMountResult.entry = NULL;
     emptyMountResult.notFound = true;
     return emptyMountResult;
   }
   do {
-    /* REPE CMPSW over the path length including its terminator. */
+    /* REPE CMPSW over the path length including its terminator */
     matched = false;
-    remainingCount = -(lengthRemaining + -0xf6);
+    remainingCount = -(lengthRemaining - PCK_ENTRY_PATH_UNITS);
     pathCursor = path;
     nameCursor = currentEntry->path;
     while (remainingCount != 0) {
       matched = *pathCursor == *nameCursor;
-      remainingCount = remainingCount + -1;
-      pathCursor = pathCursor + 1;
-      nameCursor = nameCursor + 1;
+      remainingCount--;
+      pathCursor++;
+      nameCursor++;
       if (!matched) break;
     }
     if (matched) {
@@ -933,10 +945,10 @@ Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
       foundResult.entry = currentEntry;
       return foundResult;
     }
-    currentEntry = currentEntry + 1;
-    entriesRemaining = entriesRemaining - 1;
+    currentEntry++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  notFoundResult.entry = (PckEntryHeader *)0x0;
+  notFoundResult.entry = NULL;
   notFoundResult.notFound = true;
   return notFoundResult;
 }

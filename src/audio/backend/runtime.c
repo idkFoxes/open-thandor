@@ -38,9 +38,9 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void)
 
 
 /* Address: 0x00417570.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend placeholder. Returns pointer value 0xFFFFFFFF with CF clear and consumes one
-   SoundSampleAsset argument.
+   Silent-backend stub in slot g_SoundCreateSampleVoiceSet (image 0x00417338, until DirectSound_Init
+   switches the slots to DirectSound). Returns the dummy voice set 0xFFFFFFFF as success, so callers
+   holding a sample keep a non-NULL handle even without sound.
 */
 SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
@@ -55,8 +55,8 @@ SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 
 /* Address: 0x00417580.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend no-op release. CF is cleared.
+   Silent-backend stub in slot g_SoundReleaseSampleVoiceSet (image 0x0041733C): nothing to release,
+   clears CF.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
@@ -67,9 +67,8 @@ SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 
 /* Address: 0x00417590.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend placeholder. Returns pointer value 0xFFFFFFFF with CF clear and consumes the five raw-
-   PCM arguments.
+   Silent-backend stub in slot g_SoundCreatePcmVoiceSet (image 0x00417340). Ignores the raw PCM
+   description and returns the dummy voice set 0xFFFFFFFF as success.
 */
 PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreatePcmVoiceSet
@@ -86,8 +85,8 @@ SoundBackendDisabled_CreatePcmVoiceSet
 
 
 /* Address: 0x004175A0.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend no-op release. CF is cleared.
+   Silent-backend stub in slot g_SoundReleasePcmVoiceSet (image 0x00417344): nothing to release,
+   clears CF.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
@@ -98,8 +97,8 @@ SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 
 /* Address: 0x004175B0.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend one-shot placeholder. It only clears CF and leaves EAX unchanged.
+   Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
+   success (CF clear); the original leaves EAX unchanged.
 */
 SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayOneShot
@@ -114,8 +113,8 @@ SoundBackendDisabled_PlayOneShot
 
 
 /* Address: 0x004175C0.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend looping placeholder. It only clears CF and leaves EAX unchanged.
+   Silent-backend stub in slot g_SoundPlayLooping (image 0x0041734C): plays nothing and reports
+   success (CF clear); the original leaves EAX unchanged.
 */
 SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayLooping
@@ -130,8 +129,8 @@ SoundBackendDisabled_PlayLooping
 
 
 /* Address: 0x004175D0.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend stop no-op. CF is cleared.
+   Silent-backend stub in slot g_SoundStopVoice (image 0x00417350): nothing plays, so nothing to
+   stop; clears CF.
 */
 void __thandor_void_preserve_eax_ecx_edx SoundBackendDisabled_StopVoice(IDirectSoundBuffer *voice)
 
@@ -141,8 +140,8 @@ void __thandor_void_preserve_eax_ecx_edx SoundBackendDisabled_StopVoice(IDirectS
 
 
 /* Address: 0x004175E0.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend playing query. It always sets CF, meaning not playing.
+   Silent-backend stub in slot g_SoundIsVoicePlaying (image 0x00417358): always sets CF, meaning the
+   voice is not playing.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
@@ -153,8 +152,8 @@ SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 
 /* Address: 0x00417600.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend query placeholder. Returns EDX:EAX equal to zero.
+   Silent-backend stub in slot g_SoundQueryVoiceRegs (image 0x0041735C): returns 0 in EDX:EAX, i.e.
+   no voice state.
 */
 uint64_t SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice)
 
@@ -163,8 +162,8 @@ uint64_t SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice)
 }
 
 /* Address: 0x00417610.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend gain-update no-op.
+   Silent-backend stub in slot g_SoundSetVoiceGains (image 0x00417360): ignores the new left/right
+   gains.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoundBackendDisabled_SetVoiceGains

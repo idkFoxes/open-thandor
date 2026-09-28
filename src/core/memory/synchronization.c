@@ -11,18 +11,18 @@
 /* Implementation ownership: core/memory/synchronization. */
 
 /* Address: 0x00407470.
-   Ownership: core/memory/synchronization.
-   Purpose: Treats null as an immediate success. For a non-null lock, repeatedly performs atomic xchg(lock,-1)
-   until the previous value was zero. The loop has no pause, yield, timeout, ownership tracking, or recursion
-   support. CF is clear on return.
+   Busy-waits until the lock is taken: swaps -1 into it (XCHG) until the previous value was zero. A null
+   lock succeeds at once; there is no pause, yield, timeout or recursion. Guards the per-tick state of the
+   frontend and in-game loops against the timer callbacks.
+   Reached through the function-pointer slot g_SpinLockAcquire (0x00402784).
 */
 void __thandor_void_preserve_eax_ecx_edx SpinLock_Acquire(RuntimeSpinLockValue *lockValue)
 
 {
-  RuntimeSpinLockValue *previousLockValue;
-  
+  RuntimeSpinLockValue *previousLockValue; /* first the lock pointer (null test), then the swapped-out value */
+
   previousLockValue = lockValue;
-  while (previousLockValue != (RuntimeSpinLockValue *)0x0) {
+  while (previousLockValue != NULL) {
     LOCK();
     previousLockValue = (RuntimeSpinLockValue *)*lockValue;
     *lockValue = SPIN_LOCK_LOCKED;
@@ -33,17 +33,17 @@ void __thandor_void_preserve_eax_ecx_edx SpinLock_Acquire(RuntimeSpinLockValue *
 
 
 /* Address: 0x004074A0.
-   Ownership: core/memory/synchronization.
-   Purpose: Treats null as success. For a non-null lock, performs one atomic xchg(lock,-1). CF clear means the
-   previous value was zero and the lock was acquired. CF set means it was already nonzero. EAX is preserved and is
-   not a scalar result.
+   Tries once to take the lock by swapping -1 into it (XCHG). Returns the original CF: false when the lock
+   was free and is now held (or the lock pointer is null), true when it was already busy, so the caller can
+   skip its work instead of waiting.
+   Reached through the function-pointer slot g_SpinLockTryAcquire (0x00402788).
 */
 bool __thandor_cf_preserve_eax_ecx_edx SpinLock_TryAcquireFlags(RuntimeSpinLockValue *lockValue)
 
 {
   RuntimeSpinLockValue previousLockValue;
-  
-  if (lockValue != (RuntimeSpinLockValue *)0x0) {
+
+  if (lockValue != NULL) {
     LOCK();
     previousLockValue = *lockValue;
     *lockValue = SPIN_LOCK_LOCKED;
@@ -57,14 +57,13 @@ bool __thandor_cf_preserve_eax_ecx_edx SpinLock_TryAcquireFlags(RuntimeSpinLockV
 
 
 /* Address: 0x004074D0.
-   Ownership: core/memory/synchronization.
-   Purpose: Treats null as a no-op. For a non-null lock, writes zero with a plain non-atomic store. CF is clear on
-   return.
+   Releases the lock with a plain (non-atomic) store of zero; a null lock is ignored.
+   Reached through the function-pointer slot g_SpinLockRelease (0x0040278C).
 */
 void __thandor_void_preserve_eax_ecx_edx SpinLock_Release(RuntimeSpinLockValue *lockValue)
 
 {
-  if (lockValue != (RuntimeSpinLockValue *)0x0) {
+  if (lockValue != NULL) {
     *lockValue = SPIN_LOCK_UNLOCKED;
   }
   return;
@@ -72,16 +71,17 @@ void __thandor_void_preserve_eax_ecx_edx SpinLock_Release(RuntimeSpinLockValue *
 
 
 /* Address: 0x004074F0.
-   Ownership: core/memory/synchronization.
-   Purpose: When lockValue is non-null, writes zero first and then invokes callback when callback is non-null. When
-   lockValue is null, callback is not invoked. The callback receives no arguments. CF is clear on return.
+   Releases the lock (plain store of zero) and then calls the argument-less callback, if any, so deferred
+   work can run once the lock is free. With a null lock nothing happens, not even the callback.
+   Reached through the function-pointer slot g_SpinLockReleaseAndInvoke (0x00402790); the UI pointer and
+   keyboard dispatchers use it to drop g_UiRuntimeFrameLock and run g_UiRuntimePostUnlockCallback.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockValue *lockValue)
 
 {
-  if ((lockValue != (RuntimeSpinLockValue *)0x0) &&
-     (*lockValue = SPIN_LOCK_UNLOCKED, callback != (SpinLockReleaseCallbackProc *)0x0)) {
+  if ((lockValue != NULL) &&
+     (*lockValue = SPIN_LOCK_UNLOCKED, callback != NULL)) {
     callback();
   }
   return;

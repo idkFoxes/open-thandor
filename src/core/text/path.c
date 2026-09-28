@@ -11,30 +11,34 @@
 /* Implementation ownership: core/text/path. */
 
 /* Address: 0x0040F240.
-   Ownership: core/text/path.
-   Purpose: Returns up to four low-byte extension characters packed in EAX after the final path separator. EAX is
-   zero when no extension exists; CF is clear on both paths.
+   Inverse of WidePath_SetExtensionCode: packs the low bytes of the four code units after the last '.' of the
+   final path component into EAX, first character in the lowest byte (e.g. "gfx" gives 0x786667); 0 when the
+   last component has no '.'. Always returns with CF clear. The four units are read unconditionally, so a
+   shorter extension also picks up the terminator and what follows it.
+   No caller, function-pointer table or data reference to 0x0040F240 was found in the port or the image data.
 */
 uint32_t WidePath_GetExtensionCode(uint16_t *path)
 
 {
   uint32_t *extensionCursor;
   short currentCodeUnit;
-  
+
+  /* A backslash restarts the search, so only a '.' in the last component counts. */
   do {
-    extensionCursor = (uint32_t *)0x0;
+    extensionCursor = NULL;
     while( true ) {
       currentCodeUnit = (short)*(uint32_t *)path;
       if (currentCodeUnit == 0) {
-        if (extensionCursor == (uint32_t *)0x0) {
+        if (extensionCursor == NULL) {
           return 0;
         }
-        return ((((extensionCursor[1] & 0xffffff) >> 0x10) << 8 | extensionCursor[1] & 0xff) << 8 |
-               (*extensionCursor & 0xffffff) >> 0x10) << 8 | *extensionCursor & 0xff;
+        /* bytes: char4 << 24 | char3 << 16 | char2 << 8 | char1 (the SHL/SHLD chain of the original) */
+        return ((((extensionCursor[1] & 0xffffff) >> 16) << 8 | extensionCursor[1] & 0xff) << 8 |
+               (*extensionCursor & 0xffffff) >> 16) << 8 | *extensionCursor & 0xff;
       }
       path = (uint16_t *)((int)path + 2);
-      if (currentCodeUnit == 0x5c) break;
-      if (currentCodeUnit == 0x2e) {
+      if (currentCodeUnit == '\\') break;
+      if (currentCodeUnit == '.') {
         extensionCursor = (uint32_t *)path;
       }
     }

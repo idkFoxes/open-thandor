@@ -94,7 +94,7 @@ const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {
     {0x00417620u, (void *)&CosineDerivedLookupTables_Init},
     {0x00417700u, (void *)&SoundCoefficientTransform_ApplyCosineBanksMmx},
     {0x00418560u, (void *)&SoundSample_DecodeCoefficientBlockToPcmMmx},
-    {0x004193D0u, (void *)&SoundSample_DecodeCoefficientBlockToMonoPcmMmx},
+    {0x004193D0u, (void *)&SoundSample_TransformPcmBlockToCoefficientsMmx},
     {0x0041A320u, (void *)&SoundSample_EncodePackedCoefficientBlock},
     {0x0041A430u, (void *)&SoundSample_DecodePackedCoefficientBlock},
     {0x0041A580u, (void *)&NetworkBackendFallback_Slot0_ReturnError43},

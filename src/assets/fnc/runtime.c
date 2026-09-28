@@ -11,9 +11,10 @@
 /* Implementation ownership: assets/fnc/runtime. */
 
 /* Address: 0x0041A610.
-   Ownership: assets/fnc/runtime.
-   Purpose: Checks the exact little-endian fnc signature. CF clear returns header->bindingMode in EAX; CF set
-   returns error code 0x62 when the signature is invalid.
+   Returns the binding mode (dword +0xB4) of an 'fnc' code module image with CF clear, or
+   FATAL_ERROR_FNC_MODULE_INVALID with CF set when the image lacks the 'fnc' signature. Lets a caller check the
+   mode before FncModule_LoadAndRelocate, which only supports mode 0. No caller or table slot referencing it was
+   found in src/ or src/generated/image_data.c.
 */
 uint32_t FncModule_GetBindingMode(FncModuleHeader *module)
 
@@ -21,7 +22,7 @@ uint32_t FncModule_GetBindingMode(FncModuleHeader *module)
   if (module->magic == ASSET_MAGIC_FNC) {
     return (module->exportBinding).bindingMode;
   }
-  return 0x62;
+  return FATAL_ERROR_FNC_MODULE_INVALID;
 }
 
 /* Address: 0x0041A640.

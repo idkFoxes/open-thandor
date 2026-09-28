@@ -93,11 +93,11 @@ WorldMotionSpline_EvaluateAndApplyAtTime
 
 
 /* Address: 0x0053CBB0.
-   Ownership: core/math/interpolation.
-   Purpose: Handles world motion spline evaluate and apply origin distance at time carry-flag result.
-   Local calls: CubicSpline_EvaluateValueQ12, CubicSpline_EvaluateDerivativeQ12,
-   WorldMotionSpline_ClearCachedDerivatives.
-   Cross-module calls: WorldRuntime_SetPosition80AndRebuildPosition60FromAngles [world/runtime/core].
+   Orbit variant of WorldMotionSpline_EvaluateAndApplyAtTime: evaluates the six-channel keyframe spline at
+   timeQ12 and applies channels 0..2 as the orbit origin (position80) and 3..5 as distance/yaw/pitch, from
+   which the world runtime rebuilds position60; the six derivatives are cached. Returns 1 (CF set) while the
+   spline runs; past the last keyframe it applies that keyframe, clears the derivatives and returns 0.
+   No caller, function-pointer table or data reference to 0x0053CBB0 was found in the port or the image data.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
 WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
@@ -119,44 +119,45 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
     currentKeyframe = keyframes;
     if ((uint32_t)timeQ12 < (uint32_t)currentKeyframe->timeQ12) {
       originX = CubicSpline_EvaluateValueQ12
-                          (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
+                          (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[0]);
       originY = CubicSpline_EvaluateValueQ12
-                          (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
+                          (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[1]);
       originZ = CubicSpline_EvaluateValueQ12
-                          (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
+                          (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[2]);
       distance = CubicSpline_EvaluateValueQ12
-                           (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
+                           (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[3]);
       yawAngle = CubicSpline_EvaluateValueQ12
-                        (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
-      yawAngle = yawAngle & 0xffff;
+                        (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[4]);
+      yawAngle = yawAngle & 0xffff; /* 16-bit angle: wrap to one turn */
       pitchAngle = CubicSpline_EvaluateValueQ12
-                             (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
+                             (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                 (pitchAngle,yawAngle,distance,originZ,originY,originX,worldRuntime);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[0]);
       g_WorldMotionSplineCachedDerivatives[1] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[1]);
       g_WorldMotionSplineCachedDerivatives[2] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[2]);
       g_WorldMotionSplineCachedDerivatives[3] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[3]);
       g_WorldMotionSplineCachedDerivatives[4] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[4]);
       g_WorldMotionSplineCachedDerivatives[5] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
       return 1;
     }
-    keyframeIndex = keyframeIndex + 1;
-    keyframeCount = keyframeCount + -1;
+    keyframeIndex++;
+    keyframeCount--;
     keyframes = currentKeyframe + 1;
   } while (keyframeCount != 0);
+  /* past the end: hold the last keyframe */
   WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
             (currentKeyframe->channel5Q12,currentKeyframe->channel4Q12 & 0xffff,currentKeyframe->channel3Q12,
              currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);

@@ -12,14 +12,10 @@
 /* Implementation ownership: core/math/fixed. */
 
 /* Address: 0x004BECB0.
-   Ownership: core/math/fixed.
-   Purpose: Builds two fixed-point rotation bases, composes them, extracts the resulting Euler angles, and returns
-   the composed orientation through the engine register convention. Kept distinct from Q12 coordinates, Q4/Q5
-   resource scales, attachment ordinals, and raw renderer flags. Typed parameters: p2 inputAngle0→AngleTurn32, p3
-   inputAngle1→AngleTurn32, p4 inputAngle2→AngleTurn32, p5 basisAngle0→AngleTurn32, p6 basisAngle1→AngleTurn32, p7
-   basisAngle2→AngleTurn32. Calling convention, storage, body bytes, control flow, and executable data remain
-   unchanged.
-   Local calls: FixedTransform_BuildRotationBasis, FixedTransform_Compose, FixedTransform_ExtractEulerAnglesRegs.
+   Composes two orientations given as angle triples: builds the rotation basis of each (basis angles into
+   g_ModelTransformScratchMatrix, input angles into the input scratch), multiplies them and extracts the angles
+   of the product again. Used by the army movement code to add a local rotation to a heading.
+   Returns EAX = azimuth, EBX = elevation, EDX = roll of the composed rotation.
 */
 FixedEulerAnglesEaxEbxEdx12 __thandor_eax_edx_cf_preserve_ecx
 FixedTransform_ComposeEulerAnglesRegs
@@ -27,7 +23,6 @@ FixedTransform_ComposeEulerAnglesRegs
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2)
 
 {
-  FixedEulerPairEdxEax8 composedEulerAnglePair;
   FixedEulerAnglesEaxEcxEdx12 extractedAngles;
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   
@@ -43,9 +38,10 @@ FixedTransform_ComposeEulerAnglesRegs
              (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix);
   extractedAngles = FixedTransform_ExtractEulerAnglesRegs
                     ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch);
+  /* extracted EAX = roll, ECX = azimuth, EDX = elevation, rotated into EDX, EAX, EBX */
   composedAngles.angle2 = extractedAngles.eaxAngle;
   composedAngles.angle0 = (int)THANDOR_PART(uint64_t, extractedAngles, 4);
-  composedAngles.angle1 = (int)((uint64_t)THANDOR_PART(uint64_t, extractedAngles, 4) >> 0x20);
+  composedAngles.angle1 = (int)((uint64_t)THANDOR_PART(uint64_t, extractedAngles, 4) >> 32);
   return composedAngles;
 }
 
@@ -88,15 +84,15 @@ FixedMath_VectorToAnglesAndLength3Regs
 
 
 /* Address: 0x00484A10.
-   Ownership: core/math/fixed.
-   Purpose: Pointer form of FixedMath_VectorToAnglesAndLength3Regs. EAX=length, EDX=elevation angle, ECX=azimuth
-   angle.
-   Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
+   Converts a vector into its length and two 16-bit angles: the elevation of z over the (x, y) plane and the
+   azimuth atan2(y, x) within it (the component roles differ from FixedMath_VectorToAnglesAndLength3Regs).
+   Returns EAX = length, EDX = elevation, ECX = azimuth (low 16 bits); squares are summed in 64 bits.
+   Used by the shot maintenance code for ballistic angles.
 */
 FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
 
 {
-  uint32_t elevationAngle16;
+  uint32_t horizontalLengthQ12;
   uint32_t elevationAngleResult;
   uint32_t azimuthAngle16;
   uint32_t vectorLengthQ12;
@@ -106,21 +102,21 @@ FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsF
   int64_t totalSquaredLengthQ24;
   int64_t squaredLengthAccumulatorQ24;
   GraphicsWorldCoordinateQ12 inputZQ12;
-  
+
   x = vector->x;
   inputZQ12 = vector->z;
   y = vector->y;
   squaredLengthAccumulatorQ24 = (int64_t)y * (int64_t)y + (int64_t)x * (int64_t)x;
-  elevationAngle16 =
+  horizontalLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 32),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
-  elevationAngleResult = FixedMath_Atan2Angle16(vector->z,elevationAngle16);
+  elevationAngleResult = FixedMath_Atan2Angle16(vector->z,horizontalLengthQ12);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
   totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (int64_t)inputZQ12 * (int64_t)inputZQ12;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)totalSquaredLengthQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)totalSquaredLengthQ24 >> 32),
                   (UInt64Half32)totalSquaredLengthQ24);
   lengthAnglesResult.elevationAngle = elevationAngleResult;
   lengthAnglesResult.lengthQ12 = vectorLengthQ12;
@@ -130,12 +126,9 @@ FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsF
 
 
 /* Address: 0x00484B70.
-   Ownership: core/math/fixed.
-   Purpose: Calculates a 2D vector length and wrapping 16-bit angle. EAX=length and EDX=angle. Typed parameters: p0
-   component0→FixedMathVectorComponent32_V342, p1 component1→FixedMathVectorComponent32_V342. Calling convention,
-   exact VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data
-   remain unchanged.
-   Local calls: FixedMath_Atan2Angle16, FixedMath_Length2.
+   Angle and length of a 2D vector: EDX = atan2(component0, component1) as a 16-bit angle (65536 = full
+   turn), EAX = floor(sqrt(component0^2 + component1^2)). Used by the army movement and combat code and the
+   shot catalog for planar headings and distances.
 */
 FixedLengthAngleEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 FixedMath_Vector2AngleAndLengthRegs
@@ -155,13 +148,9 @@ FixedMath_Vector2AngleAndLengthRegs
 
 
 /* Address: 0x004BEB20.
-   Ownership: core/math/fixed.
-   Purpose: Euler triple -> basis -> rotate vector; the billboard/view-facing rotation helper path. Kept distinct
-   from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed parameters: p5
-   rotationAngle0→AngleTurn32, p6 rotationAngle1→AngleTurn32, p7 rotationAngle2→AngleTurn32. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p2 inputZQ12→Q12, p3
-   inputYQ12→Q12, p4 inputXQ12→Q12.
-   Local calls: FixedTransform_BuildRotationBasis, FixedTransform_ApplyPoint.
+   Rotates the Q12 vector (x, y, z) by the rotation basis built from three angles and returns it in
+   EAX = x, ECX = y, EDX = z. The parameters are in the original's stack order (z first). Works through the
+   shared model-transform scratch globals; used by the model hierarchy for view-relative vectors.
 */
 FixedVectorEaxEcxEdx12
 FixedTransform_ApplyEulerRotationToVectorRegs
@@ -189,13 +178,10 @@ FixedTransform_ApplyEulerRotationToVectorRegs
 
 
 /* Address: 0x004BED10.
-   Ownership: core/math/fixed.
-   Purpose: Typed parameters: p2 stepMultiplier→FixedVectorStepMultiplier32_V344. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p4 vectorState→FixedVectorStateAddress32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: FixedMath_VectorToAnglesVec3Regs, FixedMath_DirectionFromAnglesScaledRegs.
+   Moves the vector at vectorState + 0x18 (a model node's local offset) along its own direction:
+   vector -= direction(vector) * directionScale * stepMultiplier. The army movement code uses it for weapon
+   attachment nodes with the weapon's backward-step scale and -elapsedTicks, which moves the offset outward
+   along its direction.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedVector_StepBackwardAlongOwnDirection
@@ -203,26 +189,22 @@ FixedVector_StepBackwardAlongOwnDirection
           FixedVectorStateAddress32 vectorState)
 
 {
-  FixedDirectionXZEdxEax8 stepDirectionXZQ12;
   FixedDirection stepDirection;
   FixedElevationAzimuth vectorAngles;
-  
+
   vectorAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)(vectorState + 0x18));
   stepDirection = FixedMath_DirectionFromAnglesScaledRegs(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,directionScale);
   *(int *)(vectorState + 0x18) = *(int *)(vectorState + 0x18) - stepDirection.x * stepMultiplier;
   *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - stepDirection.y * stepMultiplier;
   *(int *)(vectorState + 0x20) = *(int *)(vectorState + 0x20) - stepDirection.z * stepMultiplier;
-  return;
 }
 
 
 /* Address: 0x00521FA0.
-   Ownership: core/math/fixed.
-   Purpose: Solves the two angle results for a triangle from three fixed-point side lengths, using the verified
-   square-root and atan2 paths with saturated fallback states. Storage remains one signed 32-bit word. Typed
-   parameters: p0 sideLength0Q12→Q12, p1 sideLength1Q12→Q12, p2 sideLength2Q12→Q12. Calling convention, storage,
-   body bytes, control flow, and executable data remain unchanged.
-   Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
+   Two-bone joint solver for the leg suspension: for a triangle with sides s0, s1 and base s2 it returns
+   EAX = the angle between s2 and s1 and EDX = that angle plus the one between s2 and s0 (the bend at the
+   joint of s0 and s1). The height over the base comes from 64-bit sums of squares; when the triangle cannot
+   close or the base is at most 0x10, both angles are 0 when s0 < s2 (unsigned) and 0x8000 (half turn) otherwise.
 */
 FixedTriangleJointAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
@@ -248,11 +230,12 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
   side1Squared = (int64_t)sideLength1Q12 * (int64_t)sideLength1Q12;
   side0Squared = (int64_t)sideLength0Q12 * (int64_t)sideLength0Q12;
   cosineNumerator0 = (side2Squared - side1Squared) + side0Squared;
-  /* 64-bit (EBX:ECX) -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order */
+  /* 64-bit (EBX:ECX) -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order; with p = (s0^2 - s1^2) / s2
+     this is (2 * height)^2, so the square root is halved below like the two base projections */
   projectionOrHeightSquared =
        (((0 - projectionOrHeightSquared) - side2Squared) + side1Squared * 2) + side0Squared * 2;
   if ((-1 < projectionOrHeightSquared) && (0x10 < sideLength2Q12)) {
-    triangleHeight = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)projectionOrHeightSquared >> 0x20),(UInt64Half32)projectionOrHeightSquared);
+    triangleHeight = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)projectionOrHeightSquared >> 32),(UInt64Half32)projectionOrHeightSquared);
     firstAngle16 = FixedMath_Atan2Angle16((int)triangleHeight >> 1,(int)(cosineNumerator0 / (int64_t)sideLength2Q12) >> 1);
     solvedAngles.jointAngle0 =
          FixedMath_Atan2Angle16
@@ -294,10 +277,10 @@ FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
 
 
 /* Address: 0x00484E50.
-   Ownership: core/math/fixed.
-   Purpose: Extracts the two direction angles from the transform's third basis column. EDX=elevation angle and
-   ECX=azimuth angle.
-   Local calls: FixedMath_VectorToAngles3Regs.
+   Returns the direction angles of the transform's third basis column (row0[2], row1[2], row2[2]):
+   EDX = elevation of row2[2] over the other two, ECX = azimuth atan2(row1[2], row0[2]). Same as the first
+   step of FixedTransform_ExtractEulerAnglesRegs. No caller, function-pointer table or data reference to
+   0x00484E50 was found in the port or the image data.
 */
 FixedVectorAngles __thandor_preserve_eax
 FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
@@ -312,9 +295,9 @@ FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 
 /* Address: 0x004857A0.
-   Ownership: core/math/fixed.
-   Purpose: Normalizes the input vector to Q28. Vectors with integer length below 2 produce {0,0,0}.
-   Local calls: FixedMath_LengthVec3.
+   Writes input / |input| as a Q28 unit vector (output may alias input). Each component is multiplied by
+   2^32 / length (unsigned 64/32 DIV) and shifted right by 4. Vectors shorter than 2 give {0, 0, 0}.
+   Used to normalize the frustum plane normals and model light directions.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
@@ -334,28 +317,24 @@ FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
   }
   else {
     reciprocalLengthScaleQ32 = (int)(0x100000000 / (uint64_t)inputLengthQ12);
+    /* SHLD EDX,EAX,28: bits 4..35 of each product */
     normalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->x;
-    output->x = (int)((uint64_t)normalizedComponentProduct >> 0x20) << 0x1c |
+    output->x = (int)((uint64_t)normalizedComponentProduct >> 32) << 28 |
                 (uint32_t)normalizedComponentProduct >> 4;
     currentNormalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->y;
-    output->y = (int)((uint64_t)currentNormalizedComponentProduct >> 0x20) << 0x1c |
+    output->y = (int)((uint64_t)currentNormalizedComponentProduct >> 32) << 28 |
                 (uint32_t)currentNormalizedComponentProduct >> 4;
     finalNormalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->z;
-    output->z = (int)((uint64_t)finalNormalizedComponentProduct >> 0x20) << 0x1c |
+    output->z = (int)((uint64_t)finalNormalizedComponentProduct >> 32) << 28 |
                 (uint32_t)finalNormalizedComponentProduct >> 4;
   }
-  return;
 }
 
 
 /* Address: 0x004BEC20.
-   Ownership: core/math/fixed.
-   Purpose: Thin register-preserving wrapper around the fixed-transform direction rotation core. Kept distinct from
-   Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed parameters: p3
-   elevationAngle→AngleTurn32, p4 azimuthAngle→AngleTurn32, p5 rotationAngle0→AngleTurn32, p6
-   rotationAngle1→AngleTurn32, p7 rotationAngle2→AngleTurn32. Calling convention, storage, body bytes, control
-   flow, and executable data remain unchanged. Typed parameters: p2 directionScale→FixedMathScale32_V342.
-   Local calls: FixedTransform_RotateDirectionScaledCoreRegs.
+   Wrapper around FixedTransform_RotateDirectionScaledCoreRegs that returns the rotated direction in
+   EAX = x, ECX = y, EDX = z instead of the core's EAX/EBX/EDX (MOV ECX,EBX), keeping EBX. Used by the model
+   hierarchy.
 */
 FixedVectorEaxEcxEdx12
 FixedTransform_RotateDirectionScaledRegs
@@ -369,7 +348,6 @@ FixedTransform_RotateDirectionScaledRegs
   coreRotatedVector = FixedTransform_RotateDirectionScaledCoreRegs
                     (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
                      rotationAngle2);
-  /* Ghidra split the ECX/EDX halves of the return into uVar3._4_4_ and register0x00000008. */
   rotatedVector.xQ12 = coreRotatedVector.xQ12;
   rotatedVector.yQ12 = coreRotatedVector.yQ12;
   rotatedVector.zQ12 = coreRotatedVector.zQ12;
@@ -496,20 +474,19 @@ FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 
 
 /* Address: 0x00484B40.
-   Ownership: core/math/fixed.
-   Purpose: Returns EAX=cos(angle) and EDX=sin(angle) from the Q28 tables. Kept distinct from Q12 coordinates,
-   Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed parameters: p0 angle→AngleTurn32.
-   Calling convention, storage, body bytes, control flow, and executable data remain unchanged.
+   Table lookup of a 16-bit angle (65536 = full turn): returns EAX = cos(angle) and EDX = sin(angle) in Q28.
+   Used by the graphics projection setup (g_ProjectionAngleFactors).
 */
 FixedSinCosEdxEax8 FixedMath_SinCosQ28(AngleTurn32 angle)
 
 {
-  return (uint64_t)(uint32_t)g_FixedSinQ28[angle & 0xffff] << 0x20 | (uint64_t)(uint32_t)g_FixedCosQ28[angle & 0xffff];
+  return (uint64_t)(uint32_t)g_FixedSinQ28[angle & 0xffff] << 32 | (uint64_t)(uint32_t)g_FixedCosQ28[angle & 0xffff];
 }
 
 /* Address: 0x00484F10.
-   Ownership: core/math/fixed.
-   Purpose: Applies only the 3x3 Q28 basis and ignores transform->translation.
+   Rotates a direction by the transform's 3x3 Q28 basis (output = basis * direction, each dot product summed
+   in 64 bits and shifted right by 28); the translation is ignored, so the direction keeps its scale.
+   Used by the model lighting to rotate surface normals.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_ApplyDirection
@@ -527,26 +504,26 @@ FixedTransform_ApplyDirection
        (int64_t)transform->basisRow0[0] * (int64_t)direction->x +
        (int64_t)transform->basisRow0[2] * (int64_t)direction->z;
   currentBasisRowComponent0Q28 = transform->basisRow1[0];
-  output->x = (int)((uint64_t)basisDotProductAccumulatorQ40 >> 0x20) << 4 |
-              (uint32_t)basisDotProductAccumulatorQ40 >> 0x1c;
+  output->x = (int)((uint64_t)basisDotProductAccumulatorQ40 >> 32) << 4 |
+              (uint32_t)basisDotProductAccumulatorQ40 >> 28;
   currentBasisDotProductQ40 =
        (int64_t)transform->basisRow1[1] * (int64_t)direction->y +
        (int64_t)currentBasisRowComponent0Q28 * (int64_t)direction->x +
        (int64_t)transform->basisRow1[2] * (int64_t)direction->z;
   basisRow2Component0Q28 = transform->basisRow2[0];
-  output->y = (int)((uint64_t)currentBasisDotProductQ40 >> 0x20) << 4 |
-              (uint32_t)currentBasisDotProductQ40 >> 0x1c;
+  output->y = (int)((uint64_t)currentBasisDotProductQ40 >> 32) << 4 |
+              (uint32_t)currentBasisDotProductQ40 >> 28;
   finalBasisDotProductQ40 = (int64_t)transform->basisRow2[1] * (int64_t)direction->y +
           (int64_t)basisRow2Component0Q28 * (int64_t)direction->x +
           (int64_t)transform->basisRow2[2] * (int64_t)direction->z;
-  output->z = (int)((uint64_t)finalBasisDotProductQ40 >> 0x20) << 4 | (uint32_t)finalBasisDotProductQ40 >> 0x1c;
-  return;
+  output->z = (int)((uint64_t)finalBasisDotProductQ40 >> 32) << 4 | (uint32_t)finalBasisDotProductQ40 >> 28;
 }
 
 
 /* Address: 0x00485090.
-   Ownership: core/math/fixed.
-   Purpose: Multiplies a direction by the transpose of the transform's 3x3 Q28 basis. Translation is ignored.
+   Multiplies a direction by the transpose of the transform's 3x3 Q28 basis (for a rotation this is the inverse
+   rotation, i.e. world to local), summing in 64 bits and shifting right by 28; the translation is ignored.
+   Used by ModelRender_PrepareViewDirections to bring the view and auxiliary directions into model space.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_ApplyTransposeDirection
@@ -564,26 +541,27 @@ FixedTransform_ApplyTransposeDirection
        (int64_t)transform->basisRow0[0] * (int64_t)direction->x +
        (int64_t)transform->basisRow2[0] * (int64_t)direction->z;
   currentBasisColumnRow0ComponentQ28 = transform->basisRow0[1];
-  output->x = (int)((uint64_t)basisDotProductAccumulatorQ40 >> 0x20) << 4 |
-              (uint32_t)basisDotProductAccumulatorQ40 >> 0x1c;
+  output->x = (int)((uint64_t)basisDotProductAccumulatorQ40 >> 32) << 4 |
+              (uint32_t)basisDotProductAccumulatorQ40 >> 28;
   currentBasisDotProductQ40 =
        (int64_t)transform->basisRow1[1] * (int64_t)direction->y +
        (int64_t)currentBasisColumnRow0ComponentQ28 * (int64_t)direction->x +
        (int64_t)transform->basisRow2[1] * (int64_t)direction->z;
   basisRow0Component2Q28 = transform->basisRow0[2];
-  output->y = (int)((uint64_t)currentBasisDotProductQ40 >> 0x20) << 4 |
-              (uint32_t)currentBasisDotProductQ40 >> 0x1c;
+  output->y = (int)((uint64_t)currentBasisDotProductQ40 >> 32) << 4 |
+              (uint32_t)currentBasisDotProductQ40 >> 28;
   finalBasisDotProductQ40 = (int64_t)transform->basisRow1[2] * (int64_t)direction->y +
           (int64_t)basisRow0Component2Q28 * (int64_t)direction->x +
           (int64_t)transform->basisRow2[2] * (int64_t)direction->z;
-  output->z = (int)((uint64_t)finalBasisDotProductQ40 >> 0x20) << 4 | (uint32_t)finalBasisDotProductQ40 >> 0x1c;
-  return;
+  output->z = (int)((uint64_t)finalBasisDotProductQ40 >> 32) << 4 | (uint32_t)finalBasisDotProductQ40 >> 28;
 }
 
 
 /* Address: 0x00485520.
-   Ownership: core/math/fixed.
-   Purpose: It assumes the basis is a rotation matrix.
+   Inverts a rigid Q28 transform: the output basis is the adjugate of the input basis (each cofactor a 64-bit
+   difference of products shifted right by 28), which is the inverse because a rotation has determinant 1,
+   and the output translation is -(outputBasis * inputTranslation). Used for the view transform and the
+   leg suspension.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
@@ -602,38 +580,40 @@ FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix
   cofactorOrTranslationProduct = (int64_t)input->basisRow1[1] * (int64_t)input->basisRow2[2] -
           (int64_t)input->basisRow1[2] * (int64_t)input->basisRow2[1];
   componentOrProductLow = input->basisRow1[2];
-  output->basisRow0[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow0[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[0] -
           (int64_t)input->basisRow1[0] * (int64_t)input->basisRow2[2];
   componentOrProductLow = input->basisRow1[0];
-  output->basisRow1[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow1[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[1] -
           (int64_t)input->basisRow1[1] * (int64_t)input->basisRow2[0];
   componentOrProductLow = input->basisRow0[2];
-  output->basisRow2[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow2[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[1] -
           (int64_t)input->basisRow0[1] * (int64_t)input->basisRow2[2];
   componentOrProductLow = input->basisRow0[0];
-  output->basisRow0[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow0[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[2] -
           (int64_t)input->basisRow0[2] * (int64_t)input->basisRow2[0];
   componentOrProductLow = input->basisRow0[1];
-  output->basisRow1[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow1[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[0] -
           (int64_t)input->basisRow0[0] * (int64_t)input->basisRow2[1];
   componentOrProductLow = input->basisRow0[1];
-  output->basisRow2[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow2[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[2] -
           (int64_t)input->basisRow0[2] * (int64_t)input->basisRow1[1];
   componentOrProductLow = input->basisRow0[2];
-  output->basisRow0[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow0[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[0] -
           (int64_t)input->basisRow0[0] * (int64_t)input->basisRow1[2];
   componentOrProductLow = input->basisRow0[0];
-  output->basisRow1[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow1[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
   cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[1] -
           (int64_t)input->basisRow0[1] * (int64_t)input->basisRow1[0];
-  output->basisRow2[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  output->basisRow2[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 32) << 4 | (uint32_t)cofactorOrTranslationProduct >> 28;
+  /* Each translation component is the 64-bit 0 - tx*r0 - ty*r1 - tz*r2 (XOR/SUB/SBB chain in the original),
+     written out below as low halves with explicit borrows, then shifted right by 28 (high * 0x10 | low >> 28). */
   cofactorOrTranslationProduct = (int64_t)(input->translation).x * (int64_t)output->basisRow0[0];
   productXLow = (int)cofactorOrTranslationProduct;
   negatedProductXLow = -productXLow;
@@ -672,50 +652,49 @@ FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix
        (((((-(uint32_t)(componentOrProductLow != 0) - (int)((uint64_t)cofactorOrTranslationProduct >> 0x20)) - (int)((uint64_t)translationYProduct >> 0x20)
           ) - (uint32_t)(negatedProductXLow < productYLow)) - (int)((uint64_t)translationZProduct >> 0x20)) - (uint32_t)(partialDifferenceLow < productZLow)) *
        0x10 | partialDifferenceLow - productZLow >> 0x1c;
-  return;
 }
 
 
 /* Address: 0x004856B0.
-   Ownership: core/math/fixed.
-   Purpose: Returns (left.x*right.x + left.y*right.y + left.z*right.z) shifted right by 12.
+   Dot product of two Q12 vectors, summed in 64 bits and shifted right by 12 (SHRD), so the result is Q12.
+   Used by the model renderer for back-face and light-facing tests.
 */
 int32_t __thandor_eax_preserve_ecx_edx
 FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
   int64_t dotProductAccumulatorQ24;
-  
+
   dotProductAccumulatorQ24 =
        (int64_t)right->y * (int64_t)left->y + (int64_t)right->x * (int64_t)left->x +
        (int64_t)right->z * (int64_t)left->z;
-  return (uint32_t)dotProductAccumulatorQ24 >> 0xc |
-         (int)((uint64_t)dotProductAccumulatorQ24 >> 0x20) << 0x14;
+  return (uint32_t)dotProductAccumulatorQ24 >> 12 |
+         (int)((uint64_t)dotProductAccumulatorQ24 >> 32) << 20;
 }
 
 
 /* Address: 0x004856F0.
-   Ownership: core/math/fixed.
-   Purpose: Returns (left.x*right.x + left.y*right.y + left.z*right.z) shifted right by 28.
+   Dot product summed in 64 bits and shifted right by 28: with one Q28 unit vector (a frustum plane normal or
+   a direction) the result keeps the other vector's scale. Used for frustum culling and effect motion.
 */
 int32_t __thandor_eax_preserve_ecx_edx
 FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
   int64_t dotProductAccumulatorQ56;
-  
+
   dotProductAccumulatorQ56 =
        (int64_t)right->y * (int64_t)left->y + (int64_t)right->x * (int64_t)left->x +
        (int64_t)right->z * (int64_t)left->z;
-  return (uint32_t)dotProductAccumulatorQ56 >> 0x1c |
-         (int)((uint64_t)dotProductAccumulatorQ56 >> 0x20) << 4;
+  return (uint32_t)dotProductAccumulatorQ56 >> 28 |
+         (int)((uint64_t)dotProductAccumulatorQ56 >> 32) << 4;
 }
 
 
 /* Address: 0x00485730.
-   Ownership: core/math/fixed.
-   Purpose: Writes leftOperand cross rightOperand, shifted right by 12. The executable's stack order is output,
-   rightOperand, leftOperand.
+   Writes leftOperand x rightOperand (cross product of two Q12 vectors, 64-bit differences shifted right by 12).
+   The parameters are in the original's stack order: output, rightOperand, leftOperand. Used to build the
+   frustum plane normals from the corner rays.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
@@ -732,28 +711,24 @@ FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
        (int64_t)leftOperand->y * (int64_t)rightOperand->z -
        (int64_t)leftOperand->z * (int64_t)rightOperand->y;
   currentLeftComponentQ12 = leftOperand->z;
-  output->x = (int)((uint64_t)crossComponentProductDifferenceQ24 >> 0x20) << 0x14 |
-              (uint32_t)crossComponentProductDifferenceQ24 >> 0xc;
+  output->x = (int)((uint64_t)crossComponentProductDifferenceQ24 >> 32) << 20 |
+              (uint32_t)crossComponentProductDifferenceQ24 >> 12;
   currentCrossProductDifferenceQ24 =
        (int64_t)currentLeftComponentQ12 * (int64_t)rightOperand->x -
        (int64_t)leftOperand->x * (int64_t)rightOperand->z;
   leftXQ12 = leftOperand->x;
-  output->y = (int)((uint64_t)currentCrossProductDifferenceQ24 >> 0x20) << 0x14 |
-              (uint32_t)currentCrossProductDifferenceQ24 >> 0xc;
+  output->y = (int)((uint64_t)currentCrossProductDifferenceQ24 >> 32) << 20 |
+              (uint32_t)currentCrossProductDifferenceQ24 >> 12;
   finalCrossProductDifferenceQ24 = (int64_t)leftXQ12 * (int64_t)rightOperand->y -
           (int64_t)leftOperand->y * (int64_t)rightOperand->x;
-  output->z = (int)((uint64_t)finalCrossProductDifferenceQ24 >> 0x20) << 0x14 | (uint32_t)finalCrossProductDifferenceQ24 >> 0xc;
-  return;
+  output->z = (int)((uint64_t)finalCrossProductDifferenceQ24 >> 32) << 20 | (uint32_t)finalCrossProductDifferenceQ24 >> 12;
 }
 
 
 /* Address: 0x0052AD50.
-   Ownership: core/math/fixed.
-   Purpose: Projects a planar point from a signed distance, 16-bit angle, and base coordinates using the fixed
-   sine/cosine Q28 tables. EAX returns baseX plus cosine displacement and EDX returns baseY plus sine displacement.
-   Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed
-   parameters: p1 angle16→AngleTurn32. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged.
+   Moves a planar point by distance in the direction of a 16-bit angle: returns EAX = baseX + cos(angle) *
+   distance and EDX = baseY + sin(angle) * distance (Q28 table products shifted right by 28). Used by the
+   army movement code to step a unit along its heading.
 */
 FixedPlanarPointEdxEax8
 FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 baseX)
@@ -763,20 +738,15 @@ FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 
   uint32_t pointY;
 
   /* SHLD EDX,EAX,4 of the 64-bit products: bits 28..59 */
-  pointX = baseX + (uint32_t)((int64_t)g_FixedCosQ28[angle16 & 0xffff] * (int64_t)distance >> 0x1c);
-  pointY = (uint32_t)((int64_t)g_FixedSinQ28[angle16 & 0xffff] * (int64_t)distance >> 0x1c) + baseY;
-  return (uint64_t)pointY << 0x20 | (uint64_t)pointX; /* EDX = y, EAX = x */
+  pointX = baseX + (uint32_t)((int64_t)g_FixedCosQ28[angle16 & 0xffff] * (int64_t)distance >> 28);
+  pointY = (uint32_t)((int64_t)g_FixedSinQ28[angle16 & 0xffff] * (int64_t)distance >> 28) + baseY;
+  return (uint64_t)pointY << 32 | (uint64_t)pointX; /* EDX = y, EAX = x */
 }
 
 /* Address: 0x004BEC50.
-   Ownership: core/math/fixed.
-   Purpose: Builds a rotation basis, creates a scaled direction vector from two angles, rotates it through the
-   basis, and returns the transformed vector through the engine register convention. Kept distinct from Q12
-   coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed parameters: p3
-   elevationAngle→AngleTurn32, p4 azimuthAngle→AngleTurn32, p5 rotationAngle0→AngleTurn32, p6
-   rotationAngle1→AngleTurn32, p7 rotationAngle2→AngleTurn32. Calling convention, storage, body bytes, control
-   flow, and executable data remain unchanged. Typed parameters: p2 directionScale→FixedMathScale32_V342.
-   Local calls: FixedTransform_BuildRotationBasis, FixedMath_WriteDirectionScaled, FixedTransform_ApplyPoint.
+   Builds the direction of (elevationAngle, azimuthAngle) with length directionScale, rotates it by the
+   rotation basis of the three rotation angles and returns it in EAX = x, EBX = y, EDX = z. Works through the
+   shared model-transform scratch globals; called only by FixedTransform_RotateDirectionScaledRegs.
 */
 FixedVectorXEaxYEbxZEdx12 __thandor_eax_edx_cf_preserve_ecx
 FixedTransform_RotateDirectionScaledCoreRegs
@@ -804,9 +774,9 @@ FixedTransform_RotateDirectionScaledCoreRegs
 
 
 /* Address: 0x00484A70.
-   Ownership: core/math/fixed.
-   Purpose: Pointer form of FixedMath_VectorToAngles3Regs. EDX=elevation angle and ECX=azimuth angle.
-   Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
+   Direction angles of a vector without its length: elevation = atan2(z, |(x, y)|) and azimuth = atan2(y, x)
+   as 16-bit angles (the horizontal length is summed in 64 bits). Used by the army suspension, the graphics
+   direction setup and FixedVector_StepBackwardAlongOwnDirection.
 */
 FixedElevationAzimuth __thandor_preserve_eax
 FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
@@ -823,7 +793,7 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
   y = vector->y;
   horizontalSquaredLengthAccumulatorQ24 = (int64_t)y * (int64_t)y + (int64_t)x * (int64_t)x;
   magnitudeOrElevationAngle = FixedMath_UInt64Sqrt
-                    ((UInt64Half32)((uint64_t)horizontalSquaredLengthAccumulatorQ24 >> 0x20),
+                    ((UInt64Half32)((uint64_t)horizontalSquaredLengthAccumulatorQ24 >> 32),
                      (UInt64Half32)horizontalSquaredLengthAccumulatorQ24);
   magnitudeOrElevationAngle = FixedMath_Atan2Angle16(vector->z,magnitudeOrElevationAngle);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
@@ -972,11 +942,9 @@ FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azim
 
 
 /* Address: 0x00484840.
-   Ownership: core/math/fixed.
-   Purpose: Writes {cos(elevation)*cos(azimuth), cos(elevation)*sin(azimuth), sin(elevation)} multiplied by scale.
-   Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed
-   parameters: p1 elevationAngle→AngleTurn32, p2 azimuthAngle→AngleTurn32. Calling convention, storage, body bytes,
-   control flow, and executable data remain unchanged. Typed parameters: p3 scale→FixedMathScale32_V342.
+   Scaled form of FixedMath_WriteDirectionQ28: writes {cos(el)cos(az), cos(el)sin(az), sin(el)} * scale, so the
+   output has the scale's fixed-point format. x and y use the sum-to-product sums (twice the value), hence the
+   shift by 29 instead of 28. Used for the frustum corner rays and by FixedTransform_RotateDirectionScaledCoreRegs.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedMath_WriteDirectionScaled
@@ -1001,15 +969,14 @@ FixedMath_WriteDirectionScaled
   horizontalComponentScaleProduct =
        (int64_t)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[elevationOrDifferenceAngle16]) *
        (int64_t)scale;
-  output->x = (int)((uint64_t)horizontalComponentScaleProduct >> 0x20) << 3 |
-              (uint32_t)horizontalComponentScaleProduct >> 0x1d;
+  output->x = (int)((uint64_t)horizontalComponentScaleProduct >> 32) << 3 |
+              (uint32_t)horizontalComponentScaleProduct >> 29;
   yComponentScaleProduct =
        (int64_t)(azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28) * (int64_t)scale;
-  output->y = (int)((uint64_t)yComponentScaleProduct >> 0x20) << 3 |
-              (uint32_t)yComponentScaleProduct >> 0x1d;
-  output->z = (int)((uint64_t)((int64_t)verticalSinQ28 * (int64_t)scale) >> 0x20) << 4 |
-              (uint32_t)((int64_t)verticalSinQ28 * (int64_t)scale) >> 0x1c;
-  return;
+  output->y = (int)((uint64_t)yComponentScaleProduct >> 32) << 3 |
+              (uint32_t)yComponentScaleProduct >> 29;
+  output->z = (int)((uint64_t)((int64_t)verticalSinQ28 * (int64_t)scale) >> 32) << 4 |
+              (uint32_t)((int64_t)verticalSinQ28 * (int64_t)scale) >> 28;
 }
 
 
@@ -1310,22 +1277,25 @@ FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x
 
 
 /* Address: 0x004846A0.
-   Ownership: core/math/fixed.
-   Purpose: Computes the recovered Q12 fixed-point square-root approximation.
+   Approximate square root of a Q12 value, returned in Q12 (about 0.6% low): the input is shifted left by an
+   even amount so its top bit lands on bit 27 or 28 (BSR), a cubic polynomial in the normalized value is
+   evaluated with the high halves of IMULs, and the result is shifted right by half the normalizing shift.
+   Inputs of 2^29 or more give wrong results (the shift wraps). No caller, function-pointer table or data
+   reference to 0x004846A0 was found in the port or the image data.
 */
 uint32_t __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint32_t inputValue)
 
 {
   int highestBitOrNormalized;
   uint32_t normalizeShift;
-  
-  highestBitOrNormalized = 0x1f;
+
+  highestBitOrNormalized = 31;
   if (inputValue != 0) {
-    for (; inputValue >> highestBitOrNormalized == 0; highestBitOrNormalized = highestBitOrNormalized + -1) {
+    for (; inputValue >> highestBitOrNormalized == 0; highestBitOrNormalized--) {
     }
   }
   if (inputValue != 0) {
-    normalizeShift = 0x1cU - highestBitOrNormalized & 0x1e;
+    normalizeShift = 28U - highestBitOrNormalized & 0x1e;
     highestBitOrNormalized = inputValue << (int8_t)normalizeShift;
     return (int)((uint64_t)
                  ((int64_t)highestBitOrNormalized *

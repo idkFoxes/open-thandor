@@ -48,13 +48,10 @@ RichTextCommandStream_MeasureWrappedBlockRegs
 
 
 /* Address: 0x0041D7C0.
-   Ownership: assets/text/richtext.
-   Purpose: Flattens a nested rich-text stream, initializes packed style state, and draws successive wrapped lines
-   until the final CF-set line result. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1
-   clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p6
-   maximumWidth→UiPixelExtent_V301, p7 drawY→UiPixelCoordinate_V297, p8 drawX→UiPixelCoordinate_V297. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: RichTextCommandStream_FlattenNestedToRuntimeBuffer, RichTextCommandStream_DrawNextWrappedLine.
+   Draws a rich-text block wrapped to maximumWidth with its top-left corner at (drawX, drawY), clipped to the
+   given rectangle: flattens the stream into the font runtime buffer, sets the style's font and colour, and
+   draws line after line (RichTextCommandStream_DrawNextWrappedLine) until the end of the text. Called directly
+   by UiWrappedTextControl_DrawClipped.
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_DrawWrappedBlock
@@ -67,8 +64,8 @@ RichTextCommandStream_DrawWrappedBlock
   WrappedLineResult lineResult;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
-  colorPaletteIndex = packedStyle >> 0x10 & 7;
-  g_ActiveFontIndex = packedStyle >> 0x18 & 7;
+  colorPaletteIndex = packedStyle >> TEXT_STYLE_PALETTE_SHIFT & TEXT_STYLE_INDEX_MASK;
+  g_ActiveFontIndex = packedStyle >> TEXT_STYLE_FONT_SHIFT & TEXT_STYLE_INDEX_MASK;
   g_RichTextCurrentColorArgb = (&g_RichTextColorPalette0Argb)[colorPaletteIndex];
   g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[colorPaletteIndex];
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
@@ -311,13 +308,10 @@ RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSourc
 
 
 /* Address: 0x0041B300.
-   Ownership: assets/text/richtext.
-   Purpose: Physical RET cleanup=12 stack bytes. This function object claims Listing ownership for a previously
-   unowned multi-entry/shared-tail/computed-dispatch region; it does not assert that every member entry is an
-   independent ABI-level function. Body boundaries remain exact and are not split into speculative ABI functions.
-   Typed parameters: p0 param_1→RichTextCommandPayload32_V342, p1 param_2→RichTextCommandOrdinal_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Sets the 32-bit payload of the commandOrdinal-th (0-based) inline-value command (0x14..0x16) of one command
+   stream (nested streams are not followed) to payloadValue and returns false (CF clear); true (CF set) when
+   the stream has fewer such commands. No caller and no function-pointer table entry for it was found in src/
+   or src/generated/image_data.c.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_FindNthCommandPayloadPair
@@ -338,38 +332,35 @@ RichTextCommandStream_FindNthCommandPayloadPair
         return true;
       }
       commandStream = commandCursor + 1;
-    } while (-1 < (short)commandCodeUnit);
-    switch(commandCodeUnit & 0x1f) {
-    case 6:
-      commandStream = commandCursor + 9;
+    } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
+    switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+    case RICHTEXT_OP_LITERAL_COLOR:
+      commandStream = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       break;
-    case 0x14:
-    case 0x15:
-    case 0x16:
-      remainingCount = remainingCount + -1;
-      commandStream = commandCursor + 3;
+    case RICHTEXT_OP_INLINE_VALUE_0:
+    case RICHTEXT_OP_INLINE_VALUE_1:
+    case RICHTEXT_OP_INLINE_VALUE_2:
+      remainingCount--;
+      commandStream = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
       if (remainingCount == 0) {
         *(RichTextCommandPayload32 *)(commandCursor + 1) = payloadValue;
         return false;
       }
       break;
-    case 0x18:
-    case 0x19:
-    case 0x1a:
-      commandStream = commandCursor + 5;
+    case RICHTEXT_OP_CALL_NESTED:
+    case RICHTEXT_OP_JUMP_NESTED:
+    case RICHTEXT_OP_INLINE_IMAGE:
+      commandStream = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
     }
   } while( true );
 }
 
 
 /* Address: 0x0041B420.
-   Ownership: assets/text/richtext.
-   Purpose: Physical RET cleanup=8 stack bytes. This function object claims Listing ownership for a previously
-   unowned multi-entry/shared-tail/computed-dispatch region; it does not assert that every member entry is an
-   independent ABI-level function. Body boundaries remain exact and are not split into speculative ABI functions.
-   Typed parameters: p0 param_1→RichTextNestedStreamPointerValue32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Walks one command stream (without following nested streams) and sets the stream pointer of every
+   nested-stream command (0x18/0x19) to nestedStreamPointerValue, regardless of its selector (compare
+   RichTextCommandStream_PatchPayloadBySelector). No caller and no function-pointer table entry for it was
+   found in src/ or src/generated/image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchNestedStreamPointerPayloads
@@ -386,23 +377,24 @@ RichTextCommandStream_PatchNestedStreamPointerPayloads
     commandCodeUnit = *commandCursor;
     streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
-    if ((short)commandCodeUnit < 0) {
-      switch(commandCodeUnit & 0x1f) {
-      case 6:
-        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 9);
+    if ((short)commandCodeUnit < 0) { /* RICHTEXT_COMMAND_FLAG set */
+      switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+      case RICHTEXT_OP_LITERAL_COLOR:
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR);
         break;
-      case 0x14:
-      case 0x15:
-      case 0x16:
-        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 3);
+      case RICHTEXT_OP_INLINE_VALUE_0:
+      case RICHTEXT_OP_INLINE_VALUE_1:
+      case RICHTEXT_OP_INLINE_VALUE_2:
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE);
         break;
-      case 0x18:
-      case 0x19:
+      case RICHTEXT_OP_CALL_NESTED:
+      case RICHTEXT_OP_JUMP_NESTED:
+        /* the stream pointer is the first payload dword, right after the command */
         *streamCursor = nestedStreamPointerValue;
-        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + RICHTEXT_RECORD_UNITS_NESTED);
         break;
-      case 0x1a:
-        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 5);
+      case RICHTEXT_OP_INLINE_IMAGE:
+        streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE);
       }
     }
   }
@@ -411,17 +403,15 @@ RichTextCommandStream_PatchNestedStreamPointerPayloads
 
 
 /* Address: 0x0041B520.
-   Ownership: assets/text/richtext.
-   Purpose: Physical RET cleanup=12 stack bytes. This function object claims Listing ownership for a previously
-   unowned multi-entry/shared-tail/computed-dispatch region; it does not assert that every member entry is an
-   independent ABI-level function. Body boundaries remain exact and are not split into speculative ABI functions.
-   Typed parameters: p0 param_1→RichTextOpcode1APayloadValue32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Walks one command stream (without following nested streams) and sets both payload dwords of every
+   inline-image command (0x1A): the texture source to textureSourceValue and the subresource to
+   imageSubresourceValue (see RichTextCommandStream_BindTextureSource for the texture source alone). No caller
+   and no function-pointer table entry for it was found in src/ or src/generated/image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchOpcode1APayloadPair
-          (RichTextOpcode1APayloadValue32 opcode1APayloadValue,
-          RichTextCommandPayload32 leadingPayloadValue,uint16_t *commandStream)
+          (RichTextOpcode1APayloadValue32 imageSubresourceValue,
+          RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream)
 
 {
   uint16_t *commandCursor;
@@ -434,24 +424,25 @@ RichTextCommandStream_PatchOpcode1APayloadPair
     commandCodeUnit = *commandCursor;
     streamCursor = (RichTextCommandPayload32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
-    if ((short)commandCodeUnit < 0) {
-      switch(commandCodeUnit & 0x1f) {
-      case 6:
-        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 9);
+    if ((short)commandCodeUnit < 0) { /* RICHTEXT_COMMAND_FLAG set */
+      switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+      case RICHTEXT_OP_LITERAL_COLOR:
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR);
         break;
-      case 0x14:
-      case 0x15:
-      case 0x16:
-        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 3);
+      case RICHTEXT_OP_INLINE_VALUE_0:
+      case RICHTEXT_OP_INLINE_VALUE_1:
+      case RICHTEXT_OP_INLINE_VALUE_2:
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE);
         break;
-      case 0x18:
-      case 0x19:
-        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 5);
+      case RICHTEXT_OP_CALL_NESTED:
+      case RICHTEXT_OP_JUMP_NESTED:
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + RICHTEXT_RECORD_UNITS_NESTED);
         break;
-      case 0x1a:
-        *streamCursor = leadingPayloadValue;
-        *(RichTextOpcode1APayloadValue32 *)(commandCursor + 3) = opcode1APayloadValue;
-        streamCursor = (RichTextCommandPayload32 *)(commandCursor + 5);
+      case RICHTEXT_OP_INLINE_IMAGE:
+        /* payload: texture source at commandCursor + 1, subresource at commandCursor + 3 */
+        *streamCursor = textureSourceValue;
+        *(RichTextOpcode1APayloadValue32 *)(commandCursor + 3) = imageSubresourceValue;
+        streamCursor = (RichTextCommandPayload32 *)(commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE);
       }
     }
   }
@@ -460,12 +451,9 @@ RichTextCommandStream_PatchOpcode1APayloadPair
 
 
 /* Address: 0x0041B620.
-   Ownership: assets/text/richtext.
-   Purpose: Physical RET cleanup=8 stack bytes. This function object claims Listing ownership for a previously
-   unowned multi-entry/shared-tail/computed-dispatch region; it does not assert that every member entry is an
-   independent ABI-level function. Body boundaries remain exact and are not split into speculative ABI functions.
-   Typed parameters: p0 param_1→RichTextInlinePayloadValue32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Walks one command stream (without following nested streams) and sets the 32-bit payload of every
+   inline-value command (0x14..0x16) to inlinePayloadValue. No caller and no function-pointer table entry
+   for it was found in src/ or src/generated/image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchInlinePayloads
@@ -482,21 +470,21 @@ RichTextCommandStream_PatchInlinePayloads
     commandCodeUnit = *commandCursor;
     streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
-    if ((short)commandCodeUnit < 0) {
-      switch(commandCodeUnit & 0x1f) {
-      case 6:
-        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 9);
+    if ((short)commandCodeUnit < 0) { /* RICHTEXT_COMMAND_FLAG set */
+      switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+      case RICHTEXT_OP_LITERAL_COLOR:
+        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR);
         break;
-      case 0x14:
-      case 0x15:
-      case 0x16:
+      case RICHTEXT_OP_INLINE_VALUE_0:
+      case RICHTEXT_OP_INLINE_VALUE_1:
+      case RICHTEXT_OP_INLINE_VALUE_2:
         *streamCursor = inlinePayloadValue;
-        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 3);
+        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE);
         break;
-      case 0x18:
-      case 0x19:
-      case 0x1a:
-        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 5);
+      case RICHTEXT_OP_CALL_NESTED:
+      case RICHTEXT_OP_JUMP_NESTED:
+      case RICHTEXT_OP_INLINE_IMAGE:
+        streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + RICHTEXT_RECORD_UNITS_NESTED);
       }
     }
   }
@@ -505,13 +493,11 @@ RichTextCommandStream_PatchInlinePayloads
 
 
 /* Address: 0x0041B720.
-   Ownership: assets/text/richtext.
-   Purpose: Physical RET cleanup=12 stack bytes. This function object claims Listing ownership for a previously
-   unowned multi-entry/shared-tail/computed-dispatch region; it does not assert that every member entry is an
-   independent ABI-level function. Body boundaries remain exact and are not split into speculative ABI functions.
-   Typed parameters: p0 param_1→RichTextCommandFlagBits_V342, p1 param_2→RichTextCommandOrdinal_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Rewrites the command code unit of the commandOrdinal-th (0-based) inline-value command (0x14..0x16) of one
+   command stream: keeps RICHTEXT_COMMAND_FLAG and opcode bits 0x14, clears the variant and the other bits, ORs
+   in flagBits, and returns false (CF clear); true (CF set) when the stream has fewer such commands. The dword
+   access also covers the low half of the payload, which the mask 0xFFFF8014 keeps. No caller and no
+   function-pointer table entry for it was found in src/ or src/generated/image_data.c.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
@@ -532,15 +518,16 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBi
         return true;
       }
       streamCursor = (uint32_t *)((int)commandCursor + 2);
-    } while (-1 < (short)commandCodeUnit);
-    switch(commandCodeUnit & 0x1f) {
-    case 6:
+    } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
+    /* the cursors advance in bytes: record lengths are code units * 2 */
+    switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+    case RICHTEXT_OP_LITERAL_COLOR:
       streamCursor = (uint32_t *)((int)commandCursor + 0x12);
       break;
-    case 0x14:
-    case 0x15:
-    case 0x16:
-      remainingCount = remainingCount + -1;
+    case RICHTEXT_OP_INLINE_VALUE_0:
+    case RICHTEXT_OP_INLINE_VALUE_1:
+    case RICHTEXT_OP_INLINE_VALUE_2:
+      remainingCount--;
       streamCursor = (uint32_t *)((int)commandCursor + 6);
       if (remainingCount == 0) {
         *commandCursor = *commandCursor & 0xffff8014;
@@ -548,9 +535,9 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBi
         return false;
       }
       break;
-    case 0x18:
-    case 0x19:
-    case 0x1a:
+    case RICHTEXT_OP_CALL_NESTED:
+    case RICHTEXT_OP_JUMP_NESTED:
+    case RICHTEXT_OP_INLINE_IMAGE:
       streamCursor = (uint32_t *)((int)commandCursor + 10);
     }
   } while( true );
@@ -558,12 +545,10 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBi
 
 
 /* Address: 0x0041B840.
-   Ownership: assets/text/richtext.
-   Purpose: Physical RET cleanup=8 stack bytes. This function object claims Listing ownership for a previously
-   unowned multi-entry/shared-tail/computed-dispatch region; it does not assert that every member entry is an
-   independent ABI-level function. Body boundaries remain exact and are not split into speculative ABI functions.
-   Typed parameters: p1 param_2→RichTextCommandOrdinal_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Returns the variant (code & 3, i.e. 0..2 for opcodes 0x14..0x16) of the commandOrdinal-th (0-based)
+   inline-value command of one command stream with CF clear, or 0 with CF set when the stream has fewer
+   such commands. No caller and no function-pointer table entry for it was found in src/ or
+   src/generated/image_data.c.
 */
 RichTextCommandQueryResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream)
@@ -586,15 +571,16 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
         return endResult;
       }
       commandStream = (uint16_t *)((int)commandCursor + 2);
-    } while (-1 < (short)commandCodeUnit);
-    switch(commandCodeUnit & 0x1f) {
-    case 6:
+    } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
+    /* the cursors advance in bytes: record lengths are code units * 2 */
+    switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+    case RICHTEXT_OP_LITERAL_COLOR:
       commandStream = (uint16_t *)((int)commandCursor + 0x12);
       break;
-    case 0x14:
-    case 0x15:
-    case 0x16:
-      remainingCount = remainingCount + -1;
+    case RICHTEXT_OP_INLINE_VALUE_0:
+    case RICHTEXT_OP_INLINE_VALUE_1:
+    case RICHTEXT_OP_INLINE_VALUE_2:
+      remainingCount--;
       commandStream = (uint16_t *)((int)commandCursor + 6);
       if (remainingCount == 0) {
         foundResult.commandVariant = *commandCursor & 3;
@@ -602,9 +588,9 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
         return foundResult;
       }
       break;
-    case 0x18:
-    case 0x19:
-    case 0x1a:
+    case RICHTEXT_OP_CALL_NESTED:
+    case RICHTEXT_OP_JUMP_NESTED:
+    case RICHTEXT_OP_INLINE_IMAGE:
       commandStream = (uint16_t *)((int)commandCursor + 10);
     }
   } while( true );
@@ -714,20 +700,23 @@ RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
 
 
 /* Address: 0x0041BCB0.
-   Ownership: assets/text/richtext.
-   Purpose: Physical RET cleanup=4 stack bytes. This function object claims Listing ownership for a previously
-   unowned multi-entry/shared-tail/computed-dispatch region; it does not assert that every member entry is an
-   independent ABI-level function. Body boundaries remain exact and are not split into speculative ABI functions.
-   Typed parameters: p0 param_1→RichTextMarkupCapacityCodeUnits_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Leftover of the TXT2STR converter (no caller and no function-pointer table entry in src/ or
+   src/generated/image_data.c): compiles text markup into a 'str' string asset. Text between '#<' and '#>'
+   becomes one NUL-terminated, dword-padded rich-text string keyed by the last '#ddd' number (text outside is
+   ignored); further '#' escapes select a code page ('#@'..'#~'), raw command codes ('#!'), a soft hyphen
+   ('#-'), a literal '#' ('##') or a line continuation, a CR inside a tag is a line break, and '#.' ends the
+   input and groups the strings by key.
+   An unknown character returns the formatted "TXT2STR: unknown character" message (with its byte offset)
+   and CF set; running out of arena space returns FATAL_ERROR_GENERAL_FAILURE.
 */
 RichTextAssetResult __thandor_eax_cf_preserve_edx
 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
 
 {
   /* Unreachable: nothing in the original image calls 0x0041BCB0 or stores its address (a leftover
-     of the TXT2STR converter). The stack slots below were never recovered; the body is kept
-     only for completeness. */
+     of the TXT2STR converter). The original pushes a (string start, key) pair per tag on the machine
+     stack at '#<'; those slots were never recovered, so the body is kept only for completeness and does not
+     reproduce the original (the '#ddd' key in EDX is lost entirely). */
   uint8_t thandor_stack_frame[0x100]; /* unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
   uint8_t markupByte;
   uint16_t codeUnit;
@@ -805,17 +794,17 @@ RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte:
     case 0x1f:
     case 0x7f:
       goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
-    case 9:
-    case 10:
+    case '\t':
+    case '\n':
       goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
-    case 0xd:
+    case '\r':
       if (insideTagOrUnderflow) {
         capacityUnderflow = remainingCapacityBytes < 2;
         remainingCapacityBytes = remainingCapacityBytes - 2;
         if (capacityUnderflow || remainingCapacityBytes == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *outputCursor = 0x8012; /* command 0x12: line break */
-        outputCursor = outputCursor + 1;
+        *outputCursor = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK;
+        outputCursor++;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
     default:
@@ -826,39 +815,41 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
         if (capacityUnderflow || remainingCapacityBytes == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
         *outputCursor = codeUnit + codeUnitBias;
-        outputCursor = outputCursor + 1;
+        outputCursor++;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
-    case 0x23:
+    case '#':
       markupByte = *markupCursor;
       codeUnit = (uint16_t)markupByte;
       markupCursor = tokenStart + 2;
       switch(markupByte) {
       default:
         goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
-      case 10:
-      case 0xd:
+      case '\n':
+      case '\r':
+        /* line continuation: skip the line end */
         while (markupByte = *markupCursor, markupByte < 0x20) {
-          markupCursor = markupCursor + 1;
-          if ((markupByte != 10) && (markupByte != 0xd)) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+          markupCursor++;
+          if ((markupByte != '\n') && (markupByte != '\r')) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
         }
         break;
-      case 0x21:
-        codeUnitBias = 0x7fc0;
+      case '!':
+        codeUnitBias = 0x7fc0; /* '@'..'_' become RICHTEXT_COMMAND_FLAG | 0x00..0x1F */
         break;
-      case 0x23:
+      case '#':
         goto RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit;
-      case 0x2d:
+      case '-':
         capacityUnderflow = remainingCapacityBytes < 2;
         remainingCapacityBytes = remainingCapacityBytes - 2;
         if (capacityUnderflow || remainingCapacityBytes == 0)
         goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
-        *outputCursor = 0x8011; /* command 0x11: soft hyphen */
-        outputCursor = outputCursor + 1;
+        *outputCursor = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_SOFT_HYPHEN;
+        outputCursor++;
         break;
-      case 0x2e:
+      case '.':
+        /* end of input: build the asset (0x200-byte header, then one group per key) */
         if ((tagCount != 0) && (!insideTagOrUnderflow)) {
-          tagCount = tagCount + 1;
+          tagCount++;
           dStackY_3c = 0x41c70a;
           shrinkResult = g_MemoryApi.shrinkInPlace((int)outputCursor - (int)memory,memory);
           if (!shrinkResult.failed) {
@@ -869,14 +860,14 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
               if (0x1ff < largestBlock.blockSizeOrSentinel && remainingCapacityBytes != 0) {
                 assetGroupCount = 0;
                 assetWriteCursor = stringAsset.assetOrError;
-                for (groupKeyOrIndex = 0x80; entryIndexOrOffset = tagCount, groupKeyOrIndex != 0; groupKeyOrIndex = groupKeyOrIndex + -1) {
+                for (groupKeyOrIndex = 0x80; entryIndexOrOffset = tagCount, groupKeyOrIndex != 0; groupKeyOrIndex--) {
                   *assetWriteCursor = 0;
-                  assetWriteCursor = assetWriteCursor + 1;
+                  assetWriteCursor++;
                 }
                 while( true ) {
                   while (groupHeader = assetWriteCursor, groupKeyOrIndex = *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryIndexOrOffset * 8),
                         groupKeyOrIndex == -1) {
-                    entryIndexOrOffset = entryIndexOrOffset + -1;
+                    entryIndexOrOffset--;
                     assetWriteCursor = groupHeader;
                     if (entryIndexOrOffset == 0) {
                       g_MemoryApi.free(memory);
@@ -886,7 +877,7 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                       *(uint32_t *)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[0x2c] = assetGroupCount;
                       ((int *)stringAsset.assetOrError)[1] = assetSizeOrTimestamp;
-                      *(int *)stringAsset.assetOrError = 0x727473;
+                      *(int *)stringAsset.assetOrError = 0x727473; /* "str" */
                       ((int *)stringAsset.assetOrError)[2] = 1;
                       ((int *)stringAsset.assetOrError)[3] = 0;
                       stackSlot = &thandor_stack_frame[0x80 - 0x30] + tagCount;
@@ -920,7 +911,7 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                   do {
                     if (groupKeyOrIndex == *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryIndexOrOffset * 8)) {
                       entryEndOrIndex = *(int *)(&thandor_stack_frame[0x80 - 0x34] + entryIndexOrOffset * 8);
-                      groupHeader[1] = groupHeader[1] + 1;
+                      groupHeader[1]++;
                       spanSizeOrDwordCount = (entryEndOrIndex - *(int *)(&thandor_stack_frame[0x80 - 0x2c] + entryIndexOrOffset * 8)) + 4;
                       *groupHeader = *groupHeader + spanSizeOrDwordCount;
                       insideTagOrUnderflow = remainingCapacityBytes < spanSizeOrDwordCount;
@@ -930,10 +921,10 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                       RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError
                       ;
                     }
-                    entryIndexOrOffset = entryIndexOrOffset + -1;
+                    entryIndexOrOffset--;
                   } while (entryIndexOrOffset != 0);
                   offsetTableCursor = groupHeader + 4;
-                  assetGroupCount = assetGroupCount + 1;
+                  assetGroupCount++;
                   assetWriteCursor = offsetTableCursor + groupHeader[1];
                   entryEndOrIndex = tagCount;
                   do {
@@ -943,15 +934,15 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                       copySource = *(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8);
                       for (spanSizeOrDwordCount = (uint32_t)(*(int *)(&thandor_stack_frame[0x80 - 0x34] + entryEndOrIndex * 8) -
                                          (int)*(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8)) >> 2;
-                          spanSizeOrDwordCount != 0; spanSizeOrDwordCount = spanSizeOrDwordCount - 1) {
+                          spanSizeOrDwordCount != 0; spanSizeOrDwordCount--) {
                         *assetWriteCursor = *copySource;
-                        copySource = copySource + 1;
-                        assetWriteCursor = assetWriteCursor + 1;
+                        copySource++;
+                        assetWriteCursor++;
                       }
                       *offsetTableCursor = entryIndexOrOffset;
-                      offsetTableCursor = offsetTableCursor + 1;
+                      offsetTableCursor++;
                     }
-                    entryEndOrIndex = entryEndOrIndex + -1;
+                    entryEndOrIndex--;
                     entryIndexOrOffset = tagCount;
                   } while (entryEndOrIndex != 0);
                 }
@@ -966,30 +957,32 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
           g_MemoryApi.free(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount));
           capacityErrorResult.failed = true;
-          capacityErrorResult.assetOrError = (void *)0x14;
+          capacityErrorResult.assetOrError = (void *)FATAL_ERROR_GENERAL_FAILURE;
           return capacityErrorResult;
         }
         goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
-      case 0x30:
-      case 0x31:
-      case 0x32:
-      case 0x33:
-      case 0x34:
-      case 0x35:
-      case 0x36:
-      case 0x37:
-      case 0x38:
-      case 0x39:
-        if ((((*markupCursor < 0x30) || (0x39 < *markupCursor)) || (tokenStart[3] < 0x30)) || (0x39 < tokenStart[3])
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        /* '#ddd': three decimal digits, the key of the following tags (kept in EDX by the original) */
+        if ((((*markupCursor < '0') || ('9' < *markupCursor)) || (tokenStart[3] < '0')) || ('9' < tokenStart[3])
            ) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
         markupCursor = tokenStart + 4;
         break;
-      case 0x3c:
+      case '<':
         if (insideTagOrUnderflow) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
-        tagCount = tagCount + 1;
+        tagCount++;
         insideTagOrUnderflow = true;
         break;
-      case 0x3e:
+      case '>':
+        /* ends the string: NUL terminator, padded to a dword boundary */
         if (!insideTagOrUnderflow) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
         insideTagOrUnderflow = false;
         if (((uint32_t)outputCursor & 2) == 0) {
@@ -999,7 +992,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
           outputCursor[0] = L'\0';
           outputCursor[1] = L'\0';
-          outputCursor = outputCursor + 2;
+          outputCursor += 2;
           insideTagOrUnderflow = false;
         }
         else {
@@ -1008,7 +1001,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           if (capacityUnderflow || remainingCapacityBytes == 0)
           goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
           *outputCursor = L'\0';
-          outputCursor = outputCursor + 1;
+          outputCursor++;
         }
         break;
       case 0x40:
@@ -1074,7 +1067,8 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
       case 0x7c:
       case 0x7d:
       case 0x7e:
-        codeUnitBias = codeUnit * 0x80 + -0x2000;
+        /* '#@'..'#~': code page select, following bytes are emitted + (c - '@') * 0x80 */
+        codeUnitBias = codeUnit * 0x80 - 0x2000;
       }
       goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
     }
@@ -1418,15 +1412,11 @@ RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
 
 
 /* Address: 0x0041D9F0.
-   Ownership: assets/text/richtext.
-   Purpose: Measures and draws the next wrapped line from the flattened runtime buffer, handles soft hyphens,
-   images, style, color, and font commands, publishes the next word index, and encodes more-lines versus end-of-
-   stream through CF. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2
-   clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p4 maximumWidth→UiPixelExtent_V301, p5
-   drawY→UiPixelCoordinate_V297, p6 drawX→UiPixelCoordinate_V297. Calling convention, parameter storage, body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources], FontGlyph_DrawVerticallyCentered
-   [assets/text/resources].
+   Draws the next line of the flattened rich-text runtime buffer at (drawX, drawY), wrapped to maximumWidth:
+   a measure pass with the rules of RichTextCommandStream_MeasureNextWrappedLine finds the wrap point and the
+   line height, then the draw pass renders glyphs, images and colour/font commands up to it (drawing the hyphen
+   when the line wraps at a soft hyphen) and advances g_RichTextRuntimeBufferUsedWords. Returns the line height;
+   CF is set when the line ends the text. Called directly by RichTextCommandStream_DrawWrappedBlock.
 */
 WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_DrawNextWrappedLine
@@ -1438,9 +1428,9 @@ RichTextCommandStream_DrawNextWrappedLine
   int lineBottom;
   GraphicsSubresourceIndex glyphSubresource;
   int glyphAdvance;
-  uint32_t fontIndexOrImageWidth;
+  uint32_t savedFontIndexOrImageWidth;
   uint32_t lineWidth;
-  uint32_t lineTop;
+  uint32_t lineHeight;
   uint8_t *measureCommand;
   uint8_t *scanCursor;
   uint8_t *drawCursor;
@@ -1452,19 +1442,19 @@ RichTextCommandStream_DrawNextWrappedLine
   
   glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
   lineWidth = 0;
-  drawCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
-  wrapPoint = (uint8_t *)0x0;
-  lineTop = glyphSize.lineHeight;
+  drawCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t);
+  wrapPoint = NULL;
+  lineHeight = glyphSize.lineHeight;
   scanCursor = drawCursor;
-  fontIndexOrImageWidth = g_ActiveFontIndex;
+  savedFontIndexOrImageWidth = g_ActiveFontIndex; /* font commands of the measure pass are undone below */
   /* Measure pass (same rules as RichTextCommandStream_MeasureNextWrappedLine): find the wrap point and
-     the line height. */
+     the line height. The cursors are byte pointers: record lengths are code units * 2. */
   for (;;) {
     measureCommand = scanCursor;
     glyphSubresource = (GraphicsSubresourceIndex)*(short *)measureCommand;
     scanCursor = measureCommand + 2;
-    if (glyphSubresource == 0x20) {
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    if (glyphSubresource == ' ') {
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
       if (maximumWidth < lineWidth) break;
       lineWidth = lineWidth + glyphSize.width;
       wrapPoint = scanCursor;
@@ -1476,19 +1466,19 @@ RichTextCommandStream_DrawNextWrappedLine
       }
       break;
     }
-    if (-1 < (int)glyphSubresource) {
+    if (-1 < (int)glyphSubresource) { /* no RICHTEXT_COMMAND_FLAG: a glyph */
       glyphSize = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
       lineWidth = lineWidth + glyphSize.width;
-      if (lineTop < glyphSize.lineHeight) {
-        lineTop = glyphSize.lineHeight;
+      if (lineHeight < glyphSize.lineHeight) {
+        lineHeight = glyphSize.lineHeight;
       }
       continue;
     }
-    switch(glyphSubresource & 0x1f) {
-    case 6:
-      scanCursor = measureCommand + 0x12;
+    switch(glyphSubresource & RICHTEXT_OPCODE_MASK) {
+    case RICHTEXT_OP_LITERAL_COLOR:
+      scanCursor = measureCommand + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * sizeof(uint16_t);
       break;
-    case 8:
+    case RICHTEXT_OP_SELECT_FONT_FIRST:
     case 9:
     case 10:
     case 0xb:
@@ -1498,41 +1488,43 @@ RichTextCommandStream_DrawNextWrappedLine
     case 0xf:
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
-    case 0x10:
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    case RICHTEXT_OP_FIXED_SPACE:
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
       lineWidth = lineWidth + glyphSize.width;
-      if (lineTop < glyphSize.lineHeight) {
-        lineTop = glyphSize.lineHeight;
+      if (lineHeight < glyphSize.lineHeight) {
+        lineHeight = glyphSize.lineHeight;
       }
       break;
-    case 0x11:
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
+    case RICHTEXT_OP_SOFT_HYPHEN:
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs('-');
       if (maximumWidth < glyphSize.width + lineWidth)
       goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
       wrapPoint = scanCursor;
       break;
-    case 0x12:
+    case RICHTEXT_OP_LINE_BREAK:
       if (lineWidth <= maximumWidth) {
         wrapPoint = scanCursor;
       }
       goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
-    case 0x1a:
+    case RICHTEXT_OP_INLINE_IMAGE:
+      /* payload: texture source pointer (code units 1-2), subresource (code units 3-4) */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
                          (*(uint32_t *)(measureCommand + 6),*(GraphicsTextureSourceAsset **)scanCursor);
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
-      scanCursor = measureCommand + 10;
-      if (lineTop < imageSize.logicalHeightPixels) {
-        lineTop = imageSize.logicalHeightPixels;
+      scanCursor = measureCommand + RICHTEXT_RECORD_UNITS_INLINE_IMAGE * sizeof(uint16_t);
+      if (lineHeight < imageSize.logicalHeightPixels) {
+        lineHeight = imageSize.logicalHeightPixels;
       }
     }
   }
 RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
-  g_ActiveFontIndex = fontIndexOrImageWidth;
-  if (wrapPoint == (uint8_t *)0x0) {
+  g_ActiveFontIndex = savedFontIndexOrImageWidth;
+  if (wrapPoint == NULL) {
     wrapPoint = scanCursor;
   }
-  lineBottom = drawY + lineTop;
-  /* Draw pass: the line ends at a space or soft hyphen at/after the wrap point, at 0x12, or at the end. */
+  lineBottom = drawY + lineHeight;
+  /* Draw pass: the line ends at a space or soft hyphen at/after the wrap point, at a line break, or at the
+     end of the text. */
   for (;;) {
     scanCursor = drawCursor;
     glyphSubresource = (GraphicsSubresourceIndex)*(short *)scanCursor;
@@ -1540,56 +1532,58 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
     if (glyphSubresource == 0) {
       g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
       endResult.endOfText = true;
-      endResult.lineAdvancePixels = lineTop;
+      endResult.lineAdvancePixels = lineHeight;
       return endResult;
     }
-    if (glyphSubresource == 0x20) {
+    if (glyphSubresource == ' ') {
       if (wrapPoint <= drawCursor) break;
       glyphAdvance = FontGlyph_DrawVerticallyCentered
-                        (clipTop,clipLeft,clipBottom,clipRight,0x20,lineTop,lineBottom,drawX);
+                        (clipTop,clipLeft,clipBottom,clipRight,' ',lineHeight,lineBottom,drawX);
       drawX = drawX + glyphAdvance;
       continue;
     }
     if (-1 < (int)glyphSubresource) {
       glyphAdvance = FontGlyph_DrawVerticallyCentered
-                        (clipTop,clipLeft,clipBottom,clipRight,glyphSubresource,lineTop,lineBottom,drawX);
+                        (clipTop,clipLeft,clipBottom,clipRight,glyphSubresource,lineHeight,lineBottom,drawX);
       drawX = drawX + glyphAdvance;
       continue;
     }
-    switch(glyphSubresource & 0x1f) {
-    case 0:
+    switch(glyphSubresource & RICHTEXT_OPCODE_MASK) {
+    case RICHTEXT_OP_COLOR_PALETTE_0:
       g_RichTextCurrentColorArgb = g_RichTextColorPalette0Argb;
       g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette0;
       break;
-    case 1:
+    case RICHTEXT_OP_COLOR_PALETTE_1:
       g_RichTextCurrentColorArgb = g_RichTextColorPalette1Argb;
       g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette1;
       break;
-    case 2:
+    case RICHTEXT_OP_COLOR_PALETTE_2:
       g_RichTextCurrentColorArgb = g_RichTextColorPalette2Argb;
       g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette2;
       break;
-    case 3:
+    case RICHTEXT_OP_COLOR_PALETTE_3:
       g_RichTextCurrentColorArgb = g_RichTextColorPalette3Argb;
       g_RichTextCurrentShadowOffset = g_RichTextShadowOffsetPalette3;
       break;
-    case 4:
+    case RICHTEXT_OP_SAVE_COLOR:
       g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
       g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
       break;
-    case 5:
+    case RICHTEXT_OP_RESTORE_COLOR:
       g_RichTextCurrentShadowOffset = g_RichTextSavedShadowOffset;
       g_RichTextCurrentColorArgb = g_RichTextSavedColorArgb;
       break;
-    case 6:
+    case RICHTEXT_OP_LITERAL_COLOR:
+      /* eight hex-digit code units (low byte of unit k at scanCursor[2k]), as in
+         RichTextCommandStream_DrawSingleLine */
       g_RichTextCurrentColorArgb =
            (((((((scanCursor[4] & 0xf) << 0x18 | (uint32_t)*drawCursor << 0x1c) >> 4 | (uint32_t)scanCursor[8] << 0x1c) >>
                4 | (uint32_t)scanCursor[6] << 0x1c) >> 4 | (uint32_t)scanCursor[0xc] << 0x1c) >> 4 |
             (uint32_t)scanCursor[10] << 0x1c) >> 4 | (uint32_t)scanCursor[0x10] << 0x1c) >> 4 |
            (uint32_t)scanCursor[0xe] << 0x1c;
-      drawCursor = scanCursor + 0x12;
+      drawCursor = scanCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * sizeof(uint16_t);
       break;
-    case 8:
+    case RICHTEXT_OP_SELECT_FONT_FIRST:
     case 9:
     case 10:
     case 0xb:
@@ -1599,36 +1593,37 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
     case 0xf:
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
-    case 0x10:
+    case RICHTEXT_OP_FIXED_SPACE:
       glyphAdvance = FontGlyph_DrawVerticallyCentered
-                        (clipTop,clipLeft,clipBottom,clipRight,0x20,lineTop,lineBottom,drawX);
+                        (clipTop,clipLeft,clipBottom,clipRight,' ',lineHeight,lineBottom,drawX);
       drawX = drawX + glyphAdvance;
       break;
-    case 0x11:
+    case RICHTEXT_OP_SOFT_HYPHEN:
       if (wrapPoint <= drawCursor) {
         /* The line wraps at this soft hyphen: draw the hyphen and end the line. */
         FontGlyph_DrawVerticallyCentered
-                  (clipTop,clipLeft,clipBottom,clipRight,0x2d,lineTop,lineBottom,drawX);
+                  (clipTop,clipLeft,clipBottom,clipRight,'-',lineHeight,lineBottom,drawX);
         goto RichTextCommandStream_DrawNextWrappedLine_EndLine;
       }
       break;
-    case 0x12:
+    case RICHTEXT_OP_LINE_BREAK:
       goto RichTextCommandStream_DrawNextWrappedLine_EndLine;
-    case 0x1a:
+    case RICHTEXT_OP_INLINE_IMAGE:
+      /* the image sits on the line's bottom edge */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
                          (*(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor);
-      fontIndexOrImageWidth = imageSize.logicalWidthPixels;
+      savedFontIndexOrImageWidth = imageSize.logicalWidthPixels;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,lineBottom - imageSize.logicalHeightPixels,drawX,
                  *(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor,g_FramebufferAccess);
-      drawX = drawX + fontIndexOrImageWidth;
-      drawCursor = scanCursor + 10;
+      drawX = drawX + savedFontIndexOrImageWidth;
+      drawCursor = scanCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE * sizeof(uint16_t);
     }
   }
 RichTextCommandStream_DrawNextWrappedLine_EndLine:
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
   moreLinesResult.endOfText = false;
-  moreLinesResult.lineAdvancePixels = lineTop;
+  moreLinesResult.lineAdvancePixels = lineHeight;
   return moreLinesResult;
 }
 

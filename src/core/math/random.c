@@ -77,8 +77,8 @@ void __thandor_void_preserve_eax_ecx_edx Random_SelectSecondaryStream(void)
 
 
 /* Address: 0x00403150.
-   Ownership: core/math/random.
-   Purpose: Sets RandomGeneratorState.next to Random_NextPrimary without changing either seed.
+   Makes Random_NextPrimary the active generator (g_RandomGeneratorState.next) again without touching
+   either seed; the front end calls it when a session is left, undoing Random_SelectSecondaryStream.
 */
 void __cdecl Random_SelectPrimaryStream(void)
 

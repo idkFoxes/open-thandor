@@ -11,13 +11,12 @@
 /* Implementation ownership: gameplay/ai/technology. */
 
 /* Address: 0x0053BD80.
-   Ownership: gameplay/ai/technology.
-   Purpose: Common stdcall stack ABI: FactionRuntimeIndex, TechnologyId, WorldRuntimeContext*. Signed score returns
-   in EAX. Target group: stack-only callback target. Exact binary and live ownership are preflight locked.
-   Local calls: AiTechnologyCompatibility_AcceptRuntimeClassCandidate,
-   AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8.
-   Cross-module calls: ModelDefinitionRegistry_FindByRuntimeClassId [assets/model/definitions],
-   AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces].
+   Technology score callback for score kind 3 (g_AiTechnologyCandidateScoreCallbackTable[3], image
+   0x0053B9EC; technologies researched in class 13/22 structures). Looks up the model definition that
+   ModelDefinitionRegistry_FindByRuntimeClassId finds for the technology id and scores the technology by
+   how many own units share that definition's family (AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8).
+   Definitions of class 1 only score while the faction has none of ARM 302/303/304, at half weight, and at
+   3/8 when it has ARM 305 or 306.
 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
@@ -25,47 +24,52 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
           WorldRuntimeContext *worldRuntime)
 
 {
-  uint32_t definitionClassValue;
+  uint32_t runtimeClassId;
   TechnologyAsset *technologyAsset;
   ModelDefinitionRecordPrefix *candidateDefinition;
   UQ8 relationScaleQ8;
   uint32_t candidateScore;
-  bool cfResult;
-  
+  bool rejected;
+  bool hasAsset;
+
   candidateDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(technologyId);
   technologyAsset = g_TechnologyAsset;
-  if (candidateDefinition == (ModelDefinitionRecordPrefix *)0x0) {
+  if (candidateDefinition == NULL) {
     return 0;
   }
-  definitionClassValue = candidateDefinition[6].flags;
-  if (definitionClassValue != 1) {
-    if ((((definitionClassValue != 0x15) && (definitionClassValue != 2)) && (definitionClassValue != 3)) && ((definitionClassValue != 0x11 && (definitionClassValue != 0x13))))
+  runtimeClassId = candidateDefinition[6].flags; /* +0x4C of the definition */
+  if (runtimeClassId != 1) {
+    if ((((runtimeClassId != 0x15) && (runtimeClassId != 2)) && (runtimeClassId != 3)) && ((runtimeClassId != 0x11 && (runtimeClassId != 0x13))))
     {
+      /* The original leaves the definition pointer in EAX here (JNZ 0x0053BE79), so every other class
+         "scores" with its record address. */
       return (AiTechnologyCandidateScore)candidateDefinition;
     }
-    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
-    if (!cfResult) {
+    rejected = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
+    if (!rejected) {
       relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
-      return (relationScaleQ8 * 40000 >> 8) * technologyAsset->records[technologyId].baseCandidateScore >> 8;
+      return (relationScaleQ8 * AI_TECHNOLOGY_RELATION_SCORE_FACTOR >> 8) *
+             technologyAsset->records[technologyId].baseCandidateScore >> 8;
     }
     return 0;
   }
-  cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0302_BUILDING_MDL0300);
-  if (cfResult) {
+  hasAsset = AiPrimaryWorkspace_HasEntryById(ARM_0302_BUILDING_MDL0300);
+  if (hasAsset) {
     return 0;
   }
-  cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0303_BUILDING_MDL0316);
-  if (!cfResult) {
-    cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0304_BUILDING_MDL0324);
-    if (cfResult) {
+  hasAsset = AiPrimaryWorkspace_HasEntryById(ARM_0303_BUILDING_MDL0316);
+  if (!hasAsset) {
+    hasAsset = AiPrimaryWorkspace_HasEntryById(ARM_0304_BUILDING_MDL0324);
+    if (hasAsset) {
       return 0;
     }
-    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
-    if (!cfResult) {
+    rejected = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
+    if (!rejected) {
       relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
-      candidateScore = (relationScaleQ8 * 40000 >> 8) * technologyAsset->records[technologyId].baseCandidateScore >> 8;
-      cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0305_BUILDING_MDL0317);
-      if ((cfResult) || (cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0306_BUILDING_MDL0310), cfResult))
+      candidateScore = (relationScaleQ8 * AI_TECHNOLOGY_RELATION_SCORE_FACTOR >> 8) *
+                       technologyAsset->records[technologyId].baseCandidateScore >> 8;
+      hasAsset = AiPrimaryWorkspace_HasEntryById(ARM_0305_BUILDING_MDL0317);
+      if ((hasAsset) || (hasAsset = AiPrimaryWorkspace_HasEntryById(ARM_0306_BUILDING_MDL0310), hasAsset))
       {
         candidateScore = candidateScore * 3 >> 2;
       }
@@ -203,10 +207,11 @@ AiTechnologyPlanning_AddCandidateRecord
 
 
 /* Address: 0x0053BCC0.
-   Ownership: gameplay/ai/technology.
-   Purpose: Common stdcall stack ABI: FactionRuntimeIndex, TechnologyId, WorldRuntimeContext*. Signed score returns
-   in EAX. Target group: EDI inherited knowledge-context side channel. Exact binary and live ownership are
-   preflight locked.
+   Technology score callback for score kind 1 (g_AiTechnologyCandidateScoreCallbackTable[1], image
+   0x0053B9E4; xenite-mine and tritium-pump improvements). Nothing while the faction's xenite is below the
+   ki.dat minimum; mine improvements then score their base value, pump improvements their base value
+   scaled by energy demand / energy supply (Q8), but only once demand reaches 0xF0/0x100 (about 94%)
+   of supply.
 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeFactionScaledCandidateValue
@@ -235,6 +240,7 @@ AiTechnologyScore_ComputeFactionScaledCandidateValue
               (uint64_t)
               (g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick * 0x10
               + g_GameFactionRuntimeImage.records[factionIndex].baselineEnergySupplyQ4));
+    /* the original divides without a zero check: a faction with no energy supply at all faults here */
     if (0xef < (int)energyDemandPressureRatioQ8) {
       return energyDemandPressureRatioQ8 *
              g_TechnologyAsset->records[technologyId].baseCandidateScore >> 8;
@@ -245,9 +251,9 @@ AiTechnologyScore_ComputeFactionScaledCandidateValue
 
 
 /* Address: 0x0053BD60.
-   Ownership: gameplay/ai/technology.
-   Purpose: Common stdcall stack ABI: FactionRuntimeIndex, TechnologyId, WorldRuntimeContext*. Signed score returns
-   in EAX. Target group: stack-only callback target. Exact binary and live ownership are preflight locked.
+   Technology score callback for score kind 2 (g_AiTechnologyCandidateScoreCallbackTable[2], image
+   0x0053B9E8; technologies researched in class 11 structures): the technology's base candidate score
+   from the technology asset, unconditionally.
 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ReturnBaseCandidateValueForKind2
@@ -260,9 +266,8 @@ AiTechnologyScore_ReturnBaseCandidateValueForKind2
 
 
 /* Address: 0x0053BEA0.
-   Ownership: gameplay/ai/technology.
-   Purpose: Common stdcall stack ABI: FactionRuntimeIndex, TechnologyId, WorldRuntimeContext*. Signed score returns
-   in EAX. Target group: stack-only callback target. Exact binary and live ownership are preflight locked.
+   Technology score callback for score kind 4 (g_AiTechnologyCandidateScoreCallbackTable[4], image
+   0x0053B9F0; radar and AR-M silo technologies): the technology's base candidate score, unconditionally.
 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ReturnBaseCandidateValueForKind4
@@ -274,13 +279,8 @@ AiTechnologyScore_ReturnBaseCandidateValueForKind4
 }
 
 
-/* Address: 0x0053BEC0.
-   Ownership: gameplay/ai/technology.
-   Purpose: Common stdcall stack ABI: FactionRuntimeIndex, TechnologyId, WorldRuntimeContext*. Signed score returns
-   in EAX. Target group: EDX inherited category-mask side channel. Exact binary and live ownership are preflight
-   locked.
-   Cross-module calls: AiArmyCandidate_ComputeAverageCompatibleAssetScore [gameplay/ai/planning].
-*/
+/* The original passes the category mask in EDX; AiStrategicCandidate_AddBestWorkspace12Entry stores it
+   here before its scoring loop. */
 AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
 
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
@@ -288,6 +288,11 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
           (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
           PckTechnologyIdCatalog technologyId,WorldRuntimeContext *worldRuntime);
 
+/* Address: 0x0053BEC0.
+   Technology score callback for score kind 5 (g_AiTechnologyCandidateScoreCallbackTable[5], image
+   0x0053B9F4; every technology not caught by kinds 0-4). Hands the EDX category mask (here a global) to
+   the body below, which holds the original code.
+*/
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
@@ -298,6 +303,12 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue
                    (g_AiTechnologyScoreCategoryMaskEdx,factionIndex,technologyId,worldRuntime);
 }
 
+/* Body of 0x0053BEC0 (C-only split, no address of its own; only called by the wrapper above).
+   Category C and D technologies score nothing unless the faction already owns a technology of that
+   category (bit 2 / bit 4 of categoryMaskEdx). Otherwise the score is the average faction-weighted score
+   of the army assets the technology leads to (weights g_AiArmyCandidateScoreWeightsVariantC15) times the
+   base candidate score, >> 8.
+*/
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
           (AiTechnologyCategoryMask categoryMaskEdx,FactionRuntimeIndex factionIndex,
@@ -331,9 +342,9 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
 
 
 /* Address: 0x0053BC00.
-   Ownership: gameplay/ai/technology.
-   Purpose: Exact CF-clear pass-through helper. The two callers pass candidateDefinition both in EAX and as the
-   second stack argument; the helper preserves EAX and clears CF.
+   Veto hook of AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue (its only caller, called
+   directly): would return true (CF set) to reject the candidate definition, but always accepts (CF clear).
+   The caller passes candidateDefinition in EAX as well as on the stack; EAX is preserved.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiTechnologyCompatibility_AcceptRuntimeClassCandidate
@@ -345,38 +356,42 @@ AiTechnologyCompatibility_AcceptRuntimeClassCandidate
 
 
 /* Address: 0x0053BC20.
-   Ownership: gameplay/ai/technology.
-   Purpose: Handles ai technology compatibility compute average runtime relation scale q8.
+   Relation scale (Q8) of a candidate definition to the faction's units in the secondary workspace
+   (workspace 01): (1.0 + 2.0 per assigned unit whose definition id equals the candidate's or differs by
+   1000 or 2000, i.e. the same unit in another id block) / number of assigned units; 1.0 when there is
+   none. Called directly by AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue.
 */
 UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
               (ModelDefinitionRecordPrefix *candidateDefinition)
 
 {
-  ArmyRuntimeSlot *ownerArmyRuntime;
+  /* The typed path reads the dword at +8 of the record at the unit's slot +0 (MOV EDX,[EDX]; MOV
+     EDX,[EDX+8]); the current struct view calls it ownerArmyRuntime, but it is compared as a definition id. */
+  ArmyRuntimeSlot *unitDefinitionId;
   UQ8 averageScaleQ8;
   int remainingCount;
   int definitionIdDelta;
   uint32_t occupiedEntryCount;
   AiRuntimeWorkspaceEntry *runtimeWorkspaceEntry;
   
-  averageScaleQ8 = 0x100;
+  averageScaleQ8 = 0x100; /* 1.0 */
   if (g_AiWorkspace01Count != 0) {
     occupiedEntryCount = 0;
     remainingCount = g_AiWorkspace01Count;
     runtimeWorkspaceEntry = g_AiWorkspaceBuffer01_Size0200;
     do {
-      if (runtimeWorkspaceEntry->armyRuntime != (ArmyRuntimeSlot *)0x0) {
-        occupiedEntryCount = occupiedEntryCount + 1;
-        ownerArmyRuntime = (((runtimeWorkspaceEntry->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+      if (runtimeWorkspaceEntry->armyRuntime != NULL) {
+        occupiedEntryCount++;
+        unitDefinitionId = (((runtimeWorkspaceEntry->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                  ownerArmyRuntimeOrSavedOffset).armyRuntime;
-        definitionIdDelta = (int)ownerArmyRuntime - (int)candidateDefinition->definitionId;
-        if ((((ownerArmyRuntime == (ArmyRuntimeSlot *)candidateDefinition->definitionId) || (definitionIdDelta == -1000))
+        definitionIdDelta = (int)unitDefinitionId - (int)candidateDefinition->definitionId;
+        if ((((unitDefinitionId == (ArmyRuntimeSlot *)candidateDefinition->definitionId) || (definitionIdDelta == -1000))
             || (definitionIdDelta == -2000)) || ((definitionIdDelta == 1000 || (definitionIdDelta == 2000)))) {
-          averageScaleQ8 = averageScaleQ8 + 0x200;
+          averageScaleQ8 = averageScaleQ8 + 0x200; /* 2.0 */
         }
       }
-      runtimeWorkspaceEntry = runtimeWorkspaceEntry + 1;
-      remainingCount = remainingCount + -1;
+      runtimeWorkspaceEntry++;
+      remainingCount--;
     } while (remainingCount != 0);
     if (occupiedEntryCount != 0) {
       averageScaleQ8 = averageScaleQ8 / occupiedEntryCount;

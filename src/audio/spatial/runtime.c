@@ -39,10 +39,10 @@ StatusResult SpatialSoundPool_Init(void)
 
 
 /* Address: 0x0050B600.
-   Ownership: audio/spatial/runtime.
-   Purpose: Handles spatial sound rebuild listener transform from pose.
-   Cross-module calls: FixedTransform_BuildRotationBasis [core/math/fixed], FixedTransform_Compose
-   [core/math/fixed].
+   Places the sound listener at the camera: g_SpatialSoundListenerTransform becomes the rotation built from
+   the camera's view angles composed with a translation by -origin, i.e. world space to listener space, which
+   the positioned-sound functions use to get distance and azimuth. Called directly by the frontend camera
+   control setup in ui/frontend/runtime.c (no callback table).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SpatialSound_RebuildListenerTransformFromPose
@@ -51,25 +51,29 @@ SpatialSound_RebuildListenerTransformFromPose
 
 {
   FixedTransform_BuildRotationBasis
-            ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_SpatialSoundListenerRotation,0),0x4000 - viewAngle0 & 0xffff,viewAngle1,0xc000);
-  uRam0050b574 = 0;
-  uRam0050b578 = 0;
-  uRam0050b57c = 0;
-  iRam0050b5a4 = -originX;
-  iRam0050b5a8 = -originY;
-  iRam0050b5ac = -originZ;
-  uRam0050b580 = 0x10000000;
+            (&g_SpatialSoundListenerRotation,FIXED_ANGLE16_QUARTER_TURN - viewAngle0 & 0xffff,viewAngle1,
+             FIXED_ANGLE16_HALF_TURN + FIXED_ANGLE16_QUARTER_TURN);
+  g_SpatialSoundListenerRotation.translation.x = 0;
+  g_SpatialSoundListenerRotation.translation.y = 0;
+  g_SpatialSoundListenerRotation.translation.z = 0;
+  /* world-to-local: identity basis (Q28) with the translation -origin. The basis is written through the
+     raw dword globals: as g_SpatialSoundListenerWorldToLocal.basisRow* members the compiler merges the stores
+     into SSE stores. */
+  g_SpatialSoundListenerWorldToLocal.translation.x = -originX;
+  g_SpatialSoundListenerWorldToLocal.translation.y = -originY;
+  g_SpatialSoundListenerWorldToLocal.translation.z = -originZ;
+  uRam0050b580 = Q28_ONE; /* basisRow0 */
   uRam0050b584 = 0;
   uRam0050b588 = 0;
-  uRam0050b58c = 0;
-  uRam0050b590 = 0x10000000;
+  uRam0050b58c = 0; /* basisRow1 */
+  uRam0050b590 = Q28_ONE;
   uRam0050b594 = 0;
-  uRam0050b598 = 0;
+  uRam0050b598 = 0; /* basisRow2 */
   uRam0050b59c = 0;
-  uRam0050b5a0 = 0x10000000;
+  uRam0050b5a0 = Q28_ONE;
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform,
-             (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_SpatialSoundListenerWorldToLocal,0),(GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_SpatialSoundListenerRotation,0));
+             &g_SpatialSoundListenerWorldToLocal,&g_SpatialSoundListenerRotation);
   return;
 }
 
@@ -145,12 +149,11 @@ SpatialSound_PlayPositionedOneShot
 
 
 /* Address: 0x0050B7D0.
-   Ownership: audio/spatial/runtime.
-   Purpose: Computes the same positional attenuation and writes desired left/right Q15 gains into a persistent
-   SpatialSoundSlot for the pool update pass. Four stack arguments are authoritative from RET 0x10; EAX/EDX are
-   restored and do not carry a semantic return.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], FixedMath_VectorToAnglesAndLength3Regs
-   [core/math/fixed].
+   Looping counterpart of SpatialSound_PlayPositionedOneShot: computes the same distance attenuation and
+   azimuth panning and stores the result as the slot's desired gains, which SpatialSoundPool_ApplyDesiredGains
+   turns into start/stop/gain updates at the end of the frame. An out-of-range or inaudible sound leaves the
+   gains at the 0 that SpatialSoundPool_ClearDesiredGains set, so it stops. Called directly by the army and shot
+   sound updates (gameplay/army, world/shots; no callback table).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SpatialSound_UpdateDesiredPositionedGains
@@ -159,49 +162,55 @@ SpatialSound_UpdateDesiredPositionedGains
 
 {
   int64_t scaledProduct;
-  uint32_t distanceOrPannedGain;
+  uint32_t distanceOrPannedGainQ15;
   uint32_t azimuthOrLeftGainQ15;
   uint32_t volumeOrRightGainQ15;
   FixedLengthAnglesEaxEcxEdx12 lengthAngles;
   
-  volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
-  if ((slot != (SpatialSoundSlot *)0x0) && (volumeOrRightGainQ15 != 0)) {
+  volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 15;
+  if ((slot != NULL) && (volumeOrRightGainQ15 != 0)) {
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&g_SpatialSoundRelativeX,worldPosition,
                (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
     lengthAngles = FixedMath_VectorToAnglesAndLength3Regs
                       (g_SpatialSoundRelativeY,g_SpatialSoundRelativeX,g_SpatialSoundRelativeZ);
     azimuthOrLeftGainQ15 = lengthAngles.azimuthAngle;
-    distanceOrPannedGain = lengthAngles.lengthQ12;
-    if ((distanceOrPannedGain < maximumDistanceQ12) &&
+    distanceOrPannedGainQ15 = lengthAngles.lengthQ12;
+    /* attenuation: volume * cos(distance / maximum * quarter turn), the << 14 maps the ratio to
+       0..FIXED_ANGLE16_QUARTER_TURN */
+    if ((distanceOrPannedGainQ15 < maximumDistanceQ12) &&
        (scaledProduct = (int64_t)
                 g_FixedCosQ28
-                [(int)(((uint64_t)distanceOrPannedGain << 0xe) / (uint64_t)maximumDistanceQ12)] *
+                [(int)(((uint64_t)distanceOrPannedGainQ15 << 0xe) / (uint64_t)maximumDistanceQ12)] *
                 (int64_t)(int)volumeOrRightGainQ15,
-       volumeOrRightGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
-      if (azimuthOrLeftGainQ15 < 0x8000) {
-        distanceOrPannedGain = (uint32_t)((uint64_t)
-                       ((int64_t)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
+       volumeOrRightGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c,
+       SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 < (int)volumeOrRightGainQ15)) {
+      /* pan: one channel keeps the full gain, the other gets gain * (1 + cos(2 * azimuth)) / 2 */
+      if (azimuthOrLeftGainQ15 < FIXED_ANGLE16_HALF_TURN) {
+        distanceOrPannedGainQ15 = (uint32_t)((uint64_t)
+                       ((int64_t)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + Q28_ONE) *
                        (int64_t)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
         azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
       }
       else {
+        /* k_SpatialSoundStereoCosineSecondHalfBaseBias lies 0x8000 * 8 bytes before g_FixedCosQ28, so this
+           reads g_FixedCosQ28[(azimuth - FIXED_ANGLE16_HALF_TURN) * 2] */
         scaledProduct = (int64_t)
-                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + 0x10000000) *
+                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + Q28_ONE) *
                 (int64_t)(int)volumeOrRightGainQ15;
         azimuthOrLeftGainQ15 = (uint32_t)scaledProduct >> 0x1d | (int)((uint64_t)scaledProduct >> 0x20) << 3;
-        distanceOrPannedGain = volumeOrRightGainQ15;
+        distanceOrPannedGainQ15 = volumeOrRightGainQ15;
       }
-      volumeOrRightGainQ15 = distanceOrPannedGain;
+      volumeOrRightGainQ15 = distanceOrPannedGainQ15;
       if (g_ReverseStereoMask != 0) {
         volumeOrRightGainQ15 = azimuthOrLeftGainQ15;
-        azimuthOrLeftGainQ15 = distanceOrPannedGain;
+        azimuthOrLeftGainQ15 = distanceOrPannedGainQ15;
       }
-      if (0x8000 < (int)azimuthOrLeftGainQ15) {
-        azimuthOrLeftGainQ15 = 0x8000;
+      if (SPATIAL_SOUND_GAIN_Q15_FULL < (int)azimuthOrLeftGainQ15) {
+        azimuthOrLeftGainQ15 = SPATIAL_SOUND_GAIN_Q15_FULL;
       }
-      if (0x8000 < (int)volumeOrRightGainQ15) {
-        volumeOrRightGainQ15 = 0x8000;
+      if (SPATIAL_SOUND_GAIN_Q15_FULL < (int)volumeOrRightGainQ15) {
+        volumeOrRightGainQ15 = SPATIAL_SOUND_GAIN_Q15_FULL;
       }
       slot->desiredLeftGainQ15 = azimuthOrLeftGainQ15;
       slot->desiredRightGainQ15 = volumeOrRightGainQ15;
@@ -256,8 +265,11 @@ SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
 
 
 /* Address: 0x0050B940.
-   Ownership: audio/spatial/runtime.
-   Purpose: A full pool releases the voice set and returns error 0x14 with CF set.
+   PCM counterpart of SpatialSoundSlot_CreateFromSampleAsset: creates a voice set for raw PCM data and gives
+   it the first free spatial-sound slot, silent and not playing. In the original CF is clear with the slot
+   and set with the voice-set error or FATAL_ERROR_GENERAL_FAILURE (pool full, the voice set is released
+   again); this C returns only EAX, so a caller cannot tell the error code from a slot. Nothing in this code
+   base calls it and no callback-table slot references it.
 */
 SpatialSoundSlot *
 SpatialSoundSlot_CreateFromPcm
@@ -275,21 +287,21 @@ SpatialSoundSlot_CreateFromPcm
                     (bufferByteCount,sampleRateHz,bitsPerSample,channelCount,pcmData);
   voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
   if (!createResult.failed) {
-    slotsRemaining = 0x100;
+    slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
     slotCursor = g_SpatialSoundSlots;
     do {
-      if (slotCursor->voiceSet == (DirectSoundVoiceSet *)0x0) {
+      if (slotCursor->voiceSet == NULL) {
         slotCursor->voiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
         slotCursor->desiredLeftGainQ15 = 0;
         slotCursor->desiredRightGainQ15 = 0;
-        slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
+        slotCursor->activeVoice = NULL;
         return slotCursor;
       }
-      slotCursor = slotCursor + 1;
-      slotsRemaining = slotsRemaining + -1;
+      slotCursor++;
+      slotsRemaining--;
     } while (slotsRemaining != 0);
     g_SoundReleasePcmVoiceSet((DirectSoundVoiceSet *)voiceSetOrError);
-    voiceSetOrError = (SpatialSoundSlot *)0x14;
+    voiceSetOrError = (SpatialSoundSlot *)FATAL_ERROR_GENERAL_FAILURE;
   }
   return voiceSetOrError;
 }
@@ -317,9 +329,9 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleaseSample(SpatialSound
 
 
 /* Address: 0x0050BA00.
-   Ownership: audio/spatial/runtime.
-   Purpose: Releases the slot's PCM voice set through DirectSound_ReleasePcmVoiceSet and clears all four slot
-   dwords. Null is accepted.
+   Releases the PCM voice set of a slot from SpatialSoundSlot_CreateFromPcm and clears the slot (all four
+   dwords), which makes it free again. A NULL slot is ignored. Nothing in this code base calls it and no
+   callback-table slot references it.
 */
 void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleasePcm(SpatialSoundSlot *slot)
 
@@ -327,10 +339,11 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleasePcm(SpatialSoundSlo
   int slotEntriesRemaining;
   
   slotEntriesRemaining = 4;
-  if (slot != (SpatialSoundSlot *)0x0) {
+  if (slot != NULL) {
     g_SoundReleasePcmVoiceSet(slot->voiceSet);
-    for (; slotEntriesRemaining != 0; slotEntriesRemaining = slotEntriesRemaining + -1) {
-      slot->voiceSet = (DirectSoundVoiceSet *)0x0;
+    /* REP STOSD: the cursor advances one dword (to the next field) per step */
+    for (; slotEntriesRemaining != 0; slotEntriesRemaining--) {
+      slot->voiceSet = NULL;
       slot = (SpatialSoundSlot *)&slot->activeVoice;
     }
   }

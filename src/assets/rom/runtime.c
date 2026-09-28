@@ -328,24 +328,24 @@ RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue)
 
 
 /* Address: 0x00548840.
-   Ownership: assets/rom/runtime.
-   Purpose: Reverse lookup for the ROM registry: returns the secondary slot value paired with a record pointer, or
-   zero when the record is absent.
+   Returns the runtime root node registered for a ROM record in the 256-slot ROM registry, or 0 when the record
+   is not registered (the reverse of RomRegistry_FindRecordBySlotValue). No caller or table slot referencing
+   it was found in src/ or src/generated/image_data.c.
 */
 uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
 
 {
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  
-  slotsRemaining = 0x100;
+
+  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
   do {
     if (record == slotCursor->record) {
       return (uint32_t)slotCursor->runtimeRootNode;
     }
-    slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotCursor++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
   return 0;
 }

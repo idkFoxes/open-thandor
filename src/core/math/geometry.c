@@ -13,8 +13,11 @@
 bool g_Triangle2DBarycentricOutside;
 
 /* Address: 0x004869B0.
-   Ownership: core/math/geometry.
-   Purpose: Handles triangle2 d compute barycentric weights q12 packed.
+   Computes the barycentric weights of a screen point for vertices A and B of a projected triangle
+   (C's weight is the remainder to 1.0), used to interpolate texture/shade values when a clipped
+   terrain triangle is queued. Returns both weights in Q12 packed in EDX:EAX and publishes "point outside
+   the triangle" (the original CF) in g_Triangle2DBarycentricOutside.
+   Called directly by the terrain projection code (TerrainProjectedTriangle_ClipInterpolateAndQueueTextured).
 */
 TriangleBarycentricWeightsQ12
 Triangle2D_ComputeBarycentricWeightsQ12Packed

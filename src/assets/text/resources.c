@@ -118,24 +118,24 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
 
 
 /* Address: 0x0041CCB0.
-   Ownership: assets/text/resources.
-   Purpose: Releases the owning asset for one text-resource page and clears both dwords in its binding.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Unloads text page pageIndex (the counterpart of TextResourcePage_Load): releases its 'str' asset and clears
+   the page's binding (selected locale block and asset). No caller or table slot referencing it was found in
+   src/ or src/generated/image_data.c.
 */
 void __thandor_preserve_eax TextResourcePage_Unload(TextResourcePageIndex pageIndex)
 
 {
   Resource_Release(g_TextResourcePageBindings[pageIndex].asset);
-  g_TextResourcePageBindings[pageIndex].selectedLocaleBlock = (TextResourceLocaleBlockPrefix *)0x0;
-  g_TextResourcePageBindings[pageIndex].asset = (TextResourceAssetHeader *)0x0;
+  g_TextResourcePageBindings[pageIndex].selectedLocaleBlock = NULL;
+  g_TextResourcePageBindings[pageIndex].asset = NULL;
   return;
 }
 
 
 /* Address: 0x0041CDB0.
-   Ownership: assets/text/resources.
-   Purpose: Validates the 'str' magic and returns localeBlockCount from +0xB0 with CF clear. Invalid input returns
-   with CF set.
+   Returns the number of locale blocks (dword +0xB0) of a 'str' text asset with CF clear; CF set when the asset
+   lacks the 'str' signature. No caller or table slot referencing it was found in src/ or
+   src/generated/image_data.c.
 */
 AssetRecordCount __thandor_eax_cf_preserve_ecx_edx
 TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
@@ -243,17 +243,16 @@ uint32_t FontGlyph_DrawBottomAligned
 
 
 /* Address: 0x0041D400.
-   Ownership: assets/text/resources.
-   Purpose: EAX returns glyph width and CF is cleared. It selects an existing resource facet and does not imply
-   sprite, model, or effect identity. Typed parameters: p4 glyphSubresource→GraphicsSubresourceIndex_V338. Calling
-   convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p0
-   clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
-   clipRight→UiPixelCoordinate_V297, p5 lineTop→UiPixelCoordinate_V297, p6 lineBottom→UiPixelCoordinate_V297.
+   Draws one glyph of the active font at drawX, centred vertically in the text line that ends at lineBottom and
+   is lineHeight pixels high, clipped to the given rectangle, in the current rich-text colour (with the
+   half-transparent shadow copy first when a shadow offset is set). Returns the glyph width (0 without a loaded
+   font) so the caller can advance. Called directly by the wrapped-line drawing of rich text
+   (assets/text/richtext.c) for glyphs, spaces and the wrap hyphen.
 */
 uint32_t FontGlyph_DrawVerticallyCentered
                (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
                UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource,
-               UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,int32_t drawX)
+               UiPixelCoordinate lineHeight,UiPixelCoordinate lineBottom,int32_t drawX)
 
 {
   int drawY;
@@ -261,17 +260,18 @@ uint32_t FontGlyph_DrawVerticallyCentered
   uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
-  
+
   fontTexture = g_FontTextureSources[g_ActiveFontIndex];
-  if (fontTexture != (GraphicsTextureSourceAsset *)0x0) {
+  if (fontTexture != NULL) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
-    drawY = (lineBottom - lineTop) + ((int)(lineTop - textureSize.logicalHeightPixels) >> 1);
+    /* line top plus half the space the glyph leaves free */
+    drawY = (lineBottom - lineHeight) + ((int)(lineHeight - textureSize.logicalHeightPixels) >> 1);
     colorArgb = g_RichTextCurrentColorArgb;
     framebuffer = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
-                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,fontTexture,
+                 drawX + g_RichTextCurrentShadowOffset,TEXT_SHADOW_COLOR_ARGB,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
     g_GraphicsTextureSourceBlitModulatedSourceAlpha

@@ -159,12 +159,11 @@ StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAsse
 
 
 /* Address: 0x004BE670.
-   Ownership: assets/model/definitions.
-   Purpose: Scans the model lookup table at offsets +0xE4/+0xE8 for packed key (groupIndex << 4) | itemIndex. On
-   success it returns the three payload dwords from the matching 0x10-byte entry in EAX, ECX, and EDX with CF
-   clear; on failure it zeros those registers and sets CF. Saved ids, relocated pointers, attachment selectors, and
-   runtime class ids remain separate. Key index and key class remain separate 32-bit domains. Typed parameters: p0
-   keyIndex→ModelLookupKeyIndex_V338, p1 keyClass→ModelLookupKeyClass_V338.
+   Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte ModelPackedPointRecord
+   entries) for the key (keyIndex << 4) | keyClass and returns the entry's local position (the dwords at +4, +8,
+   +0xC) in EAX/ECX/EDX with CF clear; all three zero with CF set when no entry matches. Called directly by
+   ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters (a model class-init callback table slot) and by the
+   army platform-lowering step in gameplay/army/runtime.c.
 */
 ModelLookupPayloadResult
 ModelLookupTable_FindPackedKeyEntryRegs
@@ -175,7 +174,7 @@ ModelLookupTable_FindPackedKeyEntryRegs
   int entriesRemaining;
   uint32_t *packedKeyEntryCursor;
   ModelLookupPayloadResult payloadResult;
-  
+
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   packedKeyEntryCursor =
        (uint32_t *)(modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
@@ -190,8 +189,8 @@ ModelLookupTable_FindPackedKeyEntryRegs
       return payloadResult;
     }
     if ((keyClass | keyIndex << 4) == *packedKeyEntryCursor) break;
-    packedKeyEntryCursor = packedKeyEntryCursor + 4;
-    entriesRemaining = entriesRemaining - 1;
+    packedKeyEntryCursor = packedKeyEntryCursor + 4; /* next 0x10-byte entry */
+    entriesRemaining--;
   }
   payloadResult.notFound = false;
   payloadResult.payload4 = packedKeyEntryCursor[1];
@@ -238,9 +237,11 @@ ModelLookupTable_ContainsPackedKey
 
 
 /* Address: 0x0050AEA0.
-   Ownership: assets/model/definitions.
-   Purpose: Intersects the shared model-space ray with one exact 0x40-byte triangle record. EAX is Q12 distance; CF
-   set means hit, CF clear means no hit.
+   Intersects the current model-space pick ray (g_ModelRaycastLocalOrigin*, g_ModelRaycastLocalDirection*Q28,
+   limited to g_ModelRaycastMaximumDistance) with one triangle: first the plane distance along the ray (plane
+   through the weighted centre (2*v0 + v1 + v2) / 4), then an inside test of the hit point against the edges.
+   On a hit returns the Q12 distance with CF set; on a miss CF is clear and EAX holds scratch. Called for each
+   triangle by ModelNodeRuntime_RaycastHierarchyNearest.
 */
 MeshRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
 ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle)
@@ -422,9 +423,8 @@ ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog def
 
 
 /* Address: 0x0053BA00.
-   Ownership: assets/model/definitions.
-   Purpose: Returns the first ModelDefinitionRecordPrefix whose runtime class field matches runtimeClassId. One
-   stdcall stack argument; preserved EDX is loop state, not a return value.
+   Returns the first registered model definition whose runtime class id (dword +0x1C0) equals runtimeClassId,
+   or NULL. Called directly by the AI planning and technology code (gameplay/ai/planning.c, technology.c).
 */
 ModelDefinitionRecordPrefix *
 ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
@@ -433,16 +433,17 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
   int registrySlotsRemaining;
   ModelDefinitionRecordPrefix **registryCursor;
   ModelDefinitionRecordPrefix *candidateDefinition;
-  
+
   registryCursor = g_ModelDefinitionRegistry;
-  registrySlotsRemaining = 0x300;
+  registrySlotsRemaining = 768;
+  /* [0x25].flags: 0x25 twelve-byte record prefixes plus 4 = offset +0x1C0 */
   while ((candidateDefinition = *registryCursor,
-         candidateDefinition == (ModelDefinitionRecordPrefix *)0x0 ||
+         candidateDefinition == NULL ||
          (runtimeClassId != candidateDefinition[0x25].flags))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
-      return (ModelDefinitionRecordPrefix *)0x0;
+      return NULL;
     }
   }
   return candidateDefinition;

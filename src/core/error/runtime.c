@@ -30,8 +30,9 @@ void __cdecl ErrorSystem_Init(void)
 
 
 /* Address: 0x00407F50.
-   Ownership: core/error/runtime.
-   Purpose: Fallback error callback that sets carry and returns after consuming one stack argument.
+   method08 of g_UiRootCallbacks_00407E28, the callbacks of the fatal-error dialog root: always sets CF, so
+   a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
+   below (the dialog is modal).
 */
 bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFail(UiRootNode *root)
 
@@ -41,8 +42,9 @@ bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFail(UiRootNod
 
 
 /* Address: 0x00407F60.
-   Ownership: core/error/runtime.
-   Purpose: Fallback error callback that returns code 8 in EAX after consuming one stack argument.
+   pointerMissPolicy of g_UiRootCallbacks_00407E28 (the fatal-error dialog root): the non-negative result
+   stops the pointer traversal at the dialog, so the roots below it get no pointer input. The value 8 itself
+   carries no meaning beyond being non-negative.
 */
 int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *root)
 
@@ -52,15 +54,15 @@ int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *
 
 
 /* Address: 0x00407F70.
-   Ownership: core/error/runtime.
-   Purpose: Handles fatal error dialog dismiss and pop root.
-   Cross-module calls: UiRootStack_Pop [ui/controls/layout].
+   Handler of UI action 1 (slot 1 of g_UiRootStackActionHandlerPage, installed as action page 0 by the UI
+   setup in ui/controls/layout.c): closes the fatal-error dialog root and counts the dismissal, which ends
+   the modal frame loop in FatalErrorRuntime_DispatchPendingError.
 */
 void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
 
 {
   UiRootStack_Pop(rootNode);
-  g_FatalErrorDialogDismissed = g_FatalErrorDialogDismissed + 1;
+  g_FatalErrorDialogDismissed++;
   return;
 }
 
@@ -158,8 +160,10 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 
 
 /* Address: 0x0041BC50.
-   Ownership: core/error/runtime.
-   Purpose: EXACT_DUPLICATE_FATAL_DIALOG_NARROW_TO_UTF16_TWIN.
+   Byte-for-byte twin of Text_CopyNarrowToUtf16: widens a NUL-terminated 8-bit string to UTF-16 into a
+   buffer of capacityBytes bytes and returns the bytes written including the terminator; a string that does
+   not fit is cut off and terminated, and CF is set with FATAL_ERROR_GENERAL_FAILURE. Nothing in this code
+   base calls it and no callback-table slot references it.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
@@ -174,17 +178,18 @@ FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *des
   remainingCapacityBytes = capacityBytes;
   do {
     sourceByte = *source;
+    /* SUB ECX,2 / JBE: fails once the capacity would reach zero, so one unit always stays unused */
     capacityExhausted = remainingCapacityBytes < 2;
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {
       destination[-1] = 0;
       overflowResult.failed = true;
-      overflowResult.valueOrError = 0x14;
+      overflowResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
       return overflowResult;
     }
     *destination = (uint16_t)sourceByte;
-    source = source + 1;
-    destination = destination + 1;
+    source++;
+    destination++;
   } while (sourceByte != 0);
   successResult.valueOrError = capacityBytes - remainingCapacityBytes;
   successResult.failed = false;

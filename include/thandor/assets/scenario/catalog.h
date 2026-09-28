@@ -29,6 +29,15 @@
    TextResourcePage_LoadCompatibilityAliases. 0x215D fills a scenario description box while no row is selected. */
 #define TEXT_ID_LEVEL_DESCRIPTION_BASE 0x230010
 #define TEXT_ID_SCENARIO_DESCRIPTION_EMPTY 0x215D
+/* A campaign's description text is 0x230000 + its title index (record +0x50). */
+#define TEXT_ID_CAMPAIGN_DESCRIPTION_BASE 0x230000
+/* Saved-game description: a template whose rich-text payload selectors 0 and 1 receive the texts of the save
+   record's +0x90 and +0x70 ids (ScenarioCatalog_RefreshSelectedRecordLocalizedText). */
+#define TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE 0x215E
+/* Text id bases of the other single-game list columns (index at level record +0x50, +0x60 and +0x80). */
+#define TEXT_ID_LEVEL_COLUMN50_BASE 0x220A
+#define TEXT_ID_LEVEL_COLUMN60_BASE 0x2200
+#define TEXT_ID_LEVEL_COLUMN80_BASE 0x2205
 
 /* Index of the "Choose game" page (gameSelectPage) in the frontend page stack. */
 #define FRONTEND_PAGE_STACK_CHOOSE_GAME 10
@@ -91,27 +100,27 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
 
 /* 0x005443B0 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex);
+FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId);
 
 /* 0x00544AC0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestCampaignBundle
-          (uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t selectedRecordIndex);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRecordIndex);
 
 /* 0x00544DC0 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RebuildSaveRecordListPage
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
 /* 0x00544EA0 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RebuildLevelRecordListPage
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
 /* 0x00545020 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RebuildCampaignRecordListPage
-          (uint32_t callbackArg0,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
 /* 0x00549F70 */
 ScenarioCatalogRecordCount __thandor_void_preserve_eax_ecx

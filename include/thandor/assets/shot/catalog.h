@@ -37,7 +37,7 @@ ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId
 /* 0x0052B8C0 */
 ShotLaunchAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 ShotDefinition_ComputeLaunchAnglesRegs
-          (Q12 point0X,Q12 point0Y,Q12 point0Z,Q12 point1X,Q12 point1Y,Q12 point1Z,
+          (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition);
 
 /* 0x0052BCE0 */

@@ -191,9 +191,9 @@ PckCodec_DecodeFieldGrid
 
 
 /* Address: 0x0040A960.
-   Ownership: assets/package/codec.
-   Purpose: Copies sourceSize bytes when destinationCapacity is large enough and returns the four-byte-aligned
-   size. This is PCK compression method 1. Method 1 writer: plain dword-tail-safe copy.
+   PCK compression method 1 writer ("stored"), called through slot 1 of g_PckEncoderTable (0x0040E224).
+   Copies the source dword by dword when it fits into the destination and returns its size rounded up to
+   four bytes with CF clear; FATAL_ERROR_GENERAL_FAILURE with CF set when it does not fit.
 */
 PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeStored
@@ -204,10 +204,10 @@ PckCodec_EncodeStored
   PckDwordCopyCount dwordCopyCount;
   PckCodecResult successResult;
   PckCodecResult errorResult;
-  
+
   if (sourceSizeBytes <= destinationCapacityBytes) {
-    for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
-        dwordCopyCount = dwordCopyCount - 1) {
+    /* only whole dwords are copied (REP MOVSD); a 1..3-byte tail is left out */
+    for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0; dwordCopyCount--) {
       *(uint32_t *)destination = *(uint32_t *)source;
       source = source + 4;
       destination = destination + 4;
@@ -217,15 +217,14 @@ PckCodec_EncodeStored
     return successResult;
   }
   errorResult.failed = true;
-  errorResult.byteCountOrError = 0x14;
+  errorResult.byteCountOrError = FATAL_ERROR_GENERAL_FAILURE;
   return errorResult;
 }
 
 
 /* Address: 0x0040A9A0.
-   Ownership: assets/package/codec.
-   Purpose: Copies sourceSize bytes directly to the destination. This is PCK compression method 1. Method 1 reader:
-   stored copy.
+   PCK compression method 1 reader ("stored"), called through slot 1 of g_PckDecoderTable (0x0040E230).
+   Copies the stored bytes dword by dword to the destination; the capacity is not checked.
 */
 PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeStored
@@ -235,13 +234,14 @@ PckCodec_DecodeStored
 {
   PckDwordCopyCount dwordCopyCount;
   PckCodecResult copyResult;
-  
-  for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
-      dwordCopyCount = dwordCopyCount - 1) {
+
+  for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0; dwordCopyCount--) {
     *(uint32_t *)destination = *(uint32_t *)source;
     source = source + 4;
     destination = destination + 4;
   }
+  /* CF is what SHR ECX,2 shifted out last (bit 1 of the size). Package_DecodeEntryInto treats it as the
+     failure flag; stored sizes written by the encoder are multiples of four, so it is clear for them. */
   copyResult.failed = (sourceSizeBytes >> 1 & 1) != 0;
   /* EAX is untouched; in Package_DecodeEntryInto it still holds the read size (packedSize). */
   copyResult.byteCountOrError = sourceSizeBytes;

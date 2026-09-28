@@ -29,6 +29,18 @@
 #define ARMY_COMMAND_MODE_TARGET_ARMY 0x1     /* commandTargetArmyRuntime */
 #define ARMY_COMMAND_MODE_TARGET_POSITION 0x2 /* commandCoordinate0-2Q12 */
 #define ARMY_COMMAND_MODE_INTERRUPTED 0x4     /* a target command was cancelled; commandGeneration re-stamped */
+#define ARMY_COMMAND_MODE_AI_COMBAT_TARGET 0x8 /* target picked by the AI combat target selection: target-following
+                                                  moves are clamped (ArmyRuntime_StartClampedMoveCommand) */
+/* Army model runtime classStateEC (+0xEC) bits set and tested by the class update callbacks
+   (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, the production slots 11/13/22) */
+#define ARMY_MODEL_STATE_DISMANTLING 0x10         /* being recycled: health drains, Xenite (+0x184 >> 5) is refunded */
+#define ARMY_MODEL_STATE_DESTRUCTION_STARTED 0x20 /* destruction effect spawned; skips the attachment channel ticks */
+#define ARMY_MODEL_STATE_RESEARCHING 0x40         /* technology research in progress (+0x100 record) */
+#define ARMY_MODEL_STATE_RESEARCH_UNPAID 0x80     /* research queued, Xenite not yet paid */
+#define ARMY_MODEL_STATE_PRODUCING 0x100          /* a queued secondary army asset is being built */
+/* Parking position of an aircraft that has flown off the map (ArmyRuntimeClassUpdateSlot21_DispatchByClassId) */
+#define ARMY_AIRCRAFT_OFF_MAP_X_Q12 (-0x100000)
+#define ARMY_AIRCRAFT_OFF_MAP_Y_Q12 0x100000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */
@@ -184,7 +196,7 @@ ArmyRuntime_UpdateActivationMetricAndPlayStartSound
 /* 0x0052A040 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_HandleCollisionPartner
-          (ArmyRuntimeSlot *currentArmyRuntime,Q12 currentWorldXQ12,Q12 currentWorldYQ12,
+          (ArmyRuntimeSlot *currentArmyRuntime,Q12 currentWorldYQ12,Q12 currentWorldXQ12,
           ArmyRuntimeSlot *collisionPartnerArmyRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051BC00 */
@@ -270,7 +282,7 @@ ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051DBA0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestWorldPointAllowedDefault(uint32_t arg0,uint32_t arg1,uint32_t arg2);
+ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12);
 
 /* 0x0051B8F0 */
 ArmyRuntimeCreateResult __thandor_eax_cf_preserve_ecx_edx

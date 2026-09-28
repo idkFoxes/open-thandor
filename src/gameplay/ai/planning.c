@@ -132,14 +132,11 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
 
 
 /* Address: 0x0053BA50.
-   Ownership: gameplay/ai/planning.
-   Purpose: Finds the model definition for a runtime class, scans eligible army assets for matching linked
-   definition IDs and faction technology availability, and returns the average positive faction-weighted army
-   score. Stock tech.tec has 512 records over canonical ids 0..255; localized titles do not prove source-building,
-   tier, direction, or effect mappings.
-   Local calls: AiArmyCandidate_ComputeFactionWeightedScore.
-   Cross-module calls: ModelDefinitionRegistry_FindByRuntimeClassId [assets/model/definitions],
-   ModelDefinition_IsFactionTechnologyUnlocked [assets/model/definitions].
+   Average faction-weighted score (AiArmyCandidate_ComputeFactionWeightedScore) of the enabled army assets
+   that can carry the model definition of runtimeClassId: those whose own linked-definition list names it,
+   or, once the technology of the asset's first linked definition is unlocked, one of its (up to two) child
+   lists. Only positive scores count; 0 when the class has no definition or no asset scores. Only caller:
+   AiTechnologyScore_ComputeCategoryCompatibleCandidateValue, which passes a technology id as runtimeClassId.
 */
 AiCandidateScore32
 AiArmyCandidate_ComputeAverageCompatibleAssetScore
@@ -153,28 +150,28 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
   AiCandidateScore32 candidateScore;
   int registryEntriesRemaining;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
-  bool technologyUnlocked;
+  bool technologyLocked;
   int compatibleAssetCount;
   uint32_t compatibleAssetScoreSum;
-  AiLinkedDefinitionListView *assetLinkedDefinitions;
   AiLinkedDefinitionListView *nestedLinkedDefinitions;
   PckModelDefinitionIdCatalog candidateModelDefinitionId;
   AiLinkedDefinitionListView *secondNestedLinkedDefinitions;
   
   modelDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(runtimeClassId);
   candidateScore = 0;
-  if (modelDefinition != (ModelDefinitionRecordPrefix *)0x0) {
+  if (modelDefinition != NULL) {
     candidateModelDefinitionId = modelDefinition->definitionId;
     armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
-    registryEntriesRemaining = 0x300;
+    registryEntriesRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
     compatibleAssetScoreSum = 0;
     compatibleAssetCount = 0;
     for (; registryEntriesRemaining != 0;
-        armyAssetRegistryCursor = armyAssetRegistryCursor + 1,
-        registryEntriesRemaining = registryEntriesRemaining + -1) {
+        armyAssetRegistryCursor++,
+        registryEntriesRemaining--) {
       armyAssetRecord = (ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor;
-      if ((armyAssetRecord != (ArmyAssetRuntimeSemanticView80 *)0x0) &&
-         ((armyAssetRecord->flags14 & 1) != 0)) {
+      if ((armyAssetRecord != NULL) &&
+         ((armyAssetRecord->flags14 & 1) != 0)) { /* bit 0: asset enabled */
+        /* AiLinkedDefinitionListView layout: +8 child list count, +0xC/+0x10 child lists, +0x20 eight ids */
         assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer;
         if ((((candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x20)) &&
              (((candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x24) &&
@@ -184,10 +181,11 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
               (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x34))) &&
              (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x38))))) &&
            (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x3c))) {
-          technologyUnlocked = ModelDefinition_IsFactionTechnologyUnlocked
+          /* despite its name the check returns true (CF set) while the technology is still locked */
+          technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
                             (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                              *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x20));
-          if (((technologyUnlocked) ||
+          if (((technologyLocked) ||
               (nestedLinkedDefinitions = *(AiLinkedDefinitionListView **)(assetDefinitionListAddress + 0xc),
               *(int *)(assetDefinitionListAddress + 8) == 0)) ||
              ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[0] &&
@@ -217,7 +215,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                           (scoreWeights,factionIndex,armyAssetRecord);
         if (0 < candidateScore) {
           compatibleAssetScoreSum = compatibleAssetScoreSum + candidateScore;
-          compatibleAssetCount = compatibleAssetCount + 1;
+          compatibleAssetCount++;
         }
       }
     }

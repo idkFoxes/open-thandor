@@ -40,6 +40,17 @@
 #define FRONTEND_COMMAND_STOP_ROM_TRANSITION 0x1340 /* ScenarioCatalog_RequestRomTransitionStopCallback */
 #define FRONTEND_COMMAND_EXECUTE_ROM_ACTION 0x1350 /* FrontendRomActionTable_ExecuteRecord */
 #define FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE 0x16F0 /* FrontendTransfer_MarkUnavailableIfModeBit0Callback */
+/* Scenario selection ("Choose game" page, assets/scenario/catalog) */
+#define FRONTEND_COMMAND_LOAD_FIELD_GRID 0x460 /* FrontendScenarioSession_LoadOrRequestFieldGrid */
+#define FRONTEND_COMMAND_LOAD_LEVEL 0x920 /* FrontendScenarioSession_LoadOrRequestLevelAsset */
+#define FRONTEND_COMMAND_LOAD_CAMPAIGN 0xB70 /* FrontendScenarioSession_LoadOrRequestCampaignBundle */
+#define FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE 0xDC0 /* FrontendSession_ReturnToMainPage */
+#define FRONTEND_COMMAND_SHOW_SAVED_GAMES 0xE70 /* ScenarioCatalog_RebuildSaveRecordListPage */
+#define FRONTEND_COMMAND_SHOW_SINGLE_GAMES 0xF50 /* ScenarioCatalog_RebuildLevelRecordListPage */
+#define FRONTEND_COMMAND_SHOW_CAMPAIGNS 0x10D0 /* ScenarioCatalog_RebuildCampaignRecordListPage */
+#define FRONTEND_COMMAND_SELECT_SAVED_GAME 0x11F0 /* ScenarioCatalog_RefreshSelectedRecordLocalizedText */
+#define FRONTEND_COMMAND_SELECT_SINGLE_GAME 0x12A0 /* ScenarioCatalog_RefreshSelectedRecordField70DisplayId */
+#define FRONTEND_COMMAND_SELECT_CAMPAIGN 0x12F0 /* ScenarioCatalog_RefreshSelectedRecordField50DisplayId */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00543F50 */

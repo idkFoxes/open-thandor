@@ -98,8 +98,8 @@ RichTextCommandStream_PatchNestedStreamPointerPayloads
 /* 0x0041B520 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchOpcode1APayloadPair
-          (RichTextOpcode1APayloadValue32 opcode1APayloadValue,
-          RichTextCommandPayload32 leadingPayloadValue,uint16_t *commandStream);
+          (RichTextOpcode1APayloadValue32 imageSubresourceValue,
+          RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream);
 
 /* 0x0041B620 */
 void __thandor_void_preserve_eax_ecx_edx

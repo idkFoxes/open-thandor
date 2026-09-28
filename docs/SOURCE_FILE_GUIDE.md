@@ -331,7 +331,7 @@ This file owns runtime state and lifecycle operations within audio decoding, pla
 
 [Source](../src/audio/codec/sam.c) · [Header](../include/thandor/audio/codec/sam.h) · [Call graph](callgraphs/audio/codec/sam.md) · [Graphviz](callgraphs/audio/codec/sam.dot) · [Full changelog](../CHANGELOG_FULL.md#module-audio-codec-sam)
 
-This file owns SAM audio decoding and synthesis within audio decoding, playback, and spatial sound. Dominant function families: `SoundSample_*` (3), `SoundCoefficientTransform_*` (1). Representative entry points: `SoundCoefficientTransform_ApplyCosineBanksMmx`, `SoundSample_DecodeCoefficientBlockToPcmMmx`, `SoundSample_DecodeCoefficientBlockToMonoPcmMmx`.
+This file owns SAM audio decoding and synthesis within audio decoding, playback, and spatial sound. Dominant function families: `SoundSample_*` (3), `SoundCoefficientTransform_*` (1). Representative entry points: `SoundCoefficientTransform_ApplyCosineBanksMmx`, `SoundSample_DecodeCoefficientBlockToPcmMmx`, `SoundSample_TransformPcmBlockToCoefficientsMmx`.
 
 **Direct callers:** 1 module(s), 2 cross-module call edge(s).
 

@@ -11,11 +11,9 @@
 /* Implementation ownership: assets/sprite/catalog. */
 
 /* Address: 0x00486D60.
-   Ownership: assets/sprite/catalog.
-   Purpose: Validates the sprite asset magic and requires a group count from 1 through 0xFFF. Carry is clear for a
-   valid asset and set for invalid input. Role: Validates the serialized SPR LOD-group count before relocation or
-   rendering. Inputs: SPR header, including group count at header +0xB0. Outputs: Carry/status result used by the
-   caller to reject malformed images.
+   In the original: takes a sprite asset (one stack argument) and clears CF only when its magic is
+   ASSET_MAGIC_SPR and registryHeader.groupCount (+0xB0) is 1..0xFFF. This C body is an empty stub without the
+   parameter or the CF result; nothing in this code base calls it and no callback-table slot references it.
 */
 void SpriteAsset_ValidateGroupCount(void)
 
@@ -130,8 +128,11 @@ SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
 }
 
 /* Address: 0x004BE5A0.
-   Ownership: assets/sprite/catalog.
-   Purpose: Copies and derelocates a sprite image asset.
+   Inverse of SpriteAsset_RegisterAndRelocatePointers: copies the relocated sprite asset (allocationSizeBytes
+   long) to serializedDestination and turns the copy back into its serialized form, so it can be written out
+   again: the runtime fields of every fixed 0x40-byte record are cleared and the three pointers of every
+   pointer record become offsets from the asset start again. No caller or callback-table slot references it
+   in this code base.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SpriteAsset_CopyAndDerelocateImage
@@ -142,27 +143,30 @@ SpriteAsset_CopyAndDerelocateImage
   int blocksRemaining;
   int recordsRemaining;
   SpriteAssetHeader *sourceCursor;
-  int *blockCursor;
-  int *groupCursor;
+  int *blockCursor; /* SprRelocationBlockHeader20 */
+  int *groupCursor; /* SprGroupRelocationHeader20 */
   AssetMagic *destinationCursor;
-  int *recordCursor;
+  int *recordCursor; /* 0x40-byte records (0x10 dwords) behind the block header */
   int groupsRemaining;
   
   sourceCursor = relocatedSourceImage;
   destinationCursor = serializedDestination;
+  /* REP MOVSD of the whole asset; each step advances sourceCursor by one dword */
   for (copyDwordsRemaining = (relocatedSourceImage->registryHeader).common.allocationSizeBytes >> 2; copyDwordsRemaining != 0;
-      copyDwordsRemaining = copyDwordsRemaining - 1) {
+      copyDwordsRemaining--) {
     *destinationCursor = (sourceCursor->registryHeader).common.magic;
     sourceCursor = (SpriteAssetHeader *)&(sourceCursor->registryHeader).common.allocationSizeBytes;
-    destinationCursor = destinationCursor + 1;
+    destinationCursor++;
   }
-  groupCursor = (int *)((int)serializedDestination + 0x200);
-  groupsRemaining = *(int *)((int)serializedDestination + 0xb0);
+  /* the groups follow the SpriteAssetHeader */
+  groupCursor = (int *)((SpriteAssetHeader *)serializedDestination + 1);
+  groupsRemaining = ((SpriteAssetHeader *)serializedDestination)->registryHeader.groupCount;
+  /* unlike the relocation, every count is assumed to be non-zero (a zero count would wrap around) */
   do {
-    blocksRemaining = groupCursor[1];
+    blocksRemaining = groupCursor[1]; /* relocationBlockCount */
     blockCursor = groupCursor + 8;
     do {
-      recordsRemaining = blockCursor[2];
+      recordsRemaining = blockCursor[2]; /* fixedRecordCount40 */
       recordCursor = blockCursor + 8;
       do {
         recordCursor[0xc] = 0;
@@ -171,21 +175,22 @@ SpriteAsset_CopyAndDerelocateImage
         recordCursor[9] = 0;
         recordCursor[10] = 0;
         recordCursor = recordCursor + 0x10;
-        recordsRemaining = recordsRemaining + -1;
+        recordsRemaining--;
       } while (recordsRemaining != 0);
-      recordsRemaining = blockCursor[3];
+      recordsRemaining = blockCursor[3]; /* pointerRelocationCount */
       do {
+        /* pointerOrSerializedOffset00/0C/18 */
         *recordCursor = *recordCursor - (int)relocatedSourceImage;
         recordCursor[3] = recordCursor[3] - (int)relocatedSourceImage;
         recordCursor[6] = recordCursor[6] - (int)relocatedSourceImage;
         recordCursor = recordCursor + 0x10;
-        recordsRemaining = recordsRemaining + -1;
+        recordsRemaining--;
       } while (recordsRemaining != 0);
-      blockCursor = (int *)((int)blockCursor + *blockCursor);
-      blocksRemaining = blocksRemaining + -1;
+      blockCursor = (int *)((int)blockCursor + *blockCursor); /* blockByteSize */
+      blocksRemaining--;
     } while (blocksRemaining != 0);
-    groupCursor = (int *)((int)groupCursor + *groupCursor);
-    groupsRemaining = groupsRemaining + -1;
+    groupCursor = (int *)((int)groupCursor + *groupCursor); /* nextGroupByteOffset */
+    groupsRemaining--;
   } while (groupsRemaining != 0);
   return;
 }

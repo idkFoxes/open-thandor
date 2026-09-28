@@ -17,6 +17,15 @@
 #define ARMY_ASSET_REGISTRY_SLOT_COUNT 768
 /* Number of linked army-asset ids stored from record offset +0x30 (ArmyAssetRecord_HasFactionUnlockedLinkedDefinition). */
 #define ARMY_ASSET_LINKED_ID_COUNT 16
+/* Bits of an army record's flags dword (+0x14) that pick the map-editor placement lists: unit placement
+   (g_UiCommandModeG 3, g_UiCommandModeGArmyAssetId) cycles records with 0x0100 set and 0x0200 clear, object
+   placement (mode 4, g_UiCommandMode4ArmyAssetId) records with both set (ArmyAssetRegistry_HasId*). */
+#define ARMY_ASSET_FLAG_EDITOR_PLACEABLE 0x100
+#define ARMY_ASSET_FLAG_EDITOR_OBJECT 0x200
+/* The placement lists search ids 0..0xFFF and wrap around at 0x1000. */
+#define ARMY_ASSET_EDITOR_ID_LIMIT 0x1000
+/* Army ids from 400 up are rendered in their preview with faction 0 (ArmyAssetRegistry_ResolveOrCreatePreviewTexture). */
+#define ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID 400
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005719F0 */
@@ -66,7 +75,7 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
 
 /* 0x00571E40 */
 void __thandor_void_preserve_eax_ecx
-ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedArmyAssetRegistryId);
+ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress);
 
 /* 0x0051C170 */
 uint32_t __thandor_eax_preserve_ecx_edx

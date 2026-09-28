@@ -11,18 +11,13 @@
 /* Implementation ownership: gameplay/army/combat. */
 
 /* Address: 0x00523980.
-   Ownership: gameplay/army/combat.
-   Purpose: Table membership RUNTIME_UPDATE[9]. Resolves target aim state, smooths pitch and yaw, follows the
-   linked target, resolves shot launch transforms from model attachments, and fires the active attachment slots.
-   Runtime-update partition slots 0-23 receive (worldRuntime, armyRuntime). Role: Tracks the target, smooths
-   yaw/pitch, solves launch angles and fires from matching attachments. Inputs: Army weapon state, model hierarchy,
-   ShotDefinition, target and world context.
-   Local calls: ArmyRuntime_EmitDamageThresholdEffect.
-   Cross-module calls: ArmyRuntime_ResolveShotAimPoint [gameplay/army/runtime],
-   ArmyRuntime_UpdateMovementAndWaypoints [gameplay/army/movement], ModelNodeRuntime_SmoothYawTowardTarget
-   [world/model/hierarchy], ModelNodeRuntime_SmoothPitchTowardTarget [world/model/hierarchy],
-   ShotDefinition_ComputeLaunchAnglesRegs [assets/shot/catalog], ModelNodeRuntime_ComputeRelativeDirectionAngle
-   [world/model/hierarchy].
+   Runtime update of the turret-weapon class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[9],
+   0x0051FCBC). Counts down the reload timers of the eight launch attachments (showing a slot's projectile mesh
+   bit again when it is loaded) and the shared inter-shot timer, resolves the aim point of the current target and
+   turns the turret (yaw on the root node, pitch on its first child) toward the launch angles; without a target it
+   moves and returns the turret to rest. Once yaw and pitch are on target, the inter-shot timer has run out and
+   the target-following check passes, it fires from the first loaded attachment. Ends with the damage-threshold
+   effect.
 */
 
 void __thandor_void_preserve_eax_ecx_edx
@@ -38,10 +33,10 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   MdlSerializedNodeHeader38 *attachmentNodeHeader;
   ArmyRuntimeSlot *commandTargetArmy;
   InGameSimulationStepBatchTicks stepTicks;
-  Q12 point0Z;
+  Q12 aimXQ12;
   ShotRuntimeState14 targetRuntimeReference;
-  Q12 point0Y;
-  Q12 point0X;
+  Q12 aimYQ12;
+  Q12 aimZQ12;
   AngleTurn32 targetPitchAngle16;
   SprAttachmentSelectorOrdinal attachmentSelectorOrdinal;
   bool callCarry;
@@ -55,7 +50,8 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   
   stepTicks = g_InGameSimulationStepTicks;
   currentNode = modelRuntime->rootModelNode->childNodes[0]->childNodes[0];
-  if (((modelRuntime->classState).classStateEC & 9) == 0) {
+  if (((modelRuntime->classState).classStateEC & (ARMY_RUNTIME_FLAG_DESTROYED | 1)) == 0) {
+    /* reload of attachment slot i done: show its projectile (mesh group bit i of the barrel node) */
     remainingTicks = modelRuntime->attachmentReloadTicks;
     *remainingTicks = *remainingTicks - g_InGameSimulationStepTicks;
     if ((int)*remainingTicks < 0) {
@@ -125,9 +121,9 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
                         (currentNode->worldTransform).translation.y,
                         (currentNode->worldTransform).translation.x,weaponDefinitionView->shotDefinition,
                         ownerEntity);
-    point0X = aimPoint.worldZQ12;
-    point0Y = aimPoint.worldYQ12;
-    point0Z = aimPoint.worldXQ12;
+    aimZQ12 = aimPoint.worldZQ12;
+    aimYQ12 = aimPoint.worldYQ12;
+    aimXQ12 = aimPoint.worldXQ12;
     if (aimPoint.unresolved) {
       movementResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)ownerEntity);
@@ -142,7 +138,7 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
       currentNode = modelRuntime->rootModelNode;
       pitchNode = currentNode->childNodes[0];
       launchAngles = ShotDefinition_ComputeLaunchAnglesRegs
-                        (point0X,point0Y,point0Z,(pitchNode->worldTransform).translation.z,
+                        (aimZQ12,aimYQ12,aimXQ12,(pitchNode->worldTransform).translation.z,
                          (pitchNode->worldTransform).translation.y,
                          (pitchNode->worldTransform).translation.x,weaponDefinitionView->shotDefinition);
       relativeAngles = ModelNodeRuntime_ComputeRelativeDirectionAngle
@@ -159,7 +155,7 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
         if (((smoothResult.value == targetPitchAngle16) &&
             (weaponDefinitionView = modelRuntime->modelDefinition, modelRuntime->sharedInterShotTicks == 0)) &&
            (callCarry = ArmyRuntimeCommand_UpdateTargetFollowingState
-                              (point0X,point0Y,point0Z,worldRuntime,(ArmyRuntimeSlot *)modelRuntime)
+                              (aimZQ12,aimYQ12,aimXQ12,worldRuntime,(ArmyRuntimeSlot *)modelRuntime)
            , !callCarry)) {
           currentNode = pitchNode->childNodes[0];
           attachmentNodeHeader = weaponDefinitionView->modelPointSource64;
@@ -173,11 +169,11 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
                    weaponDefinitionView->attachmentReloadTicks;
               commandTargetArmy = modelRuntime->ownerArmyRuntime->commandTargetArmyRuntime;
               targetRuntimeReference = 0;
-              if (commandTargetArmy != (ArmyRuntimeSlot *)0x0) {
+              if (commandTargetArmy != NULL) {
                 targetRuntimeReference = (commandTargetArmy->modelRuntimeOrSavedOffset).savedIdOrOffset;
               }
               callCarry = ArmyRuntime_ResolveShotLaunchFromModelAttachment
-                                (targetRuntimeReference,point0X,point0Y,point0Z,
+                                (targetRuntimeReference,aimZQ12,aimYQ12,aimXQ12,
                                  attachmentSelectorOrdinal,weaponDefinitionView->shotDefinition,currentNode,attachmentNodeHeader,
                                  worldRuntime);
               if (!callCarry) {
@@ -187,12 +183,14 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
                            weaponDefinitionView->postLaunchVector0Q12,modelRuntime->ownerArmyRuntime);
                 nodeMeshMask = &(modelRuntime->rootModelNode->childNodes[0]->childNodes[0]->modelPayload).
                           meshGroupMask;
+                /* hides the fired projectile; SHL (not ROL) as in the original, so bits below it go too */
                 *nodeMeshMask = *nodeMeshMask & -2 << ((uint8_t)attachmentSelectorOrdinal & 0x1f);
                 break;
               }
+              /* launch failed: -1 runs out on the next tick, so the slot is ready again right away */
               modelRuntime->attachmentReloadTicks[attachmentSelectorOrdinal] = 0xffffffff;
             }
-            attachmentSelectorOrdinal = attachmentSelectorOrdinal + 1;
+            attachmentSelectorOrdinal++;
           } while (attachmentSelectorOrdinal < 8);
         }
       }
@@ -205,11 +203,10 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
 
 
 /* Address: 0x00525130.
-   Ownership: gameplay/army/combat.
-   Purpose: Binary entry is anchored by g_CodePointerTable_0051FC98[15]@0051FC98. Runtime-update partition slots
-   0-23 receive (worldRuntime, armyRuntime).
-   Local calls: ArmyRuntime_EmitDamageThresholdEffect.
-   Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
+   Runtime update of the resource storage class (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[15],
+   0x0051FCD4): moves the storage's fill-level child node between the heights at definition +0x24 and +0x28 in
+   proportion to the owner faction's current Xenite (or Tritium when definition +0xC0 is 1) over its storage
+   limit, then emits the damage-threshold effect.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntimeClass_UpdateTransformAndDamageEffect
@@ -220,15 +217,17 @@ ArmyRuntimeClass_UpdateTransformAndDamageEffect
   ModelRuntimeNode *rootModelNodeRuntime;
   int factionRecordByteOffset;
   ModelRuntimeNode *childNode;
-  
+
   classDefinition = modelRuntime->modelDefinition;
-  factionRecordByteOffset = modelRuntime->ownerArmyRuntime->factionIndex * 0x740;
+  /* byte offset of the faction record's xeniteCurrentQ4 / xeniteStorageLimitQ4 pair, or with +0x10 of
+     tritiumCurrentQ4 / tritiumStorageLimitQ4 (reserved78_87 - 0x78 is the record start) */
+  factionRecordByteOffset = modelRuntime->ownerArmyRuntime->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   if (*(int *)classDefinition->reserved0C0_0DB == 1) {
     factionRecordByteOffset = factionRecordByteOffset + 0x10;
   }
   rootModelNodeRuntime = modelRuntime->rootModelNode;
   childNode = rootModelNodeRuntime->childNodes[0];
-  if ((rootModelNodeRuntime->childCount != 0) && (childNode != (ModelRuntimeNode *)0x0)) {
+  if ((rootModelNodeRuntime->childCount != 0) && (childNode != NULL)) {
     (childNode->modelPayload).localTranslationZQ12 =
          (int)(((int64_t)(int)(classDefinition->runtimeValue28 - classDefinition->runtimeValue24) *
                (int64_t)
@@ -244,14 +243,9 @@ ArmyRuntimeClass_UpdateTransformAndDamageEffect
 
 
 /* Address: 0x00527AC0.
-   Ownership: gameplay/army/combat.
-   Purpose: Binary entry is anchored by g_CodePointerTable_0051FC98[4]@0051FC98. Runtime-update partition slots
-   0-23 receive (worldRuntime, armyRuntime). Role: Runs the combined timed-emitter, animated-subnode and damage-
-   effect update for its runtime class. Inputs: WorldRuntimeContext and ArmyRuntimeSlot. Outputs: Updated timers,
-   model pose and damage-threshold effect state.
-   Local calls: ArmyRuntime_EmitDamageThresholdEffect.
-   Cross-module calls: ArmyRuntime_UpdateTimedShotAndEffectEmitters [gameplay/army/runtime],
-   ArmyRuntime_UpdateAnimatedModelSubnodes [gameplay/army/runtime].
+   Runtime update of army class 4 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[4], 0x0051FCA8):
+   while the army is intact it runs its timed shot/effect emitters and animated sub-nodes (only during research
+   when the definition's gate at +0x1C8 is set), then emits the damage-threshold effect.
 */
 
 void __thandor_preserve_eax
@@ -259,9 +253,9 @@ ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
           (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedEffectsUpdateView200 *modelRuntime)
 
 {
-  if ((((modelRuntime->classState).classStateEC & 9) == 0) &&
+  if ((((modelRuntime->classState).classStateEC & (ARMY_RUNTIME_FLAG_DESTROYED | 1)) == 0) &&
      ((modelRuntime->modelDefinition->timedEffectsRequireRuntimeState40Gate1C8 == 0 ||
-      (((modelRuntime->classState).classStateEC & 0x40) != 0)))) {
+      (((modelRuntime->classState).classStateEC & ARMY_MODEL_STATE_RESEARCHING) != 0)))) {
     ArmyRuntime_UpdateTimedShotAndEffectEmitters
               (worldRuntime,(ModelRuntimeUpdateView200 *)modelRuntime);
     ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,(ModelRuntimeUpdateView200 *)modelRuntime);
@@ -351,9 +345,11 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
 
 
 /* Address: 0x0052A3E0.
-   Ownership: gameplay/army/combat.
-   Purpose: Handles army runtime apply damage and faction relation state.
-   Local calls: ArmyRuntime_ApplyDamageAndPropagateToParent.
+   Same as ArmyRuntime_ApplyDamageAndPropagateToParent: subtracts damageAmount from a living army's health
+   (actionVector2Q12, a repair capped at the class maximum at model runtime +0x60); at zero the army is flagged
+   destroyed and the excess damage goes to its parent army. The faction relation counters of the owner and of
+   sourceFactionIndex that the original would update for a root army are never reached (see below). No caller or
+   table slot referencing it was found in src/ or src/generated/image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ApplyDamageAndFactionRelationState
@@ -365,7 +361,8 @@ ArmyRuntime_ApplyDamageAndFactionRelationState
   int maxHealth;
   int healthOrDelta;
   ModelRuntimeNode *parentModelNode;
-  
+
+  /* one dword 0x200 at +0xF8 (MOV [ESI+0xF8],0x200) */
   armyRuntime->reservedF8_FF[0] = 0;
   armyRuntime->reservedF8_FF[1] = 2;
   armyRuntime->reservedF8_FF[2] = 0;
@@ -376,18 +373,25 @@ ArmyRuntime_ApplyDamageAndFactionRelationState
     healthField = &armyRuntime->actionVector2Q12;
     healthOrDelta = *healthField;
     *healthField = *healthField - damageAmount;
+    /* SUB / JLE: the new health is <= 0 */
     if (*healthField == 0 || SBORROW4(healthOrDelta,damageAmount) != *healthField < 0) {
-      healthOrDelta = armyRuntime->actionVector2Q12;
-      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | 8;
+      healthOrDelta = armyRuntime->actionVector2Q12; /* <= 0; its negation is the excess damage */
+      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | ARMY_RUNTIME_FLAG_DESTROYED;
       armyRuntime->actionVector1Q12 = (Q12)armyRuntime;
       parentModelNode = armyRuntime->modelNodeRuntime->parentNode;
       armyRuntime->actionVector2Q12 = 0;
-      if (parentModelNode != (ModelRuntimeNode *)0x0) {
+      if (parentModelNode != NULL) {
         ArmyRuntime_ApplyDamageAndPropagateToParent(-healthOrDelta,(parentModelNode->runtimePayload).armyRuntime)
         ;
       }
+      /* Without a parent the original (0x0052A470) would count the army in the relation counters of its owner
+         and of sourceFactionIndex, but behind JZ right after IMUL EBX,[EDI+0xC],0x740 (0x0052A47C). IMUL leaves
+         ZF unchanged (measured on an AMD Zen 3) and ZF is still set from TEST EDX,EDX with EDX = parent = 0, so
+         the jump is always taken and the update never runs: the C omits it, as in
+         ArmyRuntime_ApplyDamageAndPropagateToParent. */
     }
     else {
+      /* SUB / JG: a negative damage (repair) never raises the health above maxHealth */
       healthOrDelta = maxHealth - armyRuntime->actionVector2Q12;
       if (healthOrDelta == 0 || maxHealth < armyRuntime->actionVector2Q12) {
         armyRuntime->actionVector2Q12 = armyRuntime->actionVector2Q12 + healthOrDelta;
@@ -399,13 +403,9 @@ ArmyRuntime_ApplyDamageAndFactionRelationState
 
 
 /* Address: 0x0052A640.
-   Ownership: gameplay/army/combat.
-   Purpose: Splits the impact value between the target ArmyRuntimeSlot-linked entity and its parent model runtime
-   payload when present, using the exact single-entity impact helper. The normal return is void and the function
-   returns with RET 0x10. Typed parameters: p2 impactValue→ImpactDamageValue32_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: GameEntityRuntime_ApplyImpactDamageAndFactionRelationState [gameplay/faction/runtime].
+   Splits a shot impact between the hit army and the army it is mounted on: half (rounded down) goes to the
+   hit army, the rest to the parent model node's army, or to the hit army again when it has no parent. Called
+   directly by the shot impact handling in world/shots/maintenance.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
@@ -414,12 +414,12 @@ ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
 
 {
   ModelRuntimeNode *targetModelNodeRuntime;
-  
+
   targetModelNodeRuntime = targetArmyRuntime->modelNodeRuntime;
   GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
             (impactAngle,sourceFactionIndex,impactValue >> 1,(GameEntityRuntime *)targetArmyRuntime)
   ;
-  if (targetModelNodeRuntime->parentNode != (ModelRuntimeNode *)0x0) {
+  if (targetModelNodeRuntime->parentNode != NULL) {
     targetArmyRuntime =
          (ArmyRuntimeSlot *)(targetModelNodeRuntime->parentNode->runtimePayload).modelRuntime;
   }
@@ -431,16 +431,14 @@ ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
 
 
 /* Address: 0x0052B9D0.
-   Ownership: gameplay/army/combat.
-   Purpose: Tests the target against the shot trajectory mode, angular bounds, terrain and model raycasts, faction
-   and owner filters, and minimum-clearance constraints. The carry flag preserves the acceptance result. Role:
-   Tests terrain, secondary surfaces and runtime models for an unobstructed shot path. Inputs: Weapon/target
-   geometry, ShotDefinition trajectory mode and world collision structures. Outputs: Boolean/carry line-of-fire
-   result.
-   Cross-module calls: FixedMath_Vector2AngleAndLengthRegs [core/math/fixed], FixedMath_UInt64Sqrt
-   [core/math/fixed], FixedMath_Atan2Angle16 [core/math/fixed], ModelRuntime_RaycastCandidateListNearest
-   [world/model/runtime], FixedMath_VectorToAnglesAndLength3Regs [core/math/fixed],
-   FieldGrid_RaycastTerrainSurfaceDistance [world/terrain/grid].
+   Checks whether the army's weapon can hit the target position; true (CF set) = blocked. Ballistic shots need a
+   solvable arc whose elevation lies within the weapon's limits (definition +0x24 / +0x28) and no model in the way
+   along the horizontal distance; fixed-range shots always pass; other shots need an elevation within the limits
+   (unless guided), no terrain in front of the target (a ground shot without an entity target may land within
+   0x400 of the aim point) and no model in the way, and must reach the target (its distance minus half its radius)
+   within speed * (lifetime - 2/3 ramp - 1). A model in the way does not block when it is the command target or
+   passes the owner test (commandState < 1: models of the own owner, otherwise those of other owners). Called
+   directly by the AI combat target selection (gameplay/ai/combat.c) and gameplay/army/movement.c.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyWeaponRuntime_TestTargetLineOfFire
@@ -448,7 +446,7 @@ ArmyWeaponRuntime_TestTargetLineOfFire
           WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeSlot *ownModelRuntime;
+  ModelRuntimeSlot *weaponDefinition;
   int *shotDefinitionWords;
   int64_t discriminant;
   int deltaXOrScaledLength;
@@ -475,12 +473,16 @@ ArmyWeaponRuntime_TestTargetLineOfFire
   
   originNode = armyRuntime->modelNodeRuntime;
   ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
-  ownModelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  /* the army's weapon definition: minimum / maximum elevation at +0x24 / +0x28, ShotDefinition at +0x2C.
+     ShotDefinition dwords: [0] trajectoryMode, [3] launchSpeedQ12, [0x34] projectileLifetimeTicks (+0xD0),
+     [0x37] ballisticDivisorQ12 (+0xDC), [0x9C] trajectoryRampDurationTicks (+0x270),
+     [0xA4] guidanceTurnLimitAngle16 (+0x290) */
+  weaponDefinition = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   deltaXOrScaledLength = targetWorldXQ12 - (originNode->worldTransform).translation.x;
-  minAngleOwnerOrDistance = *(int *)(ownModelRuntime->reserved10_37 + 0x14);
-  maxAngleOrRange = *(int *)(ownModelRuntime->reserved10_37 + 0x18);
+  minAngleOwnerOrDistance = *(int *)(weaponDefinition->reserved10_37 + 0x14);
+  maxAngleOrRange = *(int *)(weaponDefinition->reserved10_37 + 0x18);
   deltaYOrSpeedSquared = targetWorldYQ12 - (originNode->worldTransform).translation.y;
-  shotDefinitionWords = *(int **)(ownModelRuntime->reserved10_37 + 0x1c);
+  shotDefinitionWords = *(int **)(weaponDefinition->reserved10_37 + 0x1c);
   deltaZ = targetWorldZQ12 - (originNode->worldTransform).translation.z;
   if (*shotDefinitionWords == 1) {
     horizontalVector = FixedMath_Vector2AngleAndLengthRegs(deltaYOrSpeedSquared,deltaXOrScaledLength);
@@ -513,6 +515,8 @@ ArmyWeaponRuntime_TestTargetLineOfFire
     if (!modelHit.hit) {
       return false;
     }
+    /* As in the original (MOV EAX,[EDI+0x48] at 0x0052BC55, EDI = own model node): this tests the shooter's
+       own entity, not the model that was hit (the other path uses the hit node from EDX). */
     ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
     hitEntity = ((originNode->runtimePayload).armyRuntime)->linkedEntityRuntime;
     minAngleOwnerOrDistance = (ownOrTargetEntity->common).ownership.ownerIndex;
@@ -567,7 +571,7 @@ ArmyWeaponRuntime_TestTargetLineOfFire
       distanceDifference = -distanceDifference;
     }
     if (((armyRuntime->linkedEntityRuntime->common).commandTarget.targetEntity ==
-         (GameEntityRuntime *)0x0) && (distanceDifference < 0x401)) {
+         NULL) && (distanceDifference < 0x401)) {
       return false;
     }
     return true;
@@ -587,13 +591,15 @@ ArmyWeaponRuntime_TestTargetLineOfFire
       }
     }
   }
+  /* range check: distance to the target minus half its radius (+0xDC of its class record) against
+     speed * (lifetime - 2/3 of the ramp ticks - 1); -0xAAA / 0x1000 = -2/3 in Q12 */
   ownOrTargetEntity = (armyRuntime->linkedEntityRuntime->common).commandTarget.targetEntity;
-  if (ownOrTargetEntity != (GameEntityRuntime *)0x0) {
+  if (ownOrTargetEntity != NULL) {
     angleOrDistance = (int)(angleOrDistance * 2 -
                  *(int *)(*(int *)(ownOrTargetEntity->common).ownership.definitionOrClassRecord + 0xdc)
                  ) >> 1;
   }
-  if (shotDefinitionWords[3] * ((shotDefinitionWords[0x9c] * -0xaaa >> 0xc) + shotDefinitionWords[0x34] + -1) < (int)angleOrDistance) {
+  if (shotDefinitionWords[3] * ((shotDefinitionWords[0x9c] * -0xaaa >> 0xc) + shotDefinitionWords[0x34] - 1) < (int)angleOrDistance) {
     return true;
   }
   return false;
@@ -655,15 +661,12 @@ ArmyRuntime_ApplyDamageAndPropagateToParent
 
 
 /* Address: 0x00528200.
-   Ownership: gameplay/army/combat.
-   Purpose: Emits the configured randomized effect from successive model attachment points when the runtime falls
-   below its verified damage threshold and cooldown expires. Role: Emits an effect when an army/placeable crosses a
-   configured damage threshold. Inputs: Army health/damage state, definition threshold/effect and model attachment
-   lookup. Outputs: EffectRuntime at the transformed damage attachment point. Edges: Transforms the matching
-   attachment and calls EffectRuntimePool_CreateInstanceFromDefinition.
-   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
-   ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy],
-   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
+   Damage smoke/fire of a damaged army: while its health (actionVector2Q12) is below the definition's threshold
+   percentage (+0x250) of the class maximum (+0x60), it emits the definition's effect (+0x254) every
+   +0x258 + random(+0x25C) ticks from the model's damage points (packed point key class 3), cycling through
+   them, or from the model origin when it has none, with random orientation angles. Called directly
+   at the end of nearly every army class runtime update (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
+   .runtimeUpdate slots, e.g. [4], [9], [15] in this file).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_EmitDamageThresholdEffect
@@ -675,15 +678,15 @@ ArmyRuntime_EmitDamageThresholdEffect
   ModelPackedPointRecord *localPointRecord;
   uint32_t definitionOrRandom;
   uint32_t randomValue;
-  uint32_t worldXQ12;
+  uint32_t pointYQ12;
   uint32_t randomOffset;
-  uint32_t worldZQ12;
-  AngleTurn32 orientationAngle0;
+  uint32_t pointZQ12;
   ModelLookupEntryResult lookupResult;
   ModelWorldPoint transformedPoint;
   EffectDefinition *effectDefinition;
-  
-  if ((armyRuntime->runtimeFlags & 0x210) != 0) {
+
+  /* selectionMetric3 (+0x114) is the emission cooldown, selectionMetric4 (+0x118) the next damage point */
+  if ((armyRuntime->runtimeFlags & (ARMY_MODEL_STATE_DISMANTLING | 0x200)) != 0) {
     return;
   }
   definitionOrRandom = (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset;
@@ -703,7 +706,7 @@ ArmyRuntime_EmitDamageThresholdEffect
     randomOffset = randomOrPointX % *(uint32_t *)(definitionOrRandom + 0x25c);
   }
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
-  armyRuntime->selectionMetric3 = randomOffset + *(int *)(definitionOrRandom + 600);
+  armyRuntime->selectionMetric3 = randomOffset + *(int *)(definitionOrRandom + 0x258);
   lookupResult = ModelLookupTable_ContainsPackedKey
                     (armyRuntime->selectionMetric4,3,(modelNodeRuntime->modelPayload).modelResource)
   ;
@@ -718,15 +721,15 @@ ArmyRuntime_EmitDamageThresholdEffect
   if (lookupResult.notFound) {
     /* No emitter point at all: use the model origin. */
     randomOrPointX = (modelNodeRuntime->worldTransform).translation.x;
-    worldXQ12 = (modelNodeRuntime->worldTransform).translation.y;
-    worldZQ12 = (modelNodeRuntime->worldTransform).translation.z;
+    pointYQ12 = (modelNodeRuntime->worldTransform).translation.y;
+    pointZQ12 = (modelNodeRuntime->worldTransform).translation.z;
   }
   else {
     transformedPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
-    worldZQ12 = transformedPoint.zQ12;
-    worldXQ12 = transformedPoint.yQ12;
+    pointZQ12 = transformedPoint.zQ12;
+    pointYQ12 = transformedPoint.yQ12;
     randomOrPointX = transformedPoint.xQ12;
-    armyRuntime->selectionMetric4 = armyRuntime->selectionMetric4 + 1;
+    armyRuntime->selectionMetric4++;
   }
   effectDefinition = *(EffectDefinition **)(definitionOrRandom + 0x254);
   definitionOrRandom = g_RandomGeneratorState.next();
@@ -734,7 +737,7 @@ ArmyRuntime_EmitDamageThresholdEffect
   randomValue = g_RandomGeneratorState.next();
   EffectRuntimePool_CreateInstanceFromDefinition
             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),definitionOrRandom >> 0x10,
-             (randomValue & 0x1fff) + 0x1fff,randomOffset,worldZQ12,worldXQ12,randomOrPointX,effectDefinition,worldRuntime
+             (randomValue & 0x1fff) + 0x1fff,randomOffset,pointZQ12,pointYQ12,randomOrPointX,effectDefinition,worldRuntime
             );
   return;
 }

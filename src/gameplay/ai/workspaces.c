@@ -720,11 +720,10 @@ AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 
 
 /* Address: 0x00538C90.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Recovered missed predicate symmetric to the primary workspace helper. It scans secondary eight-byte
-   entries and sets CF for a matching ID with zero assignment. Typed parameters: p0 entryId→RuntimeToken. Nearby
-   but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
+   Returns true (CF set) when the secondary workspace (workspace 01) holds an unassigned entry (no runtime
+   object yet, i.e. a pending asset) of this army asset; the workspace-01 counterpart of
+   AiPrimaryWorkspace_HasUnassignedEntryById. No caller and no function-pointer table entry for it was found
+   in src/ or src/generated/image_data.c.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
@@ -740,9 +739,9 @@ AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
       return false;
     }
     if ((entryId == workspaceEntryCursor->armyAssetId) &&
-       (workspaceEntryCursor->armyRuntime == (ArmyRuntimeSlot *)0x0)) break;
-    workspaceEntryCursor = workspaceEntryCursor + 1;
-    workspaceEntriesRemaining = workspaceEntriesRemaining + -1;
+       (workspaceEntryCursor->armyRuntime == NULL)) break;
+    workspaceEntryCursor++;
+    workspaceEntriesRemaining--;
   }
   return true;
 }
@@ -774,8 +773,9 @@ AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 
 /* Address: 0x00538D40.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Semantic ABI remains deferred.
+   Twin of AiPrimaryWorkspace_CountAssignedEntriesById (0x00538C40) with the same body: counts the
+   primary-workspace (workspace 00) entries of this army asset that have a runtime object. No caller and no
+   function-pointer table entry for this copy was found in src/ or src/generated/image_data.c.
 */
 int __thandor_eax_preserve_ecx_edx
 AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entryId)
@@ -788,12 +788,12 @@ AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entry
   matchingAssignedEntryCount = 0;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspaceBuffer00_Size0400;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1) {
-    if ((workspaceEntryCursor->armyRuntime != (ArmyRuntimeSlot *)0x0) &&
+      workspaceEntriesRemaining--) {
+    if ((workspaceEntryCursor->armyRuntime != NULL) &&
        (entryId == workspaceEntryCursor->armyAssetId)) {
-      matchingAssignedEntryCount = matchingAssignedEntryCount + 1;
+      matchingAssignedEntryCount++;
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
+    workspaceEntryCursor++;
   }
   return matchingAssignedEntryCount;
 }
@@ -1067,9 +1067,9 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
 
 
 /* Address: 0x0053BCB0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Common stdcall stack ABI: FactionRuntimeIndex, TechnologyId, WorldRuntimeContext*. Signed score returns
-   in EAX. Target group: stack-only callback target. Exact binary and live ownership are preflight locked.
+   Technology score callback for score kind 0 (g_AiTechnologyCandidateScoreCallbackTable[0], image 0x0053B9E0,
+   called by AiStrategicCandidate_AddBestWorkspace12Entry): a technology of this kind always scores 0, so it
+   is never chosen for research.
 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiWorkspace12Score_DefaultZero

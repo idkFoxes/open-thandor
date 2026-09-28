@@ -11,13 +11,9 @@
 /* Implementation ownership: assets/army/catalog. */
 
 /* Address: 0x005719F0.
-   Ownership: assets/army/catalog.
-   Purpose: Tests recordId against the exact flag-0x0100-set and flag-0x0200-clear predicate. When absent, it
-   forwards the current EAX ID into the wrapped-next search. EAX and CF remain the result channel. Stock ARM
-   ledgers contain 675 records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and
-   does not imply gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200,
-   ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped.
+   Keeps the editor's unit-placement army id when it names a placeable unit (flag 0x0100 set, 0x0200 clear),
+   otherwise moves on to the next such id with wrap-around. Called by
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog recordId)
@@ -40,12 +36,10 @@ ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog record
 
 
 /* Address: 0x00571A10.
-   Ownership: assets/army/catalog.
-   Purpose: Steps forward through IDs using the exact desired predicate and the broader flag-0x0200-clear
-   predicate, with the verified reverse-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
-   records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
-   class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200, ArmyAssetRegistry_HasIdWithoutFlag0200.
+   Steps the editor's unit-placement army id to the next placeable unit (flag 0x0100 set, 0x0200 clear). Ids of
+   other units (0x0200 clear) are skipped; at the end of the run of unit ids it goes back to the first id of that
+   run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
+   g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in unit-placement mode.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
@@ -64,7 +58,7 @@ ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
-        baseId = baseId - 1;
+        baseId--;
         broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
@@ -75,12 +69,10 @@ ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
 
 
 /* Address: 0x00571A60.
-   Ownership: assets/army/catalog.
-   Purpose: Steps backward through IDs using the exact desired predicate and the broader flag-0x0200-clear
-   predicate, with the verified forward-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
-   records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
-   class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200, ArmyAssetRegistry_HasIdWithoutFlag0200.
+   Steps the editor's unit-placement army id to the previous placeable unit (flag 0x0100 set, 0x0200 clear).
+   Ids of other units are skipped; at the start of the run of unit ids it goes forward to the last id of that
+   run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
+   g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in unit-placement mode.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
@@ -99,7 +91,7 @@ ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
-        baseId = baseId + 1;
+        baseId++;
         broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
@@ -110,11 +102,10 @@ ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
 
 
 /* Address: 0x00571B00.
-   Ownership: assets/army/catalog.
-   Purpose: Finds the previous ID in the flag-0x0100-set and flag-0x0200-clear class, wrapping signed underflow to
-   0x1000. EAX and CF remain intact. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered
-   stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200, ArmyAssetRegistry_HasIdWithFlag0100Without0200.
+   Moves the editor's unit-placement army id back out of its current run of unit ids (flag 0x0200 clear) and
+   returns the nearest placeable unit (0x0100 set, 0x0200 clear) below it, wrapping from below 0 to 0x1000. Unlike
+   the step functions this jumps between id blocks. Called from the in-game keyboard dispatch table
+   g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014) in unit-placement mode.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
@@ -126,9 +117,9 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
   for (;;) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(recordId);
     if (broaderAbsent) break;
-    recordId = recordId - 1;
+    recordId--;
     if ((int)recordId < 0) {
-      recordId = 0x1000;
+      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
       break;
     }
   }
@@ -136,9 +127,9 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
   while( true ) {
     searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
     if (!searchResult.notFound) break;
-    recordId = recordId - 1;
+    recordId--;
     if ((int)recordId < 0) {
-      recordId = 0x1000;
+      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
     }
   }
   searchResult.armyAssetId = recordId;
@@ -147,12 +138,9 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
 
 
 /* Address: 0x00571C30.
-   Ownership: assets/army/catalog.
-   Purpose: Tests recordId against the exact flags-0x0100-and-0x0200-set predicate. When absent, it forwards the
-   current EAX ID into the wrapped-next search. EAX and CF remain the result channel. Stock ARM ledgers contain 675
-   records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
-   class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200, ArmyAssetRegistry_FindNextFlags0100And0200Wrapped.
+   Keeps the editor's object-placement army id when it names a placeable object (flags 0x0100 and 0x0200 set),
+   otherwise moves on to the next such id with wrap-around. Called by
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId)
@@ -175,12 +163,10 @@ ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId)
 
 
 /* Address: 0x00571C50.
-   Ownership: assets/army/catalog.
-   Purpose: Steps forward through IDs using the exact combined-flags predicate and the broader flag-0x0200-set
-   predicate, with the verified reverse-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
-   records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
-   class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200, ArmyAssetRegistry_HasIdWithFlag0200.
+   Steps the editor's object-placement army id to the next placeable object (flags 0x0100 and 0x0200 set). Other
+   objects (0x0200 set) are skipped; at the end of the run of object ids it goes back to the first id of that run,
+   so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
+   g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in object-placement mode.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
@@ -199,7 +185,7 @@ ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
-        baseId = baseId - 1;
+        baseId--;
         broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
@@ -210,12 +196,10 @@ ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
 
 
 /* Address: 0x00571CA0.
-   Ownership: assets/army/catalog.
-   Purpose: Steps backward through IDs using the exact combined-flags predicate and the broader flag-0x0200-set
-   predicate, with the verified forward-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
-   records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
-   class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200, ArmyAssetRegistry_HasIdWithFlag0200.
+   Steps the editor's object-placement army id to the previous placeable object (flags 0x0100 and 0x0200 set).
+   Other objects are skipped; at the start of the run of object ids it goes forward to the last id of that run,
+   so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
+   g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in object-placement mode.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
@@ -234,7 +218,7 @@ ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
-        baseId = baseId + 1;
+        baseId++;
         broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
@@ -245,11 +229,10 @@ ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
 
 
 /* Address: 0x00571D40.
-   Ownership: assets/army/catalog.
-   Purpose: Finds the previous ID with flags 0x0100 and 0x0200 set, wrapping signed underflow to 0x1000. EAX and CF
-   remain intact. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping preserves the
-   32-bit registry key and does not imply gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0200, ArmyAssetRegistry_HasIdWithFlags0100And0200.
+   Moves the editor's object-placement army id back out of its current run of object ids (flag 0x0200 set) and
+   returns the nearest placeable object (0x0100 and 0x0200 set) below it, wrapping from below 0 to 0x1000. Called
+   from the in-game keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014)
+   in object-placement mode.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
@@ -261,9 +244,9 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
   for (;;) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(recordId);
     if (broaderAbsent) break;
-    recordId = recordId - 1;
+    recordId--;
     if ((int)recordId < 0) {
-      recordId = 0x1000;
+      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
       break;
     }
   }
@@ -271,9 +254,9 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
   while( true ) {
     searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
     if (!searchResult.notFound) break;
-    recordId = recordId - 1;
+    recordId--;
     if ((int)recordId < 0) {
-      recordId = 0x1000;
+      recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
     }
   }
   searchResult.armyAssetId = recordId;
@@ -393,35 +376,37 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
 
 
 /* Address: 0x00571E40.
-   Ownership: assets/army/catalog.
-   Purpose: Clears cached ArmyAsset preview textures, frees existing cache entries, and refreshes the two selected
-   preview resources.
-   Local calls: ArmyAssetRegistry_ResolveOrCreatePreviewTexture.
+   Frees the cached preview texture of every registered army record and re-renders the previews of the editor's
+   unit- and object-placement selections into their image panels on the in-game UI root. Needed because the
+   previews are drawn in the unit-placement owner faction's colours: called from the in-game keyboard dispatch
+   table g_InGameKeyboardDispatchRecords (handlers 0x0056ED80 / 0x0056EDC0, commands 0x10012 / 0x1001A) after
+   g_UiCommandModeGOwnerFactionIndex was cycled.
 */
 void __thandor_void_preserve_eax_ecx
-ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedArmyAssetRegistryId)
+ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRootAddress)
 
 {
   uint32_t resolvedTexture;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
   ArmyAssetRecordPrefix *registeredRecord;
-  
+
+  /* [2].byteSize is the dword +0x20 of the record: its cached preview texture */
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = 0x300;
+  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
   do {
     registeredRecord = *registryCursor;
-    if (registeredRecord != (ArmyAssetRecordPrefix *)0x0) {
+    if (registeredRecord != NULL) {
       g_MemoryApi.free((void *)registeredRecord[2].byteSize);
       registeredRecord[2].byteSize = 0;
     }
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
   } while (registrySlotsRemaining != 0);
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
-  *(uint32_t *)(selectedArmyAssetRegistryId + 0x9d24) = resolvedTexture;
+  INGAME_UI_FIELD(uiRootAddress,unitPlacementPreviewImage,0x54,uint32_t) = resolvedTexture;
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
-  *(uint32_t *)(selectedArmyAssetRegistryId + 0x9ddc) = resolvedTexture;
+  INGAME_UI_FIELD(uiRootAddress,objectPlacementPreviewImage,0x54,uint32_t) = resolvedTexture;
   return;
 }
 
@@ -499,12 +484,11 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 
 
 /* Address: 0x00571AB0.
-   Ownership: assets/army/catalog.
-   Purpose: Finds the next ID in the flag-0x0100-set and flag-0x0200-clear class, first advancing to a broader
-   valid record and then wrapping the desired search at 0x1000. EAX and CF remain intact. Stock ARM ledgers contain
-   675 records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply
-   gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200, ArmyAssetRegistry_HasIdWithFlag0100Without0200.
+   Moves the editor's unit-placement army id forward out of its current run of unit ids (flag 0x0200 clear) and
+   returns the next placeable unit (0x0100 set, 0x0200 clear), wrapping from 0x1000 to 0. Unlike the step
+   functions this jumps between id blocks. Called from the in-game keyboard dispatch table
+   g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in unit-placement mode, and by
+   ArmyAssetRegistry_NormalizeIdForFlag0100Without0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
@@ -516,13 +500,13 @@ ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
   while( true ) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(recordId);
     if (broaderAbsent) break;
-    recordId = recordId + 1;
+    recordId++;
   }
   while( true ) {
     searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
     if (!searchResult.notFound) break;
-    recordId = recordId + 1;
-    if (0xfff < recordId) {
+    recordId++;
+    if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
       recordId = 0;
     }
   }
@@ -532,12 +516,10 @@ ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
 
 
 /* Address: 0x00571CF0.
-   Ownership: assets/army/catalog.
-   Purpose: Finds the next ID with flags 0x0100 and 0x0200 set, first advancing to a broader flag-0x0200 record and
-   then wrapping the desired search at 0x1000. EAX and CF remain intact. Stock ARM ledgers contain 675 records and
-   326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class,
-   tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0200, ArmyAssetRegistry_HasIdWithFlags0100And0200.
+   Moves the editor's object-placement army id forward out of its current run of object ids (flag 0x0200 set) and
+   returns the next placeable object (0x0100 and 0x0200 set), wrapping from 0x1000 to 0. Called from the in-game
+   keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in
+   object-placement mode, and by ArmyAssetRegistry_NormalizeIdForFlags0100And0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId)
@@ -549,13 +531,13 @@ ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId)
   while( true ) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(recordId);
     if (broaderAbsent) break;
-    recordId = recordId + 1;
+    recordId++;
   }
   while( true ) {
     searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
     if (!searchResult.notFound) break;
-    recordId = recordId + 1;
-    if (0xfff < recordId) {
+    recordId++;
+    if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
       recordId = 0;
     }
   }
@@ -647,10 +629,12 @@ ArmyAssetRecord_RegisterAndRelocate
 
 
 /* Address: 0x00571D90.
-   Ownership: assets/army/catalog.
-   Purpose: Looks up an ArmyAsset registry record by id and returns its cached preview texture; if absent it
-   creates and caches the preview through ArmyRuntime_RenderPreviewTexture.
-   Cross-module calls: ArmyRuntime_RenderPreviewTexture [gameplay/army/runtime].
+   Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
+   cached in the record (dword +0x20, [2].byteSize); on the first request it is rendered in the unit-placement
+   owner faction's colours (faction 0 for ids from 400 up). Returns 0 for an unknown id or a failed render.
+   Called directly by the in-game keyboard dispatch handlers (g_InGameKeyboardDispatchRecords),
+   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState and
+   ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected.
 */
 uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId)
 
@@ -660,20 +644,20 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
   ArmyAssetRecordPrefix **registryCursor;
   ArmyPreviewTextureResult renderResult;
   FactionRuntimeIndex factionIndex;
-  
+
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = 0x300;
-  while ((registeredRecord = *registryCursor, registeredRecord == (ArmyAssetRecordPrefix *)0x0 ||
+  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
+  while ((registeredRecord = *registryCursor, registeredRecord == NULL ||
          (armyAssetRegistryId != registeredRecord->registryId))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       return 0;
     }
   }
   if (registeredRecord[2].byteSize == 0) {
     factionIndex = g_UiCommandModeGOwnerFactionIndex;
-    if (399 < armyAssetRegistryId) {
+    if (ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID - 1 < armyAssetRegistryId) {
       factionIndex = 0;
     }
     renderResult = ArmyRuntime_RenderPreviewTexture
@@ -725,11 +709,10 @@ ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
 
 
 /* Address: 0x00571910.
-   Ownership: assets/army/catalog.
-   Purpose: Scans all 768 ArmyAsset registry pointers for recordId. CF clear means a matching record was found with
-   flags dword +0x14 bit 0x0200 clear; CF set means absent. EAX preserves recordId. Stock ARM ledgers contain 675
-   records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
-   class, tier, faction, or direction.
+   Returns 0 (CF clear) when some registered army record with this id is a unit, i.e. has flag 0x0200 of its flags
+   dword (+0x14) clear; 1 (CF set) otherwise. Several records may share an id, so the scan goes on past a match
+   with the wrong flags. Predicate of the editor's unit-placement id searches
+   (FindNext/FindPrevious/Step*Flag0100Without0200).
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
@@ -740,12 +723,12 @@ ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
   ArmyAssetRecordPrefix *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = 0x300;
-  while (((candidateAsset = *registryCursor, candidateAsset == (ArmyAssetRecordPrefix *)0x0 ||
+  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
+  while (((candidateAsset = *registryCursor, candidateAsset == NULL ||
           (recordId != candidateAsset->registryId)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & 0x200) != 0))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       return 1;
     }
@@ -755,10 +738,9 @@ ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
 
 
 /* Address: 0x00571B50.
-   Ownership: assets/army/catalog.
-   Purpose: Scans all 768 ArmyAsset registry pointers for recordId. CF clear requires flag 0x0200 set; CF set means
-   absent. EAX preserves recordId. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping
-   preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
+   Returns 0 (CF clear) when some registered army record with this id is an object, i.e. has flag 0x0200 of its
+   flags dword (+0x14) set; 1 (CF set) otherwise. Predicate of the editor's object-placement id searches
+   (FindNext/FindPrevious/Step*Flags0100And0200).
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId)
 
@@ -768,12 +750,12 @@ uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200(Ar
   ArmyAssetRecordPrefix *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = 0x300;
-  while (((candidateAsset = *registryCursor, candidateAsset == (ArmyAssetRecordPrefix *)0x0 ||
+  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
+  while (((candidateAsset = *registryCursor, candidateAsset == NULL ||
           (recordId != candidateAsset->registryId)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & 0x200) == 0))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       return 1;
     }
@@ -783,11 +765,9 @@ uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200(Ar
 
 
 /* Address: 0x00571980.
-   Ownership: assets/army/catalog.
-   Purpose: Scans all 768 ArmyAsset registry pointers for recordId. CF clear requires flag 0x0100 set and flag
-   0x0200 clear; CF set means absent. EAX preserves recordId. Stock ARM ledgers contain 675 records and 326 unique
-   ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction,
-   or direction.
+   Returns 0 (CF clear) when some registered army record with this id is a placeable unit (flags dword +0x14 with
+   0x0100 set and 0x0200 clear); 1 (CF set) otherwise. The id test of the editor's unit-placement list
+   (NormalizeIdFor/FindNext/FindPrevious/Step*Flag0100Without0200).
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
@@ -798,13 +778,13 @@ ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
   ArmyAssetRecordPrefix *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = 0x300;
-  while ((((candidateAsset = *registryCursor, candidateAsset == (ArmyAssetRecordPrefix *)0x0 ||
+  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
+  while ((((candidateAsset = *registryCursor, candidateAsset == NULL ||
            (recordId != candidateAsset->registryId)) ||
-          ((candidateAsset[1].selectionDetailTemplateVariantIndex & 0x100) == 0)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & 0x200) != 0))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+          ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
+         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       return 1;
     }
@@ -814,11 +794,9 @@ ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
 
 
 /* Address: 0x00571BC0.
-   Ownership: assets/army/catalog.
-   Purpose: Scans all 768 ArmyAsset registry pointers for recordId. CF clear requires both flags 0x0100 and 0x0200
-   set; CF set means absent. EAX preserves recordId. Stock ARM ledgers contain 675 records and 326 unique ids;
-   flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or
-   direction.
+   Returns 0 (CF clear) when some registered army record with this id is a placeable object (flags dword +0x14
+   with 0x0100 and 0x0200 set); 1 (CF set) otherwise. The id test of the editor's object-placement list
+   (NormalizeIdFor/FindNext/FindPrevious/Step*Flags0100And0200).
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId)
@@ -829,13 +807,13 @@ ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId)
   ArmyAssetRecordPrefix *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = 0x300;
-  while ((((candidateAsset = *registryCursor, candidateAsset == (ArmyAssetRecordPrefix *)0x0 ||
+  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
+  while ((((candidateAsset = *registryCursor, candidateAsset == NULL ||
            (recordId != candidateAsset->registryId)) ||
-          ((candidateAsset[1].selectionDetailTemplateVariantIndex & 0x100) == 0)) ||
-         ((candidateAsset[1].selectionDetailTemplateVariantIndex & 0x200) == 0))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+          ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
+         ((candidateAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       return 1;
     }

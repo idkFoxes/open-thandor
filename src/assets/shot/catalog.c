@@ -142,25 +142,23 @@ ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId
 
 
 /* Address: 0x0052B8C0.
-   Ownership: assets/shot/catalog.
-   Purpose: Computes the launch azimuth and elevation pair for two 3D points using the shot definition's trajectory
-   mode. Mode 1 uses the verified ballistic discriminant path, mode 2 returns the fixed pair (0,0x4000), and other
-   modes use direct vector angles with the stored elevation offset and 0x4000 clamp. Role: Computes
-   azimuth/elevation launch angles according to ShotDefinition trajectory mode. Inputs: Source/target coordinates,
-   launch speed, ballistic divisor, elevation/range fields. Outputs: Register-pair launch angles.
-   Cross-module calls: FixedMath_Vector2AngleAndLengthRegs [core/math/fixed], FixedMath_UInt64Sqrt
-   [core/math/fixed], FixedMath_Atan2Angle16 [core/math/fixed], FixedMath_VectorToAngles3Regs [core/math/fixed].
+   Computes the heading and elevation (Angle16) at which a shot of this definition must leave launchPoint to reach
+   targetPoint. Ballistic shots solve the projectile equation (gravity = ballisticDivisorQ12) and take the high arc,
+   the low arc only when the height difference is below 1.0; fixed-range shots always go straight up (0, 0x4000);
+   all others aim directly, raised by the definition's elevation offset and capped at straight up. The callers
+   pass the points in Z, Y, X order (Z = height). Called directly by the weapon aiming code (gameplay/army/combat.c,
+   movement.c, runtime.c) and the shot launch in world/shots/runtime.c.
 */
 ShotLaunchAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 ShotDefinition_ComputeLaunchAnglesRegs
-          (Q12 point0X,Q12 point0Y,Q12 point0Z,Q12 point1X,Q12 point1Y,Q12 point1Z,
+          (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition)
 
 {
   int64_t discriminant;
   int rangeTimesDivisor;
   int launchSpeedSquared;
-  int deltaX;
+  int heightDelta;
   uint32_t computedElevation;
   uint32_t computedHeading;
   ShotLaunchAnglesEaxEdx8 clampedAngles;
@@ -168,20 +166,21 @@ ShotDefinition_ComputeLaunchAnglesRegs
   FixedLengthAngleEaxEdx8 planarLengthAngle;
   ShotLaunchAnglesEaxEdx8 launchAngles;
   FixedVectorAngles vectorAngles;
-  
-  deltaX = point0X - point1X;
+
+  heightDelta = targetZ - launchZ;
   if (definition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
-    planarLengthAngle = FixedMath_Vector2AngleAndLengthRegs(point0Y - point1Y,point0Z - point1Z);
+    planarLengthAngle = FixedMath_Vector2AngleAndLengthRegs(targetY - launchY,targetX - launchX);
     computedHeading = planarLengthAngle.angle & 0xffff;
+    /* tan(elevation) = (v^2 +- sqrt(v^4 - 2*g*h*v^2 - (g*r)^2)) / (g*r) */
     launchSpeedSquared = definition->launchSpeedQ12 * definition->launchSpeedQ12;
     rangeTimesDivisor = planarLengthAngle.length * definition->ballisticDivisorQ12;
-    discriminant = (int64_t)(launchSpeedSquared + definition->ballisticDivisorQ12 * deltaX * -2) * (int64_t)launchSpeedSquared -
+    discriminant = (int64_t)(launchSpeedSquared + definition->ballisticDivisorQ12 * heightDelta * -2) * (int64_t)launchSpeedSquared -
             (int64_t)rangeTimesDivisor * (int64_t)rangeTimesDivisor;
     if (discriminant < 0) {
-      discriminant = 0;
+      discriminant = 0; /* target out of reach */
     }
     computedElevation = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)discriminant >> 0x20),(UInt64Half32)discriminant);
-    if ((-0x1000 < deltaX) && (deltaX < 0x1000)) {
+    if ((-0x1000 < heightDelta) && (heightDelta < 0x1000)) {
       computedElevation = -computedElevation;
     }
     computedElevation = FixedMath_Atan2Angle16(launchSpeedSquared + computedElevation,rangeTimesDivisor);
@@ -189,14 +188,14 @@ ShotDefinition_ComputeLaunchAnglesRegs
   else {
     if (definition->trajectoryMode == SHOT_TRAJECTORY_FIXED_RANGE) {
       fixedRangeAngles.headingAngle = 0;
-      fixedRangeAngles.elevationAngle = 0x4000;
+      fixedRangeAngles.elevationAngle = FIXED_ANGLE16_QUARTER_TURN;
       return fixedRangeAngles;
     }
-    vectorAngles = FixedMath_VectorToAngles3Regs(deltaX,point0Y - point1Y,point0Z - point1Z);
+    vectorAngles = FixedMath_VectorToAngles3Regs(heightDelta,targetY - launchY,targetX - launchX);
     computedHeading = vectorAngles.azimuthAngle;
     computedElevation = vectorAngles.elevationAngle + definition->elevationOffsetAngle16;
-    if (0x4000 < (int)computedElevation) {
-      clampedAngles.elevationAngle = 0x4000;
+    if (FIXED_ANGLE16_QUARTER_TURN < (int)computedElevation) {
+      clampedAngles.elevationAngle = FIXED_ANGLE16_QUARTER_TURN;
       clampedAngles.headingAngle = computedHeading;
       return clampedAngles;
     }
@@ -235,10 +234,9 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
 }
 
 /* Address: 0x0052BD50.
-   Ownership: assets/shot/catalog.
-   Purpose: Custom-ABI ShotDefinition probe. EBX defaults to 0x7FFFFFFF; when trajectory mode at +0x00 is nonzero
-   and flag +0x290 is zero, EBX receives dword +0x0C. EDX is preserved and the EBX result cannot be represented by
-   an ordinary C return type.
+   Returns in EBX the shot speed used to lead a moving target: the launch speed (+0x0C) for unguided shots that
+   do not fly a direct line, INT32_MAX (no lead) for direct-line or guided (+0x290 non-zero) shots. Called
+   directly by the target aim-point computation in gameplay/army/runtime.c.
 */
 ShotRangeLimitResult __thandor_ebx_cf_preserve_eax_ecx_edx
 ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
@@ -246,8 +244,8 @@ ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
 {
   uint32_t rangeLimit;
   ShotRangeLimitResult limitResult;
-  
-  rangeLimit = 0x7fffffff;
+
+  rangeLimit = INT32_MAX;
   if ((definition->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) &&
      (definition->guidanceTurnLimitAngle16 == 0)) {
     rangeLimit = definition->launchSpeedQ12;
@@ -259,9 +257,9 @@ ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
 
 
 /* Address: 0x0052BD80.
-   Ownership: assets/shot/catalog.
-   Purpose: Returns zero except for trajectory mode 3 with the verified +0x290 flag clear; that path returns the
-   unsigned scaled +0x270 value multiplied by 0xAB and shifted right eight.
+   Returns the extra lead time for unguided lead-adjusted shots (trajectory mode 3, +0x290 zero): about two
+   thirds (0xAB / 256) of the ramp-up ticks (+0x270), during which the shot is still accelerating; 0 for all
+   other shots. The aim-point computation in gameplay/army/runtime.c multiplies it by the target's speed.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition)
