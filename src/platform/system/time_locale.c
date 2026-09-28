@@ -83,10 +83,10 @@ void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
 
 
 /* Address: 0x00402F70.
-   Ownership: platform/system/time_locale.
-   Purpose: Maps a telephone country code to the engine packed ASCII region tag used by locale-dependent resource
-   selection. Verified mappings include generic, Germany, Great Britain, France, Denmark, Italy, Belgium, Canada,
-   Netherlands, Spain, and USA, with a dash fallback.
+   Maps a telephone country code (0 = generic) to the short region tag that locale-dependent resource
+   selection uses, packed as little-endian ASCII in a dword ("Gen", "D", "GB", "F", "DK", "I", "B", "CDN",
+   "NL", "E", "USA"); unknown codes give "-". Installed statically in the function-pointer slot at
+   0x004027B0 (between g_LocaleGetDefaultTelephoneCountryCode and g_LocaleCopyDefaultComputerLabelUtf16).
 */
 LocaleRegionTagPacked __thandor_eax_preserve_ecx_edx
 Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode countryCode)

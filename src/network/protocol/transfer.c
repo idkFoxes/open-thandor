@@ -523,13 +523,13 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
 
 
 /* Address: 0x00545640.
-   Ownership: network/protocol/transfer.
-   Purpose: Exact four-argument callback wrapper that marks the transfer mailbox unavailable only when frontend
-   mode bit 0 is set.
-   Local calls: UiTransferMailbox_MarkUnavailable.
+   Frontend command handler FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE, queued by
+   FrontendNetwork_HostTickCommandAndSnapshotTransfer once the host has published the packed player
+   snapshots and executed on every peer: a client marks its receive mailbox unavailable, so it waits for
+   the new transfer instead of reading an old one. The host and a local game do nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t callbackArg0,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
+FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -540,18 +540,20 @@ FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t callbackArg0,uint32_
 
 
 /* Address: 0x00545660.
-   Ownership: network/protocol/transfer.
-   Purpose: Handles frontend snapshot transfer mark player host publication ready and release when all ready.
-   Local calls: UiTransferMailbox_SetOutgoingBuffer.
+   Frontend command handler 0x1710 (relative to FRONTEND_COMMAND_CODE_BASE), queued by a client in
+   Frontend_MainLoop once it has unpacked the host's published player snapshots, and executed on every
+   peer: marks that player FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY. On the host, once every player is
+   marked, the published block is no longer needed: its allocation is freed and the outgoing mailbox
+   emptied.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
-          (int playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
+          (int playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04)
 
 {
   FrontendPlayerRuntimeBlockCount playersRemaining;
   FrontendPlayerRuntimeRecord *playerRecord;
-  
+
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   do {
@@ -567,15 +569,15 @@ FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
         if ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
           return;
         }
-        playersRemaining = playersRemaining - 1;
+        playersRemaining--;
         playerRecord = playerRecord + 1;
       } while (playersRemaining != 0);
       g_MemoryApi.free(g_UiTransferMailbox.outgoingAllocation);
-      UiTransferMailbox_SetOutgoingBuffer(0,(void *)0x0);
+      UiTransferMailbox_SetOutgoingBuffer(0,NULL);
       return;
     }
     playerRecord = playerRecord + 1;
-    playersRemaining = playersRemaining - 1;
+    playersRemaining--;
   } while (playersRemaining != 0);
   return;
 }
@@ -1269,18 +1271,17 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
 
 
 /* Address: 0x0054EF30.
-   Ownership: network/protocol/transfer.
-   Purpose: Decrements the shared frontend transfer timeout and resets the request/mailbox page when the timer
-   reaches zero.
-   Cross-module calls: FrontendTransferPage_ResetSessionOpenAndRequestMailbox [ui/frontend/session].
+   Host timeout of a client in the host's lobby, called by FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState
+   while g_FrontendNetworkState is FRONTEND_NETWORK_STATE_JOINED: when g_SessionTransferTimeoutTicks runs out
+   (nothing heard from the host), the client leaves as if its lobby Leave button had been pressed and goes
+   back to the session list.
 */
-void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRuntime)
+void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
 
 {
-  g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks - 1;
+  g_SessionTransferTimeoutTicks--;
   if (g_SessionTransferTimeoutTicks == 0) {
-    FrontendTransferPage_ResetSessionOpenAndRequestMailbox
-              ((UiNodeBase *)((int)frontendRuntime + 0x5784));
+    FrontendTransferPage_ResetSessionOpenAndRequestMailbox(FRONTEND_UI(frontendRoot,clientLobbyLeaveButton));
   }
   return;
 }

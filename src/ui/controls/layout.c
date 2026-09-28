@@ -11,15 +11,14 @@
 /* Implementation ownership: ui/controls/layout. */
 
 /* Address: 0x004B49A0.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4950[2]@004B4950.
-   Local calls: UiWindow_BlitTiledInterior, UiWindow_BlitTiledHorizontalEdge, UiWindow_BlitTiledVerticalEdge,
-   UiContainer_DrawIntersectingChildren.
+   drawClipped of g_UiPanelControlVtable: draws the panel's optional tiled background (UI_ROOT_TILED_BACKGROUND)
+   and frame (UI_ROOT_FRAME); UI_ROOT_ALTERNATE_BACKGROUND switches to the second background and adds the
+   second frame on top. Then draws the children. A frame is four corners and four tiled edges between them.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPanelControl *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPanelControl *control)
 
 {
   uint32_t cornerWidth;
@@ -29,93 +28,112 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   int rightEdgeX;
   bool beginAccessFailed;
   TextureSizeResult cornerSize;
-  
-  if ((control->root.rootFlags & 3) != 0) {
+
+  if ((control->root.rootFlags & (UI_ROOT_TILED_BACKGROUND | UI_ROOT_FRAME)) != 0) {
     beginAccessFailed = g_GraphicsFramebufferBeginAccess();
     if (!beginAccessFailed) {
-      if ((control->root.rootFlags & 1) != 0) {
-        subresource = 0;
-        if ((control->root.rootFlags & 0x200) != 0) {
-          subresource = 0x2c;
+      if ((control->root.rootFlags & UI_ROOT_TILED_BACKGROUND) != 0) {
+        subresource = UI_WINDOW_SUBRESOURCE_WINDOW_INTERIOR;
+        if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+          subresource = UI_WINDOW_SUBRESOURCE_ALTERNATE_INTERIOR;
         }
         UiWindow_BlitTiledInterior
-                  (clipTop,clipLeft,clipBottom,clipRight,subresource,control->root.base.layoutHeight,
+                  (clipBottom,clipRight,clipTop,clipLeft,subresource,control->root.base.layoutHeight,
                    control->root.base.layoutWidth,0,0,control);
       }
-      if ((control->root.rootFlags & 2) != 0) {
-        cornerSize = g_GraphicsTextureSourceGetLogicalSize(0x13,g_UiWindowTextureSource);
+      if ((control->root.rootFlags & UI_ROOT_FRAME) != 0) {
+        /* the bottom-right corner gives the corner size */
+        cornerSize = g_GraphicsTextureSourceGetLogicalSize
+                               (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                                g_UiWindowTextureSource);
         cornerHeight = cornerSize.logicalHeightPixels;
         cornerWidth = cornerSize.logicalWidthPixels;
         rightEdgeX = control->root.base.layoutWidth - cornerWidth;
         bottomEdgeY = control->root.base.layoutHeight - cornerHeight;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,0x10,
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_LEFT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,rightEdgeX + control->root.base.left,0x11,
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_RIGHT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,control->root.base.left,0x12,
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_LEFT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,rightEdgeX + control->root.base.left,
-                   0x13,g_UiWindowTextureSource,g_FramebufferAccess);
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x14,rightEdgeX,0,cornerWidth,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP,
+                   rightEdgeX,0,cornerWidth,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x15,bottomEdgeY,cornerHeight,0,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_LEFT,
+                   bottomEdgeY,cornerHeight,0,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x16,bottomEdgeY,cornerHeight,rightEdgeX,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_RIGHT,
+                   bottomEdgeY,cornerHeight,rightEdgeX,control);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x17,rightEdgeX,bottomEdgeY,cornerWidth,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM,
+                   rightEdgeX,bottomEdgeY,cornerWidth,control);
       }
-      if ((control->root.rootFlags & 0x200) != 0) {
-        cornerSize = g_GraphicsTextureSourceGetLogicalSize(0x27,g_UiWindowTextureSource);
+      if ((control->root.rootFlags & UI_ROOT_ALTERNATE_BACKGROUND) != 0) {
+        cornerSize = g_GraphicsTextureSourceGetLogicalSize
+                               (UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                                g_UiWindowTextureSource);
         cornerHeight = cornerSize.logicalHeightPixels;
         cornerWidth = cornerSize.logicalWidthPixels;
         rightEdgeX = control->root.base.layoutWidth - cornerWidth;
         bottomEdgeY = control->root.base.layoutHeight - cornerHeight;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,0x24,
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_TOP_LEFT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,rightEdgeX + control->root.base.left,0x25,
+                  (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_TOP_RIGHT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,control->root.base.left,0x26,
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_LEFT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,rightEdgeX + control->root.base.left,
-                   0x27,g_UiWindowTextureSource,g_FramebufferAccess);
+                  (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->root.base.top,rightEdgeX + control->root.base.left,
+                   UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x28,rightEdgeX,0,cornerWidth,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_TOP,
+                   rightEdgeX,0,cornerWidth,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x29,bottomEdgeY,cornerHeight,0,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_LEFT,
+                   bottomEdgeY,cornerHeight,0,control);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x2a,bottomEdgeY,cornerHeight,rightEdgeX,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_RIGHT,
+                   bottomEdgeY,cornerHeight,rightEdgeX,control);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x2b,rightEdgeX,bottomEdgeY,cornerWidth,control);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ALTERNATE_FRAME + UI_WINDOW_FRAME_BOTTOM,
+                   rightEdgeX,bottomEdgeY,cornerWidth,control);
       }
       g_GraphicsFramebufferEndAccess();
     }
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
   return;
 }
 
 
 /* Address: 0x004B4D40.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[2]@004B4CC0.
-   Local calls: UiWindow_BlitTiledInterior, UiWindow_BlitTiledHorizontalEdge, UiWindow_BlitTiledVerticalEdge,
-   UiContainer_DrawIntersectingChildren.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext].
+   drawClipped of g_UiResizableWindowControlVtable: draws the window chrome selected by rootFlags (tiled
+   background, frame, title bar with the centred title text, close button top left, maximize/restore button
+   top right) and then the children. Title bar and buttons use their inactive pieces while the window is not
+   in the front root, the buttons their armed pieces while pressed under the pointer.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_DrawFrameTitleAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiResizableWindowControl *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiResizableWindowControl *control)
 
 {
   uint32_t cornerWidthOrSubresource;
@@ -126,114 +144,122 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
   TextResolveResult titleText;
   TextureSizeResult textureSize;
   TextureSizeResult rightCapSize;
-  
+
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
   if (!beginAccessFailed) {
-    if ((control->root.rootFlags & 1) != 0) {
+    if ((control->root.rootFlags & UI_ROOT_TILED_BACKGROUND) != 0) {
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,0,control->root.base.layoutHeight,control->root.base.layoutWidth,
-                 0,0,control);
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_INTERIOR,
+                 control->root.base.layoutHeight,control->root.base.layoutWidth,0,0,control);
     }
-    if ((control->root.rootFlags & 2) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x13,g_UiWindowTextureSource);
+    if ((control->root.rootFlags & UI_ROOT_FRAME) != 0) {
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
+                              (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                               g_UiWindowTextureSource);
       cornerHeight = textureSize.logicalHeightPixels;
       cornerWidthOrSubresource = textureSize.logicalWidthPixels;
       rightEdgeX = control->root.base.layoutWidth - cornerWidthOrSubresource;
-      edgeOffset = control->root.base.layoutHeight - cornerHeight;
+      edgeOffset = control->root.base.layoutHeight - cornerHeight; /* bottom corner row */
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,0x10,
+                (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,control->root.base.left,
+                 UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_LEFT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,rightEdgeX + control->root.base.left,
-                 0x11,g_UiWindowTextureSource,g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,edgeOffset + control->root.base.top,control->root.base.left,0x12,
+                (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,rightEdgeX + control->root.base.left,
+                 UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_RIGHT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,edgeOffset + control->root.base.top,
-                 rightEdgeX + control->root.base.left,0x13,g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipBottom,clipRight,clipTop,clipLeft,edgeOffset + control->root.base.top,control->root.base.left,
+                 UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_LEFT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
+      g_GraphicsTextureSourceBlitSourceAlpha
+                (clipBottom,clipRight,clipTop,clipLeft,edgeOffset + control->root.base.top,
+                 rightEdgeX + control->root.base.left,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x14,rightEdgeX,0,cornerWidthOrSubresource,control);
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP,
+                 rightEdgeX,0,cornerWidthOrSubresource,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x15,edgeOffset,cornerHeight,0,control);
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_LEFT,
+                 edgeOffset,cornerHeight,0,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x16,edgeOffset,cornerHeight,rightEdgeX,control);
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_RIGHT,
+                 edgeOffset,cornerHeight,rightEdgeX,control);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x17,rightEdgeX,edgeOffset,cornerWidthOrSubresource,control);
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_BOTTOM,
+                 rightEdgeX,edgeOffset,cornerWidthOrSubresource,control);
     }
-    if ((control->root.rootFlags & 4) != 0) {
-      cornerWidthOrSubresource = 10;
-      if ((control->root.base.nodeFlags & 1) == 0) {
-        cornerWidthOrSubresource = 0xb;
+    if ((control->root.rootFlags & UI_ROOT_TITLE_BAR) != 0) {
+      cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_TITLE_BAR;
+      if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
+        cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_TITLE_BAR_INACTIVE;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,cornerWidthOrSubresource,
+                (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,control->root.base.left,cornerWidthOrSubresource,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(cornerWidthOrSubresource,g_UiWindowTextureSource);
       edgeOffset = control->root.base.layoutWidth;
-      rightCapSize = g_GraphicsTextureSourceGetLogicalSize(cornerWidthOrSubresource + 4,g_UiWindowTextureSource);
-      edgeOffset = edgeOffset - rightCapSize.logicalWidthPixels;
+      rightCapSize = g_GraphicsTextureSourceGetLogicalSize
+                               (cornerWidthOrSubresource + UI_WINDOW_TITLE_BAR_RIGHT,g_UiWindowTextureSource);
+      edgeOffset = edgeOffset - rightCapSize.logicalWidthPixels; /* x of the right cap */
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,edgeOffset + control->root.base.left,cornerWidthOrSubresource + 4,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,edgeOffset + control->root.base.left,
+                 cornerWidthOrSubresource + UI_WINDOW_TITLE_BAR_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,cornerWidthOrSubresource + 2,edgeOffset,0,textureSize.logicalWidthPixels,
-                 control);
+                (clipBottom,clipRight,clipTop,clipLeft,cornerWidthOrSubresource + UI_WINDOW_TITLE_BAR_MIDDLE,
+                 edgeOffset,0,textureSize.logicalWidthPixels,control);
       titleText = TextResource_Resolve(control->titleTextResourceId);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,g_UiResizableWindowTitleTextStyle,titleText.text,
+                (clipBottom,clipRight,clipTop,clipLeft,g_UiResizableWindowTitleTextStyle,titleText.text,
                  g_UiResizableWindowTitleTextTopOffset + control->root.base.top,
                  (control->root.base.layoutWidth >> 1) + control->root.base.left);
     }
-    if ((control->root.rootFlags & 8) != 0) {
-      cornerWidthOrSubresource = 1;
-      if ((control->root.rootFlags & 0x80000) != 0) {
-        cornerWidthOrSubresource = 3;
+    if ((control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) != 0) {
+      cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON;
+      if ((control->root.rootFlags & UI_ROOT_CLOSE_ARMED) != 0) {
+        cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON_ARMED;
       }
-      if ((control->root.base.nodeFlags & 1) == 0) {
-        cornerWidthOrSubresource = 2;
+      if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
+        cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON_INACTIVE;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,cornerWidthOrSubresource,
+                (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,control->root.base.left,cornerWidthOrSubresource,
                  g_UiWindowTextureSource,g_FramebufferAccess);
     }
-    if ((control->root.rootFlags & 0x10) != 0) {
-      cornerWidthOrSubresource = 4;
-      if ((control->root.rootFlags & 0x100000) != 0) {
-        cornerWidthOrSubresource = 6;
+    if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON) != 0) {
+      cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON;
+      if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED) != 0) {
+        cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON_ARMED;
       }
-      if ((control->root.base.nodeFlags & 1) == 0) {
-        cornerWidthOrSubresource = 5;
+      if ((control->root.base.nodeFlags & UI_NODE_IN_FRONT_ROOT) == 0) {
+        cornerWidthOrSubresource = UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON_INACTIVE;
       }
-      if ((control->root.rootFlags & 0x80) != 0) {
-        cornerWidthOrSubresource = cornerWidthOrSubresource + 3;
+      if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) != 0) {
+        cornerWidthOrSubresource = cornerWidthOrSubresource + UI_WINDOW_RESTORE_BUTTON_OFFSET;
       }
       edgeOffset = control->root.base.layoutWidth;
       textureSize = g_GraphicsTextureSourceGetLogicalSize(cornerWidthOrSubresource,g_UiWindowTextureSource);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,
+                (clipBottom,clipRight,clipTop,clipLeft,control->root.base.top,
                  (edgeOffset - textureSize.logicalWidthPixels) + control->root.base.left,cornerWidthOrSubresource,g_UiWindowTextureSource,
                  g_FramebufferAccess);
     }
     g_GraphicsFramebufferEndAccess();
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
   return;
 }
 
 
 /* Address: 0x004B3420.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B33D0[2]@004B33D0.
-   Local calls: UiWindow_BlitTiledVerticalEdge, UiWindow_BlitTiledHorizontalEdge,
-   UiContainer_DrawIntersectingChildren.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_MeasureRegs
-   [assets/text/richtext], RichTextCommandStream_DrawSingleLine [assets/text/richtext].
+   drawClipped of g_UiTitledWindowControlVtable: draws the group-box frame with the title text set into its
+   top edge (between two caps, centred when titleFlags bit 0 is set, otherwise after the top-left corner),
+   then the children. The top edge is tiled left of the title only when it is centred.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTitledWindowControl_DrawFrameTitleAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiTitledWindowControl *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiTitledWindowControl *control)
 
 {
   uint32_t cornerWidth;
@@ -246,68 +272,84 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
   TextResolveResult titleText;
   TextureSizeResult textureSize;
   int savedRightEdgeX;
-  
+
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
   if (!beginAccessFailed) {
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,0x36,
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,control->base.left,
+               UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP_LEFT,
                g_UiWindowTextureSource,g_FramebufferAccess);
     rightEdgeOrCursorX = control->base.layoutWidth;
     bottomEdgeY = control->base.layoutHeight;
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x39,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize
+                            (UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                             g_UiWindowTextureSource);
     cornerWidth = textureSize.logicalWidthPixels;
     rightEdgeOrCursorX = rightEdgeOrCursorX - cornerWidth;
     bottomEdgeY = bottomEdgeY - textureSize.logicalHeightPixels;
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,rightEdgeOrCursorX + control->base.left,0x37,
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,rightEdgeOrCursorX + control->base.left,
+               UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP_RIGHT,
                g_UiWindowTextureSource,g_FramebufferAccess);
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->base.top,control->base.left,0x38,
+              (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->base.top,control->base.left,
+               UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_BOTTOM_LEFT,
                g_UiWindowTextureSource,g_FramebufferAccess);
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->base.top,rightEdgeOrCursorX + control->base.left,0x39
-               ,g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x36,g_UiWindowTextureSource);
+              (clipBottom,clipRight,clipTop,clipLeft,bottomEdgeY + control->base.top,rightEdgeOrCursorX + control->base.left,
+               UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+               g_UiWindowTextureSource,g_FramebufferAccess);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize
+                            (UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP_LEFT,
+                             g_UiWindowTextureSource);
     savedRightEdgeX = rightEdgeOrCursorX;
     UiWindow_BlitTiledVerticalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3b,bottomEdgeY,textureSize.logicalHeightPixels,0,control)
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_LEFT,
+               bottomEdgeY,textureSize.logicalHeightPixels,0,control)
     ;
     UiWindow_BlitTiledVerticalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3c,bottomEdgeY,textureSize.logicalHeightPixels,rightEdgeOrCursorX,
-               control);
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_RIGHT,
+               bottomEdgeY,textureSize.logicalHeightPixels,rightEdgeOrCursorX,control);
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3d,rightEdgeOrCursorX,bottomEdgeY,cornerWidth,control);
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_BOTTOM,
+               rightEdgeOrCursorX,bottomEdgeY,cornerWidth,control);
     titleText = TextResource_Resolve(control->titleTextResourceId);
     commandStream = titleText.text;
     titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
     titleCapX = cornerWidth;
     if ((control->titleFlags & 1) != 0) {
+      /* centred title: the top edge runs from the corner to the left cap */
       rightEdgeOrCursorX = control->base.layoutWidth;
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x3e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
+                              (UI_WINDOW_SUBRESOURCE_TITLED_BOX_TITLE_LEFT,g_UiWindowTextureSource);
       titleCapX = ((int)(rightEdgeOrCursorX - titleExtent.widthPixels) >> 1) - textureSize.logicalWidthPixels;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x3a,titleCapX,0,cornerWidth,control);
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP,
+                 titleCapX,0,cornerWidth,control);
     }
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,titleCapX + control->base.left,0x3e,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x3e,g_UiWindowTextureSource);
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,titleCapX + control->base.left,
+               UI_WINDOW_SUBRESOURCE_TITLED_BOX_TITLE_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize
+                            (UI_WINDOW_SUBRESOURCE_TITLED_BOX_TITLE_LEFT,g_UiWindowTextureSource);
     rightEdgeOrCursorX = titleCapX + textureSize.logicalWidthPixels;
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,g_UiWindowTitleTextStyle,commandStream,
+              (clipBottom,clipRight,clipTop,clipLeft,g_UiWindowTitleTextStyle,commandStream,
                control->base.top,rightEdgeOrCursorX + control->base.left);
     titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
     rightEdgeOrCursorX = rightEdgeOrCursorX + titleExtent.widthPixels;
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,rightEdgeOrCursorX + control->base.left,0x3f,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x3f,g_UiWindowTextureSource);
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,rightEdgeOrCursorX + control->base.left,
+               UI_WINDOW_SUBRESOURCE_TITLED_BOX_TITLE_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize
+                            (UI_WINDOW_SUBRESOURCE_TITLED_BOX_TITLE_RIGHT,g_UiWindowTextureSource);
+    /* the top edge from the right cap to the top-right corner */
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x3a,savedRightEdgeX,0,
-               rightEdgeOrCursorX + textureSize.logicalWidthPixels,control);
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP,
+               savedRightEdgeX,0,rightEdgeOrCursorX + textureSize.logicalWidthPixels,control);
     g_GraphicsFramebufferEndAccess();
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
   return;
 }
 
@@ -387,10 +429,10 @@ UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
 
 
 /* Address: 0x004B52D0.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[5]@004B4CC0.
-   Local calls: UiContainer_LayoutWithOptionalWindowHeaderOffset, UiRootStack_InvalidateAll.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightRelease of g_UiResizableWindowControlVtable: ends a move or resize and completes a button press.
+   Releasing over the armed close button closes the window, but only when the press was a double click
+   (or a middle-button press), like the control-menu box of old Windows versions. Releasing over the
+   armed maximize button toggles between the full framebuffer and the saved rectangle.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
@@ -402,17 +444,18 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
   int32_t rightOrBottom;
   int32_t restoredBottom;
   uint32_t framebufferHeight;
-  
-  if ((control->root.rootFlags & 0x2000) != 0) {
-    g_GraphicsCursorSetFrame(0);
+
+  if ((control->root.rootFlags & UI_ROOT_MOVING) != 0) {
+    g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   }
-  if (((control->root.rootFlags & 0x80000) != 0) &&
+  if (((control->root.rootFlags & UI_ROOT_CLOSE_ARMED) != 0) &&
      ((control->root.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0)) {
-    UiActionQueue_Enqueue(0,control);
+    UiActionQueue_Enqueue(UI_ACTION_CLOSE_ROOT,control);
   }
-  if ((control->root.rootFlags & 0x100000) != 0) {
-    control->root.rootFlags = control->root.rootFlags ^ 0x80;
-    if ((control->root.rootFlags & 0x80) == 0) {
+  if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED) != 0) {
+    control->root.rootFlags = control->root.rootFlags ^ UI_ROOT_MAXIMIZED;
+    if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0) {
+      /* restore the rectangle saved when it was maximized */
       topOrRight = control->restoredTop;
       control->root.base.left = control->restoredLeft;
       rightOrBottom = control->restoredRight;
@@ -422,9 +465,10 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
       control->root.base.right = rightOrBottom;
       UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
       UiRootStack_InvalidateAll();
-      control->root.rootFlags = control->root.rootFlags & 0xe787ff;
+      control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_POINTER_STATE;
       return;
     }
+    /* maximize: save the rectangle and cover the whole framebuffer */
     control->restoredLeft = control->root.base.left;
     topOrRight = control->root.base.right;
     rightOrBottom = control->root.base.bottom;
@@ -439,17 +483,16 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
     UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
-  control->root.rootFlags = control->root.rootFlags & 0xe787ff;
+  control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_POINTER_STATE;
   return;
 }
 
 
 /* Address: 0x004B5770.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[12]@004B4CC0.
-   Local calls: UiContainer_LayoutWithOptionalWindowHeaderOffset, UiRootStack_InvalidateAll.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiActionQueue_Enqueue [ui/core/runtime],
-   UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
+   keyboardEvent of g_UiResizableWindowControlVtable: Alt+C closes the window (with a close button), Alt+Z
+   toggles maximize (with a maximize button), both returning CF clear; every other key goes to the default
+   focus-moving handler. The key events of Keyboard_OnKeyDown carry letters as KEYBOARD_KEY_CODE_CHAR
+   (0x30000 + code), so the plain 'c' / 'z' compared here never arrive and the hotkeys do not fire.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiResizableWindowControl_HandleWindowHotkeys
@@ -461,15 +504,15 @@ UiResizableWindowControl_HandleWindowHotkeys
   int32_t restoredBottom;
   uint32_t framebufferHeight;
   bool delegateResult;
-  
-  if ((keyboardStateMask & 0x30) != 0) {
-    if (((control->root.rootFlags & 8) != 0) && (keyCode == 99)) {
-      UiActionQueue_Enqueue(0,control);
+
+  if ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) {
+    if (((control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) != 0) && (keyCode == 'c')) {
+      UiActionQueue_Enqueue(UI_ACTION_CLOSE_ROOT,control);
       return false;
     }
-    if (((control->root.rootFlags & 0x10) != 0) && (keyCode == 0x7a)) {
-      control->root.rootFlags = control->root.rootFlags ^ 0x80;
-      if ((control->root.rootFlags & 0x80) == 0) {
+    if (((control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON) != 0) && (keyCode == 'z')) {
+      control->root.rootFlags = control->root.rootFlags ^ UI_ROOT_MAXIMIZED;
+      if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0) {
         topOrRight = control->restoredTop;
         control->root.base.left = control->restoredLeft;
         rightOrBottom = control->restoredRight;
@@ -600,9 +643,9 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_Pop(UiRootNode *root)
 
 
 /* Address: 0x004B2790.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B2740[0]@004B2740.
-   Local calls: UiContainer_RelocateChildren.
+   relocate of g_UiWindowControlVtable, the same as UiFramedTextButtonControl_Relocate: an inset-framed
+   control (UI_BUTTON_FRAME_INSET) grows its layout offsets by g_UiWindowFrameInset on every side, so the
+   frame lies outside the authored box; then the children are relocated.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiWindowControl_RelocateWithFrameInset
@@ -610,9 +653,9 @@ UiWindowControl_RelocateWithFrameInset
 
 {
   int frameInset;
-  
+
   frameInset = g_UiWindowFrameInset;
-  if ((control->selectable.stateFlags & 4) != 0) {
+  if ((control->selectable.stateFlags & UI_BUTTON_FRAME_INSET) != 0) {
     control->selectable.base.leftOffset = control->selectable.base.leftOffset - g_UiWindowFrameInset;
     control->selectable.base.topOffset = control->selectable.base.topOffset - frameInset;
     control->selectable.base.rightOffset = control->selectable.base.rightOffset + frameInset;
@@ -624,11 +667,9 @@ UiWindowControl_RelocateWithFrameInset
 
 
 /* Address: 0x004B36C0.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B33D0[3]@004B33D0.
-   Local calls: UiContainer_LayoutChildren.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_MeasureRegs
-   [assets/text/richtext].
+   layout of g_UiTitledWindowControlVtable: lays out the children inside the frame, i.e. with the rectangle
+   shrunk by the top-left corner (or the title height when that is taller) and the bottom-right corner,
+   then restores the rectangle and grows layoutWidth/layoutHeight back to the full box.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control)
@@ -641,11 +682,12 @@ UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control
   RichTextExtentRegs titleExtent;
   TextResolveResult titleText;
   TextureSizeResult cornerSize;
-  
+
   titleText = TextResource_Resolve(control->titleTextResourceId);
   titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText.text);
   titleHeightOrRightInset = titleExtent.heightPixels;
-  cornerSize = g_GraphicsTextureSourceGetLogicalSize(0x36,g_UiWindowTextureSource);
+  cornerSize = g_GraphicsTextureSourceGetLogicalSize
+                         (UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_TOP_LEFT,g_UiWindowTextureSource);
   leftInset = cornerSize.logicalWidthPixels;
   topInset = cornerSize.logicalHeightPixels;
   if ((int)cornerSize.logicalHeightPixels < (int)titleHeightOrRightInset) {
@@ -653,7 +695,9 @@ UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control
   }
   control->base.left = control->base.left + leftInset;
   control->base.top = control->base.top + topInset;
-  cornerSize = g_GraphicsTextureSourceGetLogicalSize(0x39,g_UiWindowTextureSource);
+  cornerSize = g_GraphicsTextureSourceGetLogicalSize
+                         (UI_WINDOW_SUBRESOURCE_TITLED_BOX_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                          g_UiWindowTextureSource);
   bottomInset = cornerSize.logicalHeightPixels;
   titleHeightOrRightInset = cornerSize.logicalWidthPixels;
   control->base.right = control->base.right - titleHeightOrRightInset;
@@ -672,10 +716,8 @@ UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control
 
 
 /* Address: 0x004B3C00.
-   Ownership: ui/controls/layout.
-   Purpose: Calls the shared child hit-test routine for one container vtable. A result equal to the container
-   itself is converted to the 0xFFFFFFFF no-hit sentinel.
-   Local calls: UiContainer_HitTestChildren.
+   hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never
+   hit (UI_NODE_NONE instead), so the pointer passes through the panel to what lies below it.
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiContainer_HitTestChildrenOrNoneA
@@ -683,25 +725,25 @@ UiContainer_HitTestChildrenOrNoneA
 
 {
   UiNodeBase *hitNode;
-  
+
   hitNode = UiContainer_HitTestChildren(pointerY,pointerX,control);
   if (hitNode == control) {
-    hitNode = (UiNodeBase *)0xffffffff;
+    hitNode = UI_NODE_NONE;
   }
   return hitNode;
 }
 
 
 /* Address: 0x004B3C80.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B3C20[2]@004B3C20.
-   Local calls: UiWindow_BlitTiledHorizontalEdge.
-   Cross-module calls: RichTextCommandStream_DrawSingleLine [assets/text/richtext].
+   drawClipped of g_UiHorizontalGaugeControlVtable (progress bar): draws the track, a fill proportional to
+   (value - minimumValue) / (maximumValue - minimumValue) with value clamped to maximumValue, and with
+   gaugeFlags bit 0 the percentage centred on top. The fill is left out while it would be narrower than
+   its two caps. Children are not drawn.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiHorizontalGaugeControl_DrawFrameFillAndLabel
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiHorizontalGaugeControl *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiHorizontalGaugeControl *control)
 
 {
   uint64_t scaledFillProduct;
@@ -720,16 +762,18 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
   if (!beginAccessFailed) {
     rightCapXOrFillMin = control->base.layoutWidth;
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,0x7c,
-               g_UiWindowTextureSource,g_FramebufferAccess);
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x7c,g_UiWindowTextureSource);
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,control->base.left,
+               UI_WINDOW_SUBRESOURCE_GAUGE_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_GAUGE_LEFT,g_UiWindowTextureSource);
     leftCapWidth = textureSize.logicalWidthPixels;
+    /* the right cap is assumed to be as wide as the left one */
     rightCapXOrFillMin = rightCapXOrFillMin - leftCapWidth;
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x7d,rightCapXOrFillMin,0,leftCapWidth,&control->base);
+              (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_GAUGE_TRACK,rightCapXOrFillMin,0,
+               leftCapWidth,&control->base);
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,rightCapXOrFillMin + control->base.left,0x7e,
-               g_UiWindowTextureSource,g_FramebufferAccess);
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,rightCapXOrFillMin + control->base.left,
+               UI_WINDOW_SUBRESOURCE_GAUGE_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
     clampedValue = control->value;
     if (control->maximumValue < clampedValue) {
       clampedValue = control->maximumValue;
@@ -742,24 +786,28 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
       if (rangeProgressOrPercent == 0) {
         rangeProgressOrPercent = 1;
       }
+      /* DIV, ADD EDX,EDX, ADC EAX,0 in the original: rounds up only when the remainder has bit 31 set */
       divisionRemainder = (uint32_t)(scaledFillProduct % (uint64_t)rangeProgressOrPercent);
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x7f,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_GAUGE_FILL_LEFT,g_UiWindowTextureSource);
       fillEndX = ((int)(scaledFillProduct / rangeProgressOrPercent) + (uint32_t)CARRY4(divisionRemainder,divisionRemainder) + leftCapWidth) -
                   textureSize.logicalWidthPixels;
       rightCapXOrFillMin = textureSize.logicalWidthPixels + leftCapWidth;
       rangeProgressOrPercent = progressOrRange;
       if (rightCapXOrFillMin <= fillEndX) {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x80,fillEndX,0,rightCapXOrFillMin,&control->base);
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_GAUGE_FILL,fillEndX,0,
+                   rightCapXOrFillMin,&control->base);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,control->base.top,leftCapWidth + control->base.left,0x7f,
-                   g_UiWindowTextureSource,g_FramebufferAccess);
+                  (clipBottom,clipRight,clipTop,clipLeft,control->base.top,leftCapWidth + control->base.left,
+                   UI_WINDOW_SUBRESOURCE_GAUGE_FILL_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,control->base.top,fillEndX + control->base.left,0x81
-                   ,g_UiWindowTextureSource,g_FramebufferAccess);
+                  (clipBottom,clipRight,clipTop,clipLeft,control->base.top,fillEndX + control->base.left,
+                   UI_WINDOW_SUBRESOURCE_GAUGE_FILL_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
       }
     }
     if ((control->gaugeFlags & 1) != 0) {
+      /* the percentage of the clamped progress (0 when no fill was computed), as "100%" or two digits
+         without a leading zero */
       progressOrRange = control->maximumValue - control->minimumValue;
       if (progressOrRange == 0) {
         progressOrRange = 1;
@@ -767,24 +815,24 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
       divisionRemainder = (uint32_t)(((uint64_t)rangeProgressOrPercent * 100) % (uint64_t)progressOrRange);
       rangeProgressOrPercent = (int)(((uint64_t)rangeProgressOrPercent * 100) / (uint64_t)progressOrRange) + (uint32_t)CARRY4(divisionRemainder,divisionRemainder);
       if (rangeProgressOrPercent == 100) {
-        g_UiWindowPercentTextUtf16[0] = 0x31;
-        g_UiWindowPercentTextUtf16[1] = 0x30;
-        g_UiWindowPercentTextUtf16[2] = 0x30;
-        g_UiWindowPercentTextUtf16[3] = 0x25;
+        g_UiWindowPercentTextUtf16[0] = '1';
+        g_UiWindowPercentTextUtf16[1] = '0';
+        g_UiWindowPercentTextUtf16[2] = '0';
+        g_UiWindowPercentTextUtf16[3] = '%';
         g_UiWindowPercentTextUtf16[4] = 0;
       }
       else {
-        g_UiWindowPercentTextUtf16[1] = (short)((uint64_t)rangeProgressOrPercent % 10) + 0x30;
-        g_UiWindowPercentTextUtf16[0] = (short)((uint64_t)rangeProgressOrPercent / 10) + 0x30;
-        g_UiWindowPercentTextUtf16[2] = 0x25;
+        g_UiWindowPercentTextUtf16[1] = (short)((uint64_t)rangeProgressOrPercent % 10) + '0';
+        g_UiWindowPercentTextUtf16[0] = (short)((uint64_t)rangeProgressOrPercent / 10) + '0';
+        g_UiWindowPercentTextUtf16[2] = '%';
         g_UiWindowPercentTextUtf16[3] = 0;
       }
       commandStream = g_UiWindowPercentTextUtf16;
-      if (g_UiWindowPercentTextUtf16[0] == 0x30) {
+      if (g_UiWindowPercentTextUtf16[0] == '0') {
         commandStream = g_UiWindowPercentTextUtf16 + 1;
       }
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,g_UiHorizontalGaugeLabelTextStyle,
+                (clipBottom,clipRight,clipTop,clipLeft,g_UiHorizontalGaugeLabelTextStyle,
                  commandStream,g_UiHorizontalGaugeLabelTopInset + control->base.top,
                  ((uint32_t)control->base.layoutWidth >> 1) + control->base.left);
     }
@@ -795,9 +843,9 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
 
 
 /* Address: 0x004B46A0.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[0]@004B4650.
-   Local calls: UiContainer_RelocateChildren.
+   relocate of g_UiLayoutContainerControlVtable (the page stack, UiPageStackControl): turns the page links
+   from image offsets into pointers, relocates every page's tree by making it the stack's firstChild in
+   turn, and leaves page 0 as the shown page. Like the other page-stack methods it assumes at least one page.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_RelocateChildren
@@ -805,25 +853,25 @@ UiLayoutContainerControl_RelocateChildren
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **childSlot;
-  UiNodeBase **childPointerCursor;
-  
-  childSlot = &control->pages;
+  UiNodeBase **pageSlot;
+  UiNodeBase **pageCursor;
+
+  pageSlot = &control->pages;
   remainingCount = control->pageCount;
   do {
-    if (*childSlot != (UiNodeBase *)0xffffffff) {
-      *childSlot = (UiNodeBase *)((int)&(*childSlot)->nextSibling + relocationDelta);
+    if (*pageSlot != UI_NODE_NONE) {
+      *pageSlot = (UiNodeBase *)((int)*pageSlot + relocationDelta);
     }
-    childSlot = childSlot + 1;
-    remainingCount = remainingCount - 1;
+    pageSlot = pageSlot + 1;
+    remainingCount--;
   } while (remainingCount != 0);
-  childPointerCursor = &control->pages;
+  pageCursor = &control->pages;
   remainingCount = control->pageCount;
   do {
-    control->base.firstChild = *childPointerCursor;
+    control->base.firstChild = *pageCursor;
     UiContainer_RelocateChildren(relocationDelta,&control->base);
-    childPointerCursor = childPointerCursor + 1;
-    remainingCount = remainingCount - 1;
+    pageCursor = pageCursor + 1;
+    remainingCount--;
   } while (remainingCount != 0);
   control->base.firstChild = control->pages;
   return;
@@ -831,37 +879,34 @@ UiLayoutContainerControl_RelocateChildren
 
 
 /* Address: 0x004B4700.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[3]@004B4650.
-   Local calls: UiContainer_LayoutChildren.
+   layout of g_UiLayoutContainerControlVtable: lays out every page of the page stack, hidden ones included,
+   by making each the stack's firstChild in turn; the shown page is restored afterwards.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **childPointerCursor;
-  UiNodeBase *savedFirstChild;
-  
-  childPointerCursor = &control->pages;
-  savedFirstChild = control->base.firstChild;
+  UiNodeBase **pageCursor;
+  UiNodeBase *shownPage;
+
+  pageCursor = &control->pages;
+  shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
   do {
-    control->base.firstChild = *childPointerCursor;
+    control->base.firstChild = *pageCursor;
     UiContainer_LayoutChildren(&control->base);
-    childPointerCursor = childPointerCursor + 1;
-    remainingCount = remainingCount - 1;
+    pageCursor = pageCursor + 1;
+    remainingCount--;
   } while (remainingCount != 0);
-  control->base.firstChild = savedFirstChild;
+  control->base.firstChild = shownPage;
   return;
 }
 
 
 /* Address: 0x004B4790.
-   Ownership: ui/controls/layout.
-   Purpose: Calls the shared child hit-test routine for a second container vtable. A result equal to the container
-   itself is converted to the 0xFFFFFFFF no-hit sentinel.
-   Local calls: UiContainer_HitTestChildren.
+   hitTest of g_UiLayoutContainerControlVtable (the page stack): hit-tests the shown page like
+   UiContainer_HitTestChildren, but the stack itself is never hit (UI_NODE_NONE instead).
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiContainer_HitTestChildrenOrNoneB
@@ -869,73 +914,71 @@ UiContainer_HitTestChildrenOrNoneB
 
 {
   UiNodeBase *hitNode;
-  
+
   hitNode = UiContainer_HitTestChildren(pointerY,pointerX,control);
   if (hitNode == control) {
-    hitNode = (UiNodeBase *)0xffffffff;
+    hitNode = UI_NODE_NONE;
   }
   return hitNode;
 }
 
 
 /* Address: 0x004B47B0.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[14]@004B4650.
-   Local calls: UiContainer_SuppressActionId.
+   suppressActionId of g_UiLayoutContainerControlVtable: suppresses the controls carrying actionId on every
+   page of the page stack, hidden ones included (each page is made firstChild in turn).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **childPointerCursor;
-  UiNodeBase *savedFirstChild;
-  
-  childPointerCursor = &control->pages;
-  savedFirstChild = control->base.firstChild;
+  UiNodeBase **pageCursor;
+  UiNodeBase *shownPage;
+
+  pageCursor = &control->pages;
+  shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
   do {
-    control->base.firstChild = *childPointerCursor;
+    control->base.firstChild = *pageCursor;
     UiContainer_SuppressActionId(actionId,&control->base);
-    childPointerCursor = childPointerCursor + 1;
-    remainingCount = remainingCount - 1;
+    pageCursor = pageCursor + 1;
+    remainingCount--;
   } while (remainingCount != 0);
-  control->base.firstChild = savedFirstChild;
+  control->base.firstChild = shownPage;
   return;
 }
 
 
 /* Address: 0x004B4800.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[15]@004B4650.
-   Local calls: UiContainer_UnsuppressActionId.
+   unsuppressActionId of g_UiLayoutContainerControlVtable: the counterpart of
+   UiLayoutContainerControl_SuppressActionIdRecursive for every page of the page stack.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **childPointerCursor;
-  UiNodeBase *savedFirstChild;
-  
-  childPointerCursor = &control->pages;
-  savedFirstChild = control->base.firstChild;
+  UiNodeBase **pageCursor;
+  UiNodeBase *shownPage;
+
+  pageCursor = &control->pages;
+  shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
   do {
-    control->base.firstChild = *childPointerCursor;
+    control->base.firstChild = *pageCursor;
     UiContainer_UnsuppressActionId(actionId,&control->base);
-    childPointerCursor = childPointerCursor + 1;
-    remainingCount = remainingCount - 1;
+    pageCursor = pageCursor + 1;
+    remainingCount--;
   } while (remainingCount != 0);
-  control->base.firstChild = savedFirstChild;
+  control->base.firstChild = shownPage;
   return;
 }
 
 
 /* Address: 0x004B4D10.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[0]@004B4CC0.
-   Local calls: UiContainer_RelocateChildren.
+   relocate of g_UiResizableWindowControlVtable: relocates the children, then makes the window a keyboard
+   focus target only when it has a close or maximize button, i.e. hotkeys for
+   UiResizableWindowControl_HandleWindowHotkeys.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_RelocateAndRefreshInteractionState
@@ -943,7 +986,7 @@ UiResizableWindowControl_RelocateAndRefreshInteractionState
 
 {
   UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
-  if ((control->root.rootFlags & 0x18) == 0) {
+  if ((control->root.rootFlags & (UI_ROOT_CLOSE_BUTTON | UI_ROOT_MAXIMIZE_BUTTON)) == 0) {
     control->root.base.nodeFlags =
          control->root.base.nodeFlags & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
@@ -955,10 +998,10 @@ UiResizableWindowControl_RelocateAndRefreshInteractionState
 
 
 /* Address: 0x004B53E0.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[8]@004B4CC0.
-   Local calls: UiRootStack_InvalidateAll.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightDrag of g_UiResizableWindowControlVtable: while moving, shifts the window by the pointer's
+   movement since the grab; while resizing, moves the grabbed edges to the pointer, keeping the window at
+   least UI_WINDOW_MINIMUM_SIZE wide and high, and relays it out when the rectangle changed. While the close
+   or maximize button is pressed it only tracks whether the pointer is still over it (armed).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_UpdateMoveOrResize
@@ -975,52 +1018,55 @@ UiResizableWindowControl_UpdateMoveOrResize
   int newTopOrOldRight;
   bool overButton;
   TextureSizeResult buttonSize;
-  
+
   offsetXOrEdge = pointerX - control->root.base.left;
   offsetYOrEdge = pointerY - control->root.base.top;
-  if ((control->root.rootFlags & 0x2000) == 0) {
-    if ((control->root.rootFlags & 0x800) == 0) {
-      if ((control->root.rootFlags & 0x1000) == 0) {
-        if ((control->root.rootFlags & 0x4000) != 0) {
+  if ((control->root.rootFlags & UI_ROOT_MOVING) == 0) {
+    if ((control->root.rootFlags & UI_ROOT_CLOSE_PRESSED) == 0) {
+      if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_PRESSED) == 0) {
+        if ((control->root.rootFlags & UI_ROOT_RESIZING) != 0) {
+          /* the grabbed edges follow the pointer (back to absolute coordinates), the others stay */
           interactionFlags = control->root.rootFlags;
           offsetXOrEdge = offsetXOrEdge + control->root.base.left;
           offsetYOrEdge = offsetYOrEdge + control->root.base.top;
           newTopOrOldRight = offsetYOrEdge;
-          if ((interactionFlags & 0x83000000) == 0) {
+          if ((interactionFlags & UI_ROOT_RESIZE_MOVES_TOP) == 0) {
             newTopOrOldRight = control->root.base.top;
           }
-          if ((interactionFlags & 0x38000000) == 0) {
+          if ((interactionFlags & UI_ROOT_RESIZE_MOVES_BOTTOM) == 0) {
             offsetYOrEdge = control->root.base.bottom;
           }
           newLeftOrOldBottom = offsetXOrEdge;
-          if ((interactionFlags & 0xe0000000) == 0) {
+          if ((interactionFlags & UI_ROOT_RESIZE_MOVES_LEFT) == 0) {
             newLeftOrOldBottom = control->root.base.left;
           }
-          if ((interactionFlags & 0xe000000) == 0) {
+          if ((interactionFlags & UI_ROOT_RESIZE_MOVES_RIGHT) == 0) {
             offsetXOrEdge = control->root.base.right;
           }
           control->dragAnchorXOrPendingRight = offsetXOrEdge;
           control->dragAnchorYOrPendingBottom = offsetYOrEdge;
-          offsetXOrEdge = (offsetXOrEdge - newLeftOrOldBottom) + -0x40;
+          /* too narrow or too low: push the grabbed edge(s) back by the shortfall */
+          offsetXOrEdge = (offsetXOrEdge - newLeftOrOldBottom) + -UI_WINDOW_MINIMUM_SIZE;
           if (offsetXOrEdge < 0) {
-            if ((interactionFlags & 0xe000000) != 0) {
+            if ((interactionFlags & UI_ROOT_RESIZE_MOVES_RIGHT) != 0) {
               control->dragAnchorXOrPendingRight = control->dragAnchorXOrPendingRight - offsetXOrEdge;
             }
-            if ((interactionFlags & 0xe0000000) != 0) {
+            if ((interactionFlags & UI_ROOT_RESIZE_MOVES_LEFT) != 0) {
               newLeftOrOldBottom = newLeftOrOldBottom + offsetXOrEdge;
             }
           }
-          offsetXOrEdge = (offsetYOrEdge - newTopOrOldRight) + -0x40;
+          offsetXOrEdge = (offsetYOrEdge - newTopOrOldRight) + -UI_WINDOW_MINIMUM_SIZE;
           if (offsetXOrEdge < 0) {
-            if ((interactionFlags & 0x38000000) != 0) {
+            if ((interactionFlags & UI_ROOT_RESIZE_MOVES_BOTTOM) != 0) {
               control->dragAnchorYOrPendingBottom = control->dragAnchorYOrPendingBottom - offsetXOrEdge;
             }
-            if ((interactionFlags & 0x83000000) != 0) {
+            if ((interactionFlags & UI_ROOT_RESIZE_MOVES_TOP) != 0) {
               newTopOrOldRight = newTopOrOldRight + offsetXOrEdge;
             }
           }
           newRight = control->dragAnchorXOrPendingRight;
           newBottom = control->dragAnchorYOrPendingBottom;
+          /* exchange old and new edges (XCHG in the original); relayout only when one changed */
           LOCK();
           offsetXOrEdge = control->root.base.left;
           control->root.base.left = newLeftOrOldBottom;
@@ -1046,45 +1092,50 @@ UiResizableWindowControl_UpdateMoveOrResize
         }
       }
       else {
+        /* maximize button pressed: armed while the pointer is on its opaque pixels (top right) */
         newTopOrOldRight = control->root.base.layoutWidth;
-        buttonSize = g_GraphicsTextureSourceGetLogicalSize(4,g_UiWindowTextureSource);
+        buttonSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON,g_UiWindowTextureSource);
         overButton = g_GraphicsTextureSourceTestOpaquePixel
-                          (offsetYOrEdge,offsetXOrEdge,0,newTopOrOldRight - buttonSize.logicalWidthPixels,4,g_UiWindowTextureSource)
+                          (offsetYOrEdge,offsetXOrEdge,0,newTopOrOldRight - buttonSize.logicalWidthPixels,
+                           UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON,g_UiWindowTextureSource)
         ;
         if (overButton) {
-          if ((control->root.rootFlags & 0x100000) != 0) {
+          if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED) != 0) {
             return;
           }
-          control->root.rootFlags = control->root.rootFlags | 0x100000;
+          control->root.rootFlags = control->root.rootFlags | UI_ROOT_MAXIMIZE_ARMED;
         }
         else {
-          if ((control->root.rootFlags & 0x100000) == 0) {
+          if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_ARMED) == 0) {
             return;
           }
-          control->root.rootFlags = control->root.rootFlags & 0xffefffff;
+          control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_MAXIMIZE_ARMED;
         }
         UiNode_InvalidateRoot((UiNodeBase *)control);
       }
     }
     else {
-      overButton = g_GraphicsTextureSourceTestOpaquePixel(offsetYOrEdge,offsetXOrEdge,0,0,1,g_UiWindowTextureSource);
+      /* close button pressed: armed while the pointer is on its opaque pixels (top left) */
+      overButton = g_GraphicsTextureSourceTestOpaquePixel
+                        (offsetYOrEdge,offsetXOrEdge,0,0,UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON,g_UiWindowTextureSource);
       if (overButton) {
-        if ((control->root.rootFlags & 0x80000) != 0) {
+        if ((control->root.rootFlags & UI_ROOT_CLOSE_ARMED) != 0) {
           return;
         }
-        control->root.rootFlags = control->root.rootFlags | 0x80000;
+        control->root.rootFlags = control->root.rootFlags | UI_ROOT_CLOSE_ARMED;
       }
       else {
-        if ((control->root.rootFlags & 0x80000) == 0) {
+        if ((control->root.rootFlags & UI_ROOT_CLOSE_ARMED) == 0) {
           return;
         }
-        control->root.rootFlags = control->root.rootFlags & 0xfff7ffff;
+        control->root.rootFlags = control->root.rootFlags & ~UI_ROOT_CLOSE_ARMED;
       }
-      g_GraphicsTextureSourceGetLogicalSize(1,g_UiWindowTextureSource);
+      g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON,g_UiWindowTextureSource); /* result unused */
       UiNode_InvalidateRoot((UiNodeBase *)control);
     }
   }
   else {
+    /* moving: dragAnchor* hold the grab point relative to the window */
     offsetXOrEdge = offsetXOrEdge - control->dragAnchorXOrPendingRight;
     offsetYOrEdge = offsetYOrEdge - control->dragAnchorYOrPendingBottom;
     if ((offsetYOrEdge != 0) || (offsetXOrEdge != 0)) {
@@ -1102,10 +1153,9 @@ UiResizableWindowControl_UpdateMoveOrResize
 
 
 /* Address: 0x004BC660.
-   Ownership: ui/controls/layout.
-   Purpose: Temporarily substitutes the parent rectangle while laying out children, restores the control rectangle,
-   and stores the parent width and height as the resolved layout size.
-   Local calls: UiContainer_LayoutChildren.
+   layout of g_UiNodeVtable_004BC570 (image toggles of the in-game resource panel): lays out the children
+   relative to the parent's rectangle instead of the control's own by swapping the parent's edges in for
+   the call; afterwards the own rectangle is restored and its size stored as layoutWidth/layoutHeight.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiImageControl_LayoutChildrenToParent(UiImageControl *control)
@@ -1171,24 +1221,25 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_FlushInputAndResetPendingTicks(
 
 
 /* Address: 0x004AF950.
-   Ownership: ui/controls/layout.
-   Purpose: Runs the UI frame loop until the root closes and presents the final frame.
+   Modal UI loop: with the pointer capture released and stale input flushed, runs whole UI frames until the
+   root stack is empty (the last window closed), then presents one more frame with the tooltip cleared.
+   No caller in the recovered code (reached only through the function map).
 */
 void __thandor_void_preserve_eax_ecx_edx UiFrame_RunUntilRootClosedAndPresentFinalFrame(void)
 
 {
-  g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+  g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   UiFrame_FlushInputAndResetPendingTicks();
   do {
     UiKeyboard_DispatchPendingEvents();
     UiPointer_DispatchPendingEvents();
-    UiFrame_Update(0);
+    UiFrame_Update(0); /* 0: pump messages once, do not wait for a frame tick */
     UiActionQueue_DispatchPending();
     UiFrame_Draw();
     g_GraphicsFramebufferPresent(g_FramebufferAccess);
-  } while (g_UiRootNode != (UiRootNode *)0xffffffff);
-  g_UiTooltipState.targetNode = (UiNodeBase *)0x0;
+  } while (g_UiRootNode != UI_ROOT_STACK_END);
+  g_UiTooltipState.targetNode = NULL;
   UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   return;
@@ -1257,9 +1308,10 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
 
 
 /* Address: 0x004B1240.
-   Ownership: ui/controls/layout.
-   Purpose: Recomputes every UiRootNode rectangle from framebuffer dimensions, fixed offsets, and Q31 anchors,
-   invokes each root layout method, and follows previousRoot toward the back of the stack.
+   After a display mode change (UiDisplayModeAction_ApplyPendingMode, FrontendDisplaySettings_ApplyMode):
+   recomputes the rectangle of every open root from the new framebuffer size, its Q31 anchors and pixel
+   offsets (as UiRootStack_Push does) and lays it out again, from the front root down. Assumes at least one
+   open root.
 */
 void __thandor_preserve_eax_edx UiRootStack_Relayout(void)
 
@@ -1271,6 +1323,7 @@ void __thandor_preserve_eax_edx UiRootStack_Relayout(void)
   
   rootNode = g_UiRootNode;
   do {
+    /* each edge = (framebuffer extent * anchorQ31) >> 31 + offset */
     anchorPixelProductQ31 =
          (uint64_t)g_FramebufferWidth * (uint64_t)(rootNode->base).rightAnchorQ31;
     (rootNode->base).right =
@@ -1289,30 +1342,28 @@ void __thandor_preserve_eax_edx UiRootStack_Relayout(void)
          ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).topOffset;
     (*((rootNode->base).vtable)->layout)(&rootNode->base);
     rootNode = rootNode->previousRoot;
-  } while (rootNode != (UiRootNode *)0xffffffff);
+  } while (rootNode != UI_ROOT_STACK_END);
   return;
 }
 
 
 /* Address: 0x004B3EE0.
-   Ownership: ui/controls/layout.
-   Purpose: Shared UiNodeVtable pointer-move callback that consumes the three pointer-move arguments and returns
-   constant code 6. The current callers ignore EAX, so the name preserves the verified constant rather than
-   assigning an unproven status meaning.
+   pointerMove of g_UiHorizontalGaugeControlVtable: returns the busy cursor as cursor frame, so a progress
+   bar under the pointer shows it where the caller applies the frame (the in-game and scenario hover code
+   pass it to g_GraphicsCursorSetFrame; the generic pointer-move dispatch ignores it).
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiContainer_PointerMoveReturnCode6
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
-  return 6;
+  return GRAPHICS_CURSOR_FRAME_BUSY;
 }
 
 
 /* Address: 0x004B4740.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4650[13]@004B4650.
-   Cross-module calls: UiNode_ApplyFlagsRecursive [ui/core/runtime].
+   applyFlags of g_UiLayoutContainerControlVtable: applies the node-flag masks (UiNode_ApplyFlagsRecursive)
+   to every page of the page stack, hidden ones included, by making each the stack's firstChild in turn.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_ApplyFlagsRecursive
@@ -1320,26 +1371,28 @@ UiLayoutContainerControl_ApplyFlagsRecursive
 
 {
   UiPageCount remainingCount;
-  UiNodeBase **childPointerCursor;
-  UiNodeBase *savedFirstChild;
-  
-  childPointerCursor = &control->pages;
-  savedFirstChild = control->base.firstChild;
+  UiNodeBase **pageCursor;
+  UiNodeBase *shownPage;
+
+  pageCursor = &control->pages;
+  shownPage = control->base.firstChild;
   remainingCount = control->pageCount;
   do {
-    control->base.firstChild = *childPointerCursor;
+    control->base.firstChild = *pageCursor;
     UiNode_ApplyFlagsRecursive(setMask,retainMask,&control->base);
-    childPointerCursor = childPointerCursor + 1;
-    remainingCount = remainingCount - 1;
+    pageCursor = pageCursor + 1;
+    remainingCount--;
   } while (remainingCount != 0);
-  control->base.firstChild = savedFirstChild;
+  control->base.firstChild = shownPage;
   return;
 }
 
 
 /* Address: 0x004B5120.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[4]@004B4CC0.
+   nonRightPress of g_UiResizableWindowControlVtable: a press on the close or maximize button (its opaque
+   pixels) marks that button pressed. Otherwise, unless maximized, a press on the border of a resizable
+   window (outside the inner area left by the frame corners) starts a resize of the grabbed edge or corner,
+   and a press in the top UiWindowMoveHandleWidth rows of a movable window starts a move with the move cursor.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_BeginMoveResizeOrWindowAction
@@ -1353,62 +1406,68 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
   int extentLimit;
   bool hitOpaque;
   TextureSizeResult textureSize;
-  
+
   localX = pointerX - control->root.base.left;
   localY = pointerY - control->root.base.top;
-  if (((control->root.rootFlags & 8) != 0) &&
-     (hitOpaque = g_GraphicsTextureSourceTestOpaquePixel(localY,localX,0,0,1,g_UiWindowTextureSource),
+  if (((control->root.rootFlags & UI_ROOT_CLOSE_BUTTON) != 0) &&
+     (hitOpaque = g_GraphicsTextureSourceTestOpaquePixel
+                        (localY,localX,0,0,UI_WINDOW_SUBRESOURCE_CLOSE_BUTTON,g_UiWindowTextureSource),
      hitOpaque)) {
-    control->root.rootFlags = control->root.rootFlags | 0x800;
+    control->root.rootFlags = control->root.rootFlags | UI_ROOT_CLOSE_PRESSED;
     return;
   }
-  if ((control->root.rootFlags & 0x10) != 0) {
+  if ((control->root.rootFlags & UI_ROOT_MAXIMIZE_BUTTON) != 0) {
     extentLimit = control->root.base.layoutWidth;
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(4,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON,g_UiWindowTextureSource);
     hitOpaque = g_GraphicsTextureSourceTestOpaquePixel
-                      (localY,localX,0,extentLimit - textureSize.logicalWidthPixels,4,g_UiWindowTextureSource);
+                      (localY,localX,0,extentLimit - textureSize.logicalWidthPixels,
+                       UI_WINDOW_SUBRESOURCE_MAXIMIZE_BUTTON,g_UiWindowTextureSource);
     if (hitOpaque) {
-      control->root.rootFlags = control->root.rootFlags | 0x1000;
+      control->root.rootFlags = control->root.rootFlags | UI_ROOT_MAXIMIZE_PRESSED;
       return;
     }
   }
-  if ((control->root.rootFlags & 0x80) == 0) {
-    if ((control->root.rootFlags & 0x40) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x10,g_UiWindowTextureSource);
+  if ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0) {
+    if ((control->root.rootFlags & UI_ROOT_RESIZABLE) != 0) {
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
+                              (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_LEFT,g_UiWindowTextureSource);
       if ((((localX < (int)textureSize.logicalWidthPixels) || ((int)localY < (int)textureSize.logicalHeightPixels))
           || ((int)(control->root.base.layoutWidth - textureSize.logicalWidthPixels) <= localX)) ||
          ((int)(control->root.base.layoutHeight - textureSize.logicalHeightPixels) <= (int)localY)) {
+        /* which border: within g_UiWindowResizeBorderThickness of a side (corners take precedence) */
         extentLimit = control->root.base.layoutHeight - g_UiWindowResizeBorderThickness;
         if (localX < g_UiWindowResizeBorderThickness) {
-          resizeFlags = 0x80004000;
+          resizeFlags = UI_ROOT_RESIZE_TOP_LEFT | UI_ROOT_RESIZING;
           if ((g_UiWindowResizeBorderThickness <= (int)localY) &&
-             (resizeFlags = 0x20004000, (int)localY < extentLimit)) {
-            resizeFlags = 0x40004000;
+             (resizeFlags = UI_ROOT_RESIZE_BOTTOM_LEFT | UI_ROOT_RESIZING, (int)localY < extentLimit)) {
+            resizeFlags = UI_ROOT_RESIZE_LEFT | UI_ROOT_RESIZING;
           }
         }
         else if (localX < control->root.base.layoutWidth - g_UiWindowResizeBorderThickness) {
-          resizeFlags = 0x1004000;
+          resizeFlags = UI_ROOT_RESIZE_TOP | UI_ROOT_RESIZING;
           if (g_UiWindowResizeBorderThickness <= (int)localY) {
-            resizeFlags = 0x10004000;
+            resizeFlags = UI_ROOT_RESIZE_BOTTOM | UI_ROOT_RESIZING;
           }
         }
         else {
-          resizeFlags = 0x2004000;
+          resizeFlags = UI_ROOT_RESIZE_TOP_RIGHT | UI_ROOT_RESIZING;
           if ((g_UiWindowResizeBorderThickness <= (int)localY) &&
-             (resizeFlags = 0x8004000, (int)localY < extentLimit)) {
-            resizeFlags = 0x4004000;
+             (resizeFlags = UI_ROOT_RESIZE_BOTTOM_RIGHT | UI_ROOT_RESIZING, (int)localY < extentLimit)) {
+            resizeFlags = UI_ROOT_RESIZE_RIGHT | UI_ROOT_RESIZING;
           }
         }
+        /* clears the UI_ROOT_RESIZE_EDGES byte; kept as a signed constant because the unsigned
+           ~UI_ROOT_RESIZE_EDGES changes the generated code of this build */
         control->root.rootFlags = control->root.rootFlags & 0xffffff;
         control->root.rootFlags = control->root.rootFlags | resizeFlags;
         return;
       }
     }
-    if (((control->root.rootFlags & 0x20) != 0) && (localY < g_UiWindowMoveHandleWidth)) {
-      control->root.rootFlags = control->root.rootFlags | 0x2000;
+    if (((control->root.rootFlags & UI_ROOT_MOVABLE) != 0) && (localY < g_UiWindowMoveHandleWidth)) {
+      control->root.rootFlags = control->root.rootFlags | UI_ROOT_MOVING;
       control->dragAnchorXOrPendingRight = localX;
       control->dragAnchorYOrPendingBottom = localY;
-      g_GraphicsCursorSetFrame(1);
+      g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_MOVE);
     }
   }
   return;
@@ -1416,8 +1475,9 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
 
 
 /* Address: 0x004B5660.
-   Ownership: ui/controls/layout.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[10]@004B4CC0.
+   pointerMove of g_UiResizableWindowControlVtable: returns the cursor frame for the pointer position, a
+   resize cursor over the border of a resizable, non-maximized window (the same border zones as
+   UiResizableWindowControl_BeginMoveResizeOrWindowAction), otherwise the arrow.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiResizableWindowControl_QueryResizeCursorCode
@@ -1429,32 +1489,36 @@ UiResizableWindowControl_QueryResizeCursorCode
   int localY;
   int localX;
   TextureSizeResult cornerSize;
-  
-  cursorFrame = 0;
-  if (((control->root.rootFlags & 0x40) != 0) && ((control->root.rootFlags & 0x80) == 0))
+
+  cursorFrame = GRAPHICS_CURSOR_FRAME_ARROW;
+  if (((control->root.rootFlags & UI_ROOT_RESIZABLE) != 0) && ((control->root.rootFlags & UI_ROOT_MAXIMIZED) == 0))
   {
     localX = pointerX - control->root.base.left;
     if ((control->root.base.left <= pointerX) &&
        (((localY = pointerY - control->root.base.top, control->root.base.top <= pointerY &&
          (localX < control->root.base.layoutWidth)) && (localY < control->root.base.layoutHeight)))) {
-      cornerSize = g_GraphicsTextureSourceGetLogicalSize(0x10,g_UiWindowTextureSource);
+      cornerSize = g_GraphicsTextureSourceGetLogicalSize
+                             (UI_WINDOW_SUBRESOURCE_WINDOW_FRAME + UI_WINDOW_FRAME_TOP_LEFT,g_UiWindowTextureSource);
       if ((((localX < (int)cornerSize.logicalWidthPixels) || (localY < (int)cornerSize.logicalHeightPixels)) ||
           ((int)(control->root.base.layoutWidth - cornerSize.logicalWidthPixels) <= localX)) ||
-         (cursorFrame = 0, (int)(control->root.base.layoutHeight - cornerSize.logicalHeightPixels) <= localY)) {
+         (cursorFrame = GRAPHICS_CURSOR_FRAME_ARROW,
+         (int)(control->root.base.layoutHeight - cornerSize.logicalHeightPixels) <= localY)) {
         bottomBorderY = control->root.base.layoutHeight - g_UiWindowResizeBorderThickness;
         if (localX < g_UiWindowResizeBorderThickness) {
-          cursorFrame = 2;
-          if ((g_UiWindowResizeBorderThickness <= localY) && (cursorFrame = 3, localY < bottomBorderY)) {
-            return 5;
+          cursorFrame = GRAPHICS_CURSOR_FRAME_SIZE_NWSE;
+          if ((g_UiWindowResizeBorderThickness <= localY) &&
+             (cursorFrame = GRAPHICS_CURSOR_FRAME_SIZE_NESW, localY < bottomBorderY)) {
+            return GRAPHICS_CURSOR_FRAME_SIZE_WE;
           }
         }
         else {
           if (localX < control->root.base.layoutWidth - g_UiWindowResizeBorderThickness) {
-            return 4;
+            return GRAPHICS_CURSOR_FRAME_SIZE_NS;
           }
-          cursorFrame = 3;
-          if ((g_UiWindowResizeBorderThickness <= localY) && (cursorFrame = 2, localY < bottomBorderY)) {
-            cursorFrame = 5;
+          cursorFrame = GRAPHICS_CURSOR_FRAME_SIZE_NESW;
+          if ((g_UiWindowResizeBorderThickness <= localY) &&
+             (cursorFrame = GRAPHICS_CURSOR_FRAME_SIZE_NWSE, localY < bottomBorderY)) {
+            cursorFrame = GRAPHICS_CURSOR_FRAME_SIZE_WE;
           }
         }
       }
@@ -1510,16 +1574,17 @@ UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
 
 
 /* Address: 0x004B0940.
-   Ownership: ui/controls/layout.
-   Purpose: Handles ui container suppress action id.
+   suppressActionId of the plain containers (g_UiPanelControlVtable, g_UiTitledWindowControlVtable,
+   g_UiResizableWindowControlVtable and most other container vtables): passes the request on to every child;
+   the controls that carry an action id suppress themselves when it matches.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
-  
-  for (childNode = control->firstChild; childNode != (UiNodeBase *)0xffffffff;
+
+  for (childNode = control->firstChild; childNode != UI_NODE_NONE;
       childNode = childNode->nextSibling) {
     childNode->vtable->suppressActionId(actionId,childNode);
   }
@@ -1528,16 +1593,16 @@ UiContainer_SuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 
 /* Address: 0x004B0990.
-   Ownership: ui/controls/layout.
-   Purpose: Handles ui container unsuppress action id.
+   unsuppressActionId of the same container vtables as UiContainer_SuppressActionId: passes the request on to
+   every child.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
-  
-  for (childNode = control->firstChild; childNode != (UiNodeBase *)0xffffffff;
+
+  for (childNode = control->firstChild; childNode != UI_NODE_NONE;
       childNode = childNode->nextSibling) {
     childNode->vtable->unsuppressActionId(actionId,childNode);
   }
@@ -1611,10 +1676,9 @@ void __thandor_void_preserve_eax_ecx_edx UiNodeSubtree_ReleaseKeyboardFocus(UiNo
 
 
 /* Address: 0x004B50D0.
-   Ownership: ui/controls/layout.
-   Purpose: Lays out the resizable window's children. When window flag 0x04 (title bar) is set, it temporarily offsets top by the
-   logical height of window subresource 0x0C, restores top, and adds that height to layoutHeight.
-   Local calls: UiContainer_LayoutChildren.
+   layout of g_UiResizableWindowControlVtable (also called after maximize/restore): lays out the children
+   below the title bar when the window has one (UI_ROOT_TITLE_BAR), i.e. with top moved down by the bar
+   height for the call, and adds that height back to layoutHeight afterwards.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *control)
@@ -1622,12 +1686,13 @@ UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *contr
 {
   uint32_t headerHeight;
   TextureSizeResult headerSize;
-  
-  if ((control->root.rootFlags & 4) == 0) {
+
+  if ((control->root.rootFlags & UI_ROOT_TITLE_BAR) == 0) {
     UiContainer_LayoutChildren((UiNodeBase *)control);
   }
   else {
-    headerSize = g_GraphicsTextureSourceGetLogicalSize(0xc,g_UiWindowTextureSource);
+    headerSize = g_GraphicsTextureSourceGetLogicalSize
+                           (UI_WINDOW_SUBRESOURCE_TITLE_BAR + UI_WINDOW_TITLE_BAR_MIDDLE,g_UiWindowTextureSource);
     headerHeight = headerSize.logicalHeightPixels;
     control->root.base.top = control->root.base.top + headerHeight;
     UiContainer_LayoutChildren((UiNodeBase *)control);
@@ -1794,56 +1859,53 @@ UiContainer_HitTestChildren
 
 
 /* Address: 0x004B13B0.
-   Ownership: ui/controls/layout.
-   Purpose: Forwards a tiled source-alpha interior blit using the shared UI window texture and framebuffer,
-   translating all four tile coordinates by the node's resolved left and top edges. It selects an existing resource
-   facet and does not imply sprite, model, or effect identity. Typed parameters: p4
-   subresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow, and executable
-   data remain unchanged. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297,
-   p2 clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297.
+   Tiles a piece of g_UiWindowTextureSource over the rectangle (tileLeft, tileTop)..(tileRight, tileBottom),
+   given relative to node (a UiNodeBase), clipped to the clip rectangle. Like
+   GraphicsTextureSource_BlitTiledSourceAlpha, which it forwards to, it takes the bottom/right values first.
+   Called by the window, panel and button draw methods.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiWindow_BlitTiledInterior
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileTop
-          ,UiPixelCoordinate tileLeft,UiPixelCoordinate tileBottom,UiPixelCoordinate tileRight,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileBottom
+          ,UiPixelCoordinate tileRight,UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,
           void *node)
 
 {
   g_GraphicsTextureSourceBlitTiledSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,tileTop + *(int *)((int)node + 0x14),
-             tileLeft + *(int *)((int)node + 0x10),tileBottom + *(int *)((int)node + 0x14),
-             tileRight + *(int *)((int)node + 0x10),subresource,g_UiWindowTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,tileBottom + ((UiNodeBase *)node)->top,
+             tileRight + ((UiNodeBase *)node)->left,tileTop + ((UiNodeBase *)node)->top,
+             tileLeft + ((UiNodeBase *)node)->left,subresource,g_UiWindowTextureSource,
              g_FramebufferAccess);
   return;
 }
 
 
 /* Address: 0x004B0510.
-   Ownership: ui/controls/layout.
-   Purpose: Relocates serialized next/child/parent pointers for unresolved children, clears transient node flag
-   bits 0x04 and 0x80, and calls each child's vtable relocate method.
+   relocate of the plain containers (g_UiPanelControlVtable, g_UiTitledWindowControlVtable and most other
+   container vtables): relocates the children like UiSerializedTree_Relocate does for a root's siblings.
+   Every child still unrelocated (layoutWidth -1, reset to 0 here) gets its sibling/child/parent links turned
+   from image offsets into pointers and its transient click and focus flags cleared, then relocates its own
+   subtree through its relocate method.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
-  
+
   for (childNode = control->firstChild;
-      (childNode != (UiNodeBase *)0xffffffff && (childNode->layoutWidth == -1));
+      (childNode != UI_NODE_NONE && (childNode->layoutWidth == -1));
       childNode = childNode->nextSibling) {
     childNode->layoutWidth = ~childNode->layoutWidth;
-    if (childNode->nextSibling != (UiNodeBase *)0xffffffff) {
-      childNode->nextSibling =
-           (UiNodeBase *)((int)&childNode->nextSibling->nextSibling + relocationDelta);
+    if (childNode->nextSibling != UI_NODE_NONE) {
+      childNode->nextSibling = (UiNodeBase *)((int)childNode->nextSibling + relocationDelta);
     }
-    if (childNode->firstChild != (UiNodeBase *)0xffffffff) {
-      childNode->firstChild =
-           (UiNodeBase *)((int)&childNode->firstChild->nextSibling + relocationDelta);
+    if (childNode->firstChild != UI_NODE_NONE) {
+      childNode->firstChild = (UiNodeBase *)((int)childNode->firstChild + relocationDelta);
     }
-    if (childNode->parent != (UiNodeBase *)0xffffffff) {
-      childNode->parent = (UiNodeBase *)((int)&childNode->parent->nextSibling + relocationDelta);
+    if (childNode->parent != UI_NODE_NONE) {
+      childNode->parent = (UiNodeBase *)((int)childNode->parent + relocationDelta);
     }
     childNode->nodeFlags =
          childNode->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);
@@ -1854,22 +1916,23 @@ UiContainer_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiNodeB
 
 
 /* Address: 0x004B05B0.
-   Ownership: ui/controls/layout.
-   Purpose: Handles ui container draw intersecting children.
+   drawClipped of g_UiLayoutContainerControlVtable and the tail of the container draw methods: draws each
+   child whose rectangle intersects the clip rectangle, first child first (later siblings on top). The clip
+   rectangle is passed on unchanged.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiContainer_DrawIntersectingChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
-  
-  for (childNode = control->firstChild; childNode != (UiNodeBase *)0xffffffff;
+
+  for (childNode = control->firstChild; childNode != UI_NODE_NONE;
       childNode = childNode->nextSibling) {
-    if ((((childNode->left <= clipLeft) && (childNode->top <= clipTop)) &&
-        (clipRight < childNode->right)) && (clipBottom < childNode->bottom)) {
-      childNode->vtable->drawClipped(clipTop,clipLeft,clipBottom,clipRight,childNode);
+    if ((((childNode->left <= clipRight) && (childNode->top <= clipBottom)) &&
+        (clipLeft < childNode->right)) && (clipTop < childNode->bottom)) {
+      childNode->vtable->drawClipped(clipBottom,clipRight,clipTop,clipLeft,childNode);
     }
   }
   return;
@@ -1877,23 +1940,21 @@ UiContainer_DrawIntersectingChildren
 
 
 /* Address: 0x004B1350.
-   Ownership: ui/controls/layout.
-   Purpose: Forwards a tiled source-alpha blit using the shared UI window texture and framebuffer. Root-relative
-   X/Y endpoints are derived from the node, while the other tile axis uses sentinel 0x80000000. It selects an
-   existing resource facet and does not imply sprite, model, or effect identity. Typed parameters: p4
-   subresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow, and executable
-   data remain unchanged.
+   Tiles a piece of g_UiWindowTextureSource downwards from tileTop to tileBottom in one column at tileLeft
+   (relative to node, a UiNodeBase), one piece wide (INT32_MIN as right edge), clipped to the clip rectangle:
+   the vertical edges of window and button frames. Bottom/right values come first, as in
+   GraphicsTextureSource_BlitTiledSourceAlpha.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiWindow_BlitTiledVerticalEdge
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,UiPixelCoordinate edgeX,
-          UiPixelCoordinate tileStart,UiPixelCoordinate tileEnd,void *node)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,UiPixelCoordinate tileBottom,
+          UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node)
 
 {
   g_GraphicsTextureSourceBlitTiledSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,edgeX + *(int *)((int)node + 0x14),-0x80000000,
-             tileStart + *(int *)((int)node + 0x14),tileEnd + *(int *)((int)node + 0x10),subresource
+            (clipBottom,clipRight,clipTop,clipLeft,tileBottom + ((UiNodeBase *)node)->top,-0x80000000,
+             tileTop + ((UiNodeBase *)node)->top,tileLeft + ((UiNodeBase *)node)->left,subresource
              ,g_UiWindowTextureSource,g_FramebufferAccess);
   return;
 }
@@ -1950,24 +2011,22 @@ void __thandor_void_preserve_eax_ecx_edx UiContainer_LayoutChildren(UiNodeBase *
 
 
 /* Address: 0x004B12F0.
-   Ownership: ui/controls/layout.
-   Purpose: Forwards a tiled source-alpha blit using the shared UI window texture and framebuffer. Root-relative
-   X/Y endpoints are derived from the node, while one tile axis uses sentinel 0x80000000. It selects an existing
-   resource facet and does not imply sprite, model, or effect identity. Typed parameters: p4
-   subresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow, and executable
-   data remain unchanged.
+   Tiles a piece of g_UiWindowTextureSource rightwards from tileLeft to tileRight in one row at tileTop
+   (relative to node, a UiNodeBase), one piece high (INT32_MIN as bottom edge), clipped to the clip
+   rectangle: horizontal frame edges, title bars and gauge tracks. Bottom/right values come first, as in
+   GraphicsTextureSource_BlitTiledSourceAlpha.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiWindow_BlitTiledHorizontalEdge
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,GraphicsSubresourceIndex subresource,
-          UiPixelCoordinate tileStart,UiPixelCoordinate edgeY,UiPixelCoordinate tileEnd,void *node)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,GraphicsSubresourceIndex subresource,
+          UiPixelCoordinate tileRight,UiPixelCoordinate tileTop,UiPixelCoordinate tileLeft,void *node)
 
 {
   g_GraphicsTextureSourceBlitTiledSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,-0x80000000,
-             tileStart + *(int *)((int)node + 0x10),edgeY + *(int *)((int)node + 0x14),
-             tileEnd + *(int *)((int)node + 0x10),subresource,g_UiWindowTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,-0x80000000,
+             tileRight + ((UiNodeBase *)node)->left,tileTop + ((UiNodeBase *)node)->top,
+             tileLeft + ((UiNodeBase *)node)->left,subresource,g_UiWindowTextureSource,
              g_FramebufferAccess);
   return;
 }

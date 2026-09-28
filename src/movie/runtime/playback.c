@@ -14,7 +14,8 @@
 
 /* Implementation ownership: movie/runtime/playback. */
 
-/* MMX lane helpers for the 4x4 block encoders. Per 4-pixel row the original does MOVD mm,[pixel];
+/* MMX lane helpers for the 4x4 block encoders (not in the original, which does this inline with MMX
+   instructions; the helpers are inlined into Movie_EncodeFrame4x4Keyframe/Delta). Per 4-pixel row the original does MOVD mm,[pixel];
    PUNPCKLBW mm,mm (each byte duplicated into a word); PSRLW mm,6; PADDW into MM7 -- four 16-bit channel
    sums, one lane per pixel byte, wrapping at 16 bits. After four rows PSRLW MM7,6; PACKUSWB MM7,MM7;
    MOVD packs the four averages back into one pixel. */
@@ -34,7 +35,7 @@ Movie_AddRowToChannelSums(uint64_t channelSums,PackedRgb24 pixel0,PackedRgb24 pi
   uint64_t result = 0;
   uint16_t sum;
   int lane;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     sum = (uint16_t)(channelSums >> (lane * 16));
     sum = (uint16_t)(sum + Movie_DuplicatedByteLaneShr6(pixel0,lane) + Movie_DuplicatedByteLaneShr6(pixel1,lane) +
                    Movie_DuplicatedByteLaneShr6(pixel2,lane) + Movie_DuplicatedByteLaneShr6(pixel3,lane));
@@ -51,7 +52,7 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
   PackedRgb24 color = 0;
   uint16_t average;
   int lane;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     average = (uint16_t)((uint16_t)(channelSums >> (lane * 16)) >> 6);
     color = color | ((uint32_t)(average > 0xff ? 0xff : average) << (lane * 8));
   }
@@ -59,9 +60,12 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
 }
 
 /* Address: 0x004A8040.
-   Ownership: movie/runtime/playback.
-   Purpose: Handles movie encode flm buffer from frame provider carry-flag result.
-   Local calls: Movie_EncodeFrame4x4Keyframe, Movie_EncodeFrame4x4Delta.
+   Encodes a whole FLM movie into outputBuffer: writes the 0x200-byte MovieFileHeader, encodes the first frame
+   the provider returns as a keyframe and every further frame as a delta against it (the delta encoder keeps
+   the first frame's pixels up to date as its reference), then fills in the frame count and sizes. The
+   provider is called with NULL for the next frame and with a frame to release it; it ends the sequence with CF
+   set and 0xFFFFFFFF. Returns the total byte count with CF clear, or CF set with the provider's error. A
+   leftover of the movie tools: no caller found in src/ or src/generated/image_data.c.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 Movie_EncodeFlmBufferFromFrameProvider
@@ -70,26 +74,28 @@ Movie_EncodeFlmBufferFromFrameProvider
 
 {
   uint32_t packedTimeOrDate;
-  void *frameToReleaseOrNull;
+  void *frameOrStatus; /* the provider's frame, or its CF-set status (0xFFFFFFFF: no more frames) */
   uint32_t byteCount;
   int clearCount;
   uint32_t frameCount;
-  uint32_t *sourcePixels;
+  uint32_t *firstFramePixels;
   uint32_t *outputCursor;
   FrameProviderResult providerResult;
   StatusResult successResult;
   StatusResult failureResult;
   void *firstFrame;
-  
+
   outputCursor = outputBuffer;
-  for (clearCount = 0x80; clearCount != 0; clearCount = clearCount + -1) {
+  for (clearCount = MOVIE_FILE_HEADER_BYTES / 4; clearCount != 0; clearCount--) {
     *outputCursor = 0;
-    outputCursor = outputCursor + 1;
+    outputCursor++;
   }
-  outputCursor[-0x80] = 0x6d6c66;
-  outputCursor[-0x7f] = 0x200;
-  outputCursor[-0x7e] = 1;
-  outputCursor[-0x7d] = 0x20001;
+  /* MovieFileHeader, addressed from the end of the cleared header (dword indices -0x80..-1) */
+  outputCursor[-0x80] = ASSET_MAGIC_FLM;
+  outputCursor[-0x7f] = MOVIE_FILE_HEADER_BYTES; /* allocation size; the final size is stored at the end */
+  outputCursor[-0x7e] = 1; /* format version */
+  outputCursor[-0x7d] = MOVIE_FLM_CONVERTER_VERSION;
+  /* three build stamps at 0x10..0x27, each the time and then the date */
   packedTimeOrDate = g_LocaleGetPackedCurrentTime();
   outputCursor[-0x7c] = packedTimeOrDate;
   outputCursor[-0x7a] = packedTimeOrDate;
@@ -98,51 +104,53 @@ Movie_EncodeFlmBufferFromFrameProvider
   outputCursor[-0x7b] = packedTimeOrDate;
   outputCursor[-0x79] = packedTimeOrDate;
   outputCursor[-0x77] = packedTimeOrDate;
+  /* producer and source name at 0x30 and 0x70 */
   g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -0x74));
   g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -100));
-  *(uint8_t *)(outputCursor + -0x40) = 0;
+  *(uint8_t *)(outputCursor + -0x40) = 0; /* offset 0x100 */
   outputCursor[-0x54] = frameWidthPixels;
   outputCursor[-0x53] = frameHeightPixels;
-  outputCursor[-0x52] = 0;
-  outputCursor[-0x51] = 0;
-  providerResult = frameProvider((void *)0x0);
-  frameToReleaseOrNull = providerResult.frameOrError;
+  outputCursor[-0x52] = 0; /* frame count */
+  outputCursor[-0x51] = 0; /* no audio tracks */
+  providerResult = frameProvider(NULL);
+  frameOrStatus = providerResult.frameOrError;
   if (!providerResult.noFrame) {
     frameCount = 1;
-    sourcePixels = (uint32_t *)((int)frameToReleaseOrNull +
-                           *(int *)((int)frameToReleaseOrNull +
-                                   *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc));
-    byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,sourcePixels);
+    /* a frame's pixels: frame + *(frame + *(frame + 0xB8) + 0xC) */
+    firstFramePixels = (uint32_t *)((int)frameOrStatus +
+                           *(int *)((int)frameOrStatus +
+                                   *(int *)((int)frameOrStatus + 0xb8) + 0xc));
+    byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels);
     outputCursor = (uint32_t *)((int)outputCursor + byteCount);
-    firstFrame = frameToReleaseOrNull;
+    firstFrame = frameOrStatus;
     while( true ) {
-      providerResult = frameProvider((void *)0x0);
-      frameToReleaseOrNull = providerResult.frameOrError;
+      providerResult = frameProvider(NULL);
+      frameOrStatus = providerResult.frameOrError;
       if (providerResult.noFrame) break;
-      frameCount = frameCount + 1;
+      frameCount++;
       byteCount = Movie_EncodeFrame4x4Delta
-                        (frameHeightPixels,frameWidthPixels,outputCursor,sourcePixels,
-                         (uint32_t *)(*(int *)((int)frameToReleaseOrNull +
-                                          *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc) +
-                                 (int)frameToReleaseOrNull));
+                        (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,
+                         (uint32_t *)(*(int *)((int)frameOrStatus +
+                                          *(int *)((int)frameOrStatus + 0xb8) + 0xc) +
+                                 (int)frameOrStatus));
       outputCursor = (uint32_t *)((int)outputCursor + byteCount);
-      frameProvider(frameToReleaseOrNull);
+      frameProvider(frameOrStatus); /* release */
     }
-    frameProvider(firstFrame);
+    frameProvider(firstFrame); /* release */
     byteCount = (int)outputCursor - (int)outputBuffer;
     outputBuffer[0x2e] = frameCount;
-    outputBuffer[0x3f] = 0x10;
-    outputBuffer[1] = byteCount;
-    outputBuffer[0x30] = byteCount;
-    if (frameToReleaseOrNull == (void *)0xffffffff) {
-      outputBuffer[0x30] = outputBuffer[0x30] - 0x200;
+    outputBuffer[0x3f] = 16; /* frame interval in milliseconds */
+    outputBuffer[1] = byteCount; /* allocation size */
+    outputBuffer[0x30] = byteCount; /* video stream bytes once the header is subtracted below */
+    if (frameOrStatus == (void *)0xffffffff) {
+      outputBuffer[0x30] = outputBuffer[0x30] - MOVIE_FILE_HEADER_BYTES;
       successResult.failed = false;
       successResult.valueOrError = byteCount;
       return successResult;
     }
   }
   failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)frameToReleaseOrNull;
+  failureResult.valueOrError = (uint32_t)frameOrStatus;
   return failureResult;
 }
 
@@ -540,9 +548,10 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
 
 /* Address: 0x004A8D50.
-   Ownership: movie/runtime/playback.
-   Purpose: Resets currentFrameIndex and videoStreamOffset to the first frame and stops the active movie audio
-   voice. It does not rebuild a discarded streaming prefix.
+   Resets currentFrameIndex and videoStreamOffset of g_ActiveMovie to the first frame and stops its audio voice,
+   so the movie plays again from the start. It does not rebuild a discarded streaming prefix. Called by
+   FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState when the movie of a frontend page has ended (when the
+   page enables movie playback), which makes it loop.
 */
 void Movie_Rewind(void)
 
@@ -550,12 +559,12 @@ void Movie_Rewind(void)
   MovieRuntime *activeMovie;
   
   activeMovie = g_ActiveMovie;
-  if (g_ActiveMovie != (MovieRuntime *)0x0) {
+  if (g_ActiveMovie != NULL) {
     g_ActiveMovie->currentFrameIndex = 0;
-    activeMovie->videoStreamOffset = 0x200;
-    if (activeMovie->activeAudioBuffer != (IDirectSoundBuffer *)0x0) {
+    activeMovie->videoStreamOffset = MOVIE_FILE_HEADER_BYTES; /* the first frame follows the header */
+    if (activeMovie->activeAudioBuffer != NULL) {
       g_SoundStopVoice(activeMovie->activeAudioBuffer);
-      activeMovie->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
+      activeMovie->activeAudioBuffer = NULL;
     }
   }
   return;
@@ -737,9 +746,12 @@ void IntroMovie_TimerTick(void)
 }
 
 /* Address: 0x004A7030.
-   Ownership: movie/runtime/playback.
-   Purpose: Handles movie encode frame4x4 keyframe.
-   Local calls: MovieColor_ComputeLuma5FromRgb888, MovieColor_ComputeChromaCodeFromRgb888.
+   Encodes a whole frame as FLM 4x4 colour blocks of 8 bytes each (no skip tokens), for the first frame in
+   Movie_EncodeFlmBufferFromFrameProvider, its only caller. A block stores the chroma code of its average
+   colour and 16 per-pixel luma levels above a base luma, the base being the low 5 bits (a token 0..24) of
+   the first dword. A block whose luma range is below 12 uses 3-bit levels in steps of 1 above
+   (min + max - 8) / 2; otherwise bit 31 of the second dword is set and the levels step by 2 above a base
+   4 lower. The levels are packed from the bottom right pixel backwards. Returns the bytes written.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 Movie_EncodeFrame4x4Keyframe
@@ -907,7 +919,7 @@ Movie_EncodeFrame4x4Keyframe
         else if (7 < level3) {
           level3 = 7;
         }
-        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        blockRowPixels = blockRowPixels - frameWidthPixels;
         maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         level4 = maxLumaOrLevel - minLumaOrBaseLuma;
         if (level4 < 0) {
@@ -942,7 +954,7 @@ Movie_EncodeFrame4x4Keyframe
         else if (7 < level0) {
           level0 = 7;
         }
-        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        blockRowPixels = blockRowPixels - frameWidthPixels;
         minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         level1 = minLumaChromaOrLevel - minLumaOrBaseLuma;
         if (level1 < 0) {
@@ -975,7 +987,7 @@ Movie_EncodeFrame4x4Keyframe
         else if (7 < level4) {
           level4 = 7;
         }
-        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        blockRowPixels = blockRowPixels - frameWidthPixels;
         minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         level5 = minLumaChromaOrLevel - minLumaOrBaseLuma;
         if (level5 < 0) {
@@ -1054,7 +1066,7 @@ Movie_EncodeFrame4x4Keyframe
         else if (0xf < (int)wideLevel1) {
           wideLevel1 = 0xf;
         }
-        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        blockRowPixels = blockRowPixels - frameWidthPixels;
         wideLevel2 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
         if ((int)wideLevel2 < 0) {
@@ -1090,7 +1102,7 @@ Movie_EncodeFrame4x4Keyframe
         else if (0xf < (int)wideLevel5) {
           wideLevel5 = 0xf;
         }
-        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        blockRowPixels = blockRowPixels - frameWidthPixels;
         minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         minLumaChromaOrLevel = minLumaChromaOrLevel - minLumaOrBaseLuma;
         if ((int)minLumaChromaOrLevel < 0) {
@@ -1123,7 +1135,7 @@ Movie_EncodeFrame4x4Keyframe
         else if (0xf < (int)wideLevel0) {
           wideLevel0 = 0xf;
         }
-        blockRowPixels = blockRowPixels + -frameWidthPixels;
+        blockRowPixels = blockRowPixels - frameWidthPixels;
         wideLevel1 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
         if ((int)wideLevel1 < 0) {
@@ -1163,10 +1175,10 @@ Movie_EncodeFrame4x4Keyframe
       }
       sourcePixels = blockRowPixels + 4;
       outputCursor = outputCursor + 2;
-      blocksLeftInRow = blocksLeftInRow - 1;
+      blocksLeftInRow--;
     } while (blocksLeftInRow != 0);
     sourcePixels = sourcePixels + frameWidthPixels * 3;
-    blockRowsLeft = blockRowsLeft - 1;
+    blockRowsLeft--;
     blocksLeftInRow = frameWidthPixels >> 2;
   } while (blockRowsLeft != 0);
   return (int)outputCursor - (int)encodedOutput;
@@ -1174,9 +1186,12 @@ Movie_EncodeFrame4x4Keyframe
 
 
 /* Address: 0x004A7770.
-   Ownership: movie/runtime/playback.
-   Purpose: Handles movie encode frame4x4 delta.
-   Local calls: MovieColor_ComputeLuma5FromRgb888, MovieColor_ComputeChromaCodeFromRgb888.
+   Encodes currentFramePixels as an FLM delta frame against previousFramePixels (called by
+   Movie_EncodeFlmBufferFromFrameProvider for every frame after the first). A 4x4 block that does not differ
+   from the reference under g_MovieDeltaRgbHighNibbleMask2Pixels is skipped, runs of skipped blocks being
+   written as MOVIE_TOKEN_SKIP_* tokens; a changed block is copied into the reference, so the reference keeps
+   up with what the decoder shows, and encoded as in Movie_EncodeFrame4x4Keyframe. Returns the bytes written,
+   rounded up to a multiple of 8.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 Movie_EncodeFrame4x4Delta
@@ -1244,19 +1259,19 @@ Movie_EncodeFrame4x4Delta
                *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc + 8) &
                g_MovieDeltaRgbHighNibbleMask2Pixels ^
                *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc + 8));
-      minLumaOrSkipCount = pendingSkipCount + 1;
+      minLumaOrSkipCount = pendingSkipCount + 1; /* the skip run including this block, kept if it is unchanged */
       if ((int)(changedBitsOrQword >> 0x20) != 0 || (int)changedBitsOrQword != 0) {
         if (pendingSkipCount != 0) {
           if (pendingSkipCount < 9) {
-            *(uint8_t *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
+            *(uint8_t *)outputCursor = ((char)pendingSkipCount - 1) * 0x20 | MOVIE_TOKEN_SKIP_SHORT;
             outputCursor = (uint32_t *)((int)outputCursor + 1);
           }
           else if (pendingSkipCount < 0x809) {
-            *(uint16_t *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
+            *(uint16_t *)outputCursor = ((short)pendingSkipCount - 9) * 0x20 | MOVIE_TOKEN_SKIP_MEDIUM;
             outputCursor = (uint32_t *)((int)outputCursor + 2);
           }
           else {
-            *outputCursor = (pendingSkipCount - 0x809) * 0x20 | 0x1b;
+            *outputCursor = (pendingSkipCount - 0x809) * 0x20 | MOVIE_TOKEN_SKIP_LONG;
             outputCursor = outputCursor + 1;
           }
           pendingSkipCount = 0;
@@ -1409,7 +1424,7 @@ Movie_EncodeFrame4x4Delta
           else if (7 < level3) {
             level3 = 7;
           }
-          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          blockRowPixels = blockRowPixels - frameWidthPixels;
           sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
           level4 = sampleLumaOrLevel - minLumaOrBaseLuma;
           if (level4 < 0) {
@@ -1444,7 +1459,7 @@ Movie_EncodeFrame4x4Delta
           else if (7 < level0) {
             level0 = 7;
           }
-          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          blockRowPixels = blockRowPixels - frameWidthPixels;
           maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
           level1 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
           if (level1 < 0) {
@@ -1477,7 +1492,7 @@ Movie_EncodeFrame4x4Delta
           else if (7 < level4) {
             level4 = 7;
           }
-          currentBlockCursor = (uint64_t *)(blockRowPixels + -frameWidthPixels);
+          currentBlockCursor = (uint64_t *)(blockRowPixels - frameWidthPixels);
           maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
           level5 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
           if (level5 < 0) {
@@ -1557,7 +1572,7 @@ Movie_EncodeFrame4x4Delta
           else if (0xf < (int)wideLevel2) {
             wideLevel2 = 0xf;
           }
-          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          blockRowPixels = blockRowPixels - frameWidthPixels;
           wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
           wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
           if ((int)wideLevel3 < 0) {
@@ -1593,7 +1608,7 @@ Movie_EncodeFrame4x4Delta
           else if (0xf < (int)wideLevel6) {
             wideLevel6 = 0xf;
           }
-          blockRowPixels = blockRowPixels + -frameWidthPixels;
+          blockRowPixels = blockRowPixels - frameWidthPixels;
           maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
           maxLumaChromaOrLevel = maxLumaChromaOrLevel - minLumaOrBaseLuma;
           if ((int)maxLumaChromaOrLevel < 0) {
@@ -1626,7 +1641,7 @@ Movie_EncodeFrame4x4Delta
           else if (0xf < (int)wideLevel1) {
             wideLevel1 = 0xf;
           }
-          currentBlockCursor = (uint64_t *)(blockRowPixels + -frameWidthPixels);
+          currentBlockCursor = (uint64_t *)(blockRowPixels - frameWidthPixels);
           wideLevel2 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
           wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
           if ((int)wideLevel2 < 0) {
@@ -1668,23 +1683,23 @@ Movie_EncodeFrame4x4Delta
       }
       pendingSkipCount = minLumaOrSkipCount;
       currentBlockCursor = currentBlockCursor + 2;
-      blocksLeftInRow = blocksLeftInRow - 1;
+      blocksLeftInRow--;
     } while (blocksLeftInRow != 0);
     currentBlockCursor = (uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc);
-    blockRowsLeft = blockRowsLeft - 1;
+    blockRowsLeft--;
     blocksLeftInRow = frameWidthPixels >> 2;
   } while (blockRowsLeft != 0);
   if (pendingSkipCount != 0) {
     if (pendingSkipCount < 9) {
-      *(uint8_t *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
+      *(uint8_t *)outputCursor = ((char)pendingSkipCount - 1) * 0x20 | MOVIE_TOKEN_SKIP_SHORT;
       outputCursor = (uint32_t *)((int)outputCursor + 1);
     }
     else if (pendingSkipCount < 0x809) {
-      *(uint16_t *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
+      *(uint16_t *)outputCursor = ((short)pendingSkipCount - 9) * 0x20 | MOVIE_TOKEN_SKIP_MEDIUM;
       outputCursor = (uint32_t *)((int)outputCursor + 2);
     }
     else {
-      *outputCursor = (pendingSkipCount - 0x809) * 0x20 | 0x1b;
+      *outputCursor = (pendingSkipCount - 0x809) * 0x20 | MOVIE_TOKEN_SKIP_LONG;
       outputCursor = outputCursor + 1;
     }
   }
@@ -2086,33 +2101,36 @@ Movie_DecodeFrame4x4Delta
 
 
 /* Address: 0x004A6FB0.
-   Ownership: movie/runtime/playback.
-   Purpose: Handles movie color compute chroma code from rgb888.
-   Cross-module calls: FixedMath_Vector2AngleAndLengthRegs [core/math/fixed].
+   FLM chroma code of a colour for the block encoders, already shifted left by 5 so the 5-bit luma fits below
+   it: saturation in bits 10-14 and hue in bits 5-9, from the length and angle of the opponent-colour vector
+   ((blue - green) * sqrt(3), green + blue - 2 * red), both scaled by 0x8000. The bytes of PackedRgb24 are
+   blue, green, red from the lowest. Called by Movie_EncodeFrame4x4Keyframe and Movie_EncodeFrame4x4Delta.
 */
 uint32_t __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 
 {
-  uint32_t middleChannel;
+  uint32_t green;
   FixedLengthAngleEaxEdx8 angleAndLength;
   
-  middleChannel = rgb888 >> 8 & 0xff;
+  green = rgb888 >> 8 & 0xff;
+  /* 0xDDB4 = 0x8000 * sqrt(3) */
   angleAndLength = FixedMath_Vector2AngleAndLengthRegs
-                    (((rgb888 & 0xff) - middleChannel) * 0xddb4,
-                     (middleChannel + (rgb888 & 0xff) + (rgb888 >> 0x10 & 0xff) * -2) * 0x8000);
+                    (((rgb888 & 0xff) - green) * 0xddb4,
+                     (green + (rgb888 & 0xff) + (rgb888 >> 0x10 & 0xff) * -2) * 0x8000);
   return angleAndLength.length >> 9 & 0x7c00 | angleAndLength.angle >> 6 & 0x3e0;
 }
 
 
 /* Address: 0x004A7000.
-   Ownership: movie/runtime/playback.
-   Purpose: Handles movie color compute luma5 from rgb888.
+   FLM luma of a colour for the block encoders: the channel sum divided by 24 (the average divided by 8),
+   rounded: ((red + green + blue) * 0x5555 + 2^18) >> 19. A channel sum of 757 or more (near white) gives
+   32, one more than 5 bits; the encoders clamp their per-pixel levels, so it never reaches the stream. Called by
+   Movie_EncodeFrame4x4Keyframe and Movie_EncodeFrame4x4Delta.
 */
 uint32_t __thandor_eax_preserve_ecx_edx MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
 
 {
-  return ((rgb888 & 0xff) + (rgb888 >> 8 & 0xff) + (rgb888 >> 0x10 & 0xff)) * 0x5555 + 0x40000 >>
-         0x13;
+  return (((rgb888 & 0xff) + (rgb888 >> 8 & 0xff) + (rgb888 >> 0x10 & 0xff)) * 0x5555 + 0x40000) >> 19;
 }
 
 
@@ -2193,12 +2211,15 @@ static const short k_MovieChromaSinTerm[32][32] = {
     {0, 27, 54, 79, 101, 118, 132, 140, 143, 140, 132, 118, 101, 79, 54, 27, 0, -29, -55, -80, -102, -120, -133, -141, -144, -141, -133, -120, -102, -80, -55, -29},
 };
 
+/* Not in the original: clamps one colour channel of a table entry to 0..255. */
 static uint32_t MovieColor_ClampChannel(int value)
 {
   return value < 0 ? 0 : (value > 255 ? 255 : (uint32_t)value);
 }
 
-/* Called once at startup. */
+/* Not in the original: fills g_MovieChromaLumaToArgb (the 1024 chroma codes x 32 lumas that
+   Movie_DecodeFrame4x4Delta looks up) from the two tables above. Called once at startup by WinMain (src/platform/bootstrap/main.c),
+   before any movie is decoded. */
 void Movie_BuildChromaLumaTable(void)
 {
   int saturation;

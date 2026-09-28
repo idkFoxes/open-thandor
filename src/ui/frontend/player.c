@@ -11,14 +11,11 @@
 /* Implementation ownership: ui/frontend/player. */
 
 /* Address: 0x00548CD0.
-   Ownership: ui/frontend/player.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[76]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[76] (0x204C). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById, FrontendPlayerMessageBuffer_AppendTripleById,
-   FrontendPlayerMessageBuffer_PublishTextById.
-   Cross-module calls: UiTextControl_UpdateNonEmptyValidity [ui/controls/text],
-   RichTextCommandStream_CopyToNarrow [assets/text/richtext], FrontendCommandQueue_EnqueueLocalPlayerCommand
-   [network/protocol/commands].
+   Handler of UI action 0x204C (slot 76 of g_UiActionPage20InitializedHandlers), the lobby's chatInputEdit:
+   when the typed line is valid, converts it to 0x30 narrow bytes and sends it to every player as
+   FRONTEND_COMMAND_CHAT_BEGIN, four FRONTEND_COMMAND_CHAT_APPEND (12 bytes each) and
+   FRONTEND_COMMAND_CHAT_PUBLISH (without a network session the handlers are called directly), then empties
+   the edit field. The in-game counterpart is InGameUiAction1024_Handler.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
@@ -30,13 +27,14 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
   if ((textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
     RichTextCommandStream_CopyToNarrow
-              (0x30,g_UiSevenSlotCommandPayloadText.textBytes,textEditControl->textPrefix6C);
+              (PLAYER_CHAT_TEXT_BYTES,g_UiSevenSlotCommandPayloadText.textBytes,textEditControl->textPrefix6C);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
+      /* 0xFFFFFF00 is the in-game "all recipients" mask; the lobby handler ignores it */
       FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById(g_LocalPlayerRuntimeId,0,0,0xffffff00);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x1540,0,0,0xffffff00);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CHAT_BEGIN,0,0,0xffffff00);
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -47,7 +45,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (0x15b0,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
                  g_UiSevenSlotCommandPayloadText.triples[0].payloadDword08,
                  g_UiSevenSlotCommandPayloadText.triples[0].payloadDword04);
     }
@@ -60,7 +58,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (0x15b0,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
                  g_UiSevenSlotCommandPayloadText.triples[1].payloadDword08,
                  g_UiSevenSlotCommandPayloadText.triples[1].payloadDword04);
     }
@@ -73,7 +71,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (0x15b0,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
                  g_UiSevenSlotCommandPayloadText.triples[2].payloadDword08,
                  g_UiSevenSlotCommandPayloadText.triples[2].payloadDword04);
     }
@@ -86,7 +84,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (0x15b0,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
                  g_UiSevenSlotCommandPayloadText.triples[3].payloadDword08,
                  g_UiSevenSlotCommandPayloadText.triples[3].payloadDword04);
     }
@@ -95,13 +93,14 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
       FrontendPlayerMessageBuffer_PublishTextById(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x1640,0,0,0);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_CHAT_PUBLISH,0,0,0);
     }
     textEditControl->cursorIndex = 0;
     textEditControl->selectionStart = 0;
     textEditControl->selectionEnd = 0;
+    /* clear the 48 UTF-16 units of the text, two per step */
     textCursor = textEditControl->textPrefix6C;
-    for (remainingPairs = 0x18; remainingPairs != 0; remainingPairs = remainingPairs + -1) {
+    for (remainingPairs = 0x18; remainingPairs != 0; remainingPairs--) {
       textCursor[0] = 0;
       textCursor[1] = 0;
       textCursor = textCursor + 2;
@@ -145,13 +144,10 @@ FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
 
 
 /* Address: 0x00549AF0.
-   Ownership: ui/frontend/player.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[66]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[66] (0x2042). Return datatype is preserved for non-queue direct callers. Typed parameters:
-   p0 source→FrontendConsensusSourceAddress32_V345. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: FrontendPlayerRuntime_SetConsensusValueAndRefresh.
-   Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of UI action 0x2042 (slot 66 of g_UiActionPage20InitializedHandlers), the factionSetupFinishButton
+   check box of the faction setup page: sends its checked state (UI_SELECTABLE_SELECTED_OR_CHECKED or 0) as
+   this player's consensus value with FRONTEND_COMMAND_SET_CONSENSUS_VALUE, or applies it directly without a
+   network session.
 */
 void __thandor_preserve_eax
 FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source)
@@ -159,25 +155,25 @@ FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 sou
 {
   uint32_t consensusValue;
   
-  consensusValue = *(uint32_t *)(source + 0x4c) & 2;
+  /* source + 0x4C is the button's UiSelectableControl.stateFlags */
+  consensusValue = *(uint32_t *)(source + 0x4c) & UI_SELECTABLE_SELECTED_OR_CHECKED;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_SetConsensusValueAndRefresh(g_LocalPlayerRuntimeId,0,0,consensusValue);
   }
   else {
-    FrontendCommandQueue_EnqueueLocalPlayerCommand(0x820,0,0,consensusValue);
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SET_CONSENSUS_VALUE,0,0,consensusValue);
   }
   return;
 }
 
 
 /* Address: 0x0054D3A0.
-   Ownership: ui/frontend/player.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[11]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[11] (0x200B). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks.
+   Handler of FRONTEND_ACTION_KICK_PLAYER (slot 11 of g_UiActionPage20InitializedHandlers), the host lobby's
+   hostLobbyKickPlayerButton: sets the heartbeat expiry of the player selected in the player list to 1 and runs
+   the lobby's expiry pass at once, which removes that player (and counts one extra tick for every other
+   joined player). The first row, the host itself, cannot be kicked.
 */
-
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
 
@@ -185,16 +181,18 @@ FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
   UiNodeBase *parentCursor;
   FrontendPlayerRuntimeRecord **selectedPlayerRuntimeSlot;
   
+  /* rootNode starts as the kick button and walks up to the frontend root */
   parentCursor = (rootNode->base).parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     rootNode = *(UiRootNode **)
                 (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
     parentCursor = *(UiNodeBase **)
               (((FrontendNetworkListsRuntimeView5650 *)rootNode)->opaqueGap0000_4B67 + 8);
   }
-  selectedPlayerRuntimeSlot =
+  /* the list's row slots point at the player blocks */
+  selectedPlayerRuntimeSlot = (FrontendPlayerRuntimeRecord **)
        (((FrontendNetworkListsRuntimeView5650 *)rootNode)->playerRuntimeList).selectedRowSlot;
-  if (selectedPlayerRuntimeSlot !=
+  if (selectedPlayerRuntimeSlot != (FrontendPlayerRuntimeRecord **)
       (((FrontendNetworkListsRuntimeView5650 *)rootNode)->playerRuntimeList).rowSlots) {
     (*selectedPlayerRuntimeSlot)->heartbeatExpiryTicks = 1;
     FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
@@ -205,13 +203,16 @@ FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
 
 
 /* Address: 0x0054F540.
-   Ownership: ui/frontend/player.
-   Purpose: Compacts player blocks and paired frontend command slots after timeout, then sends
-   g_FrontendPlayerRemovalPacket10007 for each removed player token.
-   Local calls: FrontendPlayerRuntime_RecordReadyAndUpdateWaitState.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime],
-   UiTransfer_StagePacketAndSend [network/protocol/transfer].
+   Host after the session start (FRONTEND_NETWORK_STATE_HOST_STARTING), from the frontend root's tick
+   (FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState): counts down every client's heartbeat expiry. A
+   client that timed out is announced with TEXT_ID_NETWORK_PLAYER_REMOVED and dropped by compacting the player
+   blocks and their 0x20-byte command records. Every remaining client is then sent one
+   FRONTEND_PACKET_10007_PLAYER_REMOVAL per removed player, and the ready wait is re-evaluated without a new
+   report (player id -1).
+   NOTE: this C differs from the original for more than one removal or a removal followed by a kept block: the
+   original pushes each removed id on the stack (PUSH [ESI+0x14] at 0x0054F5AC) and pops one per announcement
+   round (0x0054F63C), and leaves the command destination cursor alone on a removal; here one variable holds the
+   last removed id, the command destination and later the packet address.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
@@ -246,11 +247,11 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       *heartbeatTicks = *heartbeatTicks - 1;
       if (*heartbeatTicks == 0) {
         g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
-        removalText = TextResource_Resolve(0xff00);
+        removalText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
         RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText.text);
         FrontendRecentTextHistory_InsertAndRebuild5(removalText.text);
         removedTokenOrCommandDest = (FrontendCommandPacketRecord *)sourceBlock->playerRuntimeId;
-        removedCount = removedCount + 1;
+        removedCount++;
         nextSourceBlock = sourceBlock + 1;
         nextDestBlock = destBlock;
       }
@@ -258,23 +259,24 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
         nextSourceBlock = sourceBlock + 1;
         nextDestBlock = destBlock + 1;
         removedTokenOrCommandDest = (FrontendCommandPacketRecord *)(commandDestOrPacket + 1);
+        /* REP MOVSD of one 0x13B0-byte player block, then of its 8-dword command record */
         copyRemaining = 0x4ec;
         if (nextDestBlock != nextSourceBlock) {
-          for (; nextDestBlock = destBlock, nextSourceBlock = sourceBlock, copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+          for (; nextDestBlock = destBlock, nextSourceBlock = sourceBlock, copyRemaining != 0; copyRemaining--) {
             nextDestBlock->runtimeState00 = nextSourceBlock->runtimeState00;
             sourceBlock = (FrontendPlayerRuntimeRecord *)&nextSourceBlock->peerSequenceToken;
             destBlock = (FrontendPlayerRuntimeRecord *)&nextDestBlock->peerSequenceToken;
           }
           commandSource = commandCursor;
-          for (copyRemaining = 8; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+          for (copyRemaining = 8; copyRemaining != 0; copyRemaining--) {
             (commandDestOrPacket->header).packedTypeAndUnitCount = (commandSource->header).packedTypeAndUnitCount;
             commandSource = (FrontendCommandPacketRecord *)&(commandSource->header).sequenceToken;
             commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)&(commandDestOrPacket->header).sequenceToken;
           }
         }
       }
-      commandCursor = commandCursor + 1;
-      scanRemaining = scanRemaining + -1;
+      commandCursor++;
+      scanRemaining--;
       sourceBlock = nextSourceBlock;
       destBlock = nextDestBlock;
       commandDestOrPacket = (FrontendPlayerRemovalPacket10007 *)removedTokenOrCommandDest;
@@ -290,10 +292,10 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       while (sendRemaining = sendRemaining - 1, sendRemaining != 0) {
         commandDestOrPacket = &g_FrontendPlayerRemovalPacket10007;
         UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
-        endpoint = endpoint + 0x13b;
+        endpoint = endpoint + 0x13b; /* next player block: 0x13B0 bytes */
         removedTokenOrCommandDest = (FrontendCommandPacketRecord *)commandDestOrPacket;
       }
-      removedCount = removedCount + -1;
+      removedCount--;
     } while (removedCount != 0);
     FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(0xffffffff,0,0,0);
   }
@@ -357,16 +359,14 @@ FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
 
 
 /* Address: 0x00544130.
-   Ownership: ui/frontend/player.
-   Purpose: Four-argument frontend callback. In mode bit 1 it marks the matching player's +0x54 dword and clears
-   UI_NODE_SUPPRESSED (0x08) on the briefingBeginButton when every player is ready; in mode bit 0 it suppresses
-   that button for the local player. EAX is
-   preserved. Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK
-   asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId.
+   Handler of FRONTEND_COMMAND_BRIEFING_READY, which a client sends when it presses the mission briefing's
+   "Begin" button (FrontendSessionAction_ApplySpeedOrToggleReady). On the client that pressed it, the button is
+   switched off (UI_NODE_SUPPRESSED). On the host the player is marked ready (readyOrWaitState 1); once every
+   client (player blocks 1..n-1) is ready, the host's own "Begin" button is switched on.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
-          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,uint32_t argument4)
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -383,6 +383,7 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
          FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags | UI_NODE_SUPPRESSED;
     return;
   }
+  /* only the host keeps track; the first test reads the host flag, later ones the remaining count */
   searchRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   hostFlagOrRemaining = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST;
@@ -391,11 +392,12 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
       return;
     }
     if (playerId == playerBlock->playerRuntimeId) break;
-    playerBlock = playerBlock + 1;
-    searchRemaining = searchRemaining - SESSION_NETWORK_ROLE_CLIENT;
+    playerBlock++;
+    searchRemaining = searchRemaining - 1;
     hostFlagOrRemaining = searchRemaining;
   }
   (playerBlock->factionAssignment).readyOrWaitState = 1;
+  /* are all clients ready? block 0 is the host */
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   do {
@@ -406,7 +408,7 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
       return;
     }
     nextBlock = playerBlock + 1;
-    playerBlock = playerBlock + 1;
+    playerBlock++;
   } while ((nextBlock->factionAssignment).readyOrWaitState != 0);
   return;
 }
@@ -520,12 +522,11 @@ FrontendPlayerRuntime_MarkFlag02ById
 
 
 /* Address: 0x00544D50.
-   Ownership: ui/frontend/player.
-   Purpose: Scans the configured frontend player blocks with exact stride 0x13B0, compares playerId against dword
-   +0x14, sets bit 0x01 at +0x60 on the first match, and stores the remaining callback values at +0x8C, +0x88, and
-   +0x84. EAX is preserved. Kept distinct from frontend slot indices, faction runtime indices, network endpoint
-   identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage,
-   body bytes, control flow, and executable data remain unchanged.
+   Handler of FRONTEND_COMMAND_SCENARIO_CATALOG_RECEIVED, which a client sends once it has unpacked the host's
+   scenario catalogue (FrontendScenarioTransfer_ProcessReceivedAsset): sets FRONTEND_PLAYER_STATE_SCENARIO_CATALOG
+   for the player and stores its 96-bit level mask (bit n = level record n, mask 0 holds records 0..31), which
+   FrontendScenarioSession_LoadOrRequestLevelAsset consults later. The command sends the dwords high first.
+   No handler is called directly: only network clients send it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
@@ -543,14 +544,14 @@ FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
-      *roleFlags = *roleFlags | 1;
+      *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_SCENARIO_CATALOG;
       playerBlock->scenarioAvailabilityMask0 = scenarioAvailabilityMask0;
       playerBlock->scenarioAvailabilityMask1 = scenarioAvailabilityMask1;
       playerBlock->scenarioAvailabilityMask2 = scenarioAvailabilityMask2;
       return;
     }
-    playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    playerBlock++;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
   return;
 }
@@ -612,12 +613,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFaction
 
 
 /* Address: 0x0054D000.
-   Ownership: ui/frontend/player.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[5]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[5] (0x2005). Return datatype is preserved for non-queue direct callers. Typed parameters: p0
-   source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout].
+   Handler of UI action 0x2005 (slot 5 of g_UiActionPage20InitializedHandlers), the host lobby's "Back" button
+   (hostLobbyBackButton): returns to the host game setup page, stops the menu room rendering on compact
+   layouts, leaves the network session (local mode, FRONTEND_NETWORK_STATE_IDLE) and shrinks the roster to the
+   local player alone (id 0, empty name, cleared state). The speed slider is reset from
+   g_SessionNetworkTickInterval (the slider shows half the interval).
 */
 void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
 
@@ -629,13 +629,14 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
   FrontendUiImage *frontendUi;
 
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x543c);
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+  UiPageStack_SetActiveIndex
+            (FRONTEND_PAGE_HOST_GAME_SETUP,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   sessionTickInterval = g_SessionNetworkTickInterval;
-  if ((int)g_FramebufferWidth < 0x281) {
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | 0x2000;
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  g_FrontendNetworkState = 0;
+  g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = sessionTickInterval >> 1;
   firstPlayerBlock = g_FrontendPlayerRuntimeBlocks;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
@@ -653,13 +654,10 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
 
 
 /* Address: 0x0054D1B0.
-   Ownership: ui/frontend/player.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[77]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[77] (0x204D). Return datatype is preserved for non-queue direct callers. Typed parameters:
-   p0 source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control
-   flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_CopyExpanded
-   [assets/text/richtext].
+   Handler of UI action 0x204D (slot 77 of g_UiActionPage20InitializedHandlers), the host game setup page's
+   networkSpeedSlider (1..7): shows the speed's name (TEXT_ID_NETWORK_SPEED_BASE + value) in the label beside it
+   and sets g_SessionNetworkTickInterval to twice the slider value. The label buffer is the one named
+   g_FrontendNetworkPlayerCountLabelUtf16.
 */
 void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
 
@@ -667,11 +665,10 @@ void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeB
   TextResolveResult labelText;
   
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
-  labelText = TextResource_Resolve
-                    ((TextResourceId)((int)&((UiNodeVtable *)(uintptr_t)g_SessionNetworkTickInterval)[0x75].rightDrag + 1 /* TODO: Ghidra read a constant as an address */));
+  labelText = TextResource_Resolve(g_SessionNetworkTickInterval + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
             (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.text);
-  g_SessionNetworkTickInterval = (UiNodeVtable *)((int)g_SessionNetworkTickInterval << 1);
+  g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
   return;
 }
 
@@ -1081,14 +1078,12 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
 
 
 /* Address: 0x00560830.
-   Ownership: ui/frontend/player.
-   Purpose: Resolves an army token through g_ArmyRuntimeRebaseBaseMinusOne, clears the player army pointer, then
-   restores captured army flag 0x80 or applies the requested technology operation. It is separate from
-   FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset identifiers. Typed
-   parameters: p3 modelOffset→ArmyRuntimeSavedOffset_V343. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged. Typed
-   parameters: p2 technologyIndexOrRestore→TechnologyIndexOrRestoreCode_V344.
-   Cross-module calls: Technology_ApplyRecordToEntity [gameplay/technology/runtime].
+   Handler of INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE, sent when the technology page of a selected building closes:
+   modelOffset is the building's record as an offset from g_ModelRuntimeRebaseDelta. While the record is live the
+   player's assignmentToken80A0 is cleared, then a positive technologyIndexOrRestore starts that research
+   (Technology_ApplyRecordToEntity, InGameTechnologyResearch_StartSelected), a negative one (cancel,
+   InGameCommandAction_ClearSelectedArmyTokenAndClosePage) gives back the flag 0x80 that
+   FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 took away when the page opened, and 0 does neither.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
@@ -1103,7 +1098,7 @@ FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((modelOffset != 0) &&
      (entity = (GameEntityRuntime *)(modelOffset + g_ModelRuntimeRebaseDelta),
-     (entity->common).ownership.modelNode != (ModelRuntimeNode *)0x0)) {
+     (entity->common).ownership.modelNode != NULL)) {
     playerBlock->assignmentToken80A0 = 0;
     if (technologyIndexOrRestore != 0) {
       if ((int)technologyIndexOrRestore < 0) {
@@ -1120,8 +1115,9 @@ FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
 
 
 /* Address: 0x005608A0.
-   Ownership: ui/frontend/player.
-   Purpose: The exact four-argument callback cleanup and preserved EAX result remain intact.
+   Handler of INGAME_COMMAND_CHAT_SET_RECIPIENTS, the first command of an in-game chat line
+   (InGameUiAction1024_Handler): stores the recipient mask (bits 8+faction and 16+player, 0xFFFFFF00 for all)
+   in the player's packedSelectionState809C and resets the staging write offset in its low byte to 0.
 */
 void __thandor_preserve_eax_edx
 FrontendPlayerTextCommand_SetPackedState
@@ -1135,13 +1131,10 @@ FrontendPlayerTextCommand_SetPackedState
 
 
 /* Address: 0x005608D0.
-   Ownership: ui/frontend/player.
-   Purpose: Uses the low byte of +0x809C as a byte offset into player +0x80C0, writes one three-dword command,
-   advances by 0x0C, clamps the offset to 0x24, and preserves the high state bits. It is separate from
-   FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset identifiers. Typed
-   parameters: p1 value2→FrontendTextCommandValue2_V344, p2 value1→FrontendTextCommandValue1_V344, p3
-   value0→FrontendTextCommandValue0_V344. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Handler of INGAME_COMMAND_CHAT_APPEND: writes 12 more bytes of the player's chat line (value0 first) into the
+   staging text at +0x80C0, at the write offset kept in the low byte of packedSelectionState809C, and advances
+   the offset. The offset stops at 0x24, the last of the four 12-byte pieces of the 0x30-byte line, so extra
+   pieces overwrite it instead of running past the buffer.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerTextCommand_AppendTripleClamped
@@ -1169,13 +1162,10 @@ FrontendPlayerTextCommand_AppendTripleClamped
 
 
 /* Address: 0x00560940.
-   Ownership: ui/frontend/player.
-   Purpose: Tests two UI-selected packed-state bits and network mode, converts the staged narrow text at +0x80C0 to
-   UTF-16, patches two rich-text selectors, and inserts the result into recent-text history. It is separate from
-   FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset identifiers.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], TextResource_Resolve [assets/text/resources],
-   RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8
-   [ui/ingame/runtime].
+   Handler of INGAME_COMMAND_CHAT_PUBLISH, the last command of an in-game chat line: in a network session, when
+   the sender's recipient mask includes the local faction (bit 8 + faction) or the local player (bit 16 +
+   player), shows "<sender>: <text>" (TEXT_ID_CHAT_MESSAGE) from the staged text in the in-game message
+   history. The sender's name is the one kept at +0x80F0 of its block.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerTextCommand_PublishConditionalRichText
@@ -1195,9 +1185,10 @@ FrontendPlayerTextCommand_PublishConditionalRichText
             0x1f)) != 0)) &&
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
+    /* +0x80C0: the 0x30 staged bytes, widened into a 0x60-byte buffer */
     Text_CopyNarrowToUtf16
               (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->reserved80B0_8117 + 0x10);
-    messageText = TextResource_Resolve(0xff07);
+    messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
     stream = messageText.text;
     RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->reserved80B0_8117 + 0x40,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
@@ -1208,42 +1199,41 @@ FrontendPlayerTextCommand_PublishConditionalRichText
 
 
 /* Address: 0x00561F10.
-   Ownership: ui/frontend/player.
-   Purpose: Resolves one player selection entry and applies the callback to it, or applies the callback to every
-   non-null entry when resolution fails. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player
-   identity, and PCK-backed asset identifiers. Typed parameters: p3 selectionEntryToken→RuntimeToken. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_Contains [gameplay/selection/runtime],
-   ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
+   Handler of INGAME_COMMAND_DESTROY_ARMIES (army placement sub-mode 1, clicking an army on the map): an army
+   outside the player's selection is destroyed alone; clicking one of the selected armies destroys every army
+   of the 32-entry selection (ArmyRuntime_DestroyInstanceAndRefreshUi). The army is sent as a saved offset from
+   g_ArmyRuntimeRebaseBaseMinusOne.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerSelection_ApplyEntryOrAll
           (FrontendPlayerIndex playerIndex,uint32_t reservedZero0,uint32_t reservedZero1,
-          RuntimeToken selectionEntryToken)
+          RuntimeToken armyRuntimeOffset)
 
 {
   GameEntityRuntime *targetEntity;
   int remainingEntries;
   WorldRuntimeContext *worldRuntime;
-  SelectionPlayerRuntimeBlock *array;
-  bool isSelected;
-  
-  array = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  targetEntity = (GameEntityRuntime *)(selectionEntryToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+  SelectionPlayerRuntimeBlock *selectionCursor;
+  bool notInSelection;
+
+  selectionCursor = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
+  targetEntity = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
   remainingEntries = 0x20;
-  isSelected = SelectionPointerArray_Contains(targetEntity,&array->selection);
-  if (isSelected) {
+  /* SelectionPointerArray_Contains sets CF (true) when the army is NOT in the selection */
+  notInSelection = SelectionPointerArray_Contains(targetEntity,&selectionCursor->selection);
+  if (notInSelection) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
     return;
   }
+  /* selectionCursor walks the 32 entries, one dword per step */
   do {
-    targetEntity = (array->selection).entries[0];
-    if (targetEntity != (GameEntityRuntime *)0x0) {
+    targetEntity = (selectionCursor->selection).entries[0];
+    if (targetEntity != NULL) {
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
     }
-    array = (SelectionPlayerRuntimeBlock *)((array->selection).entries + 1);
-    remainingEntries = remainingEntries + -1;
+    selectionCursor = (SelectionPlayerRuntimeBlock *)((selectionCursor->selection).entries + 1);
+    remainingEntries--;
   } while (remainingEntries != 0);
   return;
 }
@@ -1324,16 +1314,14 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
 
 
 /* Address: 0x00544770.
-   Ownership: ui/frontend/player.
-   Purpose: Four-argument frontend callback. EAX is preserved. Kept distinct from frontend slot indices, faction
-   runtime indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p0
-   playerId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable data remain
-   unchanged.
-   Cross-module calls: FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls [ui/frontend/settings].
+   Handler of FRONTEND_COMMAND_SET_CONSENSUS_VALUE (FrontendPlayerConsensus_SubmitSelectedValue): stores the
+   player's "Finish" check box state on the faction setup page. When any player has it unchecked the "Next"
+   button is switched off; when all have it checked the host's "Next" button is switched on. Then the page's
+   faction and player controls are refreshed.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_SetConsensusValueAndRefresh
-          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendConsensusValue consensusValue)
 
 {
@@ -1348,14 +1336,14 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
   do {
     if (playerId == playerBlock->playerRuntimeId) {
       (playerBlock->factionAssignment).consensusValue = consensusValue;
-      taskAssignmentRoot = g_FrontendRootNode;
+      taskAssignmentRoot = (UiRootNode *)g_FrontendRootNode;
       combinedConsensus = 0xffffffff;
       remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
       playerBlock = g_FrontendPlayerRuntimeBlocks;
       do {
         combinedConsensus = combinedConsensus & (playerBlock->factionAssignment).consensusValue;
-        playerBlock = playerBlock + 1;
-        remainingBlocks = remainingBlocks - 1;
+        playerBlock++;
+        remainingBlocks--;
       } while (remainingBlocks != 0);
       if (combinedConsensus == 0) {
         nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->nodeFlags;
@@ -1369,19 +1357,18 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
       FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(taskAssignmentRoot);
       return;
     }
-    playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    playerBlock++;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
   return;
 }
 
 
 /* Address: 0x00545490.
-   Ownership: ui/frontend/player.
-   Purpose: Scans the active frontend player blocks at exact 0x13B0 stride and resets the matching 0x64-byte
-   message record write offset to four. Kept distinct from frontend slot indices, faction runtime indices, network
-   endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged.
+   Handler of FRONTEND_COMMAND_CHAT_BEGIN, the first command of a lobby chat line
+   (FrontendPlayerMessage_SubmitSevenSlotText): rewinds the sender's message record so the following
+   FRONTEND_COMMAND_CHAT_APPEND pieces fill its text from the start. In the lobby states (hosting, joined) the
+   players are counted with g_FrontendPlayerRuntimeCount, otherwise with g_FrontendPlayerRuntimeBlockCount.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
@@ -1394,8 +1381,9 @@ FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
 
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   messageBuffer = (uint32_t *)(uintptr_t)g_FrontendPlayerMessageBuffers;
-  if ((g_FrontendNetworkState == 3) ||
-     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
+  if ((g_FrontendNetworkState == FRONTEND_NETWORK_STATE_JOINED) ||
+     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount,
+     g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
   while( true ) {
@@ -1403,23 +1391,19 @@ FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
       return;
     }
     if (playerId == playerBlock->playerRuntimeId) break;
-    remainingBlocks = remainingBlocks - 1;
-    playerBlock = playerBlock + 1;
-    messageBuffer = messageBuffer + 0x19;
+    remainingBlocks--;
+    playerBlock++;
+    messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES / 4;
   }
-  *messageBuffer = 4;
+  *messageBuffer = FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET;
   return;
 }
 
 
 /* Address: 0x00545500.
-   Ownership: ui/frontend/player.
-   Purpose: Scans the active frontend player blocks at exact 0x13B0 stride, advances the matching message record
-   write offset by 0x0C, and appends three dwords. Kept distinct from frontend slot indices, faction runtime
-   indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId.
-   Calling convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters:
-   p1 valueA→FrontendMessageValueA_V344, p2 valueB→FrontendMessageValueB_V344, p3
-   valueC→FrontendMessageValueC_V344.
+   Handler of FRONTEND_COMMAND_CHAT_APPEND: appends 12 bytes of a lobby chat line (valueC first) to the
+   sender's message record and advances its write offset. Unlike the in-game FrontendPlayerTextCommand_
+   AppendTripleClamped the offset is not clamped: a ninth piece would run past the 100-byte record.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerMessageBuffer_AppendTripleById
@@ -1433,9 +1417,10 @@ FrontendPlayerMessageBuffer_AppendTripleById
   int *messageBuffer;
   
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  messageBuffer = g_FrontendPlayerMessageBuffers;
-  if ((g_FrontendNetworkState == 3) ||
-     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
+  messageBuffer = (int *)g_FrontendPlayerMessageBuffers;
+  if ((g_FrontendNetworkState == FRONTEND_NETWORK_STATE_JOINED) ||
+     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount,
+     g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
   while( true ) {
@@ -1443,9 +1428,9 @@ FrontendPlayerMessageBuffer_AppendTripleById
       return;
     }
     if (playerId == playerBlock->playerRuntimeId) break;
-    remainingBlocks = remainingBlocks - 1;
-    playerBlock = playerBlock + 1;
-    messageBuffer = messageBuffer + 0x19;
+    remainingBlocks--;
+    playerBlock++;
+    messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES / 4;
   }
   writeOffset = *messageBuffer;
   *messageBuffer = *messageBuffer + 0xc;
@@ -1457,15 +1442,9 @@ FrontendPlayerMessageBuffer_AppendTripleById
 
 
 /* Address: 0x00545590.
-   Ownership: ui/frontend/player.
-   Purpose: Finds the player message record, converts up to 0x60 narrow bytes from record +0x04 to UTF-16, patches
-   player name and text into resource 0xFF07, and inserts the result into recent history. Kept distinct from
-   frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset identifiers. Typed
-   parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable
-   data remain unchanged.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], TextResource_Resolve [assets/text/resources],
-   RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5
-   [ui/frontend/runtime].
+   Handler of FRONTEND_COMMAND_CHAT_PUBLISH, the last command of a lobby chat line: widens the sender's collected
+   text to UTF-16 and shows "<sender>: <text>" (TEXT_ID_CHAT_MESSAGE, the sender's player name) in the lobby's
+   message history.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerMessageBuffer_PublishTextById
@@ -1480,8 +1459,9 @@ FrontendPlayerMessageBuffer_PublishTextById
   
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   messageBuffer = g_FrontendPlayerMessageBuffers;
-  if ((g_FrontendNetworkState == 3) ||
-     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
+  if ((g_FrontendNetworkState == FRONTEND_NETWORK_STATE_JOINED) ||
+     (remainingBlocks = g_FrontendPlayerRuntimeBlockCount,
+     g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
   while( true ) {
@@ -1489,12 +1469,14 @@ FrontendPlayerMessageBuffer_PublishTextById
       return;
     }
     if (playerId == playerBlock->playerRuntimeId) break;
-    remainingBlocks = remainingBlocks - 1;
-    playerBlock = playerBlock + 1;
-    messageBuffer = messageBuffer + 100;
+    remainingBlocks--;
+    playerBlock++;
+    messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES;
   }
-  Text_CopyNarrowToUtf16(0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,(uint8_t *)(messageBuffer + 4));
-  messageText = TextResource_Resolve(0xff07);
+  /* the 0x30 text bytes, widened into a 0x60-byte buffer */
+  Text_CopyNarrowToUtf16(0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,
+                         (uint8_t *)(messageBuffer + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET));
+  messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
   stream = messageText.text;
   RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,stream);
   RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
@@ -1504,10 +1486,12 @@ FrontendPlayerMessageBuffer_PublishTextById
 
 
 /* Address: 0x0054EBD0.
-   Ownership: ui/frontend/player.
-   Purpose: Decrements remote player expiry counters, compacts exact 0x13B0-byte player blocks, adjusts selection
-   state, formats the new count, and refreshes the player list. Preserved EDX:EAX is incidental.
-   Cross-module calls: UiPointerList_RefreshSelectionAndQueueAction [ui/controls/lists].
+   Host lobby (FRONTEND_NETWORK_STATE_HOSTING), from the frontend root's tick
+   (FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState) and from the kick button
+   (FrontendPlayerSetup_ExpireSelectedRuntimeBlock): counts down the heartbeat expiry of every joined
+   player (rows 1..n-1; row 0 is the host) and drops those that reached 0 by compacting the 0x13B0-byte player
+   blocks, keeping the list selection on the same player (or the host row when the selected one left). Then the
+   player count text is rewritten and the list refreshed.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
@@ -1541,7 +1525,7 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
         nextSourceBlock = sourceBlock + 1;
         rowCountField = &(frontendRoot->playerRuntimeList).rowCount;
         *rowCountField = *rowCountField - 1;
-        g_FrontendPlayerRuntimeCount = g_FrontendPlayerRuntimeCount + -1;
+        g_FrontendPlayerRuntimeCount--;
         selectedSlot = (frontendRoot->playerRuntimeList).selectedRowSlot;
         if (rowSlotCursor == selectedSlot) {
           (frontendRoot->playerRuntimeList).selectedRowSlot =
@@ -1549,7 +1533,7 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
         }
         else if (rowSlotCursor <= selectedSlot) {
           selectedSlotField = &(frontendRoot->playerRuntimeList).selectedRowSlot;
-          *selectedSlotField = *selectedSlotField + -1;
+          *selectedSlotField = *selectedSlotField - 1;
         }
       }
       else {
@@ -1559,14 +1543,15 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
         if (nextDestBlock != nextSourceBlock) {
           nextSourceBlock = sourceBlock;
           nextDestBlock = destBlock;
-          for (copyRemaining = 0x4ec; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+          /* REP MOVSD of one 0x13B0-byte player block */
+          for (copyRemaining = 0x4ec; copyRemaining != 0; copyRemaining--) {
             nextDestBlock->runtimeState00 = nextSourceBlock->runtimeState00;
             nextSourceBlock = (FrontendPlayerRuntimeRecord *)&nextSourceBlock->peerSequenceToken;
             nextDestBlock = (FrontendPlayerRuntimeRecord *)&nextDestBlock->peerSequenceToken;
           }
         }
       }
-      blocksRemaining = blocksRemaining + -1;
+      blocksRemaining--;
       sourceBlock = nextSourceBlock;
       destBlock = nextDestBlock;
     } while (blocksRemaining != 0);

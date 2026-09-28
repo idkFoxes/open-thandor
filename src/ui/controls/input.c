@@ -265,10 +265,10 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBas
 
 
 /* Address: 0x004B4420.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B3EF0[12]@004B3EF0.
-   Local calls: UiNode_DefaultKeyboardEventMoveFocusNext.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   keyboardEvent slot of g_UiRangeSliderControlVtable. Left/Right (Down/Up for a vertical slider) move the
+   value by stepValue, with Ctrl straight to the minimum/maximum; each step plays the click sound, queues
+   actionId and redraws. Other keys, and all keys while suppressed, go to the default handler, which passes
+   them on. CF clear when the key was consumed.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiRangeSliderControl_HandleKeyboard
@@ -284,24 +284,23 @@ UiRangeSliderControl_HandleKeyboard
     delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
-  /* sliderFlags bit 0 selects the key pair (0x10019/0x10011 instead of 0x10014/0x10016). */
-  if ((control->sliderFlags & 1) == 0) {
-    decreaseKey = 0x10014;
-    increaseKey = 0x10016;
+  if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
+    decreaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT);
+    increaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT);
   }
   else {
-    decreaseKey = 0x10019;
-    increaseKey = 0x10011;
+    decreaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN);
+    increaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP);
   }
   if (keyCode == decreaseKey) {
-    if (((keyboardStateMask & 0xc) != 0) ||
+    if (((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) ||
        (adjustedSliderValue = control->value - control->stepValue,
        adjustedSliderValue < control->minimumValue)) {
       adjustedSliderValue = control->minimumValue;
     }
   }
   else if (keyCode == increaseKey) {
-    if (((keyboardStateMask & 0xc) != 0) ||
+    if (((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) ||
        (adjustedSliderValue = control->value + control->stepValue,
        control->maximumValue < adjustedSliderValue)) {
       adjustedSliderValue = control->maximumValue;
@@ -312,7 +311,7 @@ UiRangeSliderControl_HandleKeyboard
     return delegatedResult;
   }
   control->value = adjustedSliderValue;
-  if (((control->sliderFlags & 4) != 0) && (control->clickSound != (DirectSoundVoiceSet *)0x0)) {
+  if (((control->sliderFlags & UI_RANGE_SLIDER_CLICK_SOUND) != 0) && (control->clickSound != NULL)) {
     g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
   }
   UiActionQueue_Enqueue(control->actionId,&control->base);
@@ -322,10 +321,10 @@ UiRangeSliderControl_HandleKeyboard
 
 
 /* Address: 0x004B9CB0.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[12]@004B9530.
-   Local calls: UiNode_DefaultKeyboardEventMoveFocusNext.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   keyboardEvent slot of g_UiFocusProxyControlVtable. Hands the key to the framed focus child and redraws
+   when the child consumed it. Tab goes to the default handler (passed on); with UI_LABEL_SWALLOW_CHARACTERS
+   typed characters with bit 0x10 or 0x20 set are consumed without reaching the child. CF clear when
+   consumed.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiSingleLineTextControl_ForwardKeyboardEventToChild
@@ -333,20 +332,20 @@ UiSingleLineTextControl_ForwardKeyboardEventToChild
 
 {
   UiNodeBase *childControl;
-  bool childHandledEvent;
   bool eventResult;
-  
+
   childControl = control->focusChild;
+  /* key codes without a high word are typed characters (Keyboard_OnChar) and KEYBOARD_KEY_CODE_SPACE */
   if ((keyCode & 0xffff0000) == 0) {
-    if (((control->labelFlags & 0x8000) != 0) && ((keyCode & 0x30) != 0)) {
+    if (((control->labelFlags & UI_LABEL_SWALLOW_CHARACTERS) != 0) && ((keyCode & 0x30) != 0)) {
       return false;
     }
   }
-  else if (keyCode == 0x10002) {
-    eventResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,0x10002,&control->base);
+  else if (keyCode == KEYBOARD_KEY_CODE_TAB) {
+    eventResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,KEYBOARD_KEY_CODE_TAB,&control->base);
     return eventResult;
   }
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     eventResult = childControl->vtable->keyboardEvent(keyboardStateMask,keyCode,childControl);
     if (!eventResult) {
       UiNode_InvalidateRoot(&control->base);
@@ -358,10 +357,10 @@ UiSingleLineTextControl_ForwardKeyboardEventToChild
 
 
 /* Address: 0x004B9DA0.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[17]@004B9530.
-   Local calls: UiNode_ForwardPointerWheelToParent.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   pointerWheel slot of g_UiFocusProxyControlVtable. Forwards the wheel to the focus child, lending it the
+   keyboard focus for the call, and redraws. UI_LABEL_WHEEL_FORWARD_ACTIVE guards against re-entry: a
+   wheel event that comes back while forwarding (a child passing it to its parent) goes on to this
+   control's parent instead.
 */
 void __thandor_preserve_eax_edx
 UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
@@ -370,11 +369,11 @@ UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
 
 {
   UiNodeBase *childControl;
-  
-  if ((control->labelFlags & 0x400) == 0) {
+
+  if ((control->labelFlags & UI_LABEL_WHEEL_FORWARD_ACTIVE) == 0) {
     childControl = control->focusChild;
-    control->labelFlags = control->labelFlags | 0x400;
-    if (childControl != (UiNodeBase *)0x0) {
+    control->labelFlags = control->labelFlags | UI_LABEL_WHEEL_FORWARD_ACTIVE;
+    if (childControl != NULL) {
       if (&control->base == g_UiKeyboardFocusNode) {
         g_UiKeyboardFocusNode = childControl;
         childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -386,7 +385,7 @@ UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
       }
       UiNode_InvalidateRoot(&control->base);
     }
-    control->labelFlags = control->labelFlags & 0xfffffbff;
+    control->labelFlags = control->labelFlags & ~UI_LABEL_WHEEL_FORWARD_ACTIVE;
     return;
   }
   UiNode_ForwardPointerWheelToParent(wheelDelta,pointerY,pointerX,&control->base);
@@ -395,21 +394,21 @@ UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
 
 
 /* Address: 0x004B07F0.
-   Ownership: ui/controls/input.
-   Purpose: Default pointer-move handler; returns zero in EAX, which callers ignore.
+   Default pointerMove slot of most UI vtables (range sliders, labels, lists, ...): the node asks for
+   cursor frame 0 (GRAPHICS_CURSOR_FRAME_ARROW).
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
-  return 0;
+  return GRAPHICS_CURSOR_FRAME_ARROW;
 }
 
 
 /* Address: 0x004B42D0.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B3EF0[8]@004B3EF0.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightDrag slot of g_UiRangeSliderControlVtable. While the thumb is dragged, maps the pointer position
+   (thumb centre) along the track onto minimumValue..maximumValue, rounded to nearest and mirrored for
+   reversed sliders, then queues actionId and redraws.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiRangeSliderControl_UpdateValueFromPointer
@@ -423,9 +422,10 @@ UiRangeSliderControl_UpdateValueFromPointer
   uint32_t trackLength;
   TextureSizeResult thumbSize;
 
-  if ((control->sliderFlags & 2) != 0) {
-    if ((control->sliderFlags & 1) == 0) {
-      thumbSize = g_GraphicsTextureSourceGetLogicalSize(0xaf,g_UiWindowTextureSource);
+  if ((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) != 0) {
+    if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
+      thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_HORIZONTAL_THUMB,
+                                                        g_UiWindowTextureSource);
       trackLength = control->base.layoutWidth - thumbSize.logicalWidthPixels;
       if (trackLength == 0) {
         trackLength = 1;
@@ -436,12 +436,13 @@ UiRangeSliderControl_UpdateValueFromPointer
       }
       scaledOffset = (uint64_t)pointerOffset *
               (uint64_t)(uint32_t)(control->maximumValue - control->minimumValue);
+      /* offset * range / trackLength, plus one when the remainder is more than half the track */
       sliderValue = control->minimumValue +
                (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) + (int)(scaledOffset / trackLength);
       if (control->maximumValue < sliderValue) {
         sliderValue = control->maximumValue;
       }
-      if ((control->sliderFlags & 8) != 0) {
+      if ((control->sliderFlags & UI_RANGE_SLIDER_REVERSED) != 0) {
         sliderValue = control->maximumValue - (sliderValue - control->minimumValue);
       }
       control->value = sliderValue;
@@ -449,7 +450,8 @@ UiRangeSliderControl_UpdateValueFromPointer
       UiNode_InvalidateRoot(&control->base);
       return;
     }
-    thumbSize = g_GraphicsTextureSourceGetLogicalSize(0xb7,g_UiWindowTextureSource);
+    thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_THUMB,
+                                                      g_UiWindowTextureSource);
     trackLength = control->base.layoutHeight - thumbSize.logicalHeightPixels;
     if (trackLength == 0) {
       trackLength = 1;
@@ -465,7 +467,7 @@ UiRangeSliderControl_UpdateValueFromPointer
     if (control->maximumValue < sliderValue) {
       sliderValue = control->maximumValue;
     }
-    if ((control->sliderFlags & 8) != 0) {
+    if ((control->sliderFlags & UI_RANGE_SLIDER_REVERSED) != 0) {
       sliderValue = control->maximumValue - (sliderValue - control->minimumValue);
     }
     control->value = sliderValue;
@@ -477,9 +479,9 @@ UiRangeSliderControl_UpdateValueFromPointer
 
 
 /* Address: 0x004B4570.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B3EF0[17]@004B3EF0.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   pointerWheel slot of g_UiRangeSliderControlVtable. Unless the thumb is being dragged, each wheel notch
+   moves the value by stepValue * g_UiRangeSliderDragScale, clamped to the range; then actionId is queued
+   and the slider redrawn.
 */
 void __thandor_void_preserve_eax_ecx
 UiRangeSliderControl_HandlePointerWheel
@@ -489,7 +491,7 @@ UiRangeSliderControl_HandlePointerWheel
 {
   int32_t adjustedSliderValue;
 
-  if ((((control->sliderFlags & 2) == 0) && ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0)
+  if ((((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) == 0) && ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0)
       ) && (wheelDelta != 0)) {
     adjustedSliderValue =
          control->value + wheelDelta * g_UiRangeSliderDragScale * control->stepValue;
@@ -508,9 +510,10 @@ UiRangeSliderControl_HandlePointerWheel
 
 
 /* Address: 0x004B9580.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[0]@004B9530; g_UiNodeVtable_00517FC0[0]@00517FC0.
-   Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
+   relocate slot of g_UiFocusProxyControlVtable and g_UiCommandVisibilitySingleLineTextVtable. A label with
+   a focus child becomes a fallback focus target in the child's place (the child loses its focus-target
+   flags), the children and the focusChild offset are relocated, and a serialized text offset
+   (UI_LABEL_TEXT_NEEDS_RELOCATION) is turned into a pointer once.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSingleLineTextControl_RelocateChild
@@ -524,29 +527,29 @@ UiSingleLineTextControl_RelocateChild
 
   if ((((controlReg->base).nodeFlags &
         (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) &&
-     (controlReg->focusChild != (UiNodeBase *)0x0)) {
+     (controlReg->focusChild != NULL)) {
     (controlReg->base).nodeFlags = (controlReg->base).nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   UiContainer_RelocateChildren(relocationDelta,&controlReg->base);
-  if (controlReg->focusChild != (UiNodeBase *)0x0) {
+  if (controlReg->focusChild != NULL) {
     controlReg->focusChild =
          (UiNodeBase *)((int)&(controlReg->focusChild)->nextSibling + relocationDelta);
     childNodeFlagsField = &(controlReg->focusChild)->nodeFlags;
     *childNodeFlagsField =
          *childNodeFlagsField & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
-  if ((control->labelFlags & 0x20) != 0) {
+  if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
     control->text = (uint16_t *)((int)control->text + relocationDelta);
-    control->labelFlags = control->labelFlags & 0xffffffdf;
+    control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
   return;
 }
 
 
 /* Address: 0x004B99A0.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[4]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightPress slot of g_UiFocusProxyControlVtable. Forwards the left press to the focus child; if this
+   control has the keyboard focus, the child holds it for the duration of the call so it acts as focused.
+   Redraws afterwards.
 */
 void __thandor_preserve_eax_edx
 UiSingleLineTextControl_ForwardNonRightPressToChild
@@ -557,7 +560,7 @@ UiSingleLineTextControl_ForwardNonRightPressToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -574,9 +577,8 @@ UiSingleLineTextControl_ForwardNonRightPressToChild
 
 
 /* Address: 0x004B9A00.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[5]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightRelease slot of g_UiFocusProxyControlVtable. Forwards the left release to the focus child,
+   lending it the keyboard focus for the call like UiSingleLineTextControl_ForwardNonRightPressToChild.
 */
 void __thandor_preserve_eax_edx
 UiSingleLineTextControl_ForwardNonRightReleaseToChild
@@ -587,7 +589,7 @@ UiSingleLineTextControl_ForwardNonRightReleaseToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -604,9 +606,9 @@ UiSingleLineTextControl_ForwardNonRightReleaseToChild
 
 
 /* Address: 0x004B9A60.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[6]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   rightPress slot of g_UiFocusProxyControlVtable. Forwards the right press to the focus child (lending it
+   the keyboard focus), but not when the child's parent is this control: most rightPress handlers
+   (UiNode_ForwardRightPressToParent) would hand the press straight back.
 */
 void __thandor_preserve_eax_edx
 UiSingleLineTextControl_ForwardRightPressToChild
@@ -617,7 +619,7 @@ UiSingleLineTextControl_ForwardRightPressToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -636,9 +638,8 @@ UiSingleLineTextControl_ForwardRightPressToChild
 
 
 /* Address: 0x004B9AD0.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[7]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   rightRelease slot of g_UiFocusProxyControlVtable. Forwards the right release to the focus child,
+   lending it the keyboard focus for the call.
 */
 void __thandor_preserve_eax_edx
 UiSingleLineTextControl_ForwardRightReleaseToChild
@@ -649,7 +650,7 @@ UiSingleLineTextControl_ForwardRightReleaseToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -666,9 +667,8 @@ UiSingleLineTextControl_ForwardRightReleaseToChild
 
 
 /* Address: 0x004B9B30.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[8]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightDrag slot of g_UiFocusProxyControlVtable. Forwards the left-button drag to the focus child,
+   lending it the keyboard focus for the call.
 */
 void __thandor_preserve_eax_edx
 UiSingleLineTextControl_ForwardNonRightDragToChild
@@ -679,7 +679,7 @@ UiSingleLineTextControl_ForwardNonRightDragToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -696,9 +696,8 @@ UiSingleLineTextControl_ForwardNonRightDragToChild
 
 
 /* Address: 0x004B9B90.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[9]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   rightDrag slot of g_UiFocusProxyControlVtable. Forwards the right-button drag to the focus child,
+   lending it the keyboard focus for the call.
 */
 void __thandor_preserve_eax_edx
 UiSingleLineTextControl_ForwardRightDragToChild
@@ -709,7 +708,7 @@ UiSingleLineTextControl_ForwardRightDragToChild
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -726,9 +725,8 @@ UiSingleLineTextControl_ForwardRightDragToChild
 
 
 /* Address: 0x004B9BF0.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[10]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   pointerMove slot of g_UiFocusProxyControlVtable. Returns the focus child's cursor frame (asked with the
+   keyboard focus lent to it), or the arrow (0) without a child.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiSingleLineTextControl_ForwardPointerMoveToChild
@@ -740,7 +738,7 @@ UiSingleLineTextControl_ForwardPointerMoveToChild
   
   cursorFrame = 0;
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -757,9 +755,9 @@ UiSingleLineTextControl_ForwardPointerMoveToChild
 
 
 /* Address: 0x004B9C50.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[11]@004B9530.
-   Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
+   hitTest slot of g_UiFocusProxyControlVtable. A hit on the focus child is reported as this control, so
+   the proxy receives the input and forwards it; hits on the child or the control itself count as
+   misses (UI_NODE_NONE) while the child is suppressed.
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiSingleLineTextControl_HitTestChildProxy
@@ -773,14 +771,14 @@ UiSingleLineTextControl_HitTestChildProxy
   if (hitNode == control->focusChild) {
     returnedNode = &control->base;
     if ((hitNode->nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-      returnedNode = (UiNodeBase *)0xffffffff;
+      returnedNode = UI_NODE_NONE;
     }
   }
   else {
     returnedNode = hitNode;
-    if (((hitNode == &control->base) && (control->focusChild != (UiNodeBase *)0x0)) &&
+    if (((hitNode == &control->base) && (control->focusChild != NULL)) &&
        (((control->focusChild)->nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
-      returnedNode = (UiNodeBase *)0xffffffff;
+      returnedNode = UI_NODE_NONE;
     }
   }
   return returnedNode;
@@ -788,9 +786,8 @@ UiSingleLineTextControl_HitTestChildProxy
 
 
 /* Address: 0x004B9D40.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[16]@004B9530.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   tick slot of g_UiFocusProxyControlVtable. Forwards the per-frame tick to the focus child, lending it the
+   keyboard focus for the call, and redraws.
 */
 void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control)
 
@@ -798,7 +795,7 @@ void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSin
   UiNodeBase *childControl;
   
   childControl = control->focusChild;
-  if (childControl != (UiNodeBase *)0x0) {
+  if (childControl != NULL) {
     if (&control->base == g_UiKeyboardFocusNode) {
       g_UiKeyboardFocusNode = childControl;
       childControl->nodeFlags = childControl->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
@@ -815,10 +812,9 @@ void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSin
 
 
 /* Address: 0x004BCA70.
-   Ownership: ui/controls/input.
-   Purpose: Opaque-hit-tests pointer motion and forwards pointerMove to a matching child when child routing is
-   enabled.
-   Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
+   pointerMove slot of the image-control vtable at 0x004BC570. Over an opaque pixel of the image the arrow
+   is shown. Over a transparent pixel of a persistent-activation image, a child under the pointer supplies
+   the cursor; without one, UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE while no image control is hovered.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiImageControl_PointerMove
@@ -827,26 +823,25 @@ UiImageControl_PointerMove
 {
   UiImageControl *hitControl;
   GraphicsCursorFrameIndex cursorFrame;
-  bool opaquePixelHit;
-  bool opaqueTestResult;
-  
+  bool overOpaquePixel;
+
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & 0x40) == 0) {
-      opaqueTestResult = g_GraphicsTextureSourceTestOpaquePixel
+    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
+      overOpaquePixel = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->normalSubresource,
                          control->textureSource);
-      if (opaqueTestResult) {
-        return 0;
+      if (overOpaquePixel) {
+        return GRAPHICS_CURSOR_FRAME_ARROW;
       }
     }
     else {
-      opaqueTestResult = g_GraphicsTextureSourceTestOpaquePixel
+      overOpaquePixel = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);
-      if (opaqueTestResult) {
-        return 0;
+      if (overOpaquePixel) {
+        return GRAPHICS_CURSOR_FRAME_ARROW;
       }
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
@@ -857,12 +852,12 @@ UiImageControl_PointerMove
                           (pointerY,pointerX,(UiNodeBase *)hitControl);
         return cursorFrame;
       }
-      if (g_UiImageControlHoverTarget == (UiImageControl *)0x0) {
-        return 8;
+      if (g_UiImageControlHoverTarget == NULL) {
+        return UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE;
       }
     }
   }
-  return 0;
+  return GRAPHICS_CURSOR_FRAME_ARROW;
 }
 
 
@@ -875,7 +870,7 @@ static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shif
   int lane;
 
   lanes = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     lanes = lanes |
             (uint64_t)(uint16_t)((uint16_t)(((pixel >> (lane * 8)) & 0xff) * 0x101) >> shift) << (lane * 16);
   }
@@ -889,7 +884,7 @@ static __inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right)
   int shift;
 
   sum = 0;
-  for (shift = 0; shift < 64; shift = shift + 16) {
+  for (shift = 0; shift < 64; shift += 16) {
     sum = sum | (uint64_t)(uint16_t)((uint16_t)(left >> shift) + (uint16_t)(right >> shift)) << shift;
   }
   return sum;
@@ -904,7 +899,7 @@ static __inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift
   int lane;
 
   packed = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     laneValue = (uint16_t)(lanes >> (lane * 16)) >> shift;
     packed = packed | (uint32_t)(0xff < laneValue ? 0xff : laneValue) << (lane * 8);
   }
@@ -937,8 +932,11 @@ static __inline PackedArgb32 UiScaler_BlendBilinear
 
 
 /* Address: 0x00515CC0.
-   Ownership: ui/controls/input.
-   Purpose: Handles ui selection geometry control draw clipped.
+   drawClipped slot of g_UiSelectionGeometryControlVtable. Fills the node (clipped) with its texture,
+   rotated by rotationAngle and scaled by sampleScaleQ12 about sourceOrigin: every screen pixel is mapped
+   back to a Q12 source position and bilinearly filtered from the 2x2 texels around it (texels outside the
+   texture count as 0), for 16- and 32-bit framebuffers. Only direct-colour subresources (negative
+   paletteIndex) are drawn.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSelectionGeometryControl_DrawClipped
@@ -980,6 +978,7 @@ UiSelectionGeometryControl_DrawClipped
   int remainingColumns;
   uint8_t *destRowStart;
 
+  /* intersect the clip rectangle with the node (clipRight/clipBottom act as the left/top bound here) */
   if (clipRight < (control->base).left) {
     clipRight = (control->base).left;
   }
@@ -995,7 +994,7 @@ UiSelectionGeometryControl_DrawClipped
   clipWidth = clipLeft - clipRight;
   if (((clipWidth != 0 && clipRight <= clipLeft) &&
       (clipHeightOrColumnTerm = clipTop - clipBottom, clipHeightOrColumnTerm != 0 && clipBottom <= clipTop)) &&
-     (control->textureSource != (GraphicsTextureSourceAsset *)0x0)) {
+     (control->textureSource != NULL)) {
     rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
     cosTermOrRowStepV = -((int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c);
     rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
@@ -1022,6 +1021,8 @@ UiSelectionGeometryControl_DrawClipped
              stepTermOrRowStartU * 2 * (((control->base).left + (control->base).right >> 1) - clipRight));
     sourceTexture = control->textureSource;
     subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
+    /* the subresource entry fields (paletteIndex, dataOffset, pixelWidth, pixelHeight) are read relative to
+       the asset's address anchor */
     if (*(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x20)) < 0)
     {
       sourceWidth = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x10))
@@ -1097,12 +1098,12 @@ UiSelectionGeometryControl_DrawClipped
               sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
               sourceV = sourceV + pixelStepV;
               destPixel = destPixel + 2;
-              remainingColumns = remainingColumns + -1;
+              remainingColumns = remainingColumns - 1;
             } while (remainingColumns != 0);
             sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
             sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
             destPixel = destRowStart + g_FramebufferRowStrideBytes;
-            clipTop = clipTop + -1;
+            clipTop = clipTop - 1; /* now the remaining row count */
             stepTermOrRowStartU = sinTermOrSourceU;
             stepTermOrRowStartV = sourceV;
             remainingColumns = clipWidth;
@@ -1163,12 +1164,12 @@ UiSelectionGeometryControl_DrawClipped
               sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
               sourceV = sourceV + pixelStepV;
               destPixel = destPixel + 4;
-              remainingColumns = remainingColumns + -1;
+              remainingColumns = remainingColumns - 1;
             } while (remainingColumns != 0);
             sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
             sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
             destPixel = destRowStart + g_FramebufferRowStrideBytes;
-            clipTop = clipTop + -1;
+            clipTop = clipTop - 1; /* now the remaining row count */
             stepTermOrRowStartU = sinTermOrSourceU;
             stepTermOrRowStartV = sourceV;
             remainingColumns = clipWidth;
@@ -1184,9 +1185,9 @@ UiSelectionGeometryControl_DrawClipped
 
 
 /* Address: 0x005161A0.
-   Ownership: ui/controls/input.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00515C70[4]@00515C70.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   nonRightPress slot of g_UiSelectionGeometryControlVtable. Maps the clicked screen point back into
+   texture space with the same rotation/scale as UiSelectionGeometryControl_DrawClipped, stores it in
+   selectedSourceYQ12/XQ12 and queues actionId so the handler can read the picked source position.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
@@ -1578,8 +1579,8 @@ UiPointer_DispatchMotionAndWheel
 
 
 /* Address: 0x004B09F0.
-   Ownership: ui/controls/input.
-   Purpose: Forwards pointerWheel to node->parent when one exists.
+   Default pointerWheel slot of most UI vtables: passes the wheel event up to the parent node (if any), so
+   it reaches the nearest ancestor that handles the wheel.
 */
 void __thandor_preserve_eax_edx
 UiNode_ForwardPointerWheelToParent
@@ -1590,7 +1591,7 @@ UiNode_ForwardPointerWheelToParent
   UiNodeBase *parentControl;
   
   parentControl = control->parent;
-  if (parentControl != (UiNodeBase *)0xffffffff) {
+  if (parentControl != UI_NODE_NONE) {
     parentControl->vtable->pointerWheel(wheelDelta,pointerY,pointerX,parentControl);
   }
   return;
@@ -1598,10 +1599,9 @@ UiNode_ForwardPointerWheelToParent
 
 
 /* Address: 0x004B08C0.
-   Ownership: ui/controls/input.
-   Purpose: Shared three-argument keyboard fallback in vtable slot +0x30. It always returns CF set (event not
-   handled): the original compares the event with 0x00010002 but then sets CF unconditionally (CMP; STC; RET 0xc),
-   so the focus move its name suggests never happens.
+   Default keyboardEvent slot of many UI vtables, also the fallback of the slider and focus-proxy handlers.
+   It always returns CF set (key not consumed): the original compares the key with KEYBOARD_KEY_CODE_TAB but
+   then sets CF unconditionally (CMP; STC; RET 0xc), so the focus move its name suggests never happens.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiNode_DefaultKeyboardEventMoveFocusNext

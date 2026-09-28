@@ -21,6 +21,27 @@
    for exactly one tile extent from the tile origin. */
 #define GRAPHICS_TILED_BLIT_ONE_TILE (-0x80000000)
 
+/* Subresource table of a 'gfx' texture source: one 32-byte record per subresource at
+   asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE). The code reaches it through
+   buildMetadata.assetRelativeAddressAnchor28, which lies GFX_ASSET_ANCHOR28_OFFSET bytes into the asset, so
+   every field offset below appears as (GFX_SUBRESOURCE_* - GFX_ASSET_ANCHOR28_OFFSET). The pixel data offset is
+   relative to the asset start as well. */
+#define GFX_ASSET_ANCHOR28_OFFSET 0x28
+/* The 0x200-byte asset header (sizeof(GraphicsTextureSourceAsset)) is followed by paletteBankCount palette banks
+   of 256 eight-byte entries (argb8888, framebuffer pixel); the subresource table and the pixels lie at the
+   offsets the header and the records name. */
+#define GFX_ASSET_HEADER_SIZE 0x200
+#define GFX_PALETTE_BANK_SIZE 0x800
+#define GFX_SUBRESOURCE_RECORD_SIZE 0x20
+#define GFX_SUBRESOURCE_LOGICAL_WIDTH 0x00  /* tile extent used by the tiled blits */
+#define GFX_SUBRESOURCE_LOGICAL_HEIGHT 0x04
+#define GFX_SUBRESOURCE_PALETTE_INDEX 0x08  /* -1: direct ARGB8888 pixels; else palette bank, 8-bit indices */
+#define GFX_SUBRESOURCE_PIXEL_OFFSET 0x0C   /* asset-relative offset of the pixels */
+#define GFX_SUBRESOURCE_ORIGIN_X 0x10       /* position of the stored pixels inside the logical extent */
+#define GFX_SUBRESOURCE_ORIGIN_Y 0x14
+#define GFX_SUBRESOURCE_PIXEL_WIDTH 0x18    /* stored pixels per row */
+#define GFX_SUBRESOURCE_PIXEL_HEIGHT 0x1C   /* stored rows */
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0057E970 */

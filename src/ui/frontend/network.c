@@ -301,28 +301,26 @@ void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(Ui
 
 
 /* Address: 0x0054C7D0.
-   Ownership: ui/frontend/network.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[13]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[13] (0x200D). Return datatype is preserved for non-queue direct callers. Typed parameters:
-   p0 transferPageControl→UiTextEditControl *. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer].
+   Action 0x200D of the host address edit on the network game page (g_FrontendUiActionHandlersPage20 slot 13):
+   the typed address is parsed by the active network backend into g_FrontendNetworkEndpointScratch. An
+   unparsable address only clears the edit's valid flag; a valid one sends the session discovery probe
+   and writes the parsed endpoint back as normalised text.
 */
 void __thandor_preserve_eax_edx
-FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferPageControl)
+FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit)
 
 {
   bool endpointParseFailed;
-  
+
   endpointParseFailed = g_NetworkBackendSlot6
-                    (&g_FrontendNetworkEndpointScratch,(char *)transferPageControl->textPrefix6C);
+                    (&g_FrontendNetworkEndpointScratch,(char *)hostAddressEdit->textPrefix6C);
   if (endpointParseFailed) {
-    transferPageControl->editStateFlags =
-         transferPageControl->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
+    hostAddressEdit->editStateFlags =
+         hostAddressEdit->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
     return;
   }
-  transferPageControl->editStateFlags =
-       transferPageControl->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
+  hostAddressEdit->editStateFlags =
+       hostAddressEdit->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
   UiTransfer_SendPacketType10000Value2931();
   g_NetworkBackendSlot7
             (&g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
@@ -332,14 +330,9 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferP
 
 
 /* Address: 0x0054CE10.
-   Ownership: ui/frontend/network.
-   Purpose: Binary entry is anchored by g_UiActionPage20InitializedHandlers[3]@00545938. Queued UI action handler
-   for FRONTEND_PAGE20[3] (0x2003). Return datatype is preserved for non-queue direct callers. Typed parameters: p0
-   source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiNodeList_SuppressActionId
-   [ui/controls/lists], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer].
+   Action 0x2003 of the back button on the host game setup page (g_FrontendUiActionHandlersPage20 slot 3):
+   returns to the network game page, stops the menu room rendering behind it on small screens, resumes
+   browsing with the join button hidden and an empty session list, and sends a new session discovery probe.
 */
 void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
 
@@ -348,13 +341,13 @@ void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBas
   FrontendUiImage *frontendUi;
 
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x4f94);
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
-  if ((int)g_FramebufferWidth < 0x281) {
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | 0x2000;
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  g_FrontendNetworkState = 1;
-  UiNodeList_SuppressActionId(0x2002,FRONTEND_UI(frontendUi,frontendRoot));
+  g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
+  UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
             (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   UiTransfer_SendPacketType10000Value2931();

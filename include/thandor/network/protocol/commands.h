@@ -40,6 +40,12 @@
 #define INGAME_COMMAND_PLACEMENT_SET_FACTION 0x2EC0 /* PlayerRuntime_SetState8090 */
 #define INGAME_COMMAND_PLACEMENT_SET_ARMY 0x2EF0 /* PlayerRuntime_SetState8094 */
 #define INGAME_COMMAND_PLACEMENT_CLEAR_ARMY 0x3190 /* PlayerRuntime_ClearState8094 */
+/* Technology page, chat and army removal (ui/frontend/player) */
+#define INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE 0x1700 /* FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology */
+#define INGAME_COMMAND_CHAT_SET_RECIPIENTS 0x1770 /* FrontendPlayerTextCommand_SetPackedState */
+#define INGAME_COMMAND_CHAT_APPEND 0x17A0 /* FrontendPlayerTextCommand_AppendTripleClamped */
+#define INGAME_COMMAND_CHAT_PUBLISH 0x1810 /* FrontendPlayerTextCommand_PublishConditionalRichText */
+#define INGAME_COMMAND_DESTROY_ARMIES 0x2DE0 /* FrontendPlayerSelection_ApplyEntryOrAll */
 /* Frontend command codes work the same way, relative to FrontendCommandQueue_EnqueueLocalPlayerCommand
    (0x00543F50). */
 #define FRONTEND_COMMAND_CODE_BASE 0x00543F50
@@ -48,6 +54,13 @@
 #define FRONTEND_COMMAND_STOP_ROM_TRANSITION 0x1340 /* ScenarioCatalog_RequestRomTransitionStopCallback */
 #define FRONTEND_COMMAND_EXECUTE_ROM_ACTION 0x1350 /* FrontendRomActionTable_ExecuteRecord */
 #define FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE 0x16F0 /* FrontendTransfer_MarkUnavailableIfModeBit0Callback */
+/* Lobby handshake and chat (ui/frontend/player) */
+#define FRONTEND_COMMAND_BRIEFING_READY 0x1E0 /* FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08 */
+#define FRONTEND_COMMAND_SET_CONSENSUS_VALUE 0x820 /* FrontendPlayerRuntime_SetConsensusValueAndRefresh */
+#define FRONTEND_COMMAND_SCENARIO_CATALOG_RECEIVED 0xE00 /* FrontendPlayerRuntime_MarkFlag01AndStoreValuesById */
+#define FRONTEND_COMMAND_CHAT_BEGIN 0x1540 /* FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById */
+#define FRONTEND_COMMAND_CHAT_APPEND 0x15B0 /* FrontendPlayerMessageBuffer_AppendTripleById */
+#define FRONTEND_COMMAND_CHAT_PUBLISH 0x1640 /* FrontendPlayerMessageBuffer_PublishTextById */
 /* Scenario selection ("Choose game" page, assets/scenario/catalog) */
 #define FRONTEND_COMMAND_LOAD_FIELD_GRID 0x460 /* FrontendScenarioSession_LoadOrRequestFieldGrid */
 #define FRONTEND_COMMAND_LOAD_LEVEL 0x920 /* FrontendScenarioSession_LoadOrRequestLevelAsset */

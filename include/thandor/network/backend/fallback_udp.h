@@ -16,20 +16,20 @@
 
 /* 0x0041A580 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot0_ReturnError43(uint32_t argument);
+NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex);
 
 /* 0x0041A590 */
 void __cdecl NetworkBackendFallback_Slot1_NoOp(void);
 
 /* 0x0041A5A0 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot2_ReturnError43(uint32_t argument);
+NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort);
 
 /* 0x0041A5B0 */
 void __cdecl NetworkBackendFallback_Slot3_NoOp(void);
 
 /* 0x0041A5C0 */
-NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailure (WinSockAddress *sourceAddress,uint32_t argument1,uint8_t *buffer);
+NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailure (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
 
 /* 0x0041A5D0 */
 NetworkSendResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5_ThreeArgSuccess (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);

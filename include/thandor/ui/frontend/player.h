@@ -22,6 +22,14 @@
                                            removed from every group of the faction */
 #define SELECTION_TRANSFER_MERGE 0x2 /* add missing entries instead of replacing the destination */
 #define SELECTION_TRANSFER_CENTER_VIEW 0x4 /* local player: move the camera to the selection's average position */
+/* Chat. A line is sent as a begin command, four append commands of 12 narrow bytes (3 dwords) each and a
+   publish command. Lobby: one 100-byte record per player block in g_FrontendPlayerMessageBuffers, dword 0 the
+   byte offset of the next write (starting after itself), then the 0x30-byte text. In game the text is staged
+   at +0x80C0 of the player's SelectionPlayerRuntimeBlock, the write offset in the low byte of +0x809C. */
+#define FRONTEND_PLAYER_MESSAGE_RECORD_BYTES 100
+#define FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET 4
+#define PLAYER_CHAT_TEXT_BYTES 0x30
+#define TEXT_ID_CHAT_MESSAGE 0xFF07 /* rich text: selector 0 = sender name, selector 1 = message */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00548CD0 */
@@ -58,7 +66,7 @@ FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken);
 /* 0x00544130 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
-          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,uint32_t argument4);
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x005442B0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -167,7 +175,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerSelection_ApplyEntryOrAll
           (FrontendPlayerIndex playerIndex,uint32_t reservedZero0,uint32_t reservedZero1,
-          RuntimeToken selectionEntryToken);
+          RuntimeToken armyRuntimeOffset);
 
 /* 0x00544020 */
 void __thandor_void_preserve_eax_ecx
@@ -177,7 +185,7 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
 /* 0x00544770 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_SetConsensusValueAndRefresh
-          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendConsensusValue consensusValue);
 
 /* 0x00545490 */

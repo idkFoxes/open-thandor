@@ -12,33 +12,29 @@
 /* Implementation ownership: platform/input/devices. */
 
 /* Address: 0x00417280.
-   Ownership: platform/input/devices.
-   Purpose: Masks both arguments to 16 bits, converts ASCII a-z to A-Z, and leaves flags from comparing
-   uppercase(secondValue) against uppercase(firstValue). The function preserves incoming EAX and EDX; callers
-   consume condition flags rather than a scalar return. Keyboard case-insensitive comparison callback; EFLAGS carry
-   the comparison and EAX/EDX are preserved. Typed parameters: p0 leftCodeUnit→KeyboardCharacterCode_V308, p1
-   rightCodeUnit→KeyboardCharacterCode_V308. Nearby but non-identical semantic domains were explicitly deferred.
-   Local calls: Keyboard_ToUpperAscii.
+   Case-insensitive character compare, reached through the compareCaseInsensitiveFlags slot of
+   g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218). Both 16-bit code units are upper-cased and the result
+   is returned in CF (upper(right) < upper(left)); EAX, ECX and EDX are preserved for the caller.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Keyboard_CompareAsciiCaseInsensitiveFlags
           (KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
 {
-  uint32_t asciiCodeUnit;
+  uint32_t leftLowWord;
   uint32_t upperRight;
   uint32_t upperLeft;
-  
-  asciiCodeUnit = leftCodeUnit & 0xffff;
+
+  leftLowWord = leftCodeUnit & 0xffff;
   upperRight = Keyboard_ToUpperAscii(rightCodeUnit & 0xffff);
-  upperLeft = Keyboard_ToUpperAscii(asciiCodeUnit);
+  upperLeft = Keyboard_ToUpperAscii(leftLowWord);
   return upperRight < upperLeft;
 }
 
 
 /* Address: 0x00417230.
-   Ownership: platform/input/devices.
-   Purpose: Discards all queued keyboard events by copying g_KeyboardReadIndex into g_KeyboardWriteIndex.
+   Discards every queued keyboard event by moving the ring's write index back onto its read index.
+   Reached through the g_KeyboardFlushEvents pointer (0x00417210).
 */
 void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
 
@@ -49,10 +45,9 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
 
 
 /* Address: 0x00417240.
-   Ownership: platform/input/devices.
-   Purpose: Returns one KeyboardInputEvent through EDX:EAX: EAX=keyCode and EDX=stateMask. CF clear means an event
-   was returned; CF set means the ring was empty. The qword return type models the preserved register pair, not a
-   source-level 64-bit API.
+   Takes the oldest event out of the keyboard ring, reached through the g_KeyboardReadEvent pointer
+   (0x00417214). Returns EAX = key code and EDX = modifier state with CF clear, or CF set when the ring is
+   empty; the struct return only models that register triple.
 */
 KeyboardEventResult __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
 
@@ -64,7 +59,7 @@ KeyboardEventResult __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs
   
   nextReadIndex = g_KeyboardReadIndex + 1;
   if (g_KeyboardReadIndex != g_KeyboardWriteIndex) {
-    if (0x3f < nextReadIndex) {
+    if (KEYBOARD_EVENT_RING_SIZE - 1 < nextReadIndex) {
       nextReadIndex = 0;
     }
     eventRecord = g_KeyboardEvents + g_KeyboardReadIndex;
@@ -83,17 +78,14 @@ KeyboardEventResult __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs
 
 
 /* Address: 0x004172D0.
-   Ownership: platform/input/devices.
-   Purpose: Converts ASCII A-Z to a-z and leaves all other values unchanged. Keyboard ASCII case-transform
-   callback. Typed parameters: p0 asciiCodeUnit→KeyboardCharacterCode_V308. Nearby but non-identical semantic
-   domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
+   Converts ASCII 'A'-'Z' to 'a'-'z' and returns every other value unchanged. Reached through the toLower
+   slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218).
 */
 uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
-  if ((0x40 < asciiCodeUnit) && (asciiCodeUnit < 0x5b)) {
-    asciiCodeUnit = asciiCodeUnit + 0x20;
+  if (('A' - 1 < asciiCodeUnit) && (asciiCodeUnit < 'Z' + 1)) {
+    asciiCodeUnit = asciiCodeUnit + ('a' - 'A');
   }
   return asciiCodeUnit;
 }
@@ -767,9 +759,9 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyUp(KeyboardVirtualKeyCode
 
 
 /* Address: 0x00577B30.
-   Ownership: platform/input/devices.
-   Purpose: Handles WM_CHAR and WM_SYSCHAR by appending the low 16-bit character plus the current keyboard state.
-   When either Ctrl bit is active, control characters 1-26 are normalized to lowercase ASCII a-z by adding 0x60.
+   WM_CHAR/WM_SYSCHAR handler (called from the main window procedure): queues the 16-bit character with
+   the current modifier state in the keyboard ring. With Ctrl held, the control characters 1-26 that
+   Windows delivers for Ctrl+A..Ctrl+Z are turned back into 'a'..'z'.
 */
 void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode character)
 
@@ -784,12 +776,12 @@ void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode chara
   keyCode = character & 0xffff;
   nextWriteIndex = g_KeyboardWriteIndex + 1;
   g_KeyboardWriteIndex = g_KeyboardWriteIndex + 1;
-  if (((g_KeyboardStateMask & 0xc) != 0) && (keyCode < 0x1b)) {
-    keyCode = keyCode + 0x60;
+  if (((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) && (keyCode < 26 + 1)) {
+    keyCode = keyCode + ('a' - 1);
   }
   g_KeyboardEvents[writeIndex].stateMask04 = g_KeyboardStateMask;
   eventRecord->keyCode00 = keyCode;
-  if (0x3f < nextWriteIndex) {
+  if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
     g_KeyboardWriteIndex = 0;
   }
   return;
@@ -797,17 +789,15 @@ void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode chara
 
 
 /* Address: 0x004172B0.
-   Ownership: platform/input/devices.
-   Purpose: Converts ASCII a-z to A-Z and leaves all other values unchanged. Keyboard ASCII case-transform
-   callback. Typed parameters: p0 asciiCodeUnit→KeyboardCharacterCode_V308. Nearby but non-identical semantic
-   domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
+   Converts ASCII 'a'-'z' to 'A'-'Z' and returns every other value unchanged. Reached through the toUpper
+   slot of g_KeyboardAsciiCaseTransformCallbacks3 (0x00417218); Keyboard_CompareAsciiCaseInsensitiveFlags
+   also calls it directly.
 */
 uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
-  if ((0x60 < asciiCodeUnit) && (asciiCodeUnit < 0x7b)) {
-    asciiCodeUnit = asciiCodeUnit - 0x20;
+  if (('a' - 1 < asciiCodeUnit) && (asciiCodeUnit < 'z' + 1)) {
+    asciiCodeUnit = asciiCodeUnit - ('a' - 'A');
   }
   return asciiCodeUnit;
 }

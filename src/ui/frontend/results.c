@@ -11,24 +11,12 @@
 /* Implementation ownership: ui/frontend/results. */
 
 /* Address: 0x00517020.
-   Ownership: ui/frontend/results.
-   Purpose: The 18-entry table at 00517070 is a FrontendResultsColumnType computed-jump dispatch table whose
-   targets are interior labels, not independent functions. [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Retired
-   detached enum dictionary FrontendResultsColumnType after transferring its complete value vocabulary to code
-   annotation. It is not a safe whole-value storage type. Values: 0=FRONTEND_RESULTS_COLUMN_RESERVED_00,
-   1=FRONTEND_RESULTS_COLUMN_RESERVED_01, 2=FRONTEND_RESULTS_COLUMN_COLOUR, 3=FRONTEND_RESULTS_COLUMN_ECONOMY,
-   4=FRONTEND_RESULTS_COLUMN_MILITARY, 5=FRONTEND_RESULTS_COLUMN_POINTS, 6=FRONTEND_RESULTS_COLUMN_PLAYER,
-   7=FRONTEND_RESULTS_COLUMN_FACTION, 8=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_98,
-   9=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_9C, 10=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_A0,
-   11=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_A4, 12=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_A8,
-   13=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_AC, 14=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_B0,
-   15=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_B4, 16=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_B8,
-   17=FRONTEND_RESULTS_COLUMN_FACTION_FIELD_BC
-   Local calls: FrontendResultsTable_DrawColourColumn, FrontendResultsTable_DrawEconomyColumn,
-   FrontendResultsTable_DrawMilitaryColumn, FrontendResultsTable_DrawPointsColumn,
-   FrontendResultsTable_DrawPlayerColumn, FrontendResultsTable_DrawFactionColumn,
-   FrontendResultsTable_DrawFormattedFactionFieldColumn.
-   Cross-module calls: TextResource_Resolve [assets/text/resources].
+   drawClipped of g_UiNodeVtable_00516F60, the three results charts (resultsChart1..3) of the end-of-game
+   results screen. Table mode (modeFlags bit 0 clear) draws the control's list of column types one after the
+   other, advancing by each type's width (types 0 and 1 are empty spacers). Graph mode first converts the colour of
+   each faction's colour text (TEXT_ID_FACTION_NAME_BASE + colour index at record +0x38) into a packed pixel
+   for g_FrontendResultsFactionPackedPixelColors, then draws one pixel column per x through the control's
+   factionWeightRaster, each showing the stat table sample at x / width of the game so far.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawColumnSequenceByType
@@ -101,6 +89,7 @@ FrontendResultsTable_DrawColumnSequenceByType
                      (FrontendResultsRowMetrics *)control);
           drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionPixels;
           break;
+        /* 8..0x11: faction record fields +0x98..+0xBC (value template, header, field offset) */
         case 8:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (0x21c1,0x21b6,0x98,clipTop,clipLeft,clipBottom,clipRight,drawXOrCount,drawY,
@@ -161,18 +150,19 @@ FrontendResultsTable_DrawColumnSequenceByType
                      (FrontendResultsRowMetrics *)control);
           drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldBCPixels;
         }
-        columnTypeOrColorCursor = columnTypeOrColorCursor + 1;
-        remainingColumns = remainingColumns - 1;
+        columnTypeOrColorCursor++;
+        remainingColumns--;
       } while (remainingColumns != 0);
       g_GraphicsFramebufferEndAccess();
     }
   }
   else {
+    /* factions 1..7: the colour text's code units 1..8 hold the colour digits (low nibble each) */
     drawXOrCount = 7;
     columnTypeOrColorCursor = g_FrontendResultsFactionPackedPixelColors;
-    factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+    factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,GAME_FACTION_RUNTIME_RECORD_BYTES);
     do {
-      resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + 0x2173);
+      resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + TEXT_ID_FACTION_NAME_BASE);
       colourResource = resolvedText.text;
       *columnTypeOrColorCursor = (((uint8_t)colourResource[8] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[7] << 0x1c) +
                 *(int *)((int)g_SoftwarePixelPackTables->red +
@@ -184,12 +174,12 @@ FrontendResultsTable_DrawColumnSequenceByType
                 [(((uint8_t)colourResource[2] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[1] << 0x1c) >> 0x18];
       statTableImage = g_GameStatTableImage;
       framebufferAccess = g_FramebufferAccess;
-      factionRecordAddress = factionRecordAddress + 0x740;
-      columnTypeOrColorCursor = columnTypeOrColorCursor + 1;
-      drawXOrCount = drawXOrCount + -1;
+      factionRecordAddress = factionRecordAddress + GAME_FACTION_RUNTIME_RECORD_BYTES;
+      columnTypeOrColorCursor++;
+      drawXOrCount--;
     } while (drawXOrCount != 0);
     drawXOrCount = (control->base).layoutWidth;
-    historySampleCount = g_GameFactionRuntimeImage.tail.simulationTick >> 7;
+    historySampleCount = g_GameFactionRuntimeImage.tail.simulationTick >> RESULTS_STAT_SAMPLE_TICK_SHIFT;
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       g_FrontendResultsFramebufferBytesPerPixel = framebufferAccess->bytesPerPixel;
@@ -201,9 +191,10 @@ FrontendResultsTable_DrawColumnSequenceByType
                   ((control->base).bottom,(control->base).top,pixelColumn + (control->base).left,
                    (FrontendResultsFactionWeightPair8 *)
                    ((int)(((uint64_t)pixelColumn * (uint64_t)historySampleCount) /
-                         (uint64_t)(uint32_t)(control->base).layoutWidth) * 0x38 + (int)statTableImage));
-        pixelColumn = pixelColumn + 1;
-        drawXOrCount = drawXOrCount + -1;
+                         (uint64_t)(uint32_t)(control->base).layoutWidth) * RESULTS_STAT_SAMPLE_BYTES +
+                    (int)statTableImage));
+        pixelColumn++;
+        drawXOrCount--;
       } while (drawXOrCount != 0);
       g_GraphicsFramebufferEndAccess();
     }
@@ -213,22 +204,23 @@ FrontendResultsTable_DrawColumnSequenceByType
 
 
 /* Address: 0x00517FB0.
-   Ownership: ui/frontend/results.
-   Purpose: Shared UiNodeVtable hit-test callback for two frontend-results controls. It consumes the three hit-test
-   arguments and returns the 0xFFFFFFFF no-hit sentinel.
+   hitTest of g_UiCommandVisibilityWrappedTextVtable and g_UiCommandVisibilitySingleLineTextVtable: these text
+   controls are never hit, so the pointer passes through them (UI_NODE_NONE).
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 FrontendResultsTable_HitTestAlwaysNone
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
-  return (UiNodeBase *)0xffffffff;
+  return UI_NODE_NONE;
 }
 
 
 /* Address: 0x005174E0.
-   Ownership: ui/frontend/results.
-   Purpose: Draws the faction-weight sum column in the frontend results graph.
+   factionWeightRaster of resultsChart1 (set in its template in image_data.c): draws one pixel column of the
+   stacked results graph from spanStartY to spanEndY, split among factions 1..7 in proportion to the sum of both
+   metrics of the stat table sample, each in the faction's colour. When all are 0, every active faction counts
+   as 1 (written back into the sample). Every pixel is stored as a 16-bit word.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsGraph_DrawFactionWeightSumColumn
@@ -257,9 +249,9 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
     do {
       if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
         factionWeights[factionIndex - 1].lane0 = factionWeights[factionIndex - 1].lane0 + 1;
-        weightTotal = weightTotal + 1;
+        weightTotal++;
       }
-      factionIndex = factionIndex + 1;
+      factionIndex++;
     } while (factionIndex < 8);
   }
   pixelCursor = framebufferAccess->pixels +
@@ -278,11 +270,11 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
       do {
         *(short *)pixelCursor = (short)packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight = segmentHeight + -1;
+        segmentHeight--;
       } while (segmentHeight != 0);
     }
-    factionIndex = factionIndex + 1;
-    factionWeights = factionWeights + 1;
+    factionIndex++;
+    factionWeights++;
     if (6 < factionIndex) {
       return;
     }
@@ -290,8 +282,8 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
 }
 
 /* Address: 0x005175F0.
-   Ownership: ui/frontend/results.
-   Purpose: Draws faction-weight lane 0 in the frontend results graph.
+   factionWeightRaster of resultsChart2: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
+   sample's first metric (lane 0, faction record +0x88 when sampled) only.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsGraph_DrawFactionWeightLane0Column
@@ -317,9 +309,9 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
     do {
       if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
         factionWeights[factionIndex - 1].lane0 = factionWeights[factionIndex - 1].lane0 + 1;
-        weightTotal = weightTotal + 1;
+        weightTotal++;
       }
-      factionIndex = factionIndex + 1;
+      factionIndex++;
     } while (factionIndex < 8);
   }
   pixelCursor = framebufferAccess->pixels +
@@ -338,11 +330,11 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
       do {
         *(short *)pixelCursor = (short)packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight = segmentHeight + -1;
+        segmentHeight--;
       } while (segmentHeight != 0);
     }
-    factionIndex = factionIndex + 1;
-    factionWeights = factionWeights + 1;
+    factionIndex++;
+    factionWeights++;
     if (6 < factionIndex) {
       return;
     }
@@ -350,8 +342,8 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
 }
 
 /* Address: 0x005176F0.
-   Ownership: ui/frontend/results.
-   Purpose: Draws faction-weight lane 1 in the frontend results graph.
+   factionWeightRaster of resultsChart3: like FrontendResultsGraph_DrawFactionWeightSumColumn, but from the
+   sample's second metric (lane 1, faction record +0x8C when sampled) only.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsGraph_DrawFactionWeightLane1Column
@@ -377,9 +369,9 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
     do {
       if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
         factionWeights[factionIndex - 1].lane1 = factionWeights[factionIndex - 1].lane1 + 1;
-        weightTotal = weightTotal + 1;
+        weightTotal++;
       }
-      factionIndex = factionIndex + 1;
+      factionIndex++;
     } while (factionIndex < 8);
   }
   pixelCursor = framebufferAccess->pixels +
@@ -398,11 +390,11 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
       do {
         *(short *)pixelCursor = (short)packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight = segmentHeight + -1;
+        segmentHeight--;
       } while (segmentHeight != 0);
     }
-    factionIndex = factionIndex + 1;
-    factionWeights = factionWeights + 1;
+    factionIndex++;
+    factionWeights++;
     if (6 < factionIndex) {
       return;
     }
@@ -410,14 +402,9 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
 }
 
 /* Address: 0x005177F0.
-   Ownership: ui/frontend/results.
-   Purpose: Draws localized results-table header 0x21B2 and one colour resource per active faction slot 1 through
-   7. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2
-   clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p4 drawX→UiPixelCoordinate_V297, p5
-   drawY→UiPixelCoordinate_V297. Calling convention, exact VariableStorage serialization, function body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext].
+   Results table column type 2 (FrontendResultsTable_DrawColumnSequenceByType): header TEXT_ID_RESULTS_COLOUR,
+   then one row per active faction 1..7 with its colour name (TEXT_ID_FACTION_NAME_BASE + colour index at record
+   +0x38).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawColourColumn
@@ -432,38 +419,32 @@ FrontendResultsTable_DrawColourColumn
   int baselineY;
   TextResolveResult resolvedText;
   
-  resolvedText = TextResource_Resolve(0x21b2);
+  resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_COLOUR);
   offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
   baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.text,drawX + 6,baselineY);
   factionIndex = 1;
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,GAME_FACTION_RUNTIME_RECORD_BYTES);
   offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
-      resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + 0x2173);
+      resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + TEXT_ID_FACTION_NAME_BASE);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.text,drawX + 6,offsetOrRowY);
       offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    factionIndex = factionIndex + 1;
-    factionRecordAddress = factionRecordAddress + 0x740;
+    factionIndex++;
+    factionRecordAddress = factionRecordAddress + GAME_FACTION_RUNTIME_RECORD_BYTES;
   } while (factionIndex < 8);
   return;
 }
 
 
 /* Address: 0x005178B0.
-   Ownership: ui/frontend/results.
-   Purpose: Draws localized results-table header 0x21B5 and one localized faction name per active faction slot 1
-   through 7. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2
-   clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p4 drawX→UiPixelCoordinate_V297, p5
-   drawY→UiPixelCoordinate_V297. Calling convention, exact VariableStorage serialization, function body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext].
+   Results table column type 7: header TEXT_ID_RESULTS_FACTION, then the name of each active faction 1..7
+   (TEXT_ID_PLAYER_NUMBER_BASE + faction index).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawFactionColumn
@@ -477,7 +458,7 @@ FrontendResultsTable_DrawFactionColumn
   int baselineY;
   TextResolveResult resolvedText;
   
-  resolvedText = TextResource_Resolve(0x21b5);
+  resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_FACTION);
   offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
   baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
@@ -487,28 +468,20 @@ FrontendResultsTable_DrawFactionColumn
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
-      resolvedText = TextResource_Resolve(factionIndex + 0x2190);
+      resolvedText = TextResource_Resolve(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.text,drawX + 6,offsetOrRowY);
       offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    factionIndex = factionIndex + 1;
+    factionIndex++;
   } while (factionIndex < 8);
   return;
 }
 
 
 /* Address: 0x00517960.
-   Ownership: ui/frontend/results.
-   Purpose: Draws a caller-selected header and formats one caller-selected signed faction-record field through a
-   caller-selected localized template. Typed parameters: p0 valueFormatResourceId→TextResourceId_V338, p1
-   headerResourceId→TextResourceId_V338. Nearby but non-identical semantic domains were explicitly deferred.
-   Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p2 factionFieldOffset→FrontendResultsFactionFieldByteOffset_V342, p3
-   clipTop→UiPixelCoordinate_V297, p4 clipLeft→UiPixelCoordinate_V297, p5 clipBottom→UiPixelCoordinate_V297, p6
-   clipRight→UiPixelCoordinate_V297, p7 drawX→UiPixelCoordinate_V297, p8 drawY→UiPixelCoordinate_V297.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext].
+   Results table column types 8..0x11: header headerResourceId, then for each active faction 1..7 the signed
+   dword at factionFieldOffset of its faction record, patched into the valueFormatResourceId template.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawFormattedFactionFieldColumn
@@ -532,6 +505,7 @@ FrontendResultsTable_DrawFormattedFactionFieldColumn
   factionIndex = 1;
   offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
+  /* the field in faction record 1 (reserved78_87 starts at record +0x78) */
   factionFieldCursor = g_GameFactionRuntimeImage.records[1].reserved78_87 + (factionFieldOffset - 0x78);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
@@ -544,22 +518,16 @@ FrontendResultsTable_DrawFormattedFactionFieldColumn
                 (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.text,drawX + 6,offsetOrRowY);
       offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    factionIndex = factionIndex + 1;
-    factionFieldCursor = factionFieldCursor + 0x740;
+    factionIndex++;
+    factionFieldCursor = factionFieldCursor + GAME_FACTION_RUNTIME_RECORD_BYTES;
   } while (factionIndex < 8);
   return;
 }
 
 
 /* Address: 0x00517A30.
-   Ownership: ui/frontend/results.
-   Purpose: Draws localized Points header 0x21B3 and formats the sum of faction fields +0x90 and +0x94. Typed
-   parameters: p0 clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2
-   clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p4 drawX→UiPixelCoordinate_V297, p5
-   drawY→UiPixelCoordinate_V297. Calling convention, exact VariableStorage serialization, function body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext].
+   Results table column type 5: header TEXT_ID_RESULTS_POINTS, then for each active faction 1..7 its points,
+   the sum of the economy (+0x90) and military (+0x94) values of its faction record.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawPointsColumn
@@ -574,13 +542,13 @@ FrontendResultsTable_DrawPointsColumn
   int baselineY;
   TextResolveResult resolvedText;
   
-  resolvedText = TextResource_Resolve(0x21b3);
+  resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_POINTS);
   offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
   baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.text,drawX + 6,baselineY);
   factionIndex = 1;
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,GAME_FACTION_RUNTIME_RECORD_BYTES);
   offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
@@ -589,28 +557,22 @@ FrontendResultsTable_DrawPointsColumn
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),
                  (uint16_t *)&g_FrontendResultsValueTextUtf16);
-      resolvedText = TextResource_Resolve(0x21c4);
+      resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.text);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.text,drawX + 6,offsetOrRowY);
       offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    factionIndex = factionIndex + 1;
-    factionRecordAddress = factionRecordAddress + 0x740;
+    factionIndex++;
+    factionRecordAddress = factionRecordAddress + GAME_FACTION_RUNTIME_RECORD_BYTES;
   } while (factionIndex < 8);
   return;
 }
 
 
 /* Address: 0x00517B10.
-   Ownership: ui/frontend/results.
-   Purpose: Draws localized Economy header 0x21B0 and formats faction field +0x90. Typed parameters: p0
-   clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
-   clipRight→UiPixelCoordinate_V297, p4 drawX→UiPixelCoordinate_V297, p5 drawY→UiPixelCoordinate_V297. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext].
+   Results table column type 3: header TEXT_ID_RESULTS_ECONOMY, then for each active faction 1..7 the economy
+   value at +0x90 of its faction record.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawEconomyColumn
@@ -625,13 +587,13 @@ FrontendResultsTable_DrawEconomyColumn
   int baselineY;
   TextResolveResult resolvedText;
   
-  resolvedText = TextResource_Resolve(0x21b0);
+  resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_ECONOMY);
   offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
   baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.text,drawX + 6,baselineY);
   factionIndex = 1;
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,GAME_FACTION_RUNTIME_RECORD_BYTES);
   offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
@@ -639,28 +601,22 @@ FrontendResultsTable_DrawEconomyColumn
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int32_t *)(factionRecordAddress + 0x90),(uint16_t *)&g_FrontendResultsValueTextUtf16);
-      resolvedText = TextResource_Resolve(0x21c4);
+      resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.text);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.text,drawX + 6,offsetOrRowY);
       offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    factionIndex = factionIndex + 1;
-    factionRecordAddress = factionRecordAddress + 0x740;
+    factionIndex++;
+    factionRecordAddress = factionRecordAddress + GAME_FACTION_RUNTIME_RECORD_BYTES;
   } while (factionIndex < 8);
   return;
 }
 
 
 /* Address: 0x00517BF0.
-   Ownership: ui/frontend/results.
-   Purpose: Draws localized Military header 0x21B1 and formats faction field +0x94. Typed parameters: p0
-   clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
-   clipRight→UiPixelCoordinate_V297, p4 drawX→UiPixelCoordinate_V297, p5 drawY→UiPixelCoordinate_V297. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext].
+   Results table column type 4: header TEXT_ID_RESULTS_MILITARY, then for each active faction 1..7 the military
+   value at +0x94 of its faction record.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawMilitaryColumn
@@ -675,13 +631,13 @@ FrontendResultsTable_DrawMilitaryColumn
   int baselineY;
   TextResolveResult resolvedText;
   
-  resolvedText = TextResource_Resolve(0x21b1);
+  resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_MILITARY);
   offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
   baselineY = drawY + offsetOrRowY;
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,1,resolvedText.text,drawX + 6,baselineY);
   factionIndex = 1;
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,GAME_FACTION_RUNTIME_RECORD_BYTES);
   offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
@@ -689,28 +645,23 @@ FrontendResultsTable_DrawMilitaryColumn
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int32_t *)(factionRecordAddress + 0x94),(uint16_t *)&g_FrontendResultsValueTextUtf16);
-      resolvedText = TextResource_Resolve(0x21c4);
+      resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.text);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,2,resolvedText.text,drawX + 6,offsetOrRowY);
       offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
     }
-    factionIndex = factionIndex + 1;
-    factionRecordAddress = factionRecordAddress + 0x740;
+    factionIndex++;
+    factionRecordAddress = factionRecordAddress + GAME_FACTION_RUNTIME_RECORD_BYTES;
   } while (factionIndex < 8);
   return;
 }
 
 
 /* Address: 0x00517CD0.
-   Ownership: ui/frontend/results.
-   Purpose: Draws localized Player header 0x21B4 and up to three matching names from exact 0x13B0-byte frontend
-   player blocks. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2
-   clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p4 drawX→UiPixelCoordinate_V297, p5
-   drawY→UiPixelCoordinate_V297. Calling convention, exact VariableStorage serialization, function body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext].
+   Results table column type 6: header TEXT_ID_RESULTS_PLAYER, then for each active faction 1..7 the names of
+   up to three players assigned to it, 26 pixels apart. The second and fourth clip bounds of each name are
+   narrowed to the row (rowBottomY, rowTopY), so the names are clipped to their row.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendResultsTable_DrawPlayerColumn
@@ -721,7 +672,7 @@ FrontendResultsTable_DrawPlayerColumn
 {
   int offsetOrRowY;
   uint32_t factionIndex;
-  FrontendPlayerNameUtf16_28 *commandStream;
+  FrontendPlayerNameUtf16_28 *playerNameCursor;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   int nameDrawX;
   int coordinateOrAdvance;
@@ -732,7 +683,7 @@ FrontendResultsTable_DrawPlayerColumn
   int rowBottomY;
   int rowTopY;
   
-  resolvedText = TextResource_Resolve(0x21b4);
+  resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_PLAYER);
   offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
   coordinateOrAdvance = drawY + offsetOrRowY;
   nameDrawX = drawX + 6;
@@ -745,14 +696,15 @@ FrontendResultsTable_DrawPlayerColumn
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       namesDrawn = 0;
-      commandStream = &g_FrontendPlayerRuntimeBlocks->playerName;
+      playerNameCursor = &g_FrontendPlayerRuntimeBlocks->playerName;
       remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
       coordinateOrAdvance = nameDrawX;
       do {
+        /* the block's factionAssignment.factionAssignmentIndex (+0x58; the name is at +0x18) */
         if ((factionIndex == *(FrontendFactionAssignmentIndex *)
-                       ((int)((UiTransferEndpointDescriptor *)(commandStream + 1) + 1) + 8)) &&
+                       ((int)((UiTransferEndpointDescriptor *)(playerNameCursor + 1) + 1) + 8)) &&
            (namesDrawn < 3)) {
-          namesDrawn = namesDrawn + 1;
+          namesDrawn++;
           nameClipRight = clipRight;
           if (clipRight < rowTopY) {
             nameClipRight = rowTopY;
@@ -762,19 +714,19 @@ FrontendResultsTable_DrawPlayerColumn
             nameClipLeft = rowBottomY;
           }
           RichTextCommandStream_DrawSingleLine
-                    (clipTop,nameClipLeft,clipBottom,nameClipRight,2,commandStream->textUtf16,coordinateOrAdvance,
+                    (clipTop,nameClipLeft,clipBottom,nameClipRight,2,playerNameCursor->textUtf16,coordinateOrAdvance,
                      offsetOrRowY);
           coordinateOrAdvance = coordinateOrAdvance + 0x1a;
         }
-        commandStream = commandStream + 0x7e;
-        remainingBlocks = remainingBlocks - 1;
+        playerNameCursor = playerNameCursor + 0x7e; /* next player block: 0x13B0 bytes */
+        remainingBlocks--;
       } while (remainingBlocks != 0);
       coordinateOrAdvance = rowMetrics->rowAdvancePixels;
       offsetOrRowY = offsetOrRowY + coordinateOrAdvance;
       rowTopY = rowTopY + coordinateOrAdvance;
       rowBottomY = rowBottomY + coordinateOrAdvance;
     }
-    factionIndex = factionIndex + 1;
+    factionIndex++;
   } while (factionIndex < 8);
   return;
 }

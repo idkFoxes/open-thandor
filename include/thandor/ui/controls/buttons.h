@@ -21,6 +21,38 @@
 #define UI_SPRITE_BUTTON_ANIMATED 0x80
 #define UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION 0x800
 #define UI_SPRITE_BUTTON_ACTION_PENDING 0x1000
+/* Further UiSpriteButtonControl stateFlags bits (UiSpriteButtonControl_DrawClipped, _HitTestOpaque,
+   _NonRightPress/_Release/_Drag, _Relocate): RECT_HIT_TEST hit-tests the node rectangle instead of opaque
+   sprite pixels; NORMAL_UNDER_SELECTED draws the normal frame below the selected one; SERIALIZED_DESCRIPTOR
+   means normalSubresourceStartOrDescriptor still points at the 8-int layout/frame descriptor that
+   _Relocate expands; ACTIVATION_SOUND plays activationSoundId on activation; SELECTED_ONLY draws the button
+   only while selected and hit-tests its selected frame. Without ANIMATED, the ACTION_AFTER_ANIMATION bit
+   (0x800) instead selects alternateTextureSource for the selected frame. */
+#define UI_SPRITE_BUTTON_RECT_HIT_TEST 0x20
+#define UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED 0x40
+#define UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR 0x100
+#define UI_SPRITE_BUTTON_ACTIVATION_SOUND 0x200
+#define UI_SPRITE_BUTTON_SELECTED_ONLY 0x400
+#define UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE 0x800
+/* Colour the sprite shadow is drawn with (ARGB, half-transparent black; UiSpriteButtonControl_DrawClipped). */
+#define UI_SPRITE_BUTTON_SHADOW_ARGB 0x7F000000
+/* UiImageActionControl displayFlags (UiImageActionControl_DrawImageAndChildren/_HandleKeyboardActivation). */
+#define UI_IMAGE_ACTION_STRETCH 0x1
+#define UI_IMAGE_ACTION_KEY_ACTIVATES 0x2 /* any key but Tab queues primaryActionId */
+#define UI_IMAGE_ACTION_LETTERBOX 0x4
+#define UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB 0xFF000000 /* opaque black */
+/* Framed text box pieces in g_UiWindowTextureSource (UiConditionalActionControl_DrawClipped); a 416x58
+   box instead uses the single unframed background UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND. */
+#define UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT 0x72
+#define UI_TEXT_BOX_SUBRESOURCE_TOP_RIGHT 0x73
+#define UI_TEXT_BOX_SUBRESOURCE_BOTTOM_LEFT 0x74
+#define UI_TEXT_BOX_SUBRESOURCE_BOTTOM_RIGHT 0x75
+#define UI_TEXT_BOX_SUBRESOURCE_TOP 0x76
+#define UI_TEXT_BOX_SUBRESOURCE_LEFT 0x77
+#define UI_TEXT_BOX_SUBRESOURCE_RIGHT 0x78
+#define UI_TEXT_BOX_SUBRESOURCE_BOTTOM 0x79
+#define UI_TEXT_BOX_SUBRESOURCE_INTERIOR 0x7B
+#define UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND 200
 
 /* 0x004B1D20 */
 void __thandor_void_preserve_eax_ecx_edx UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root);

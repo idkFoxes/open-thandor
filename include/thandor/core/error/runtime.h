@@ -50,6 +50,9 @@
 /* Network socket setup/send failed (NetworkFallback_OpenAndBindUdpSocket, NetworkFallback_SendDatagram); the
    WSAGetLastError code is left in g_PackageLastErrorPath */
 #define FATAL_ERROR_NETWORK_SOCKET 0x2A
+/* No network backend: the default g_NetworkBackendSlot0/Slot2 entries (NetworkBackendFallback_Slot0/2, left in
+   place when Network_Init could not start WinSock) return it; the frontend reports it when no backend opens */
+#define FATAL_ERROR_NETWORK_UNAVAILABLE 0x2B
 /* DirectSound_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 (a failing
    secondary-buffer step there and in DirectSound_CreatePcmVoiceSet returns FATAL_ERROR_DIRECTSOUND_SETUP) */
 #define FATAL_ERROR_SOUND_SAMPLE_INVALID 0x4A
@@ -133,6 +136,9 @@
 #define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F
 /* GraphicsCursor_SetFrameIndex: the frame index is not below g_CursorFrameCount (EAX holds it on success too) */
 #define FATAL_ERROR_CURSOR_FRAME_OUT_OF_RANGE 0x2D
+/* Texture sources (graphics/resources/texture): not a 'gfx' asset or the subresource index is out of range
+   (GraphicsTextureSource_ConvertPaletteEntries, GraphicsTextureSource_DecomposeSubresourceRegions) */
+#define FATAL_ERROR_GFX_ASSET_INVALID 0x2C
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

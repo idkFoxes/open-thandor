@@ -11,9 +11,9 @@
 /* Implementation ownership: ui/core/runtime. */
 
 /* Address: 0x004228F0.
-   Ownership: ui/core/runtime.
-   Purpose: Binary entry is anchored by g_CodePointerTable_004229A0[0]@004229A0;
-   g_CodePointerTable_00424324[0]@00424324. UiRootCallbacks root callback with one stack argument.
+   vetoClose callback of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: frees the
+   heap copy of the dialog root when UiRootStack_Pop closes it. The close is vetoed (CF set) only when the
+   free fails.
 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root)
 
@@ -26,10 +26,9 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root)
 
 
 /* Address: 0x00422980.
-   Ownership: ui/core/runtime.
-   Purpose: Binary entry is anchored by g_CodePointerTable_004229A0[2]@004229A0;
-   g_CodePointerTable_00424324[2]@00424324. UiRootCallbacks method08; caller-cleanup one-argument convention is
-   intentional.
+   method08 of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: always sets CF, so a
+   pointer press that misses the dialog ends the root-stack hit test there (the dialogs are modal). The
+   caller removes the one stack argument.
 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *root)
 
@@ -39,8 +38,9 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *
 
 
 /* Address: 0x00422990.
-   Ownership: ui/core/runtime.
-   Purpose: Recovered UI root pointer miss-policy helper that returns code 8.
+   pointerMissPolicy of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: the
+   non-negative result stops pointer motion that misses the dialog from reaching the roots below it. The value
+   8 carries no meaning beyond being non-negative (same as ErrorRuntime_CallbackReturnCode8).
 */
 int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root)
 
@@ -49,66 +49,71 @@ int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicy_ReturnCode8(UiRootNod
 }
 
 /* Address: 0x00424270.
-   Ownership: ui/core/runtime.
-   Purpose: Formats signed dwords at runtime offsets +0x140 and +0x144 into the UTF-16 buffers at +0xBB4 and
-   +0xB94. Both calls use width 3, base 10, terminator and signed flags, with exact scale values 0x400000 and
-   0x10000. EAX is preserved.
+   Writes the two number readouts of the display settings dialog (root is a copy of
+   g_UiDisplaySettingsRootTemplate): the selected colour bias (applyButton +0x6C, Q16, -64..+64) divided by
+   64.0, i.e. -1.000..+1.000, and the colour scale (applyButton +0x70, Q16, 0.5..2.0) as a plain value, both
+   signed with up to 3 fraction digits into the number buffers in the tail of colorBiasValueText (+0x7C =
+   root +0xBB4 for the bias, +0x5C = root +0xB94 for the scale). Called when the dialog opens and by
+   UiDisplaySettingsRoot_RefreshModeSelection.
 */
-void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *runtime)
+void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *root)
 
 {
+  /* fractionalDigits 3, integerDigitLimit 10; the denominators are 64.0 and 1.0 in Q16 */
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,0x400000,
-             *(int32_t *)((int)runtime + 0x140),(uint16_t *)((int)runtime + 0xbb4));
+            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,64 << 16,
+             DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,int32_t),
+             &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x7C,uint16_t));
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,0x10000,
-             *(int32_t *)((int)runtime + 0x144),(uint16_t *)((int)runtime + 0xb94));
+            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,1 << 16,
+             DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,int32_t),
+             &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,uint16_t));
   return;
 }
 
 
 /* Address: 0x004244E0.
-   Ownership: ui/core/runtime.
-   Purpose: Typed parameters: p0 value0→UiPixelCoordinate_V297, p1 value1→UiPixelCoordinate_V297, p2
-   value2→UiPixelCoordinate_V297, p3 value3→UiPixelCoordinate_V297. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], UiRootStack_Push [ui/controls/layout], UiRootStack_InvalidateAll [ui/controls/layout].
+   Opens the "keep the new display mode?" dialog after UiDisplayModeAction_ApplyPendingMode switched modes:
+   copies g_UiFourValueDialogTemplateImage to the heap, points the countdown text (text 0x109) at its number
+   buffer, prints the starting seconds there and stores the previous mode tuple, which the revert action
+   0x20D (button or countdown expiry) restores. The original returns CF set when the allocation failed; no
+   caller looks at it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiRuntime_OpenFourValueDialog
-          (UiPixelCoordinate value0,UiPixelCoordinate value1,UiPixelCoordinate value2,
-          UiPixelCoordinate value3)
+          (UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
+          UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth)
 
 {
-  int32_t *valueTextBuffer;
+  int32_t *countdownNumberBuffer;
   UiRootNode *root;
   int remainingDwords;
   uint32_t *templateCursor;
   UiRootNode *copyCursor;
   ArenaAllocResult allocResult;
   TextResolveResult resolvedText;
-  
+
   allocResult = g_MemoryApi.alloc(0x1a4);
   root = (UiRootNode *)allocResult.payloadOrError;
   if (!allocResult.failed) {
+    /* REP MOVSD of the 0x1A4-byte template, one dword per step */
     templateCursor = g_UiFourValueDialogTemplateImage;
     copyCursor = root;
-    for (remainingDwords = 0x69; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = 0x1a4 / 4; remainingDwords != 0; remainingDwords--) {
       (copyCursor->base).nextSibling = (UiNodeBase *)*templateCursor;
-      templateCursor = templateCursor + 1;
+      templateCursor++;
       copyCursor = (UiRootNode *)&(copyCursor->base).firstChild;
     }
-    valueTextBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t);
+    countdownNumberBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t);
     resolvedText = TextResource_Resolve(0x109);
-    RichTextCommandStream_PatchPayloadBySelector(0,valueTextBuffer,resolvedText.text);
+    RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText.text);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,int32_t),
-               (uint16_t *)valueTextBuffer);
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,int32_t) = value3;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,int32_t) = value2;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,int32_t) = value1;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,int32_t) = value0;
+               (uint16_t *)countdownNumberBuffer);
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,int32_t) = previousWidth;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,int32_t) = previousHeight;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,int32_t) = previousBitsPerPixel;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,int32_t) = previousAdapterIndex;
     UiRootStack_Push(&g_UiFourValueDialogRootCallbacks,root);
     UiRootStack_InvalidateAll();
     return;
@@ -168,9 +173,8 @@ void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void)
 
 
 /* Address: 0x004AF030.
-   Ownership: ui/core/runtime.
-   Purpose: Compares the 256-entry write and read indices. CF set means at least one record is pending; CF clear
-   means empty.
+   Tells whether a received network packet is waiting in the record ring: CF set when the write and read
+   indices differ. No caller was found in the executable.
 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void)
 
@@ -361,14 +365,8 @@ void __cdecl UiActionQueue_DispatchPending(void)
 }
 
 /* Address: 0x004B05A0.
-   Ownership: ui/core/runtime.
-   Purpose: Shared one-argument no-op installed in common UI-node vtable slot +0x04. It preserves the incoming
-   register and flag state except for the ordinary stack-frame instructions.
-   [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Retired detached enum dictionary UiNodeKnownCallbackSlot after
-   transferring its complete value vocabulary to code annotation. It is not a safe whole-value storage type.
-   Values: 0=RELOCATE, 2=DRAW_CLIPPED, 3=LAYOUT, 4=NON_RIGHT_PRESS, 5=NON_RIGHT_RELEASE, 6=RIGHT_PRESS,
-   7=RIGHT_RELEASE, 8=NON_RIGHT_DRAG, 9=RIGHT_DRAG, 10=POINTER_MOVE, 11=HIT_TEST, 12=KEYBOARD_EVENT_CF,
-   13=APPLY_FLAGS, 14=SUPPRESS_ACTION_ID, 15=UNSUPPRESS_ACTION_ID, 16=TICK, 17=POINTER_WHEEL
+   Default method04 (vtable slot +0x04) of the UI node classes: does nothing. Installed statically in 40
+   UiNodeVtable tables in image_data.c; no caller of the slot is known yet.
 */
 void __thandor_void_preserve_eax_ecx_edx UiNode_DefaultMethod04_NoOp(void *node)
 
@@ -378,9 +376,8 @@ void __thandor_void_preserve_eax_ecx_edx UiNode_DefaultMethod04_NoOp(void *node)
 
 
 /* Address: 0x004B0750.
-   Ownership: ui/core/runtime.
-   Purpose: Shared four-argument no-op installed in common UI-node vtable slot +0x10, the non-right pointer-press
-   slot. Existing return-register and flag behavior is preserved.
+   Default nonRightPress (vtable slot +0x10, left/middle button press) of the UI node classes: ignores the
+   press. Installed statically in 14 UiNodeVtable tables in image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNode_DefaultNonRightPress
@@ -393,8 +390,8 @@ UiNode_DefaultNonRightPress
 
 
 /* Address: 0x004B0760.
-   Ownership: ui/core/runtime.
-   Purpose: Default no-op left/middle release handler.
+   Default nonRightRelease (vtable slot +0x14, left/middle button release) of the UI node classes: ignores
+   the release. Installed statically in 25 UiNodeVtable tables in image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNode_DefaultNonRightRelease
@@ -407,9 +404,9 @@ UiNode_DefaultNonRightRelease
 
 
 /* Address: 0x004B0770.
-   Ownership: ui/core/runtime.
-   Purpose: Forwards rightPress to node->parent while updating g_UiPointerCaptureTarget. Reaching the root clears
-   the capture target and button.
+   Default rightPress (vtable slot +0x18) of the UI node classes: passes the right-button press up to the
+   parent, which also takes over the pointer capture; at the root nobody takes it and the capture is
+   cleared. Installed statically in 32 UiNodeVtable tables in image_data.c.
 */
 void __thandor_preserve_eax_edx
 UiNode_ForwardRightPressToParent
@@ -418,8 +415,8 @@ UiNode_ForwardRightPressToParent
 
 {
   g_UiPointerCaptureTarget = control->parent;
-  if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
-    g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+  if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
+    g_UiPointerCaptureTarget = UI_NODE_NONE;
     g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   }
   else {
@@ -431,8 +428,8 @@ UiNode_ForwardRightPressToParent
 
 
 /* Address: 0x004B07C0.
-   Ownership: ui/core/runtime.
-   Purpose: Default no-op right-button release handler.
+   Default rightRelease (vtable slot +0x1C) of the UI node classes: ignores the right-button release.
+   Installed statically in 34 UiNodeVtable tables in image_data.c.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNode_DefaultRightRelease
@@ -445,8 +442,8 @@ UiNode_DefaultRightRelease
 
 
 /* Address: 0x004B07D0.
-   Ownership: ui/core/runtime.
-   Purpose: Default no-op left/middle capture-drag handler.
+   Default nonRightDrag (vtable slot +0x20, pointer motion while a left/middle press holds the capture) of the
+   UI node classes: ignores it. Installed statically in 25 UiNodeVtable tables in image_data.c.
 */
 void UiNode_DefaultNonRightDrag
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
@@ -457,8 +454,8 @@ void UiNode_DefaultNonRightDrag
 }
 
 /* Address: 0x004B07E0.
-   Ownership: ui/core/runtime.
-   Purpose: Default no-op right-button capture-drag handler.
+   Default rightDrag (vtable slot +0x24, pointer motion while a right press holds the capture) of the UI
+   node classes: ignores it. Installed statically in 34 UiNodeVtable tables in image_data.c.
 */
 void __thandor_preserve_eax_edx
 UiNode_DefaultRightDrag
@@ -471,9 +468,10 @@ UiNode_DefaultRightDrag
 
 
 /* Address: 0x004B08E0.
-   Ownership: ui/core/runtime.
-   Purpose: Updates nodeFlags as (nodeFlags & retainMask) | setMask and forwards the same masks to direct children
-   through vtable slot +0x34.
+   Default applyFlags (vtable slot +0x34) of the UI node classes: sets nodeFlags to
+   (nodeFlags & retainMask) | setMask and passes the same masks to each direct child's applyFlags, so the change
+   reaches the whole subtree. Installed statically in 39 UiNodeVtable tables in image_data.c; also called
+   directly by UiLayoutContainerControl_ApplyFlagsRecursive once per page.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
@@ -483,7 +481,7 @@ UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNo
   
   control->nodeFlags = control->nodeFlags & retainMask;
   control->nodeFlags = control->nodeFlags | setMask;
-  for (childControl = control->firstChild; childControl != (UiNodeBase *)0xffffffff;
+  for (childControl = control->firstChild; childControl != UI_NODE_NONE;
       childControl = childControl->nextSibling) {
     childControl->vtable->applyFlags(setMask,retainMask,childControl);
   }
@@ -492,8 +490,8 @@ UiNode_ApplyFlagsRecursive(UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNo
 
 
 /* Address: 0x004B09E0.
-   Ownership: ui/core/runtime.
-   Purpose: Default no-op per-frame node tick.
+   Default tick (vtable slot +0x40, per-frame update) of the UI node classes: does nothing. Installed
+   statically in 30 UiNodeVtable tables in image_data.c.
 */
 void UiNode_DefaultTick(UiNodeBase *control)
 

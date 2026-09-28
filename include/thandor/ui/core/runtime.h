@@ -37,13 +37,13 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root);
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *root);
 
 /* 0x00424270 */
-void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *runtime);
+void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void *root);
 
 /* 0x004244E0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiRuntime_OpenFourValueDialog
-          (UiPixelCoordinate value0,UiPixelCoordinate value1,UiPixelCoordinate value2,
-          UiPixelCoordinate value3);
+          (UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
+          UiPixelCoordinate previousHeight,UiPixelCoordinate previousWidth);
 
 /* 0x004AEF00 */
 RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx

@@ -36,10 +36,10 @@ void __thandor_void_preserve_eax_ecx_edx UiTree_AdvanceSpriteButtonAnimations(Ui
 
 
 /* Address: 0x004B1620.
-   Ownership: ui/controls/buttons.
-   Purpose: Initializes animation state, optionally expands a 0x20-byte sequence descriptor into layout and frame
-   ranges, randomizes the initial normal frame, and relocates child pointers.
-   Cross-module calls: Random_NextPrimary [core/math/random], UiContainer_RelocateChildren [ui/controls/layout].
+   Relocate slot of g_UiSpriteButtonControlVtable and the sprite-button vtables at 0x005162C0, 0x00516310
+   and 0x00516530. For an animated button it first expands a serialized 8-int descriptor (node rectangle,
+   normal and selected frame ranges) and starts the animation on a random normal frame, so buttons of the
+   same kind do not animate in lockstep; then the children are relocated.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSpriteButtonControl_Relocate
@@ -48,21 +48,21 @@ UiSpriteButtonControl_Relocate
 {
   UiSelectableStateFlags *stateFlagsField;
   int32_t *sequenceDescriptor;
-  int32_t descriptorOffset;
+  int32_t descriptorValue;
   GraphicsSubresourceEndIndex subresourceEnd;
   uint32_t randomValue;
   uint32_t normalFrameCount;
-  
-  if (((control->selectable).stateFlags & 0x80) != 0) {
+
+  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
     control->animationFrameOffset = 0;
-    if (((control->selectable).stateFlags & 0x100) != 0) {
+    if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR) != 0) {
       sequenceDescriptor = (int32_t *)control->normalSubresourceStartOrDescriptor;
-      descriptorOffset = sequenceDescriptor[1];
+      descriptorValue = sequenceDescriptor[1];
       (control->selectable).base.leftOffset = *sequenceDescriptor;
-      (control->selectable).base.topOffset = descriptorOffset;
-      descriptorOffset = sequenceDescriptor[3];
+      (control->selectable).base.topOffset = descriptorValue;
+      descriptorValue = sequenceDescriptor[3];
       (control->selectable).base.rightOffset = sequenceDescriptor[2];
-      (control->selectable).base.bottomOffset = descriptorOffset;
+      (control->selectable).base.bottomOffset = descriptorValue;
       subresourceEnd = sequenceDescriptor[5];
       control->normalSubresourceStartOrDescriptor = sequenceDescriptor[4];
       control->normalSubresourceEndExclusive = subresourceEnd;
@@ -70,7 +70,7 @@ UiSpriteButtonControl_Relocate
       control->selectedSubresourceStart = sequenceDescriptor[6];
       control->selectedSubresourceEndExclusive = subresourceEnd;
       stateFlagsField = &(control->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & 0xfffffeff;
+      *stateFlagsField = *stateFlagsField & ~UI_SPRITE_BUTTON_SERIALIZED_DESCRIPTOR;
     }
     randomValue = Random_NextPrimary();
     normalFrameCount = control->normalSubresourceEndExclusive - control->normalSubresourceStartOrDescriptor;
@@ -84,9 +84,10 @@ UiSpriteButtonControl_Relocate
 
 
 /* Address: 0x004B16E0.
-   Ownership: ui/controls/buttons.
-   Purpose: Draws the active normal or selected sprite frame with signed state-specific offsets, optional
-   animation-frame offset, and optional alternate texture source.
+   drawClipped slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0 and
+   0x00516310. Draws the current frame (normal or selected, plus the animation offset) twice: first as a
+   half-transparent black shadow shifted by the state's drawOffsets, then the sprite itself, optionally
+   over the normal frame (NORMAL_UNDER_SELECTED).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSpriteButtonControl_DrawClipped
@@ -94,60 +95,60 @@ UiSpriteButtonControl_DrawClipped
           UiPixelCoordinate clipRight,UiSpriteButtonControl *control)
 
 {
-  int8_t drawOffsetX;
-  int8_t drawOffsetY;
+  int8_t shadowOffsetX;
+  int8_t shadowOffsetY;
   bool accessFailed;
   uint32_t underlaySubresource;
   uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *textureSource;
   SoftwareFramebufferAccess *framebufferAccess;
-  
+
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0 ||
-       (((control->selectable).stateFlags & 0x400) == 0)) &&
-      (control->primaryTextureSource != (GraphicsTextureSourceAsset *)0x0)))) {
+       (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0)) &&
+      (control->primaryTextureSource != NULL)))) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-        drawOffsetX = (control->drawOffsets).normalX;
-        drawOffsetY = (control->drawOffsets).normalY;
+        shadowOffsetX = (control->drawOffsets).normalX;
+        shadowOffsetY = (control->drawOffsets).normalY;
       }
       else {
-        drawOffsetX = (control->drawOffsets).selectedX;
-        drawOffsetY = (control->drawOffsets).selectedY;
+        shadowOffsetX = (control->drawOffsets).selectedX;
+        shadowOffsetY = (control->drawOffsets).selectedY;
       }
       textureSource = control->primaryTextureSource;
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
         subresourceIndex = control->normalSubresourceStartOrDescriptor;
       }
       else {
-        if ((((control->selectable).stateFlags & 0x80) == 0) &&
-           (((control->selectable).stateFlags & 0x800) != 0)) {
+        if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
+           (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
           textureSource = control->alternateTextureSource;
         }
         subresourceIndex = control->selectedSubresourceStart;
       }
-      if (((control->selectable).stateFlags & 0x80) != 0) {
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
         subresourceIndex = subresourceIndex + control->animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,(int)drawOffsetY + (control->selectable).base.top,
-                 (int)drawOffsetX + (control->selectable).base.left,0x7f000000,subresourceIndex,textureSource,
-                 g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,(int)shadowOffsetY + (control->selectable).base.top,
+                 (int)shadowOffsetX + (control->selectable).base.left,UI_SPRITE_BUTTON_SHADOW_ARGB,
+                 subresourceIndex,textureSource,g_FramebufferAccess);
       textureSource = control->primaryTextureSource;
       framebufferAccess = g_FramebufferAccess;
       if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
         subresourceIndex = control->normalSubresourceStartOrDescriptor;
       }
       else {
-        if ((((control->selectable).stateFlags & 0x80) == 0) &&
-           (((control->selectable).stateFlags & 0x800) != 0)) {
+        if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
+           (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
           textureSource = control->alternateTextureSource;
         }
         subresourceIndex = control->selectedSubresourceStart;
-        if (((control->selectable).stateFlags & 0x40) != 0) {
+        if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED) != 0) {
           underlaySubresource = control->normalSubresourceStartOrDescriptor;
-          if (((control->selectable).stateFlags & 0x80) != 0) {
+          if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
             underlaySubresource = underlaySubresource + control->animationFrameOffset;
           }
           g_GraphicsTextureSourceBlitSourceAlpha
@@ -156,7 +157,7 @@ UiSpriteButtonControl_DrawClipped
                      g_FramebufferAccess);
         }
       }
-      if (((control->selectable).stateFlags & 0x80) != 0) {
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
         subresourceIndex = subresourceIndex + control->animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
@@ -170,10 +171,9 @@ UiSpriteButtonControl_DrawClipped
 
 
 /* Address: 0x004B1890.
-   Ownership: ui/controls/buttons.
-   Purpose: Updates selected/toggle and animation state for a non-right pointer press, optionally plays
-   activationSoundId, queues actionId, and invalidates the root.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiActionQueue_Enqueue [ui/core/runtime].
+   nonRightPress slot of g_UiSpriteButtonControlVtable. A momentary button only shows its pressed frame
+   (the action follows on release); a persistent one toggles (TOGGLE_ON_ACTIVATION) or latches selected,
+   plays its activation sound and queues actionId, deferred to the animation end for ACTION_AFTER_ANIMATION.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSpriteButtonControl_NonRightPress
@@ -190,8 +190,8 @@ UiSpriteButtonControl_NonRightPress
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
-      if ((((control->selectable).stateFlags & 0x80) != 0) &&
-         ((((control->selectable).stateFlags & 0x800) != 0 ||
+      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) &&
+         ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0 ||
           (control->selectedSubresourceEndExclusive <=
            control->animationFrameOffset + control->selectedSubresourceStart)))) {
         control->animationFrameOffset = 0;
@@ -200,7 +200,7 @@ UiSpriteButtonControl_NonRightPress
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-      if ((((control->selectable).stateFlags & 0x200) != 0) && (control->activationSoundId != 0)) {
+      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -208,16 +208,16 @@ UiSpriteButtonControl_NonRightPress
       selectionStateFlagsField = &(control->selectable).stateFlags;
       *selectionStateFlagsField = *selectionStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
       queueAction = true;
-      if (((control->selectable).stateFlags & 0x80) != 0) {
-        if ((((control->selectable).stateFlags & 0x800) != 0) ||
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+        if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0) ||
            (control->selectedSubresourceEndExclusive <=
             control->animationFrameOffset + control->selectedSubresourceStart)) {
           control->animationFrameOffset = 0;
         }
         pressStateFlagsField = &(control->selectable).stateFlags;
-        *pressStateFlagsField = *pressStateFlagsField | 0x1000;
-        /* Animated buttons with state flag 0x800 do not queue the action here. */
-        queueAction = ((control->selectable).stateFlags & 0x800) == 0;
+        *pressStateFlagsField = *pressStateFlagsField | UI_SPRITE_BUTTON_ACTION_PENDING;
+        /* ACTION_AFTER_ANIMATION: UiSpriteButtonControl_AdvanceAnimation queues it on the last frame. */
+        queueAction = ((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) == 0;
       }
       if (queueAction) {
         UiActionQueue_Enqueue((control->selectable).actionId,control);
@@ -226,7 +226,7 @@ UiSpriteButtonControl_NonRightPress
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      if ((((control->selectable).stateFlags & 0x200) != 0) && (control->activationSoundId != 0)) {
+      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -234,15 +234,15 @@ UiSpriteButtonControl_NonRightPress
       pressStateFlagsField = &(control->selectable).stateFlags;
       *pressStateFlagsField = *pressStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
       queueAction = true;
-      if (((control->selectable).stateFlags & 0x80) != 0) {
-        if ((((control->selectable).stateFlags & 0x800) != 0) ||
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
+        if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0) ||
            (control->selectedSubresourceEndExclusive <=
             control->animationFrameOffset + control->selectedSubresourceStart)) {
           control->animationFrameOffset = 0;
         }
         pressStateFlagsField = &(control->selectable).stateFlags;
-        *pressStateFlagsField = *pressStateFlagsField | 0x1000;
-        queueAction = ((control->selectable).stateFlags & 0x800) == 0;
+        *pressStateFlagsField = *pressStateFlagsField | UI_SPRITE_BUTTON_ACTION_PENDING;
+        queueAction = ((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) == 0;
       }
       if (queueAction) {
         UiActionQueue_Enqueue((control->selectable).actionId,control);
@@ -255,10 +255,9 @@ UiSpriteButtonControl_NonRightPress
 
 
 /* Address: 0x004B1A30.
-   Ownership: ui/controls/buttons.
-   Purpose: Clears momentary selected state on release, resets completed animation state when required, optionally
-   plays activationSoundId, queues actionId, and invalidates the root.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightRelease slot of g_UiSpriteButtonControlVtable. Completes the click of a momentary button: if it
+   is still shown pressed (the pointer was released over it), it plays the activation sound, drops the
+   pressed state and queues actionId. Persistent buttons act on press instead.
 */
 void __thandor_preserve_eax
 UiSpriteButtonControl_NonRightRelease
@@ -270,14 +269,14 @@ UiSpriteButtonControl_NonRightRelease
   
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) {
-    if ((((control->selectable).stateFlags & 0x80) != 0) &&
-       ((((control->selectable).stateFlags & 0x800) != 0 ||
+    if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) &&
+       ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0 ||
         (control->normalSubresourceEndExclusive <=
          control->animationFrameOffset + control->normalSubresourceStartOrDescriptor)))) {
       control->animationFrameOffset = 0;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-      if ((((control->selectable).stateFlags & 0x200) != 0) && (control->activationSoundId != 0)) {
+      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -293,10 +292,10 @@ UiSpriteButtonControl_NonRightRelease
 
 
 /* Address: 0x004B1AE0.
-   Ownership: ui/controls/buttons.
-   Purpose: Uses opaque-sprite or rectangular hit testing during capture to update the selected hover/pressed state
-   and invalidate changes.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   nonRightDrag slot of g_UiSpriteButtonControlVtable, and both drag slots of the sprite-button vtables at
+   0x005162C0, 0x00516310 and 0x00516530. While a momentary, non-animated button holds the
+   pointer, it shows the pressed state only while the pointer is over the button (opaque sprite pixel or
+   node rectangle), so dragging off cancels the click.
 */
 void __thandor_preserve_eax_edx
 UiSpriteButtonControl_NonRightDrag
@@ -304,7 +303,6 @@ UiSpriteButtonControl_NonRightDrag
           UiSpriteButtonControl *control)
 
 {
-  bool opaquePixelHit;
   bool pointerInside;
   UiSelectableStateFlags *selectedStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
@@ -315,13 +313,13 @@ UiSpriteButtonControl_NonRightDrag
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
     return;
   }
-  if (((control->selectable).stateFlags & 0x80) != 0) {
+  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
     return;
   }
-  if (((control->selectable).stateFlags & 0x20) == 0) {
+  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST) == 0) {
     pointerInside = false;
-    if (control->primaryTextureSource != (GraphicsTextureSourceAsset *)0x0) {
-      if (((control->selectable).stateFlags & 0x400) == 0) {
+    if (control->primaryTextureSource != NULL) {
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0) {
         pointerInside = g_GraphicsTextureSourceTestOpaquePixel
                           (pointerY,pointerX,(control->selectable).base.top,
                            (control->selectable).base.left,
@@ -363,26 +361,25 @@ UiSpriteButtonControl_NonRightDrag
 
 
 /* Address: 0x004B1BF0.
-   Ownership: ui/controls/buttons.
-   Purpose: Returns the control when its active sprite pixel or configured rectangular region contains the point;
-   otherwise returns the 0xFFFFFFFF sentinel.
+   hitTest slot of g_UiSpriteButtonControlVtable and of the sprite-button vtables at 0x005162C0, 0x00516310
+   and 0x00516530. Returns the button when the point lies on an opaque pixel of its normal frame (selected
+   frame for SELECTED_ONLY buttons); RECT_HIT_TEST buttons accept the whole node (the caller has already
+   checked the rectangle). Otherwise UI_NODE_NONE.
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiSpriteButtonControl_HitTestOpaque
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSpriteButtonControl *control)
 
 {
-  UiNodeBase *opaqueHitNode;
   UiSpriteButtonControl *hitNode;
-  bool opaquePixelHit;
   bool spritePixelHit;
   
-  hitNode = (UiSpriteButtonControl *)0xffffffff;
+  hitNode = (UiSpriteButtonControl *)UI_NODE_NONE;
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-     (hitNode = control, ((control->selectable).stateFlags & 0x20) == 0)) {
-    if (((control->selectable).stateFlags & 0x400) == 0) {
-      if (control->primaryTextureSource == (GraphicsTextureSourceAsset *)0x0) {
-        hitNode = (UiSpriteButtonControl *)0xffffffff;
+     (hitNode = control, ((control->selectable).stateFlags & UI_SPRITE_BUTTON_RECT_HIT_TEST) == 0)) {
+    if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) == 0) {
+      if (control->primaryTextureSource == NULL) {
+        hitNode = (UiSpriteButtonControl *)UI_NODE_NONE;
         return (UiNodeBase *)hitNode;
       }
       spritePixelHit = g_GraphicsTextureSourceTestOpaquePixel
@@ -397,7 +394,7 @@ UiSpriteButtonControl_HitTestOpaque
                          control->primaryTextureSource);
     }
     if (!spritePixelHit) {
-      hitNode = (UiSpriteButtonControl *)0xffffffff;
+      hitNode = (UiSpriteButtonControl *)UI_NODE_NONE;
       return (UiNodeBase *)hitNode;
     }
   }
@@ -406,9 +403,10 @@ UiSpriteButtonControl_HitTestOpaque
 
 
 /* Address: 0x00515010.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00514FC0[2]@00514FC0.
-   Cross-module calls: UiContainer_DrawIntersectingChildren [ui/controls/layout].
+   drawClipped slot of g_UiImageActionControlVtable (briefing image, movie views). Draws the image 1:1, or
+   with UI_IMAGE_ACTION_STRETCH bilinearly stretched over the node; with UI_IMAGE_ACTION_LETTERBOX and a
+   letterboxWidth narrower than the node it is scaled to that width, centred and framed by black bars.
+   Children are drawn on top.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiImageActionControl_DrawImageAndChildren
@@ -417,19 +415,19 @@ UiImageActionControl_DrawImageAndChildren
 
 {
   int imageBottom;
-  uint32_t sourceWidth;
+  uint32_t letterboxWidth;
   int drawWidth;
   uint32_t scaledHeight;
   uint32_t horizontalMargin;
   int imageLeft;
   int imageTop;
   bool accessFailed;
-  
-  if (((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && (control->textureSource != (GraphicsTextureSourceAsset *)0x0))
+
+  if (((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && (control->textureSource != NULL))
   {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
-      if ((control->displayFlags & 1) == 0) {
+      if ((control->displayFlags & UI_IMAGE_ACTION_STRETCH) == 0) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,
                    control->subresource,control->textureSource,
@@ -437,10 +435,10 @@ UiImageActionControl_DrawImageAndChildren
         g_GraphicsFramebufferEndAccess();
       }
       else {
-        sourceWidth = control->letterboxWidth;
-        horizontalMargin = control->base.layoutWidth - sourceWidth;
-        if (((uint32_t)control->base.layoutWidth < sourceWidth || horizontalMargin == 0) ||
-           ((control->displayFlags & 4) == 0)) {
+        letterboxWidth = control->letterboxWidth;
+        horizontalMargin = control->base.layoutWidth - letterboxWidth;
+        if (((uint32_t)control->base.layoutWidth < letterboxWidth || horizontalMargin == 0) ||
+           ((control->displayFlags & UI_IMAGE_ACTION_LETTERBOX) == 0)) {
           g_GraphicsTextureSourceStretchDirectColorBilinear
                     (control->base.layoutHeight,control->base.layoutWidth,control->base.top,control->base.left,
                      control->subresource,control->textureSource,
@@ -448,24 +446,26 @@ UiImageActionControl_DrawImageAndChildren
           g_GraphicsFramebufferEndAccess();
         }
         else {
-          scaledHeight = (uint32_t)(((int64_t)(int)sourceWidth * (int64_t)control->base.layoutHeight) /
+          /* keep the node's aspect ratio at letterboxWidth */
+          scaledHeight = (uint32_t)(((int64_t)(int)letterboxWidth * (int64_t)control->base.layoutHeight) /
                         (int64_t)control->base.layoutWidth);
           imageLeft = (horizontalMargin >> 1) + control->base.left;
-          imageTop = (control->base.layoutHeight - scaledHeight >> 1) + control->base.top;
+          imageTop = ((control->base.layoutHeight - scaledHeight) >> 1) + control->base.top;
           drawWidth = control->letterboxWidth;
           imageBottom = scaledHeight + imageTop;
+          /* black bars above, below, left and right of the image */
           g_GraphicsFramebufferFillRectArgb
                     (clipTop,clipLeft,clipBottom,clipRight,imageTop,control->base.right,control->base.top,
-                     control->base.left,0xff000000,g_FramebufferAccess);
+                     control->base.left,UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB,g_FramebufferAccess);
           g_GraphicsFramebufferFillRectArgb
                     (clipTop,clipLeft,clipBottom,clipRight,control->base.bottom,control->base.right,imageBottom,
-                     control->base.left,0xff000000,g_FramebufferAccess);
+                     control->base.left,UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB,g_FramebufferAccess);
           g_GraphicsFramebufferFillRectArgb
-                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,imageLeft,imageTop,control->base.left,0xff000000,
-                     g_FramebufferAccess);
+                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,imageLeft,imageTop,control->base.left,
+                     UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB,g_FramebufferAccess);
           g_GraphicsFramebufferFillRectArgb
                     (clipTop,clipLeft,clipBottom,clipRight,imageBottom,control->base.right,imageTop,imageLeft + drawWidth,
-                     0xff000000,g_FramebufferAccess);
+                     UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB,g_FramebufferAccess);
           g_GraphicsTextureSourceStretchDirectColorBilinear
                     (scaledHeight,control->letterboxWidth,imageTop,imageLeft,control->subresource,
                      control->textureSource,g_FramebufferAccess);
@@ -480,8 +480,7 @@ UiImageActionControl_DrawImageAndChildren
 
 
 /* Address: 0x005151F0.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00514FC0[10]@00514FC0.
+   pointerMove slot of g_UiImageActionControlVtable: returns the control's cursor frame for the pointer.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiImageActionControl_QueryPointerCode
@@ -493,9 +492,7 @@ UiImageActionControl_QueryPointerCode
 
 
 /* Address: 0x00515210.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00514FC0[4]@00514FC0.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   nonRightPress slot of g_UiImageActionControlVtable: a left click queues primaryActionId.
 */
 void __thandor_preserve_eax
 UiImageActionControl_EnqueuePrimaryAction
@@ -509,9 +506,7 @@ UiImageActionControl_EnqueuePrimaryAction
 
 
 /* Address: 0x00515230.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00514FC0[6]@00514FC0.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   rightPress slot of g_UiImageActionControlVtable: a right click queues secondaryActionId.
 */
 void __thandor_preserve_eax
 UiImageActionControl_EnqueueSecondaryAction
@@ -525,20 +520,20 @@ UiImageActionControl_EnqueueSecondaryAction
 
 
 /* Address: 0x00515250.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00514FC0[12]@00514FC0.
-   Cross-module calls: UiKeyboardFocus_MoveNext [ui/controls/input], UiActionQueue_Enqueue [ui/core/runtime].
+   keyboardEvent slot of g_UiImageActionControlVtable. Tab moves the keyboard focus on; with
+   UI_IMAGE_ACTION_KEY_ACTIVATES any other key queues primaryActionId, like a left click.
+   CF clear when the key was consumed, set to pass it on.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
 
 {
-  if (keyCode == 0x10002) {
+  if (keyCode == KEYBOARD_KEY_CODE_TAB) {
     UiKeyboardFocus_MoveNext();
     return false;
   }
-  if ((control->displayFlags & 2) != 0) {
+  if ((control->displayFlags & UI_IMAGE_ACTION_KEY_ACTIVATES) != 0) {
     UiActionQueue_Enqueue(control->primaryActionId,&control->base);
     return false;
   }
@@ -547,21 +542,20 @@ UiImageActionControl_HandleKeyboardActivation
 
 
 /* Address: 0x005152E0.
-   Ownership: ui/controls/buttons.
-   Purpose: Handles ui conditional action control draw clipped.
-   Cross-module calls: UiWindow_BlitTiledHorizontalEdge [ui/controls/layout], UiWindow_BlitTiledVerticalEdge
-   [ui/controls/layout], UiWindow_BlitTiledInterior [ui/controls/layout], RichTextCommandStream_MeasureRegs
-   [assets/text/richtext], RichTextCommandStream_DrawSingleLine [assets/text/richtext].
+   drawClipped slot of g_UiConditionalActionControlVtable. Draws nothing while the box has no text lines.
+   Otherwise it draws a tiled window frame (or, for a 416x58 box, one unframed background image) and the
+   rich-text lines inside the frame, clipped to the inner area. The 416x58 variant shows at most 4 lines,
+   last line first.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiConditionalActionControl_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiConditionalActionControl *control)
 
 {
-  uint32_t tileEnd;
+  uint32_t cornerWidth;
   int textLeft;
-  uint32_t tileStart;
-  int drawX;
+  uint32_t cornerHeight;
+  int lineTop;
   int innerHeightOrBottom;
   uint32_t lineIndexOrCount;
   int innerWidthOrRight;
@@ -569,59 +563,66 @@ UiConditionalActionControl_DrawClipped
   RichTextExtentRegs textExtent;
   TextureSizeResult cornerSize;
   GraphicsSubresourceIndex backgroundSubresource;
-  
+
   if ((control->lineCount != 0) &&
      (accessFailed = g_GraphicsFramebufferBeginAccess(), !accessFailed)) {
-    backgroundSubresource = 0x7b;
-    if ((control->base.layoutWidth == 0x1a0) && (control->base.layoutHeight == 0x3a)) {
-      backgroundSubresource = 200;
+    backgroundSubresource = UI_TEXT_BOX_SUBRESOURCE_INTERIOR;
+    if ((control->base.layoutWidth == 416) && (control->base.layoutHeight == 58)) {
+      backgroundSubresource = UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND;
     }
-    cornerSize = g_GraphicsTextureSourceGetLogicalSize(0x72,g_UiWindowTextureSource);
-    tileStart = cornerSize.logicalHeightPixels;
-    tileEnd = cornerSize.logicalWidthPixels;
+    cornerSize = g_GraphicsTextureSourceGetLogicalSize(UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT,g_UiWindowTextureSource);
+    cornerHeight = cornerSize.logicalHeightPixels;
+    cornerWidth = cornerSize.logicalWidthPixels;
     innerWidthOrRight = control->base.layoutWidth;
     innerHeightOrBottom = control->base.layoutHeight;
-    if (backgroundSubresource == 0x7b) {
-      innerWidthOrRight = innerWidthOrRight - tileEnd;
-      innerHeightOrBottom = innerHeightOrBottom - tileStart;
+    if (backgroundSubresource == UI_TEXT_BOX_SUBRESOURCE_INTERIOR) {
+      innerWidthOrRight = innerWidthOrRight - cornerWidth;
+      innerHeightOrBottom = innerHeightOrBottom - cornerHeight;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,0x72,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,
+                 UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,innerWidthOrRight + control->base.left,0x73,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,innerWidthOrRight + control->base.left,
+                 UI_TEXT_BOX_SUBRESOURCE_TOP_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,control->base.left,0x74,
-                 g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,control->base.left,
+                 UI_TEXT_BOX_SUBRESOURCE_BOTTOM_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,innerWidthOrRight + control->base.left,
-                 0x75,g_UiWindowTextureSource,g_FramebufferAccess);
+                 UI_TEXT_BOX_SUBRESOURCE_BOTTOM_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x76,innerWidthOrRight,0,tileEnd,&control->base);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_TEXT_BOX_SUBRESOURCE_TOP,innerWidthOrRight,0,cornerWidth,
+                 &control->base);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x77,innerHeightOrBottom,tileStart,0,&control->base);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_TEXT_BOX_SUBRESOURCE_LEFT,innerHeightOrBottom,cornerHeight,0,
+                 &control->base);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x78,innerHeightOrBottom,tileStart,innerWidthOrRight,&control->base);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_TEXT_BOX_SUBRESOURCE_RIGHT,innerHeightOrBottom,cornerHeight,
+                 innerWidthOrRight,&control->base);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x79,innerWidthOrRight,innerHeightOrBottom,tileEnd,&control->base);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_TEXT_BOX_SUBRESOURCE_BOTTOM,innerWidthOrRight,
+                 innerHeightOrBottom,cornerWidth,&control->base);
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,0x7b,innerHeightOrBottom,innerWidthOrRight,tileStart,tileEnd,&control->base);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_TEXT_BOX_SUBRESOURCE_INTERIOR,innerHeightOrBottom,
+                 innerWidthOrRight,cornerHeight,cornerWidth,&control->base);
     }
     else {
       UiWindow_BlitTiledInterior
                 (clipTop,clipLeft,clipBottom,clipRight,backgroundSubresource,innerHeightOrBottom,innerWidthOrRight,0,0,&control->base);
-      innerWidthOrRight = innerWidthOrRight - tileEnd;
-      innerHeightOrBottom = innerHeightOrBottom - tileStart;
+      innerWidthOrRight = innerWidthOrRight - cornerWidth;
+      innerHeightOrBottom = innerHeightOrBottom - cornerHeight;
     }
-    textLeft = tileEnd + control->base.left;
-    drawX = tileStart + control->base.top;
+    textLeft = cornerWidth + control->base.left;
+    lineTop = cornerHeight + control->base.top;
     innerWidthOrRight = innerWidthOrRight + control->base.left;
     innerHeightOrBottom = innerHeightOrBottom + control->base.top;
+    /* narrow the clip rectangle to the area inside the frame (the clip parameters are named in reverse
+       order: clipRight/clipBottom act as the left/top bound here) */
     if (clipRight < textLeft) {
       clipRight = textLeft;
     }
-    if (clipBottom < drawX) {
-      clipBottom = drawX;
+    if (clipBottom < lineTop) {
+      clipBottom = lineTop;
     }
     if (innerWidthOrRight < clipLeft) {
       clipLeft = innerWidthOrRight;
@@ -630,14 +631,14 @@ UiConditionalActionControl_DrawClipped
       clipTop = innerHeightOrBottom;
     }
     textExtent = RichTextCommandStream_MeasureRegs(g_UiTextStyleNormal,control->textLines[0]);
-    if (backgroundSubresource == 0x7b) {
+    if (backgroundSubresource == UI_TEXT_BOX_SUBRESOURCE_INTERIOR) {
       lineIndexOrCount = 0;
       do {
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_UiTextStyleNormal,
-                   control->textLines[lineIndexOrCount],drawX,textLeft + 3);
+                   control->textLines[lineIndexOrCount],lineTop,textLeft + 3);
         lineIndexOrCount = lineIndexOrCount + 1;
-        drawX = drawX + textExtent.heightPixels;
+        lineTop = lineTop + textExtent.heightPixels;
       } while (lineIndexOrCount < control->lineCount);
     }
     else {
@@ -648,8 +649,8 @@ UiConditionalActionControl_DrawClipped
       do {
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_UiTextStyleNormal,
-                   control->textLines[lineIndexOrCount - 1],drawX,textLeft + 3);
-        drawX = drawX + textExtent.heightPixels;
+                   control->textLines[lineIndexOrCount - 1],lineTop,textLeft + 3);
+        lineTop = lineTop + textExtent.heightPixels;
         lineIndexOrCount = lineIndexOrCount - 1;
       } while (lineIndexOrCount != 0);
     }
@@ -660,8 +661,7 @@ UiConditionalActionControl_DrawClipped
 
 
 /* Address: 0x005155A0.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00515290[10]@00515290.
+   pointerMove slot of g_UiConditionalActionControlVtable: returns the control's cursor frame.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiConditionalActionControl_QueryPointerCode
@@ -673,9 +673,8 @@ UiConditionalActionControl_QueryPointerCode
 
 
 /* Address: 0x005155C0.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00515290[11]@00515290.
-   Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
+   hitTest slot of g_UiConditionalActionControlVtable. An empty box (no text lines) is invisible and
+   returns UI_NODE_NONE; otherwise the normal child hit test applies.
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiConditionalActionControl_HitTestWhenEnabled
@@ -683,8 +682,8 @@ UiConditionalActionControl_HitTestWhenEnabled
 
 {
   UiNodeBase *hitNode;
-  
-  hitNode = (UiNodeBase *)0xffffffff;
+
+  hitNode = UI_NODE_NONE;
   if (control->lineCount != 0) {
     hitNode = UiContainer_HitTestChildren(pointerY,pointerX,&control->base);
   }
@@ -693,9 +692,8 @@ UiConditionalActionControl_HitTestWhenEnabled
 
 
 /* Address: 0x005155F0.
-   Ownership: ui/controls/buttons.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_00515290[4]@00515290.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   nonRightPress slot of g_UiConditionalActionControlVtable: a left click queues actionId, but only while
+   the box shows text.
 */
 void __thandor_preserve_eax
 UiConditionalActionControl_EnqueuePrimaryActionIfEnabled

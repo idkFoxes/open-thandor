@@ -68,12 +68,12 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
 
 /* 0x00545640 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t arg3);
+FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04);
 
 /* 0x00545660 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
-          (int playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
+          (int playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04);
 
 /* 0x0054E230 */
 bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(void);
@@ -119,7 +119,7 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
           FrontendRootRuntimeAddress32 frontendRuntime);
 
 /* 0x0054EF30 */
-void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRuntime);
+void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot);
 
 /* 0x0054FBA0 */
 bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFrontend(void);

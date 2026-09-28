@@ -377,9 +377,11 @@ uint32_t DynDLL_Unload(char *moduleName)
 }
 
 /* Address: 0x00573D40.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Handles bootstrap api resolve binding by destination.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   Looks up the g_BootstrapApiBindings entry whose destination slot equals destination (a slot that still
+   holds its name string), passes that name to the bound LoadLibraryA and stores the result in the slot; CF
+   set when no entry matches or the call fails (the name is left in g_PackageLastErrorPath). EAX is
+   FATAL_ERROR_LOADER_MODULE_MISSING on both paths. No caller found in src/ or src/generated/image_data.c
+   (only the function map lists it).
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 BootstrapApi_ResolveBindingByDestination(void **destination)
@@ -390,29 +392,30 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
   DynamicApiBinding *bindingCursor;
   StatusResult failureResult;
   StatusResult successResult;
-  
+
   bindingCursor = g_BootstrapApiBindings;
+  /* the original bounds the walk with the loaded-module count, not with the size of the binding table */
   remainingCount = g_DynamicModuleCount;
-  for (; remainingCount != 0; remainingCount = remainingCount - 1) {
+  for (; remainingCount != 0; remainingCount--) {
     if (destination == bindingCursor->destination) {
       Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)destination);
       /* The original pushes ESI (the binding cursor) only to preserve it across the call: binding slot 0
          (LoadLibraryA) gets the destination argument as its single argument, and the result is stored
-         into the matching binding (MOV [ESI],EDX after POP ESI). The function is unreferenced. */
+         into the matching binding (MOV [ESI],EDX after POP ESI). */
       resolvedProcedure =
            (void *)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)((char *)destination);
-      if (resolvedProcedure != (void *)0x0) {
+      if (resolvedProcedure != NULL) {
         bindingCursor->destination = (void **)resolvedProcedure;
-        successResult.valueOrError = 0xf;
+        successResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING; /* EAX keeps the code on success too */
         successResult.failed = false;
         return successResult;
       }
       break;
     }
-    bindingCursor = bindingCursor + 1;
+    bindingCursor++;
   }
   failureResult.failed = true;
-  failureResult.valueOrError = 0xf;
+  failureResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING;
   return failureResult;
 }
 
@@ -443,12 +446,11 @@ void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
 
 
 /* Address: 0x00585F50.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Win32 WNDPROC. Typed parameters: p1 message→Win32WindowMessageId_V343. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: Keyboard_OnKeyDown [platform/input/devices], Keyboard_OnKeyUp [platform/input/devices],
-   Keyboard_OnChar [platform/input/devices].
+   Window procedure of the main window (g_MainWindowClass.windowProc, registered by ProcessEntry). Counts
+   WM_CLOSE/WM_DESTROY, hides the cursor and forwards keys and characters to the keyboard layer. On
+   WM_ACTIVATEAPP it drops to normal priority, releases the mouse and lets the graphics backend give up the
+   display when deactivated, and on reactivation returns to real-time priority, reacquires the mouse, restores
+   the display mode and reseeds the lock-key state.
 */
 LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam)
 
@@ -456,28 +458,31 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
   uint16_t keyState;
   HANDLE currentProcess;
   LRESULT defaultResult;
-  
-  if ((message == 2) || (message == 0x10)) {
-    g_WindowDestroyDepth = g_WindowDestroyDepth + 1;
+
+  if ((message == WM_DESTROY) || (message == WM_CLOSE)) {
+    g_WindowDestroyDepth++;
   }
-  else if (message == 0x1c) {
+  else if (message == WM_ACTIVATEAPP) {
     g_AppActive = wParam;
     if (wParam == 0) {
       currentProcess = GetCurrentProcess();
-      SetPriorityClass(currentProcess,0x20);
-      if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
+      SetPriorityClass(currentProcess,NORMAL_PRIORITY_CLASS);
+      if (g_MouseDevice != NULL) {
         g_MouseDevice->lpVtbl->Unacquire(g_MouseDevice);
       }
+      /* not while the window is being closed or destroyed */
       if (g_WindowDestroyDepth == 0) {
         g_GraphicsBackendRefreshActiveAdapter();
       }
     }
     else {
       currentProcess = GetCurrentProcess();
-      SetPriorityClass(currentProcess,0x100);
-      if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
+      SetPriorityClass(currentProcess,REALTIME_PRIORITY_CLASS);
+      if (g_MouseDevice != NULL) {
         g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
       }
+      /* only when a display mode was set; the red+green+blue bit count is rounded up to a multiple of 16
+         (a 5-5-5 format asks for 16 bits per pixel) */
       if (-1 < (int)g_ActiveGraphicsAdapterIndex) {
         g_GraphicsSetDisplayMode
                   (g_ActiveGraphicsAdapterIndex,
@@ -486,35 +491,36 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
                    g_SoftwarePixelFormatConfig.blueBitCount + 0xf & 0xfffffff0,g_FramebufferHeight,
                    g_FramebufferWidth);
       }
-      if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
+      if (g_MouseDevice != NULL) {
         g_KeyboardStateMask = 0;
-        keyState = GetKeyState(0x90);
+        /* bit 0 of GetKeyState is the toggle state of a lock key */
+        keyState = GetKeyState(VK_NUMLOCK);
         if ((keyState & 1) != 0) {
-          g_KeyboardStateMask = g_KeyboardStateMask | 0x10000;
+          g_KeyboardStateMask = g_KeyboardStateMask | KEYBOARD_STATE_NUM_LOCK;
         }
-        keyState = GetKeyState(0x91);
+        keyState = GetKeyState(VK_SCROLL);
         if ((keyState & 1) != 0) {
-          g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
+          g_KeyboardStateMask = g_KeyboardStateMask | KEYBOARD_STATE_SCROLL_LOCK;
         }
-        keyState = GetKeyState(0x14);
+        keyState = GetKeyState(VK_CAPITAL);
         if ((keyState & 1) != 0) {
-          g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
+          g_KeyboardStateMask = g_KeyboardStateMask | KEYBOARD_STATE_CAPS_LOCK;
         }
         g_KeyboardFlushEvents();
       }
     }
   }
-  else if (message == 0x20) {
-    SetCursor((HCURSOR)0x0);
+  else if (message == WM_SETCURSOR) {
+    SetCursor(NULL);
   }
-  else if ((message == 0x100) || (message == 0x104)) {
+  else if ((message == WM_KEYDOWN) || (message == WM_SYSKEYDOWN)) {
     Keyboard_OnKeyDown(wParam);
   }
-  else if ((message == 0x101) || (message == 0x105)) {
+  else if ((message == WM_KEYUP) || (message == WM_SYSKEYUP)) {
     Keyboard_OnKeyUp(wParam);
   }
   else {
-    if ((message != 0x102) && (message != 0x106)) {
+    if ((message != WM_CHAR) && (message != WM_SYSCHAR)) {
       defaultResult = DefWindowProcA(hwnd,message,wParam,lParam);
       return defaultResult;
     }

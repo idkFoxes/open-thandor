@@ -340,13 +340,12 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
 
 
 /* Address: 0x0054FA10.
-   Ownership: network/backend/runtime.
-   Purpose: Ticks the frontend disconnect timeout and, when it expires, clears mailbox/network state, resets page
-   and ROM state, and collapses the player/session runtime to its local baseline.
-   Cross-module calls: UiTransferMailbox_ClearReceivedState [network/protocol/transfer], UiPageStack_SetActiveIndex
-   [ui/controls/layout], FrontendRomTransition_ActivateRecordById [assets/rom/runtime], TextResource_Resolve
-   [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext],
-   FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime].
+   Host timeout of a client while the session starts, called by
+   FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState while g_FrontendNetworkState is
+   FRONTEND_NETWORK_STATE_CLIENT_STARTING: when g_SessionTransferTimeoutTicks runs out the host is lost. The session is dropped to a
+   local one (mailbox cleared, network role cleared, backend socket closed), the frontend returns to its
+   first page if it was still waiting for players, the TEXT_ID_NETWORK_HOST_LOST notice with the host's name
+   is shown and the player list collapses to the local player alone.
 */
 void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
 
@@ -357,37 +356,40 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
   TextResolveResult resolvedText;
-  
-  g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks - 1;
+
+  g_SessionTransferTimeoutTicks--;
   if (g_SessionTransferTimeoutTicks == 0) {
     UiTransferMailbox_ClearReceivedState();
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
     g_FrontendNetworkState = 0;
-    g_NetworkBackendSlot3();
-    g_NetworkBackendSlot1();
+    g_NetworkBackendSlot3(); /* close the socket */
+    g_NetworkBackendSlot1(); /* backend cleanup */
     frontendRootBase = g_FrontendRootNode;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    if ((g_FrontendRuntimeFlags & 0x10) != 0) {
+    if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
       frontendRootFlags = &FRONTEND_UI_FIELD(frontendRootBase,menuRoomModelView,0x4C,uint32_t);
-      *frontendRootFlags = *frontendRootFlags & 0xffffdfff;
+      *frontendRootFlags = *frontendRootFlags & ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
       FrontendRomTransition_ActivateRecordById
                 (1,(WorldRuntimeContext *)FRONTEND_UI(frontendRootBase,menuRoomModelView));
     }
-    resolvedText = TextResource_Resolve(0xff01);
+    /* player block 0 is the host's while connected */
+    resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);
     RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText.text);
     FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.text);
     localPlayerRecord = g_FrontendPlayerRuntimeBlocks;
-    for (remainingPlayers = g_FrontendPlayerRuntimeBlockCount; remainingPlayers != 0; remainingPlayers = remainingPlayers - 1) {
+    for (remainingPlayers = g_FrontendPlayerRuntimeBlockCount; remainingPlayers != 0; remainingPlayers--) {
       if ((playerRecord->factionAssignment).readyOrWaitState == 0) {
+        /* some player had not reported ready yet: report it for the local player, so a waiting
+           Frontend_Init can finish (the role was cleared above, so the local branch is always taken) */
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(g_LocalPlayerRuntimeId,0,0,0);
         }
         else {
-          FrontendCommandQueue_EnqueueLocalPlayerCommand(0xd0,0,0,0);
+          FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
         }
         playerRecord = g_FrontendPlayerRuntimeBlocks;
         g_FrontendPlayerRuntimeBlockCount = 1;
@@ -520,8 +522,8 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeout
 
 
 /* Address: 0x00583D10.
-   Ownership: network/backend/runtime.
-   Purpose: Proven unreferenced trivial stub that preserves its recovered register set and returns zero.
+   Stub in the network backend code that returns 0 and preserves the other registers; nothing references
+   it (neither a call nor a table entry).
 */
 uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
 
@@ -530,8 +532,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_0058
 }
 
 /* Address: 0x00583D30.
-   Ownership: network/backend/runtime.
-   Purpose: Proven unreferenced trivial no-op stub with the recovered register-preservation contract.
+   Empty stub in the network backend code (a bare RET); nothing references it.
 */
 void __thandor_void_preserve_eax_ecx_edx Unreferenced_NoOpPreserveRegs_00583D30(void)
 
@@ -540,8 +541,8 @@ void __thandor_void_preserve_eax_ecx_edx Unreferenced_NoOpPreserveRegs_00583D30(
 }
 
 /* Address: 0x00583D40.
-   Ownership: network/backend/runtime.
-   Purpose: Proven unreferenced trivial stub that preserves its recovered register set and returns zero.
+   Stub in the network backend code that returns 0 and preserves the other registers; nothing references
+   it.
 */
 uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D40(void)
 
@@ -812,17 +813,21 @@ NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionRetur
 
 
 /* Address: 0x00585210.
-   Ownership: network/backend/runtime.
-   Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
-   callable entry.
+   Backend slot 0 ("select backend instance") of the ws2_32 backend, which can offer several instances
+   (protocols): remembers the index and copies the instance's address family, socket-address length,
+   socket type and protocol into the active-backend globals used by the other ws2_32 slots. CF is set for
+   an index beyond g_NetworkBackendInstanceCount (the original loads 0x2B into EAX there but restores EAX).
+   No recovered table points at it; like the other ws2_32 slots it belongs to the skipped part of
+   Network_Init.
 */
 bool __thandor_cf_preserve_eax_ecx_edx NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex)
 
 {
   NetworkBackendInstanceDescriptorPrefix *selectedBackendDescriptor;
-  
+
   if (instanceIndex < g_NetworkBackendInstanceCount) {
     g_NetworkBackendSessionContext = (NetworkSessionContext *)instanceIndex;
+    /* the instance descriptors are 0x100 bytes apart */
     selectedBackendDescriptor =
          (NetworkBackendInstanceDescriptorPrefix *)
          ((int)g_NetworkBackendInstanceTable + instanceIndex * 0x100);

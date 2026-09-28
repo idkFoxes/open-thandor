@@ -21,6 +21,76 @@
 #define UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB 0xC0
 #define UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB 0xC2
 
+/* More g_UiWindowTextureSource pieces (UiScrollableControl_DrawFrameContentAndScrollbars and the list row
+   drawing). Each pressed/active piece follows its normal piece at +8 (0x5A -> 0x62 ... 0x61 -> 0x69); the
+   thumb caps have their active variant at +4 (0xC0 -> 0xC4 ... 0xC3 -> 0xC7). */
+#define UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT 0x5B
+#define UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE 0x5C
+#define UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK 0x5D
+#define UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN 0x5F
+#define UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE 0x60
+#define UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK 0x61
+#define UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET 8
+#define UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END 0xC1
+#define UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END 0xC3
+#define UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET 4
+/* Frame styles: four corners (top-left, top-right, bottom-left, bottom-right), then the top, left, right and
+   bottom edges. */
+#define UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST 0x6A
+#define UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST 0x72
+#define UI_WINDOW_SUBRESOURCE_INTERIOR 0x7A
+/* Row highlight of the selected list row: plain bar, or left cap / middle / right cap when focused. */
+#define UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT 0x82
+#define UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT 0x83
+#define UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE 0x84
+#define UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT 0x85
+
+/* UiScrollableControl scrollStateFlags bits beyond UiScrollableStateFlags: the interior fill (0x100 draws
+   UI_WINDOW_SUBRESOURCE_INTERIOR, 0x200 alone draws subresource 0), the two frame styles, the right-button
+   drag (panning) and whether that drag started inside the content view (then the hit test does not pass
+   the pointer to the content). */
+#define UI_SCROLL_FILL_INTERIOR_TEXTURED 0x100
+#define UI_SCROLL_FILL_INTERIOR 0x200
+#define UI_SCROLL_FRAME_STYLE_A 0x400
+#define UI_SCROLL_FRAME_STYLE_B 0x800
+/* NOTE: UiScrollableControl_BeginSecondaryScrollInteraction sets 0x1000 and clears it again a few instructions
+   later (as in the original), so the pointer wheel's test of it never sees it set. */
+#define UI_SCROLL_SECONDARY_INTERACTION_ACTIVE 0x1000
+#define UI_SCROLL_SECONDARY_PANNING_CONTENT 0x4000
+/* All UI_SCROLL_HORIZONTAL_*_ACTIVE / UI_SCROLL_VERTICAL_*_ACTIVE part bits. */
+#define UI_SCROLL_HORIZONTAL_PARTS_ACTIVE 0x1F0000
+#define UI_SCROLL_VERTICAL_PARTS_ACTIVE 0x1F000000
+/* Cursor frames of a panning drag: all directions, vertical only, horizontal only. */
+#define UI_SCROLL_CURSOR_FRAME_PAN 1
+#define UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL 4
+#define UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL 5
+
+/* UiListControl.listStateFlags / UiTimedListControl.listStateAndDelay: bits 24..31 count down the frames until
+   a deferred list action is queued (tick callbacks). */
+#define UI_LIST_COUNTDOWN_SHIFT 24
+#define UI_LIST_COUNTDOWN_ONE 0x1000000
+#define UI_LIST_COUNTDOWN_MASK 0xff000000
+#define UI_LIST_FLAGS_MASK 0xffffff
+
+/* UiSelectableControl stateFlags bits read by UiSelectableControl_KeyboardEvent: Enter / Escape also activate
+   the control; 0x80 plays UiSoundSelectableControl.activationSound on a keyboard activation (the same bit
+   is UI_SPRITE_BUTTON_ANIMATED for sprite buttons). */
+#define UI_SELECTABLE_ACTIVATE_ON_ENTER 0x04
+#define UI_SELECTABLE_ACTIVATE_ON_ESCAPE 0x08
+#define UI_SELECTABLE_PLAY_KEYBOARD_SOUND 0x80
+
+/* Directory tree records (UiTimedListTree_BuildDirectoryRecordBlock): rowPayload04 is the row icon in the
+   list's rowTextureSource (drive rows use their EngineDriveTypeCode); each label buffer is 0x200 bytes. */
+#define UI_TIMED_LIST_ICON_DIRECTORY 0x26
+#define UI_TIMED_LIST_ICON_COMPUTER 0x27
+#define UI_TIMED_LIST_LABEL_BYTES 0x200
+
+/* UiCatalogEntryControl_DrawClipped: packed text styles of the overlays (price, count, percentage); the alert
+   colour marks an unaffordable price or a flagged army. MEASURE is only used to measure the text. */
+#define UI_CATALOG_TEXT_STYLE_NORMAL 0x1040000
+#define UI_CATALOG_TEXT_STYLE_ALERT 0x1050000
+#define UI_CATALOG_TEXT_STYLE_MEASURE 0x1000000
+
 /* 0x004BBE60 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiTimedListControl_HandleKeyboardNavigation

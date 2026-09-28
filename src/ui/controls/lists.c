@@ -11,11 +11,11 @@
 /* Implementation ownership: ui/controls/lists. */
 
 /* Address: 0x004BBE60.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui timed list control handle keyboard navigation carry-flag result.
-   Local calls: UiScrollableControl_QueryContentSizeRegs, UiTimedListTree_CountRecordArrayAndNestedChildren,
-   UiScrollableControl_ClampOffsetsToViewport.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
+   Keyboard handler of the tree list (g_UiTimedListControlVtable keyboardEvent): Home/End, Up/Down and
+   Page Up/Down walk the visible rows of the record tree, Left/Right collapse/expand the selected row through
+   recordSelectionCallback. A moved selection is scrolled into view and its action queued after
+   g_UiTimedListActionDelayFrames frames (UiTimedListControl_TickActionDelay). Other keys go to the default
+   focus handling; the keys handled here return false (CF clear).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiTimedListControl_HandleKeyboardNavigation
@@ -43,31 +43,31 @@ UiTimedListControl_HandleKeyboardNavigation
      followed by count row records; an expanded row (flags 1|2) links its child block. */
   stepCounter = 1;
   previousSelection = control->selectedRecord;
-  if ((keyCode & 0xffff0000) == 0) {
+  if ((keyCode & 0xffff0000) == 0) { /* plain characters */
     handled = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return handled;
   }
   switch (keyCode) {
-  case 0x10010:
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME):
     control->selectedRecord = control->recordTree + 1;
     break;
-  case 0x10018:
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END):
     childBlock = control->recordTree;
     do {
       lastRecord = childBlock + (int)childBlock->recordCountOrRowPayload00;
       control->selectedRecord = lastRecord;
-      if (((lastRecord->recordFlags0C & 1) == 0) || ((lastRecord->recordFlags0C & 2) == 0)) break;
+      if (((lastRecord->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) || ((lastRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) == 0)) break;
       childBlock = lastRecord->nestedRecordBlockOrParentLink08;
-    } while (childBlock != (UiTimedListTreeRecord16 *)0x0);
+    } while (childBlock != NULL);
     break;
-  case 0x10012:
-  case 0x10011:
-    if (keyCode == 0x10012) {
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP):
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP):
+    if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP)) {
       /* Page: one step less than the rows visible in the viewport (unsigned 32-bit DIV).
          NOTE: exactly one visible row gives 0 steps, which the do/while wraps like the original. */
       contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)((uint32_t)(contentSize >> 0x20) / control->rowHeight);
-      stepCounter = rowAccumulator + -1;
+      rowAccumulator = (int)((uint32_t)(contentSize >> 32) / control->rowHeight);
+      stepCounter = rowAccumulator - 1;
       if (rowAccumulator < 1) {
         stepCounter = 1;
       }
@@ -79,9 +79,9 @@ UiTimedListControl_HandleKeyboardNavigation
       recordCursor = stepRecord - 1;
       control->selectedRecord = recordCursor;
       if ((stepRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) {
-        while ((((recordCursor->recordFlags0C & 1U) != 0 && ((recordCursor->recordFlags0C & 2U) != 0)) &&
+        while ((((recordCursor->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0 && ((recordCursor->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
                (recordCursor = recordCursor->nestedRecordBlockOrParentLink08,
-               recordCursor != (UiTimedListTreeRecord16 *)0x0))) {
+               recordCursor != NULL))) {
           recordCursor = recordCursor + (int)recordCursor->recordCountOrRowPayload00;
           control->selectedRecord = recordCursor;
         }
@@ -89,19 +89,19 @@ UiTimedListControl_HandleKeyboardNavigation
       else {
         recordCursor = stepRecord[-1].nestedRecordBlockOrParentLink08;
         control->selectedRecord = stepRecord;
-        if (recordCursor != (UiTimedListTreeRecord16 *)0x0) {
+        if (recordCursor != NULL) {
           control->selectedRecord = recordCursor;
         }
       }
-      stepCounter = stepCounter + -1;
+      stepCounter--;
     } while (stepCounter != 0);
     break;
-  case 0x1001a:
-  case 0x10019:
-    if (keyCode == 0x1001a) {
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN):
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN):
+    if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN)) {
       contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)((uint32_t)(contentSize >> 0x20) / control->rowHeight);
-      stepCounter = rowAccumulator + -1;
+      rowAccumulator = (int)((uint32_t)(contentSize >> 32) / control->rowHeight);
+      stepCounter = rowAccumulator - 1;
       if (rowAccumulator < 1) {
         stepCounter = 1;
       }
@@ -112,14 +112,14 @@ UiTimedListControl_HandleKeyboardNavigation
       startRecord = control->selectedRecord;
       siblingIndex = 0;
       scanRecord = startRecord;
-      if ((((startRecord->recordFlags0C & 1) == 0) || ((startRecord->recordFlags0C & 2) == 0)) ||
+      if ((((startRecord->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) || ((startRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) == 0)) ||
          ((recordCursor = startRecord->nestedRecordBlockOrParentLink08,
-          recordCursor == (UiTimedListTreeRecord16 *)0x0 || (recordCursor->recordCountOrRowPayload00 == 0))))
+          recordCursor == NULL || (recordCursor->recordCountOrRowPayload00 == 0))))
       {
         while( true ) {
           do {
             stepRecord = scanRecord;
-            siblingIndex = siblingIndex + 1;
+            siblingIndex++;
             scanRecord = stepRecord - 1;
           } while ((stepRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
           control->selectedRecord = control->selectedRecord + 1;
@@ -127,7 +127,7 @@ UiTimedListControl_HandleKeyboardNavigation
           scanRecord = stepRecord[-1].nestedRecordBlockOrParentLink08;
           siblingIndex = 0;
           control->selectedRecord = scanRecord;
-          if (scanRecord == (UiTimedListTreeRecord16 *)0x0) {
+          if (scanRecord == NULL) {
             control->selectedRecord = startRecord;
             break;
           }
@@ -136,14 +136,14 @@ UiTimedListControl_HandleKeyboardNavigation
       else {
         control->selectedRecord = recordCursor + 1;
       }
-      stepCounter = stepCounter + -1;
+      stepCounter--;
     } while (stepCounter != 0);
     break;
-  case 0x10014:
-    if ((previousSelection->recordFlags0C & 1) == 0) {
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT): /* collapse an expanded row */
+    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) {
       return false;
     }
-    if ((previousSelection->recordFlags0C & 2) == 0) {
+    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) == 0) {
       return false;
     }
     if (control->recordSelectionCallback == 0) {
@@ -152,11 +152,11 @@ UiTimedListControl_HandleKeyboardNavigation
     control->recordSelectionCallback
               (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
     return false;
-  case 0x10016:
-    if ((previousSelection->recordFlags0C & 1) == 0) {
+  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT): /* expand a collapsed directory row */
+    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) {
       return false;
     }
-    if ((previousSelection->recordFlags0C & 2) != 0) {
+    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) {
       return false;
     }
     if (control->recordSelectionCallback == 0) {
@@ -184,26 +184,26 @@ UiTimedListControl_HandleKeyboardNavigation
       rowAccumulator = rowIndex + 1;
     } while (((countRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
             (countRecord = countRecord->nestedRecordBlockOrParentLink08,
-            countRecord != (UiTimedListTreeRecord16 *)0x0));
+            countRecord != NULL));
     rowIndex = rowIndex * (int)control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
               ((int)control->rowHeight + rowIndex + 1,(control->base).rightOffset,rowIndex,0,
                (UiScrollableControl *)(control->base).parent);
     actionDelayFrames = g_UiTimedListActionDelayFrames;
     control->listStateAndDelay = control->listStateAndDelay | UI_TIMED_LIST_ACTION_DELAY_PENDING;
-    control->listStateAndDelay = control->listStateAndDelay & 0xffffff;
-    control->listStateAndDelay = control->listStateAndDelay | actionDelayFrames << 0x18;
+    control->listStateAndDelay = control->listStateAndDelay & UI_LIST_FLAGS_MASK;
+    control->listStateAndDelay = control->listStateAndDelay | actionDelayFrames << UI_LIST_COUNTDOWN_SHIFT;
   }
   return false;
 }
 
 
 /* Address: 0x004BB100.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[12]@004BA590.
-   Local calls: UiScrollableControl_QueryContentSizeRegs, UiScrollableControl_ClampOffsetsToViewport.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_DefaultKeyboardEventMoveFocusNext
-   [ui/controls/input].
+   Keyboard handler of the column list (g_UiListControlVtable keyboardEvent): Enter confirms the selection
+   and queues the list's action at once; Home/End, Up/Down and Page Up/Down (one row less than the view
+   holds) move the selection, play the selection sound, scroll the row into view and queue the action after
+   g_UiListActivationPulseFrames frames (UiListControl_TickActivationPulse). Other keys go to the default
+   focus handling; the keys handled here return false (CF clear).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiListControl_HandleKeyboardNavigation
@@ -218,43 +218,43 @@ UiListControl_HandleKeyboardNavigation
   UiScrollableContentDimensionsEdxEax8 contentSize;
   
   previousSelectedSlot = control->selectedRowSlot;
-  if ((keyCode & 0xffff0000) != 0) {
-    if (keyCode == 0x10001) {
+  if ((keyCode & 0xffff0000) != 0) { /* not a plain character */
+    if (keyCode == KEYBOARD_KEY_CODE_ENTER) {
       control->listStateFlags = control->listStateFlags | UI_LIST_SELECTION_CONFIRMED;
       UiActionQueue_Enqueue(control->actionId,control);
     }
-    else if (keyCode == 0x10010) {
+    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME)) {
       control->selectedRowSlot = control->rowSlots;
     }
-    else if (keyCode == 0x10018) {
+    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END)) {
       control->selectedRowSlot = control->rowSlots + (control->rowCount - 1);
     }
-    else if (keyCode == 0x10012) {
+    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP)) {
       contentSize = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
       rowValue = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) -
-              ((int)((contentSize >> 0x20) / (uint64_t)control->rowHeight) + -1);
+              ((int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1);
       if (rowValue < 0) {
         rowValue = 0;
       }
       control->selectedRowSlot = control->rowSlots + rowValue;
     }
-    else if (keyCode == 0x1001a) {
+    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN)) {
       contentSize = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
       targetRowIndex = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) +
-              (int)((contentSize >> 0x20) / (uint64_t)control->rowHeight) + -1;
+              (int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1;
       if (control->rowCount <= targetRowIndex) {
         targetRowIndex = control->rowCount - 1;
       }
       control->selectedRowSlot = control->rowSlots + targetRowIndex;
     }
-    else if (keyCode == 0x10011) {
-      if (control->rowSlots <= control->selectedRowSlot + -1) {
-        control->selectedRowSlot = control->selectedRowSlot + -1;
+    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP)) {
+      if (control->rowSlots <= control->selectedRowSlot - 1) {
+        control->selectedRowSlot = control->selectedRowSlot - 1;
       }
     }
-    else if (keyCode == 0x10019) {
+    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN)) {
       if (((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) + 1 <
           control->rowCount) {
         control->selectedRowSlot = control->selectedRowSlot + 1;
@@ -267,7 +267,7 @@ UiListControl_HandleKeyboardNavigation
     newSelectedSlot = control->selectedRowSlot;
     if (newSelectedSlot != previousSelectedSlot) {
       if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
-         (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+         (control->activationSound != NULL)) {
         g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
       }
       rowValue = ((uint32_t)((int)newSelectedSlot - (int)control->rowSlots) >> 2) * control->rowHeight;
@@ -276,8 +276,8 @@ UiListControl_HandleKeyboardNavigation
                  (UiScrollableControl *)(control->base).parent);
       rowValue = g_UiListActivationPulseFrames;
       control->listStateFlags = control->listStateFlags | UI_LIST_DEFERRED_ACTION_PENDING;
-      control->listStateFlags = control->listStateFlags & 0xffffff;
-      control->listStateFlags = control->listStateFlags | rowValue << 0x18;
+      control->listStateFlags = control->listStateFlags & UI_LIST_FLAGS_MASK;
+      control->listStateFlags = control->listStateFlags | rowValue << UI_LIST_COUNTDOWN_SHIFT;
     }
     return false;
   }
@@ -311,10 +311,10 @@ UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
 
 
 /* Address: 0x004B87A0.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[4]@004B7920.
-   Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Left-button press on a scroll frame (g_UiScrollableControlVtable nonRightPress): finds the scrollbar part
+   under the pointer and starts that interaction. An arrow is held (auto-repeat in
+   UiScrollableControl_TickAutoScroll), a thumb is grabbed for dragging, a track click pages by half a view
+   at once and again on release. Pointer outside both bars: nothing happens.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_BeginPrimaryScrollInteraction
@@ -335,7 +335,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
   horizontalBarHit = false;
   if ((control->scrollStateFlags &
       (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
       horizontalBarHit = (-1 < localY) && (localY < (int)textureSize.logicalHeightPixels);
     }
@@ -346,7 +346,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
     }
     if (horizontalBarHit) {
       horizontalTrackEnd = (control->base).layoutWidth;
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
         horizontalTrackEnd = horizontalTrackEnd - textureSize.logicalWidthPixels;
       }
@@ -363,7 +363,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
       return;
     }
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
       if (localXOrTrackBottom < 0) {
         return;
@@ -381,7 +381,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
       }
     }
     localXOrTrackBottom = (control->base).layoutHeight;
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
       localXOrTrackBottom = localXOrTrackBottom - textureSize.logicalHeightPixels;
     }
@@ -396,7 +396,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
       return;
     }
     if (localY < control->verticalThumbTop) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       if ((int)(localY - trackStartOffset) < (int)textureSize.logicalHeightPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
@@ -415,7 +415,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
         UiNode_InvalidateRoot(&control->base);
         return;
       }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       if (localXOrTrackBottom - localY <= (int)textureSize.logicalHeightPixels) {
         control->scrollStateFlags =
              control->scrollStateFlags |
@@ -429,7 +429,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
     }
   }
   else if (localXOrTrackBottom < control->horizontalThumbLeft) {
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     if ((int)(localXOrTrackBottom - trackStartOffset) < (int)textureSize.logicalWidthPixels) {
       control->scrollStateFlags =
            control->scrollStateFlags |
@@ -448,7 +448,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
       UiNode_InvalidateRoot(&control->base);
       return;
     }
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     if (horizontalTrackEnd - localXOrTrackBottom <= (int)textureSize.logicalWidthPixels) {
       control->scrollStateFlags =
            control->scrollStateFlags |
@@ -468,10 +468,8 @@ UiScrollableControl_BeginPrimaryScrollInteraction
 
 
 /* Address: 0x004B8A20.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[5]@004B7920.
-   Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Left-button release on a scroll frame (g_UiScrollableControlVtable nonRightRelease): a held track pages by
+   another half view, then every scrollbar interaction ends and the frame is redrawn.
 */
 void __thandor_preserve_eax
 UiScrollableControl_EndPrimaryScrollInteraction
@@ -495,17 +493,18 @@ UiScrollableControl_EndPrimaryScrollInteraction
     control->scrollOffsetY = control->scrollOffsetY - ((int)control->viewportHeight >> 1);
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  control->scrollStateFlags = control->scrollStateFlags & 0xe0e0dfff;
+  control->scrollStateFlags = control->scrollStateFlags &
+       ~(UI_SCROLL_VERTICAL_PARTS_ACTIVE|UI_SCROLL_HORIZONTAL_PARTS_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE);
   UiNode_InvalidateRoot(&control->base);
   return;
 }
 
 
 /* Address: 0x004B8BF0.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[8]@004B7920.
-   Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Left-button drag on a scroll frame (g_UiScrollableControlVtable nonRightDrag): a grabbed thumb follows the
+   pointer (the scroll offset is the thumb position scaled from the free track to the scroll range); a held
+   arrow repeats (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) only while the pointer stays on it. A held track
+   ignores the drag.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_UpdatePrimaryScrollDrag
@@ -533,12 +532,12 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     thumbOffsetOrLocalX = (control->base).left;
     anchorOrLocalY = control->pointerAnchorX;
     trackLength = (control->base).layoutWidth;
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     thumbOffsetOrLocalX = ((pointerX - thumbOffsetOrLocalX) - anchorOrLocalY) - textureSize.logicalWidthPixels;
     trackLength = trackLength + textureSize.logicalWidthPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
         thumbOffsetOrLocalX = thumbOffsetOrLocalX - textureSize.logicalWidthPixels;
       }
@@ -556,12 +555,12 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     thumbOffsetOrLocalX = (control->base).top;
     anchorOrLocalY = control->pointerAnchorY;
     trackLength = (control->base).layoutHeight;
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     thumbOffsetOrLocalX = ((pointerY - thumbOffsetOrLocalX) - anchorOrLocalY) - textureSize.logicalHeightPixels;
     trackLength = trackLength + textureSize.logicalHeightPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
         thumbOffsetOrLocalX = thumbOffsetOrLocalX - textureSize.logicalHeightPixels;
       }
@@ -580,7 +579,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
   thumbOffsetOrLocalX = pointerX - (control->base).left;
   arrowHovered = false;
   if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) != 0) {
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
       inArrowBar = (anchorOrLocalY < (control->base).layoutHeight) &&
@@ -592,7 +591,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowStart = 0;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
         arrowStart = textureSize.logicalWidthPixels;
       }
       arrowHovered = ((int)arrowStart <= thumbOffsetOrLocalX) &&
@@ -600,7 +599,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) != 0) {
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalWidthPixels;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) == 0) {
       inArrowBar = (anchorOrLocalY < (control->base).layoutHeight) &&
@@ -612,14 +611,14 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowEnd = (control->base).layoutWidth;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalWidthPixels;
       }
       arrowHovered = (thumbOffsetOrLocalX < arrowEnd) && ((int)(arrowEnd - arrowSize) <= thumbOffsetOrLocalX);
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) != 0) {
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
       inArrowBar = (thumbOffsetOrLocalX < (control->base).layoutWidth) &&
@@ -631,14 +630,14 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowStart = 0;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
         arrowStart = textureSize.logicalHeightPixels;
       }
       arrowHovered = ((int)arrowStart <= anchorOrLocalY) && (anchorOrLocalY < (int)(arrowStart + arrowSize));
     }
   }
   else if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) != 0) {
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
     arrowSize = textureSize.logicalHeightPixels;
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) == 0) {
       inArrowBar = (thumbOffsetOrLocalX < (control->base).layoutWidth) &&
@@ -650,7 +649,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowEnd = (control->base).layoutHeight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalHeightPixels;
       }
       arrowHovered = (anchorOrLocalY < arrowEnd) && ((int)(arrowEnd - arrowSize) <= anchorOrLocalY);
@@ -678,10 +677,9 @@ UiScrollableControl_UpdatePrimaryScrollDrag
 
 
 /* Address: 0x004B8F90.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[9]@004B7920.
-   Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Right-button drag on a scroll frame (g_UiScrollableControlVtable rightDrag): pans the content by the
+   pointer movement since the press (on the axes that have a bar) and puts the pointer back to the press
+   position, so the pointer stays in place while the content moves.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_UpdateSecondaryScrollDrag
@@ -710,18 +708,13 @@ UiScrollableControl_UpdateSecondaryScrollDrag
 
 
 /* Address: 0x004B9070.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[16]@004B7920.
-   Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Per-frame tick of a scroll frame (g_UiScrollableControlVtable tick): while an arrow is held under the
+   pointer, scrolls by autoScrollStepX/Y in the arrow's direction and redraws.
 */
 void __thandor_void_preserve_ecx_edx
 UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
 
 {
-  UiPixelOffset horizontalScrollStep;
-  UiPixelOffset verticalScrollStep;
-  
   if ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) != 0) {
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) != 0) {
       control->scrollOffsetX = control->scrollOffsetX + control->autoScrollStepX;
@@ -743,10 +736,9 @@ UiScrollableControl_TickAutoScroll(UiScrollableControl *control)
 
 
 /* Address: 0x004B90E0.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[17]@004B7920.
-   Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Mouse wheel over a scroll frame (g_UiScrollableControlVtable pointerWheel): scrolls vertically by
+   wheelDelta steps, g_UiScrollWheelListStep pixels per step when the content is a list control, else
+   g_UiScrollWheelDefaultStep. Ignored without a vertical bar, during a button interaction or when suppressed.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_HandlePointerWheel
@@ -756,15 +748,15 @@ UiScrollableControl_HandlePointerWheel
 {
   UiNodeBase *firstChildNode;
   int scrollStep;
-  UiNodeBase *contentChild;
-  
+
   if (((((control->scrollStateFlags &
          (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) &&
-       ((control->scrollStateFlags & 0x3000) == 0)) &&
+       ((control->scrollStateFlags &
+         (UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE)) == 0)) &&
       (((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0)) &&
      (firstChildNode = (control->base).firstChild, wheelDelta != 0)) {
     scrollStep = g_UiScrollWheelDefaultStep;
-    if ((firstChildNode != (UiNodeBase *)0xffffffff) &&
+    if ((firstChildNode != UI_NODE_NONE) &&
        (((firstChildNode->vtable == &g_UiTimedListControlVtable ||
          (firstChildNode->vtable == &g_UiTextListControlVtable)) ||
         (firstChildNode->vtable == &g_UiListControlVtable)))) {
@@ -800,10 +792,10 @@ UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *con
 
 
 /* Address: 0x004BB020.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[4]@004BA590.
-   Local calls: UiScrollableControl_ClampOffsetsToViewport.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   Left-button press on the column list (g_UiListControlVtable nonRightPress): selects the row under the
+   pointer, scrolls it into view, queues the list's action and plays the selection sound. A double click
+   also marks the selection confirmed (UI_LIST_SELECTION_CONFIRMED) and re-queues even for the same row; a
+   single click on the already selected row does nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListControl_SelectRowFromPointer
@@ -812,7 +804,7 @@ UiListControl_SelectRowFromPointer
 
 {
   uint32_t rowIndex;
-  int clipBottom;
+  int rowTop;
   int32_t *topEdgeField;
   
   topEdgeField = &(control->base).top;
@@ -825,13 +817,13 @@ UiListControl_SelectRowFromPointer
          (control->listStateFlags = control->listStateFlags & ~UI_LIST_SELECTION_CONFIRMED,
          control->rowSlots + rowIndex != control->selectedRowSlot)) {
         control->selectedRowSlot = control->rowSlots + rowIndex;
-        clipBottom = rowIndex * control->rowHeight;
+        rowTop = rowIndex * control->rowHeight;
         UiScrollableControl_ClampOffsetsToViewport
-                  (clipBottom + 1 + control->rowHeight,(control->base).rightOffset,clipBottom,0,
+                  (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
                    (UiScrollableControl *)(control->base).parent);
         UiActionQueue_Enqueue(control->actionId,control);
         if (((control->listStateFlags & UI_LIST_PLAY_SELECTION_SOUND) != 0) &&
-           (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+           (control->activationSound != NULL)) {
           g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
         }
       }
@@ -915,12 +907,9 @@ UiPointerList_SortByDwordPairFieldDescending
 
 
 /* Address: 0x004BB8A0.
-   Ownership: ui/controls/lists.
-   Purpose: Bubble-sorts in ascending unsigned order by one dword at fieldOffset, then restores selection and
-   invalidates its row. Typed parameters: p0 fieldOffset→UiPointerListFieldByteOffset_V342. Calling convention,
-   exact VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data
-   remain unchanged.
-   Local calls: UiScrollableControl_ClampOffsetsToViewport.
+   Sorts the rows of a pointer list by the unsigned dword at fieldOffset in each row entry with an exchange
+   sort, then selects the previously selected entry again and scrolls it into view. Equal keys are swapped
+   too, so the sort is not stable. Called by the scenario catalog (src/assets/scenario/catalog.c, field 0x50).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_SortByDwordFieldAscending
@@ -936,26 +925,27 @@ UiPointerList_SortByDwordFieldAscending
   void **scanSlot;
   
   scanSlot = control->rowSlots;
-  if (scanSlot != (void **)0x0) {
+  if (scanSlot != NULL) {
     innerCountOrRowTop = control->rowCount - 1;
     if ((innerCountOrRowTop != 0) && (-1 < innerCountOrRowTop)) {
       selectedEntry = *control->selectedRowSlot;
       pivotSlot = scanSlot;
       outerCount = innerCountOrRowTop;
+      /* each pass moves the smallest remaining key to pivotSlot */
       do {
         do {
-          scanSlot = scanSlot + 1;
+          scanSlot++;
           if (*(uint32_t *)((int)*scanSlot + fieldOffset) <= *(uint32_t *)((int)*pivotSlot + fieldOffset)) {
-            LOCK();
+            LOCK(); /* the original swaps with XCHG */
             swapEntry = *scanSlot;
             *scanSlot = *pivotSlot;
             UNLOCK();
             *pivotSlot = swapEntry;
           }
-          innerCountOrRowTop = innerCountOrRowTop + -1;
+          innerCountOrRowTop--;
         } while (innerCountOrRowTop != 0);
         scanSlot = pivotSlot + 1;
-        innerCountOrRowTop = outerCount + -1;
+        innerCountOrRowTop = outerCount - 1;
         pivotSlot = scanSlot;
         outerCount = innerCountOrRowTop;
       } while (innerCountOrRowTop != 0);
@@ -965,8 +955,8 @@ UiPointerList_SortByDwordFieldAscending
       do {
         if (selectedEntry == *scanSlot) break;
         innerCountOrRowTop = innerCountOrRowTop + control->rowHeight;
-        scanSlot = scanSlot + 1;
-        rowsRemaining = rowsRemaining - 1;
+        scanSlot++;
+        rowsRemaining--;
       } while (rowsRemaining != 0);
       if (rowsRemaining == 0) {
         /* Not found: select the first row (the row top stays past the last row, as in the original). */
@@ -983,11 +973,11 @@ UiPointerList_SortByDwordFieldAscending
 
 
 /* Address: 0x004BBCD0.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui timed list control select row from pointer.
-   Local calls: UiTimedListControl_SelectRecordAndScrollIntoView.
-   Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext], UiActionQueue_Enqueue
-   [ui/core/runtime].
+   Left-button press on the tree list (g_UiTimedListControlVtable nonRightPress): walks the visible rows to
+   the one under the pointer. A hit on the expand/collapse icon in the indentation (opaque pixel) calls
+   recordSelectionCallback; a hit on the row icon or label (up to 6 pixels past the text) selects the row,
+   scrolls it into view and queues the list's action, and a double click also calls recordSelectionCallback
+   for a directory row.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTimedListControl_SelectRowFromPointer
@@ -1009,7 +999,7 @@ UiTimedListControl_SelectRowFromPointer
   int indent;
 
   header = list->base.recordTree;
-  if (header == (UiTimedListTreeRecord16 *)0x0) {
+  if (header == NULL) {
     return;
   }
   remaining = (int)header->recordCountOrRowPayload00;
@@ -1028,14 +1018,14 @@ UiTimedListControl_SelectRowFromPointer
     if (y <= 0) {
       break;
     }
-    record = record + 1;
-    remaining = remaining - 1;
-    if ((((record[-1].recordFlags0C & 1) != 0) && ((record[-1].recordFlags0C & 2) != 0)) &&
-        (record[-1].nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0) &&
+    record++;
+    remaining--;
+    if ((((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) && ((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
+        (record[-1].nestedRecordBlockOrParentLink08 != NULL) &&
         (depth < TREE_DEPTH_LIMIT)) {
       savedRecord[depth] = record;
       savedRemaining[depth] = remaining;
-      depth = depth + 1;
+      depth++;
       header = record[-1].nestedRecordBlockOrParentLink08;
       remaining = (int)header->recordCountOrRowPayload00;
       record = header + 1;
@@ -1044,7 +1034,7 @@ UiTimedListControl_SelectRowFromPointer
       if (depth == 0) {
         return;
       }
-      depth = depth - 1;
+      depth--;
       record = savedRecord[depth];
       remaining = savedRemaining[depth];
     }
@@ -1053,7 +1043,7 @@ UiTimedListControl_SelectRowFromPointer
   x = x - indent;
   if (x < 0) {
     /* Inside the indentation: the expand/collapse icon of the row. */
-    if (((record->recordFlags0C & 1) != 0) && (indent != 0) &&
+    if (((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) && (indent != 0) &&
         g_GraphicsTextureSourceTestOpaquePixel
                   (y + (int)list->base.rowHeight,x + (int)list->observedDrawParameter80,0,0,
                    list->base.observedDrawParameter6C,list->base.rowTextureSource) &&
@@ -1076,7 +1066,7 @@ UiTimedListControl_SelectRowFromPointer
     UiActionQueue_Enqueue(list->base.actionId,control);
   }
   if (((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) &&
-      ((record->recordFlags0C & 1) != 0) && (list->base.recordSelectionCallback != 0)) {
+      ((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) && (list->base.recordSelectionCallback != 0)) {
     list->base.recordSelectionCallback(record,list);
   }
   return;
@@ -1084,8 +1074,9 @@ UiTimedListControl_SelectRowFromPointer
 
 
 /* Address: 0x0040FF70.
-   Ownership: ui/controls/lists.
-   Purpose: Finds a timed-list tree record by label.
+   Returns the row of recordBlock whose label equals labelUtf16 (exact, case-sensitive compare of at most
+   256 code units including the terminator), or NULL. Used by UiTimedListTree_BuildDirectoryHierarchy to find
+   the directory row of each path level.
 */
 UiTimedListTreeRecord16 * __thandor_eax_preserve_ecx_edx
 UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock)
@@ -1099,41 +1090,44 @@ UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *
   uint16_t *queryLabelCursor;
   bool charsEqual;
   
-  scanRemaining = 0x100;
+  scanRemaining = 256;
   recordLabelCursor = labelUtf16;
   do {
     if (scanRemaining == 0) break;
-    scanRemaining = scanRemaining + -1;
+    scanRemaining--;
     labelChar = *recordLabelCursor;
-    recordLabelCursor = recordLabelCursor + 1;
+    recordLabelCursor++;
   } while (labelChar != 0);
   recordsRemaining = recordBlock->recordCountOrRowPayload00;
   do {
     if (recordsRemaining == 0) {
-      return (UiTimedListTreeRecord16 *)0x0;
+      return NULL;
     }
-    recordBlock = recordBlock + 1;
+    recordBlock++;
     charsEqual = false;
-    compareRemaining = 0x100 - scanRemaining;
+    compareRemaining = 256 - scanRemaining;
     recordLabelCursor = (uint16_t *)recordBlock->recordCountOrRowPayload00;
     queryLabelCursor = labelUtf16;
     do {
       if (compareRemaining == 0) break;
-      compareRemaining = compareRemaining + -1;
+      compareRemaining--;
       charsEqual = *recordLabelCursor == *queryLabelCursor;
-      recordLabelCursor = recordLabelCursor + 1;
-      queryLabelCursor = queryLabelCursor + 1;
+      recordLabelCursor++;
+      queryLabelCursor++;
     } while (charsEqual);
     if (charsEqual) {
       return recordBlock;
     }
-    recordsRemaining = recordsRemaining - 1;
+    recordsRemaining--;
   } while( true );
 }
 
 /* Address: 0x0040FFE0.
-   Ownership: ui/controls/lists.
-   Purpose: Builds a timed-list directory record block and exposes the recovered carry/error contract.
+   Builds one level of the directory tree for the tree list: for an empty path the root block with the
+   single "computer" row; for a drive root ("X:" or "X:\") the list of drives, labelled "X:[volume label]"
+   with their drive type as icon; otherwise the subdirectories of pathUtf16. The block (header record, rows,
+   then the 0x200-byte labels) is allocated from the arena; a row gets flag bit 0 when it has
+   subdirectories, i.e. can be expanded. CF set on failure (allocation or enumeration).
 */
 DirectoryRecordBlockResult __thandor_eax_cf_preserve_ecx_edx
 UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
@@ -1168,17 +1162,17 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
   DriveLetterEnumerationEaxEcx8 driveEnum;
   
   if (*pathUtf16 == 0) {
-    allocResult = g_MemoryApi.alloc(0x220);
+    allocResult = g_MemoryApi.alloc(0x220); /* header, one row, one label */
     outputRecords = (uint32_t *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       *outputRecords = 1;
       outputRecords[1] = 0;
       outputRecords[2] = 0;
-      outputRecords[3] = 0x80000000;
+      outputRecords[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
       outputRecords[4] = (uint32_t)(outputRecords + 8);
-      outputRecords[5] = 0x27;
+      outputRecords[5] = UI_TIMED_LIST_ICON_COMPUTER;
       outputRecords[6] = 0;
-      outputRecords[7] = 1;
+      outputRecords[7] = UI_TIMED_LIST_RECORD_OBSERVED_BIT0;
       g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputRecords + 8));
       return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
@@ -1186,14 +1180,14 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
     driveEnum = g_FileSystemEnumerateDriveLetters((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     directoryEntryCount = driveEnum.driveCount;
-    allocResult = g_MemoryApi.alloc(driveEnum.driveCountMirror * 0x210 + 0x10);
+    allocResult = g_MemoryApi.alloc(driveEnum.driveCountMirror * 0x210 + 0x10); /* header, then a row and a label per drive */
     outputRecords = (uint32_t *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       result.recordBlockOrError = outputRecords + 4;
       *outputRecords = directoryEntryCount;
       outputRecords[1] = 0;
       outputRecords[2] = 0;
-      outputRecords[3] = 0x80000000;
+      outputRecords[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
       labelCursor = ((uint32_t *)result.recordBlockOrError) + directoryEntryCount * 4;
       driveLetterCursor = (uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0);
       do {
@@ -1204,11 +1198,11 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
         ((uint32_t *)result.recordBlockOrError)[1] = (uint32_t)driveType;
         ((uint32_t *)result.recordBlockOrError)[2] = 0;
         ((uint32_t *)result.recordBlockOrError)[3] = 0;
-        u________0040ff58[0] = (wchar_t)driveLetter;
+        u________0040ff58[0] = (wchar_t)driveLetter; /* the pattern L"?:\*.*" */
         *labelCursor = driveLetter;
-        ((uint16_t *)((int)labelCursor + 2))[0] = 0x3a;
-        ((uint16_t *)((int)labelCursor + 2))[1] = 0x5b;
-        ((uint16_t *)((int)labelCursor + 6))[0] = 0x5d;
+        ((uint16_t *)((int)labelCursor + 2))[0] = ':';
+        ((uint16_t *)((int)labelCursor + 2))[1] = '[';
+        ((uint16_t *)((int)labelCursor + 6))[0] = ']';
         ((uint16_t *)((int)labelCursor + 6))[1] = 0;
         /* Label "X:[<volume label>]"; any failure closes it as "X:[]" (a failing directory probe
            also truncates an already written volume label, as in the original). */
@@ -1216,27 +1210,27 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
         closeLabelEmpty = mediaCheckResult;
         if (!closeLabelEmpty) {
           enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                             (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8,
+                             (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8, /* the label buffer after "X:[" */
                               (uint8_t *)((int)labelCursor + 6),(uint8_t *)u________0040ff58);
           closeLabelEmpty = enumResult.failed;
           if (!closeLabelEmpty) {
             if (enumResult.entryCount == 0) {
-              ((uint16_t *)((int)labelCursor + 6))[0] = 0x5d;
+              ((uint16_t *)((int)labelCursor + 6))[0] = ']';
               ((uint16_t *)((int)labelCursor + 6))[1] = 0;
             }
             else {
-              scanRemaining = 0x100;
+              scanRemaining = 256;
               scanPointer = labelCursor;
               do {
                 nextScanPointer = scanPointer;
                 if (scanRemaining == 0) break;
-                scanRemaining = scanRemaining + -1;
+                scanRemaining--;
                 nextScanPointer = (uint32_t *)((int)scanPointer + 2);
                 scanValue = *scanPointer;
                 scanPointer = nextScanPointer;
               } while ((uint16_t)scanValue != 0);
-              ((uint16_t *)((int)nextScanPointer + -2))[0] = 0x5d;
-              ((uint16_t *)((int)nextScanPointer + -2))[1] = 0;
+              ((uint16_t *)((int)nextScanPointer - 2))[0] = ']';
+              ((uint16_t *)((int)nextScanPointer - 2))[1] = 0;
             }
             enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                                (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
@@ -1244,18 +1238,18 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
                                 (uint8_t *)u________0040ff58);
             closeLabelEmpty = enumResult.failed;
             if ((!closeLabelEmpty) && (enumResult.entryCount != 0)) {
-              ((uint32_t *)result.recordBlockOrError)[3] = ((uint32_t *)result.recordBlockOrError)[3] | 1;
+              ((uint32_t *)result.recordBlockOrError)[3] = ((uint32_t *)result.recordBlockOrError)[3] | UI_TIMED_LIST_RECORD_OBSERVED_BIT0;
             }
           }
         }
         if (closeLabelEmpty) {
-          ((uint16_t *)((int)labelCursor + 6))[0] = 0x5d;
+          ((uint16_t *)((int)labelCursor + 6))[0] = ']';
           ((uint16_t *)((int)labelCursor + 6))[1] = 0;
         }
-        labelCursor = labelCursor + 0x80;
+        labelCursor = labelCursor + UI_TIMED_LIST_LABEL_BYTES / 4;
         result.recordBlockOrError = (uint32_t *)((uint32_t *)result.recordBlockOrError) + 4;
-        driveLetterCursor = driveLetterCursor + 1;
-        directoryEntryCount = directoryEntryCount - 1;
+        driveLetterCursor++;
+        directoryEntryCount--;
         if (directoryEntryCount == 0) {
           return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
@@ -1288,17 +1282,17 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
             scanRemaining = directoryEntryCount + 1;
             scanCursor = (uint32_t *)0x14;
             remainingBytes = (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -0x10);
-            if ((uint32_t)(scanRemaining * 0x10) <= largestBlock.blockSizeOrSentinel && remainingBytes != (uint32_t *)0x0) {
+            if ((uint32_t)(scanRemaining * 0x10) <= largestBlock.blockSizeOrSentinel && remainingBytes != NULL) {
               *(uint32_t *)result.recordBlockOrError = directoryEntryCount;
               ((uint32_t *)result.recordBlockOrError)[1] = 0;
               ((uint32_t *)result.recordBlockOrError)[2] = 0;
-              ((uint32_t *)result.recordBlockOrError)[3] = 0x80000000;
+              ((uint32_t *)result.recordBlockOrError)[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
               labelWriteCursor = ((uint32_t *)result.recordBlockOrError) + scanRemaining * 4;
               leaf = outputRecords;
               recordCursor = result.recordBlockOrError;
-              for (; directoryEntryCount != 0; directoryEntryCount = directoryEntryCount - 1) {
+              for (; directoryEntryCount != 0; directoryEntryCount--) {
                 recordCursor[4] = (uint32_t)labelWriteCursor;
-                recordCursor[5] = 0x26;
+                recordCursor[5] = UI_TIMED_LIST_ICON_DIRECTORY;
                 recordCursor[6] = 0;
                 recordCursor[7] = 0;
                 WidePath_CombineDirectoryAndLeaf
@@ -1312,26 +1306,26 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
                                     (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                     (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
                 if ((!enumResult.failed) && (enumResult.entryCount != 0)) {
-                  recordCursor[7] = recordCursor[7] | 1;
+                  recordCursor[7] = recordCursor[7] | UI_TIMED_LIST_RECORD_OBSERVED_BIT0;
                 }
-                scanRemaining = 0x100;
+                scanRemaining = 256;
                 scanCursor = leaf;
                 do {
                   if (scanRemaining == 0) break;
-                  scanRemaining = scanRemaining + -1;
+                  scanRemaining--;
                   leafCodeUnitPair = *scanCursor;
                   scanCursor = (uint32_t *)((int)scanCursor + 2);
                 } while ((uint16_t)leafCodeUnitPair != 0);
                 scanCursor = (uint32_t *)(0x102U - scanRemaining & 0xfffffffe);
                 bytesAfterLabel = (uint32_t *)((int)remainingBytes - (int)scanCursor);
-                if ((remainingBytes < scanCursor || bytesAfterLabel == (uint32_t *)0x0) ||
+                if ((remainingBytes < scanCursor || bytesAfterLabel == NULL) ||
                    (remainingBytes = (uint32_t *)((int)bytesAfterLabel - (int)scanCursor),
-                   bytesAfterLabel < scanCursor || remainingBytes == (uint32_t *)0x0)) break;
+                   bytesAfterLabel < scanCursor || remainingBytes == NULL)) break;
                 scanCursor = leaf;
-                for (scanValue = 0x102U - scanRemaining >> 1; scanValue != 0; scanValue = scanValue - 1) {
+                for (scanValue = 0x102U - scanRemaining >> 1; scanValue != 0; scanValue--) {
                   *labelWriteCursor = *scanCursor;
-                  scanCursor = scanCursor + 1;
-                  labelWriteCursor = labelWriteCursor + 1;
+                  scanCursor++;
+                  labelWriteCursor++;
                 }
                 leaf = (uint32_t *)((int)leaf + (int)entryStride);
                 recordCursor = recordCursor + 4;
@@ -1364,8 +1358,11 @@ UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
 }
 
 /* Address: 0x00410380.
-   Ownership: ui/controls/lists.
-   Purpose: Builds the timed-list directory hierarchy.
+   Builds the directory tree from the root ("computer") down to selectedPathUtf16: one record block per path
+   level (UiTimedListTree_BuildDirectoryRecordBlock), each linked to its parent block and opened (expanded)
+   from the parent row that names it. Returns the root block and the row of the selected directory, or CF
+   set on failure (then the blocks built so far are freed, see the note at fail). No caller found in src/
+   or image_data.c (only the function map).
 */
 DirectoryHierarchyResult __thandor_eax_edx_cf_preserve_ecx
 UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
@@ -1391,7 +1388,7 @@ UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
   levelStackTop = 0;
   while( true ) {
     pathCopyCursor = &g_UiTimedListHierarchyPathScratch;
-    for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+    for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) { /* 256 code units */
       pathCopyCursor->firstTwoCodeUnits = *(uint32_t *)selectedPathUtf16;
       selectedPathUtf16 = (uint16_t *)(selectedPathUtf16 + 2);
       pathCopyCursor = (WidePathBuffer256 *)(&pathCopyCursor->firstTwoCodeUnits + 1);
@@ -1401,7 +1398,7 @@ UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
     if (levelStackTop >= 0x200) {
       /* Only reachable when splitting stops shortening the path; the original then pushes until
          its stack overflows. */
-      builtBlock.recordBlockOrError = (UiTimedListTreeRecord16 *)0x0;
+      builtBlock.recordBlockOrError = NULL;
       goto fail;
     }
     builtBlock = UiTimedListTree_BuildDirectoryRecordBlock
@@ -1415,7 +1412,7 @@ UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
          UiTimedListTree_FindRecordByLabel
                    (g_UiTimedListRecordPathScratch.codeUnits,builtBlock.recordBlockOrError);
     levelStack[levelStackTop++] = builtBlock.recordBlockOrError;
-    levelCount = levelCount + 1;
+    levelCount++;
     selectedPathUtf16 = (uint16_t *)&g_UiTimedListHierarchyParentPathScratch;
   }
   /* Root level: find the record whose label starts with the drive letter (case-insensitive). */
@@ -1426,16 +1423,16 @@ UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
   firstCodeUnit = g_UiTimedListHierarchyPathScratch.codeUnits[0];
   recordCursor = levelBlock + 1;
   while (((firstCodeUnit ^ *(uint16_t *)recordCursor->recordCountOrRowPayload00) & 0xdf) != 0) {
-    recordCursor = recordCursor + 1;
-    recordsRemaining = recordsRemaining - 1;
+    recordCursor++;
+    recordsRemaining--;
     if (recordsRemaining == 0) {
-      builtBlock.recordBlockOrError = (UiTimedListTreeRecord16 *)0x0;
+      builtBlock.recordBlockOrError = NULL;
       goto fail;
     }
   }
   levelStack[levelStackTop++] = recordCursor;
   levelStack[levelStackTop++] = levelBlock;
-  levelCount = levelCount + 1;
+  levelCount++;
   g_UiTimedListHierarchyPathScratch.codeUnits[0] = 0;
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits);
   if (builtBlock.failed) goto fail;
@@ -1445,18 +1442,18 @@ UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
   recordCursor = parentBlock + 1;
   do {
     levelBlock = levelStack[--levelStackTop];
-    if (levelBlock != (UiTimedListTreeRecord16 *)0x0) {
+    if (levelBlock != NULL) {
       levelBlock->rowPayload04 = (uint32_t)parentBlock;
       levelBlock->nestedRecordBlockOrParentLink08 = recordCursor;
     }
-    if (recordCursor != (UiTimedListTreeRecord16 *)0x0) {
+    if (recordCursor != NULL) {
       recordCursor->recordFlags0C =
            recordCursor->recordFlags0C | UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
       recordCursor->nestedRecordBlockOrParentLink08 = levelBlock;
     }
     parentBlock = levelBlock;
     recordCursor = levelStack[--levelStackTop];
-    levelCount = levelCount + -1;
+    levelCount--;
   } while (levelCount != 0);
   result.rootRecordBlockOrError = builtBlock.recordBlockOrError;
   result.selectedRecordOrNull = recordCursor;
@@ -1465,18 +1462,19 @@ UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
 fail:
   /* As in the original: one pop per level (not per pair), so this frees the top blocks and
      interleaved found-record pointers, not every pushed block. */
-  for (; levelCount != 0; levelCount = levelCount + -1) {
+  for (; levelCount != 0; levelCount--) {
     g_MemoryApi.free(levelStack[--levelStackTop]);
   }
-  result.selectedRecordOrNull = (UiTimedListTreeRecord16 *)0x0;
+  result.selectedRecordOrNull = NULL;
   result.rootRecordBlockOrError = builtBlock.recordBlockOrError;
   result.failed = true;
   return result;
 }
 
 /* Address: 0x004104B0.
-   Ownership: ui/controls/lists.
-   Purpose: Recursively frees a timed-list record block while testing containment.
+   Frees a record block and every expanded child block below it (collapsing a directory row) and tells in
+   CF whether targetRecord (the list's selected row) was one of the freed rows, so the caller can move the
+   selection to the collapsed row.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
@@ -1489,19 +1487,19 @@ UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
   bool childContains;
   
   containsCount = 0;
-  if (recordBlock != (UiTimedListTreeRecord16 *)0x0) {
+  if (recordBlock != NULL) {
     recordCursor = recordBlock;
-    for (recordsRemaining = recordBlock->recordCountOrRowPayload00; recordsRemaining != 0; recordsRemaining = recordsRemaining - 1) {
+    for (recordsRemaining = recordBlock->recordCountOrRowPayload00; recordsRemaining != 0; recordsRemaining--) {
       if (recordCursor + 1 == targetRecord) {
-        containsCount = containsCount + 1;
+        containsCount++;
       }
       if ((((recordCursor[1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
           ((recordCursor[1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
          (childContains = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
                             (targetRecord,recordCursor[1].nestedRecordBlockOrParentLink08), childContains)) {
-        containsCount = containsCount + 1;
+        containsCount++;
       }
-      recordCursor = recordCursor + 1;
+      recordCursor++;
     }
   }
   g_MemoryApi.free(recordBlock);
@@ -1509,8 +1507,10 @@ UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
 }
 
 /* Address: 0x00410520.
-   Ownership: ui/controls/lists.
-   Purpose: Attaches a directory record block to the timed-list hierarchy.
+   Expands a directory row of the tree: builds the full path of the row (its label joined to the labels of
+   its ancestor rows, a drive row gives "X:"), enumerates its subdirectories into a new record block and
+   links the block below the row (the block header points back to the row and to the row's own block).
+   The root "computer" row lists the drives. CF set when the path or the block cannot be built.
 */
 bool __thandor_cf_preserve_ecx_edx
 UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
@@ -1529,15 +1529,15 @@ UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
   
   recordPathSourceDwords = (uint32_t *)record->recordCountOrRowPayload00;
   recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-  for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+  for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
     *recordPathScratchDestDwords = *recordPathSourceDwords;
-    recordPathSourceDwords = recordPathSourceDwords + 1;
-    recordPathScratchDestDwords = recordPathScratchDestDwords + 1;
+    recordPathSourceDwords++;
+    recordPathScratchDestDwords++;
   }
   if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
      (record[-1].rowPayload04 != 0)) {
     linkedRecord = record;
-    if (g_UiTimedListRecordPathScratch.codeUnits[1] == 0x3a) {
+    if (g_UiTimedListRecordPathScratch.codeUnits[1] == ':') {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListHierarchyParentPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
@@ -1547,23 +1547,23 @@ UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
       while( true ) {
         do {
           scanRecord = linkedRecord;
-          linkedRecord = scanRecord + -1;
+          linkedRecord = scanRecord - 1;
         } while ((scanRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
         linkedRecord = scanRecord[-1].nestedRecordBlockOrParentLink08;
-        if (linkedRecord == (UiTimedListTreeRecord16 *)0x0) {
+        if (linkedRecord == NULL) {
           return true;
         }
         directory = (uint32_t *)linkedRecord->recordCountOrRowPayload00;
-        if (*(uint16_t *)((int)directory + 2) == 0x3a) break;
+        if (*(uint16_t *)((int)directory + 2) == ':') break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
         combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
         combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-        for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+        for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
           *combinedPathScratchDestDwords = *combinedPathSourceDwords;
-          combinedPathSourceDwords = combinedPathSourceDwords + 1;
-          combinedPathScratchDestDwords = combinedPathScratchDestDwords + 1;
+          combinedPathSourceDwords++;
+          combinedPathScratchDestDwords++;
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
@@ -1578,7 +1578,7 @@ UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
     }
   }
   else {
-    g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = 0x3a0061;
+    g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = 0x3a0061; /* "a:": list the drives */
     THANDOR_PART(uint32_t, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
   }
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlock
@@ -1590,8 +1590,8 @@ UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
   record->nestedRecordBlockOrParentLink08 = linkedRecord;
   linkedRecord->nestedRecordBlockOrParentLink08 = record;
   do {
-    previousRecord = record + -1;
-    scanRecord = record + -1;
+    previousRecord = record - 1;
+    scanRecord = record - 1;
     record = previousRecord;
   } while ((scanRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
   linkedRecord->rowPayload04 = (uint32_t)previousRecord;
@@ -1599,8 +1599,10 @@ UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
 }
 
 /* Address: 0x00410670.
-   Ownership: ui/controls/lists.
-   Purpose: Toggles expansion for a timed-list directory record.
+   Expands or collapses a directory row of the tree list (the directory browser's recordSelectionCallback),
+   then recomputes the list layout and scrolls the selection into view. Collapsing a branch that contained
+   the selected row moves the selection to the collapsed row and queues the list's action. No caller found
+   in src/ or image_data.c (only the function map).
 */
 void __thandor_void_preserve_eax_ecx
 UiTimedListControl_ToggleDirectoryRecordExpansion
@@ -1637,8 +1639,10 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
 }
 
 /* Address: 0x00410700.
-   Ownership: ui/controls/lists.
-   Purpose: Builds the recovered path for a timed-list tree record.
+   Writes the full path of a tree row to outputPathDwords (256 code units): the row label joined to the
+   labels of its ancestor rows; a drive row gives "X:", the root "computer" row its label unchanged. CF set
+   when the ancestor chain does not end in a drive row. No caller found in src/ or image_data.c (only the
+   function map).
 */
 bool __thandor_cf_preserve_ecx_edx
 UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record)
@@ -1657,12 +1661,12 @@ UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord
   copyRemaining = 0x80;
   if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
      (record[-1].rowPayload04 != 0)) {
-    for (; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+    for (; copyRemaining != 0; copyRemaining--) {
       *recordPathScratchDestDwords = *recordPathSourceDwords;
-      recordPathSourceDwords = (uint32_t *)(recordPathSourceDwords + 1);
-      recordPathScratchDestDwords = recordPathScratchDestDwords + 1;
+      recordPathSourceDwords++;
+      recordPathScratchDestDwords++;
     }
-    if (g_UiTimedListRecordPathScratch.codeUnits[1] == 0x3a) {
+    if (g_UiTimedListRecordPathScratch.codeUnits[1] == ':') {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
       recordPathSourceDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
     }
@@ -1670,23 +1674,23 @@ UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord
       while( true ) {
         do {
           scanRecord = record;
-          record = scanRecord + -1;
+          record = scanRecord - 1;
         } while ((scanRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
         record = scanRecord[-1].nestedRecordBlockOrParentLink08;
-        if (record == (UiTimedListTreeRecord16 *)0x0) {
+        if (record == NULL) {
           return true;
         }
         directory = (uint32_t *)record->recordCountOrRowPayload00;
-        if (*(uint16_t *)((int)directory + 2) == 0x3a) break;
+        if (*(uint16_t *)((int)directory + 2) == ':') break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
         combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
         combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-        for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+        for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
           *combinedPathScratchDestDwords = *combinedPathSourceDwords;
-          combinedPathSourceDwords = combinedPathSourceDwords + 1;
-          combinedPathScratchDestDwords = combinedPathScratchDestDwords + 1;
+          combinedPathSourceDwords++;
+          combinedPathScratchDestDwords++;
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
@@ -1698,10 +1702,10 @@ UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord
       recordPathSourceDwords = (uint32_t *)&g_UiTimedListSecondaryPathScratch;
     }
   }
-  for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
+  for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
     *outputPathDwords = *recordPathSourceDwords;
-    recordPathSourceDwords = (uint32_t *)(recordPathSourceDwords + 1);
-    outputPathDwords = outputPathDwords + 1;
+    recordPathSourceDwords++;
+    outputPathDwords++;
   }
   return false;
 }
@@ -1737,12 +1741,11 @@ UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 
 /* Address: 0x004B2550.
-   Ownership: ui/controls/lists.
-   Purpose: Handles keyboard activation for selectable controls, optionally plays the derived control's keyboard
-   sound, toggles or sets selected state, queues actionId, invalidates the root, and returns consumption through
-   CF.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime],
-   UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
+   Keyboard handler shared by the buttons, check boxes and similar selectable controls (keyboardEvent of
+   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable, g_UiNodeVtable_004B1D80, _004BC570, _005162C0,
+   _00516310 and _00516530). Space on the focused control, or Enter / Escape when the control binds them,
+   activates it: a push button queues its action, a toggle flips its selected state, a radio-style control
+   gets selected; optionally with the activation sound. Other keys go to the default focus handling.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiSelectableControl_KeyboardEvent
@@ -1753,19 +1756,19 @@ UiSelectableControl_KeyboardEvent
   bool handled;
   bool activates;
 
-  /* Space activates the focused control (unless disabled); keys 0x10001/0x10000 activate it when
-     state flag 4/8 binds them. Everything else goes to the default focus handling. */
+  /* Space activates the focused control (unless disabled); Enter/Escape activate it when the state flags
+     bind them. Everything else goes to the default focus handling. */
   activates = false;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (keyCode == 0x20) {
+    if (keyCode == KEYBOARD_KEY_CODE_SPACE) {
       activates = (&(control->selectable).base == g_UiKeyboardFocusNode) &&
                   (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0);
     }
-    else if (keyCode == 0x10001) {
-      activates = ((control->selectable).stateFlags & 4) != 0;
+    else if (keyCode == KEYBOARD_KEY_CODE_ENTER) {
+      activates = ((control->selectable).stateFlags & UI_SELECTABLE_ACTIVATE_ON_ENTER) != 0;
     }
-    else if (keyCode == 0x10000) {
-      activates = ((control->selectable).stateFlags & 8) != 0;
+    else if (keyCode == KEYBOARD_KEY_CODE_ESCAPE) {
+      activates = ((control->selectable).stateFlags & UI_SELECTABLE_ACTIVATE_ON_ESCAPE) != 0;
     }
   }
   if (!activates) {
@@ -1774,8 +1777,8 @@ UiSelectableControl_KeyboardEvent
     return handled;
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
-    if ((((control->selectable).stateFlags & 0x80) != 0) &&
-       (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+    if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
+       (control->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     UiActionQueue_Enqueue((control->selectable).actionId,control);
@@ -1783,8 +1786,8 @@ UiSelectableControl_KeyboardEvent
     return false;
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-    if ((((control->selectable).stateFlags & 0x80) != 0) &&
-       (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+    if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
+       (control->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     (control->selectable).stateFlags =
@@ -1794,8 +1797,8 @@ UiSelectableControl_KeyboardEvent
     return false;
   }
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-    if ((((control->selectable).stateFlags & 0x80) != 0) &&
-       (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+    if ((((control->selectable).stateFlags & UI_SELECTABLE_PLAY_KEYBOARD_SOUND) != 0) &&
+       (control->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     (control->selectable).stateFlags =
@@ -1812,10 +1815,10 @@ UiSelectableControl_KeyboardEvent
 
 
 /* Address: 0x004B26E0.
-   Ownership: ui/controls/lists.
-   Purpose: When actionId matches control->actionId, sets nodeFlags bit 0x08 and updates focus/activation state for
-   the newly suppressed control.
-   Cross-module calls: UiKeyboardFocus_ReleaseNode [ui/controls/input].
+   Disables (greys out) a selectable control bound to actionId: sets UI_NODE_SUPPRESSED and gives up the
+   keyboard focus if it had it. suppressActionId of g_UiGraphicsAdapterTextButtonVtable, g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
+   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
+   _004BC570, _005162C0, _00516310, _00516530.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
@@ -1833,10 +1836,10 @@ UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableControl *
 
 
 /* Address: 0x004B2710.
-   Ownership: ui/controls/lists.
-   Purpose: When actionId matches control->actionId, clears nodeFlags bit 0x08 and updates focus/activation state
-   for the restored control.
-   Cross-module calls: UiKeyboardFocus_AcquireIfNone [ui/controls/input].
+   Re-enables a selectable control bound to actionId: clears UI_NODE_SUPPRESSED and takes the keyboard focus
+   when no node has it. unsuppressActionId of g_UiGraphicsAdapterTextButtonVtable, g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
+   g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
+   _004BC570, _005162C0, _00516310, _00516530.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control)
@@ -1890,11 +1893,9 @@ UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
 
 
 /* Address: 0x004B2D70.
-   Ownership: ui/controls/lists.
-   Purpose: Variadic group test that ignores node visibility. CF=0 when any listed control has selected bit 0x02;
-   CF=1 when none does. Kept distinct from player IDs, command opcodes, and resource identifiers. Typed parameters:
-   p0 controlCount→UiControlCount_V338. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged.
+   Asks a group of selectable controls (controlCount control pointers follow on the stack) whether none is
+   selected, suppressed ones included: CF set when none is, otherwise CF clear with the index (ECX) of the
+   first selected control. Called by the frontend scenario page (src/ui/frontend/scenario.c).
 */
 SelectableGroupIndexResult __thandor_eax_ecx_cf_preserve_edx
 UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
@@ -1907,13 +1908,14 @@ UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
+  /* +0x4C = stateFlags of the UiSelectableControl */
   do {
-    if ((*(uint32_t *)(*(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset) + 0x4c) & 2) != 0) {
+    if ((*(uint32_t *)(*(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset) + 0x4c) & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       selectedResult.noneSelected = false;
       selectedResult.selectedIndexOrCount = controlIndex;
       return selectedResult;
     }
-    controlIndex = controlIndex + 1;
+    controlIndex++;
     controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
   noneSelectedResult.noneSelected = true;
@@ -2010,9 +2012,9 @@ UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
 
 
 /* Address: 0x004B7970.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[0]@004B7920.
-   Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
+   Relocation of a scroll frame loaded from a serialized UI tree (g_UiScrollableControlVtable relocate):
+   relocates the children, takes the content size from the content child's right/bottom offsets and scrolls
+   back to the origin.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_RelocateChildren
@@ -2024,7 +2026,7 @@ UiScrollableControl_RelocateChildren
   
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   contentChild = (control->base).firstChild;
-  if (contentChild != (UiNodeBase *)0xffffffff) {
+  if (contentChild != UI_NODE_NONE) {
     contentHeight = contentChild->bottomOffset;
     control->contentWidth = contentChild->rightOffset;
     control->contentHeight = contentHeight;
@@ -2036,11 +2038,9 @@ UiScrollableControl_RelocateChildren
 
 
 /* Address: 0x004B79D0.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[2]@004B7920.
-   Cross-module calls: UiWindow_BlitTiledHorizontalEdge [ui/controls/layout], UiWindow_BlitTiledVerticalEdge
-   [ui/controls/layout], UiWindow_BlitTiledInterior [ui/controls/layout], UiContainer_DrawIntersectingChildren
-   [ui/controls/layout].
+   Draws a scroll frame (g_UiScrollableControlVtable drawClipped) from g_UiWindowTextureSource pieces: the
+   horizontal and vertical bars (arrows, track and thumb, pressed/active pieces while held), the optional
+   frame style and interior fill, then the content child clipped to the remaining view.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_DrawFrameContentAndScrollbars
@@ -2076,18 +2076,18 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       edgeScratch = contentRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
         barOffset = 0;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalWidthPixels;
         contentTop = contentTop + textureSize.logicalHeightPixels;
       }
       else {
         trackStart = contentBottom;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalWidthPixels;
         barOffset = contentBottom - textureSize.logicalHeightPixels;
         contentBottom = trackStart - textureSize.logicalHeightPixels;
       }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       horizontalBarLeft = tileEnd;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
         horizontalBarLeft = textureSize.logicalWidthPixels;
@@ -2099,13 +2099,13 @@ UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   horizontalBarLeft + (control->base).left,0x5a,g_UiWindowTextureSource,g_FramebufferAccess);
+                   horizontalBarLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource,g_FramebufferAccess);
         tileEnd = capSize;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   horizontalBarLeft + (control->base).left,0x62,g_UiWindowTextureSource,g_FramebufferAccess);
+                   horizontalBarLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
         tileEnd = capSize;
       }
       trackStart = horizontalBarLeft + arrowLength;
@@ -2114,23 +2114,23 @@ UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackEnd + (control->base).left,0x5b,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
         contentRight = edgeScratch;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackEnd + (control->base).left,99,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
         contentRight = edgeScratch;
       }
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x5d,control->horizontalThumbLeft,barOffset,
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,control->horizontalThumbLeft,barOffset,
                    trackStart,control);
       }
       else {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x65,control->horizontalThumbLeft,barOffset,
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,control->horizontalThumbLeft,barOffset,
                    trackStart,control);
       }
       edgeScratch = control->horizontalThumbRight;
@@ -2139,40 +2139,40 @@ UiScrollableControl_DrawFrameContentAndScrollbars
           edgeScratch = clipRight;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,edgeScratch,0x5d,trackEnd,barOffset,trackStart,control);
+                  (clipTop,clipLeft,clipBottom,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,trackEnd,barOffset,trackStart,control);
       }
       else {
         if (edgeScratch < clipRight) {
           edgeScratch = clipRight;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,edgeScratch,0x65,trackEnd,barOffset,trackStart,control);
+                  (clipTop,clipLeft,clipBottom,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,barOffset,trackStart,control);
       }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc0,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource);
       capSize = textureSize.logicalWidthPixels;
       edgeScratch = control->horizontalThumbLeft;
       trackStart = control->horizontalThumbRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   edgeScratch + (control->base).left,0xc0,g_UiWindowTextureSource,g_FramebufferAccess);
+                   edgeScratch + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource,g_FramebufferAccess);
         trackStart = trackStart - capSize;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackStart + (control->base).left,0xc1,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackStart + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x5c,trackStart,barOffset,edgeScratch + capSize,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE,trackStart,barOffset,edgeScratch + capSize,control);
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   edgeScratch + (control->base).left,0xc4,g_UiWindowTextureSource,g_FramebufferAccess);
+                   edgeScratch + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
         trackStart = trackStart - capSize;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackStart + (control->base).left,0xc5,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackStart + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,100,trackStart,barOffset,edgeScratch + capSize,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackStart,barOffset,edgeScratch + capSize,control);
       }
     }
     if ((control->scrollStateFlags &
@@ -2181,14 +2181,14 @@ UiScrollableControl_DrawFrameContentAndScrollbars
       barOffset = contentTop;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
         capSize = tileEnd;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalHeightPixels;
         capSize = capSize + textureSize.logicalWidthPixels;
       }
       else {
         trackStart = contentRight;
         capSize = tileEnd;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
         arrowLength = textureSize.logicalHeightPixels;
         tileEnd = contentRight - textureSize.logicalWidthPixels;
         contentRight = trackStart - textureSize.logicalWidthPixels;
@@ -2197,12 +2197,12 @@ UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                   tileEnd + (control->base).left,0x5e,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource,g_FramebufferAccess);
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                   tileEnd + (control->base).left,0x66,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
       }
       trackStart = contentTop + arrowLength;
       trackEnd = contentBottom - arrowLength;
@@ -2210,25 +2210,25 @@ UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
-                   tileEnd + (control->base).left,0x5f,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN,g_UiWindowTextureSource,g_FramebufferAccess);
         contentBottom = edgeScratch;
         contentTop = barOffset;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
-                   tileEnd + (control->base).left,0x67,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
         contentBottom = edgeScratch;
         contentTop = barOffset;
       }
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x61,control->verticalThumbTop,trackStart,
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,control->verticalThumbTop,trackStart,
                    tileEnd,control);
       }
       else {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x69,control->verticalThumbTop,trackStart,
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,control->verticalThumbTop,trackStart,
                    tileEnd,control);
       }
       edgeScratch = control->verticalThumbBottom;
@@ -2237,106 +2237,106 @@ UiScrollableControl_DrawFrameContentAndScrollbars
           edgeScratch = clipBottom;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,edgeScratch,clipRight,0x61,trackEnd,trackStart,tileEnd,control);
+                  (clipTop,clipLeft,edgeScratch,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,trackEnd,trackStart,tileEnd,control);
       }
       else {
         if (edgeScratch < clipBottom) {
           edgeScratch = clipBottom;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,edgeScratch,clipRight,0x69,trackEnd,trackStart,tileEnd,control);
+                  (clipTop,clipLeft,edgeScratch,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,trackStart,tileEnd,control);
       }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc2,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
       arrowLength = textureSize.logicalHeightPixels;
       edgeScratch = control->verticalThumbTop;
       barOffset = control->verticalThumbBottom;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
-                   tileEnd + (control->base).left,0xc2,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource,g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   tileEnd + (control->base).left,0xc3,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x60,barOffset,edgeScratch + arrowLength,tileEnd,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE,barOffset,edgeScratch + arrowLength,tileEnd,control);
         tileEnd = capSize;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
-                   tileEnd + (control->base).left,0xc6,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   tileEnd + (control->base).left,199,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x68,barOffset,edgeScratch + arrowLength,tileEnd,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,barOffset,edgeScratch + arrowLength,tileEnd,control);
         tileEnd = capSize;
       }
     }
-    if ((control->scrollStateFlags & 0x400) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x6a,g_UiWindowTextureSource);
+    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A) != 0) {
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource);
       capSize = textureSize.logicalWidthPixels;
       contentBottom = contentBottom - textureSize.logicalHeightPixels;
       contentRight = contentRight - capSize;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 tileEnd + (control->base).left,0x6a,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 contentRight + (control->base).left,0x6b,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 1,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 tileEnd + (control->base).left,0x6c,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 2,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 contentRight + (control->base).left,0x6d,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 3,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x6e,contentRight,contentTop,tileEnd + capSize,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 4,contentRight,contentTop,tileEnd + capSize,control);
       contentTop = contentTop + textureSize.logicalHeightPixels;
       edgeScratch = (tileEnd + capSize) - capSize;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x6f,contentBottom,contentTop,edgeScratch,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 5,contentBottom,contentTop,edgeScratch,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x70,contentBottom,contentTop,contentRight,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 6,contentBottom,contentTop,contentRight,control);
       tileEnd = edgeScratch + capSize;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x71,contentRight,contentBottom,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 7,contentRight,contentBottom,tileEnd,control);
     }
-    if ((control->scrollStateFlags & 0x800) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x72,g_UiWindowTextureSource);
+    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource);
       capSize = textureSize.logicalWidthPixels;
       contentBottom = contentBottom - textureSize.logicalHeightPixels;
       contentRight = contentRight - capSize;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 tileEnd + (control->base).left,0x72,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 contentRight + (control->base).left,0x73,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 1,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 tileEnd + (control->base).left,0x74,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 2,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 contentRight + (control->base).left,0x75,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 3,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x76,contentRight,contentTop,tileEnd + capSize,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 4,contentRight,contentTop,tileEnd + capSize,control);
       contentTop = contentTop + textureSize.logicalHeightPixels;
       edgeScratch = (tileEnd + capSize) - capSize;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x77,contentBottom,contentTop,edgeScratch,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 5,contentBottom,contentTop,edgeScratch,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x78,contentBottom,contentTop,contentRight,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 6,contentBottom,contentTop,contentRight,control);
       tileEnd = edgeScratch + capSize;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x79,contentRight,contentBottom,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 7,contentRight,contentBottom,tileEnd,control);
     }
-    if ((control->scrollStateFlags & 0x300) != 0) {
+    if ((control->scrollStateFlags & (UI_SCROLL_FILL_INTERIOR|UI_SCROLL_FILL_INTERIOR_TEXTURED)) != 0) {
       subresource = 0;
-      if ((control->scrollStateFlags & 0x100) != 0) {
-        subresource = 0x7a;
+      if ((control->scrollStateFlags & UI_SCROLL_FILL_INTERIOR_TEXTURED) != 0) {
+        subresource = UI_WINDOW_SUBRESOURCE_INTERIOR;
       }
       UiWindow_BlitTiledInterior
                 (clipTop,clipLeft,clipBottom,clipRight,subresource,contentBottom,contentRight,contentTop,tileEnd,control
@@ -2611,8 +2611,8 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
 
 
 /* Address: 0x004B8AC0.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[10]@004B7920.
+   Cursor of a scroll frame (g_UiScrollableControlVtable pointerMove): while a right-button pan that started
+   inside the content is active, the pan cursor for the axes that can scroll; otherwise the arrow.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiScrollableControl_QueryPointerRegion
@@ -2621,19 +2621,19 @@ UiScrollableControl_QueryPointerRegion
 {
   GraphicsCursorFrameIndex cursorFrame;
   
-  cursorFrame = 0;
-  if (((control->scrollStateFlags & 0x4000) != 0) &&
+  cursorFrame = GRAPHICS_CURSOR_FRAME_ARROW;
+  if (((control->scrollStateFlags & UI_SCROLL_SECONDARY_PANNING_CONTENT) != 0) &&
      ((control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
        UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)) {
-    cursorFrame = 1;
+    cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
-      cursorFrame = 4;
+      cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
-      cursorFrame = 5;
+      cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL;
     }
   }
   return cursorFrame;
@@ -2641,8 +2641,9 @@ UiScrollableControl_QueryPointerRegion
 
 
 /* Address: 0x004B8B10.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[6]@004B7920.
+   Right-button press on a scroll frame (g_UiScrollableControlVtable rightPress): starts panning. Pins the
+   cursor (g_CursorUseOverridePosition), remembers the press position as the pan anchor and, when the press is
+   inside the content view and the frame has a bar, shows the pan cursor for the axes that can scroll.
 */
 void __thandor_void_preserve_ecx_edx
 UiScrollableControl_BeginSecondaryScrollInteraction
@@ -2654,29 +2655,31 @@ UiScrollableControl_BeginSecondaryScrollInteraction
   int localPointerY;
   uint32_t cursorFrame;
   
-  g_CursorUseOverridePosition = g_CursorUseOverridePosition + 1;
-  control->scrollStateFlags = control->scrollStateFlags | 0x1000;
+  g_CursorUseOverridePosition++;
+  control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_SECONDARY_INTERACTION_ACTIVE;
   control->pointerAnchorX = pointerX;
   control->pointerAnchorY = pointerY;
   localPointerX = pointerX - (control->base).left;
   localPointerY = pointerY - (control->base).top;
-  control->scrollStateFlags = control->scrollStateFlags & 0xe0e0cfff;
+  control->scrollStateFlags = control->scrollStateFlags &
+       ~(UI_SCROLL_VERTICAL_PARTS_ACTIVE|UI_SCROLL_HORIZONTAL_PARTS_ACTIVE|UI_SCROLL_PRIMARY_INTERACTION_ACTIVE|
+         UI_SCROLL_SECONDARY_INTERACTION_ACTIVE); /* clears the bit set above too, as in the original */
   if (((((int)control->contentOriginX <= localPointerX) &&
        ((int)control->contentOriginY <= localPointerY)) &&
       ((int)(localPointerX - control->viewportWidth) < (int)control->contentOriginX)) &&
      (((int)(localPointerY - control->viewportHeight) < (int)control->contentOriginY &&
-      (control->scrollStateFlags = control->scrollStateFlags | 0x4000,
+      (control->scrollStateFlags = control->scrollStateFlags | UI_SCROLL_SECONDARY_PANNING_CONTENT,
       (control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
        UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)))) {
-    cursorFrame = 1;
+    cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) {
-      cursorFrame = 4;
+      cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) == 0) {
-      cursorFrame = 5;
+      cursorFrame = UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL;
     }
     g_GraphicsCursorSetFrame(cursorFrame);
   }
@@ -2685,8 +2688,8 @@ UiScrollableControl_BeginSecondaryScrollInteraction
 
 
 /* Address: 0x004B8BC0.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[7]@004B7920.
+   Right-button release on a scroll frame (g_UiScrollableControlVtable rightRelease): ends panning, releases
+   the pinned cursor and restores the arrow cursor.
 */
 void UiScrollableControl_EndSecondaryScrollInteraction
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
@@ -2694,16 +2697,17 @@ void UiScrollableControl_EndSecondaryScrollInteraction
 
 {
   g_CursorUseOverridePosition = 0;
-  control->scrollStateFlags = control->scrollStateFlags & 0xffffafff;
-  g_GraphicsCursorSetFrame(0);
+  control->scrollStateFlags = control->scrollStateFlags &
+       ~(UI_SCROLL_SECONDARY_PANNING_CONTENT|UI_SCROLL_SECONDARY_INTERACTION_ACTIVE);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   return;
 }
 
 
 /* Address: 0x004B9000.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004B7920[11]@004B7920.
-   Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
+   Hit test of a scroll frame (g_UiScrollableControlVtable hitTest): a pointer inside the content view hits
+   the content's children, anywhere else (bars, frame) or during a right-button pan of the content the frame
+   itself.
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiScrollableControl_HitTestContentAndScrollbars
@@ -2715,7 +2719,7 @@ UiScrollableControl_HitTestContentAndScrollbars
   
   localPointerX = pointerX - (control->base).left;
   localPointerY = pointerY - (control->base).top;
-  if (((((control->scrollStateFlags & 0x4000) == 0) &&
+  if (((((control->scrollStateFlags & UI_SCROLL_SECONDARY_PANNING_CONTENT) == 0) &&
        ((int)control->contentOriginX <= localPointerX)) &&
       ((int)control->contentOriginY <= localPointerY)) &&
      (((int)(localPointerX - control->viewportWidth) < (int)control->contentOriginX &&
@@ -2727,8 +2731,8 @@ UiScrollableControl_HitTestContentAndScrollbars
 
 
 /* Address: 0x004BA4E0.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui pointer list get row slots variant a.
+   Returns the row pointer array of a pointer list (identical to UiPointerList_GetRowSlotsVariantB). No
+   caller found in src/ or image_data.c (only the function map).
 */
 void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
 
@@ -2757,10 +2761,9 @@ UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *cont
 }
 
 /* Address: 0x004BADE0.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui list control draw rows and selection.
-   Cross-module calls: UiWindow_BlitTiledHorizontalEdge [ui/controls/layout], RichTextCommandStream_MeasureRegs
-   [assets/text/richtext], RichTextCommandStream_DrawSingleLine [assets/text/richtext].
+   Draws the visible rows of the column list (g_UiListControlVtable drawClipped): the highlight bar behind
+   the selected row (with end caps while the list has the keyboard focus), then each column's text of the
+   row record. A column with a negative width is right-aligned in |width| pixels.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListControl_DrawRowsAndSelection
@@ -2802,27 +2805,27 @@ UiListControl_DrawRowsAndSelection
             widthOrColumnCount = (control->base).layoutWidth;
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x82,widthOrColumnCount,rowTop,0,control);
+                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,widthOrColumnCount,rowTop,0,control);
             }
             else {
-              textureSize = g_GraphicsTextureSourceGetLogicalSize(0x83,g_UiWindowTextureSource);
+              textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource);
               widthOrColumnCount = widthOrColumnCount - textureSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,0x84,widthOrColumnCount,rowTop,
+                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,widthOrColumnCount,rowTop,
                          textureSize.logicalWidthPixels,control);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
-                         (control->base).left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
+                         (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
-                         widthOrColumnCount + (control->base).left,0x85,g_UiWindowTextureSource,
+                         widthOrColumnCount + (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,g_UiWindowTextureSource,
                          g_FramebufferAccess);
             }
           }
           widthOrColumnCount = control->columnCount;
           rowRecord = (uint8_t *)*rowSlot;
           if (widthOrColumnCount != 0) {
-            columnX = 3;
+            columnX = 3; /* text inset */
             column = control->columns;
             do {
               columnWidth = column->width;
@@ -2842,11 +2845,11 @@ UiListControl_DrawRowsAndSelection
                            (uint16_t *)(rowRecord + column->rowTextOffset),
                            rowTop + 1 + (control->base).top,(columnX - columnWidth) + (control->base).left);
               }
-              column = column + 1;
-              widthOrColumnCount = widthOrColumnCount + -1;
+              column++;
+              widthOrColumnCount--;
             } while (widthOrColumnCount != 0);
           }
-          rowSlot = rowSlot + 1;
+          rowSlot++;
           rowTop = (int)control->rowHeight + rowTop;
         } while (rowSlot <= lastRowSlot);
         g_GraphicsFramebufferEndAccess();
@@ -2858,17 +2861,19 @@ UiListControl_DrawRowsAndSelection
 
 
 /* Address: 0x004BB310.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[16]@004BA590.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   Per-frame tick of the column list (g_UiListControlVtable tick): counts down the deferred action of a
+   keyboard selection change and queues the list's action when it reaches zero (clearing the pending and
+   confirmed flags).
 */
 void __thandor_preserve_eax UiListControl_TickActivationPulse(UiListControl *control)
 
 {
   if (((control->listStateFlags & UI_LIST_DEFERRED_ACTION_PENDING) != 0) &&
-     (control->listStateFlags = control->listStateFlags - 0x1000000,
-     (control->listStateFlags & 0xff000000) == 0)) {
-    control->listStateFlags = control->listStateFlags & 0xfffff9;
+     (control->listStateFlags = control->listStateFlags - UI_LIST_COUNTDOWN_ONE,
+     (control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0)) {
+    control->listStateFlags =
+         control->listStateFlags &
+         (UI_LIST_FLAGS_MASK & ~(UI_LIST_DEFERRED_ACTION_PENDING|UI_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
   return;
@@ -2876,9 +2881,8 @@ void __thandor_preserve_eax UiListControl_TickActivationPulse(UiListControl *con
 
 
 /* Address: 0x004BB350.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[15]@004BA590.
-   Cross-module calls: UiContainer_UnsuppressActionId [ui/controls/layout].
+   Re-enables the column list when it is bound to actionId (g_UiListControlVtable unsuppressActionId), then
+   passes the request on to its children like any container.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
@@ -2896,9 +2900,9 @@ UiListControl_UnsuppressIfActionId(UiActionId actionId,UiListControl *control)
 
 
 /* Address: 0x004BB380.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[14]@004BA590.
-   Cross-module calls: UiContainer_SuppressActionId [ui/controls/layout].
+   Disables the column list when it is bound to actionId (g_UiListControlVtable suppressActionId), then
+   passes the request on to its children like any container. Unlike the selectable controls it keeps the
+   keyboard focus.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
@@ -2965,8 +2969,8 @@ UiPointerList_InitializeColumnLayout
 
 
 /* Address: 0x004BB460.
-   Ownership: ui/controls/lists.
-   Purpose: EXACT_DUPLICATE_UI_POINTER_LIST_ROW_SLOT_GETTER_VARIANT_B.
+   Returns the row pointer array of a pointer list (identical to UiPointerList_GetRowSlotsVariantA). No
+   caller found in src/ or image_data.c (only the function map).
 */
 void ** UiPointerList_GetRowSlotsVariantB(UiPointerListControl *control)
 
@@ -2976,9 +2980,8 @@ void ** UiPointerList_GetRowSlotsVariantB(UiPointerListControl *control)
 
 
 /* Address: 0x004BB9E0.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BB990[0]@004BB990.
-   Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
+   Relocation of the tree list loaded from a serialized UI tree (g_UiTimedListControlVtable relocate): only
+   relocates the children like any container.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTimedListControl_RelocateChildren
@@ -2991,10 +2994,9 @@ UiTimedListControl_RelocateChildren
 
 
 /* Address: 0x004BBA00.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui timed list control draw rows and selection.
-   Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext], UiWindow_BlitTiledHorizontalEdge
-   [ui/controls/layout], RichTextCommandStream_DrawSingleLine [assets/text/richtext].
+   Draws the tree list (g_UiTimedListControlVtable drawClipped): for every visible row the connector lines
+   of its ancestor levels, its branch and expand/collapse icons, its row icon, the highlight behind the
+   selected row's label (with end caps while the list has the keyboard focus) and the label.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTimedListControl_DrawRowsAndSelection
@@ -3023,7 +3025,7 @@ UiTimedListControl_DrawRowsAndSelection
     return;
   }
   header = list->base.recordTree;
-  if ((header != (UiTimedListTreeRecord16 *)0x0) && (header->recordCountOrRowPayload00 != 0)) {
+  if ((header != NULL) && (header->recordCountOrRowPayload00 != 0)) {
     rowTexture = list->base.rowTextureSource;
     remaining = header->recordCountOrRowPayload00;
     record = header + 1;
@@ -3047,10 +3049,10 @@ UiTimedListControl_DrawRowsAndSelection
                   (clipTop,clipLeft,clipBottom,clipRight,y,x,
                    (remaining <= 1) ? list->observedDrawParameter7C : list->observedDrawParameter78,
                    rowTexture,g_FramebufferAccess);
-        if ((record->recordFlags0C & 1) != 0) {
+        if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) {
           g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,y,x,
-                     ((record->recordFlags0C & 2) != 0) ? list->observedDrawParameter70 :
+                     ((record->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) ? list->observedDrawParameter70 :
                                                           list->base.observedDrawParameter6C,
                      rowTexture,g_FramebufferAccess);
         }
@@ -3064,23 +3066,23 @@ UiTimedListControl_DrawRowsAndSelection
         RichTextExtentRegs extent =
              RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
         int width = (int)extent.widthPixels + 6;
-        if ((control->nodeFlags & 4) != 0) {
+        if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
           TextureSizeResult cap =
-               g_GraphicsTextureSourceGetLogicalSize(0x83,g_UiWindowTextureSource);
+               g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource);
           int capWidth = (int)cap.logicalWidthPixels;
           int endX = width - capWidth + x;
           UiWindow_BlitTiledHorizontalEdge
-                    (clipTop,clipLeft,clipBottom,clipRight,0x84,endX,rowY,capWidth + x,control);
+                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,endX,rowY,capWidth + x,control);
           g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,x + control->left,
-                     0x83,g_UiWindowTextureSource,g_FramebufferAccess);
+                     UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
           g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,endX + control->left,
-                     0x85,g_UiWindowTextureSource,g_FramebufferAccess);
+                     UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
         }
         else {
           UiWindow_BlitTiledHorizontalEdge
-                    (clipTop,clipLeft,clipBottom,clipRight,0x82,width + x,rowY,x,control);
+                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,width + x,rowY,x,control);
         }
       }
       RichTextCommandStream_DrawSingleLine
@@ -3088,20 +3090,21 @@ UiTimedListControl_DrawRowsAndSelection
                  (uint16_t *)record->recordCountOrRowPayload00,rowY + 1 + control->top,
                  x + 3 + control->left);
       rowY = rowY + (int)list->base.rowHeight;
-      record = record + 1;
-      remaining = remaining - 1;
-      if (((record[-1].recordFlags0C & 1) != 0) && ((record[-1].recordFlags0C & 2) != 0) &&
-          (record[-1].nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0) &&
+      record++;
+      remaining--;
+      if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
+          ((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) &&
+          (record[-1].nestedRecordBlockOrParentLink08 != NULL) &&
           (depth < TREE_DEPTH_LIMIT)) {
         UiTimedListTreeRecord16 *children = record[-1].nestedRecordBlockOrParentLink08;
         savedRecord[depth] = record;
         savedRemaining[depth] = remaining;
-        depth = depth + 1;
+        depth++;
         remaining = children->recordCountOrRowPayload00;
         record = children + 1;
       }
       while ((remaining == 0) && (depth != 0)) {
-        depth = depth - 1;
+        depth--;
         record = savedRecord[depth];
         remaining = savedRemaining[depth];
       }
@@ -3113,17 +3116,17 @@ UiTimedListControl_DrawRowsAndSelection
 
 
 /* Address: 0x004BC180.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BB990[16]@004BB990.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   Per-frame tick of the tree list (g_UiTimedListControlVtable tick): counts down the deferred action of a
+   keyboard selection change and queues the list's action when it reaches zero.
 */
 void __thandor_preserve_eax UiTimedListControl_TickActionDelay(UiTimedListControl *control)
 
 {
   if (((control->listStateAndDelay & UI_TIMED_LIST_ACTION_DELAY_PENDING) != 0) &&
-     (control->listStateAndDelay = control->listStateAndDelay - 0x1000000,
-     (control->listStateAndDelay & 0xff000000) == 0)) {
-    control->listStateAndDelay = control->listStateAndDelay & 0xfffffd;
+     (control->listStateAndDelay = control->listStateAndDelay - UI_LIST_COUNTDOWN_ONE,
+     (control->listStateAndDelay & UI_LIST_COUNTDOWN_MASK) == 0)) {
+    control->listStateAndDelay =
+         control->listStateAndDelay & (UI_LIST_FLAGS_MASK & ~UI_TIMED_LIST_ACTION_DELAY_PENDING);
     UiActionQueue_Enqueue(control->actionId,control);
   }
   return;
@@ -3131,8 +3134,7 @@ void __thandor_preserve_eax UiTimedListControl_TickActionDelay(UiTimedListContro
 
 
 /* Address: 0x004BC3F0.
-   Ownership: ui/controls/lists.
-   Purpose: Returns the selected timed-list record.
+   Returns the selected row of the tree list. Called by UiTimedListControl_ToggleDirectoryRecordExpansion.
 */
 UiTimedListTreeRecord16 *
 UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control)
@@ -3142,9 +3144,9 @@ UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control)
 }
 
 /* Address: 0x004BC460.
-   Ownership: ui/controls/lists.
-   Purpose: Binary entry is anchored by g_UiNodeVtable_004BC410[0]@004BC410; g_UiNodeVtable_00517F10[0]@00517F10.
-   Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
+   Relocation of a wrapped text control loaded from a serialized UI tree (relocate of
+   g_UiListOffsetControlVtable and g_UiCommandVisibilityWrappedTextVtable): relocates the children and, when
+   UI_LABEL_TEXT_NEEDS_RELOCATION marks the text pointer as a serialized offset, turns it into a pointer once.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiWrappedTextControl_RelocateAndApplyDeferredOffset
@@ -3152,20 +3154,21 @@ UiWrappedTextControl_RelocateAndApplyDeferredOffset
 
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);
-  if ((control->labelFlags & 0x20) != 0) {
+  if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
     control->text = (uint16_t *)((int)control->text + relocationDelta);
-    control->labelFlags = control->labelFlags & 0xffffffdf;
+    control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
   return;
 }
 
 
 /* Address: 0x00516580.
-   Ownership: ui/controls/lists.
-   Purpose: Draws the inherited sprite state and catalog-specific numeric/status overlays derived from
-   runtimeDisplayValueQ4 and active game-state tables.
-   Cross-module calls: RichTextCommandStream_MeasureRegs [assets/text/richtext],
-   RichTextCommandStream_DrawSingleLine [assets/text/richtext].
+   Draws a build catalog entry of the in-game command panel (g_UiNodeVtable_00516530 drawClipped): the
+   sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
+   faction's xenite does not cover it), how many of this army asset the faction already owns (top left) and
+   the highest ownerValue64/ownerValue68 percentage among the faction's armies of this asset in a given
+   model state (top right, alert colour when that army has runtimeFlags bit 0). The entry is looked up by its offset in the in-game root in the
+   group-42 and group-48 catalog tables.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCatalogEntryControl_DrawClipped
@@ -3192,7 +3195,7 @@ UiCatalogEntryControl_DrawClipped
   
   if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
      (((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0
-       && (((control->command).sprite.selectable.stateFlags & 0x400) != 0)) ||
+       && (((control->command).sprite.selectable.stateFlags & 0x400) != 0)) || /* hidden while not selected */
       (accessFailed = g_GraphicsFramebufferBeginAccess(), accessFailed)))) {
     return;
   }
@@ -3202,14 +3205,14 @@ UiCatalogEntryControl_DrawClipped
     subresourceOrTextLength = (control->command).sprite.normalSubresourceStartOrDescriptor;
   }
   else {
-    if ((((control->command).sprite.selectable.stateFlags & 0x80) == 0) &&
+    if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
        (((control->command).sprite.selectable.stateFlags & 0x800) != 0)) {
       spriteTextureSource = (control->command).sprite.alternateTextureSource;
     }
     subresourceOrTextLength = (control->command).sprite.selectedSubresourceStart;
-    if (((control->command).sprite.selectable.stateFlags & 0x40) != 0) {
+    if (((control->command).sprite.selectable.stateFlags & 0x40) != 0) { /* normal frame drawn underneath */
       backgroundSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
-      if (((control->command).sprite.selectable.stateFlags & 0x80) != 0) {
+      if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
         backgroundSubresource = backgroundSubresource + (control->command).sprite.animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
@@ -3218,7 +3221,7 @@ UiCatalogEntryControl_DrawClipped
                  (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
     }
   }
-  if (((control->command).sprite.selectable.stateFlags & 0x80) != 0) {
+  if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
     subresourceOrTextLength = subresourceOrTextLength + (control->command).sprite.animationFrameOffset;
   }
   g_GraphicsTextureSourceBlitSourceAlpha
@@ -3227,43 +3230,43 @@ UiCatalogEntryControl_DrawClipped
   factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
   if ((int)g_GameFactionRuntimeImage.records[factionIndexOrPercent].xeniteCurrentQ4 <
       (int)control->runtimeDisplayValueQ4) {
-    overlayTextStyle = 0x1050000;
+    overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
   }
   else {
-    overlayTextStyle = 0x1040000;
+    overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL;
   }
-  g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+  g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
   g_UiCatalogEntryRichTextScratchUtf16[1] = 0;
   subresourceOrTextLength = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
-  *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
-  textExtent = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
+  *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' '; /* ' ' and the terminator */
+  textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
-             ((control->command).sprite.selectable.base.bottom - textExtent.heightPixels) + -2,
+             ((control->command).sprite.selectable.base.bottom - textExtent.heightPixels) - 2,
              ((int)((control->command).sprite.selectable.base.layoutWidth - textExtent.widthPixels) >> 1)
              + (control->command).sprite.selectable.base.left);
-  recordIndexOrPercent = 0x29;
+  recordIndexOrPercent = 42 - 1; /* the last group-42 record */
   do {
     if ((int)control - (int)g_InGameRuntimeRoot ==
         g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndexOrPercent]) {
       assetCountOrPercent = 0;
       catalogArmyAssetId = g_UiCatalogGroup42Records[recordIndexOrPercent]->armyAssetId;
       for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount; assetSlotIndex != 0;
-          assetSlotIndex = assetSlotIndex - 1) {
+          assetSlotIndex--) {
         if (g_UiCatalogGroup42Records[recordIndexOrPercent] ==
             *(UiCommandRuntimeRecordPrefix **)(factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
-          assetCountOrPercent = assetCountOrPercent + 1;
+          assetCountOrPercent++;
         }
       }
       if (assetCountOrPercent != 0) {
-        g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+        g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
         subresourceOrTextLength = g_WideNumberFormatUtf16
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
         factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
+        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' '; /* ' ' and the terminator */
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
                    g_UiCatalogEntryRichTextScratchUtf16,factionIndexOrPercent + 2,
@@ -3272,7 +3275,7 @@ UiCatalogEntryControl_DrawClipped
       factionIndexOrPercent = -1;
       for (modelNodePrimary =
                 (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          modelNodePrimary != (ModelRuntimeNode *)0x0;
+          modelNodePrimary != NULL;
           modelNodePrimary = (ModelRuntimeNode *)(modelNodePrimary->common).nextNode) {
         if (((modelNodePrimary->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (armyRuntime = (modelNodePrimary->runtimePayload).armyRuntime,
@@ -3283,18 +3286,18 @@ UiCatalogEntryControl_DrawClipped
                   (catalogArmyAssetId == armyRuntime->classState60)) &&
                  (recordIndexOrPercent = (int)(((int64_t)(int)armyRuntime->ownerValue64 * 100) /
                                (int64_t)(int)armyRuntime->ownerValue68), factionIndexOrPercent <= recordIndexOrPercent)) &&
-                (overlayTextStyle = 0x1040000, factionIndexOrPercent = recordIndexOrPercent, (armyRuntime->runtimeFlags & 1) != 0)))))) {
-          overlayTextStyle = 0x1050000;
+                (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, factionIndexOrPercent = recordIndexOrPercent, (armyRuntime->runtimeFlags & 1) != 0)))))) {
+          overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
         }
       }
       if (-1 < factionIndexOrPercent) {
-        g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+        g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
         subresourceOrTextLength = g_WideNumberFormatUtf16
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,factionIndexOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
-        *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
-        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = 0x20;
-        textExtent = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
+        *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
+        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' '; /* ' ' and the terminator */
+        textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
                    g_UiCatalogEntryRichTextScratchUtf16,
@@ -3304,12 +3307,12 @@ UiCatalogEntryControl_DrawClipped
       g_GraphicsFramebufferEndAccess();
       return;
     }
-    recordIndexOrPercent = recordIndexOrPercent + -1;
+    recordIndexOrPercent--;
   } while (-1 < recordIndexOrPercent);
-  recordIndexOrPercent = 0x2f;
+  recordIndexOrPercent = 48 - 1; /* the last group-48 record */
   while ((int)control - (int)g_InGameRuntimeRoot !=
          g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][recordIndexOrPercent]) {
-    recordIndexOrPercent = recordIndexOrPercent + -1;
+    recordIndexOrPercent--;
     if (recordIndexOrPercent < 0) {
       g_GraphicsFramebufferEndAccess();
       return;
@@ -3318,19 +3321,19 @@ UiCatalogEntryControl_DrawClipped
   assetCountOrPercent = 0;
   catalogArmyAssetId = g_UiCatalogGroup48Records[recordIndexOrPercent]->armyAssetId;
   for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount; assetSlotIndex != 0;
-      assetSlotIndex = assetSlotIndex - 1) {
+      assetSlotIndex--) {
     if (g_UiCatalogGroup48Records[recordIndexOrPercent] ==
         *(UiCommandRuntimeRecordPrefix **)(factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
-      assetCountOrPercent = assetCountOrPercent + 1;
+      assetCountOrPercent++;
     }
   }
   if (assetCountOrPercent != 0) {
-    g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+    g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
     subresourceOrTextLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
     factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
+    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' '; /* ' ' and the terminator */
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                factionIndexOrPercent + 2,(control->command).sprite.selectable.base.left);
@@ -3338,7 +3341,7 @@ UiCatalogEntryControl_DrawClipped
   factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
   recordIndexOrPercent = -1;
   for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      modelNode != (ModelRuntimeNode *)0x0;
+      modelNode != NULL;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       slotArmyRuntime = (modelNode->runtimePayload).armyRuntime;
@@ -3349,8 +3352,8 @@ UiCatalogEntryControl_DrawClipped
            ((catalogArmyAssetId == slotArmyRuntime->classState60 &&
             ((assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
                            (int64_t)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent &&
-             (overlayTextStyle = 0x1040000, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))))) {
-          overlayTextStyle = 0x1050000;
+             (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))))) {
+          overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
         }
       }
       else if ((((((slotArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd)
@@ -3359,19 +3362,19 @@ UiCatalogEntryControl_DrawClipped
               (((catalogArmyAssetId == slotArmyRuntime->classState60 &&
                 (assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
                               (int64_t)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent)) &&
-               (overlayTextStyle = 0x1040000, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))) {
-        overlayTextStyle = 0x1050000;
+               (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))) {
+        overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
       }
     }
   }
   if (-1 < recordIndexOrPercent) {
-    g_UiCatalogEntryRichTextScratchUtf16[0] = 0x20;
+    g_UiCatalogEntryRichTextScratchUtf16[0] = ' ';
     subresourceOrTextLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordIndexOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
-    *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
-    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = 0x20;
-    textExtent = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
+    *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
+    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' '; /* ' ' and the terminator */
+    textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                (control->command).sprite.selectable.base.top + 2,
@@ -3383,10 +3386,9 @@ UiCatalogEntryControl_DrawClipped
 
 
 /* Address: 0x00516B90.
-   Ownership: ui/controls/lists.
-   Purpose: Maps a hovered catalog control to one of two verified static catalog tables, updates the active catalog
-   selection, and returns the pointer cursor identifier.
-   Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime].
+   Pointer over a build catalog entry (g_UiNodeVtable_00516530 pointerMove): finds the entry in the group-42
+   or group-48 catalog tables, makes its record the hover selection and rebuilds the selection detail panel,
+   so the panel describes the hovered asset. Returns cursor frame 10, or 12 while Ctrl is held.
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiCatalogEntryControl_PointerMove
@@ -3398,7 +3400,7 @@ UiCatalogEntryControl_PointerMove
   int group48Index;
   
   if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    recordIndex = 0x29;
+    recordIndex = 42 - 1; /* the last group-42 record */
     do {
       if ((int)control - (int)g_InGameRuntimeRoot ==
           g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
@@ -3406,10 +3408,10 @@ UiCatalogEntryControl_PointerMove
         InGameSelectionDetailPanel_Rebuild();
         break;
       }
-      recordIndex = recordIndex + -1;
+      recordIndex--;
     } while (-1 < recordIndex);
     if (recordIndex < 0) {
-      group48Index = 0x2f;
+      group48Index = 48 - 1; /* the last group-48 record */
       do {
         if ((int)control - (int)g_InGameRuntimeRoot ==
             g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][group48Index]) {
@@ -3417,22 +3419,22 @@ UiCatalogEntryControl_PointerMove
           InGameSelectionDetailPanel_Rebuild();
           break;
         }
-        group48Index = group48Index + -1;
+        group48Index--;
       } while (-1 < group48Index);
     }
   }
   cursorFrame = 10;
-  if ((g_KeyboardStateMask & 0xc) != 0) {
-    cursorFrame = 0xc;
+  if ((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) {
+    cursorFrame = 12;
   }
   return cursorFrame;
 }
 
 
 /* Address: 0x00516C50.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui catalog entry control non right release.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   Left-button release on a pressed build catalog entry (g_UiNodeVtable_00516530 nonRightRelease): releases
+   the button, records the modifier keys held (g_KeyboardStateMask into activationInputState) for the action
+   handler, plays the activation sound and queues the entry's action.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCatalogEntryControl_NonRightRelease
@@ -3449,7 +3451,7 @@ UiCatalogEntryControl_NonRightRelease
     stateFlagsField = &(control->command).sprite.selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     (control->command).activationInputState = activationInputState;
-    if ((((control->command).sprite.selectable.stateFlags & 0x200) != 0) &&
+    if ((((control->command).sprite.selectable.stateFlags & 0x200) != 0) && /* sound on release */
        ((control->command).sprite.activationSoundId != 0)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -3463,9 +3465,9 @@ UiCatalogEntryControl_NonRightRelease
 
 
 /* Address: 0x004BC360.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui timed list control select record and scroll into view.
-   Local calls: UiTimedListTree_CountRecordArrayAndNestedChildren, UiScrollableControl_ClampOffsetsToViewport.
+   Selects a row of the tree list and scrolls it into view: counts the visible rows above it (walking back
+   through its block and up through the ancestor rows, adding the rows of expanded blocks) to get its y.
+   Does not queue the list's action.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTimedListControl_SelectRecordAndScrollIntoView
@@ -3480,7 +3482,7 @@ UiTimedListControl_SelectRecordAndScrollIntoView
   rowAccumulator = 0;
   (control->base).selectedRecord = selectedRecord;
   do {
-    previousRecord = selectedRecord + -1;
+    previousRecord = selectedRecord - 1;
     rowIndex = rowAccumulator;
     if ((selectedRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) !=
         0) {
@@ -3492,7 +3494,7 @@ UiTimedListControl_SelectRecordAndScrollIntoView
     rowAccumulator = rowIndex + 1;
   } while (((selectedRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
           (selectedRecord = selectedRecord->nestedRecordBlockOrParentLink08,
-          selectedRecord != (UiTimedListTreeRecord16 *)0x0));
+          selectedRecord != NULL));
   rowIndex = rowIndex * (control->base).rowHeight;
   UiScrollableControl_ClampOffsetsToViewport
             (rowIndex + 1 + (control->base).rowHeight,(control->base).base.rightOffset,rowIndex,0,
@@ -3548,9 +3550,8 @@ UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control)
 
 
 /* Address: 0x004B9460.
-   Ownership: ui/controls/lists.
-   Purpose: Returns the verified scrollable-content width and height fields through EAX and EDX when the control
-   uses the expected scrollable vtable, otherwise returns zero for both dimensions.
+   Returns the size of the view of a scroll frame (viewportWidth in EAX, viewportHeight in EDX), or 0/0 when
+   control is not a scroll frame. The lists use it on their parent to page by a view's height.
 */
 UiScrollableContentDimensionsEdxEax8
 UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control)
@@ -3571,8 +3572,9 @@ UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control)
 }
 
 /* Address: 0x004BC1C0.
-   Ownership: ui/controls/lists.
-   Purpose: Sets the timed-list record tree and recomputes layout.
+   Gives the tree list a new record tree (or NULL) and selects its first row: row height from the list font,
+   row count over all expanded blocks, width from the widest indented row label plus icon; then the parent
+   scroll frame is laid out again for the new content size.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTimedListControl_SetRecordTreeAndRecomputeLayout
@@ -3593,7 +3595,7 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
   int depth;
 
   glyph = FontGlyph_GetLogicalSizeActiveRegs(0);
-  remaining = (recordTree == (UiTimedListTreeRecord16 *)0x0) ? 0 : recordTree->recordCountOrRowPayload00;
+  remaining = (recordTree == NULL) ? 0 : recordTree->recordCountOrRowPayload00;
   (control->base).rowHeight = glyph.lineHeight + 1;
   (control->base).rowCount = remaining;
   (control->base).recordTree = recordTree;
@@ -3606,25 +3608,25 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
          RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
     width = extent.widthPixels + control->observedDrawParameter84 +
             control->observedDrawParameter80 * (uint32_t)depth;
-    record = record + 1;
-    remaining = remaining - 1;
+    record++;
+    remaining--;
     if (widest < width) {
       widest = width;
     }
     if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
         ((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) &&
-        (record[-1].nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0) &&
+        (record[-1].nestedRecordBlockOrParentLink08 != NULL) &&
         (depth < TREE_DEPTH_LIMIT)) {
       UiTimedListTreeRecord16 *children = record[-1].nestedRecordBlockOrParentLink08;
       savedRecord[depth] = record;
       savedRemaining[depth] = remaining;
-      depth = depth + 1;
+      depth++;
       remaining = children->recordCountOrRowPayload00;
       record = children + 1;
       (control->base).rowCount = (control->base).rowCount + remaining;
     }
     while ((remaining == 0) && (depth != 0)) {
-      depth = depth - 1;
+      depth--;
       record = savedRecord[depth];
       remaining = savedRemaining[depth];
     }
@@ -3639,8 +3641,8 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
 }
 
 /* Address: 0x004BC2F0.
-   Ownership: ui/controls/lists.
-   Purpose: Returns the timed-list record tree.
+   Returns the root record block of the tree list. No caller found in src/ or image_data.c (only the
+   function map).
 */
 UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *control)
 
@@ -3649,8 +3651,8 @@ UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *c
 }
 
 /* Address: 0x004BC310.
-   Ownership: ui/controls/lists.
-   Purpose: Handles ui timed list tree count record array and nested children.
+   Counts the visible rows of a record block: its rows plus, recursively, the rows of every expanded child
+   block (0 for NULL). Used to turn a row position into a row index for scrolling.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock)
@@ -3661,7 +3663,7 @@ UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recor
   uint32_t recordsRemaining;
   
   totalCount = 0;
-  if (recordBlock != (UiTimedListTreeRecord16 *)0x0) {
+  if (recordBlock != NULL) {
     totalCount = recordBlock->recordCountOrRowPayload00;
     recordsRemaining = totalCount;
     do {
@@ -3671,8 +3673,8 @@ UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recor
                           (recordBlock[1].nestedRecordBlockOrParentLink08);
         totalCount = totalCount + nestedRecordCount;
       }
-      recordsRemaining = recordsRemaining - 1;
-      recordBlock = recordBlock + 1;
+      recordsRemaining--;
+      recordBlock++;
     } while (recordsRemaining != 0);
   }
   return totalCount;

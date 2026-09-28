@@ -23,7 +23,7 @@ void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(Ui
 
 /* 0x0054C7D0 */
 void __thandor_preserve_eax_edx
-FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferPageControl);
+FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit);
 
 /* 0x0054CE10 */
 void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source);

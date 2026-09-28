@@ -12,6 +12,21 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/results. */
+
+/* Text resource ids of the results table (FrontendResultsTable_Draw*Column): column headers, and the template
+   the numeric columns patch their value into (selector 0). The faction-field columns take their header
+   (0x21B6..0x21BF) and value template (0x21C1..0x21C3) from FrontendResultsTable_DrawColumnSequenceByType. */
+#define TEXT_ID_RESULTS_ECONOMY 0x21B0
+#define TEXT_ID_RESULTS_MILITARY 0x21B1
+#define TEXT_ID_RESULTS_COLOUR 0x21B2
+#define TEXT_ID_RESULTS_POINTS 0x21B3
+#define TEXT_ID_RESULTS_PLAYER 0x21B4
+#define TEXT_ID_RESULTS_FACTION 0x21B5
+#define TEXT_ID_RESULTS_VALUE_TEMPLATE 0x21C4
+/* Results graph: g_GameStatTableImage holds one 0x38-byte sample (7 factions x 2 dwords) every 128 simulation
+   ticks. */
+#define RESULTS_STAT_SAMPLE_BYTES 0x38
+#define RESULTS_STAT_SAMPLE_TICK_SHIFT 7
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00517020 */

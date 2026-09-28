@@ -603,6 +603,13 @@
 #ifndef DDERR_OUTOFVIDEOMEMORY
 #define DDERR_OUTOFVIDEOMEMORY ((TH_LEGACY_HRESULT)0x8876017CL)
 #endif
+/* IDirectDraw2::CreatePalette flags (the 8-bit paths of GraphicsTexture_UploadColor_*) */
+#ifndef DDPCAPS_8BIT
+#define DDPCAPS_8BIT 0x00000004
+#endif
+#ifndef DDPCAPS_ALLOW256
+#define DDPCAPS_ALLOW256 0x00000040
+#endif
 #ifndef DDPF_ALPHAPIXELS
 #define DDPF_ALPHAPIXELS 0x00000001
 #endif
@@ -884,6 +891,29 @@
 #endif
 #ifndef GR_TEXFMT_ARGB_4444
 #define GR_TEXFMT_ARGB_4444 0xc
+#endif
+
+/* Window messages handled by MainWindowProc */
+#ifndef WM_DESTROY
+#define WM_DESTROY 0x0002
+#endif
+#ifndef WM_CLOSE
+#define WM_CLOSE 0x0010
+#endif
+#ifndef WM_ACTIVATEAPP
+#define WM_ACTIVATEAPP 0x001C
+#endif
+#ifndef WM_SETCURSOR
+#define WM_SETCURSOR 0x0020
+#endif
+#ifndef WM_KEYUP
+#define WM_KEYUP 0x0101
+#endif
+#ifndef WM_SYSKEYDOWN
+#define WM_SYSKEYDOWN 0x0104
+#endif
+#ifndef WM_SYSCHAR
+#define WM_SYSCHAR 0x0106
 #endif
 
 #endif /* THANDOR_PLATFORM_WIN32_CONSTANTS_H */

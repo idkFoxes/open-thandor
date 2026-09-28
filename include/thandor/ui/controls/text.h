@@ -12,6 +12,81 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/controls/text. */
+
+/* Pieces of g_UiWindowTextureSource (win.gfx) drawn by the text controls. A frame is UI_WINDOW_FRAME_PIECE_COUNT
+   consecutive pieces: top-left, top-right, bottom-left and bottom-right corner, then the top, left, right and
+   bottom edge. */
+#define UI_WINDOW_FRAME_PIECE_COUNT 8
+#define UI_WINDOW_SUBRESOURCE_BUTTON_FRAME 0x4A /* the selected frame follows it */
+#define UI_WINDOW_SUBRESOURCE_BUTTON_FRAME_DISABLED 0x8C
+#define UI_WINDOW_SUBRESOURCE_INSET_BUTTON_FRAME 0x94 /* UI_BUTTON_FRAME_INSET; the selected frame follows it */
+#define UI_WINDOW_SUBRESOURCE_INSET_BUTTON_FRAME_DISABLED 0xA4
+#define UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME 0x6A
+#define UI_WINDOW_SUBRESOURCE_TEXT_EDIT_INTERIOR 0x7A
+#define UI_WINDOW_SUBRESOURCE_CHECKBOX 0x40 /* toggle text button: +2 checked, +4 alternate state, +1 disabled */
+#define UI_WINDOW_SUBRESOURCE_PUSH_BUTTON 0x46 /* push text button: +2 pressed, +1 disabled */
+#define UI_WINDOW_SUBRESOURCE_LIST_SELECTION 0x82 /* selected list row, list without focus */
+#define UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_LEFT 0x83 /* selected list row with focus: left cap, */
+#define UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_MIDDLE 0x84 /* tiled middle */
+#define UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_RIGHT 0x85 /* and right cap */
+#define UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT 0x86 /* keyboard-focus mark behind a focused label: left cap, */
+#define UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE 0x87 /* tiled middle */
+#define UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT 0x88 /* and right cap */
+#define UI_WINDOW_SUBRESOURCE_CARET_INSERT 0x89
+#define UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE 0x8A
+#define UI_WINDOW_SUBRESOURCE_TEXT_SELECTION 0x8B
+
+/* stateFlags bits (UiSelectableControl) that the text and framed buttons read. */
+#define UI_BUTTON_FRAME_INSET 0x04 /* framed buttons: inset frame, the hit area shrinks by g_UiWindowFrameInset */
+#define UI_BUTTON_ALTERNATE_STATE 0x40 /* text buttons: third checkbox state, alternate text style; cleared on toggle */
+#define UI_BUTTON_PLAY_ACTIVATION_SOUND 0x80 /* play activationSoundId on activation */
+#define UI_BUTTON_OWN_STYLE_FONT 0x100 /* the font byte of packedTextStyle replaces the state style's */
+#define UI_BUTTON_OWN_STYLE_PALETTE 0x200 /* the palette byte of packedTextStyle replaces the state style's */
+#define UI_BUTTON_HIDDEN_WHILE_SUPPRESSED 0x400
+#define UI_BUTTON_NO_FRAME_WHILE_SUPPRESSED 0x800 /* framed text button */
+#define UI_BUTTON_NO_FOCUS_MARK 0x1000
+
+/* labelFlags of UiSingleLineTextControl and UiWrappedTextControl. */
+#define UI_LABEL_CENTER_X 0x01
+#define UI_LABEL_ALIGN_RIGHT 0x02
+#define UI_LABEL_CENTER_Y 0x04
+#define UI_LABEL_ALIGN_BOTTOM 0x08
+#define UI_LABEL_TEXT_IS_STREAM 0x10 /* text is a rich-text command stream, else a TextResourceId */
+#define UI_LABEL_HIDE_WHILE_SUPPRESSED 0x40 /* single-line label */
+#define UI_LABEL_KEEP_WRAP_WIDTH 0x40 /* wrapped label: wrapWidth does not follow layoutWidth */
+#define UI_LABEL_OWN_STYLE_FONT 0x100 /* the font byte of styleOverride replaces g_UiTextStyleNormal's */
+#define UI_LABEL_OWN_STYLE_PALETTE 0x200 /* the palette byte of styleOverride replaces g_UiTextStyleNormal's */
+
+/* panelFlags of UiImagePanelControl (also the base of UiArmyMetricsPanel). */
+#define UI_IMAGE_PANEL_CENTER_X 0x01
+#define UI_IMAGE_PANEL_ALIGN_RIGHT 0x02
+#define UI_IMAGE_PANEL_CENTER_Y 0x04
+#define UI_IMAGE_PANEL_ALIGN_BOTTOM 0x08
+#define UI_IMAGE_PANEL_DROP_SHADOW 0x10
+#define UI_IMAGE_PANEL_NEVER_HIT 0x20
+#define UI_IMAGE_PANEL_HIT_WHOLE_BOX 0x40 /* skip the opaque-pixel test */
+#define UI_IMAGE_PANEL_STRETCH 0x80 /* stretch the texture over the layout box */
+
+/* fillFlags of UiFillPanelControl. */
+#define UI_FILL_PANEL_TILE_X 0x01
+#define UI_FILL_PANEL_TILE_Y 0x02
+#define UI_FILL_PANEL_DROP_SHADOW 0x10
+
+/* gaugeFlags of UiFormattedContainer. */
+#define UI_GAUGE_TWO_SIDED_SCALE 0x01
+#define UI_GAUGE_HAS_MARKER 0x02 /* the node is a UiFormattedContainerWithMarker */
+
+/* editStateFlags bits of UiPathTextEditControl beyond UiTextEditStateFlags; bits 1-2 are passed on to
+   g_FileSystemValidateDos83Path. */
+#define UI_PATH_TEXT_ALLOW_WILDCARDS 0x02 /* accept '*' and '?' */
+#define UI_PATH_TEXT_NAME_ONLY 0x04 /* refuse ':' and '\' */
+
+/* Code units of the fixed text buffers (the terminator included). */
+#define UI_NUMERIC_TEXT_BUFFER_UNITS 16
+#define UI_PATH_TEXT_BUFFER_UNITS 256
+
+/* The top byte of editStateFlags (text edits) and listStateFlags (text lists) counts frames down. */
+#define UI_STATE_FRAME_COUNTER_UNIT 0x1000000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004B0200 */
