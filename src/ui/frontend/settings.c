@@ -1658,9 +1658,23 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptor
    and apply handlers here and by ui/frontend/runtime). Every colour-depth, resolution and adapter choice is
    hidden unless the adapter offers it together with the other two pending values, the choices matching the
    pending mode are selected, and the apply button is only offered while the pending mode differs from the saved
-   one. Note: for each group this C only selects the first choice (or the adapter 0 choice) on a match; the
-   original compares every choice and pushes the matching one (see the stage-2 notes).
+   one.
+   How the selection works in the original (0x0054B1A3..0x0054B227 and the three groups): it first pushes all
+   19 choice controls (adapter 1..5, resolution 1..10, colour depth 1..4, so colour depth 4 ends on top), then
+   per group pushes every choice whose value equals the pending one (colour depth: bits per pixel == +0x60,
+   e.g. 0x0054B287; resolution: width == +0x60 and height == +0x64, e.g. 0x0054B33B; adapter: pending adapter
+   == 0..4, e.g. 0x0054B5E4) and calls UiSelectableGroup_SelectExclusive(count, <top of stack>, <the count
+   entries below it>), which pops count and the selected control, and then pops count entries (ADD ESP 0x10 /
+   0x28 / 0x14). With exactly one match per group this selects the matching choice. Quirk of the original:
+   when a group has no match, the entry on top (without earlier shifts: that group's last choice) is taken as
+   the selected control but is not in the list, so it keeps its state; the group's other choices plus the
+   next group's first choice are deselected, and every later group works on a stack shifted by one entry
+   (two matches in one group shift it the other way). modeStack models that stack exactly. Once a shift
+   reaches past the 19 pushed controls the original also deselects and redraws whatever its saved
+   EBP/ESI/EDI registers point at; this C leaves those entries out (listCount is cut at the last control).
 */
+#define DISPLAY_MODE_STACK_BASE 19 /* room for the pushed matches above the 19 controls */
+#define DISPLAY_MODE_STACK_END (DISPLAY_MODE_STACK_BASE + 19)
 void __thandor_void_preserve_eax_ecx_edx
 FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
 
@@ -1672,7 +1686,12 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   uint32_t persistedValue;
   bool modeCheckCarry;
   UiNodeBase *parentCursorOrSelectedRow;
-  
+  /* the original's stack: modeStack[modeStackTop] is the top; the 5 NULL entries after the 19 controls stand
+     for the original's saved registers */
+  UiNodeBase *modeStack[DISPLAY_MODE_STACK_END + 5];
+  int modeStackTop;
+  UiControlCount listCount;
+
   bitsPerPixel = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                  persistentSelection.bitsPerPixel;
   pendingHeight = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection
@@ -1687,6 +1706,32 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     frontendRoot = frontendRoot->parent;
     parentCursorOrSelectedRow = frontendRoot->parent;
   }
+  /* 0x0054B1A3..0x0054B227: push all 19 choices */
+  modeStackTop = DISPLAY_MODE_STACK_BASE;
+  modeStack[DISPLAY_MODE_STACK_BASE + 0] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption4);
+  modeStack[DISPLAY_MODE_STACK_BASE + 1] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption3);
+  modeStack[DISPLAY_MODE_STACK_BASE + 2] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption2);
+  modeStack[DISPLAY_MODE_STACK_BASE + 3] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
+  modeStack[DISPLAY_MODE_STACK_BASE + 4] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
+  modeStack[DISPLAY_MODE_STACK_BASE + 5] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
+  modeStack[DISPLAY_MODE_STACK_BASE + 6] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
+  modeStack[DISPLAY_MODE_STACK_BASE + 7] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
+  modeStack[DISPLAY_MODE_STACK_BASE + 8] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
+  modeStack[DISPLAY_MODE_STACK_BASE + 9] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
+  modeStack[DISPLAY_MODE_STACK_BASE + 10] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
+  modeStack[DISPLAY_MODE_STACK_BASE + 11] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
+  modeStack[DISPLAY_MODE_STACK_BASE + 12] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
+  modeStack[DISPLAY_MODE_STACK_BASE + 13] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
+  modeStack[DISPLAY_MODE_STACK_BASE + 14] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
+  modeStack[DISPLAY_MODE_STACK_BASE + 15] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
+  modeStack[DISPLAY_MODE_STACK_BASE + 16] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
+  modeStack[DISPLAY_MODE_STACK_BASE + 17] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
+  modeStack[DISPLAY_MODE_STACK_BASE + 18] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
+  modeStack[DISPLAY_MODE_STACK_END + 0] = NULL;
+  modeStack[DISPLAY_MODE_STACK_END + 1] = NULL;
+  modeStack[DISPLAY_MODE_STACK_END + 2] = NULL;
+  modeStack[DISPLAY_MODE_STACK_END + 3] = NULL;
+  modeStack[DISPLAY_MODE_STACK_END + 4] = NULL;
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t),
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
@@ -1695,15 +1740,15 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
                      persistentSelection.width,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.adapterIndex);
-  parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1,frontendRoot);
   }
+  /* 0x0054B250 */
   if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t)) {
-    parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     ((FrontendColorDepthBits)FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption2,0x60,struct UiNodeBase *),pendingHeight,pendingWidth
@@ -1714,6 +1759,10 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 1,frontendRoot);
   }
+  /* 0x0054B287 */
+  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption2,0x60,uint32_t)) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption2);
+  }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,int32_t),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
@@ -1721,6 +1770,10 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 2,frontendRoot);
+  }
+  /* 0x0054B2BE */
+  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,uint32_t)) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption3);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,uint32_t),pendingHeight,pendingWidth,adapterIndex);
@@ -1730,24 +1783,32 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_COLOR_DEPTH_OPTION1 + 3,frontendRoot);
   }
-  UiSelectableGroup_SelectExclusive(4,parentCursorOrSelectedRow,
-      FRONTEND_UI(frontendRoot,displayColorDepthOption4),
-      FRONTEND_UI(frontendRoot,displayColorDepthOption3),
-      FRONTEND_UI(frontendRoot,displayColorDepthOption2),
-      FRONTEND_UI(frontendRoot,displayColorDepthOption1));
+  /* 0x0054B2F5 */
+  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,uint32_t)) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption4);
+  }
+  /* 0x0054B304: SelectExclusive(4, top, next 4), then pop 1 + 4 */
+  listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
+  if (listCount > 4) {
+    listCount = 4;
+  }
+  UiSelectableGroup_SelectExclusive(listCount,modeStack[modeStackTop],
+      modeStack[modeStackTop + 1],modeStack[modeStackTop + 2],modeStack[modeStackTop + 3],
+      modeStack[modeStackTop + 4]);
+  modeStackTop = modeStackTop + 5;
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t),adapterIndex);
-  parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1,frontendRoot);
   }
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t)) &&
-     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags))) {
-    parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
+  /* 0x0054B33B */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,int32_t),
@@ -1758,6 +1819,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 1,frontendRoot);
   }
+  /* 0x0054B37F */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption2);
+  }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,uint32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,uint32_t),adapterIndex);
@@ -1766,6 +1832,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 2,frontendRoot);
+  }
+  /* 0x0054B3C3 */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption3);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,
@@ -1778,6 +1849,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 3,frontendRoot);
   }
+  /* 0x0054B407 */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption4);
+  }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,int32_t),adapterIndex);
@@ -1786,6 +1862,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 4,frontendRoot);
+  }
+  /* 0x0054B44B */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption5);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,uint32_t),
@@ -1796,6 +1877,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 5,frontendRoot);
   }
+  /* 0x0054B48F */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption6);
+  }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,(FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x64,struct UiNodeVtable *),
                      (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x60,struct UiNodeBase *),adapterIndex);
@@ -1804,6 +1890,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 6,frontendRoot);
+  }
+  /* 0x0054B4D3 */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption7);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,int32_t),
@@ -1814,6 +1905,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 7,frontendRoot);
   }
+  /* 0x0054B517 */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption8);
+  }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,int32_t),adapterIndex);
@@ -1822,6 +1918,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 8,frontendRoot);
+  }
+  /* 0x0054B55B */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption9);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,int32_t),
@@ -1832,27 +1933,32 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_RESOLUTION_OPTION1 + 9,frontendRoot);
   }
-  UiSelectableGroup_SelectExclusive(10,parentCursorOrSelectedRow,
-      FRONTEND_UI(frontendRoot,displayResolutionOption10),
-      FRONTEND_UI(frontendRoot,displayResolutionOption9),
-      FRONTEND_UI(frontendRoot,displayResolutionOption8),
-      FRONTEND_UI(frontendRoot,displayResolutionOption7),
-      FRONTEND_UI(frontendRoot,displayResolutionOption6),
-      FRONTEND_UI(frontendRoot,displayResolutionOption5),
-      FRONTEND_UI(frontendRoot,displayResolutionOption4),
-      FRONTEND_UI(frontendRoot,displayResolutionOption3),
-      FRONTEND_UI(frontendRoot,displayResolutionOption2),
-      FRONTEND_UI(frontendRoot,displayResolutionOption1));
+  /* 0x0054B59F */
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,uint32_t)) &&
+     (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,uint32_t))) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption10);
+  }
+  /* 0x0054B5B6: SelectExclusive(10, top, next 10), then pop 1 + 10 */
+  listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
+  if (listCount > 10) {
+    listCount = 10;
+  }
+  UiSelectableGroup_SelectExclusive(listCount,modeStack[modeStackTop],
+      modeStack[modeStackTop + 1],modeStack[modeStackTop + 2],modeStack[modeStackTop + 3],
+      modeStack[modeStackTop + 4],modeStack[modeStackTop + 5],modeStack[modeStackTop + 6],
+      modeStack[modeStackTop + 7],modeStack[modeStackTop + 8],modeStack[modeStackTop + 9],
+      modeStack[modeStackTop + 10]);
+  modeStackTop = modeStackTop + 11;
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,0);
-  parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1,frontendRoot);
   }
+  /* 0x0054B5E4 */
   if (adapterIndex == 0) {
-    parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,1);
   if (modeCheckCarry) {
@@ -1861,12 +1967,20 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 1,frontendRoot);
   }
+  /* 0x0054B613 */
+  if (adapterIndex == 1) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption2);
+  }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,2);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 2,frontendRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 2,frontendRoot);
+  }
+  /* 0x0054B643 */
+  if (adapterIndex == 2) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption3);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,3);
   if (modeCheckCarry) {
@@ -1875,6 +1989,10 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 3,frontendRoot);
   }
+  /* 0x0054B673 */
+  if (adapterIndex == 3) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption4);
+  }
   modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,4);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 4,frontendRoot);
@@ -1882,12 +2000,18 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_ADAPTER_OPTION1 + 4,frontendRoot);
   }
-  UiSelectableGroup_SelectExclusive(5,parentCursorOrSelectedRow,
-      FRONTEND_UI(frontendRoot,displayAdapterOption5),
-      FRONTEND_UI(frontendRoot,displayAdapterOption4),
-      FRONTEND_UI(frontendRoot,displayAdapterOption3),
-      FRONTEND_UI(frontendRoot,displayAdapterOption2),
-      FRONTEND_UI(frontendRoot,displayAdapterOption1));
+  /* 0x0054B6A3 */
+  if (adapterIndex == 4) {
+    modeStack[--modeStackTop] = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption5);
+  }
+  /* 0x0054B6AF: SelectExclusive(5, top, next 5), then pop 1 + 5 (the stack is dropped at return anyway) */
+  listCount = DISPLAY_MODE_STACK_END - (modeStackTop + 1);
+  if (listCount > 5) {
+    listCount = 5;
+  }
+  UiSelectableGroup_SelectExclusive(listCount,modeStack[modeStackTop],
+      modeStack[modeStackTop + 1],modeStack[modeStackTop + 2],modeStack[modeStackTop + 3],
+      modeStack[modeStackTop + 4],modeStack[modeStackTop + 5]);
   persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_ADAPTER_INDEX);
   if ((((persistedValue == adapterIndex) &&
        (persistedValue = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH), persistedValue == pendingWidth)) &&
