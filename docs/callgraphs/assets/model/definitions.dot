@@ -13,16 +13,16 @@ digraph thandor {
   "ModelDefinition_SelectFactionUnlockedLinkedId" [label="0x0051B430\nModelDefinition_SelectFactionUnlockedLinkedIdCf"];
   "ModelDefinition_RegisterAndResolveReferences" [label="0x00528600\nModelDefinition_RegisterAndResolveReferencesCf"];
   "ModelDefinition_UnlockLinkedTechnologyForFaction" [label="0x0052ADE0\nModelDefinition_UnlockLinkedTechnologyForFactionCf"];
-  "ModelDefinition_IsFactionTechnologyUnlocked" [label="0x0052AD90\nModelDefinition_IsFactionTechnologyUnlockedCf"];
+  "ModelDefinition_IsFactionTechnologyLocked" [label="0x0052AD90\nModelDefinition_IsFactionTechnologyUnlockedCf"];
   "ModelDefinitionRegistry_FindByIdWithError" [label="0x00528E20\nModelDefinitionRegistry_FindByIdWithErrorCf"];
-  "ModelDefinition_SelectFactionUnlockedLinkedDefinition" -> "ModelDefinition_IsFactionTechnologyUnlocked";
+  "ModelDefinition_SelectFactionUnlockedLinkedDefinition" -> "ModelDefinition_IsFactionTechnologyLocked";
   "ModelDefinition_SelectFactionUnlockedLinkedDefinition" -> "ModelDefinitionRegistry_FindByIdWithError";
   "ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology" -> "ModelDefinition_SelectFactionUnlockedLinkedId";
   "ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology" -> "ModelDefinition_UnlockLinkedTechnologyForFaction";
-  "ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction" -> "ModelDefinition_IsFactionTechnologyUnlocked";
+  "ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction" -> "ModelDefinition_IsFactionTechnologyLocked";
   "ModelAsset_PrepareRecords" -> "ModelDefinition_RegisterAndResolveReferences";
-  "ModelDefinition_SelectFactionUnlockedLinkedId" -> "ModelDefinition_IsFactionTechnologyUnlocked";
+  "ModelDefinition_SelectFactionUnlockedLinkedId" -> "ModelDefinition_IsFactionTechnologyLocked";
   "ModelDefinition_RegisterAndResolveReferences" -> "ModelDefinitionRegistry_FindByIdWithError";
   "ModelDefinition_UnlockLinkedTechnologyForFaction" -> "ModelDefinitionRegistry_FindByIdWithError";
-  "ModelDefinition_IsFactionTechnologyUnlocked" -> "ModelDefinitionRegistry_FindByIdWithError";
+  "ModelDefinition_IsFactionTechnologyLocked" -> "ModelDefinitionRegistry_FindByIdWithError";
 }

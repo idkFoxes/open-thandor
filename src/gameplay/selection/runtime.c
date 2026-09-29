@@ -20,8 +20,8 @@
    UiArmyMetricsPanel_DrawTextureMetricsAndChildren (ui/controls/text.c).
 */
 void SelectionPanel_RenderArmyRuntimeMetrics
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
           UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
           RuntimeModelFactionPrefix *runtimeEntry)
 
@@ -64,36 +64,36 @@ void SelectionPanel_RenderArmyRuntimeMetrics
             (armyRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11)))) {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
+                             (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
                               (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,(armyRuntime->classLinkState).classState68,
                      (armyRuntime->classLinkState).classState64,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
                      panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
           goto EndFramebufferAccess;
         }
@@ -113,40 +113,40 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           activeMetricMaximum = (int)(activeTotalMetrics >> 0x20);
           if (activeMetricMaximum == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
             topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
                                 activeMetricMaximum,(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,capacityOrMetric,capacityOrMetric - workingValue,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
                      panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
           SelectionPanel_DrawSolidCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
           goto EndFramebufferAccess;
         }
@@ -180,40 +180,40 @@ void SelectionPanel_RenderArmyRuntimeMetrics
             capacityOrMetric = (int)(activeTotalMetrics >> 0x20);
             if (capacityOrMetric == 0) {
               topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
+                                 (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
             }
             else {
               topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,capacityOrMetric,
+                                 (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,capacityOrMetric,
                                   (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
             }
             groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
             if (groupIndexResult.notFound) {
               topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                                 (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
             }
             else {
               topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                                 (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                                 (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                   groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
             }
             bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
             bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                      (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                        topLeftAdvance.nextX,maximumValue,workingValue + maximumValue,SELECTION_PANEL_CELL_TOP_BAR);
             scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
             SelectionPanel_DrawProportionalCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                      (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
                        bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                        SELECTION_PANEL_CELL_BOTTOM_BAR);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                      (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
                        panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
             SelectionPanel_DrawSolidCappedBar
-                      (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                      (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,
                        panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
             goto EndFramebufferAccess;
           }
@@ -225,39 +225,39 @@ void SelectionPanel_RenderArmyRuntimeMetrics
             terrainContactMode == ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
+                             (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
                               (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,(armyRuntime->classLinkState).classState68,
                      (armyRuntime->classLinkState).classState64,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
                      panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,SELECTION_PANEL_CELL_LEFT_SEGMENTS);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         else if (((armyRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
@@ -265,43 +265,43 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           workingValue = (int)(activeTotalMetrics >> 0x20);
           if (workingValue == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
             topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                                 (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawForwardCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
                      panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,SELECTION_PANEL_CELL_LEFT_SEGMENTS);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         else {
@@ -309,44 +309,44 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           workingValue = (int)(activeTotalMetrics >> 0x20);
           if (workingValue == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
           }
           else {
             topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                                 (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           }
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
           }
           else {
             topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                               (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                               (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                                 groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
           }
           bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
           bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                             (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                             (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,
                      topLeftAdvance.nextX,armyRuntime->researchDurationTicks,
                      armyRuntime->researchElapsedTicks,SELECTION_PANEL_CELL_TOP_BAR);
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
+                    (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
                      panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,SELECTION_PANEL_CELL_LEFT_SEGMENTS);
           SelectionPanel_DrawSegmentedCappedBar
-                    (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
+                    (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
         goto EndFramebufferAccess;
@@ -357,39 +357,39 @@ void SelectionPanel_RenderArmyRuntimeMetrics
       workingValue = (int)(activeTotalMetrics >> 0x20);
       if (workingValue == 0) {
         topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
       }
       else {
         topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                             (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
       groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
       if (groupIndexResult.notFound) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
         topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                             groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
       bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                         (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
       bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                         (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
       SelectionPanel_DrawForwardCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
+                (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
                  SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
       scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
+                (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
                  ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
+                (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
                  SELECTION_PANEL_CELL_LEFT_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
+                (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
                  SELECTION_PANEL_CELL_RIGHT_BAR);
     }
     else {
@@ -397,62 +397,62 @@ void SelectionPanel_RenderArmyRuntimeMetrics
       workingValue = (int)(activeTotalMetrics >> 0x20);
       if (workingValue == 0) {
         topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
       }
       else {
         topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,workingValue,
                             (UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
       }
       groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
       if (groupIndexResult.notFound) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
       }
       else {
         topRightAdvance = SelectionPanel_DrawNumberCellAndAdvanceRegs
-                           (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,
+                           (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,
                             groupIndexResult.runtimeGroupIndex,SELECTION_PANEL_CELL_GROUP_NUMBER);
       }
       bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                         (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
       bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                         (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                         (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
+                (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,
                  armyRuntime->researchDurationTicks,
                  armyRuntime->researchElapsedTicks,SELECTION_PANEL_CELL_TOP_BAR);
       scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
+                (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
                  ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
+                (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
                  SELECTION_PANEL_CELL_LEFT_BAR);
       SelectionPanel_DrawSolidCappedBar
-                (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
+                (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
                  SELECTION_PANEL_CELL_RIGHT_BAR);
     }
   }
   else {
     topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
+                       (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
     topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
+                       (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelRight,SELECTION_PANEL_CELL_CORNER_TOP_RIGHT);
     bottomLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
+                       (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelLeft,SELECTION_PANEL_CELL_CORNER_BOTTOM_LEFT);
     bottomRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
-                       (clipTop,clipLeft,clipBottom,clipRight,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
+                       (clipBottom,clipRight,clipTop,clipLeft,panelBottom,panelRight,SELECTION_PANEL_CELL_CORNER_BOTTOM_RIGHT);
     SelectionPanel_DrawForwardCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
+              (clipBottom,clipRight,clipTop,clipLeft,panelTop,topRightAdvance.nextX,topLeftAdvance.nextX,SELECTION_PANEL_CELL_TOP_BAR_EMPTY);
     scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
     SelectionPanel_DrawProportionalCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX,
+              (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX,
                (UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
+              (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
     SelectionPanel_DrawSolidCappedBar
-              (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
+              (clipBottom,clipRight,clipTop,clipLeft,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
                SELECTION_PANEL_CELL_RIGHT_BAR);
   }
 EndFramebufferAccess:
@@ -1819,8 +1819,8 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
    and left out when the span is too short. No caller was found in src/ or src/generated/image_data.c.
 */
 void SelectionPanel_DrawHorizontalNumberTextCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
           uint16_t *commandStream,SelectionPanelCellIndex cellIndex)
 
@@ -1861,57 +1861,57 @@ void SelectionPanel_DrawHorizontalNumberTextCappedBar
           + spanStartCoordinate + leftCapWidth;
   if ((uint32_t)spanEndCoordinate < requiredEnd) {
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,spanStartCoordinate,baseSubresource,
+              (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,spanStartCoordinate,baseSubresource,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
     innerCursor = spanEndCoordinate - pieceSize.logicalWidthPixels;
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 2,
+              (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,innerCursor,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,innerCursor,rowCoordinate,
+              (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,innerCursor,rowCoordinate,
                spanStartCoordinate + leftCapWidth,baseSubresource + 1,g_SelectionPanelTextureSource,
                g_FramebufferAccess);
   }
   else {
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,spanStartCoordinate,baseSubresource,
+              (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,spanStartCoordinate,baseSubresource,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     innerCursor = spanStartCoordinate + leftCapWidth;
     pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
     rightCapStart = spanEndCoordinate - pieceSize.logicalWidthPixels;
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,rightCapStart,baseSubresource + 2,
+              (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,rightCapStart,baseSubresource + 2,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_START) == 0) {
       if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_END) == 0) {
         segmentCursor = ((int)(rightCapStart - requiredEnd) >> 1) + innerCursor;
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
+                  (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
+                  (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,segmentCursor,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
         segmentCursor = segmentCursor + pieceSize.logicalWidthPixels;
         innerCursor = textWidth + segmentCursor;
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,innerCursor,rowCoordinate,segmentCursor,baseSubresource + 4,
+                  (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,innerCursor,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         /* in this cell the X offset field shifts the text vertically */
         rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                                  SELECTION_PANEL_CELL_OFFSET_X);
         RichTextCommandStream_DrawSingleLine
-                  (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
+                  (clipBottom,clipRight,clipTop,clipLeft,g_SelectionPanelNumberTextStyle,
                    commandStream,rowCoordinate,segmentCursor);
         rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                                  SELECTION_PANEL_CELL_OFFSET_X);
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 5,
+                  (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,innerCursor,baseSubresource + 5,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 5,g_SelectionPanelTextureSource);
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,
+                  (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,
                    innerCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                    g_FramebufferAccess);
       }
@@ -1919,52 +1919,52 @@ void SelectionPanel_DrawHorizontalNumberTextCappedBar
         pieceSize = g_GraphicsTextureSourceGetLogicalSize(textRightBorderSubresource,g_SelectionPanelTextureSource);
         rightCapStart = rightCapStart - pieceSize.logicalWidthPixels;
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,rightCapStart,textRightBorderSubresource,
+                  (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,rightCapStart,textRightBorderSubresource,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         segmentCursor = rightCapStart - textWidth;
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,segmentCursor,baseSubresource + 4,
+                  (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,segmentCursor,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                                  SELECTION_PANEL_CELL_OFFSET_X);
         RichTextCommandStream_DrawSingleLine
-                  (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
+                  (clipBottom,clipRight,clipTop,clipLeft,g_SelectionPanelNumberTextStyle,
                    commandStream,rowCoordinate,segmentCursor);
         rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                                  SELECTION_PANEL_CELL_OFFSET_X);
         pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
         segmentCursor = segmentCursor - pieceSize.logicalWidthPixels;
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,baseSubresource + 3,
+                  (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,segmentCursor,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         g_SelectionPanelBlitClipped
-                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
+                  (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 1,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
       }
     }
     else {
       g_SelectionPanelBlitOpaque
-                (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,innerCursor,baseSubresource + 3,
+                (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,innerCursor,baseSubresource + 3,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       pieceSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
       innerCursor = innerCursor + pieceSize.logicalWidthPixels;
       segmentCursor = textWidth + innerCursor;
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 4,
+                (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,segmentCursor,rowCoordinate,innerCursor,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       rowCoordinate = rowCoordinate + *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                                SELECTION_PANEL_CELL_OFFSET_X);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,commandStream,
+                (clipBottom,clipRight,clipTop,clipLeft,g_SelectionPanelNumberTextStyle,commandStream,
                  rowCoordinate,innerCursor);
       rowCoordinate = rowCoordinate - *(int *)((int)panelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                                SELECTION_PANEL_CELL_OFFSET_X);
       g_SelectionPanelBlitOpaque
-                (clipTop,clipLeft,clipBottom,clipRight,rowCoordinate,segmentCursor,textRightBorderSubresource,
+                (clipBottom,clipRight,clipTop,clipLeft,rowCoordinate,segmentCursor,textRightBorderSubresource,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       pieceSize = g_GraphicsTextureSourceGetLogicalSize(textRightBorderSubresource,g_SelectionPanelTextureSource);
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,
+                (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,rightCapStart,rowCoordinate,
                  segmentCursor + pieceSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
                  g_FramebufferAccess);
     }
@@ -1979,8 +1979,8 @@ void SelectionPanel_DrawHorizontalNumberTextCappedBar
    SelectionPanel_RenderArmyRuntimeMetrics for the group number.
 */
 SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex)
 
 {
@@ -2010,13 +2010,13 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
   subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                      SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
   subresourceOrWidth = spriteSize.logicalWidthPixels;
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,g_SelectionPanelNumberTextStyle,
+            (clipBottom,clipRight,clipTop,clipLeft,g_SelectionPanelNumberTextStyle,
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16,
              ((int)(spriteHeight - textExtent.heightPixels) >> 1) + cellY,
              ((int)(subresourceOrWidth - textExtent.widthPixels) >> 1) + cellX);
@@ -2041,8 +2041,8 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
    SelectionPanel_RenderArmyRuntimeMetrics for the frame corners.
 */
 SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelCellIndex cellIndex)
 
 {
@@ -2060,7 +2060,7 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
   subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                      SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,
+            (clipBottom,clipRight,clipTop,clipLeft,
              originY + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                 SELECTION_PANEL_CELL_OFFSET_Y),
              originX + *(int *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
@@ -2091,8 +2091,8 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
    SelectionPanel_RenderArmyRuntimeMetrics for the hierarchy meter.
 */
 SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex)
 
@@ -2134,10 +2134,10 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
   subresourceOrWidth = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE +
                                      SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,subresourceOrWidth,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,cellY,cellX,meterFrame + baseSubresource,
+            (clipBottom,clipRight,clipTop,clipLeft,cellY,cellX,meterFrame + baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(subresourceOrWidth,g_SelectionPanelTextureSource);
   spriteHeight = spriteSize.logicalHeightPixels;
@@ -2165,8 +2165,8 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
    for the top and bottom edge.
 */
 void SelectionPanel_DrawProportionalCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex)
@@ -2185,13 +2185,13 @@ void SelectionPanel_DrawProportionalCappedBar
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
+            (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   interiorStart = barStartCoordinate + capSize.logicalWidthPixels;
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - capSize.logicalWidthPixels;
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   filledSpan = endCapCoordinate - interiorStart;
   if (currentValue < 0) {
@@ -2216,10 +2216,10 @@ void SelectionPanel_DrawProportionalCappedBar
     }
   }
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,filledSpan + interiorStart,fixedDrawCoordinate,interiorStart,
+            (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,filledSpan + interiorStart,fixedDrawCoordinate,interiorStart,
              fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,filledSpan + interiorStart,baseSubresource + 1,
+            (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,filledSpan + interiorStart,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
@@ -2231,8 +2231,8 @@ void SelectionPanel_DrawProportionalCappedBar
    in src/ or src/generated/image_data.c.
 */
 void SelectionPanel_DrawVerticalProportionalCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex)
@@ -2251,13 +2251,13 @@ void SelectionPanel_DrawVerticalProportionalCappedBar
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
+            (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   interiorStart = barStartCoordinate + capSize.logicalHeightPixels;
   capSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - capSize.logicalHeightPixels;
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   filledSpan = endCapCoordinate - interiorStart;
   if (currentValue < 0) {
@@ -2282,10 +2282,10 @@ void SelectionPanel_DrawVerticalProportionalCappedBar
     }
   }
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate - filledSpan,fixedDrawCoordinate,
+            (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate - filledSpan,fixedDrawCoordinate,
              fillFrame + 2 + baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate - filledSpan,GRAPHICS_TILED_BLIT_ONE_TILE,interiorStart,fixedDrawCoordinate,baseSubresource + 1,
+            (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate - filledSpan,GRAPHICS_TILED_BLIT_ONE_TILE,interiorStart,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
 }
@@ -2296,8 +2296,8 @@ void SelectionPanel_DrawVerticalProportionalCappedBar
    SelectionPanel_RenderArmyRuntimeMetrics for the top edge when there is no value to show.
 */
 void SelectionPanel_DrawForwardCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
           SelectionPanelCellIndex cellIndex)
 
@@ -2312,15 +2312,15 @@ void SelectionPanel_DrawForwardCappedBar
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
+            (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,barStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   endCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - endCapSize.logicalWidthPixels;
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,endCapCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,
+            (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,endCapCoordinate,fixedDrawCoordinate,
              barStartCoordinate + startCapSize.logicalWidthPixels,baseSubresource + 1,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   return;
@@ -2333,8 +2333,8 @@ void SelectionPanel_DrawForwardCappedBar
    Called by SelectionPanel_RenderArmyRuntimeMetrics for the left and right edge.
 */
 void SelectionPanel_DrawSolidCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
           SelectionPanelCellIndex cellIndex)
 
@@ -2349,15 +2349,15 @@ void SelectionPanel_DrawSolidCappedBar
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   startCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
+            (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   endCapSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - endCapSize.logicalHeightPixels;
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   g_SelectionPanelBlitClipped
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
+            (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
              barStartCoordinate + startCapSize.logicalHeightPixels,fixedDrawCoordinate,baseSubresource + 1,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   return;
@@ -2372,8 +2372,8 @@ void SelectionPanel_DrawSolidCappedBar
    not fit. No caller was found in src/ or src/generated/image_data.c.
 */
 void SelectionPanel_DrawHorizontalSegmentedCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
           SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
           ,SelectionPanelCellIndex cellIndex)
@@ -2391,13 +2391,13 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource,
+            (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanStartCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   interiorStart = spanStartCoordinate + spriteSize.logicalWidthPixels;
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 2,
+            (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 2,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   segmentsEnd = filledSegmentCount;
@@ -2407,19 +2407,19 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
   segmentsEnd = spriteSize.logicalWidthPixels * segmentsEnd + interiorStart;
   if (spanEndCoordinate < segmentsEnd) {
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
+              (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   else if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_START) == 0) {
     if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_END) == 0) {
       spanStartCoordinate = (spanEndCoordinate - segmentsEnd >> 1) + interiorStart;
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanStartCoordinate,fixedDrawCoordinate,interiorStart,
+                (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,spanStartCoordinate,fixedDrawCoordinate,interiorStart,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
       spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount--) {
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
+                  (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
         totalSegmentCount--;
@@ -2427,13 +2427,13 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
       if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
         for (; totalSegmentCount != 0; totalSegmentCount--) {
           g_SelectionPanelBlitOpaque
-                    (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
+                    (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
           spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,
+                (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,
                  spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
     else {
@@ -2441,7 +2441,7 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
       for (; filledSegmentCount != 0; filledSegmentCount--) {
         spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 4,
+                  (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount--;
       }
@@ -2449,12 +2449,12 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
         for (; totalSegmentCount != 0; totalSegmentCount--) {
           spanEndCoordinate = spanEndCoordinate - spriteSize.logicalWidthPixels;
           g_SelectionPanelBlitOpaque
-                    (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 3,
+                    (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanEndCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
+                (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,interiorStart,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
     }
   }
@@ -2463,7 +2463,7 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
     spanStartCoordinate = interiorStart;
     for (; filledSegmentCount != 0; filledSegmentCount--) {
       g_SelectionPanelBlitOpaque
-                (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
+                (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
       totalSegmentCount--;
@@ -2471,13 +2471,13 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
     if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
       for (; totalSegmentCount != 0; totalSegmentCount--) {
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
+                  (clipBottom,clipRight,clipTop,clipLeft,fixedDrawCoordinate,spanStartCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         spanStartCoordinate = spanStartCoordinate + spriteSize.logicalWidthPixels;
       }
     }
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,
+              (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,spanEndCoordinate,fixedDrawCoordinate,
                spanStartCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   return;
@@ -2491,8 +2491,8 @@ void SelectionPanel_DrawHorizontalSegmentedCappedBar
    Called by SelectionPanel_RenderArmyRuntimeMetrics for the left and right edge of class-0x16 entities.
 */
 void SelectionPanel_DrawSegmentedCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
           SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
           ,SelectionPanelCellIndex cellIndex)
@@ -2510,13 +2510,13 @@ void SelectionPanel_DrawSegmentedCappedBar
   baseSubresource = *(uint32_t *)((int)g_SelectionPanelData + cellIndex * SELECTION_PANEL_CELL_SIZE + SELECTION_PANEL_CELL_BASE_SUBRESOURCE);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource,g_SelectionPanelTextureSource);
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
+            (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource,
              g_SelectionPanelTextureSource,g_FramebufferAccess);
   barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 2,g_SelectionPanelTextureSource);
   endCapCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
   g_SelectionPanelBlitOpaque
-            (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
+            (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,fixedDrawCoordinate,baseSubresource + 2,g_SelectionPanelTextureSource,
              g_FramebufferAccess);
   spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 3,g_SelectionPanelTextureSource);
   segmentsEnd = filledSegmentCount;
@@ -2526,20 +2526,20 @@ void SelectionPanel_DrawSegmentedCappedBar
   segmentsEnd = spriteSize.logicalHeightPixels * segmentsEnd + barStartCoordinate;
   if (endCapCoordinate < segmentsEnd) {
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barStartCoordinate,fixedDrawCoordinate,
+              (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barStartCoordinate,fixedDrawCoordinate,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   else if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_START) == 0) {
     if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_ALIGN_END) == 0) {
       barEndCoordinate = endCapCoordinate - (endCapCoordinate - segmentsEnd >> 1);
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barEndCoordinate,fixedDrawCoordinate,
+                (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barEndCoordinate,fixedDrawCoordinate,
                  baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
       spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
       for (; filledSegmentCount != 0; filledSegmentCount--) {
         barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
+                  (clipBottom,clipRight,clipTop,clipLeft,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount--;
       }
@@ -2547,12 +2547,12 @@ void SelectionPanel_DrawSegmentedCappedBar
         for (; totalSegmentCount != 0; totalSegmentCount--) {
           barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
           g_SelectionPanelBlitOpaque
-                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
+                    (clipBottom,clipRight,clipTop,clipLeft,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
+                (clipBottom,clipRight,clipTop,clipLeft,barEndCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
                  barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
@@ -2562,7 +2562,7 @@ void SelectionPanel_DrawSegmentedCappedBar
       for (; filledSegmentCount != 0; filledSegmentCount--) {
         barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
+                  (clipBottom,clipRight,clipTop,clipLeft,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         totalSegmentCount--;
       }
@@ -2570,12 +2570,12 @@ void SelectionPanel_DrawSegmentedCappedBar
         for (; totalSegmentCount != 0; totalSegmentCount--) {
           barEndCoordinate = barEndCoordinate - spriteSize.logicalHeightPixels;
           g_SelectionPanelBlitOpaque
-                    (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
+                    (clipBottom,clipRight,clipTop,clipLeft,barEndCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                      g_SelectionPanelTextureSource,g_FramebufferAccess);
         }
       }
       g_SelectionPanelBlitClipped
-                (clipTop,clipLeft,clipBottom,clipRight,barEndCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
+                (clipBottom,clipRight,clipTop,clipLeft,barEndCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,
                  barStartCoordinate,fixedDrawCoordinate,baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess)
       ;
     }
@@ -2584,7 +2584,7 @@ void SelectionPanel_DrawSegmentedCappedBar
     spriteSize = g_GraphicsTextureSourceGetLogicalSize(baseSubresource + 4,g_SelectionPanelTextureSource);
     for (; filledSegmentCount != 0; filledSegmentCount--) {
       g_SelectionPanelBlitOpaque
-                (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 4,
+                (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 4,
                  g_SelectionPanelTextureSource,g_FramebufferAccess);
       barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
       totalSegmentCount--;
@@ -2592,13 +2592,13 @@ void SelectionPanel_DrawSegmentedCappedBar
     if ((*cellFlags & SELECTION_PANEL_CELL_FLAG_SHOW_EMPTY_SEGMENTS) != 0) {
       for (; totalSegmentCount != 0; totalSegmentCount--) {
         g_SelectionPanelBlitOpaque
-                  (clipTop,clipLeft,clipBottom,clipRight,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 3,
+                  (clipBottom,clipRight,clipTop,clipLeft,barStartCoordinate,fixedDrawCoordinate,baseSubresource + 3,
                    g_SelectionPanelTextureSource,g_FramebufferAccess);
         barStartCoordinate = barStartCoordinate + spriteSize.logicalHeightPixels;
       }
     }
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barStartCoordinate,fixedDrawCoordinate,
+              (clipBottom,clipRight,clipTop,clipLeft,endCapCoordinate,GRAPHICS_TILED_BLIT_ONE_TILE,barStartCoordinate,fixedDrawCoordinate,
                baseSubresource + 1,g_SelectionPanelTextureSource,g_FramebufferAccess);
   }
   return;

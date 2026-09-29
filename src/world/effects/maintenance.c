@@ -98,7 +98,7 @@ void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRun
 
 /* Address: 0x0051E840.
    Effect entry of the audioRefresh phase of g_RuntimeMaintenanceCallbackPhases (only reached through that table,
-   from the every-8th-frame spatial sound pass in EndGameResultsUiRuntime_UpdateAndHandleInput): effects add no
+   from the every-8th-frame spatial sound pass in InGameUiRoot_UpdateFrame): effects add no
    spatial sound, so this does nothing (RET 8).
 */
 void EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject)

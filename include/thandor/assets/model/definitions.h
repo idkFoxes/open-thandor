@@ -72,7 +72,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId);
 
 /* 0x0052AD90 */
-bool ModelDefinition_IsFactionTechnologyUnlocked
+bool ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
 /* 0x00528E20 */

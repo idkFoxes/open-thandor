@@ -153,6 +153,8 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
    source faction's bit (2 << 2 * faction) in +0x50 and are scored by AiCombatTarget_EvaluateCandidateScore
    within depth-bin masks around the source (radius +0x4C plus 4.0). Returns the best army (or NULL) and the sum.
    Only called by AiCombatDecision_UpdateTargetAssignment.
+   Original quirk: a zero sum returns a stack leftover instead of the sum (see the body); the C returns the
+   world runtime pointer, the positive value the traced original paths leave there.
 */
 AiCombatTargetSelectionResult
 AiCombatTarget_SelectBestCandidate
@@ -184,8 +186,17 @@ AiCombatTarget_SelectBestCandidate
     sourceClassCount = sourceClassCount + sourceArmyRuntime->targetClassShotDamage[classIndexOrFaction];
     classIndexOrFaction--;
   } while (-1 < classIndexOrFaction);
-  /* With a zero sum the original returns an EDX never written in this call (stack slot [EBP-0x10]);
-     returnedSourceClassCount is likewise left unset. */
+  /* Original quirk: with a zero sum the original skips MOV [EBP-0x10],ESI (0x00537302) and returns in EDX
+     (0x00537403) whatever an earlier call left in that stack slot, 36 bytes below
+     AiCombatDecision_UpdateTargetAssignment's return address. The call just before at the same depth is
+     ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive (0x0051D2C0): for an army with child
+     entities each child's frame pushes EBX = worldRuntime there (0x0052A7D8), otherwise the class handler's
+     frame leaves e.g. the movement length ([EBP-8], 0x0052094B) or a pushed pointer / return address. The
+     value is class and state dependent, but every traced path leaves a positive one (the movement length is
+     0 only when the unit stands exactly on its movement point), and the caller only tests EDX > 0
+     (0x00537013), so the C returns the most common of them, the world runtime pointer (positive:
+     /LARGEADDRESSAWARE:NO). */
+  returnedSourceClassCount = (AiSourceClassCount)(uintptr_t)worldRuntime;
   if (sourceClassCount != 0) {
     sourceModelNode = sourceArmyRuntime->modelNodeRuntime;
     searchRadiusQ12 = sourceArmyRuntime->weaponRangeQ12 + 0x4000;

@@ -69,9 +69,9 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance
         return result;
       }
     }
-    /* despite its name the counter counts these late rejections; the placement preview
+    /* the counter counts these late rejections; the placement preview
        (InGameWorldOverlay) tints the ghost by it */
-    g_ArmyPlacementAcceptedCandidateCount++;
+    g_ArmyPlacementLateRejectionCount++;
   }
   result.value = eaxOrOffsetYQ12;
   result.rejected = true;
@@ -138,7 +138,7 @@ bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
         }
       }
     }
-    g_ArmyPlacementAcceptedCandidateCount++;
+    g_ArmyPlacementLateRejectionCount++;
   }
   return true;
 }
@@ -245,7 +245,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancy
         return result;
       }
     }
-    g_ArmyPlacementAcceptedCandidateCount++;
+    g_ArmyPlacementLateRejectionCount++;
   }
   result.value = eaxOrCellColumn;
   result.rejected = true;
@@ -292,7 +292,7 @@ bool ArmyPlacement_TestGridOccupancyMask
         return false;
       }
     }
-    g_ArmyPlacementAcceptedCandidateCount++;
+    g_ArmyPlacementLateRejectionCount++;
   }
   return true;
 }
@@ -341,15 +341,14 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
 
 
 /* Address: 0x005281A0.
-   Placement test for a mobile unit (ground, tracked, walker, glider and water classes; despite the name it
-   has nothing to do with shots): the point must pass the definition's cell-mask bands (+0x260/+0x264), be
+   Placement test for a mobile unit (ground, tracked, walker, glider and water classes): the point must pass the definition's cell-mask bands (+0x260/+0x264), be
    free of other armies (ArmyCollision_TestPointAgainstRuntimeList) and, unless
    UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE is set, not be blocked on the field grid for the
    owner's faction. Returns value 0 with CF (rejected) as the result.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[1..3, 17..19]
    (0x0051FF38), called by ArmyPlacement_DispatchAssetAtFieldPoint.
 */
-PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
+PlacementCandidateResult ArmyPlacement_TestMobileUnitPoint
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,
                uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
@@ -389,7 +388,7 @@ PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
    definition's contact kind (+0x278) from the movement, creation and session code.
 */
 void ArmyPlacementContact_ApplyTerrainHeight
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
 {
@@ -397,14 +396,14 @@ void ArmyPlacementContact_ApplyTerrainHeight
   HeightSampleResult surfaceHeight;
   
   if (worldRuntime->fieldGrid != NULL) {
-    surfaceHeight = FieldGrid_InterpolateTerrainHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+    surfaceHeight = FieldGrid_InterpolateTerrainHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
     surfaceHeightQ12 = surfaceHeight.heightQ12;
     if (!surfaceHeight.failed) {
       (modelNode->worldTransform).translation.z =
            surfaceHeightQ12 + heightOffsetQ12 +
            ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
-      (modelNode->worldTransform).translation.x = worldYQ12;
-      (modelNode->worldTransform).translation.y = worldXQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
       (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
@@ -421,7 +420,7 @@ void ArmyPlacementContact_ApplyTerrainHeight
    definition's contact kind (+0x278).
 */
 void ArmyPlacementContact_ApplyWaterSurfaceHeight
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
 {
@@ -429,12 +428,12 @@ void ArmyPlacementContact_ApplyWaterSurfaceHeight
   HeightSampleResult surfaceHeight;
   
   if (worldRuntime->fieldGrid != NULL) {
-    surfaceHeight = FieldGrid_InterpolateWaterSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+    surfaceHeight = FieldGrid_InterpolateWaterSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
     surfaceHeightQ12 = surfaceHeight.heightQ12;
     if (!surfaceHeight.failed) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
-      (modelNode->worldTransform).translation.x = worldYQ12;
-      (modelNode->worldTransform).translation.y = worldXQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
       (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
@@ -450,7 +449,7 @@ void ArmyPlacementContact_ApplyWaterSurfaceHeight
    definition's contact kind (+0x278).
 */
 void ArmyPlacementContact_ApplyTerrainHeightAndNormal
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
 {
@@ -458,7 +457,7 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
   HeightNormalSampleResult surfaceHeightNormal;
   
   if (worldRuntime->fieldGrid != NULL) {
-    surfaceHeightNormal = FieldGrid_InterpolateTerrainHeightAndNormal(worldXQ12,worldYQ12,worldRuntime->fieldGrid)
+    surfaceHeightNormal = FieldGrid_InterpolateTerrainHeightAndNormal(worldYQ12,worldXQ12,worldRuntime->fieldGrid)
     ;
     if (!surfaceHeightNormal.failed) {
       resourceHeightOffsetQ12 = ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
@@ -466,8 +465,8 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
       (modelNode->modelPayload).worldRotationAngle1 = (int)surfaceHeightNormal.packedNormalAngles >> 0x10;
       (modelNode->worldTransform).translation.z =
            surfaceHeightNormal.heightQ12 + resourceHeightOffsetQ12 + heightOffsetQ12;
-      (modelNode->worldTransform).translation.x = worldYQ12;
-      (modelNode->worldTransform).translation.y = worldXQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
   }
@@ -483,7 +482,7 @@ void ArmyPlacementContact_ApplyTerrainHeightAndNormal
    definition's contact kind (+0x278).
 */
 void ArmyPlacementContact_ApplyTopSurfaceHeight
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
 {
@@ -491,12 +490,12 @@ void ArmyPlacementContact_ApplyTopSurfaceHeight
   HeightSampleResult surfaceHeight;
   
   if (worldRuntime->fieldGrid != NULL) {
-    surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
+    surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
     surfaceHeightQ12 = surfaceHeight.heightQ12;
     if (!surfaceHeight.failed) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
-      (modelNode->worldTransform).translation.x = worldYQ12;
-      (modelNode->worldTransform).translation.y = worldXQ12;
+      (modelNode->worldTransform).translation.x = worldXQ12;
+      (modelNode->worldTransform).translation.y = worldYQ12;
       (modelNode->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
     }
@@ -513,12 +512,12 @@ void ArmyPlacementContact_ApplyTopSurfaceHeight
    definition's contact kind (+0x278).
 */
 void ArmyPlacementContact_InitializeArticulatedSuspension
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime)
 
 {
-  (modelNode->worldTransform).translation.x = worldYQ12;
-  (modelNode->worldTransform).translation.y = worldXQ12;
+  (modelNode->worldTransform).translation.x = worldXQ12;
+  (modelNode->worldTransform).translation.y = worldYQ12;
   modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
   ArmyArticulatedRuntime_InitializeTerrainContactGeometry(modelNode,worldRuntime);
   ArmyArticulatedRuntime_UpdateSuspensionHierarchy(modelNode,worldRuntime);
@@ -703,7 +702,7 @@ PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccess
    the world's owner list: a cheap depth-bin mask overlap first, then the exact circle test
    ArmyCollision_TestPointWithinExpandedRuntimeRadius. Returns CF: true = an army is in the way (a
    definition without radius never collides).
-   Called directly by ArmyRuntimeCollision_TestShotSpawnPoint.
+   Called directly by ArmyPlacement_TestMobileUnitPoint.
 */
 
 bool ArmyCollision_TestPointAgainstRuntimeList
@@ -1189,7 +1188,7 @@ Reject:
 /* Address: 0x00524650.
    Tests whether a point comes within queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 of the army's
    (1,5) anchor point in world space - the second footprint of class-13 models. Returns CF: true = too close
-   (and counts it in g_ArmyPlacementAcceptedCandidateCount); false also when the model has no anchor point.
+   (and counts it in g_ArmyPlacementLateRejectionCount); false also when the model has no anchor point.
    Called directly by ArmyPlacementCollision_TestPointAgainstRuntimeList and
    ArmyPlacementCollision_TestCandidateAgainstRuntimeList.
 */
@@ -1209,7 +1208,7 @@ bool ArmyPlacementCandidate_TestModelAnchorDistance
     anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.yQ12 - targetWorldXQ12,
                                           anchorWorldPoint.xQ12 - targetWorldYQ12);
     if ((int)anchorDistanceQ12 <= queryRadiusQ12 + ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12) {
-      g_ArmyPlacementAcceptedCandidateCount++;
+      g_ArmyPlacementLateRejectionCount++;
       return true;
     }
   }

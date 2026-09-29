@@ -454,10 +454,10 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                      (levelImage->worldSettings).terrainLightingColor138Argb,
                                      (levelImage->worldSettings).terrainLightingColor134Argb,
                                      (levelImage->worldSettings).terrainLightingColor130Argb,
-                                     (levelImage->worldSettings).terrainRampColor12CArgb,
+                                     (levelImage->worldSettings).terrainSecondaryColorArgb,
                                      (levelImage->worldSettings).terrainLightingColor128Argb,
-                                     (levelImage->worldSettings).terrainRampColor124Argb,
-                                     (levelImage->worldSettings).terrainBaseColorArgb,worldRuntime)
+                                     (levelImage->worldSettings).terrainBaseColorArgb,
+                                     (levelImage->worldSettings).terrainRampStepColorArgb,worldRuntime)
                           ;
                           /* start camera from the local faction's player slot, then the lit field region
                              from the tail */
@@ -583,7 +583,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                     g_InGameActiveEffectVoice = 0;
                                     g_InGameEffectsEnabled = 1;
                                     g_InGameActiveMusicVoice = 0;
-                                    g_InGameMusicEnabled = 1;
+                                    g_InGameMusicNextTrackCountdown = 1;
                                     g_InGameLevelMusicVoiceSet0 = (DirectSoundVoiceSet *)0x0;
                                     g_InGameLevelMusicVoiceSet1 = (DirectSoundVoiceSet *)0x0;
                                     g_InGameLevelMusicVoiceSet2 = (DirectSoundVoiceSet *)0x0;
@@ -1190,10 +1190,10 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                      (levelImage->worldSettings).terrainLightingColor138Argb,
                                      (levelImage->worldSettings).terrainLightingColor134Argb,
                                      (levelImage->worldSettings).terrainLightingColor130Argb,
-                                     (levelImage->worldSettings).terrainRampColor12CArgb,
+                                     (levelImage->worldSettings).terrainSecondaryColorArgb,
                                      (levelImage->worldSettings).terrainLightingColor128Argb,
-                                     (levelImage->worldSettings).terrainRampColor124Argb,
-                                     (levelImage->worldSettings).terrainBaseColorArgb,worldRuntime)
+                                     (levelImage->worldSettings).terrainBaseColorArgb,
+                                     (levelImage->worldSettings).terrainRampStepColorArgb,worldRuntime)
                           ;
                           /* start camera from the local faction's player slot, then the lit field region
                              from the tail */
@@ -1338,7 +1338,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                 g_InGameActiveEffectVoice = 0;
                                                 g_InGameEffectsEnabled = 1;
                                                 g_InGameActiveMusicVoice = 0;
-                                                g_InGameMusicEnabled = 1;
+                                                g_InGameMusicNextTrackCountdown = 1;
                                                 g_InGameLevelMusicVoiceSet0 = (void *)0x0;
                                                 g_InGameLevelMusicVoiceSet1 = (void *)0x0;
                                                 g_InGameLevelMusicVoiceSet2 = (void *)0x0;

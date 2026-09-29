@@ -12,7 +12,7 @@ digraph thandor {
   "GameFactionRuntime_UpdateImpactAlertAnchorAndNotify" [label="0x00514510\nGameFactionRuntime_UpdateImpactAlertAnchorAndNotify"];
   "GameFactionRuntime_RecomputeProgressAndScoreMetrics" [label="0x00514730\nGameFactionRuntime_RecomputeProgressAndScoreMetrics"];
   "GameFactionRuntime_FindRuntimeGroupIndex" [label="0x00514900\nGameFactionRuntime_FindRuntimeGroupIndexCf"];
-  "FactionRuntime_HasArmyAssetOrActiveStructure" [label="0x0051B800\nFactionRuntime_HasArmyAssetOrActiveStructureCf"];
+  "FactionRuntime_IsArmyAssetNotPending" [label="0x0051B800\nFactionRuntime_HasArmyAssetOrActiveStructureCf"];
   "GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel" [label="0x0051C4C0\nGameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel"];
   "GameEntityRuntime_ResolveCommandTargetPosition" [label="0x0051C680\nGameEntityRuntime_ResolveCommandTargetPositionCf"];
   "GameEntityRuntime_ApplyImpactDamageAndFactionRelationState" [label="0x0052A4D0\nGameEntityRuntime_ApplyImpactDamageAndFactionRelationState"];

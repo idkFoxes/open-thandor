@@ -96,7 +96,7 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode);
 void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode);
 
 /* 0x00424590 */
-void UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode);
+void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode);
 
 /* 0x004BC8B0 */
 void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -116,8 +116,8 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root);
 
 /* 0x004B3F40 */
 void UiRangeSliderControl_DrawTrackAndThumb
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiRangeSliderControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiRangeSliderControl *control);
 
 /* 0x004B41C0 */
 void UiRangeSliderControl_BeginThumbDrag
@@ -136,8 +136,8 @@ void UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderCo
 void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control);
 
 /* 0x004BC5C0 */
-void UiImageControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiImageControl *control);
+void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiImageControl *control);
 
 /* 0x004BC6E0 */
 void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -153,7 +153,7 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode);
 
 /* 0x00517E30 */
 void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiHorizontalGaugeControl *control);
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control);
 
 /* 0x00423600 */
 void UiDisplaySettings_OpenAndPopulateModeSelection(void);

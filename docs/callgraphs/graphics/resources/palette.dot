@@ -2,7 +2,7 @@ digraph thandor {
   rankdir=LR;
   node [shape=box];
   "GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices" [label="0x004AE520\nGraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices"];
-  "GraphicsPaletteAsset_GetBankCountRegs" [label="0x004AD800\nGraphicsPaletteAsset_GetBankCountRegs"];
+  "GraphicsPaletteAsset_GetBankCount" [label="0x004AD800\nGraphicsPaletteAsset_GetBankCountRegs"];
   "GraphicsPaletteAsset_LoadPackage" [label="0x004AD820\nGraphicsPaletteAsset_LoadPackage"];
   "GraphicsPaletteAsset_ReleasePackage" [label="0x004AD860\nGraphicsPaletteAsset_ReleasePackage"];
   "GraphicsPaletteAsset_Clone" [label="0x004AD880\nGraphicsPaletteAsset_Clone"];

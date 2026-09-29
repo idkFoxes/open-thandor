@@ -94,15 +94,15 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
     if ((g_InGamePendingPlacementArmyAsset != 0) &&
        (g_InGamePlacementSurfaceHeightQ12OrSentinel != WORLD_POINTER_NO_HIT)) {
       previewTint = OVERLAY_PREVIEW_TINT_ARGB;
-      g_ArmyPlacementAcceptedCandidateCount = 1;
+      g_ArmyPlacementLateRejectionCount = 1;
       checkResult = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                          (0,g_InGamePlacementHeading16,g_InGamePlacementWorldXQ12,
                           g_InGamePlacementWorldYQ12,
                           *(ArmyPlacementContext *)(g_InGamePendingPlacementArmyAsset + 8),
                           worldRuntime->activeFactionRuntimeIndex,worldRuntime);
-      acceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount;
+      acceptedCandidateCount = g_ArmyPlacementLateRejectionCount;
       if (checkResult) {
-        g_ArmyPlacementAcceptedCandidateCount = 0;
+        g_ArmyPlacementLateRejectionCount = 0;
         if (acceptedCandidateCount < 2) goto RefreshMarkers;
         previewTint = OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB;
       }
@@ -110,16 +110,16 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
       /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
       worldXQ12 = g_ArmyPlacementValidatedWorldXQ12;
       validatedWorldYQ12 = g_ArmyPlacementValidatedWorldYQ12;
-      g_ArmyPlacementAcceptedCandidateCount = 1;
+      g_ArmyPlacementLateRejectionCount = 1;
       worldRuntimeCopy = worldRuntime;
       dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                          (1,0,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
                           *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8),
                           worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime);
-      if ((dispatchResult.failed) && (g_ArmyPlacementAcceptedCandidateCount < 2)) {
+      if ((dispatchResult.failed) && (g_ArmyPlacementLateRejectionCount < 2)) {
         previewTint = previewTint & OVERLAY_PREVIEW_TINT_BLOCKED_MASK;
       }
-      g_ArmyPlacementAcceptedCandidateCount = 0;
+      g_ArmyPlacementLateRejectionCount = 0;
       createdArmy = ArmyRuntime_CreateInstanceFromAsset
                          (1,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
                           worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntimeCopy);
@@ -290,8 +290,8 @@ RefreshMarkers:
    context flag 0x400 is set.
 */
 void SelectionOverlay_RenderSelectedArmyMetrics
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft)
 
 {
   ModelRuntimeNode *modelNode;
@@ -312,7 +312,7 @@ void SelectionOverlay_RenderSelectedArmyMetrics
       if ((g_ModelProjectedBoundsPixels.minX < g_ModelProjectedBoundsPixels.maxX) &&
          (g_ModelProjectedBoundsPixels.minY < g_ModelProjectedBoundsPixels.maxY)) {
         SelectionPanel_RenderArmyRuntimeMetrics
-                  (clipTop,clipLeft,clipBottom,clipRight,g_ModelProjectedBoundsPixels.maxY,
+                  (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
                    g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                    g_ModelProjectedBoundsPixels.minX,
                    (RuntimeModelFactionPrefix *)*selectionSlotCursor); /* EDX: the entity (lost local) */
@@ -332,8 +332,8 @@ void SelectionOverlay_RenderSelectedArmyMetrics
    the selection info.
 */
 void SelectionOverlay_RenderArmyMetricsForEntity
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,GameEntityRuntime *entity)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,GameEntityRuntime *entity)
 
 {
   ModelRuntimeNode *modelNode;
@@ -358,7 +358,7 @@ void SelectionOverlay_RenderArmyMetricsForEntity
       g_SelectionPanelTextureSource = g_InfoPanelTextureSource;
       g_SelectionPanelData = g_InfoPanelData;
       SelectionPanel_RenderArmyRuntimeMetrics
-                (clipTop,clipLeft,clipBottom,clipRight,g_ModelProjectedBoundsPixels.maxY,
+                (clipBottom,clipRight,clipTop,clipLeft,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                  g_ModelProjectedBoundsPixels.minX,
                  (RuntimeModelFactionPrefix *)entity); /* EDX: the entity (lost local) */
@@ -376,8 +376,8 @@ void SelectionOverlay_RenderArmyMetricsForEntity
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x80 is set (the drag-selection
    rectangle, WORLD_RUNTIME_FLAG_DRAG_SELECTING in the in-game world view).
 */
-void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
+void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
           UiPixelCoordinate cornerBY,UiPixelCoordinate cornerBX)
 
 {
@@ -413,30 +413,30 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinat
     edgeX = cornerBX - cornerWidth;
     edgeY = cornerBY - cornerSize.logicalHeightPixels;
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,edgeY,edgeX,SELECTION_OVERLAY_FRAME_TOP_LEFT,
+              (clipBottom,clipRight,clipTop,clipLeft,edgeY,edgeX,SELECTION_OVERLAY_FRAME_TOP_LEFT,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,edgeY,cornerAX,SELECTION_OVERLAY_FRAME_TOP_RIGHT,
+              (clipBottom,clipRight,clipTop,clipLeft,edgeY,cornerAX,SELECTION_OVERLAY_FRAME_TOP_RIGHT,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,edgeX,SELECTION_OVERLAY_FRAME_BOTTOM_LEFT,
+              (clipBottom,clipRight,clipTop,clipLeft,cornerAY,edgeX,SELECTION_OVERLAY_FRAME_BOTTOM_LEFT,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,cornerAX,SELECTION_OVERLAY_FRAME_BOTTOM_RIGHT,
+              (clipBottom,clipRight,clipTop,clipLeft,cornerAY,cornerAX,SELECTION_OVERLAY_FRAME_BOTTOM_RIGHT,
                g_SelectionPanelTextureSource,g_FramebufferAccess);
     edgeX = edgeX + cornerWidth;
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,cornerAX,edgeY,edgeX,
+              (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,cornerAX,edgeY,edgeX,
                SELECTION_OVERLAY_FRAME_TOP,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,cornerAX,cornerAY,edgeX,
+              (clipBottom,clipRight,clipTop,clipLeft,GRAPHICS_TILED_BLIT_ONE_TILE,cornerAX,cornerAY,edgeX,
                SELECTION_OVERLAY_FRAME_BOTTOM,g_SelectionPanelTextureSource,g_FramebufferAccess);
     edgeY = edgeY + cornerSize.logicalHeightPixels;
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,GRAPHICS_TILED_BLIT_ONE_TILE,edgeY,
+              (clipBottom,clipRight,clipTop,clipLeft,cornerAY,GRAPHICS_TILED_BLIT_ONE_TILE,edgeY,
                edgeX - cornerWidth,SELECTION_OVERLAY_FRAME_LEFT,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_SelectionPanelBlitClipped
-              (clipTop,clipLeft,clipBottom,clipRight,cornerAY,GRAPHICS_TILED_BLIT_ONE_TILE,edgeY,
+              (clipBottom,clipRight,clipTop,clipLeft,cornerAY,GRAPHICS_TILED_BLIT_ONE_TILE,edgeY,
                cornerAX,SELECTION_OVERLAY_FRAME_RIGHT,g_SelectionPanelTextureSource,g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
@@ -452,8 +452,8 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinat
    flag 0x200000 is set.
 */
 void SelectionOverlay_DrawTerrainPointMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,int markerPointCount,int *gridCoordinatePairs,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,int markerPointCount,int *gridCoordinatePairs,
           FieldGridAsset *fieldGrid)
 
 {
@@ -499,7 +499,7 @@ void SelectionOverlay_DrawTerrainPointMarkers
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_GRID_POINT,
                                                                g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
-                      (clipTop,clipLeft,clipBottom,clipRight,
+                      (clipBottom,clipRight,clipTop,clipLeft,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
           }
@@ -522,8 +522,8 @@ void SelectionOverlay_DrawTerrainPointMarkers
    high byte of g_UiCommandModeGColorVariantLimit is nonzero.
 */
 void SelectionOverlay_DrawWorldPointMarker
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
 
 {
@@ -567,7 +567,7 @@ void SelectionOverlay_DrawWorldPointMarker
     markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_WORLD_POINT,
                                                        g_SelectionPanelTextureSource);
     g_SelectionPanelBlitOpaque
-              (clipTop,clipLeft,clipBottom,clipRight,
+              (clipBottom,clipRight,clipTop,clipLeft,
                (projectedPoint.projectedY >> 12) - ((int)markerSize.logicalHeightPixels >> 1),
                (projectedPoint.projectedX >> 12) - ((int)markerSize.logicalWidthPixels >> 1),
                SELECTION_OVERLAY_MARKER_WORLD_POINT,g_SelectionPanelTextureSource,g_FramebufferAccess);
@@ -584,8 +584,8 @@ void SelectionOverlay_DrawWorldPointMarker
    skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x800000 is set.
 */
 void SelectionOverlay_DrawGridVertexMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid)
 
 {
   uint32_t gridColumns;
@@ -627,7 +627,7 @@ void SelectionOverlay_DrawGridVertexMarkers
           markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_GRID_VERTEX,
                                                              g_SelectionPanelTextureSource);
           g_SelectionPanelBlitOpaque
-                    (clipTop,clipLeft,clipBottom,clipRight,
+                    (clipBottom,clipRight,clipTop,clipLeft,
                      screenY - ((int)markerSize.logicalHeightPixels >> 1),
                      screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
         }
@@ -652,8 +652,8 @@ void SelectionOverlay_DrawGridVertexMarkers
    is set.
 */
 void SelectionOverlay_DrawFluidExclusionMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension gridColumns;
@@ -700,7 +700,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED,
                                                                g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
-                      (clipTop,clipLeft,clipBottom,clipRight,
+                      (clipBottom,clipRight,clipTop,clipLeft,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),receiverTextureId,receiverTextureSource,receiverFramebuffer);
             screenY = savedScreenY;
@@ -710,7 +710,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED,
                                                                g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
-                      (clipTop,clipLeft,clipBottom,clipRight,
+                      (clipBottom,clipRight,clipTop,clipLeft,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),sourceTextureId,sourceTextureSource,sourceFramebuffer);
           }
@@ -737,8 +737,8 @@ void SelectionOverlay_DrawFluidExclusionMarkers
    context flag 0x2000000 is set.
 */
 void SelectionOverlay_DrawResourceCellMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension gridColumns;
@@ -786,7 +786,7 @@ void SelectionOverlay_DrawResourceCellMarkers
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE,
                                                                g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
-                      (clipTop,clipLeft,clipBottom,clipRight,
+                      (clipBottom,clipRight,clipTop,clipLeft,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),flaggedTextureId,flaggedTextureSource,flaggedFramebuffer);
             screenY = savedScreenY;
@@ -797,7 +797,7 @@ void SelectionOverlay_DrawResourceCellMarkers
             markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_OTHER_RESOURCE,
                                                                g_SelectionPanelTextureSource);
             g_SelectionPanelBlitOpaque
-                      (clipTop,clipLeft,clipBottom,clipRight,
+                      (clipBottom,clipRight,clipTop,clipLeft,
                        screenY - ((int)markerSize.logicalHeightPixels >> 1),
                        screenX - ((int)markerSize.logicalWidthPixels >> 1),otherTextureId,otherTextureSource,otherFramebuffer);
           }
@@ -823,8 +823,8 @@ void SelectionOverlay_DrawResourceCellMarkers
    bit 0x40 are set and a field grid is attached.
 */
 void SelectionOverlay_DrawUnresolvedCellMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension gridColumns;
@@ -859,7 +859,7 @@ void SelectionOverlay_DrawUnresolvedCellMarkers
           markerSize = g_GraphicsTextureSourceGetLogicalSize(SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED,
                                                              g_SelectionPanelTextureSource);
           g_SelectionPanelBlitOpaque
-                    (clipTop,clipLeft,clipBottom,clipRight,
+                    (clipBottom,clipRight,clipTop,clipLeft,
                      screenY - ((int)markerSize.logicalHeightPixels >> 1),
                      screenX - ((int)markerSize.logicalWidthPixels >> 1),blitTextureId,blitTextureSource,blitFramebuffer);
         }

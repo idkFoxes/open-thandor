@@ -943,6 +943,10 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
    that has the level locally counts as ready; then the frontend returns to the main page with code 1.
    Reached as frontend command FRONTEND_COMMAND_LOAD_FIELD_GRID (command-handler format: playerRuntimeId and
    three unused arguments, RET 0x10 in the original).
+   Original quirk: FRONTEND_PLAYER_STATE_LEVEL_RECEIVED is set on the first player block, not on the player the
+   scan stopped at (0x005443F6 MOV EAX,[g_FrontendPlayerRuntimeBlocks]; 0x00544401 OR [EAX+0x60],8, while ESI
+   is reloaded with the level asset). The flag thus marks "grid loaded on this machine"; a later call would find the
+   same other player still unflagged (unless the has-level-locally pass below flagged it) and load again.
 */
 void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
 
@@ -974,7 +978,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
   do {
     if (((playerRecord->factionAssignment).roleStateFlags & FRONTEND_PLAYER_STATE_LEVEL_RECEIVED) == 0) {
       levelPathOffset = (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
-      /* the flag goes to the first player record, not to the one found */
+      /* original quirk: the flag goes to the first player record, not to the one found (see above) */
       roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
       *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
       /* the level's own path (an offset into the asset) with the extension changed to .fld; the loaded grid

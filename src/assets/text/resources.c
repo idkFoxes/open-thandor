@@ -208,8 +208,8 @@ GlyphSizeResult FontGlyph_GetLogicalSizeForStyleRegs
    first, shifted down and right. Returns the glyph width (0 without a loaded font) so the caller can advance.
 */
 uint32_t FontGlyph_DrawBottomAligned
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource,
+               (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+               UiPixelCoordinate clipLeft,GraphicsSubresourceIndex glyphSubresource,
                UiPixelCoordinate baselineY,int32_t drawX)
 
 {
@@ -227,12 +227,12 @@ uint32_t FontGlyph_DrawBottomAligned
     framebuffer = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
+                (clipBottom,clipRight,clipTop,clipLeft,drawY + g_RichTextCurrentShadowOffset,
                  drawX + g_RichTextCurrentShadowOffset,TEXT_SHADOW_COLOR_ARGB,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
+              (clipBottom,clipRight,clipTop,clipLeft,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
     /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
     return textureSize.logicalWidthPixels;
   }
@@ -248,8 +248,8 @@ uint32_t FontGlyph_DrawBottomAligned
    (assets/text/richtext.c) for glyphs, spaces and the wrap hyphen.
 */
 uint32_t FontGlyph_DrawVerticallyCentered
-               (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-               UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource,
+               (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+               UiPixelCoordinate clipLeft,GraphicsSubresourceIndex glyphSubresource,
                UiPixelCoordinate lineHeight,UiPixelCoordinate lineBottom,int32_t drawX)
 
 {
@@ -268,12 +268,12 @@ uint32_t FontGlyph_DrawVerticallyCentered
     framebuffer = g_FramebufferAccess;
     if (g_RichTextCurrentShadowOffset != 0) {
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
+                (clipBottom,clipRight,clipTop,clipLeft,drawY + g_RichTextCurrentShadowOffset,
                  drawX + g_RichTextCurrentShadowOffset,TEXT_SHADOW_COLOR_ARGB,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
+              (clipBottom,clipRight,clipTop,clipLeft,drawY,drawX,colorArgb,glyphSubresource,fontTexture,framebuffer);
     /* EAX still holds the width from GetLogicalSize: both blits preserve EAX/ECX/EDX. */
     return textureSize.logicalWidthPixels;
   }

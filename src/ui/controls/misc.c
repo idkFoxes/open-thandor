@@ -118,7 +118,7 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
    restored framebuffer size and opens the display settings dialog again. The name is misleading: nothing is
    applied.
 */
-void UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode)
+void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
 
 {
   int64_t scaledAnchor;
@@ -395,8 +395,8 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
    UI_RANGE_SLIDER_VERTICAL; a suppressed slider uses the greyed pieces.
 */
 void UiRangeSliderControl_DrawTrackAndThumb
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiRangeSliderControl *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiRangeSliderControl *control)
 
 {
   int32_t rangeMax;
@@ -417,18 +417,18 @@ void UiRangeSliderControl_DrawTrackAndThumb
     }
     if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) != 0) {
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,
+                (clipBottom,clipRight,clipTop,clipLeft,control->base.top,control->base.left,
                  subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET,
                                                           g_UiWindowTextureSource);
       edgeLength = control->base.layoutHeight - textureSize.logicalHeightPixels;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,
+                (clipBottom,clipRight,clipTop,clipLeft,
                  subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_TRACK,
                  edgeLength,textureSize.logicalHeightPixels,0,&control->base);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,edgeLength + control->base.top,control->base.left,
+                (clipBottom,clipRight,clipTop,clipLeft,edgeLength + control->base.top,control->base.left,
                  subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_END_CAP,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       /* the thumb */
@@ -456,7 +456,7 @@ void UiRangeSliderControl_DrawTrackAndThumb
       scaledOffset =
            (uint64_t)valueOffsetOrRange * (uint64_t)(control->base.layoutHeight - textureSize.logicalHeightPixels);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,
+                (clipBottom,clipRight,clipTop,clipLeft,
                  (int)(scaledOffset / rangeOrValueOffset) +
                  (uint32_t)(rangeOrValueOffset < (uint32_t)((int)(scaledOffset % (uint64_t)rangeOrValueOffset) * 2)) +
                  control->base.top,control->base.left,
@@ -466,15 +466,15 @@ void UiRangeSliderControl_DrawTrackAndThumb
       return;
     }
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,subresourceBase,
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,control->base.left,subresourceBase,
                g_UiWindowTextureSource,g_FramebufferAccess);
     textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase,g_UiWindowTextureSource);
     edgeLength = control->base.layoutWidth - textureSize.logicalWidthPixels;
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + UI_RANGE_SLIDER_PIECE_TRACK,edgeLength,0,
+              (clipBottom,clipRight,clipTop,clipLeft,subresourceBase + UI_RANGE_SLIDER_PIECE_TRACK,edgeLength,0,
                textureSize.logicalWidthPixels,&control->base);
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,edgeLength + control->base.left,
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,edgeLength + control->base.left,
                subresourceBase + UI_RANGE_SLIDER_PIECE_END_CAP,
                g_UiWindowTextureSource,g_FramebufferAccess);
     /* the thumb */
@@ -500,7 +500,7 @@ void UiRangeSliderControl_DrawTrackAndThumb
     scaledOffset =
          (uint64_t)rangeOrValueOffset * (uint64_t)(control->base.layoutWidth - textureSize.logicalWidthPixels);
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,
+              (clipBottom,clipRight,clipTop,clipLeft,control->base.top,
                (int)(scaledOffset / valueOffsetOrRange) +
                (uint32_t)(valueOffsetOrRange < (uint32_t)((int)(scaledOffset % (uint64_t)valueOffsetOrRange) * 2)) +
                control->base.left,subresourceBase + UI_RANGE_SLIDER_PIECE_THUMB,g_UiWindowTextureSource,
@@ -608,8 +608,8 @@ void UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSlider
    are drawn first, then the image itself: alternateSubresource while selected, else normalSubresource. An
    image with UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE is only drawn while selected.
 */
-void UiImageControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiImageControl *control)
+void UiImageControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiImageControl *control)
 
 {
   bool accessFailed;
@@ -618,7 +618,7 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clip
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) {
       UiContainer_DrawIntersectingChildren
-                (clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
+                (clipBottom,clipRight,clipTop,clipLeft,(UiNodeBase *)control);
     }
     if ((((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) ||
        (((control->selectable).stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0)) {
@@ -631,7 +631,7 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clip
           subresource = control->alternateSubresource;
         }
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
+                  (clipBottom,clipRight,clipTop,clipLeft,(control->selectable).base.top,
                    (control->selectable).base.left,subresource,control->textureSource,g_FramebufferAccess);
         g_GraphicsFramebufferEndAccess();
       }
@@ -776,7 +776,7 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
    running and not yet complete.
 */
 void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiHorizontalGaugeControl *control)
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiHorizontalGaugeControl *control)
 
 {
   UiTransferPayloadByteCount receivedTotal;
@@ -824,7 +824,7 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
       return;
     }
   }
-  UiHorizontalGaugeControl_DrawFrameFillAndLabel(clipTop,clipLeft,clipBottom,clipRight,control);
+  UiHorizontalGaugeControl_DrawFrameFillAndLabel(clipBottom,clipRight,clipTop,clipLeft,control);
   return;
 }
 
@@ -835,7 +835,7 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
    selected and the original values, installs its action handlers and pushes it. The option buttons are then
    labelled with the enumerated values in ascending order: up to 4 distinct bit depths, 8 resolutions and 5
    adapters (a sorted insert into the g_UiDisplayModeDistinctValueScratch slots, 0xFFFFFFFF = empty).
-   Reopened by UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings. The original sets CF when the
+   Reopened by UiDisplayModeAction_RevertAndReopenSettings. The original sets CF when the
    allocation fails; that caller ignores it.
 */
 void UiDisplaySettings_OpenAndPopulateModeSelection(void)

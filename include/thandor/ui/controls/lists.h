@@ -187,8 +187,8 @@ void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocation
 
 /* 0x004B79D0 */
 void UiScrollableControl_DrawFrameContentAndScrollbars
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiScrollableControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiScrollableControl *control);
 
 /* 0x004B8310 */
 void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control);
@@ -218,7 +218,7 @@ void ** UiPointerList_GetTextListRowSlots(UiPointerListControl *control);
 UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control);
 
 /* 0x004BADE0 */
-void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control);
+void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiListControl *control);
 
 /* 0x004BB310 */
 void UiListControl_TickActivationPulse(UiListControl *control);
@@ -239,7 +239,7 @@ void ** UiPointerList_GetColumnListRowSlots(UiPointerListControl *control);
 void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control);
 
 /* 0x004BBA00 */
-void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control);
+void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiNodeBase *control);
 
 /* 0x004BC180 */
 void UiTimedListControl_TickActionDelay(UiTimedListControl *control);
@@ -250,8 +250,8 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
 
 /* 0x00516580 */
 void UiCatalogEntryControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiCatalogEntryControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiCatalogEntryControl *control);
 
 /* 0x00516B90 */
 GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove

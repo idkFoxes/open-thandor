@@ -22,7 +22,7 @@ digraph thandor {
   "FieldGrid_InterpolateWaterSurfaceHeight" [label="0x004FEE90\nFieldGrid_InterpolateWaterSurfaceHeight"];
   "FieldGrid_InterpolateTopSurfaceHeight" [label="0x004FEFF0\nFieldGrid_InterpolateTopSurfaceHeight"];
   "FieldGrid_InterpolateTerrainHeightAndNormal" [label="0x004FF1A0\nFieldGrid_InterpolateTerrainHeightAndNormal"];
-  "FieldGrid_InterpolateTerrainHeightAndTriangle0Normal" [label="0x004FF3D0\nFieldGrid_InterpolateTerrainHeightAndTriangle0Normal"];
+  "FieldGrid_InterpolateWaterDepthAndTriangle0Normal" [label="0x004FF3D0\nFieldGrid_InterpolateTerrainHeightAndTriangle0Normal"];
   "FieldGrid_InterpolateTerrainHeightAndTriangle1Normal" [label="0x004FF600\nFieldGrid_InterpolateTerrainHeightAndTriangle1Normal"];
   "FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs" [label="0x004FF830\nFieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs"];
   "FieldGrid_TestWorldPointBlocked" [label="0x004FFB80\nFieldGrid_TestWorldPointBlockedCf"];

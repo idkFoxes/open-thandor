@@ -595,11 +595,12 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
 {
   /* Rewritten from the assembly (0x004AA170-0x004AA3E8) with the MMX lanes in plain C, like the
      32-bit variant. Two destination pixels per step; each blends four ARGB8888 neighbours through
-     the forward (0x00420F20) and inverse (0x0041FF20) word tables, then packs to 16 bits with the
+     the word tables g_SoftwareBilinearInverseFactors (0x00420F20, weight of the left/upper neighbour) and
+     g_SoftwareBilinearForwardFactors (0x0041FF20, weight of the right/lower one), then packs to 16 bits with the
      runtime quantize masks (0x0041F6E8) and PMADDWD weights (0x0041F6E0), which the display
      setup fills for 555 or 565. */
-  const short *forward = (const short *)g_SoftwareBilinearInverseFactors;
-  const short *inverse = (const short *)g_SoftwareBilinearForwardFactors;
+  const short *firstWeights = (const short *)g_SoftwareBilinearInverseFactors;
+  const short *secondWeights = (const short *)g_SoftwareBilinearForwardFactors;
   const uint16_t *quantizeMask = (const uint16_t *)&g_SoftwarePixelMmxConstants.quantizeMasksQ12;
   const short *packWeights = (const short *)&g_SoftwarePixelMmxConstants.packWeights;
   uint8_t *asset = (uint8_t *)sourceAsset;
@@ -658,10 +659,10 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
           int b = ((p00[lane + 4] * 0x101) >> 2);
           int c = ((p10[lane] * 0x101) >> 2);
           int d = ((p10[lane + 4] * 0x101) >> 2);
-          short top = (short)(((a * forward[wx * 4 + lane]) >> 16) + ((b * inverse[wx * 4 + lane]) >> 16));
-          short bottom = (short)(((c * forward[wx * 4 + lane]) >> 16) + ((d * inverse[wx * 4 + lane]) >> 16));
-          short mixed = (short)(((top * forward[wy * 4 + lane]) >> 16) +
-                                ((bottom * inverse[wy * 4 + lane]) >> 16));
+          short top = (short)(((a * firstWeights[wx * 4 + lane]) >> 16) + ((b * secondWeights[wx * 4 + lane]) >> 16));
+          short bottom = (short)(((c * firstWeights[wx * 4 + lane]) >> 16) + ((d * secondWeights[wx * 4 + lane]) >> 16));
+          short mixed = (short)(((top * firstWeights[wy * 4 + lane]) >> 16) +
+                                ((bottom * secondWeights[wy * 4 + lane]) >> 16));
           int value = (unsigned short)mixed >> 2;
           if (value > 0xff) value = 0xff;
           /* PUNPCKLBW x,x; PSLLW 4; PAND quantize mask */
@@ -701,10 +702,11 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
 {
   /* Rewritten from the assembly (0x004AA3F0-0x004AA616) with the MMX lanes in plain C. The
      decompiled version (300 lines of lane emulation) left the end-movie frames static. Two
-     destination pixels per step; each blends four ARGB8888 neighbours through the forward
-     (0x00420F20) and inverse (0x0041FF20) word tables, as PMULHW does. */
-  const short *forward = (const short *)g_SoftwareBilinearInverseFactors;
-  const short *inverse = (const short *)g_SoftwareBilinearForwardFactors;
+     destination pixels per step; each blends four ARGB8888 neighbours through the word tables
+     g_SoftwareBilinearInverseFactors (0x00420F20, weight of the left/upper neighbour) and
+     g_SoftwareBilinearForwardFactors (0x0041FF20, weight of the right/lower one), as PMULHW does. */
+  const short *firstWeights = (const short *)g_SoftwareBilinearInverseFactors;
+  const short *secondWeights = (const short *)g_SoftwareBilinearForwardFactors;
   const unsigned long long clampMask = g_SoftwareBilinearPackedByteClampMask;
   uint8_t *asset = (uint8_t *)sourceAsset;
   GraphicsTextureSourceEntry *entry;
@@ -761,10 +763,10 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
           int b = ((p00[lane + 4] * 0x101) >> 2);
           int c = ((p10[lane] * 0x101) >> 2);
           int d = ((p10[lane + 4] * 0x101) >> 2);
-          short top = (short)(((a * forward[wx * 4 + lane]) >> 16) + ((b * inverse[wx * 4 + lane]) >> 16));
-          short bottom = (short)(((c * forward[wx * 4 + lane]) >> 16) + ((d * inverse[wx * 4 + lane]) >> 16));
-          short mixed = (short)(((top * forward[wy * 4 + lane]) >> 16) +
-                                ((bottom * inverse[wy * 4 + lane]) >> 16));
+          short top = (short)(((a * firstWeights[wx * 4 + lane]) >> 16) + ((b * secondWeights[wx * 4 + lane]) >> 16));
+          short bottom = (short)(((c * firstWeights[wx * 4 + lane]) >> 16) + ((d * secondWeights[wx * 4 + lane]) >> 16));
+          short mixed = (short)(((top * firstWeights[wy * 4 + lane]) >> 16) +
+                                ((bottom * secondWeights[wy * 4 + lane]) >> 16));
           int value = (unsigned short)mixed >> 2;
           if (value > 0xff) value = 0xff;
           pixel |= (uint32_t)value << (lane * 8);

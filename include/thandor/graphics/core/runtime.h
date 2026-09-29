@@ -97,7 +97,7 @@ void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScre
 void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x00486730 */
-void Graphics_SetSceneBounds(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
+void Graphics_SetSceneBoundsAndColors(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
           GraphicsSceneExtentFixed bound5,GraphicsSceneExtentFixed bound4,
           GraphicsSceneExtentFixed bound3,GraphicsSceneExtentFixed bound2,
           GraphicsSceneExtentFixed bound1,GraphicsSceneExtentFixed bound0);
@@ -136,7 +136,7 @@ void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 g
 StatusResult __cdecl Graphics_Init(void);
 
 /* 0x005794E0 */
-void GraphicsBackend_RefreshActiveAdapterIfReady(void);
+void GraphicsBackend_ShutdownGlideOnDeactivate(void);
 
 /* 0x00579520 */
 void Graphics_Shutdown(void);

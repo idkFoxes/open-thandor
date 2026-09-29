@@ -49,50 +49,50 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
 
 /* 0x0052F0C0 */
 void SelectionOverlay_RenderSelectedArmyMetrics
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft);
 
 /* 0x0052F1B0 */
 void SelectionOverlay_RenderArmyMetricsForEntity
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,GameEntityRuntime *entity);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,GameEntityRuntime *entity);
 
 /* 0x0052F2A0 */
-void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
+void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate cornerAY,UiPixelCoordinate cornerAX,
           UiPixelCoordinate cornerBY,UiPixelCoordinate cornerBX);
 
 /* 0x0052F490 */
 void SelectionOverlay_DrawTerrainPointMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,int markerPointCount,int *gridCoordinatePairs,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,int markerPointCount,int *gridCoordinatePairs,
           FieldGridAsset *fieldGrid);
 
 /* 0x0052F5A0 */
 void SelectionOverlay_DrawWorldPointMarker
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x0052F680 */
 void SelectionOverlay_DrawGridVertexMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid);
 
 /* 0x0052F780 */
 void SelectionOverlay_DrawFluidExclusionMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid);
 
 /* 0x0052F8C0 */
 void SelectionOverlay_DrawResourceCellMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid);
 
 /* 0x0052FA20 */
 void SelectionOverlay_DrawUnresolvedCellMarkers
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid);
 
 /* 0x00560020 */
 void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,SelectionMarkerCoordinateValue32 heading,

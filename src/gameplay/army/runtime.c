@@ -123,7 +123,7 @@ void ArmyRuntimeClass_UpdateAircraft
       currentDefinition = modelRuntime->modelDefinition;
       homeDefinitionSlot = (ModelRuntimeSlot *)(homeModelRuntime->definitionOrSavedId).savedIdOrOffset;
       (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
-      ArmyRuntimeSpawner_PlayCreationSound((ArmyRuntimeSlot *)homeModelRuntime,worldRuntime);
+      ArmyRuntime_PlayDefinitionOneShotSound((ArmyRuntimeSlot *)homeModelRuntime,worldRuntime);
       stepValue = (int)(((int64_t)(int)homeModelRuntime->health *
                      (int64_t)currentDefinition->maximumHealth) /
                     (int64_t)(homeDefinitionSlot->classLinkState).modelLinkOrState.signedScalarState);
@@ -162,7 +162,7 @@ void ArmyRuntimeClass_UpdateAircraft
     *stateField = *stateField - 1;
     if ((*stateField == 0) && (homeModelRuntime != NULL)) {
       (homeModelRuntime->classState).classStateB0 = ARMY_PAD_HANGAR_LOWERING;
-      ArmyRuntimeSpawner_PlayCreationSound((ArmyRuntimeSlot *)homeModelRuntime,worldRuntime);
+      ArmyRuntime_PlayDefinitionOneShotSound((ArmyRuntimeSlot *)homeModelRuntime,worldRuntime);
     }
     stateField = &(modelRuntime->classLinkState).classState68;
     *stateField = *stateField - 1;
@@ -3392,9 +3392,9 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
    Plays the one-shot sound at +0x270 of the army's definition (+0x00) at the army's position, with the
    definition's range and gain (+0x7C/+0x78), where the active faction's cell bits 0/1 are set. Called directly
    by ArmyRuntimeClass_UpdateAircraft for the home pad when an aircraft lands or takes off (the
-   pad's platform sound; despite the name nothing is created).
+   pad's platform sound).
 */
-void ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime)
+void ArmyRuntime_PlayDefinitionOneShotSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime)
 
 {
   ModelDefinition *definition;

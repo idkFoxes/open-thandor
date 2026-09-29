@@ -41,7 +41,7 @@ void SpatialSound_UpdateDesiredPositionedGains
 SpatialSoundSlotResult SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset);
 
 /* 0x0050B940 */
-SpatialSoundSlot * SpatialSoundSlot_CreateFromPcm (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz, AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount, void *pcmData);
+SpatialSoundSlotResult SpatialSoundSlot_CreateFromPcm (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz, AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount, void *pcmData);
 
 /* 0x0050B9D0 */
 void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot);

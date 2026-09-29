@@ -132,8 +132,8 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
 
 /* 0x004227B0 */
 void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiTextButtonControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiTextButtonControl *control);
 
 /* 0x004B58F0 */
 void UiNumericTextEditControl_RelocateAndRebuildText
@@ -141,8 +141,8 @@ void UiNumericTextEditControl_RelocateAndRebuildText
 
 /* 0x004B5960 */
 void UiTextEditControl_DrawTextSelectionAndCaret
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiTextEditControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiTextEditControl *control);
 
 /* 0x004B5DF0 */
 void UiTextEditControl_BeginSelectionAtPointer
@@ -172,13 +172,13 @@ void UiPointerList_SortByExpandedTextFieldDescending
 
 /* 0x005156A0 */
 void UiNumericPairTextButton_DrawFormattedValues
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNumericPairTextButton *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiNumericPairTextButton *control);
 
 /* 0x00515780 */
 void UiPayloadPairTextButton_DrawFormattedPayloads
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPayloadPairTextButton *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPayloadPairTextButton *control);
 
 /* 0x004B0320 */
 void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -192,8 +192,8 @@ void UiFramedTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDe
 
 /* 0x004B1E10 */
 void UiFramedTextButtonControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiFramedTextButtonControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiFramedTextButtonControl *control);
 
 /* 0x004B22A0 */
 void UiFramedTextButtonControl_NonRightPress
@@ -216,8 +216,8 @@ UiNodeBase * UiFramedTextButtonControl_HitTestRect
 
 /* 0x004B27D0 */
 void UiWindowControl_DrawFramedTextAndChrome
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiWindowControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiWindowControl *control);
 
 /* 0x004B2E40 */
 void UiTextButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,UiTextButtonControl *control);
@@ -233,16 +233,16 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
 
 /* 0x004B37C0 */
 void UiImagePanelControl_DrawAlignedTextureAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiImagePanelControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiImagePanelControl *control);
 
 /* 0x004B3960 */
 UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control);
 
 /* 0x004B3AA0 */
 void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiFillPanelControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiFillPanelControl *control);
 
 /* 0x004B5E60 */
 void UiTextEditControl_EndSelection
@@ -260,13 +260,13 @@ void UiTextEditControl_TickCaretBlink(UiTextEditControl *control);
 
 /* 0x004B95E0 */
 void UiSingleLineTextControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiSingleLineTextControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiSingleLineTextControl *control);
 
 /* 0x004B9E90 */
 void UiTextListControl_DrawRowsAndSelection
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiTextListControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiTextListControl *control);
 
 /* 0x004BA040 */
 void UiTextListControl_SelectRowFromPointer
@@ -291,13 +291,13 @@ void UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl 
 void UiPointerList_InitializeMeasuredTextRows(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
 
 /* 0x004BC490 */
-void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiWrappedTextControl *control);
+void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiWrappedTextControl *control);
 
 /* 0x004BCC80 */
 void UiNineSlicePanelControl_DrawTextureFrameAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNineSlicePanelControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiNineSlicePanelControl *control);
 
 /* 0x00515830 */
 void UiFormattedContainer_RelocateWithPatchedTextPayloads
@@ -305,17 +305,17 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
 
 /* 0x005158B0 */
 void UiFormattedContainer_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiFormattedContainer *control);
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiFormattedContainer *control);
 
 /* 0x00516D10 */
 void UiArmyMetricsPanel_DrawTextureMetricsAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiArmyMetricsPanel *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiArmyMetricsPanel *control);
 
 /* 0x00519110 */
 void UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiSoftwareTexturePreviewControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiSoftwareTexturePreviewControl *control);
 
 /* 0x00519190 */
 void UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
@@ -365,7 +365,7 @@ TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uin
 void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control);
 
 /* 0x004B2E60 */
-void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiTextButtonControl *control);
+void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiTextButtonControl *control);
 
 #endif /* THANDOR_UI_CONTROLS_TEXT_H */

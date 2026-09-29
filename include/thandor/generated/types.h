@@ -3183,8 +3183,8 @@ struct WorldMotionSnapshot {
 };
 
 struct WorldLightingState {
-    PackedArgb32 baseColorArgb; 
-    PackedArgb32 rampColorArgb; 
+    PackedArgb32 rampStepColorArgb; // +0x120: third argument of TerrainLighting_BuildColorRampAndSetBaseColor, scaled by (256 - i) / 256 into the ramp (level terrainRampStepColorArgb).
+    PackedArgb32 baseColorArgb; // +0x124: second argument of TerrainLighting_BuildColorRampAndSetBaseColor: ramp offset and alpha, fills the directional-light LUT (level terrainBaseColorArgb).
     PackedArgb32 color128Argb; 
     PackedArgb32 secondaryColorArgb; // Passed as the secondary colour to TerrainLighting_BuildColorRampAndSetBaseColor.
     PackedArgb32 color130Argb;
@@ -5229,7 +5229,7 @@ struct UiSoundSelectableControl {
 struct UiNodeVtable {
     void (*relocate)(UiSerializedRelocationDelta, struct UiNodeBase *); 
     void (*method04)(struct UiNodeBase *); // Recovered common one-argument no-op callback; concrete UiNode vtables use 0x004B05A0.
-    void (*drawClipped)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
+    void (*drawClipped)(UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight, UiPixelCoordinate clipTop, UiPixelCoordinate clipLeft, struct UiNodeBase *node); // Clip rectangle bottom/right first (UiFrame_Draw, UiContainer_DrawIntersectingChildren), as in the texture-source blits.
     void (*layout)(struct UiNodeBase *); 
     void (*nonRightPress)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
     void (*nonRightRelease)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
@@ -6226,12 +6226,12 @@ struct LevelPlayerSlotRecord {
 
 struct LevelWorldSettings {
     uint32_t packedFieldRegionOriginYHigh16XLow16;
+    PackedArgb32 terrainRampStepColorArgb;
     PackedArgb32 terrainBaseColorArgb;
-    PackedArgb32 terrainRampColor124Argb;
     LevelLightingCycleDurationTicks terrainLightingCycleDurationTicks; // Modulo period for WorldLightingRuntime_UpdateInterpolatedTerrainLighting; zero disables periodic interpolation.
     uint32_t packedFieldRegionHeightHigh16WidthLow16;
     PackedArgb32 terrainLightingColor128Argb;
-    PackedArgb32 terrainRampColor12CArgb;
+    PackedArgb32 terrainSecondaryColorArgb;
     uint32_t reserved1C;
     PackedArgb32 terrainLightingColor130Argb;
     PackedArgb32 terrainLightingColor134Argb;
@@ -6245,10 +6245,10 @@ struct LevelWorldSettings {
     InGameNotificationMovieId introNotificationMovieId; /* +0x44: first of the five level intro notification movies (0 = none) */
     uint32_t alternatePackedFieldRegionOriginYHigh16XLow16; // Second field-region origin pair interpolated against packedFieldRegionOriginYHigh16XLow16.
     uint32_t alternatePackedFieldRegionHeightHigh16WidthLow16; // Second field-region dimension pair interpolated against packedFieldRegionHeightHigh16WidthLow16.
-    PackedArgb32 alternateTerrainBaseColorArgb; // Second endpoint for terrain base-color interpolation.
-    PackedArgb32 alternateTerrainRampColor124Argb; // Second endpoint for terrain ramp color +0x124 interpolation.
+    PackedArgb32 alternateTerrainRampStepColorArgb; // Second endpoint for terrain ramp-step colour (+0x120) interpolation.
+    PackedArgb32 alternateTerrainBaseColorArgb; // Second endpoint for terrain base colour (+0x124) interpolation.
     PackedArgb32 alternateTerrainLightingColor128Argb; // Second endpoint for terrain lighting color +0x128 interpolation.
-    PackedArgb32 alternateTerrainRampColor12CArgb; // Second endpoint for terrain ramp color +0x12C interpolation.
+    PackedArgb32 alternateTerrainSecondaryColorArgb; // Second endpoint for terrain secondary colour (+0x12C) interpolation.
     PackedArgb32 alternateTerrainLightingColor130Argb; // Second endpoint for terrain lighting color +0x130 interpolation.
     PackedArgb32 alternateTerrainLightingColor134Argb; // Second endpoint for terrain lighting color +0x134 interpolation.
     PackedArgb32 alternateTerrainLightingColor138Argb; // Second endpoint for terrain lighting color +0x138 interpolation.
@@ -8705,7 +8705,7 @@ struct MdlDefinitionSemanticPrefix {
     uint32_t visibilityRadius; // ModelDefinition.visibilityRadius
     enum ModelRuntimeClassId runtimeClassId; 
     uint32_t aimHeightOffsetQ12; // ModelDefinition.aimHeightOffsetQ12
-    Q12 placementRadiusQ12; 
+    Q12 placementHeightOffsetQ12; // ModelDefinition.placementHeightOffsetQ12 (+0x54)
     uint32_t waterEmitterEffectId; // ModelDefinition.waterEmitterEffectDefinitionReference (serialized id)
     uint32_t targetClassIndex; // ModelDefinition.targetClassIndex (indexes per-class shot impact effects and damage)
     uint32_t maximumHealth; // ModelDefinition.maximumHealth
@@ -11474,7 +11474,7 @@ struct InGameRuntimeRootUiGridView {
 };
 #pragma pack(pop)
 
-/* InGameRuntimeRoot as seen by its frame update (EndGameResultsUiRuntime_UpdateAndHandleInput). */
+/* InGameRuntimeRoot as seen by its frame update (InGameUiRoot_UpdateFrame). */
 struct InGameRuntimeRootFrameView {
     struct UiRootNode rootUi;
     uint8_t reserved0058_09B7[2400];
@@ -11547,14 +11547,14 @@ struct FrontendModelPointerContext {
     uint32_t (*buttonReleaseCallback)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerHitContext *); // Non-right button release (FrontendModelPointerContext_NonRightRelease).
     void (*rightClickCallback)(struct FrontendModelPointerContext *); // Invoked on right release when rightButtonHeldTicks < 7 (unsigned), i.e. a click rather than a camera drag; receives the context (PUSH EBX; CALL EDX at 0050c75c). Callee may clobber ECX (caller preserves only EAX/EDX).
     uint32_t rightButtonHeldTicks; // Ticks the right button has been held: cleared on press, counted by FrontendModelPointerContext_Tick, compared against 7 on release.
-    GraphicsSceneExtentFixed sceneBound0; // Exact bound0 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    GraphicsSceneExtentFixed sceneBound1; // Exact bound1 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    GraphicsSceneExtentFixed sceneBound2; // Exact bound2 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    GraphicsSceneExtentFixed sceneBound3; // Exact bound3 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    GraphicsSceneExtentFixed sceneBound4; // Exact bound4 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    GraphicsSceneExtentFixed sceneBound5; // Exact bound5 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    GraphicsSceneExtentFixed sceneBound6; // Exact bound6 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    GraphicsSceneExtentFixed sceneBound7; // Exact bound7 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound0; // Exact bound0 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound1; // Exact bound1 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound2; // Exact bound2 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound3; // Exact bound3 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound4; // Exact bound4 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound5; // Exact bound5 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound6; // Exact bound6 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
+    GraphicsSceneExtentFixed sceneBound7; // Exact bound7 input copied by Graphics_SetSceneBoundsAndColors; axis interpretation remains unresolved.
     uint8_t reserved140_15B[28]; // Observed but not semantically resolved in this pass.
     void (*renderPhaseCallback)(enum GraphicsBooleanState, struct WorldRuntimeContext *); // In-game world-overlay render phase callback stored immediately after WorldRuntimeContext; installed target 00568300 preserves EAX/ECX/EDX.
     UiPixelCoordinate dragFrameStartX; // Pointer X of the non-right press (NonRightPress); first corner of the selection-overlay drag frame in DrawClipped.
@@ -11618,7 +11618,7 @@ struct ArmyRuntimeClassUpdate21DefinitionView {
     uint8_t opaqueGap0034_0047[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     uint32_t worldPointAllowedContext;
     uint8_t opaqueGap004C_0053[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    Q12 placementContactRadiusQ12;
+    Q12 placementHeightOffsetQ12; // ModelDefinition.placementHeightOffsetQ12 (+0x54)
     uint8_t opaqueGap0058_005F[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     Q12 maximumHealth;
     void *rootNode;

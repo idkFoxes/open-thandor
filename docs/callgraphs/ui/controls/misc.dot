@@ -5,7 +5,7 @@ digraph thandor {
   "UiDisplayModeAction_UpdateColorDepthSelection" [label="0x00423C40\nUiDisplayModeAction_UpdateAdapterSelection"];
   "UiDisplayModeAction_UpdateResolutionSelection" [label="0x00423C80\nUiDisplayModeAction_UpdateResolutionSelection"];
   "UiDisplayModeAction_UpdateAdapterSelection" [label="0x00423CB0\nUiDisplayModeAction_UpdateColorDepthSelection"];
-  "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" [label="0x00424590\nUiDisplayModeAction_ApplyFourValueDialogAndReopenSettings"];
+  "UiDisplayModeAction_RevertAndReopenSettings" [label="0x00424590\nUiDisplayModeAction_ApplyFourValueDialogAndReopenSettings"];
   "UiImageControl_NonRightDrag" [label="0x004BC8B0\nUiImageControl_NonRightDrag"];
   "UiImageControl_TickHover" [label="0x004BCB50\nUiImageControl_TickHover"];
   "UiDisplayModeAction_ApplyPendingMode" [label="0x00423B30\nUiDisplayModeAction_ApplyPendingMode"];
@@ -28,7 +28,7 @@ digraph thandor {
   "UiDisplayModeAction_UpdateColorDepthSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
   "UiDisplayModeAction_UpdateResolutionSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
   "UiDisplayModeAction_UpdateAdapterSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
-  "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" -> "UiDisplaySettings_OpenAndPopulateModeSelection";
+  "UiDisplayModeAction_RevertAndReopenSettings" -> "UiDisplaySettings_OpenAndPopulateModeSelection";
   "UiImageControl_NonRightDrag" -> "UiImageControl_HitTestOpaque";
   "UiImageControl_TickHover" -> "UiImageControl_HitTestOpaque";
   "UiDisplaySettings_OpenAndPopulateModeSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";

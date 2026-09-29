@@ -44,7 +44,7 @@
 #define UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING 0x20 /* an army asset waits for placement on the map
                                                           (InGameCommand_ExecuteLocalPlacementFromSelection) */
 #define UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN 0x2000 /* the placement overlay was drawn onto the field
-                                                                  grid (EndGameResultsUiRuntime_UpdateAndHandleInput) */
+                                                                  grid (InGameUiRoot_UpdateFrame) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED 0x40000 /* toggled by typing the cheat code into the chat line
                                                           (InGameChatInput_SendLineOrCheckCheatPhrase) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD 0x100000 /* cheat hotkey: build and research times / 16 */
@@ -166,13 +166,13 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
 
 /* 0x00517F60 */
 void UiCommandVisibilityWrappedText_DrawWhenAllowed
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiNodeBase *control);
 
 /* 0x00518010 */
 void UiCommandVisibilitySingleLineText_DrawWhenAllowed
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiNodeBase *control);
 
 /* 0x0055F4A0 */
 void InGameCommand_TogglePauseRequest

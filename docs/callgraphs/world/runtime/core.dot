@@ -7,7 +7,7 @@ digraph thandor {
   "WorldRuntime_PointCameraAtTarget" [label="0x0050D1E0\nWorldRuntime_SetPosition80AndRebuildPosition60FromAngles"];
   "WorldRuntime_RestoreMotionStateFromSnapshot" [label="0x0050D2C0\nWorldRuntime_RestoreMotionStateFromSnapshot"];
   "WorldRuntime_AttachFieldGridAsset" [label="0x0050D670\nWorldRuntime_AttachFieldGridAsset"];
-  "WorldRuntime_AdjustFieldOriginWrappedClamped" [label="0x00561E30\nWorldRuntime_AdjustFieldOriginWrappedClamped"];
+  "WorldRuntime_TurnAuxiliaryAnglesClamped" [label="0x00561E30\nWorldRuntime_AdjustFieldOriginWrappedClamped"];
   "WorldRuntime_InterpolateTerrainHeightOrSentinel" [label="0x004BE760\nWorldRuntime_InterpolateTerrainHeightOrSentinel"];
   "WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel" [label="0x004BE790\nWorldRuntime_InterpolateWaterSurfaceHeightOrSentinel"];
   "WorldRuntime_InterpolateTopSurfaceHeightOrSentinel" [label="0x004BE7C0\nWorldRuntime_InterpolateTopSurfaceHeightOrSentinel"];
@@ -20,8 +20,8 @@ digraph thandor {
   "WorldRuntime_AddFlags" [label="0x0050D560\nWorldRuntime_AddFlags"];
   "WorldRuntime_ClearFlags" [label="0x0050D580\nWorldRuntime_ClearFlags"];
   "WorldRuntime_ToggleFlags" [label="0x0050D5A0\nWorldRuntime_ToggleFlags"];
-  "WorldRuntime_GetVector0Regs" [label="0x0050D610\nWorldRuntime_GetVector0Regs"];
-  "WorldRuntime_GetVector1Regs" [label="0x0050D630\nWorldRuntime_GetVector1Regs"];
+  "WorldRuntime_GetCameraPositionRegs" [label="0x0050D610\nWorldRuntime_GetVector0Regs"];
+  "WorldRuntime_GetCameraOrientationRegs" [label="0x0050D630\nWorldRuntime_GetVector1Regs"];
   "WorldRuntime_GetFlags" [label="0x0050D650\nWorldRuntime_GetFlagsCf"];
   "WorldRuntime_GetFieldGridAsset" [label="0x0050D6A0\nWorldRuntime_GetFieldGridAsset"];
   "WorldRuntime_GetPendingToken" [label="0x0050D6D0\nWorldRuntime_GetPendingToken"];
@@ -58,6 +58,6 @@ digraph thandor {
   "WorldRuntime_PointCameraAtTarget" -> "WorldRuntime_ClearFieldGridDirtyFlag";
   "WorldRuntime_RestoreMotionStateFromSnapshot" -> "WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface";
   "WorldRuntime_AttachFieldGridAsset" -> "WorldRuntime_ClearFieldGridDirtyFlag";
-  "WorldRuntime_AdjustFieldOriginWrappedClamped" -> "WorldRuntime_RecomputeFieldRegionNormalsAndLighting";
+  "WorldRuntime_TurnAuxiliaryAnglesClamped" -> "WorldRuntime_RecomputeFieldRegionNormalsAndLighting";
   "WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface" -> "WorldRuntime_ClearFieldGridDirtyFlag";
 }

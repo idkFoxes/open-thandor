@@ -2016,8 +2016,8 @@ void UiScrollableControl_RelocateChildren(UiSerializedRelocationDelta relocation
    frame style and interior fill, then the content child clipped to the remaining view.
 */
 void UiScrollableControl_DrawFrameContentAndScrollbars
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiScrollableControl *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiScrollableControl *control)
 
 {
   uint32_t arrowLength;
@@ -2072,14 +2072,14 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_DECREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    horizontalBarLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         tileEnd = capSize;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    horizontalBarLeft + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
                    g_UiWindowTextureSource,g_FramebufferAccess);
@@ -2090,14 +2090,14 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       if (((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_INCREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    trackEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         contentRight = edgeScratch;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    trackEnd + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
                    g_UiWindowTextureSource,g_FramebufferAccess);
@@ -2105,32 +2105,32 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       }
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,
                    control->horizontalThumbLeft,barOffset,
                    trackStart,control);
       }
       else {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,
+                  (clipBottom,clipRight,clipTop,clipLeft,
                    UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
                    control->horizontalThumbLeft,barOffset,
                    trackStart,control);
       }
       edgeScratch = control->horizontalThumbRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) == 0) {
-        if (edgeScratch < clipRight) {
-          edgeScratch = clipRight;
+        if (edgeScratch < clipLeft) {
+          edgeScratch = clipLeft;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,trackEnd,barOffset,
+                  (clipBottom,clipRight,clipTop,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,trackEnd,barOffset,
                    trackStart,control);
       }
       else {
-        if (edgeScratch < clipRight) {
-          edgeScratch = clipRight;
+        if (edgeScratch < clipLeft) {
+          edgeScratch = clipLeft;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,edgeScratch,
+                  (clipBottom,clipRight,clipTop,edgeScratch,
                    UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,barOffset,
                    trackStart,control);
       }
@@ -2141,32 +2141,32 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       trackStart = control->horizontalThumbRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    edgeScratch + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         trackStart = trackStart - capSize;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    trackStart + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE,trackStart,
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE,trackStart,
                    barOffset,edgeScratch + capSize,control);
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    edgeScratch + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         trackStart = trackStart - capSize;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    trackStart + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,
+                  (clipBottom,clipRight,clipTop,clipLeft,
                    UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackStart,
                    barOffset,edgeScratch + capSize,control);
       }
@@ -2194,13 +2194,13 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_DECREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
                    tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource,
                    g_FramebufferAccess);
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
                    tileEnd + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,
                    g_FramebufferAccess);
@@ -2210,7 +2210,7 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       if (((control->scrollStateFlags & UI_SCROLL_VERTICAL_INCREMENT_ACTIVE) == 0) ||
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,trackEnd + (control->base).top,
                    tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         contentBottom = edgeScratch;
@@ -2218,7 +2218,7 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,trackEnd + (control->base).top,
                    tileEnd + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
                    g_UiWindowTextureSource,g_FramebufferAccess);
@@ -2227,32 +2227,32 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       }
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,control->verticalThumbTop,
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,control->verticalThumbTop,
                    trackStart,
                    tileEnd,control);
       }
       else {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,
+                  (clipBottom,clipRight,clipTop,clipLeft,
                    UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
                    control->verticalThumbTop,trackStart,
                    tileEnd,control);
       }
       edgeScratch = control->verticalThumbBottom;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) == 0) {
-        if (edgeScratch < clipBottom) {
-          edgeScratch = clipBottom;
+        if (edgeScratch < clipTop) {
+          edgeScratch = clipTop;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,edgeScratch,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,trackEnd,trackStart,
+                  (clipBottom,clipRight,edgeScratch,clipLeft,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,trackEnd,trackStart,
                    tileEnd,control);
       }
       else {
-        if (edgeScratch < clipBottom) {
-          edgeScratch = clipBottom;
+        if (edgeScratch < clipTop) {
+          edgeScratch = clipTop;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,edgeScratch,clipRight,
+                  (clipBottom,clipRight,edgeScratch,clipLeft,
                    UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,trackStart,
                    tileEnd,control);
       }
@@ -2262,33 +2262,33 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       barOffset = control->verticalThumbBottom;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,edgeScratch + (control->base).top,
                    tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE,barOffset,
+                  (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE,barOffset,
                    edgeScratch + arrowLength,tileEnd,control);
         tileEnd = capSize;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,edgeScratch + (control->base).top,
                    tileEnd + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
+                  (clipBottom,clipRight,clipTop,clipLeft,barOffset + (control->base).top,
                    tileEnd + (control->base).left,
                    UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,
+                  (clipBottom,clipRight,clipTop,clipLeft,
                    UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,barOffset,
                    edgeScratch + arrowLength,tileEnd,control);
         tileEnd = capSize;
@@ -2300,35 +2300,35 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       contentBottom = contentBottom - textureSize.logicalHeightPixels;
       contentRight = contentRight - capSize;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
                  tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
                  contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_TOP_RIGHT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
                  tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM_LEFT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
                  contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM_RIGHT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_TOP,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_TOP,
                  contentRight,contentTop,tileEnd + capSize,control);
       contentTop = contentTop + textureSize.logicalHeightPixels;
       edgeScratch = (tileEnd + capSize) - capSize;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_LEFT,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_LEFT,
                  contentBottom,contentTop,edgeScratch,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_RIGHT,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_RIGHT,
                  contentBottom,contentTop,contentRight,control);
       tileEnd = edgeScratch + capSize;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM,
                  contentRight,contentBottom,tileEnd,control);
     }
     if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
@@ -2337,35 +2337,35 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       contentBottom = contentBottom - textureSize.logicalHeightPixels;
       contentRight = contentRight - capSize;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
                  tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentTop + (control->base).top,
                  contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_TOP_RIGHT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
                  tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM_LEFT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
+                (clipBottom,clipRight,clipTop,clipLeft,contentBottom + (control->base).top,
                  contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM_RIGHT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_TOP,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_TOP,
                  contentRight,contentTop,tileEnd + capSize,control);
       contentTop = contentTop + textureSize.logicalHeightPixels;
       edgeScratch = (tileEnd + capSize) - capSize;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_LEFT,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_LEFT,
                  contentBottom,contentTop,edgeScratch,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_RIGHT,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_RIGHT,
                  contentBottom,contentTop,contentRight,control);
       tileEnd = edgeScratch + capSize;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM,
+                (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM,
                  contentRight,contentBottom,tileEnd,control);
     }
     if ((control->scrollStateFlags & (UI_SCROLL_FILL_INTERIOR|UI_SCROLL_FILL_INTERIOR_TEXTURED)) != 0) {
@@ -2374,7 +2374,7 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
         subresource = UI_WINDOW_SUBRESOURCE_INTERIOR;
       }
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,subresource,contentBottom,contentRight,contentTop,tileEnd,
+                (clipBottom,clipRight,clipTop,clipLeft,subresource,contentBottom,contentRight,contentTop,tileEnd,
                  control);
     }
     g_GraphicsFramebufferEndAccess();
@@ -2382,17 +2382,17 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
     contentTop = contentTop + (control->base).top;
     contentRight = contentRight + (control->base).left;
     contentBottom = contentBottom + (control->base).top;
-    if (edgeScratch < clipRight) {
-      edgeScratch = clipRight;
+    if (edgeScratch < clipLeft) {
+      edgeScratch = clipLeft;
     }
-    if (contentTop < clipBottom) {
-      contentTop = clipBottom;
+    if (contentTop < clipTop) {
+      contentTop = clipTop;
     }
-    if (clipLeft < contentRight) {
-      contentRight = clipLeft;
+    if (clipRight < contentRight) {
+      contentRight = clipRight;
     }
-    if (clipTop < contentBottom) {
-      contentBottom = clipTop;
+    if (clipBottom < contentBottom) {
+      contentBottom = clipBottom;
     }
     UiContainer_DrawIntersectingChildren(contentBottom,contentRight,contentTop,edgeScratch,&control->base);
   }
@@ -2802,7 +2802,7 @@ UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control)
    the selected row (with end caps while the list has the keyboard focus), then each column's text of the
    row record. A column with a negative width is right-aligned in |width| pixels.
 */
-void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control)
+void UiListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiListControl *control)
 
 {
   int columnWidth;
@@ -2820,13 +2820,13 @@ void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,
   TextureSizeResult textureSize;
   
   if (control->rowCount != 0) {
-    rowTop = (clipBottom - (control->base).top) / (int)control->rowHeight;
+    rowTop = (clipTop - (control->base).top) / (int)control->rowHeight;
     if (rowTop < 0) {
       rowTop = 0;
     }
     rowSlot = control->rowSlots + rowTop;
     lastRowIndex =
-         (uint32_t)(((clipTop - (control->base).top) + (int)control->rowHeight) / (int)control->rowHeight);
+         (uint32_t)(((clipBottom - (control->base).top) + (int)control->rowHeight) / (int)control->rowHeight);
     rowTop = rowTop * (int)control->rowHeight;
     if (control->rowCount <= lastRowIndex) {
       lastRowIndex = control->rowCount - 1;
@@ -2840,7 +2840,7 @@ void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,
             widthOrColumnCount = (control->base).layoutWidth;
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,widthOrColumnCount,
+                        (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,widthOrColumnCount,
                          rowTop,0,control);
             }
             else {
@@ -2848,15 +2848,15 @@ void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,
                                                                   g_UiWindowTextureSource);
               widthOrColumnCount = widthOrColumnCount - textureSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,
+                        (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,
                          widthOrColumnCount,rowTop,
                          textureSize.logicalWidthPixels,control);
               g_GraphicsTextureSourceBlitSourceAlpha
-                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
+                        (clipBottom,clipRight,clipTop,clipLeft,rowTop + (control->base).top,
                          (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource,
                          g_FramebufferAccess);
               g_GraphicsTextureSourceBlitSourceAlpha
-                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
+                        (clipBottom,clipRight,clipTop,clipLeft,rowTop + (control->base).top,
                          widthOrColumnCount + (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,
                          g_UiWindowTextureSource,
                          g_FramebufferAccess);
@@ -2874,14 +2874,14 @@ void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,
                 commandStream = (uint16_t *)(rowRecord + column->rowTextOffset);
                 textExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,commandStream);
                 RichTextCommandStream_DrawSingleLine
-                          (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,commandStream,
+                          (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,commandStream,
                            rowTop + 1 + (control->base).top,
                            (columnX - (textExtent.widthPixels + 6)) + (control->base).left);
               }
               else {
                 columnX = columnX + columnWidth;
                 RichTextCommandStream_DrawSingleLine
-                          (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
+                          (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,
                            (uint16_t *)(rowRecord + column->rowTextOffset),
                            rowTop + 1 + (control->base).top,(columnX - columnWidth) + (control->base).left);
               }
@@ -3032,7 +3032,7 @@ void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationD
    of its ancestor levels, its branch and expand/collapse icons, its row icon, the highlight behind the
    selected row's label (with end caps while the list has the keyboard focus) and the label.
 */
-void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+void UiTimedListControl_DrawRowsAndSelection(int clipBottom,int clipRight,int clipTop,int clipLeft,UiNodeBase *control)
 
 {
   /* Rewritten from the assembly (0x004BBA00-0x004BBCCC). Expanded records push (record,
@@ -3072,18 +3072,18 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
         for (level = 1; level < depth; level++) {
           if (savedRemaining[level] != 0) {
             g_GraphicsTextureSourceBlitSourceAlpha
-                      (clipTop,clipLeft,clipBottom,clipRight,y,x,list->ancestorConnectorSubresource,
+                      (clipBottom,clipRight,clipTop,clipLeft,y,x,list->ancestorConnectorSubresource,
                        rowTexture,g_FramebufferAccess);
           }
           x = x + (int)list->indentPixelsPerLevel;
         }
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,y,x,
+                  (clipBottom,clipRight,clipTop,clipLeft,y,x,
                    (remaining <= 1) ? list->lastRowConnectorSubresource : list->siblingConnectorSubresource,
                    rowTexture,g_FramebufferAccess);
         if ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) {
           g_GraphicsTextureSourceBlitSourceAlpha
-                    (clipTop,clipLeft,clipBottom,clipRight,y,x,
+                    (clipBottom,clipRight,clipTop,clipLeft,y,x,
                      ((record->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) ? list->expandedIconSubresource :
                                                           list->base.collapsedIconSubresource,
                      rowTexture,g_FramebufferAccess);
@@ -3091,7 +3091,7 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
         x = x + (int)list->indentPixelsPerLevel;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,y,x,record->parentBlockOrIcon,rowTexture,
+                (clipBottom,clipRight,clipTop,clipLeft,y,x,record->parentBlockOrIcon,rowTexture,
                  g_FramebufferAccess);
       x = x + (int)list->iconColumnPixels - control->left;
       if (record == list->base.selectedRecord) {
@@ -3104,23 +3104,23 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
           int capWidth = (int)cap.logicalWidthPixels;
           int endX = width - capWidth + x;
           UiWindow_BlitTiledHorizontalEdge
-                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,endX,rowY,
+                    (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,endX,rowY,
                      capWidth + x,control);
           g_GraphicsTextureSourceBlitSourceAlpha
-                    (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,x + control->left,
+                    (clipBottom,clipRight,clipTop,clipLeft,rowY + control->top,x + control->left,
                      UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
           g_GraphicsTextureSourceBlitSourceAlpha
-                    (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,endX + control->left,
+                    (clipBottom,clipRight,clipTop,clipLeft,rowY + control->top,endX + control->left,
                      UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
         }
         else {
           UiWindow_BlitTiledHorizontalEdge
-                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,width + x,rowY,x,
+                    (clipBottom,clipRight,clipTop,clipLeft,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,width + x,rowY,x,
                      control);
         }
       }
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
+                (clipBottom,clipRight,clipTop,clipLeft,g_UiListTextStyle,
                  (uint16_t *)record->countOrLabelText,rowY + 1 + control->top,
                  x + 3 + control->left);
       rowY = rowY + (int)list->base.rowHeight;
@@ -3204,8 +3204,8 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
    offset in the in-game root in the group-42 and group-48 catalog tables.
 */
 void UiCatalogEntryControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiCatalogEntryControl *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiCatalogEntryControl *control)
 
 {
   ArmyRuntimeSlot *slotArmyRuntime;
@@ -3248,7 +3248,7 @@ void UiCatalogEntryControl_DrawClipped
         backgroundSubresource = backgroundSubresource + (control->command).sprite.animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top,
+                (clipBottom,clipRight,clipTop,clipLeft,(control->command).sprite.selectable.base.top,
                  (control->command).sprite.selectable.base.left,backgroundSubresource,
                  (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
     }
@@ -3257,7 +3257,7 @@ void UiCatalogEntryControl_DrawClipped
     subresourceOrTextLength = subresourceOrTextLength + (control->command).sprite.animationFrameOffset;
   }
   g_GraphicsTextureSourceBlitSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top,
+            (clipBottom,clipRight,clipTop,clipLeft,(control->command).sprite.selectable.base.top,
              (control->command).sprite.selectable.base.left,subresourceOrTextLength,spriteTextureSource,framebuffer);
   factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
   if ((int)g_GameFactionRuntimeImage.records[factionIndexOrPercent].xeniteCurrentQ4 <
@@ -3276,7 +3276,7 @@ void UiCatalogEntryControl_DrawClipped
   *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
   textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
-            (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
+            (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
              ((control->command).sprite.selectable.base.bottom - textExtent.heightPixels) - 2,
              ((int)((control->command).sprite.selectable.base.layoutWidth - textExtent.widthPixels) >> 1)
              + (control->command).sprite.selectable.base.left);
@@ -3303,7 +3303,7 @@ void UiCatalogEntryControl_DrawClipped
         /* ' ' and the terminator */
         *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
         RichTextCommandStream_DrawSingleLine
-                  (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
+                  (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,
                    g_UiCatalogEntryRichTextScratchUtf16,factionIndexOrPercent + 2,
                    (control->command).sprite.selectable.base.left);
       }
@@ -3338,7 +3338,7 @@ void UiCatalogEntryControl_DrawClipped
         textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,
                                                        g_UiCatalogEntryRichTextScratchUtf16);
         RichTextCommandStream_DrawSingleLine
-                  (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
+                  (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,
                    g_UiCatalogEntryRichTextScratchUtf16,
                    (control->command).sprite.selectable.base.top + 2,
                    (control->command).sprite.selectable.base.right - textExtent.widthPixels);
@@ -3376,7 +3376,7 @@ void UiCatalogEntryControl_DrawClipped
     /* ' ' and the terminator */
     *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
+              (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                factionIndexOrPercent + 2,(control->command).sprite.selectable.base.left);
   }
   factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
@@ -3421,7 +3421,7 @@ void UiCatalogEntryControl_DrawClipped
     *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' ';
     textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
+              (clipBottom,clipRight,clipTop,clipLeft,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                (control->command).sprite.selectable.base.top + 2,
                (control->command).sprite.selectable.base.right - textExtent.widthPixels);
   }

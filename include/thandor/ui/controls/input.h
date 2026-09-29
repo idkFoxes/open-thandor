@@ -152,7 +152,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
 
 /* 0x00515CC0 */
 void UiSelectionGeometryControl_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiSelectionGeometryControl *control
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiSelectionGeometryControl *control
           );
 
 /* 0x005161A0 */

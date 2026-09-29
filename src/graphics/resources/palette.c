@@ -212,14 +212,22 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
 
 
 /* Address: 0x004AD800.
-   In the original: checks the 'pal' signature and returns paletteBankCount in ECX with CF clear, CF set for a
-   wrong signature. The C body is empty (the register result has no C form here); no caller or table reference
-   is known.
+   Checks the 'pal' signature and returns paletteBankCount (+0xB0, ECX in the original) with CF clear, or CF
+   set for a wrong signature (ECX then still holds the asset pointer). No caller or table reference is known.
 */
-void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset)
+StatusResult GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset)
 
 {
-  return;
+  StatusResult result;
+
+  if (paletteAsset->magic != ASSET_MAGIC_PAL) {
+    result.valueOrError = (uint32_t)(uintptr_t)paletteAsset;
+    result.failed = true;
+    return result;
+  }
+  result.valueOrError = paletteAsset->paletteBankCount;
+  result.failed = false;
+  return result;
 }
 
 /* Address: 0x004AD820.

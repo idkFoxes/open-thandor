@@ -34,6 +34,12 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
    the active mouse). Presses and motion go to the node under the pointer; a release goes to the node
    that captured the pointer with that button, which then loses the capture and the pointer position is
    dispatched again as motion. A release without a matching capture is dropped.
+   Original quirk: a captured middle-button release also steps the primary random stream (0x004AF643 CALL
+   Random_NextPrimary after the motion dispatch; the left/right release paths do not), so the primary seed
+   depends on local mouse input. The session simulation draws through g_RandomGeneratorState.next, which is
+   Random_NextSecondary during a network session, so this does not desync the game state; only the local
+   users of the primary stream (ambient sound/music choice, button animation phases, the field's cell
+   animation phases and material variants at level load, sequence tokens) can differ between machines.
 */
 void UiPointer_DispatchPendingEvents(void)
 
@@ -67,7 +73,7 @@ void UiPointer_DispatchPendingEvents(void)
           g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
           g_UiPointerCaptureTarget = UI_NODE_NONE;
           UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
-          Random_NextPrimary(); /* only this release also advances the random generator */
+          Random_NextPrimary(); /* original quirk: only this release steps the primary random stream */
         }
       }
       else if (eventKind < 4) { /* motion and the presses */
@@ -918,7 +924,7 @@ static __inline PackedArgb32 UiScaler_BlendBilinear
    paletteIndex) are drawn.
 */
 void UiSelectionGeometryControl_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiSelectionGeometryControl *control)
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiSelectionGeometryControl *control)
 
 {
   GraphicsTextureSourceAsset *sourceTexture;
@@ -955,22 +961,22 @@ void UiSelectionGeometryControl_DrawClipped
   int remainingColumns;
   uint8_t *destRowStart;
 
-  /* intersect the clip rectangle with the node (clipRight/clipBottom act as the left/top bound here) */
-  if (clipRight < (control->base).left) {
-    clipRight = (control->base).left;
+  /* intersect the clip rectangle with the node */
+  if (clipLeft < (control->base).left) {
+    clipLeft = (control->base).left;
   }
-  if (clipBottom < (control->base).top) {
-    clipBottom = (control->base).top;
+  if (clipTop < (control->base).top) {
+    clipTop = (control->base).top;
   }
-  if ((control->base).right < clipLeft) {
-    clipLeft = (control->base).right;
+  if ((control->base).right < clipRight) {
+    clipRight = (control->base).right;
   }
-  if ((control->base).bottom < clipTop) {
-    clipTop = (control->base).bottom;
+  if ((control->base).bottom < clipBottom) {
+    clipBottom = (control->base).bottom;
   }
-  clipWidth = clipLeft - clipRight;
-  if (((clipWidth != 0 && clipRight <= clipLeft) &&
-      (clipHeightOrColumnTerm = clipTop - clipBottom, clipHeightOrColumnTerm != 0 && clipBottom <= clipTop)) &&
+  clipWidth = clipRight - clipLeft;
+  if (((clipWidth != 0 && clipLeft <= clipRight) &&
+      (clipHeightOrColumnTerm = clipBottom - clipTop, clipHeightOrColumnTerm != 0 && clipTop <= clipBottom)) &&
      (control->textureSource != NULL)) {
     rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
     cosTermOrRowStepV = -((int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c);
@@ -988,17 +994,17 @@ void UiSelectionGeometryControl_DrawClipped
     rowStepU = (uint64_t)sinTermOrSourceU;
     sourceStartU = (uint64_t)
              (control->sourceOriginYQ12 -
-             (sinTermOrSourceU * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
+             (sinTermOrSourceU * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
              (((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) -
               stepTermOrRowStartU) *
-             (((control->base).left + (control->base).right >> 1) - clipRight)));
+             (((control->base).left + (control->base).right >> 1) - clipLeft)));
     /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
     pixelStepU =
          ((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermOrRowStartU;
     pixelStepV = stepTermOrRowStartU * 2;
     texelIndexOrFraction = control->sourceOriginXQ12 -
-             (cosTermOrRowStepV * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
-             stepTermOrRowStartU * 2 * (((control->base).left + (control->base).right >> 1) - clipRight));
+             (cosTermOrRowStepV * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
+             stepTermOrRowStartU * 2 * (((control->base).left + (control->base).right >> 1) - clipLeft));
     sourceTexture = control->textureSource;
     subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
     /* the subresource entry fields (paletteIndex, dataOffset, pixelWidth, pixelHeight) are read relative to
@@ -1015,11 +1021,11 @@ void UiSelectionGeometryControl_DrawClipped
         rowStepUHigh = (int)(rowStepU >> 0x20);
         sinTermOrSourceU = (uint32_t)sourceStartU;
         sourceColumn = (int)(sourceStartU >> 0x20);
-        clipTop = clipHeightOrColumnTerm;
+        clipBottom = clipHeightOrColumnTerm;
         remainingColumns = clipWidth;
         if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
           destPixel = g_FramebufferAccess->pixels +
-                    g_FramebufferRowStrideBytes * clipBottom + clipRight * 2;
+                    g_FramebufferRowStrideBytes * clipTop + clipLeft * 2;
           sourceV = sourceColumn + texelIndexOrFraction;
           stepTermOrRowStartU = sinTermOrSourceU;
           stepTermOrRowStartV = sourceV;
@@ -1083,16 +1089,16 @@ void UiSelectionGeometryControl_DrawClipped
             sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
             sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
             destPixel = destRowStart + g_FramebufferRowStrideBytes;
-            clipTop = clipTop - 1; /* now the remaining row count */
+            clipBottom = clipBottom - 1; /* now the remaining row count */
             stepTermOrRowStartU = sinTermOrSourceU;
             stepTermOrRowStartV = sourceV;
             remainingColumns = clipWidth;
             destRowStart = destPixel;
-          } while (clipTop != 0);
+          } while (clipBottom != 0);
         }
         else {
           destPixel = g_FramebufferAccess->pixels +
-                    g_FramebufferRowStrideBytes * clipBottom + clipRight * 4;
+                    g_FramebufferRowStrideBytes * clipTop + clipLeft * 4;
           sourceV = sourceColumn + texelIndexOrFraction;
           stepTermOrRowStartU = sinTermOrSourceU;
           stepTermOrRowStartV = sourceV;
@@ -1149,12 +1155,12 @@ void UiSelectionGeometryControl_DrawClipped
             sinTermOrSourceU = stepTermOrRowStartU + (int)rowStepU;
             sourceV = stepTermOrRowStartV + rowStepUHigh + cosTermOrRowStepV;
             destPixel = destRowStart + g_FramebufferRowStrideBytes;
-            clipTop = clipTop - 1; /* now the remaining row count */
+            clipBottom = clipBottom - 1; /* now the remaining row count */
             stepTermOrRowStartU = sinTermOrSourceU;
             stepTermOrRowStartV = sourceV;
             remainingColumns = clipWidth;
             destRowStart = destPixel;
-          } while (clipTop != 0);
+          } while (clipBottom != 0);
         }
         g_GraphicsFramebufferEndAccess();
       }

@@ -125,7 +125,7 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
                  viewParameters->originY,viewParameters->originX);
       Graphics_SetProjectionViewport(outputHeight,outputWidth,0,0);
       Graphics_SetAuxiliaryOrientation(auxiliaryOrientationAngles[1],*auxiliaryOrientationAngles);
-      Graphics_SetSceneBounds
+      Graphics_SetSceneBoundsAndColors
                 (sceneExtents->verticalExtent,sceneExtents->horizontalExtent,
                  sceneExtents->verticalExtent,sceneExtents->horizontalExtent,0,0,0,0);
       Graphics_RebuildFrustumPlanes();

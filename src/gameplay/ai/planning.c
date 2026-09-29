@@ -191,8 +191,8 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[6])))) &&
            (candidateModelDefinitionId !=
             ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[7])) {
-          /* despite its name the check returns true (CF set) while the technology is still locked */
-          technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
+          /* true (CF set) while the technology is still locked */
+          technologyLocked = ModelDefinition_IsFactionTechnologyLocked
                             (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]);
           if (((technologyLocked) ||

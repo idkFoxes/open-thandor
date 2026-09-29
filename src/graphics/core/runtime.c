@@ -358,11 +358,11 @@ void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azi
 
 
 /* Address: 0x00486730.
-   Stores the eight per-scene values in g_SceneBoundsFixed. Despite the name, bound4..bound7 are packed ARGB
+   Stores the eight per-scene values in g_SceneBoundsFixed. bound4..bound7 are packed ARGB
    colours: the model renderer passes bound5/bound4 and bound7/bound6 as the scene colour pairs of
    ModelRender_ComputeVertexIntensityDefaultPath and ...ScaledPath. No reader of bound0..bound3 is known.
 */
-void Graphics_SetSceneBounds(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
+void Graphics_SetSceneBoundsAndColors(GraphicsSceneExtentFixed bound7,GraphicsSceneExtentFixed bound6,
           GraphicsSceneExtentFixed bound5,GraphicsSceneExtentFixed bound4,
           GraphicsSceneExtentFixed bound3,GraphicsSceneExtentFixed bound2,
           GraphicsSceneExtentFixed bound1,GraphicsSceneExtentFixed bound0)
@@ -463,7 +463,7 @@ void Graphics_RebuildFrustumPlanes(void)
 /* Address: 0x004A9100.
    Initial value of g_GraphicsBackendRefreshActiveAdapter (image slot 0x004A8ED4), which MainWindowProc calls on
    WM_ACTIVATEAPP deactivation: does nothing until Graphics_Init installs
-   GraphicsBackend_RefreshActiveAdapterIfReady.
+   GraphicsBackend_ShutdownGlideOnDeactivate.
 */
 void GraphicsBackend_RefreshActiveAdapterNoOp(void)
 
@@ -737,7 +737,7 @@ StatusResult __cdecl Graphics_Init(void)
                   cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DIRECTDRAW_NO_DISPLAY_MODE;
                   if (g_GraphicsDisplayModeCount != 0) {
                     g_GraphicsBackendRefreshActiveAdapter =
-                         GraphicsBackend_RefreshActiveAdapterIfReady;
+                         GraphicsBackend_ShutdownGlideOnDeactivate;
                     g_GraphicsSetDisplayMode =
                          GraphicsDirectDraw_ApplyDisplayModeAndCreateResources;
                     g_GraphicsFramebufferBeginAccess = GraphicsFramebuffer_BeginAccess;
@@ -768,11 +768,11 @@ StatusResult __cdecl Graphics_Init(void)
 
 /* Address: 0x005794E0.
    Installed by Graphics_Init as g_GraphicsBackendRefreshActiveAdapter, which MainWindowProc calls when the
-   application is deactivated (WM_ACTIVATEAPP): despite its name it shuts Glide down when the active adapter
+   application is deactivated (WM_ACTIVATEAPP): it shuts Glide down when the active adapter
    is the running 3dfx Glide adapter, so the full-screen Glide display is released while the game is in the
    background.
 */
-void GraphicsBackend_RefreshActiveAdapterIfReady(void)
+void GraphicsBackend_ShutdownGlideOnDeactivate(void)
 
 {
   if (((g_GlideRuntimeActiveCount != 0) && (g_ActiveGraphicsAdapterIndex != GRAPHICS_ADAPTER_INDEX_NONE)) &&

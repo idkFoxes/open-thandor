@@ -506,13 +506,13 @@ void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *r
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets
           [runtimeImage->factionAssignmentIndex - 1];
-  cameraOrientation = WorldRuntime_GetVector1Regs((WorldRuntimeContext *)runtimeImage);
+  cameraOrientation = WorldRuntime_GetCameraOrientationRegs((WorldRuntimeContext *)runtimeImage);
   playerSlot = (LevelPlayerSlotRecord *)((uint8_t *)levelConditionStorage->levelImage.playerSlots +
                                          playerSlotByteOffset);
   playerSlot->startCameraMagnitudeQ12 = cameraOrientation.magnitudeQ12;
   playerSlot->packedHeadingLow16PitchHigh16 =
        cameraOrientation.headingAngle & 0xffff | cameraOrientation.pitchAngle << 16;
-  cameraPosition = WorldRuntime_GetVector0Regs((WorldRuntimeContext *)runtimeImage);
+  cameraPosition = WorldRuntime_GetCameraPositionRegs((WorldRuntimeContext *)runtimeImage);
   playerSlot->startCameraXQ12 = cameraPosition.xQ12;
   playerSlot->startCameraYQ12 = cameraPosition.yQ12;
   playerSlot->startCameraZQ12 = cameraPosition.zQ12;

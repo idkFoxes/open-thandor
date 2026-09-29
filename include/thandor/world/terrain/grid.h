@@ -151,7 +151,7 @@ HeightSampleResult FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 world
 HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FF3D0 */
-HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
+HeightNormalSampleResult FieldGrid_InterpolateWaterDepthAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF600 */

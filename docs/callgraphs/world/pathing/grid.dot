@@ -27,10 +27,10 @@ digraph thandor {
   "GridReachability_MarkOpenRegionRecursive" [label="0x005363C0\nGridReachability_MarkOpenRegionRecursive"];
   "GridReachability_ClearCostedRegionRecursive" [label="0x00536440\nGridReachability_ClearCostedRegionRecursive"];
   "GridPathCost_FindNearestUnblockedCell" [label="0x005342F0\nGridPathCost_FindNearestUnblockedCell"];
-  "GridPathLine_TestHexSegmentClear" [label="0x005344B0\nGridPathLine_TestHexSegmentClearCf"];
+  "GridPathLine_TestHexSegmentBlocked" [label="0x005344B0\nGridPathLine_TestHexSegmentClearCf"];
   "EntityPathing_ResolveDestinationAndRebuildRoutes" -> "GridPathCost_FindNearestUnblockedCell";
   "EntityPathing_ResolveDestinationAndRebuildRoutes" -> "EntityPathing_RebuildOverlappingGroupRoutes";
-  "EntityPathing_ResolveDestinationAndRebuildRoutes" -> "GridPathLine_TestHexSegmentClear";
+  "EntityPathing_ResolveDestinationAndRebuildRoutes" -> "GridPathLine_TestHexSegmentBlocked";
   "EntityPathing_ResolveDestinationAndRebuildRoutes" -> "GridScratch_ResetTraversalFlagsAndCosts";
   "EntityPathing_ResolveDestinationAndRebuildRoutes" -> "GridPathCost_PropagateWeightedHexNeighbors";
   "EntityPathing_ResolveDestinationAndRebuildRoutes" -> "GridPathRegion_MarkUnreachableFromCell";
@@ -46,8 +46,8 @@ digraph thandor {
   "GridFootprint_ClearTraversalFlagsAroundWorldPoint" -> "GridFootprint_ClearTraversalFlagsDiagonalPositive";
   "GridFootprint_ClearTraversalFlagsAroundWorldPoint" -> "GridFootprint_ClearTraversalFlagsDiagonalNegative";
   "EntityPathing_UpdateRouteSegment" -> "GridPathCost_FindNearestUnblockedCell";
-  "EntityPathing_UpdateRouteSegment" -> "GridPathLine_TestHexSegmentClear";
+  "EntityPathing_UpdateRouteSegment" -> "GridPathLine_TestHexSegmentBlocked";
   "GridScratch_TestWorldPointReachability" -> "GridScratch_TestConnectedReachabilityRecursiveRegs";
-  "GridPathCost_BacktrackBestHexRoute" -> "GridPathLine_TestHexSegmentClear";
+  "GridPathCost_BacktrackBestHexRoute" -> "GridPathLine_TestHexSegmentBlocked";
   "GridPathRegion_MarkUnreachableFromCell" -> "GridPathRegion_MarkUnreachableRecursive";
 }

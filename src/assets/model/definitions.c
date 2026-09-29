@@ -30,8 +30,8 @@ ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
     /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
     linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
-      /* despite its name the check returns true (CF set) when the technology is still locked */
-      technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
+      /* true (CF set) while the technology is still locked */
+      technologyLocked = ModelDefinition_IsFactionTechnologyLocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                          linkedDefinitionId);
       if (!technologyLocked) {
@@ -84,7 +84,7 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
 {
   uint32_t childIndex;
   /* true from this check means the technology is still locked */
-  if (ModelDefinition_IsFactionTechnologyUnlocked
+  if (ModelDefinition_IsFactionTechnologyLocked
                 (technologyMasks,node->linkedDefinitionIds[0])) {
     return true;
   }
@@ -99,7 +99,7 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
 /* Address: 0x0051DA60.
    Walks the model-definition hierarchy below definitionNode and tests each definition's technology
    requirement against the faction's technology masks. Returns false (CF clear) when every definition in the
-   tree is unlocked, true (CF set) as soon as one is still locked: ModelDefinition_IsFactionTechnologyUnlocked
+   tree is unlocked, true (CF set) as soon as one is still locked: ModelDefinition_IsFactionTechnologyLocked
    reports a locked technology with CF set.
 */
 bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
@@ -457,7 +457,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
     linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
       /* true (CF set) means the technology is still locked */
-      technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
+      technologyLocked = ModelDefinition_IsFactionTechnologyLocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                          linkedDefinitionId);
       if (!technologyLocked) {
@@ -720,10 +720,10 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
 
 /* Address: 0x0052AD90.
    Tests whether the faction may use the model definition: the technology bit it requires (record +0x1C0)
-   must be set in the faction's 256-bit technology masks. Despite the name, true (CF set) means LOCKED
+   must be set in the faction's 256-bit technology masks. True (CF set) means locked
    (bit clear or unknown id); false (CF clear) means unlocked.
 */
-bool ModelDefinition_IsFactionTechnologyUnlocked
+bool ModelDefinition_IsFactionTechnologyLocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {

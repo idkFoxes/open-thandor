@@ -62,7 +62,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
 RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x0051B800 */
-bool FactionRuntime_HasArmyAssetOrActiveStructure
+bool FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord);
 
 /* 0x0051C4C0 */

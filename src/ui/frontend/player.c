@@ -203,8 +203,9 @@ void FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
    FRONTEND_PACKET_10007_PLAYER_REMOVAL per removed player, and the ready wait is re-evaluated without a new
    report (player id -1).
    The command records start at g_FrontendPlayerCommandRecords[0] while the scan starts at player block 1, and
-   the announcements go out in reverse removal order (the original pushes each removed id on the stack and pops
-   one per round); both are kept from the original.
+   the announcements go out in reverse removal order (the original pushes each removed id on the stack,
+   0x0054F5AC PUSH [ESI+0x14], and pops one per round, 0x0054F63C); both are kept from the original. The id
+   stack does not overlap the command cursors at [EBP-4]/[EBP-8] (verified against the asm).
 */
 void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
@@ -617,7 +618,7 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
    Handler of UI action 0x204D (slot 77 of g_UiActionPage20InitializedHandlers), the host game setup page's
    networkSpeedSlider (1..7): shows the speed's name (TEXT_ID_NETWORK_SPEED_BASE + value) in the label beside it
    and sets g_SessionNetworkTickInterval to twice the slider value. The label buffer is the one named
-   g_FrontendNetworkPlayerCountLabelUtf16.
+   g_FrontendNetworkSpeedLabelUtf16.
 */
 void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
 
@@ -627,7 +628,7 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve(g_SessionNetworkTickInterval + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.text);
+            (0x40,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText.text);
   g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
   return;
 }

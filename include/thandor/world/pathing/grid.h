@@ -159,7 +159,7 @@ void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScr
 NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn);
 
 /* 0x005344B0 */
-bool GridPathLine_TestHexSegmentClear(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
 
 #endif /* THANDOR_WORLD_PATHING_GRID_H */

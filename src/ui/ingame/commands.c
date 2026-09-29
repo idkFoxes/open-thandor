@@ -403,15 +403,15 @@ GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoord
    paused.
 */
 void UiCommandVisibilityWrappedText_DrawWhenAllowed
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiNodeBase *control)
 
 {
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS) == 0 &&
       ((((UiWrappedTextControl *)control)->labelFlags & UI_WORLD_TEXT_PAUSED_ONLY) == 0 ||
        (g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) &&
       (control->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    UiWrappedTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiWrappedTextControl *)control);
+    UiWrappedTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,(UiWrappedTextControl *)control);
   }
   return;
 }
@@ -423,8 +423,8 @@ void UiCommandVisibilityWrappedText_DrawWhenAllowed
    text shifted by ticks - 2 bytes (the text pointer is restored afterwards).
 */
 void UiCommandVisibilitySingleLineText_DrawWhenAllowed
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiNodeBase *control)
 
 {
   int drawOffsetAdjust;
@@ -437,7 +437,7 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
        (drawOffsetAdjust = g_InGameSimulationStepTicks - 2, 1 < g_InGameSimulationStepTicks))) {
     ((UiSingleLineTextControl *)control)->text =
          (uint16_t *)((uint8_t *)((UiSingleLineTextControl *)control)->text + drawOffsetAdjust);
-    UiSingleLineTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiSingleLineTextControl *)control);
+    UiSingleLineTextControl_DrawClipped(clipBottom,clipRight,clipTop,clipLeft,(UiSingleLineTextControl *)control);
     ((UiSingleLineTextControl *)control)->text =
          (uint16_t *)((uint8_t *)((UiSingleLineTextControl *)control)->text - drawOffsetAdjust);
   }
@@ -1519,7 +1519,7 @@ void InGameCommand_HandlePlayerDeparture
 
 /* Address: 0x0056D980.
    Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
-   from the world runtime's lighting colours (lighting.baseColorArgb, rampColorArgb) with their alpha removed and the secondary
+   from the world runtime's lighting colours (lighting.baseColorArgb, rampStepColorArgb) with their alpha removed and the secondary
    colour (secondaryColorArgb) made opaque, relights the field grid with the light angles stored in the root, then sets
    UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED and the limit read by the terrain triangle and marker drawing.
 */
@@ -1528,8 +1528,8 @@ void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
             (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb | 0xff000000,
-             ((WorldRuntimeContext *)worldRuntime)->lighting.rampColorArgb & 0xffffff,
-             ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb & 0xffffff);
+             ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb & 0xffffff,
+             ((WorldRuntimeContext *)worldRuntime)->lighting.rampStepColorArgb & 0xffffff);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightElevationAngle,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightAzimuthAngle,
              ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
@@ -1776,7 +1776,7 @@ void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context)
 /* Address: 0x0056D9F0.
    Terrain colours of every editor mode except smoothing (and of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
    when the editor is switched off): rebuilds the terrain colour ramp from the world runtime's lighting colours
-   (lighting.baseColorArgb, rampColorArgb, secondaryColorArgb) unchanged, relights the field grid with the light
+   (lighting.baseColorArgb, rampStepColorArgb, secondaryColorArgb) unchanged, relights the field grid with the light
    angles stored in the root, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
    counterpart of UiCommandModeG_ApplyMaskedColorVariant.
 */
@@ -1784,8 +1784,8 @@ void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb,((WorldRuntimeContext *)worldRuntime)->lighting.rampColorArgb,
-             ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb);
+            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb,((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb,
+             ((WorldRuntimeContext *)worldRuntime)->lighting.rampStepColorArgb);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightElevationAngle,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightAzimuthAngle,
              ((WorldRuntimeContext *)worldRuntime)->fieldGrid);

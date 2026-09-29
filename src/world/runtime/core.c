@@ -96,13 +96,13 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
     blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
     primaryColorA =
          g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-         terrainBaseColorArgb;
+         terrainRampStepColorArgb;
     primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            terrainRampColor124Argb;
+            terrainBaseColorArgb;
     alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainBaseColorArgb;
+            alternateTerrainRampStepColorArgb;
     alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainRampColor124Argb;
+            alternateTerrainBaseColorArgb;
     forwardFactors = g_SoftwareBilinearForwardFactors[blendIndexOrPrimaryValue];
     inverseFactors = g_SoftwareBilinearInverseFactors[blendIndexOrPrimaryValue];
     mixedColor0A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
@@ -111,11 +111,11 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
          g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
          terrainLightingColor128Argb;
     primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            terrainRampColor12CArgb;
+            terrainSecondaryColorArgb;
     alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainLightingColor128Argb;
     alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-            alternateTerrainRampColor12CArgb;
+            alternateTerrainSecondaryColorArgb;
     mixedColor1A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor1B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
     primaryColorA =
@@ -140,13 +140,13 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
             alternateTerrainLightingColor13CArgb;
     mixedColor3A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor3B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
-    /* A colors without alpha; B colors opaque, except the second one keeps the ramp color's alpha */
+    /* A colors without alpha; B colors opaque, except the secondary colour keeps its alpha */
     WorldRuntime_SetTerrainLightingConfiguration
               (mixedColor3B | 0xff000000,mixedColor3A & 0xffffff,mixedColor2B | 0xff000000,
                mixedColor2A & 0xffffff,
                mixedColor1B |
                g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
-               terrainRampColor12CArgb & 0xff000000,
+               terrainSecondaryColorArgb & 0xff000000,
                mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
     /* Low 16 bits of the pairs: triangular blend over the phase byte (0x80 = half cycle); the value that
        would lie below the other one gets 0x10000 added, so the blend runs forward through the 16-bit wrap.
@@ -353,7 +353,7 @@ void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext
    -0x4000..-0x1000 and the azimuth wrapped to 16 bits, and relights the field with the unchanged light
    direction. The name is historical: nothing here is a field origin.
 */
-void WorldRuntime_AdjustFieldOriginWrappedClamped
+void WorldRuntime_TurnAuxiliaryAnglesClamped
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle)
 
 {
@@ -616,7 +616,7 @@ void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world
 /* Address: 0x0050D610.
    Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68) in EAX, ECX and EDX.
 */
-WorldCameraPosition WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
+WorldCameraPosition WorldRuntime_GetCameraPositionRegs(WorldRuntimeContext *world)
 
 {
   WorldCameraPosition positionVector;
@@ -632,7 +632,7 @@ WorldCameraPosition WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
    Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle, context
    +0x6C..+0x74) in EAX, ECX and EDX.
 */
-WorldCameraOrientation WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
+WorldCameraOrientation WorldRuntime_GetCameraOrientationRegs(WorldRuntimeContext *world)
 
 {
   WorldCameraOrientation motionVector;
@@ -1196,12 +1196,12 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
 
 /* Address: 0x0050D760.
    Stores the eight terrain lighting colours of the level (or of the current lighting-cycle blend) in the world
-   runtime and rebuilds the terrain colour ramp from the two ramp colours and the base colour.
+   runtime and rebuilds the terrain colour ramp from the base colour, the ramp-step colour and the secondary colour.
 */
 void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
           PackedArgb32 lightingColor134Argb,PackedArgb32 lightingColor130Argb,
-          PackedArgb32 rampColor12CArgb,PackedArgb32 lightingColor128Argb,
-          PackedArgb32 rampColor124Argb,PackedArgb32 baseColorArgb,WorldRuntimeContext *worldRuntime
+          PackedArgb32 secondaryColorArgb,PackedArgb32 lightingColor128Argb,
+          PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb,WorldRuntimeContext *worldRuntime
           )
 
 {
@@ -1210,10 +1210,10 @@ void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CA
   worldRuntime->lighting.color128Argb = lightingColor128Argb;
   worldRuntime->lighting.color138Argb = lightingColor138Argb;
   worldRuntime->lighting.color13CArgb = lightingColor13CArgb;
+  worldRuntime->lighting.rampStepColorArgb = rampStepColorArgb;
   worldRuntime->lighting.baseColorArgb = baseColorArgb;
-  worldRuntime->lighting.rampColorArgb = rampColor124Argb;
-  worldRuntime->lighting.secondaryColorArgb = rampColor12CArgb;
-  TerrainLighting_BuildColorRampAndSetBaseColor(rampColor12CArgb,rampColor124Argb,baseColorArgb);
+  worldRuntime->lighting.secondaryColorArgb = secondaryColorArgb;
+  TerrainLighting_BuildColorRampAndSetBaseColor(secondaryColorArgb,baseColorArgb,rampStepColorArgb);
   return;
 }
 

@@ -1858,7 +1858,7 @@ typedef struct ImageData_00530818 {
     uint32_t at_g_InGameLevelMusicVoiceSet2; /* 00531050 g_InGameLevelMusicVoiceSet2 */
     uint32_t at_g_InGameLevelMusicVoiceSet3; /* 00531054 g_InGameLevelMusicVoiceSet3 */
     uint32_t at_g_InGameActiveMusicVoice; /* 00531058 g_InGameActiveMusicVoice */
-    uint32_t at_g_InGameMusicEnabled; /* 0053105C g_InGameMusicEnabled */
+    uint32_t at_g_InGameMusicNextTrackCountdown; /* 0053105C g_InGameMusicNextTrackCountdown */
     InGameLevelRuntimeGlobalBlock20 at_g_InGameLevelRuntimeGlobalBlock; /* 00531060 g_InGameLevelRuntimeGlobalBlock */
 } ImageData_00530818;
 extern ImageData_00530818 g_ImageData_00530818;
@@ -2284,9 +2284,9 @@ typedef struct ImageData_0054D780 {
     uint8_t at_g_FrontendNetworkPlayerCountTextUtf16; /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
     uint32_t at_g_FrontendNetworkPlayerCountTextUtf16_rest[1]; /* beyond the declared type */
     uint8_t at_g_FrontendNetworkPlayerCountTextUtf16_rest_tail[3];
-    uint8_t at_g_FrontendNetworkPlayerCountLabelUtf16; /* 0054DDF0 g_FrontendNetworkPlayerCountLabelUtf16 */
-    uint32_t at_g_FrontendNetworkPlayerCountLabelUtf16_rest[15]; /* beyond the declared type */
-    uint8_t at_g_FrontendNetworkPlayerCountLabelUtf16_rest_tail[3];
+    uint8_t at_g_FrontendNetworkSpeedLabelUtf16; /* 0054DDF0 g_FrontendNetworkSpeedLabelUtf16 */
+    uint32_t at_g_FrontendNetworkSpeedLabelUtf16_rest[15]; /* beyond the declared type */
+    uint8_t at_g_FrontendNetworkSpeedLabelUtf16_rest_tail[3];
     uint8_t at_g_FrontendNetworkEndpointTextUtf16; /* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
     uint32_t at_g_FrontendNetworkEndpointTextUtf16_rest[255]; /* beyond the declared type */
     uint8_t at_g_FrontendNetworkEndpointTextUtf16_rest_tail[3];
@@ -2501,7 +2501,7 @@ typedef struct ImageData_00562498 {
     code * at_g_InGamePointerModeHandlers[8]; /* 00563748 g_InGamePointerModeHandlers */
     uint32_t at_g_InGamePointerModeCommandIds[8]; /* 00563768 g_InGamePointerModeCommandIds */
     uint32_t at_g_InGamePointerModePreviewArmyIds[8]; /* 00563788 g_InGamePointerModePreviewArmyIds */
-    ArmyPlacementCandidateCount at_g_ArmyPlacementAcceptedCandidateCount; /* 005637A8 g_ArmyPlacementAcceptedCandidateCount */
+    ArmyPlacementCandidateCount at_g_ArmyPlacementLateRejectionCount; /* 005637A8 g_ArmyPlacementLateRejectionCount */
     uint8_t at_g_InGameWorldRuntimeDwordArray256; /* 005637AC g_InGameWorldRuntimeDwordArray256 */
     uint32_t at_g_InGameWorldRuntimeDwordArray256_rest[255]; /* beyond the declared type */
     uint8_t at_g_InGameWorldRuntimeDwordArray256_rest_tail[3];
@@ -4432,7 +4432,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00531050 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelMusicVoiceSet2)
 #define THANDOR_IMAGE_0x00531054 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelMusicVoiceSet3)
 #define THANDOR_IMAGE_0x00531058 ((uintptr_t)&g_ImageData_00530818.at_g_InGameActiveMusicVoice)
-#define THANDOR_IMAGE_0x0053105c ((uintptr_t)&g_ImageData_00530818.at_g_InGameMusicEnabled)
+#define THANDOR_IMAGE_0x0053105c ((uintptr_t)&g_ImageData_00530818.at_g_InGameMusicNextTrackCountdown)
 #define THANDOR_IMAGE_0x00531060 ((uintptr_t)&g_ImageData_00530818.at_g_InGameLevelRuntimeGlobalBlock)
 #define THANDOR_IMAGE_0x005332a0 ((uintptr_t)&g_ImageData_0053329C.at_g_GridScratchPrimary)
 #define THANDOR_IMAGE_0x005332a4 ((uintptr_t)&g_ImageData_0053329C.at_g_GridScratchSecondary)
@@ -4654,7 +4654,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0054ddd0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkEndpointScratch)
 #define THANDOR_IMAGE_0x0054dde0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkRuntimeCountTextUtf16)
 #define THANDOR_IMAGE_0x0054dde8 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkPlayerCountTextUtf16)
-#define THANDOR_IMAGE_0x0054ddf0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkPlayerCountLabelUtf16)
+#define THANDOR_IMAGE_0x0054ddf0 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkSpeedLabelUtf16)
 #define THANDOR_IMAGE_0x0054de30 ((uintptr_t)&g_ImageData_0054D780.at_g_FrontendNetworkEndpointTextUtf16)
 #define THANDOR_IMAGE_0x0054fbc0 ((uintptr_t)&g_ImageData_0054FBB0.at_g_UiRootCallbacks_0054FBC0)
 #define THANDOR_IMAGE_0x0054fbd4 ((uintptr_t)&g_ImageData_0054FBB0.at_g_InGameFactionStatusTextScratchUtf16)
@@ -4832,7 +4832,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0056378c ((uintptr_t)&g_ImageData_00562498 + 0x12F4)
 #define THANDOR_IMAGE_0x00563790 ((uintptr_t)&g_ImageData_00562498 + 0x12F8)
 #define THANDOR_IMAGE_0x00563798 ((uintptr_t)&g_ImageData_00562498 + 0x1300)
-#define THANDOR_IMAGE_0x005637a8 ((uintptr_t)&g_ImageData_00562498.at_g_ArmyPlacementAcceptedCandidateCount)
+#define THANDOR_IMAGE_0x005637a8 ((uintptr_t)&g_ImageData_00562498.at_g_ArmyPlacementLateRejectionCount)
 #define THANDOR_IMAGE_0x005637ac ((uintptr_t)&g_ImageData_00562498.at_g_InGameWorldRuntimeDwordArray256)
 #define THANDOR_IMAGE_0x00563bac ((uintptr_t)&g_ImageData_00562498.at_g_EndMovieSelectionIndex)
 #define THANDOR_IMAGE_0x00563bb0 ((uintptr_t)&g_ImageData_00562498.at_g_EndMovieVariantIndex)

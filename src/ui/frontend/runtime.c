@@ -807,43 +807,43 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
    is set (a dialog page covers the room).
 */
 void FrontendModelPointerContext_RenderWorldViewQueuesClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FrontendModelPointerContext *control)
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FrontendModelPointerContext *control)
 
 {
   UiPixelCoordinate cursorOverrideX;
   UiPixelCoordinate cursorOverrideY;
   uint32_t queuedPrimitiveCount;
-  GraphicsWorldCoordinateQ12 originY;
+  UiPixelCoordinate overlayClipRight; /* ECX; also the listener Y (Q12) on the sound path */
   void (*renderHierarchyProc)(ModelRuntimeNode *);
   ModelRuntimeNode *modelNode;
-  /* The selection overlays after the scene take their rectangle from EDX/ECX/EDI/ESI (top/left/bottom/right).
+  /* The selection overlays after the scene take their rectangle from EDX/ECX/EDI/ESI (bottom/right/top/left).
      On the complete path these are reloaded with the clipped rectangle; when a primitive-queue reset fails the
      original jumps straight to the end and the overlays receive whatever those registers held at that point
-     (cursor Y in Q12, the listener Z, the render procedure address, a model-list pointer, ...). The overlay*
+     (cursor Y in Q12, the listener Y and Z, the render procedure address, a model-list pointer, ...). The overlay*
      variables below model exactly those register contents. */
-  UiPixelCoordinate overlayClipTop;
   UiPixelCoordinate overlayClipBottom;
-  UiPixelCoordinate overlayClipRight;
+  UiPixelCoordinate overlayClipTop;
+  UiPixelCoordinate overlayClipLeft;
   bool entryFound;
   PrimitiveQueueResult queueResult;
 
   if ((control->contextFlags & FRONTEND_MENU_ROOM_RENDER_SUPPRESSED) != 0) {
     return;
   }
-  if (clipRight < control->base.left) {
-    clipRight = control->base.left;
+  if (clipLeft < control->base.left) {
+    clipLeft = control->base.left;
   }
-  if (control->base.right < clipLeft) {
-    clipLeft = control->base.right;
+  if (control->base.right < clipRight) {
+    clipRight = control->base.right;
   }
-  if (clipBottom < control->base.top) {
-    clipBottom = control->base.top;
+  if (clipTop < control->base.top) {
+    clipTop = control->base.top;
   }
-  if (control->base.bottom < clipTop) {
-    clipTop = control->base.bottom;
+  if (control->base.bottom < clipBottom) {
+    clipBottom = control->base.bottom;
   }
-  g_GraphicsSetViewportAndClearDepth(clipTop,clipLeft,clipBottom,clipRight);
+  g_GraphicsSetViewportAndClearDepth(clipBottom,clipRight,clipTop,clipLeft);
   g_SpinLockAcquire(control->renderSpinLock);
   cursorOverrideY = g_CursorOverrideY;
   cursorOverrideX = g_CursorOverrideX;
@@ -852,27 +852,27 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   control->surfaceHitWorldX = WORLD_POINTER_NO_HIT;
   control->surfaceHitWorldY = WORLD_POINTER_NO_HIT;
   control->surfaceHitDepth = WORLD_POINTER_NO_HIT;
-  overlayClipTop = cursorOverrideY << 12;
+  overlayClipBottom = cursorOverrideY << 12;
   control->cursorWorldXQ12 = cursorOverrideX << 12;
-  control->cursorWorldYQ12 = overlayClipTop;
+  control->cursorWorldYQ12 = overlayClipBottom;
   control->renderedPrimitiveCount = 0;
-  Graphics_SetProjectionClipRect(clipTop,clipLeft,clipBottom,clipRight);
+  Graphics_SetProjectionClipRect(clipBottom,clipRight,clipTop,clipLeft);
   Graphics_SetViewProjectionParameters
             (control->projectionShift,control->viewAngle1,control->viewAngle0,
              control->projectionScale,control->hitReferenceWorldZQ12,control->hitReferenceWorldYQ12,
              control->hitReferenceWorldXQ12);
-  originY = clipLeft;
+  overlayClipRight = clipRight;
   if ((control->contextFlags & WORLD_RUNTIME_FLAG_SOUND_LISTENER) != 0) {
-    originY = control->targetPositionYQ12;
-    overlayClipTop = ((int)control->committedDistanceOrSoundZOffset >> 2) + control->targetPositionZQ12;
+    overlayClipRight = control->targetPositionYQ12;
+    overlayClipBottom = ((int)control->committedDistanceOrSoundZOffset >> 2) + control->targetPositionZQ12;
     SpatialSound_RebuildListenerTransformFromPose
-              (control->viewAngle1,control->viewAngle0,overlayClipTop,originY,control->targetPositionXQ12);
+              (control->viewAngle1,control->viewAngle0,overlayClipBottom,overlayClipRight,control->targetPositionXQ12);
   }
   Graphics_SetProjectionViewport
             (control->base.bottom,control->base.right,control->base.top,control->base.left);
   Graphics_SetAuxiliaryOrientation
             (control->auxiliaryOrientationAngle1,control->auxiliaryOrientationAngle0);
-  Graphics_SetSceneBounds
+  Graphics_SetSceneBoundsAndColors
             (control->sceneBound7,control->sceneBound6,control->sceneBound5,control->sceneBound4,
              control->sceneBound3,control->sceneBound2,control->sceneBound1,control->sceneBound0);
   Graphics_RebuildFrustumPlanes();
@@ -883,8 +883,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   g_SpinLockAcquire(control->renderSpinLock);
   queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-  overlayClipRight = clipTop;
-  overlayClipBottom = clipBottom;
+  overlayClipLeft = clipBottom;
+  overlayClipTop = clipTop;
   if (!queueResult.failed) {
     Graphics_SetActivePrimitiveQueue(queueResult.queue);
     control->activePrimitiveQueue = queueResult.queue;
@@ -895,7 +895,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
       renderHierarchyProc = ModelRuntime_RenderHierarchyRecursiveAlternatePath;
     }
-    overlayClipTop = (UiPixelCoordinate)(uintptr_t)renderHierarchyProc;
+    overlayClipBottom = (UiPixelCoordinate)(uintptr_t)renderHierarchyProc;
     for (modelNode = control->candidateModelListHead; modelNode != NULL;
         modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
       if ((((modelNode->runtimeFlags & 0x40) == 0) && ((modelNode->runtimeFlags & 0x200) != 0)) &&
@@ -910,12 +910,12 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
               (control->base.nodeFlags & 8,control->activePrimitiveQueue);
     g_GraphicsDrawPrimitiveQueue
-              (clipTop,clipLeft,clipBottom,clipRight,control->activePrimitiveQueue);
+              (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
     queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
     control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
     g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
     g_SpinLockAcquire(control->renderSpinLock);
-    overlayClipBottom = 0; /* EDI: the model loop ran to its NULL terminator */
+    overlayClipTop = 0; /* EDI: the model loop ran to its NULL terminator */
     if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL)) {
       queueResult = GraphicsPrimitiveQueue_ResetGlobal();
       if (queueResult.failed) goto endScene;
@@ -925,7 +925,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
       PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
                 (control->base.nodeFlags & 8,control->activePrimitiveQueue);
       g_GraphicsDrawPrimitiveQueue
-                (clipTop,clipLeft,clipBottom,clipRight,control->activePrimitiveQueue);
+                (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
       queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
       control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
     }
@@ -933,7 +933,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     g_SpinLockAcquire(control->renderSpinLock);
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_SHADING_ENABLED) != 0) {
       modelNode = control->candidateModelListHead;
-      overlayClipBottom = (UiPixelCoordinate)(uintptr_t)modelNode; /* EDI */
+      overlayClipTop = (UiPixelCoordinate)(uintptr_t)modelNode; /* EDI */
       queueResult = GraphicsPrimitiveQueue_ResetGlobal();
       if (queueResult.failed) goto endScene;
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
@@ -949,12 +949,12 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
           modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
         } while (modelNode != NULL);
         GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources();
-        overlayClipBottom = 0;
+        overlayClipTop = 0;
       }
       PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
                 (control->base.nodeFlags & 8,control->activePrimitiveQueue);
       g_GraphicsDrawPrimitiveQueue
-                (clipTop,clipLeft,clipBottom,clipRight,control->activePrimitiveQueue);
+                (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
       queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
       control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
     }
@@ -986,17 +986,17 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
       PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
                 (control->base.nodeFlags & 8,control->activePrimitiveQueue);
       g_GraphicsDrawPrimitiveQueue
-                (clipTop,clipLeft,clipBottom,clipRight,control->activePrimitiveQueue);
+                (clipBottom,clipRight,clipTop,clipLeft,control->activePrimitiveQueue);
       queuedPrimitiveCount = GraphicsPrimitiveQueue_GetCount(control->activePrimitiveQueue);
       control->renderedPrimitiveCount = control->renderedPrimitiveCount + queuedPrimitiveCount;
       g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
       g_SpinLockAcquire(control->renderSpinLock);
-      originY = clipLeft;
-      overlayClipTop = clipTop;
       overlayClipRight = clipRight;
       overlayClipBottom = clipBottom;
-      if ((((clipRight == control->base.left) && (clipLeft == control->base.right)) &&
-          (clipBottom == control->base.top)) && (clipTop == control->base.bottom)) {
+      overlayClipLeft = clipLeft;
+      overlayClipTop = clipTop;
+      if ((((clipLeft == control->base.left) && (clipRight == control->base.right)) &&
+          (clipTop == control->base.top)) && (clipBottom == control->base.bottom)) {
         /* the whole view was drawn: the next terrain pass may reuse this projection */
         control->contextFlags = control->contextFlags | TERRAIN_RENDER_REUSE_PROJECTION;
       }
@@ -1016,55 +1016,55 @@ endScene:
   if ((g_UiCommandRuntimeFlags & 0x8000) == 0) {
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) &&
         (SelectionOverlay_RenderSelectedArmyMetrics
-                   (overlayClipTop,originY,overlayClipBottom,
-                    overlayClipRight),
+                   (overlayClipBottom,overlayClipRight,overlayClipTop,
+                    overlayClipLeft),
         control->selectedOverlayEntity != NULL)) &&
        (entryFound = SelectionInfo_FindEntry(control->selectedOverlayEntity), entryFound)) {
       SelectionOverlay_RenderArmyMetricsForEntity
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->selectedOverlayEntity);
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,control->selectedOverlayEntity);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
       SelectionOverlay_DrawBoundsFrame
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->dragFrameEndY,
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,control->dragFrameEndY,
                  control->dragFrameEndX,control->dragFrameStartY,
                  control->dragFrameStartX);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS) != 0) {
       SelectionOverlay_DrawTerrainPointMarkers
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->terrainMarkerPointCount,
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,control->terrainMarkerPointCount,
                  control->terrainMarkerCoordinatePairs,control->fieldGrid);
     }
     if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER) != 0) && (control->surfaceHitDepth != WORLD_POINTER_NO_HIT)) {
       SelectionOverlay_DrawWorldPointMarker
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,
                  (uint32_t)((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0),
                  control->surfaceHitWorldY,control->surfaceHitWorldX,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS) != 0) {
       SelectionOverlay_DrawGridVertexMarkers
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->fieldGrid);
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) != 0) {
       SelectionOverlay_DrawFluidExclusionMarkers
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->fieldGrid);
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS) != 0) {
       SelectionOverlay_DrawResourceCellMarkers
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,(uint8_t)control->selectedResourceMarkerIndex,
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,(uint8_t)control->selectedResourceMarkerIndex,
                  control->fieldGrid);
     }
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL))
        && ((g_UiCommandRuntimeFlags & 0x40) != 0)) {
       SelectionOverlay_DrawUnresolvedCellMarkers
-                (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->fieldGrid);
+                (overlayClipBottom,overlayClipRight,overlayClipTop,
+                 overlayClipLeft,control->fieldGrid);
     }
   }
   g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitSourceAlpha;
@@ -1074,7 +1074,7 @@ endScene:
      ((int)control->surfaceHitDepth < control->selectedHitMetric)) {
     control->selectedModelNode = NULL;
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
+  UiContainer_DrawIntersectingChildren(clipBottom,clipRight,clipTop,clipLeft,&control->base);
   return;
 }
 
@@ -2677,7 +2677,7 @@ void Frontend_PlaySelectedEndMovie(void)
   }
   rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
   rootCallbacks->keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
-  rootCallbacks->frameUpdate = EndGameResultsUiRuntime_UpdateAndHandleInput;
+  rootCallbacks->frameUpdate = InGameUiRoot_UpdateFrame;
   return;
 }
 
@@ -3436,7 +3436,7 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
     g_TextureDeviceReloadCount = 0;
   }
   world = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
-  worldVector0 = WorldRuntime_GetVector0Regs(world);
+  worldVector0 = WorldRuntime_GetCameraPositionRegs(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,worldVector0.xQ12,g_FrontendDebugOverlayTextSlot04Utf16);
@@ -3446,7 +3446,7 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,worldVector0.zQ12,g_FrontendDebugOverlayTextSlot06Utf16);
-  worldVector1 = WorldRuntime_GetVector1Regs(world);
+  worldVector1 = WorldRuntime_GetCameraOrientationRegs(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,worldVector1.magnitudeQ12,g_FrontendDebugOverlayTextSlot07Utf16);

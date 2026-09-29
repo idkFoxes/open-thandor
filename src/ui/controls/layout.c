@@ -1782,8 +1782,7 @@ void UiFrame_Draw(void)
       clipBottom = g_FramebufferHeight;
     }
     if ((clipLeft < clipRight) && (clipTop < clipBottom)) {
-      /* drawClipped takes (bottom, right, top, left, node); the draw methods name these parameters
-         clipTop, clipLeft, clipBottom, clipRight. */
+      /* drawClipped takes (bottom, right, top, left, node) */
       (*((root->base).vtable)->drawClipped)(clipBottom,clipRight,clipTop,clipLeft,&root->base);
     }
   }

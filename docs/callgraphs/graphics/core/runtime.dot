@@ -9,7 +9,7 @@ digraph thandor {
   "Graphics_SetViewProjectionParameters" [label="0x004864D0\nGraphics_SetViewProjectionParameters"];
   "Graphics_SetProjectionViewport" [label="0x00486640\nGraphics_SetProjectionViewport"];
   "Graphics_SetAuxiliaryOrientation" [label="0x004866C0\nGraphics_SetAuxiliaryOrientation"];
-  "Graphics_SetSceneBounds" [label="0x00486730\nGraphics_SetSceneBounds"];
+  "Graphics_SetSceneBoundsAndColors" [label="0x00486730\nGraphics_SetSceneBounds"];
   "Graphics_SetActivePrimitiveQueue" [label="0x00486790\nGraphics_SetActivePrimitiveQueue"];
   "Graphics_RebuildFrustumPlanes" [label="0x004867B0\nGraphics_RebuildFrustumPlanes"];
   "GraphicsBackend_RefreshActiveAdapterNoOp" [label="0x004A9100\nGraphicsBackend_RefreshActiveAdapterNoOp"];
@@ -19,7 +19,7 @@ digraph thandor {
   "GraphicsObject_SetRotationEulerAnglesPacked" [label="0x004BD080\nGraphicsObject_SetRotationEulerAnglesPacked"];
   "GraphicsObject_RebuildTransformHierarchyRecursive" [label="0x004BD0B0\nGraphicsObject_RebuildTransformHierarchyRecursive"];
   "Graphics_Init" [label="0x00578560\nGraphics_Init"];
-  "GraphicsBackend_RefreshActiveAdapterIfReady" [label="0x005794E0\nGraphicsBackend_RefreshActiveAdapterIfReady"];
+  "GraphicsBackend_ShutdownGlideOnDeactivate" [label="0x005794E0\nGraphicsBackend_RefreshActiveAdapterIfReady"];
   "Graphics_Shutdown" [label="0x00579520\nGraphics_Shutdown"];
   "Graphics_SetViewportAndClearDepth" [label="0x0057A5C0\nGraphics_SetViewportAndClearDepth"];
   "Graphics_BeginScene" [label="0x0057E6D0\nGraphics_BeginScene"];

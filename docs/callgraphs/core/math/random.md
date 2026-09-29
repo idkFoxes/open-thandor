@@ -15,7 +15,7 @@
 
 ## Called by
 
-- [`gameplay/session/runtime`](../../gameplay/session/runtime.md): [`EndGameResultsUiRuntime_UpdateAndHandleInput`](../../../../src/gameplay/session/runtime.c#L87) → [`Random_NextPrimary`](../../../../src/core/math/random.c#L5)
+- [`gameplay/session/runtime`](../../gameplay/session/runtime.md): [`InGameUiRoot_UpdateFrame`](../../../../src/gameplay/session/runtime.c#L87) → [`Random_NextPrimary`](../../../../src/core/math/random.c#L5)
 - [`movie/runtime/playback`](../../movie/runtime/playback.md): [`Movie_Open`](../../../../src/movie/runtime/playback.c#L129) → [`Random_NextPrimary`](../../../../src/core/math/random.c#L5)
 - [`network/backend/runtime`](../../network/backend/runtime.md): [`FrontendNetwork_HandleHandshakeAndPlayerStatePackets`](../../../../src/network/backend/runtime.c#L5) → [`Random_GetSecondarySeed`](../../../../src/core/math/random.c#L48)
 - [`network/protocol/transfer`](../../network/protocol/transfer.md): [`FrontendTransfer_HandleGameplayCommandAndRosterPackets`](../../../../src/network/protocol/transfer.c#L340) → [`Random_SetBothSeeds`](../../../../src/core/math/random.c#L36); [`FrontendTransfer_HandleGameplayCommandAndRosterPackets`](../../../../src/network/protocol/transfer.c#L340) → [`Random_SelectSecondaryStream`](../../../../src/core/math/random.c#L59); [`UiTransferMailbox_RandomizeSequenceToken`](../../../../src/network/protocol/transfer.c#L1168) → [`Random_NextPrimary`](../../../../src/core/math/random.c#L5)

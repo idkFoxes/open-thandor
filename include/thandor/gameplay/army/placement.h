@@ -64,34 +64,34 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 /* 0x005281A0 */
-PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
+PlacementCandidateResult ArmyPlacement_TestMobileUnitPoint
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
                ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x004BE7F0 */
 void ArmyPlacementContact_ApplyTerrainHeight
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x004BE860 */
 void ArmyPlacementContact_ApplyWaterSurfaceHeight
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x004BE8C0 */
 void ArmyPlacementContact_ApplyTerrainHeightAndNormal
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x004BE930 */
 void ArmyPlacementContact_ApplyTopSurfaceHeight
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x004BE990 */
 void ArmyPlacementContact_InitializeArticulatedSuspension
-          (Q12 heightOffsetQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeNode *modelNode,
+          (Q12 heightOffsetQ12,Q12 worldYQ12,Q12 worldXQ12,ModelRuntimeNode *modelNode,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x00525320 */

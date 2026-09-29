@@ -681,10 +681,10 @@ RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFac
 
 /* Address: 0x0051B800.
    Checks whether the faction already has armyAssetRecord pending: in its secondary army-asset list, or in
-   production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). Despite the name the result is
-   inverted: false (CF clear) when found, true (CF set) when not.
+   production in one of its class 0x0B/0x0D structures (state word 0x2E == 1). The result is
+   false (CF clear) when found, true (CF set) when not.
 */
-bool FactionRuntime_HasArmyAssetOrActiveStructure
+bool FactionRuntime_IsArmyAssetNotPending
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
 
 {

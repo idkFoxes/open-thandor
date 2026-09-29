@@ -100,13 +100,13 @@ shutdown_and_fail:
 
 
 /* Address: 0x00566290.
-   Frame update of the in-game UI root for the whole session (despite its name): network session upkeep, the
+   Frame update of the in-game UI root for the whole session: network session upkeep, the
    placement overlay, cursor frame and edge scrolling, keeping the camera target near the field, and, unless the
    interaction subsystem is active, ambient effect sounds, music selection, the camera keys, the countdown text and
    the terrain texture refresh. Nothing but the network upkeep runs while waiting for players.
 */
 
-void EndGameResultsUiRuntime_UpdateAndHandleInput(InGameRuntimeRootFrameView *inGameRoot)
+void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot)
 
 {
   Q12 *motionCoordinate;
@@ -284,17 +284,17 @@ void EndGameResultsUiRuntime_UpdateAndHandleInput(InGameRuntimeRootFrameView *in
       levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
       /* music: same delay scheme, then the best-suited of the four tracks */
       if ((cursorFrameOrScratch & PERSISTENT_SOUND_OPTION_MUSIC) != 0) {
-        if (g_InGameMusicEnabled == 0) {
+        if (g_InGameMusicNextTrackCountdown == 0) {
           voicePlaying = g_SoundIsVoicePlaying(g_InGameActiveMusicVoice);
           if (voicePlaying) {
             g_InGameActiveMusicVoice = NULL;
             cursorFrameOrScratch = Random_NextPrimary();
-            g_InGameMusicEnabled = (cursorFrameOrScratch & 0x3f) + 1;
+            g_InGameMusicNextTrackCountdown = (cursorFrameOrScratch & 0x3f) + 1;
           }
         }
         else {
-          g_InGameMusicEnabled--;
-          if (g_InGameMusicEnabled == 0) {
+          g_InGameMusicNextTrackCountdown--;
+          if (g_InGameMusicNextTrackCountdown == 0) {
             cursorFrameOrScratch = 0;
             bestTrackOrSecondsLeft = 0;
             trackIndex = 0;

@@ -244,7 +244,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
 uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
 /* 0x00527230 */
-void ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime);
+void ArmyRuntime_PlayDefinitionOneShotSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x005272B0 */
 void ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldContext);

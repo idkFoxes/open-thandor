@@ -47,8 +47,8 @@
 
 /* 0x0052E350 */
 void SelectionPanel_RenderArmyRuntimeMetrics
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
           UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
           RuntimeModelFactionPrefix *runtimeEntry);
 
@@ -190,49 +190,49 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
 
 /* 0x0052D600 */
 SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelNumericValue32 value,SelectionPanelCellIndex cellIndex);
 
 /* 0x0052D6F0 */
 SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawIconCellAndAdvanceRegs
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           SelectionPanelCellIndex cellIndex);
 
 /* 0x0052D770 */
 SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate originY,UiPixelCoordinate originX,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate originY,UiPixelCoordinate originX,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex);
 
 /* 0x0052D850 */
 void SelectionPanel_DrawProportionalCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex);
 
 /* 0x0052DAF0 */
 void SelectionPanel_DrawForwardCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate barEndCoordinate,UiPixelCoordinate barStartCoordinate,
           SelectionPanelCellIndex cellIndex);
 
 /* 0x0052DBC0 */
 void SelectionPanel_DrawSolidCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
           SelectionPanelCellIndex cellIndex);
 
 /* 0x0052DFF0 */
 void SelectionPanel_DrawSegmentedCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
           SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
           ,SelectionPanelCellIndex cellIndex);
@@ -278,23 +278,23 @@ void SelectionPointerArray_Clear32(SelectionPointerArray32 *array);
 
 /* 0x0052D150 */
 void SelectionPanel_DrawHorizontalNumberTextCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
           uint16_t *commandStream,SelectionPanelCellIndex cellIndex);
 
 /* 0x0052D9A0 */
 void SelectionPanel_DrawVerticalProportionalCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate barEndCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate barEndCoordinate,
           UiPixelCoordinate barStartCoordinate,UiPixelCoordinate fixedCoordinate,
           UiNumericValue32 maximumValue,UiNumericValue32 currentValue,
           SelectionPanelCellIndex cellIndex);
 
 /* 0x0052DC90 */
 void SelectionPanel_DrawHorizontalSegmentedCappedBar
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
           SelectionPanelSegmentCount totalSegmentCount,SelectionPanelSegmentCount filledSegmentCount
           ,SelectionPanelCellIndex cellIndex);

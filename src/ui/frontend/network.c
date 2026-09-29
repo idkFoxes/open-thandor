@@ -443,10 +443,10 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
              (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
   digitValueOrSpeed = g_SessionNetworkTickInterval >> 1;
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = digitValueOrSpeed;
-  /* the speed caption; despite its name, g_FrontendNetworkPlayerCountLabelUtf16 holds the network speed */
+  /* the speed caption */
   resolvedText = TextResource_Resolve(digitValueOrSpeed + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,resolvedText.text);
+            (0x40,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText.text);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   if (appliedOptionMask == 7) {

@@ -1851,6 +1851,8 @@ static void Movie_DebugCompareAfter(MovieRuntime *movie, uint32_t height, uint32
    decoding) while a streamed movie has less than one refill chunk buffered. A streamed movie drops played
    bytes from the buffer front in MOVIE_COMPACT_SHIFT_BYTES steps. Ends (CF set) after the last frame, on a
    read failure of the worker or when no movie is open.
+   Original quirk: after a worker read failure it closes the caller's leftover EBX instead of the stream
+   handle (0x004A8BDD); the C closes NULL, which has the same effect on the movie (see the body).
 */
 MovieFrameResult Movie_AdvanceFrame(void)
 

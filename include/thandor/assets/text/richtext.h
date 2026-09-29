@@ -62,14 +62,14 @@ RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
 
 /* 0x0041D7C0 */
 void RichTextCommandStream_DrawWrappedBlock
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,uint32_t packedStyle,uint16_t *commandStream,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX);
 
 /* 0x0041D4A0 */
 bool RichTextCommandStream_DrawSingleLine
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,uint16_t *commandStream,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX);
 
 /* 0x0041B100 */
@@ -120,8 +120,8 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
 
 /* 0x0041D9F0 */
 WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX);
 
 /* 0x0041D840 */

@@ -1564,9 +1564,9 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
     /* the cursor steps 4 bytes per variant, so element 0 is the current variant */
     modelDefinitionId =
          ((ModelDefinition *)variantCursorOrRemaining)->variantModelDefinitionIds[0];
-    /* ModelDefinition_IsFactionTechnologyUnlocked returns true (CF set) when the variant is NOT unlocked */
+    /* ModelDefinition_IsFactionTechnologyLocked returns true (CF set) when the variant is NOT unlocked */
     if ((modelDefinitionId != 0) &&
-       (variantLocked = ModelDefinition_IsFactionTechnologyUnlocked
+       (variantLocked = ModelDefinition_IsFactionTechnologyLocked
                           (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                            modelDefinitionId), !variantLocked)) {
       /* swap to this variant; armour points scale with the new maximum */

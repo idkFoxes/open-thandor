@@ -24,6 +24,14 @@
    each requested by the receiver with a 0x10031 packet naming the next offset; a request that stays
    unanswered for UI_TRANSFER_CHUNK_RETRY_TICKS ticks is sent again. Ping: 0x10032 is echoed as 0x10033,
    whose round trip becomes the player's latency text. Skipped while the ring lock is held elsewhere.
+   Original quirk: the checksum loop trusts the unit count of the (descrambled) packet header (0x004AEB74..
+   0x004AEB96: SHR 0x10, SHL 3, DEC/JNZ) - neither the received byte count nor the 0x100-byte ring slot limit it,
+   so a count above 8 XORs past the slot and a count of 0 wraps the counter and reads on until it faults.
+   Original quirk: on a host chunk request (0x10031) the timeout extension goes to the dword at +0x10 of the
+   sender's receive scratch slot (0x004AED10 ADD [ESI+0x10],0x40; ESI = auxiliary endpoint slot), not to the
+   requesting player's heartbeatExpiryTicks at +0x10 of the player record (EBX), which was probably meant; the
+   scratch dword is never read, so the host's heartbeat countdown is not extended by chunk requests. The client
+   branch (0x80030) extends g_SessionTransferTimeoutTicks as intended (0x004AEBDD).
 */
 void UiTransferMailbox_ServiceAndRetransmitTimer(void)
 
@@ -154,6 +162,7 @@ receiveNextRecord:
               playersRemaining--;
               if (playersRemaining == 0) goto receiveNextRecord;
             }
+            /* original quirk: ESI (receive scratch slot) instead of EBX (player record), see above */
             senderEndpointSlot->transferTimeoutTicks =
                  senderEndpointSlot->transferTimeoutTicks + UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS;
             g_UiTransferMailboxChunkOffset = *(UiTransferMailboxByteOffset *)ringRecord->payload;
@@ -275,15 +284,16 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
   FrontendPlayerNameUtf16 *nameDestinationCursor;
   FrontendPlayerRuntimeRecord *playerRecord;
   
-  if (((packet->packet10000Handshake.header.packedTypeAndUnitCount == FRONTEND_PACKET_40008_SESSION_PLAYER_ROW) &&
-      (g_FrontendSessionToken == packet->packet10000Handshake.header.sequenceToken)) &&
+  if (((packet->packet40008LobbyRosterSnapshot.header.packedTypeAndUnitCount ==
+        FRONTEND_PACKET_40008_SESSION_PLAYER_ROW) &&
+      (g_FrontendSessionToken == packet->packet40008LobbyRosterSnapshot.header.sequenceToken)) &&
      (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder ==
       senderEndpoint->ipv4AddressNetworkOrder)) {
-    playerOrCommandCount = packet->packet20002PlayerDescriptor.playerDescriptorPayload[3];
-    if ((packet->packet20002PlayerDescriptor.playerDescriptorPayload[2] < 8) && (playerOrCommandCount < 9)) {
+    playerOrCommandCount = packet->packet40008LobbyRosterSnapshot.playerCount;
+    if ((packet->packet40008LobbyRosterSnapshot.selectedPlayerIndex < 8) && (playerOrCommandCount < 9)) {
       packetCursor = (uint32_t *)packet;
       playerRowCursor = (uint32_t *)(&g_FrontendPlayerListRows)
-                        [packet->packet20002PlayerDescriptor.playerDescriptorPayload[2]];
+                        [packet->packet40008LobbyRosterSnapshot.selectedPlayerIndex];
       g_FrontendPlayerRuntimeCount = playerOrCommandCount;
       /* the whole 0x80-byte packet becomes the player's list row */
       for (loopCount = 0x20; loopCount != 0; loopCount--) {
@@ -292,10 +302,10 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
         playerRowCursor++;
       }
       playerRecord = g_FrontendPlayerRuntimeBlocks +
-               packet->packet20002PlayerDescriptor.playerDescriptorPayload[2];
-      playerRecord->playerRuntimeId =
-           packet->packet20002PlayerDescriptor.playerDescriptorPayload[4];
-      nameSourceCursor = &packet->genericTransferPacket.commands[2].payload2;
+               packet->packet40008LobbyRosterSnapshot.selectedPlayerIndex;
+      playerRecord->playerRuntimeId = packet->packet40008LobbyRosterSnapshot.selectedPlayerRuntimeId;
+      /* the player's name at +0x38 */
+      nameSourceCursor = packet->packet40008LobbyRosterSnapshot.playerDescriptorPayload;
       nameDestinationCursor = &playerRecord->playerName;
       for (loopCount = 10; loopCount != 0; loopCount--) {
         *(uint32_t *)nameDestinationCursor->textUtf16 = *nameSourceCursor;
@@ -308,10 +318,10 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
     }
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
     /* the host starts the session: this many player snapshots follow */
-    if (packet->packet10009SnapshotChunkRequest.reserved10 != 0) {
+    if (packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount != 0) {
       g_FrontendPlayerRuntimeBlockCount = 0;
       g_FrontendExpectedPlayerRuntimeBlockCount =
-           packet->packet10009SnapshotChunkRequest.reserved10;
+           packet->packet40008LobbyRosterSnapshot.pendingSessionPlayerCount;
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(frontendRuntime,frontendPageStack));
       FrontendState_DispatchCode(1);
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_CLIENT_STARTING;

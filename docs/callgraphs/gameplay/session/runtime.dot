@@ -2,7 +2,7 @@ digraph thandor {
   rankdir=LR;
   node [shape=box];
   "InGameRuntime_RunSessionUntilExit" [label="0x00564F70\nInGameRuntime_RunSessionUntilExit"];
-  "EndGameResultsUiRuntime_UpdateAndHandleInput" [label="0x00566290\nEndGameResultsUiRuntime_UpdateAndHandleInputCf"];
+  "InGameUiRoot_UpdateFrame" [label="0x00566290\nEndGameResultsUiRuntime_UpdateAndHandleInputCf"];
   "InGameConditionRuntime_RebaseLoadedRecords" [label="0x0050EA90\nInGameConditionRuntime_RebaseLoadedRecords"];
   "InGameRuntime_PeriodicCountdownAndClockTick" [label="0x00565E10\nInGameRuntime_PeriodicCountdownAndClockTick"];
   "InGameHotkeys_DispatchCommandByFlags" [label="0x00567060\nInGameHotkeys_DispatchCommandByFlagsCf"];
@@ -20,7 +20,7 @@ digraph thandor {
   "InGameRuntime_RunSessionUntilExit" -> "InGameRuntime_InitializeNewSession";
   "InGameRuntime_RunSessionUntilExit" -> "InGameRuntime_InitializeLoadedSession";
   "InGameRuntime_RunSessionUntilExit" -> "InGameRuntime_ShutdownAndReleaseResources";
-  "EndGameResultsUiRuntime_UpdateAndHandleInput" -> "InGameRuntime_UpdateCursorGridAndViewScaleCache";
+  "InGameUiRoot_UpdateFrame" -> "InGameRuntime_UpdateCursorGridAndViewScaleCache";
   "InGameRuntime_InitializeNewSession" -> "InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess";
   "InGameRuntime_InitializeNewSession" -> "InGameRuntime_UpdateSimulationAndNetworkTick";
   "InGameRuntime_InitializeLoadedSession" -> "InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess";

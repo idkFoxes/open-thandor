@@ -101,7 +101,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
    with none selected, from all own models (class 22 adds capability 8, class 13 its definition's flags at
    +0xC4). Every registered army asset with flag 1, a texture and a matching capability that passes the
    technology and ownership/unlock tests (CF results of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction,
-   FactionRuntime_HasArmyAssetOrActiveStructure, ArmyAssetRecord_HasFactionUnlockedLinkedDefinition) gets a
+   FactionRuntime_IsArmyAssetNotPending, ArmyAssetRecord_HasFactionUnlockedLinkedDefinition) gets a
    slot, in a grid of at most eight columns with its texture and Xenite cost; the frame is sized to the grid
    (smaller margins below 800 pixels width) and the panel hidden when the catalog is empty.
 */
@@ -171,7 +171,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
         catalogRecord->textureSource != NULL &&
         itemCount < BUILD_CATALOG_ENTRY_COUNT &&
         (catalogRecord->assetFlags14 & capabilityFlags) != 0 &&
-        ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
+        ((checkResult = FactionRuntime_IsArmyAssetNotPending
                              (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult) ||
          (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
                              (factionIndex,capabilityFlags,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult))) {
@@ -307,7 +307,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
         catalogRecord->textureSource != NULL &&
         itemCount < SPECIAL_BUILD_CATALOG_ENTRY_COUNT &&
         structureCount != 0 &&
-        ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
+        ((checkResult = FactionRuntime_IsArmyAssetNotPending
                              (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult) ||
          (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
                              (factionIndex,BUILD_CATALOG_ASSET_FLAG_SPECIAL,(ArmyAssetRecordPrefix *)catalogRecord),

@@ -7,7 +7,7 @@ digraph thandor {
   "ArmyPlacementCandidate_TestFieldOccupancy" [label="0x00524EB0\nArmyPlacementCandidate_TestFieldOccupancyCf"];
   "ArmyPlacement_TestGridOccupancyMask" [label="0x00524F70\nArmyPlacement_TestGridOccupancyMask"];
   "ArmyPlacement_TestGridRuntimeAndFieldBlocking" [label="0x00528110\nArmyPlacement_TestGridRuntimeAndFieldBlocking"];
-  "ArmyRuntimeCollision_TestShotSpawnPoint" [label="0x005281A0\nArmyRuntimeCollision_TestShotSpawnPointCf"];
+  "ArmyPlacement_TestMobileUnitPoint" [label="0x005281A0\nArmyRuntimeCollision_TestShotSpawnPointCf"];
   "ArmyPlacementContact_ApplyTerrainHeight" [label="0x004BE7F0\nArmyPlacementContact_ApplyTerrainHeight"];
   "ArmyPlacementContact_ApplyWaterSurfaceHeight" [label="0x004BE860\nArmyPlacementContact_ApplyWaterSurfaceHeight"];
   "ArmyPlacementContact_ApplyTerrainHeightAndNormal" [label="0x004BE8C0\nArmyPlacementContact_ApplyTerrainHeightAndNormal"];
@@ -34,7 +34,7 @@ digraph thandor {
   "ArmyPlacementCandidate_TestFieldOccupancy" -> "ArmyPlacementCollision_TestCandidateAndClearance";
   "ArmyPlacement_TestGridOccupancyMask" -> "ArmyPlacementCollision_TestCurrentRuntime";
   "ArmyPlacement_TestGridRuntimeAndFieldBlocking" -> "ArmyCollision_FindBlockingRuntimeForCurrentUnit";
-  "ArmyRuntimeCollision_TestShotSpawnPoint" -> "ArmyCollision_TestPointAgainstRuntimeList";
+  "ArmyPlacement_TestMobileUnitPoint" -> "ArmyCollision_TestPointAgainstRuntimeList";
   "ArmyCollision_TestPointAgainstRuntimeList" -> "ArmyCollision_TestPointWithinExpandedRuntimeRadius";
   "ArmyCollision_FindBlockingRuntimeForCurrentUnit" -> "ArmyCollision_TestPointWithinExpandedRuntimeRadius";
   "ArmyPlacementCollision_TestPointAgainstRuntimeList" -> "ArmyCollision_TestPointWithinExpandedRuntimeRadius";

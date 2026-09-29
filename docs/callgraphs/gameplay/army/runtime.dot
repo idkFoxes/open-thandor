@@ -45,7 +45,7 @@ digraph thandor {
   "ArmyRuntime_TestArmyNearFactoryExit" [label="0x005246B0\nArmyRuntime_TestClass13ProximityCandidateCf"];
   "ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint" [label="0x00526510\nArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint"];
   "ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric" [label="0x005271A0\nArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric"];
-  "ArmyRuntimeSpawner_PlayCreationSound" [label="0x00527230\nArmyRuntimeSpawner_PlayCreationSound"];
+  "ArmyRuntime_PlayDefinitionOneShotSound" [label="0x00527230\nArmyRuntimeSpawner_PlayCreationSound"];
   "ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint" [label="0x005272B0\nArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint"];
   "ArmyRuntime_TestPositionDistanceWithinCombinedRadius" [label="0x005273D0\nArmyRuntime_TestPositionDistanceWithinCombinedRadiusCf"];
   "ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate" [label="0x005297D0\nArmyRuntime_SpawnIndexedModelPointEffectNearCandidate"];
@@ -57,7 +57,7 @@ digraph thandor {
   "ArmyRuntime_InitializeTerrainOccupancyFlags" [label="0x0051D0B0\nArmyRuntime_InitializeTerrainOccupancyFlags"];
   "ArmyRuntime_UpdateAnimatedModelSubnodes" [label="0x00527E70\nArmyRuntime_UpdateAnimatedModelSubnodes"];
   "ArmyRuntime_UpdateTimedShotAndEffectEmitters" [label="0x00527C00\nArmyRuntime_UpdateTimedShotAndEffectEmitters"];
-  "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntimeSpawner_PlayCreationSound";
+  "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_PlayDefinitionOneShotSound";
   "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_TestWorldPointAllowedDefault";
   "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint";
   "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate";

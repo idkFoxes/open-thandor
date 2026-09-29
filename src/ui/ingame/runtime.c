@@ -176,10 +176,10 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,0,-EDITOR_ADJUST_STEP);
+          WorldRuntime_TurnAuxiliaryAnglesClamped(g_LocalPlayerRuntimeId,0,0,-EDITOR_ADJUST_STEP);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,0,-EDITOR_ADJUST_STEP);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_AUXILIARY_ANGLES,0,0,-EDITOR_ADJUST_STEP);
         }
       }
     }
@@ -231,10 +231,10 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,0,EDITOR_ADJUST_STEP);
+          WorldRuntime_TurnAuxiliaryAnglesClamped(g_LocalPlayerRuntimeId,0,0,EDITOR_ADJUST_STEP);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,0,EDITOR_ADJUST_STEP);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_AUXILIARY_ANGLES,0,0,EDITOR_ADJUST_STEP);
         }
       }
     }
@@ -288,10 +288,10 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,-EDITOR_ADJUST_STEP,0);
+          WorldRuntime_TurnAuxiliaryAnglesClamped(g_LocalPlayerRuntimeId,0,-EDITOR_ADJUST_STEP,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,-EDITOR_ADJUST_STEP,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_AUXILIARY_ANGLES,0,-EDITOR_ADJUST_STEP,0);
         }
       }
     }
@@ -345,10 +345,10 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
       if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) != 0) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          WorldRuntime_AdjustFieldOriginWrappedClamped(g_LocalPlayerRuntimeId,0,EDITOR_ADJUST_STEP,0);
+          WorldRuntime_TurnAuxiliaryAnglesClamped(g_LocalPlayerRuntimeId,0,EDITOR_ADJUST_STEP,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN,0,EDITOR_ADJUST_STEP,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_TURN_AUXILIARY_ANGLES,0,EDITOR_ADJUST_STEP,0);
         }
       }
     }
@@ -2780,7 +2780,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   }
   runtimeRoot = g_InGameRuntimeRoot;
   world = &g_InGameRuntimeRoot->worldRuntime;
-  cameraPosition = WorldRuntime_GetVector0Regs(world);
+  cameraPosition = WorldRuntime_GetCameraPositionRegs(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraPosition.xQ12,g_FrontendDebugOverlayTextSlot04Utf16);
@@ -2790,7 +2790,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraPosition.zQ12,g_FrontendDebugOverlayTextSlot06Utf16);
-  cameraOrientation = WorldRuntime_GetVector1Regs(world);
+  cameraOrientation = WorldRuntime_GetCameraOrientationRegs(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraOrientation.magnitudeQ12,g_FrontendDebugOverlayTextSlot07Utf16);

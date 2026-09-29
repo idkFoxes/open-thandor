@@ -263,13 +263,11 @@ SpatialSoundSlotResult SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *
 
 /* Address: 0x0050B940.
    PCM counterpart of SpatialSoundSlot_CreateFromSampleAsset: creates a voice set for raw PCM data and gives
-   it the first free spatial-sound slot, silent and not playing. In the original CF is clear with the slot
-   and set with the voice-set error or FATAL_ERROR_GENERAL_FAILURE (pool full, the voice set is released
-   again); this C returns only EAX, so a caller cannot tell the error code from a slot. Nothing in this code
-   base calls it and no callback-table slot references it.
+   it the first free spatial-sound slot, silent and not playing. CF clear with the slot; CF set with the
+   voice-set error, or with FATAL_ERROR_GENERAL_FAILURE when all slots are taken (the voice set is released
+   again). Nothing in this code base calls it and no callback-table slot references it.
 */
-SpatialSoundSlot *
-SpatialSoundSlot_CreateFromPcm
+SpatialSoundSlotResult SpatialSoundSlot_CreateFromPcm
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
           void *pcmData)
@@ -279,6 +277,8 @@ SpatialSoundSlot_CreateFromPcm
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
   PcmVoiceSetResult createResult;
+  SpatialSoundSlotResult failureResult;
+  SpatialSoundSlotResult successResult;
   
   createResult = g_SoundCreatePcmVoiceSet
                     (bufferByteCount,sampleRateHz,bitsPerSample,channelCount,pcmData);
@@ -292,7 +292,9 @@ SpatialSoundSlot_CreateFromPcm
         slotCursor->desiredLeftGainQ15 = 0;
         slotCursor->desiredRightGainQ15 = 0;
         slotCursor->activeVoice = NULL;
-        return slotCursor;
+        successResult.failed = false;
+        successResult.soundSlot = slotCursor;
+        return successResult;
       }
       slotCursor++;
       slotsRemaining--;
@@ -300,7 +302,9 @@ SpatialSoundSlot_CreateFromPcm
     g_SoundReleasePcmVoiceSet((DirectSoundVoiceSet *)voiceSetOrError);
     voiceSetOrError = (SpatialSoundSlot *)FATAL_ERROR_GENERAL_FAILURE;
   }
-  return voiceSetOrError;
+  failureResult.failed = true;
+  failureResult.soundSlot = voiceSetOrError;
+  return failureResult;
 }
 
 

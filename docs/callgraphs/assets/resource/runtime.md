@@ -13,7 +13,7 @@
 - `0x00513020` **[`InGameSaveGame_PrepareFactionImage`](../../../../src/assets/resource/runtime.c#L258)**
 - `0x0051E2B0` **[`InGameSaveGame_PrepareEffectSlots`](../../../../src/assets/resource/runtime.c#L314)**
 - `0x0052B6D0` **[`InGameSaveGame_PrepareShotSlots`](../../../../src/assets/resource/runtime.c#L378)**
-- `0x00532B00` **[`InGameSaveGame_StoreCameraAsPlayerStart`](../../../../src/assets/resource/runtime.c#L442)** — cross: [`WorldRuntime_GetVector1Regs`](../../../../src/world/runtime/core.c#L938) → [`world/runtime/core`](../../world/runtime/core.md), [`WorldRuntime_GetVector0Regs`](../../../../src/world/runtime/core.c#L927) → [`world/runtime/core`](../../world/runtime/core.md)
+- `0x00532B00` **[`InGameSaveGame_StoreCameraAsPlayerStart`](../../../../src/assets/resource/runtime.c#L442)** — cross: [`WorldRuntime_GetCameraOrientationRegs`](../../../../src/world/runtime/core.c#L938) → [`world/runtime/core`](../../world/runtime/core.md), [`WorldRuntime_GetCameraPositionRegs`](../../../../src/world/runtime/core.c#L927) → [`world/runtime/core`](../../world/runtime/core.md)
 
 ## Called by
 

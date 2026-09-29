@@ -147,7 +147,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   else {
     cellCoordOrStrideBytes = g_GridScratchWidth * 8;
     routeScratchCell = g_GridScratchPrimary + startRow * g_GridScratchWidth + startColumnOrScratch;
-    segmentBlocked = GridPathLine_TestHexSegmentClear
+    segmentBlocked = GridPathLine_TestHexSegmentBlocked
                        (g_GridPathHighCostMask,startRow,startColumnOrScratch,routeScratchCell,
                         g_GridScratchPrimary + targetRow * g_GridScratchWidth + targetColumn);
     if (segmentBlocked) {
@@ -1298,7 +1298,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   targetColumn = nearestCell.selectedColumn;
   targetRow = nearestCell.selectedRow;
   if ((nearestCell.relocated) ||
-     (segmentBlocked = GridPathLine_TestHexSegmentClear
+     (segmentBlocked = GridPathLine_TestHexSegmentBlocked
                          (0,startRowOrDeltaY,startColumnOrDeltaX,g_GridScratchPrimary + startRowOrDeltaY * g_GridScratchWidth + startColumnOrDeltaX,
                           g_GridScratchPrimary + (rowLimit - 2) * g_GridScratchWidth + (columnLimitOrRadius - 2)),
      targetColumn = columnLimitOrRadius - 2, targetRow = rowLimit - 2, segmentBlocked)) {
@@ -1433,7 +1433,7 @@ bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorld
 /* Address: 0x00534660.
    Follows the propagated path costs downhill from startCell (the mover's cell, at startRow/startColumn) to the
    cheapest of the six neighbours, as long as that neighbour can still be seen from startCell in a straight line
-   (GridPathLine_TestHexSegmentClear with callerBlockingMask, dropped once a high-cost cell is entered); at least
+   (GridPathLine_TestHexSegmentBlocked with callerBlockingMask, dropped once a high-cost cell is entered); at least
    one step is taken. Returns the row/column of the farthest such cell with CF clear, or CF set when that cell is
    the cost origin itself (cost 0, the target was reached).
 */
@@ -1490,7 +1490,7 @@ PathBacktrackResult GridPathCost_BacktrackBestHexRoute
     if (bestNeighborCell == NULL) {
       break; /* local minimum: return the current cell */
     }
-    segmentBlocked = GridPathLine_TestHexSegmentClear
+    segmentBlocked = GridPathLine_TestHexSegmentBlocked
                       (callerBlockingMask,startRow,startColumn,startCell,bestNeighborCell);
     if (segmentBlocked) {
       if (currentCell == startCell) {
@@ -2356,10 +2356,10 @@ NearestCellResult GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate 
    Rasterises the straight line from startCell (at startRow, startColumn) to endCell over the scratch grid and
    returns true (CF set) as soon as a cell other than startCell is blocked (bit 31), lacks the mover's faction
    presence bit (g_GridPathEntityClassMask), or has a g_GridPathBlockingMask or callerBlockingMask bit; false
-   when the whole line is clear. Despite the name, true means "blocked". The line is always walked left to right;
+   when the whole line is clear. The line is always walked left to right;
    upward lines step row by row, downward lines column by column.
 */
-bool GridPathLine_TestHexSegmentClear(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+bool GridPathLine_TestHexSegmentBlocked(FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell)
 
 {

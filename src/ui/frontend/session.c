@@ -382,13 +382,14 @@ unlock:
 
 
 /* Address: 0x005725D0.
-   In-game tick on the HOST (despite the name): counts down every client's heartbeat timeout, drops clients that
+   In-game tick on the host: counts down every client's heartbeat timeout, drops clients that
    ran out (a notice with the player's name is posted) and compacts the player blocks and their command records,
    then tells the remaining clients about each dropped player with a 0x10007 packet and re-evaluates the ready
    consensus.
    Quirks kept from the original: the command records start at g_FrontendClientPlayerCommandRecords[0] while the
    players start at block 1, and the 0x10007 packets go out in reverse drop order (the ids are pushed on the
-   stack while scanning and popped one per packet).
+   stack while scanning, 0x00572646 PUSH [ESI+0x14], and popped one per packet, 0x005726CC). The id stack does
+   not overlap the command cursors, which live at [EBP-4]/[EBP-8] above it (verified against the asm).
 */
 void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
 
@@ -465,7 +466,7 @@ void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
 
 
 /* Address: 0x00572960.
-   In-game tick on a CLIENT (despite the name): counts down the host timeout. When it runs out the session falls
+   In-game tick on a client: counts down the host timeout. When it runs out the session falls
    back to a local game: the network role is cleared, the socket closed, TEXT_ID_NETWORK_HOST_LOST posted, a
    pending ready vote is submitted if some player has not voted yet, and the local player becomes the only
    player, with id 0.

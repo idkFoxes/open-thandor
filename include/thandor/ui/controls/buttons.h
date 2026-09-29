@@ -66,8 +66,8 @@ void UiSpriteButtonControl_Relocate(UiSerializedRelocationDelta relocationDelta,
 
 /* 0x004B16E0 */
 void UiSpriteButtonControl_DrawClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiSpriteButtonControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiSpriteButtonControl *control);
 
 /* 0x004B1890 */
 void UiSpriteButtonControl_NonRightPress
@@ -90,8 +90,8 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
 
 /* 0x00515010 */
 void UiImageActionControl_DrawImageAndChildren
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiImageActionControl *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiImageActionControl *control);
 
 /* 0x005151F0 */
 GraphicsCursorFrameIndex UiImageActionControl_QueryPointerCode
@@ -113,7 +113,7 @@ bool UiImageActionControl_HandleKeyboardActivation
 
 /* 0x005152E0 */
 void UiConditionalActionControl_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiConditionalActionControl *control);
+          (int clipBottom,int clipRight,int clipTop,int clipLeft,UiConditionalActionControl *control);
 
 /* 0x005155A0 */
 GraphicsCursorFrameIndex UiConditionalActionControl_QueryPointerCode

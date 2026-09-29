@@ -29,7 +29,7 @@
 bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSourceBase);
 
 /* 0x004AD800 */
-void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset);
+StatusResult GraphicsPaletteAsset_GetBankCount(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD820 */
 PaletteAssetResult GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16);

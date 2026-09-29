@@ -172,8 +172,8 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext);
 
 /* 0x0050BC60 */
 void FrontendModelPointerContext_RenderWorldViewQueuesClipped
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FrontendModelPointerContext *control);
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,FrontendModelPointerContext *control);
 
 /* 0x0050C6E0 */
 void FrontendModelPointerContext_RightPress

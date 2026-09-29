@@ -364,7 +364,7 @@ DllLoadResult DynDLL_Load(char *moduleName)
    The original also reports success/failure in CF (CLC at 0x00573D2A, STC at 0x00573D12); no caller reads it:
    Glide3_InitAndEnumerate follows with CLC/STC, GraphicsGlide3_ApplyDisplayModeAndInitializeResources with STC,
    and Glide3_Shutdown passes it out unchanged, but its callers overwrite the flags first (ADD at 0x00578B5D,
-   TEST at 0x00579582, XOR EAX,EAX at 0x00586102 after GraphicsBackend_RefreshActiveAdapterIfReady). The EAX
+   TEST at 0x00579582, XOR EAX,EAX at 0x00586102 after GraphicsBackend_ShutdownGlideOnDeactivate). The EAX
    result is likewise discarded (POP EAX or ignored) by all of them.
 */
 uint32_t DynDLL_Unload(char *moduleName)

@@ -72,7 +72,7 @@
 #define INGAME_COMMAND_EDITOR_RESET_INFLUENCE 0x2A80 /* FieldGrid_ResetLocalInfluenceState */
 #define INGAME_COMMAND_EDITOR_REBUILD_INFLUENCE 0x2AE0 /* FieldGrid_RebuildLocalInfluenceState */
 #define INGAME_COMMAND_EDITOR_HEIGHTS_TO_DELTAS 0x2C90 /* TerrainEditBuffer_ConvertHeightsToDeltas */
-#define INGAME_COMMAND_EDITOR_MOVE_FIELD_ORIGIN 0x2D00 /* WorldRuntime_AdjustFieldOriginWrappedClamped */
+#define INGAME_COMMAND_EDITOR_TURN_AUXILIARY_ANGLES 0x2D00 /* WorldRuntime_TurnAuxiliaryAnglesClamped */
 #define INGAME_COMMAND_EDITOR_TURN_LIGHT 0x2D70 /* TerrainLighting_AdjustDirectionAndRecomputeField */
 #define INGAME_COMMAND_PLACEMENT_MOVE 0x2F20 /* SelectionPlayerRuntime_MovePrimarySelectionBy */
 #define INGAME_COMMAND_PLACEMENT_ROTATE 0x30F0 /* SelectionPlayerRuntime_RotatePrimarySelectionBy */

@@ -46,7 +46,7 @@
 #define WORLD_RUNTIME_FLAG_SOUND_LISTENER 0x10000
 /* WorldOwnerListNode.runtimeFlags bit: the node is linked into its world's owner list. */
 #define WORLD_OWNER_NODE_LINKED 0x80000000
-/* Range of the auxiliary elevation angle (fieldRegion.auxiliaryElevationAngle) set by WorldRuntime_AdjustFieldOriginWrappedClamped */
+/* Range of the auxiliary elevation angle (fieldRegion.auxiliaryElevationAngle) set by WorldRuntime_TurnAuxiliaryAnglesClamped */
 #define WORLD_AUXILIARY_ELEVATION_MINIMUM (-0x4000) /* a quarter turn down */
 #define WORLD_AUXILIARY_ELEVATION_MAXIMUM (-0x1000)
 /* Smallest camera magnitude WorldRuntime_SetCameraAnglesAndMagnitudeClamped accepts (0.25 in Q12) */
@@ -79,7 +79,7 @@ void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRunti
 void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world);
 
 /* 0x00561E30 */
-void WorldRuntime_AdjustFieldOriginWrappedClamped
+void WorldRuntime_TurnAuxiliaryAnglesClamped
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaElevationAngle,Q12 deltaAzimuthAngle);
 
 /* 0x004BE760 */
@@ -121,10 +121,10 @@ void WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world);
 
 /* 0x0050D610 */
-WorldCameraPosition WorldRuntime_GetVector0Regs(WorldRuntimeContext *world);
+WorldCameraPosition WorldRuntime_GetCameraPositionRegs(WorldRuntimeContext *world);
 
 /* 0x0050D630 */
-WorldCameraOrientation WorldRuntime_GetVector1Regs(WorldRuntimeContext *world);
+WorldCameraOrientation WorldRuntime_GetCameraOrientationRegs(WorldRuntimeContext *world);
 
 /* 0x0050D650 */
 WorldFlagsResult WorldRuntime_GetFlags(WorldRuntimeContext *world);
@@ -211,8 +211,8 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
 /* 0x0050D760 */
 void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CArgb,PackedArgb32 lightingColor138Argb,
           PackedArgb32 lightingColor134Argb,PackedArgb32 lightingColor130Argb,
-          PackedArgb32 rampColor12CArgb,PackedArgb32 lightingColor128Argb,
-          PackedArgb32 rampColor124Argb,PackedArgb32 baseColorArgb,WorldRuntimeContext *worldRuntime
+          PackedArgb32 secondaryColorArgb,PackedArgb32 lightingColor128Argb,
+          PackedArgb32 baseColorArgb,PackedArgb32 rampStepColorArgb,WorldRuntimeContext *worldRuntime
           );
 
 /* 0x0050D5C0 */

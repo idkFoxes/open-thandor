@@ -1366,7 +1366,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             /* 10 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
             /* 11 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
             /* 12 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
-            /* 13 */ (void *)UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings,
+            /* 13 */ (void *)UiDisplayModeAction_RevertAndReopenSettings,
             /* 14 */ (void *)UiDisplayModeAction_CancelAndRebuildPixelPacking,
             /* 15 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
             /* 16 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
@@ -3985,9 +3985,9 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
         },
         .placementAssetClassDispatch = {
             /*  0 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
-            /*  1 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
-            /*  2 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
-            /*  3 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /*  1 */ (void *)ArmyPlacement_TestMobileUnitPoint,
+            /*  2 */ (void *)ArmyPlacement_TestMobileUnitPoint,
+            /*  3 */ (void *)ArmyPlacement_TestMobileUnitPoint,
             /*  4 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
             /*  5 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
             /*  6 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
@@ -4001,9 +4001,9 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /* 14 */ (void *)ArmyPlacementCandidate_TestFieldOccupancy,
             /* 15 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
             /* 16 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
-            /* 17 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
-            /* 18 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
-            /* 19 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /* 17 */ (void *)ArmyPlacement_TestMobileUnitPoint,
+            /* 18 */ (void *)ArmyPlacement_TestMobileUnitPoint,
+            /* 19 */ (void *)ArmyPlacement_TestMobileUnitPoint,
             /* 20 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
             /* 21 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
             /* 22 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
@@ -4227,7 +4227,7 @@ ImageData_00530818 g_ImageData_00530818 = {
     0, /* 00531050 g_InGameLevelMusicVoiceSet2 */
     0, /* 00531054 g_InGameLevelMusicVoiceSet3 */
     0, /* 00531058 g_InGameActiveMusicVoice */
-    0, /* 0053105C g_InGameMusicEnabled */
+    0, /* 0053105C g_InGameMusicNextTrackCountdown */
     {.playerSlotByteOffsets = {0, 0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0}}, /* 00531060 g_InGameLevelRuntimeGlobalBlock */
 };
 
@@ -6360,7 +6360,7 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
             .leftAnchorQ31 = 0x40000000, .topAnchorQ31 = 0x40000000, .rightAnchorQ31 = 0x40000000, .bottomAnchorQ31 = 0x40000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000014, 0x00000000, (uint32_t)&g_FrontendNetworkPlayerCountLabelUtf16},
+            0x00000014, 0x00000000, (uint32_t)&g_FrontendNetworkSpeedLabelUtf16},
         { /* +5270 maxPlayersLabel g_UiFocusProxyControlVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x52CC), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4EDC),
             .vtable = (void *)&g_UiFocusProxyControlVtable,
@@ -6783,7 +6783,7 @@ ImageData_0054D780 g_ImageData_0054D780 = {
     0, /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
     {0},
     {0},
-    0, /* 0054DDF0 g_FrontendNetworkPlayerCountLabelUtf16 */
+    0, /* 0054DDF0 g_FrontendNetworkSpeedLabelUtf16 */
     {0},
     {0},
     0, /* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
@@ -6795,7 +6795,7 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0054FBB0 gap */
     /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
     {
-        .frameUpdate = (void *)EndGameResultsUiRuntime_UpdateAndHandleInput,
+        .frameUpdate = (void *)InGameUiRoot_UpdateFrame,
         .keyboardFallback = (void *)InGameHotkeys_DispatchCommandByFlags},
     0, /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
     0, /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
@@ -10999,7 +10999,7 @@ ImageData_00562498 g_ImageData_00562498 = {
         (void *)SelectionMarkerCoordinates_ApplyType7},
     {0x1A, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C}, /* 00563768 g_InGamePointerModeCommandIds */
     {0, 0xF0, 0xF2, 0xF0, 0xF4, 0xF0, 0xF2, 0xF0}, /* 00563788 g_InGamePointerModePreviewArmyIds */
-    0, /* 005637A8 g_ArmyPlacementAcceptedCandidateCount */
+    0, /* 005637A8 g_ArmyPlacementLateRejectionCount */
     0, /* 005637AC g_InGameWorldRuntimeDwordArray256 */
     {0},
     {0},

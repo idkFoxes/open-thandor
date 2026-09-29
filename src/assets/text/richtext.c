@@ -11,6 +11,9 @@
 /* Depth of the machine-stack return chains the original keeps for nested (0x18) streams. */
 #define RICHTEXT_NESTING_LIMIT 64
 
+/* Tags RichTextMarkup_ParseAndBuildStringAsset can collect (the original keeps them on the machine stack). */
+#define RICHTEXT_MARKUP_TAG_LIMIT 4096
+
 /* Implementation ownership: assets/text/richtext. */
 
 /* Address: 0x0041D300.
@@ -51,8 +54,8 @@ RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
    by UiWrappedTextControl_DrawClipped.
 */
 void RichTextCommandStream_DrawWrappedBlock
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,uint32_t packedStyle,uint16_t *commandStream,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX)
 
 {
@@ -67,7 +70,7 @@ void RichTextCommandStream_DrawWrappedBlock
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while (lineResult = RichTextCommandStream_DrawNextWrappedLine
-                            (clipTop,clipLeft,clipBottom,clipRight,maximumWidth,drawY,drawX),
+                            (clipBottom,clipRight,clipTop,clipLeft,maximumWidth,drawY,drawX),
          !lineResult.endOfText) {
     drawY = drawY + lineResult.lineAdvancePixels;
   }
@@ -81,8 +84,8 @@ void RichTextCommandStream_DrawWrappedBlock
    commands until the end of the stream or a line break.
 */
 bool RichTextCommandStream_DrawSingleLine
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,uint16_t *commandStream,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX)
 
 {
@@ -126,7 +129,7 @@ bool RichTextCommandStream_DrawSingleLine
     }
     if (-1 < (int)glyphSubresource) {
       glyphAdvance = FontGlyph_DrawBottomAligned
-                        (clipTop,clipLeft,clipBottom,clipRight,glyphSubresource,lineBaselineY,penX);
+                        (clipBottom,clipRight,clipTop,clipLeft,glyphSubresource,lineBaselineY,penX);
       penX = penX + glyphAdvance;
       continue;
     }
@@ -177,7 +180,7 @@ bool RichTextCommandStream_DrawSingleLine
       break;
     case RICHTEXT_OP_FIXED_SPACE:
       glyphAdvance = FontGlyph_DrawBottomAligned
-                        (clipTop,clipLeft,clipBottom,clipRight,' ',lineBaselineY,penX);
+                        (clipBottom,clipRight,clipTop,clipLeft,' ',lineBaselineY,penX);
       penX = penX + glyphAdvance;
       break;
     case RICHTEXT_OP_LINE_BREAK:
@@ -204,7 +207,7 @@ bool RichTextCommandStream_DrawSingleLine
                         (*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream);
       imageWidth = imageSize.logicalWidthPixels;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,lineBaselineY - imageSize.logicalHeightPixels,
+                (clipBottom,clipRight,clipTop,clipLeft,lineBaselineY - imageSize.logicalHeightPixels,
                  penX,*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream,
                  g_FramebufferAccess);
       penX = penX + imageWidth;
@@ -687,396 +690,261 @@ capacityError:
    src/generated/image_data.c): compiles text markup into a 'str' string asset. Text between '#<' and '#>'
    becomes one NUL-terminated, dword-padded rich-text string keyed by the last '#ddd' number (text outside is
    ignored); further '#' escapes select a code page ('#@'..'#~'), raw command codes ('#!'), a soft hyphen
-   ('#-'), a literal '#' ('##') or a line continuation, a CR inside a tag is a line break, and '#.' ends the
-   input and groups the strings by key.
+   ('#-', emitted also outside a tag), a literal '#' ('##') or a line continuation, a CR inside a tag is a line
+   break, and '#.' ends the input and groups the strings by key: a 0x200-byte header, then per key (in the order
+   of the key's first string) a 0x10-byte group header {size, string count, key, 0}, the string offsets
+   (relative to the group header) and the strings.
    An unknown character returns the formatted "TXT2STR: unknown character" message (with its byte offset)
-   and CF set; running out of arena space returns FATAL_ERROR_GENERAL_FAILURE.
+   in EAX and CF set; running out of arena space returns FATAL_ERROR_GENERAL_FAILURE and CF set.
+   On success the original also returns the asset size in ECX and asset + 0x100 in EDX; RichTextAssetResult
+   keeps only EAX and CF (there is no caller).
 */
 RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
 
 {
-  /* Unreachable: nothing in the original image calls 0x0041BCB0 or stores its address (a leftover
-     of the TXT2STR converter). The original pushes a (string start, key) pair per tag on the machine
-     stack at '#<'; those slots were never recovered, so the body is kept only for completeness and does not
-     reproduce the original (the '#ddd' key in EDX is lost entirely). */
-  uint8_t thandor_stack_frame[0x100]; /* unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
-  uint8_t markupByte;
-  uint16_t codeUnit;
-  wchar_t *memory;
-  uint32_t spanSizeOrDwordCount;
-  uint32_t remainingCapacityBytes;
-  int groupKeyOrIndex;
-  int *offsetTableCursor;
-  int entryIndexOrOffset;
-  int entryEndOrIndex;
-  short codeUnitBias;
-  uint8_t *stackSlot;
-  uint8_t *callStackSlot;
-  uint8_t *tokenStart;
-  uint8_t *markupCursor;
-  int *copySource;
-  wchar_t *outputCursor;
-  int *groupHeader;
-  uint32_t assetSizeOrTimestamp;
-  int *assetWriteCursor;
-  bool capacityUnderflow;
-  bool insideTagOrUnderflow;
-  RichTextAssetResult errorMessageResult;
-  RichTextAssetResult capacityErrorResult;
-  ArenaShrinkResult shrinkResult;
-  RichTextAssetResult stringAsset;
+  /* Rewritten from the assembly (0x0041BCB0-0x0041C8C2). The original pushes a (string start, key) pair per
+     '#<' on the machine stack (and an (end of output, -1) sentinel at '#.'); tagStarts/tagKeys hold those
+     pairs in push order, so string k ends at tagStarts[k + 1]. More than RICHTEXT_MARKUP_TAG_LIMIT - 1 tags
+     (the original is limited only by its stack) fail like an arena overflow. */
+  static uint16_t *tagStarts[RICHTEXT_MARKUP_TAG_LIMIT];
+  static int32_t tagKeys[RICHTEXT_MARKUP_TAG_LIMIT];
   ArenaLargestAllocResult largestBlock;
-  WideNumberFormatFlags aWStackY_44 [2];
-  uint32_t dStackY_3c;
-  int assetGroupCount;
-  int tagCount;
-  
+  RichTextAssetResult result;
+  uint16_t *memory;
+  uint16_t *outputCursor;
+  uint32_t remainingCapacityBytes;
+  uint8_t *markupCursor;
+  uint32_t markupByte;
+  uint32_t codeUnitBias;
+  int32_t key;
+  bool insideTag;
+  uint32_t tagCount;
+  uint32_t *asset;
+  uint32_t *assetCursor;
+  uint32_t *groupHeader;
+  uint32_t *offsetCursor;
+  uint32_t groupCount;
+  int32_t groupKey;
+  uint32_t spanBytes;
+  uint32_t dwordCount;
+  uint32_t *copySource;
+  uint32_t first;
+  uint32_t index;
+  uint32_t assetSize;
+
   largestBlock = g_MemoryApi.allocLargestFreeBlock();
+  if (largestBlock.failed) {
+    result.assetOrError = (void *)(uintptr_t)largestBlock.allocationOrError;
+    result.failed = true;
+    return result;
+  }
+  memory = (uint16_t *)(uintptr_t)largestBlock.allocationOrError;
   remainingCapacityBytes = largestBlock.blockSizeOrSentinel;
-  memory = (wchar_t *)largestBlock.allocationOrError;
-  if (!largestBlock.failed) {
-    codeUnitBias = 0;
-    tagCount = 0;
-    markupCursor = markupBytes;
-    outputCursor = memory;
-    insideTagOrUnderflow = false;
-parseNextByte:
-    tokenStart = markupCursor;
-    codeUnit = (uint16_t)*tokenStart;
-    markupCursor = tokenStart + 1;
-    switch(*tokenStart) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 0xb:
-    case 0xc:
-    case 0xe:
-    case 0xf:
-    case 0x10:
-    case 0x11:
-    case 0x12:
-    case 0x13:
-    case 0x14:
-    case 0x15:
-    case 0x16:
-    case 0x17:
-    case 0x18:
-    case 0x19:
-    case 0x1a:
-    case 0x1b:
-    case 0x1c:
-    case 0x1d:
-    case 0x1e:
-    case 0x1f:
+  asset = NULL;
+  markupCursor = markupBytes;
+  outputCursor = memory;
+  key = 0;
+  codeUnitBias = 0;
+  insideTag = false;
+  tagCount = 0;
+  for (;;) {
+    markupByte = *markupCursor++;
+    switch (markupByte) {
+    case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
+    case 0xb: case 0xc: case 0xe: case 0xf:
+    case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+    case 0x18: case 0x19: case 0x1a: case 0x1b: case 0x1c: case 0x1d: case 0x1e: case 0x1f:
     case 0x7f:
       goto reportUnknownCharacter;
     case '\t':
     case '\n':
-      goto parseNextByte;
+      continue;
     case '\r':
-      if (insideTagOrUnderflow) {
-        capacityUnderflow = remainingCapacityBytes < 2;
-        remainingCapacityBytes = remainingCapacityBytes - 2;
-        if (capacityUnderflow || remainingCapacityBytes == 0)
-          goto freePrimaryBufferAndFail;
-        *outputCursor = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK;
-        outputCursor++;
+      if (insideTag) {
+        if (remainingCapacityBytes <= 2) goto freePrimaryBufferAndFail;
+        remainingCapacityBytes -= 2;
+        *outputCursor++ = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK;
       }
-      goto parseNextByte;
+      continue;
     default:
-emitLiteralCodeUnit:
-      if (insideTagOrUnderflow) {
-        capacityUnderflow = remainingCapacityBytes < 2;
-        remainingCapacityBytes = remainingCapacityBytes - 2;
-        if (capacityUnderflow || remainingCapacityBytes == 0)
-          goto freePrimaryBufferAndFail;
-        *outputCursor = codeUnit + codeUnitBias;
-        outputCursor++;
+emitCodeUnit:
+      if (insideTag) {
+        if (remainingCapacityBytes <= 2) goto freePrimaryBufferAndFail;
+        remainingCapacityBytes -= 2;
+        *outputCursor++ = (uint16_t)(markupByte + codeUnitBias);
       }
-      goto parseNextByte;
+      continue;
     case '#':
-      markupByte = *markupCursor;
-      codeUnit = (uint16_t)markupByte;
-      markupCursor = tokenStart + 2;
-      switch(markupByte) {
-      default:
-        goto reportUnknownCharacter;
-      case '\n':
-      case '\r':
-        /* line continuation: skip the line end */
-        while (markupByte = *markupCursor, markupByte < 0x20) {
-          markupCursor++;
-          if ((markupByte != '\n') && (markupByte != '\r')) goto reportUnknownCharacter;
-        }
-        break;
-      case '!':
-        codeUnitBias = 0x7fc0; /* '@'..'_' become RICHTEXT_COMMAND_FLAG | 0x00..0x1F */
-        break;
-      case '#':
-        goto emitLiteralCodeUnit;
-      case '-':
-        capacityUnderflow = remainingCapacityBytes < 2;
-        remainingCapacityBytes = remainingCapacityBytes - 2;
-        if (capacityUnderflow || remainingCapacityBytes == 0)
-          goto freePrimaryBufferAndFail;
-        *outputCursor = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_SOFT_HYPHEN;
-        outputCursor++;
-        break;
-      case '.':
-        /* end of input: build the asset (0x200-byte header, then one group per key) */
-        if ((tagCount != 0) && (!insideTagOrUnderflow)) {
-          tagCount++;
-          dStackY_3c = 0x41c70a;
-          shrinkResult = g_MemoryApi.shrinkInPlace((int)outputCursor - (int)memory,memory);
-          if (!shrinkResult.failed) {
-            largestBlock = g_MemoryApi.allocLargestFreeBlock();
-            stringAsset.assetOrError = (int *)largestBlock.allocationOrError;
-            if (!largestBlock.failed) {
-              remainingCapacityBytes = largestBlock.blockSizeOrSentinel - 0x200;
-              if (0x1ff < largestBlock.blockSizeOrSentinel && remainingCapacityBytes != 0) {
-                assetGroupCount = 0;
-                assetWriteCursor = stringAsset.assetOrError;
-                for (groupKeyOrIndex = 0x80; entryIndexOrOffset = tagCount, groupKeyOrIndex != 0; groupKeyOrIndex--) {
-                  *assetWriteCursor = 0;
-                  assetWriteCursor++;
-                }
-                while( true ) {
-                  while (groupHeader = assetWriteCursor, groupKeyOrIndex = *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryIndexOrOffset * 8),
-                        groupKeyOrIndex == -1) {
-                    entryIndexOrOffset--;
-                    assetWriteCursor = groupHeader;
-                    if (entryIndexOrOffset == 0) {
-                      g_MemoryApi.free(memory);
-                      assetSizeOrTimestamp = (int)groupHeader - (int)stringAsset.assetOrError;
-                      g_MemoryApi.shrinkInPlace(assetSizeOrTimestamp,stringAsset.assetOrError);
-                      tagCount = tagCount * 8;
-                      *(uint32_t *)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = assetSizeOrTimestamp;
-                      ((int *)stringAsset.assetOrError)[0x2c] = assetGroupCount;
-                      ((int *)stringAsset.assetOrError)[1] = assetSizeOrTimestamp;
-                      *(int *)stringAsset.assetOrError = 0x727473; /* "str" */
-                      ((int *)stringAsset.assetOrError)[2] = 1;
-                      ((int *)stringAsset.assetOrError)[3] = 0;
-                      stackSlot = &thandor_stack_frame[0x80 - 0x30] + tagCount;
-                      *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c7b5;
-                      assetSizeOrTimestamp = g_LocaleGetPackedCurrentTime();
-                      ((int *)stringAsset.assetOrError)[4] = assetSizeOrTimestamp;
-                      ((int *)stringAsset.assetOrError)[6] = assetSizeOrTimestamp;
-                      ((int *)stringAsset.assetOrError)[8] = assetSizeOrTimestamp;
-                      callStackSlot = stackSlot + -4;
-                      *(uint32_t *)(stackSlot + -4) = 0x41c7cd;
-                      assetSizeOrTimestamp = g_LocaleGetPackedCurrentDate();
-                      ((int *)stringAsset.assetOrError)[5] = assetSizeOrTimestamp;
-                      ((int *)stringAsset.assetOrError)[7] = assetSizeOrTimestamp;
-                      ((int *)stringAsset.assetOrError)[9] = assetSizeOrTimestamp;
-                      *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0xc;
-                      *(uint32_t *)(callStackSlot + -8) = 0x41c7ec;
-                      g_LocaleCopyDefaultComputerLabelUtf16(*(uint16_t **)(callStackSlot + -4));
-                      *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0x1c;
-                      *(uint32_t *)(callStackSlot + -8) = 0x41c7f9;
-                      g_LocaleCopyDefaultComputerLabelUtf16(*(uint16_t **)(callStackSlot + -4));
-                      stringAsset.failed = false;
-                      return stringAsset;
-                    }
-                  }
-                  insideTagOrUnderflow = remainingCapacityBytes < 0x10;
-                  remainingCapacityBytes = remainingCapacityBytes - 0x10;
-                  if (insideTagOrUnderflow || remainingCapacityBytes == 0) break;
-                  groupHeader[2] = groupKeyOrIndex;
-                  *groupHeader = 0x10;
-                  groupHeader[1] = 0;
-                  do {
-                    if (groupKeyOrIndex == *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryIndexOrOffset * 8)) {
-                      entryEndOrIndex = *(int *)(&thandor_stack_frame[0x80 - 0x34] + entryIndexOrOffset * 8);
-                      groupHeader[1]++;
-                      spanSizeOrDwordCount = (entryEndOrIndex - *(int *)(&thandor_stack_frame[0x80 - 0x2c] + entryIndexOrOffset * 8)) + 4;
-                      *groupHeader = *groupHeader + spanSizeOrDwordCount;
-                      insideTagOrUnderflow = remainingCapacityBytes < spanSizeOrDwordCount;
-                      remainingCapacityBytes = remainingCapacityBytes - spanSizeOrDwordCount;
-                      if (insideTagOrUnderflow || remainingCapacityBytes == 0)
-                      goto 
-                      freeExpansionBufferAndFail
-                      ;
-                    }
-                    entryIndexOrOffset--;
-                  } while (entryIndexOrOffset != 0);
-                  offsetTableCursor = groupHeader + 4;
-                  assetGroupCount++;
-                  assetWriteCursor = offsetTableCursor + groupHeader[1];
-                  entryEndOrIndex = tagCount;
-                  do {
-                    if (groupKeyOrIndex == *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryEndOrIndex * 8)) {
-                      *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + entryEndOrIndex * 8) = 0xffffffff;
-                      entryIndexOrOffset = (int)assetWriteCursor - (int)groupHeader;
-                      copySource = *(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8);
-                      for (spanSizeOrDwordCount = (uint32_t)(*(int *)(&thandor_stack_frame[0x80 - 0x34] + entryEndOrIndex * 8) -
-                                         (int)*(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8)) >> 2;
-                          spanSizeOrDwordCount != 0; spanSizeOrDwordCount--) {
-                        *assetWriteCursor = *copySource;
-                        copySource++;
-                        assetWriteCursor++;
-                      }
-                      *offsetTableCursor = entryIndexOrOffset;
-                      offsetTableCursor++;
-                    }
-                    entryEndOrIndex--;
-                    entryIndexOrOffset = tagCount;
-                  } while (entryEndOrIndex != 0);
-                }
-              }
-freeExpansionBufferAndFail:
-              g_MemoryApi.free(stringAsset.assetOrError);
-            }
-          }
-freePrimaryBufferAndFail:
-          tagCount = tagCount * 8;
-          *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = memory;
-          *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
-          g_MemoryApi.free(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount));
-          capacityErrorResult.failed = true;
-          capacityErrorResult.assetOrError = (void *)FATAL_ERROR_GENERAL_FAILURE;
-          return capacityErrorResult;
-        }
-        goto reportUnknownCharacter;
-      case '0':
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-      case '6':
-      case '7':
-      case '8':
-      case '9':
-        /* '#ddd': three decimal digits, the key of the following tags (kept in EDX by the original) */
-        if ((((*markupCursor < '0') || ('9' < *markupCursor)) || (tokenStart[3] < '0')) || ('9' < tokenStart[3])
-           ) goto reportUnknownCharacter;
-        markupCursor = tokenStart + 4;
-        break;
-      case '<':
-        if (insideTagOrUnderflow) goto reportUnknownCharacter;
-        tagCount++;
-        insideTagOrUnderflow = true;
-        break;
-      case '>':
-        /* ends the string: NUL terminator, padded to a dword boundary */
-        if (!insideTagOrUnderflow) goto reportUnknownCharacter;
-        insideTagOrUnderflow = false;
-        if (((uint32_t)outputCursor & 2) == 0) {
-          insideTagOrUnderflow = remainingCapacityBytes < 4;
-          remainingCapacityBytes = remainingCapacityBytes - 4;
-          if (insideTagOrUnderflow || remainingCapacityBytes == 0)
-            goto freePrimaryBufferAndFail;
-          outputCursor[0] = L'\0';
-          outputCursor[1] = L'\0';
-          outputCursor += 2;
-          insideTagOrUnderflow = false;
-        }
-        else {
-          capacityUnderflow = remainingCapacityBytes < 2;
-          remainingCapacityBytes = remainingCapacityBytes - 2;
-          if (capacityUnderflow || remainingCapacityBytes == 0)
-            goto freePrimaryBufferAndFail;
-          *outputCursor = L'\0';
-          outputCursor++;
-        }
-        break;
-      case 0x40:
-      case 0x41:
-      case 0x42:
-      case 0x43:
-      case 0x44:
-      case 0x45:
-      case 0x46:
-      case 0x47:
-      case 0x48:
-      case 0x49:
-      case 0x4a:
-      case 0x4b:
-      case 0x4c:
-      case 0x4d:
-      case 0x4e:
-      case 0x4f:
-      case 0x50:
-      case 0x51:
-      case 0x52:
-      case 0x53:
-      case 0x54:
-      case 0x55:
-      case 0x56:
-      case 0x57:
-      case 0x58:
-      case 0x59:
-      case 0x5a:
-      case 0x5b:
-      case 0x5c:
-      case 0x5d:
-      case 0x5e:
-      case 0x5f:
-      case 0x60:
-      case 0x61:
-      case 0x62:
-      case 99:
-      case 100:
-      case 0x65:
-      case 0x66:
-      case 0x67:
-      case 0x68:
-      case 0x69:
-      case 0x6a:
-      case 0x6b:
-      case 0x6c:
-      case 0x6d:
-      case 0x6e:
-      case 0x6f:
-      case 0x70:
-      case 0x71:
-      case 0x72:
-      case 0x73:
-      case 0x74:
-      case 0x75:
-      case 0x76:
-      case 0x77:
-      case 0x78:
-      case 0x79:
-      case 0x7a:
-      case 0x7b:
-      case 0x7c:
-      case 0x7d:
-      case 0x7e:
-        /* '#@'..'#~': code page select, following bytes are emitted + (c - '@') * 0x80 */
-        codeUnitBias = codeUnit * 0x80 - 0x2000;
+      break;
+    }
+    markupByte = *markupCursor++;
+    switch (markupByte) {
+    default:
+      goto reportUnknownCharacter;
+    case '\n':
+    case '\r':
+      /* line continuation: skip the line end */
+      for (;;) {
+        markupByte = *markupCursor;
+        if (markupByte >= 0x20) break;
+        markupCursor++;
+        if ((markupByte != '\n') && (markupByte != '\r')) goto reportUnknownCharacter;
       }
-      goto parseNextByte;
+      continue;
+    case '!':
+      codeUnitBias = 0x7fc0; /* '@'..'_' become RICHTEXT_COMMAND_FLAG | 0x00..0x1F */
+      continue;
+    case '#':
+      goto emitCodeUnit;
+    case '-':
+      /* no inside-tag test in the original */
+      if (remainingCapacityBytes <= 2) goto freePrimaryBufferAndFail;
+      remainingCapacityBytes -= 2;
+      *outputCursor++ = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_SOFT_HYPHEN;
+      continue;
+    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+      /* '#ddd': three decimal digits, the key of the following tags (EDX in the original) */
+      key = (int32_t)(markupByte - '0') * 10;
+      if ((markupCursor[0] < '0') || ('9' < markupCursor[0])) goto reportUnknownCharacter;
+      key = key + (markupCursor[0] - '0');
+      if ((markupCursor[1] < '0') || ('9' < markupCursor[1])) goto reportUnknownCharacter;
+      key = key * 10 + (markupCursor[1] - '0');
+      markupCursor += 2;
+      continue;
+    case '<':
+      if (insideTag) goto reportUnknownCharacter;
+      /* PUSH EDI / PUSH EDX: the string starts here and gets the current key */
+      if (tagCount >= RICHTEXT_MARKUP_TAG_LIMIT - 1) goto freePrimaryBufferAndFail;
+      tagStarts[tagCount] = outputCursor;
+      tagKeys[tagCount] = key;
+      tagCount++;
+      insideTag = true;
+      continue;
+    case '>':
+      /* ends the string: NUL terminator, padded to a dword boundary */
+      if (!insideTag) goto reportUnknownCharacter;
+      insideTag = false;
+      if (((uint32_t)(uintptr_t)outputCursor & 2) == 0) {
+        if (remainingCapacityBytes <= 4) goto freePrimaryBufferAndFail;
+        remainingCapacityBytes -= 4;
+        outputCursor[0] = 0;
+        outputCursor[1] = 0;
+        outputCursor += 2;
+      }
+      else {
+        if (remainingCapacityBytes <= 2) goto freePrimaryBufferAndFail;
+        remainingCapacityBytes -= 2;
+        *outputCursor++ = 0;
+      }
+      continue;
+    case '.':
+      if ((tagCount == 0) || insideTag) goto reportUnknownCharacter;
+      goto buildAsset;
+    case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
+    case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4e: case 0x4f:
+    case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
+    case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d: case 0x5e: case 0x5f:
+    case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x65: case 0x66: case 0x67:
+    case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+    case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
+    case 0x78: case 0x79: case 0x7a: case 0x7b: case 0x7c: case 0x7d: case 0x7e:
+      /* '#@'..'#~': code page select, following bytes are emitted + (c - '@') * 0x80 */
+      codeUnitBias = markupByte * 0x80 - 0x2000;
+      continue;
     }
   }
-RichTextMarkup_ParseAndBuildStringAsset_ReturnError:
-  errorMessageResult.failed = true;
-  errorMessageResult.assetOrError = memory;
-  return errorMessageResult;
+
+buildAsset:
+  /* PUSH EDI / PUSH -1: the sentinel, its start is the end of the last string */
+  tagStarts[tagCount] = outputCursor;
+  tagKeys[tagCount] = -1;
+  tagCount++;
+  if (g_MemoryApi.shrinkInPlace((uint32_t)((uint8_t *)outputCursor - (uint8_t *)memory),memory).failed) {
+    goto freePrimaryBufferAndFail;
+  }
+  largestBlock = g_MemoryApi.allocLargestFreeBlock();
+  if (largestBlock.failed) goto freePrimaryBufferAndFail;
+  asset = (uint32_t *)(uintptr_t)largestBlock.allocationOrError;
+  if (largestBlock.blockSizeOrSentinel <= 0x200) goto freeAssetBufferAndFail;
+  remainingCapacityBytes = largestBlock.blockSizeOrSentinel - 0x200;
+  for (index = 0; index < 0x80; index++) {
+    asset[index] = 0;
+  }
+  assetCursor = asset + 0x80;
+  groupCount = 0;
+  for (;;) {
+    /* the next key in the order of its first string; copied strings carry key -1 */
+    for (first = 0; (first < tagCount) && (tagKeys[first] == -1); first++) {
+    }
+    if (first == tagCount) break;
+    groupKey = tagKeys[first];
+    if (remainingCapacityBytes <= 0x10) goto freeAssetBufferAndFail;
+    remainingCapacityBytes -= 0x10;
+    groupHeader = assetCursor;
+    groupHeader[2] = (uint32_t)groupKey;
+    groupHeader[0] = 0x10;
+    groupHeader[1] = 0;
+    for (index = first; index < tagCount; index++) {
+      if (tagKeys[index] == groupKey) {
+        groupHeader[1]++;
+        spanBytes = (uint32_t)((uint8_t *)tagStarts[index + 1] - (uint8_t *)tagStarts[index]) + 4;
+        groupHeader[0] += spanBytes;
+        if (remainingCapacityBytes <= spanBytes) goto freeAssetBufferAndFail;
+        remainingCapacityBytes -= spanBytes;
+      }
+    }
+    groupCount++;
+    offsetCursor = groupHeader + 4;
+    assetCursor = offsetCursor + groupHeader[1];
+    for (index = 0; index < tagCount; index++) {
+      if (tagKeys[index] == groupKey) {
+        tagKeys[index] = -1;
+        *offsetCursor++ = (uint32_t)((uint8_t *)assetCursor - (uint8_t *)groupHeader);
+        copySource = (uint32_t *)tagStarts[index];
+        for (dwordCount = (uint32_t)((uint8_t *)tagStarts[index + 1] - (uint8_t *)tagStarts[index]) >> 2;
+             dwordCount != 0; dwordCount--) {
+          *assetCursor++ = *copySource++;
+        }
+      }
+    }
+  }
+  g_MemoryApi.free(memory);
+  assetSize = (uint32_t)((uint8_t *)assetCursor - (uint8_t *)asset);
+  g_MemoryApi.shrinkInPlace(assetSize,asset);
+  asset[0x2c] = groupCount; /* +0xB0 */
+  asset[1] = assetSize;
+  asset[0] = ASSET_MAGIC_STR;
+  asset[2] = 1;
+  asset[3] = 0;
+  asset[4] = g_LocaleGetPackedCurrentTime();
+  asset[6] = asset[4];
+  asset[8] = asset[4];
+  asset[5] = g_LocaleGetPackedCurrentDate();
+  asset[7] = asset[5];
+  asset[9] = asset[5];
+  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(asset + 0xc));  /* +0x30 */
+  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(asset + 0x1c)); /* +0x70 */
+  result.assetOrError = asset;
+  result.failed = false;
+  return result;
+
+freeAssetBufferAndFail:
+  g_MemoryApi.free(asset);
+freePrimaryBufferAndFail:
+  g_MemoryApi.free(memory);
+  result.assetOrError = (void *)FATAL_ERROR_GENERAL_FAILURE;
+  result.failed = true;
+  return result;
+
 reportUnknownCharacter:
-  groupKeyOrIndex = tagCount * 8;
-  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = memory;
-  *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = 0x41c5a2;
-  g_MemoryApi.free(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
-  *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
-  *(int *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = (int)markupCursor - (int)markupBytes;
-  *(uint32_t *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex) = 1;
-  *(uint32_t *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex) = 10;
-  (&dStackY_3c)[tagCount * 2] = 0;
-  aWStackY_44[tagCount * 2 + 1] = 0x40;
-  aWStackY_44[tagCount * 2] = 0x41c5bb;
+  g_MemoryApi.free(memory);
+  /* the byte offset after the offending character(s), written into the message at +0x4C */
   g_WideNumberFormatUtf16
-            (aWStackY_44[tagCount * 2 + 1],(&dStackY_3c)[tagCount * 2],
-             *(uint32_t *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex),*(uint32_t *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex),
-             *(int32_t *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex),*(uint16_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
-  memory = u_error__TXT2STR__unknown_characte_0041afac;
-  goto RichTextMarkup_ParseAndBuildStringAsset_ReturnError;
+            (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(markupCursor - markupBytes),
+             &u_error__TXT2STR__unknown_characte_0041afac[0x26]);
+  result.assetOrError = u_error__TXT2STR__unknown_characte_0041afac;
+  result.failed = true;
+  return result;
 }
 
 
@@ -1398,8 +1266,8 @@ commitWrapBoundary:
    CF is set when the line ends the text. Called directly by RichTextCommandStream_DrawWrappedBlock.
 */
 WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
+          (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
+          UiPixelCoordinate clipLeft,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX)
 
 {
@@ -1516,13 +1384,13 @@ commitWrapBoundary:
     if (glyphSubresource == ' ') {
       if (wrapPoint <= drawCursor) break;
       glyphAdvance = FontGlyph_DrawVerticallyCentered
-                        (clipTop,clipLeft,clipBottom,clipRight,' ',lineHeight,lineBottom,drawX);
+                        (clipBottom,clipRight,clipTop,clipLeft,' ',lineHeight,lineBottom,drawX);
       drawX = drawX + glyphAdvance;
       continue;
     }
     if (-1 < (int)glyphSubresource) {
       glyphAdvance = FontGlyph_DrawVerticallyCentered
-                        (clipTop,clipLeft,clipBottom,clipRight,glyphSubresource,lineHeight,lineBottom,drawX);
+                        (clipBottom,clipRight,clipTop,clipLeft,glyphSubresource,lineHeight,lineBottom,drawX);
       drawX = drawX + glyphAdvance;
       continue;
     }
@@ -1573,14 +1441,14 @@ commitWrapBoundary:
       break;
     case RICHTEXT_OP_FIXED_SPACE:
       glyphAdvance = FontGlyph_DrawVerticallyCentered
-                        (clipTop,clipLeft,clipBottom,clipRight,' ',lineHeight,lineBottom,drawX);
+                        (clipBottom,clipRight,clipTop,clipLeft,' ',lineHeight,lineBottom,drawX);
       drawX = drawX + glyphAdvance;
       break;
     case RICHTEXT_OP_SOFT_HYPHEN:
       if (wrapPoint <= drawCursor) {
         /* The line wraps at this soft hyphen: draw the hyphen and end the line. */
         FontGlyph_DrawVerticallyCentered
-                  (clipTop,clipLeft,clipBottom,clipRight,'-',lineHeight,lineBottom,drawX);
+                  (clipBottom,clipRight,clipTop,clipLeft,'-',lineHeight,lineBottom,drawX);
         goto endLine;
       }
       break;
@@ -1592,7 +1460,7 @@ commitWrapBoundary:
                          (*(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor);
       savedFontIndexOrImageWidth = imageSize.logicalWidthPixels;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,lineBottom - imageSize.logicalHeightPixels,drawX,
+                (clipBottom,clipRight,clipTop,clipLeft,lineBottom - imageSize.logicalHeightPixels,drawX,
                  *(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor,g_FramebufferAccess);
       drawX = drawX + savedFontIndexOrImageWidth;
       drawCursor = scanCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE * sizeof(uint16_t);

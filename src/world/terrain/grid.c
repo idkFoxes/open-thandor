@@ -1422,10 +1422,10 @@ HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,
 
 /* Address: 0x004FF3D0.
    Like FieldGrid_InterpolateTerrainHeightAndNormal, but the interpolated value is the water depth
-   (waterSurfaceDelta, +0x4C), not the terrain height, despite the name; the blended normal is still the
+   (waterSurfaceDelta, +0x4C), not the terrain height; the blended normal is still the
    terrain normal (triangle0NormalAngles, +0x08). No caller found in src/ or the image tables.
 */
-HeightNormalSampleResult FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
+HeightNormalSampleResult FieldGrid_InterpolateWaterDepthAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {

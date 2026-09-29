@@ -94,7 +94,10 @@ void SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 /* Address: 0x004175B0.
    Silent-backend stub in slot g_SoundPlayOneShot (image 0x00417348): plays nothing and reports
-   success (CF clear); the original leaves EAX unchanged.
+   success (CF clear); the original leaves EAX unchanged, so its callers store their own leftover EAX as the
+   voice (e.g. the random effect index at 0x005665A6, the music gain at 0x0056666F). Those handles only ever go back
+   to the silent stubs (the backend is chosen once at startup) or through a NULL test before one
+   (Movie_Rewind), so returning NULL here behaves the same.
 */
 SoundPlayResult SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -109,7 +112,10 @@ SoundPlayResult SoundBackendDisabled_PlayOneShot
 
 /* Address: 0x004175C0.
    Silent-backend stub in slot g_SoundPlayLooping (image 0x0041734C): plays nothing and reports
-   success (CF clear); the original leaves EAX unchanged.
+   success (CF clear); the original leaves EAX unchanged (callers store it: the music gain at 0x0054C03B /
+   0x00546988, the non-zero gain at 0x0050BAC2). As for SoundBackendDisabled_PlayOneShot those values only
+   reach the silent stubs again, so NULL behaves the same (the spatial pool merely calls this stub again
+   instead of the gain stub on the next frame).
 */
 SoundPlayResult SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,

@@ -818,7 +818,7 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   else {
     g_SoundStopVoice(g_InGameActiveMusicVoice);
     g_InGameActiveMusicVoice = NULL;
-    g_InGameMusicEnabled = 1;
+    g_InGameMusicNextTrackCountdown = 1;
   }
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   PersistentSettings_Write(musicEnabledBit | audioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC,

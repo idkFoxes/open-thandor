@@ -42,7 +42,7 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16);
 
 /* 0x00566290 */
-void EndGameResultsUiRuntime_UpdateAndHandleInput(InGameRuntimeRootFrameView *inGameRoot);
+void InGameUiRoot_UpdateFrame(InGameRuntimeRootFrameView *inGameRoot);
 
 /* 0x0050EA90 */
 void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
