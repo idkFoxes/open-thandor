@@ -9,6 +9,144 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+#ifdef THANDOR_TEST_AIDS
+#include <stdlib.h>
+
+/* Port-only test aid for campaign carry-over tests: OPEN_THANDOR_AUTOWIN=<seconds> ends a campaign level as won
+   after that many seconds of the session (with OPEN_THANDOR_AUTOWIN_LEVELS=<k> only in the first k sessions). It
+   picks the active end trigger of the level script whose end selection moves the campaign forward (a later
+   level, else successor 0 = the campaign end; see the scoring below), moves the owner-list position of every
+   mobile unit of the local faction that stands outside the local faction's exit zone of the campaign level
+   record to the zone centre, and then sets the end movie state exactly as
+   InGameConditionRuntime_UpdateScheduledRecords does for that trigger. From there the original code runs:
+   the end movie, OldUnitRuntime_RebuildScenarioReplayTables (collects the units in the exit zone), the next
+   level and OldUnitRuntime_MergeMasksAndReplayRecords. Called once per frame by InGameRuntime_RunSessionUntilExit. */
+static void InGameRuntime_TestAidAutoWin(void)
+{
+  static unsigned sessionSeen;
+  static unsigned sessionStart;
+  static int done;
+  const char *value = getenv("OPEN_THANDOR_AUTOWIN");
+  CampaignAsset *campaign = (CampaignAsset *)g_FrontendLoadedCampaignAsset;
+  CampaignLevelRecord *level = NULL;
+  InGameEndConditionTriggerRecord8 *chosen = NULL;
+  int chosenScore = 0;
+  InGameEndConditionTriggerRecord8 *trigger;
+  WorldOwnerListNode *ownerNode;
+  uint32_t localFaction;
+  int index;
+  int moved = 0;
+  if (value == NULL || g_InGameRuntimeRoot == NULL) {
+    return;
+  }
+  /* OPEN_THANDOR_AUTOWIN_LEVELS=<k>: only the first k sessions of the process end automatically */
+  if (getenv("OPEN_THANDOR_AUTOWIN_LEVELS") != NULL &&
+      g_TestAidSessionCount > (unsigned)atoi(getenv("OPEN_THANDOR_AUTOWIN_LEVELS"))) {
+    return;
+  }
+  if (sessionSeen != g_TestAidSessionCount) {
+    sessionSeen = g_TestAidSessionCount;
+    sessionStart = Thandor_TickCount();
+    done = 0;
+  }
+  if (done || Thandor_TickCount() - sessionStart < (unsigned)atoi(value) * 1000u) {
+    return;
+  }
+  done = 1;
+  if (campaign == NULL) {
+    Thandor_Log("test aid: auto-win: not a campaign level");
+    return;
+  }
+  for (index = 0; index < campaign->levelRecordCount; index++) {
+    if (campaign->levels[index].levelId == campaign->currentLevelId) {
+      level = &campaign->levels[index];
+    }
+  }
+  if (level == NULL) {
+    Thandor_Log("test aid: auto-win: level %d has no campaign record", campaign->currentLevelId);
+    return;
+  }
+  localFaction = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
+  /* the trigger that moves the campaign forward: a successor with a higher level id (score 3), else successor 0,
+     the campaign end (2), else another known level (1); a trigger ending another faction than the local one wins
+     a tie. A successor equal to the current level (replay) or unknown is never chosen, except as the last resort
+     in a level without any other trigger. */
+  trigger = (InGameEndConditionTriggerRecord8 *)(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule.triggers;
+  for (index = 0; index < INGAME_END_CONDITION_TRIGGER_COUNT; index++, trigger++) {
+    uint32_t selection = trigger->endMovieSelectionIndex;
+    int successor;
+    int score = 0;
+    int other;
+    if (trigger->stateFlags != INGAME_END_CONDITION_TRIGGER_ACTIVE || selection >= 8) {
+      continue;
+    }
+    successor = level->successorLevelIds[selection];
+    Thandor_Log("test aid: auto-win: level %d trigger %d: ends faction %u, end selection %u -> level %d", level->levelId,
+                index, (unsigned)trigger->factionRuntimeIndex, (unsigned)selection, successor);
+    for (other = 0; other < campaign->levelRecordCount; other++) {
+      if (campaign->levels[other].levelId == successor && successor != level->levelId) {
+        score = successor > level->levelId ? 3 : 1;
+      }
+    }
+    if (successor == 0) {
+      score = 2;
+    }
+    score = score * 2 + (trigger->factionRuntimeIndex != localFaction);
+    if (chosen == NULL || score > chosenScore) {
+      chosen = trigger;
+      chosenScore = score;
+    }
+  }
+  if (chosen == NULL) {
+    Thandor_Log("test aid: auto-win: level %d has no active end trigger", level->levelId);
+    return;
+  }
+  if (level->successorLevelIds[chosen->endMovieSelectionIndex] == 0 || chosenScore < 2) {
+    Thandor_Log("test aid: auto-win: level %d has no successor level, firing the campaign end", level->levelId);
+  }
+  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
+       ownerNode = ownerNode->nextNode) {
+    ModelRuntimeSlot *model;
+    if (ownerNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL) {
+      continue;
+    }
+    model = (ModelRuntimeSlot *)ownerNode->runtimePayload;
+    /* units already inside the zone stay where they are (many levels use centre 0,0 with a radius covering the
+       whole map, i.e. everything is carried over at its position); radius 0 means no carry-over */
+    if (level->exitZoneRadius[localFaction] <= 0 ||
+        model->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != localFaction ||
+        model->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0 ||
+        (int)FixedMath_Length2(level->exitZoneCenterY[localFaction] - ownerNode->worldYQ12,
+                               level->exitZoneCenterX[localFaction] - ownerNode->worldXQ12) <=
+            level->exitZoneRadius[localFaction]) {
+      continue;
+    }
+    ownerNode->worldXQ12 = level->exitZoneCenterX[localFaction];
+    ownerNode->worldYQ12 = level->exitZoneCenterY[localFaction];
+    moved++;
+  }
+  /* end movie state as the level script sets it for this trigger (the ended faction is another one than the
+     local one when a win trigger was found) */
+  g_EndMovieVariantIndex = chosen->movieVariantSelector;
+  if (chosen->factionRuntimeIndex != localFaction) {
+    g_EndMovieVariantIndex = chosen->movieVariantSelector ^ 1;
+  }
+  g_EndMovieSelectionIndex = chosen->endMovieSelectionIndex;
+  g_EndMoviePath = (uint16_t *)u_flm_ende0000_flm_0050df06;
+  if (g_EndMovieVariantIndex == 0) {
+    g_EndMoviePath = (uint16_t *)u_flm_ende0001_flm_0050df28;
+  }
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
+  Thandor_Log("test aid: auto-win: level %d, end selection %u -> level %d, exit zone radius %d, "
+              "%d mobile units of faction %u outside it moved into it", level->levelId, (unsigned)chosen->endMovieSelectionIndex,
+              level->successorLevelIds[chosen->endMovieSelectionIndex], level->exitZoneRadius[localFaction],
+              moved, localFaction);
+  Thandor_Log("test aid: auto-win: exit zone centre (%d,%d), destination (%d,%d)",
+              level->exitZoneCenterX[localFaction], level->exitZoneCenterY[localFaction],
+              level->exitZoneDestinationX[localFaction], level->exitZoneDestinationY[localFaction]);
+}
+#endif
+
 /* Implementation ownership: gameplay/session/runtime. */
 
 /* Address: 0x00564F70.
@@ -39,6 +177,9 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
     startupErrorOrExitCode = loadedSessionInit.runtimeRootOrError;
     if (loadedSessionInit.failed) goto shutdown_and_fail;
   }
+#ifdef THANDOR_TEST_AIDS
+  g_TestAidSessionCount++;
+#endif
   do {
     g_TestAidInGameFrames++; /* project test aid, not part of the original code */
     /* two pending simulation ticks are consumed per rendered frame, clamped at zero */
@@ -48,6 +189,9 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
     }
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresent();
+#ifdef THANDOR_TEST_AIDS
+    InGameRuntime_TestAidAutoWin();
+#endif
     /* The success paths return 0x0C in EAX; callers ignore it because CF is clear. */
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED) != 0) {
       g_SoundStopAllVoices();
@@ -1217,6 +1361,32 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
                                       (unsigned)g_OldUnitRecordCount);
 #endif
                           OldUnitRuntime_MergeMasksAndReplayRecords();
+#ifdef THANDOR_TEST_AIDS
+                          if (g_InGameRuntimeRoot != NULL && g_OldUnitRecordCount != 0) {
+                            /* where the carried units of the local faction landed, against the level's start view */
+                            WorldRuntimeContext *world = &g_InGameRuntimeRoot->worldRuntime;
+                            unsigned perFaction[8] = {0}, record, shown = 0;
+                            unsigned localFaction = world->activeFactionRuntimeIndex;
+                            for (record = 0; record < (unsigned)g_OldUnitRecordCount && record < 0x200; record++) {
+                              perFaction[g_OldUnitPrimaryTable[record * 8 + 1] & 7]++;
+                            }
+                            Thandor_Log("level start: view target (%d,%d), local faction %u, carried per faction "
+                                        "%u %u %u %u %u %u %u %u", world->motion.targetPositionXQ12,
+                                        world->motion.targetPositionYQ12, localFaction, perFaction[0], perFaction[1],
+                                        perFaction[2], perFaction[3], perFaction[4], perFaction[5], perFaction[6],
+                                        perFaction[7]);
+                            for (record = 0; record < (unsigned)g_OldUnitRecordCount && record < 0x200 && shown < 4;
+                                 record++) {
+                              if (g_OldUnitPrimaryTable[record * 8 + 1] == localFaction) {
+                                shown++;
+                                Thandor_Log("level start: local carried unit, army asset %u at (%d,%d)",
+                                            (unsigned)g_OldUnitPrimaryTable[record * 8],
+                                            (int)g_OldUnitPrimaryTable[record * 8 + 2],
+                                            (int)g_OldUnitPrimaryTable[record * 8 + 3]);
+                              }
+                            }
+                          }
+#endif
                         }
                         gridScratch = GridScratch_AllocateForFieldGrid
                                            ((inGameRoot->worldRuntime).fieldGrid);

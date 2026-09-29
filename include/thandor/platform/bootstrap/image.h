@@ -59,6 +59,9 @@ void *Thandor_LoadOriginalCodeCopy(unsigned address, unsigned size);
 /* Test aid (OPEN_THANDOR_SCRIPT `ingame`): counts in-game session frames, i.e. frames after the
    level has finished loading. */
 extern volatile unsigned g_TestAidInGameFrames;
+/* Test aid (script `clickuntilnextlevel`, OPEN_THANDOR_AUTOWIN): number of in-game sessions started so far
+   (counted by InGameRuntime_RunSessionUntilExit in the test build only). */
+extern volatile unsigned g_TestAidSessionCount;
 #ifdef THANDOR_TEST_AIDS
 /* Test aids for a local two-instance network test (not in the original):
    OPEN_THANDOR_MULTI_INSTANCE=1 lets a second instance start although a game window exists;

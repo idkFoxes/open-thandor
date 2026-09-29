@@ -89,10 +89,13 @@ static void Win32_AutoShotTick(void)
      <ms> layout <w> <h>    the following coordinates are for a w x h screen; they are moved by half
                             the difference to the current resolution (dialogs and the view are centred)
      <ms> clickuntilingame <x> <y> [interval]  left click x,y every interval ms (3000) until the level runs
+     <ms> clickuntilnextlevel <x> <y> [interval]  the same until the next in-game session starts (test build:
+                            campaign level change); the times of the following lines count from then
      <ms> ingame            wait until the level has loaded and the game runs; the times of the
                             following lines count from that moment
    <ms> counts from the first message pump. Pointer events go into the same ring DirectInput fills. */
 volatile unsigned g_TestAidInGameFrames;
+volatile unsigned g_TestAidSessionCount;
 
 /* Port-only test aid (no original address). Moves the pointer to framebuffer pixel x,y with button mask buttons
    (LEFT/RIGHT of GraphicsCursorButtonState) and appends a pointer event of that type to the 256-entry ring
@@ -198,12 +201,29 @@ static void Win32_ScriptTick(void)
       Thandor_Log("script: in game, times restart at 0");
       continue;
     }
-    if (strcmp(command, "clickuntilingame") == 0) {
-      /* click x,y every `hold` ms (default 3000) until the level runs; this line stays pending until then */
+    if (strcmp(command, "clickuntilingame") == 0 || strcmp(command, "clickuntilnextlevel") == 0) {
+      /* click x,y every `hold` ms (default 3000) until the level runs (clickuntilingame) or until the next
+         in-game session has started (clickuntilnextlevel, test build: end movie, results, briefing of the next
+         campaign level); this line stays pending until then */
+      static unsigned targetSession;
+      static int armed;
+      int nextLevel = strcmp(command, "clickuntilnextlevel") == 0;
       int clickX = x;
       int clickY = y;
-      if (g_TestAidInGameFrames != 0) {
+      int reached;
+      if (nextLevel && !armed) {
+        targetSession = g_TestAidSessionCount + 1;
+        armed = 1;
+      }
+      reached = nextLevel ? g_TestAidSessionCount >= targetSession : g_TestAidInGameFrames != 0;
+      if (reached) {
+        armed = 0;
         state = 1;
+        if (nextLevel) {
+          start = Thandor_TickCount();
+          now = 0;
+          Thandor_Log("script: next level started (session %u), times restart at 0", g_TestAidSessionCount);
+        }
         continue;
       }
       if (layoutWidth > 0) {
