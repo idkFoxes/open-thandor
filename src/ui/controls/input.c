@@ -56,14 +56,12 @@ void UiPointer_DispatchPendingEvents(void)
   if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
     DirectInputMouse_PollBufferedEvents();
   }
-  while( true ) {
-    control = g_UiPointerCaptureTarget;
-    pointerEvent = g_GraphicsCursorConsumeEvent();
+  while (control = g_UiPointerCaptureTarget, pointerEvent = g_GraphicsCursorConsumeEvent(),
+         !pointerEvent.queueEmpty) {
     pointerX = pointerEvent.pointerX;
     wheelDelta = pointerEvent.wheelDelta;
     pointerY = pointerEvent.pointerY;
     buttonMask = pointerEvent.buttonState;
-    if (pointerEvent.queueEmpty) break;
     eventKind = (char)pointerEvent.eventType; /* GraphicsCursorEventType */
     if (eventKind < RIGHT_RELEASE) {
       if (eventKind == MIDDLE_RELEASE) {
@@ -152,9 +150,7 @@ void UiKeyboard_DispatchPendingEvents(void)
   KeyboardEventResult keyboardEvent;
 
   g_SpinLockAcquire(g_UiRuntimeFrameLock);
-  while( true ) {
-    keyboardEvent = g_KeyboardReadEvent();
-    if (keyboardEvent.queueEmpty) break;
+  while (keyboardEvent = g_KeyboardReadEvent(), !keyboardEvent.queueEmpty) {
     if (g_UiPointerCaptureTarget != UI_NODE_NONE) continue;
     keyboardStateMask = keyboardEvent.eventData;
     keyCode = keyboardEvent.eventCode;
@@ -1251,17 +1247,19 @@ void UiPointer_DispatchLeftPress(GraphicsCursorButtonState buttonMask,UiPointerW
   if (opaqueHit == UI_NODE_NONE) {
     /* Otherwise hit-test the root stack from the top; a root's method08 may end the search. */
     root = topRoot;
-    while( true ) {
-      if (root == UI_ROOT_STACK_END) {
-        return;
-      }
-      if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-           ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
-         ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) break;
+    if (root == UI_ROOT_STACK_END) {
+      return;
+    }
+    while (!((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
+             ((root->base).left <= pointerX)) && ((root->base).top <= pointerY) &&
+             (pointerX < (root->base).right) && (pointerY < (root->base).bottom))) {
       callbacksField = &root->callbacks;
       root = root->previousRoot;
       if (((*callbacksField)->method08 != NULL) &&
          (handled = (*(*callbacksField)->method08)(root), handled)) {
+        return;
+      }
+      if (root == UI_ROOT_STACK_END) {
         return;
       }
     }
@@ -1337,17 +1335,19 @@ void UiPointer_DispatchMiddlePress
   if (opaqueHit == UI_NODE_NONE) {
     /* Otherwise hit-test the root stack from the top; a root's method08 may end the search. */
     root = topRoot;
-    while( true ) {
-      if (root == UI_ROOT_STACK_END) {
-        return;
-      }
-      if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
-           ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
-         ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) break;
+    if (root == UI_ROOT_STACK_END) {
+      return;
+    }
+    while (!((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
+             ((root->base).left <= pointerX)) && ((root->base).top <= pointerY) &&
+             (pointerX < (root->base).right) && (pointerY < (root->base).bottom))) {
       callbacksField = &root->callbacks;
       root = root->previousRoot;
       if (((*callbacksField)->method08 != NULL) &&
          (handled = (*(*callbacksField)->method08)(root), handled)) {
+        return;
+      }
+      if (root == UI_ROOT_STACK_END) {
         return;
       }
     }
@@ -1465,7 +1465,7 @@ void UiKeyboardFocus_MoveNext(void)
     return;
   }
   /* Pre-order walk from the focus node, wrapping around through the topmost ancestor. */
-  while( true ) {
+  do {
     nextNode = node->firstChild;
     if (nextNode == UI_NODE_NONE) {
       while ((nextNode = node->nextSibling, nextNode == UI_NODE_NONE) &&
@@ -1477,11 +1477,10 @@ void UiKeyboardFocus_MoveNext(void)
       }
     }
     node = nextNode;
-    if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
-    if (node == g_UiKeyboardFocusNode) {
-      return;
-    }
-    if ((node->nodeFlags & UI_NODE_SUPPRESSED) == 0) break;
+  } while (((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) ||
+           ((node != g_UiKeyboardFocusNode) && ((node->nodeFlags & UI_NODE_SUPPRESSED) != 0)));
+  if (node == g_UiKeyboardFocusNode) {
+    return; /* back at the focus node: no other focus target */
   }
   UiKeyboardFocus_Set(node);
   return;
@@ -1521,10 +1520,7 @@ void UiPointer_DispatchMotionAndWheel
     }
     return;
   }
-  while( true ) {
-    if (root == UI_ROOT_STACK_END) {
-      return;
-    }
+  while (root != UI_ROOT_STACK_END) {
     if (((((root->base).left <= pointerX) && ((root->base).top <= pointerY)) &&
         (pointerX < (root->base).right)) && (pointerY < (root->base).bottom)) {
       targetNode = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
@@ -1544,7 +1540,9 @@ void UiPointer_DispatchMotionAndWheel
       return;
     }
     missPolicyResult = missPolicy(root);
-    if (-1 < missPolicyResult) break;
+    if (-1 < missPolicyResult) {
+      return;
+    }
     root = root->previousRoot;
   }
   return;

@@ -264,12 +264,9 @@ void GridInfluence_SetLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radi
         oppositeWalkCursor--;
         rowOrWalkerValue = rowOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        walkCursor++;
-        rowOrWalkerValue = GridInfluence_SetLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
-                           columnOrWalkerValue,&walkCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (walkCursor++, rowOrWalkerValue = GridInfluence_SetLowDistanceBandsDiagonalPositive
+                                   (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
+                                   columnOrWalkerValue,&walkCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
       /* row below: downward walks, rightwards then leftwards */
@@ -283,12 +280,9 @@ void GridInfluence_SetLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radi
         walkCursor++;
         rowOrWalkerValue = rowOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        centerCellCursor--;
-        rowOrWalkerValue = GridInfluence_SetLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
-                           columnOrWalkerValue,&centerCellCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (centerCellCursor--, rowOrWalkerValue = GridInfluence_SetLowDistanceBandsDiagonalNegative
+                                   (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
+                                   columnOrWalkerValue,&centerCellCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
       return;
@@ -385,12 +379,9 @@ void GridInfluence_SetHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits rad
         oppositeWalkCursor--;
         rowOrWalkerValue = rowOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        walkCursor++;
-        rowOrWalkerValue = GridInfluence_SetHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
-                           columnOrWalkerValue,&walkCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (walkCursor++, rowOrWalkerValue = GridInfluence_SetHighDistanceBandsDiagonalPositive
+                                   (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
+                                   columnOrWalkerValue,&walkCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
       /* row below: downward walks, rightwards then leftwards */
@@ -404,12 +395,9 @@ void GridInfluence_SetHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits rad
         walkCursor++;
         rowOrWalkerValue = rowOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        centerCellCursor--;
-        rowOrWalkerValue = GridInfluence_SetHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
-                           columnOrWalkerValue,&centerCellCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (centerCellCursor--, rowOrWalkerValue = GridInfluence_SetHighDistanceBandsDiagonalNegative
+                                   (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
+                                   columnOrWalkerValue,&centerCellCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
       return;
@@ -506,12 +494,9 @@ void GridInfluence_ClearLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits ra
         oppositeWalkCursor--;
         rowOrWalkerValue = rowOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        walkCursor++;
-        rowOrWalkerValue = GridInfluence_ClearLowDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
-                           columnOrWalkerValue,&walkCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (walkCursor++, rowOrWalkerValue = GridInfluence_ClearLowDistanceBandsDiagonalPositive
+                                   (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
+                                   columnOrWalkerValue,&walkCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
       /* row below: downward walks, rightwards then leftwards */
@@ -525,12 +510,9 @@ void GridInfluence_ClearLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits ra
         walkCursor++;
         rowOrWalkerValue = rowOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        centerCellCursor--;
-        rowOrWalkerValue = GridInfluence_ClearLowDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
-                           columnOrWalkerValue,&centerCellCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (centerCellCursor--, rowOrWalkerValue = GridInfluence_ClearLowDistanceBandsDiagonalNegative
+                                   (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
+                                   columnOrWalkerValue,&centerCellCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
       return;
@@ -627,12 +609,9 @@ void GridInfluence_ClearHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits r
         oppositeWalkCursor--;
         rowOrWalkerValue = rowOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        walkCursor++;
-        rowOrWalkerValue = GridInfluence_ClearHighDistanceBandsDiagonalPositive
-                          (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
-                           columnOrWalkerValue,&walkCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (walkCursor++, rowOrWalkerValue = GridInfluence_ClearHighDistanceBandsDiagonalPositive
+                                   (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
+                                   columnOrWalkerValue,&walkCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
       /* row below: downward walks, rightwards then leftwards */
@@ -646,12 +625,9 @@ void GridInfluence_ClearHighDistanceBandsAroundWorldPoint(FieldGridRadiusUnits r
         walkCursor++;
         rowOrWalkerValue = rowOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        centerCellCursor--;
-        rowOrWalkerValue = GridInfluence_ClearHighDistanceBandsDiagonalNegative
-                          (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
-                           columnOrWalkerValue,&centerCellCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (centerCellCursor--, rowOrWalkerValue = GridInfluence_ClearHighDistanceBandsDiagonalNegative
+                                   (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
+                                   columnOrWalkerValue,&centerCellCursor->stateMask), rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
       return;

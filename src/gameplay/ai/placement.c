@@ -109,63 +109,60 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
   uint32_t workspace02CapOrWeight;
   uint32_t secondaryDistanceCap;
   AiKnowledgeDataImage *knowledgeData;
-  int deltaXOrPrimaryTerm;
+  int primaryTerm;
   uint32_t workspace02Distance;
   uint32_t secondaryDistance;
   uint32_t remainingCount;
+  int deltaX;
   int deltaY;
   AiScoredSiteWorkspaceEntry *siteEntry;
   
   remainingCount = g_AiWorkspace05Count;
   siteEntry = g_AiWorkspace05GeneralSites;
-  while( true ) {
-    if (remainingCount == 0) {
-      cellWorldX = currentCell->worldX;
-      cellWorldY = currentCell->worldY;
-      if (g_AiWorkspace05Count < AI_WORKSPACE05_CAPACITY) {
-        siteEntry->cellWorldXQ12 = cellWorldX;
-        siteEntry->cellWorldYQ12 = cellWorldY;
-        siteEntry->cell = currentCell;
-        knowledgeData = g_AiKnowledgeData;
-        primaryCapOrWeight = (g_AiKnowledgeData->parameters).generalSitePrimaryDistanceCapQ12;
-        deltaXOrPrimaryTerm = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
-        deltaXOrPrimaryTerm = primaryCapOrWeight - deltaXOrPrimaryTerm;
-        if (deltaXOrPrimaryTerm < 0) {
-          deltaXOrPrimaryTerm = 0;
-        }
-        primaryCapOrWeight = (knowledgeData->parameters).generalSitePrimaryDistanceCoefficient;
-        workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCapQ12;
-        workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
-        if ((int)workspace02CapOrWeight < (int)workspace02Distance) {
-          workspace02Distance = workspace02CapOrWeight;
-        }
-        workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCoefficient;
-        secondaryDistanceCap = (knowledgeData->parameters).generalSiteSecondaryDistanceCapQ12;
-        secondaryDistance = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
-        if ((int)secondaryDistanceCap < (int)secondaryDistance) {
-          secondaryDistance = secondaryDistanceCap;
-        }
-        g_AiWorkspace05Count++;
-        siteEntry->score =
-             deltaXOrPrimaryTerm * primaryCapOrWeight + workspace02Distance * workspace02CapOrWeight +
-             secondaryDistance * (knowledgeData->parameters).generalSiteSecondaryDistanceCoefficient;
-      }
-      return;
-    }
-    deltaXOrPrimaryTerm = siteEntry->cellWorldXQ12 - currentCell->worldX;
-    if (deltaXOrPrimaryTerm < 0) {
-      deltaXOrPrimaryTerm = -deltaXOrPrimaryTerm;
+  for (; remainingCount != 0; siteEntry++, remainingCount--) {
+    deltaX = siteEntry->cellWorldXQ12 - currentCell->worldX;
+    if (deltaX < 0) {
+      deltaX = -deltaX;
     }
     deltaY = siteEntry->cellWorldYQ12 - currentCell->worldY;
     if (deltaY < 0) {
       deltaY = -deltaY;
     }
-    if ((deltaXOrPrimaryTerm < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12) &&
-       (deltaY < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12)) break;
-    siteEntry++;
-    remainingCount--;
+    if ((deltaX < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12) &&
+       (deltaY < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12)) {
+      return;
+    }
   }
-  return;
+  cellWorldX = currentCell->worldX;
+  cellWorldY = currentCell->worldY;
+  if (g_AiWorkspace05Count < AI_WORKSPACE05_CAPACITY) {
+    siteEntry->cellWorldXQ12 = cellWorldX;
+    siteEntry->cellWorldYQ12 = cellWorldY;
+    siteEntry->cell = currentCell;
+    knowledgeData = g_AiKnowledgeData;
+    primaryCapOrWeight = (g_AiKnowledgeData->parameters).generalSitePrimaryDistanceCapQ12;
+    primaryTerm = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+    primaryTerm = primaryCapOrWeight - primaryTerm;
+    if (primaryTerm < 0) {
+      primaryTerm = 0;
+    }
+    primaryCapOrWeight = (knowledgeData->parameters).generalSitePrimaryDistanceCoefficient;
+    workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCapQ12;
+    workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
+    if ((int)workspace02CapOrWeight < (int)workspace02Distance) {
+      workspace02Distance = workspace02CapOrWeight;
+    }
+    workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCoefficient;
+    secondaryDistanceCap = (knowledgeData->parameters).generalSiteSecondaryDistanceCapQ12;
+    secondaryDistance = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+    if ((int)secondaryDistanceCap < (int)secondaryDistance) {
+      secondaryDistance = secondaryDistanceCap;
+    }
+    g_AiWorkspace05Count++;
+    siteEntry->score =
+         primaryTerm * primaryCapOrWeight + workspace02Distance * workspace02CapOrWeight +
+         secondaryDistance * (knowledgeData->parameters).generalSiteSecondaryDistanceCoefficient;
+  }
 }
 
 
@@ -190,42 +187,8 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
 
   remainingCount = g_AiWorkspace06Count;
   siteEntryBytes = g_AiWorkspace06FlaggedSites;
-  while( true ) {
-    if (remainingCount == 0) {
-      cellWorldX = currentCell->worldX;
-      cellWorldY = currentCell->worldY;
-      if (g_AiWorkspace06Count < AI_WORKSPACE06_CAPACITY) {
-        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldXQ12 = cellWorldX;
-        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldYQ12 = cellWorldY;
-        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cell = currentCell;
-        /* the wrong-base reads (see above): the ki.dat parameter layout applied to the new entry's address */
-        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCapQ12;
-        deltaYOrDistanceOrWeight = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
-        deltaXOrCapTerm = deltaXOrCapTerm - deltaYOrDistanceOrWeight;
-        if (deltaXOrCapTerm < 0) {
-          deltaXOrCapTerm = 0;
-        }
-        deltaYOrDistanceOrWeight = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCoefficient;
-        workspace02CapOrScore = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCapQ12;
-        workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
-        if (workspace02CapOrScore < workspace02Distance) {
-          workspace02Distance = workspace02CapOrScore;
-        }
-        workspace02CapOrScore =
-             deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance *
-                  (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCoefficient;
-        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCapQ12;
-        deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
-        if (-1 < deltaXOrCapTerm - deltaYOrDistanceOrWeight) {
-          workspace02CapOrScore =
-               workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) *
-                    (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCoefficient;
-        }
-        g_AiWorkspace06Count++;
-        ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->score = workspace02CapOrScore;
-      }
-      return;
-    }
+  for (; remainingCount != 0;
+       siteEntryBytes = siteEntryBytes + sizeof(AiScoredSiteWorkspaceEntry), remainingCount--) {
     deltaXOrCapTerm = *(int *)siteEntryBytes - currentCell->worldX;
     if (deltaXOrCapTerm < 0) {
       deltaXOrCapTerm = -deltaXOrCapTerm;
@@ -235,11 +198,42 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
       deltaYOrDistanceOrWeight = -deltaYOrDistanceOrWeight;
     }
     if ((deltaXOrCapTerm < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12) &&
-       (deltaYOrDistanceOrWeight < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) break;
-    siteEntryBytes = siteEntryBytes + sizeof(AiScoredSiteWorkspaceEntry);
-    remainingCount--;
+       (deltaYOrDistanceOrWeight < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) {
+      return;
+    }
   }
-  return;
+  cellWorldX = currentCell->worldX;
+  cellWorldY = currentCell->worldY;
+  if (g_AiWorkspace06Count < AI_WORKSPACE06_CAPACITY) {
+    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldXQ12 = cellWorldX;
+    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldYQ12 = cellWorldY;
+    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cell = currentCell;
+    /* the wrong-base reads (see above): the ki.dat parameter layout applied to the new entry's address */
+    deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCapQ12;
+    deltaYOrDistanceOrWeight = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+    deltaXOrCapTerm = deltaXOrCapTerm - deltaYOrDistanceOrWeight;
+    if (deltaXOrCapTerm < 0) {
+      deltaXOrCapTerm = 0;
+    }
+    deltaYOrDistanceOrWeight = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCoefficient;
+    workspace02CapOrScore = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCapQ12;
+    workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
+    if (workspace02CapOrScore < workspace02Distance) {
+      workspace02Distance = workspace02CapOrScore;
+    }
+    workspace02CapOrScore =
+         deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance *
+              (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCoefficient;
+    deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCapQ12;
+    deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+    if (-1 < deltaXOrCapTerm - deltaYOrDistanceOrWeight) {
+      workspace02CapOrScore =
+           workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) *
+                (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCoefficient;
+    }
+    g_AiWorkspace06Count++;
+    ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->score = workspace02CapOrScore;
+  }
 }
 
 
@@ -299,49 +293,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
     }
     workspace00Entry++;
   }
-  do {
-    if (remainingFeatureCount == 0) {
-      if (g_AiWorkspace08Count < AI_WORKSPACE08_CAPACITY) {
-        terrainFeatureEntry->cell = terrainFeatureCell;
-        terrainFeatureEntry->armyAssetId = featureAssetId;
-        nearestDistanceOrPriority = INT32_MAX;
-        workspace00Entry = g_AiWorkspace00Structures;
-        for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
-          if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
-            entityOrDeltaY =
-                 (int)((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
-            entityDeltaX =
-                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.x - terrainFeatureCell->worldX;
-            if (entityDeltaX < 0) {
-              entityDeltaX = -entityDeltaX;
-            }
-            entityOrDeltaY =
-                 ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.y - terrainFeatureCell->worldY;
-            if (entityOrDeltaY < 0) {
-              entityOrDeltaY = -entityOrDeltaY;
-            }
-            if (((featureAssetId == workspace00Entry->armyAssetId) &&
-                (entityDeltaX < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12
-                )) && (entityOrDeltaY < (int)(g_AiKnowledgeData->parameters).
-                                    terrainFeatureMinimumAxisSeparationQ12)) {
-              return;
-            }
-            if (entityDeltaX + entityOrDeltaY < nearestDistanceOrPriority) {
-              nearestDistanceOrPriority = entityDeltaX + entityOrDeltaY;
-            }
-          }
-          workspace00Entry++;
-        }
-        nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 -
-             nearestDistanceOrPriority;
-        if (nearestDistanceOrPriority < 0) {
-          nearestDistanceOrPriority = 0;
-        }
-        g_AiWorkspace08Count++;
-        terrainFeatureEntry->priority = nearestDistanceOrPriority;
-      }
-      return;
-    }
+  for (; remainingFeatureCount != 0; remainingFeatureCount--, terrainFeatureEntry++) {
     if (featureAssetId == terrainFeatureEntry->armyAssetId) {
       countOrDeltaX = terrainFeatureEntry->cell->worldX - terrainFeatureCell->worldX;
       if (countOrDeltaX < 0) {
@@ -397,9 +349,46 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
         } while( true );
       }
     }
-    remainingFeatureCount--;
-    terrainFeatureEntry++;
-  } while( true );
+  }
+  if (g_AiWorkspace08Count < AI_WORKSPACE08_CAPACITY) {
+    terrainFeatureEntry->cell = terrainFeatureCell;
+    terrainFeatureEntry->armyAssetId = featureAssetId;
+    nearestDistanceOrPriority = INT32_MAX;
+    workspace00Entry = g_AiWorkspace00Structures;
+    for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
+      if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
+        entityOrDeltaY =
+             (int)((ModelRuntimeSlot *)workspace00Entry->runtimeSlotAddressOrZero)->rootModelNodeOrSavedOffset.modelNode;
+        entityDeltaX =
+             ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.x - terrainFeatureCell->worldX;
+        if (entityDeltaX < 0) {
+          entityDeltaX = -entityDeltaX;
+        }
+        entityOrDeltaY =
+             ((ModelRuntimeNode *)entityOrDeltaY)->worldTransform.translation.y - terrainFeatureCell->worldY;
+        if (entityOrDeltaY < 0) {
+          entityOrDeltaY = -entityOrDeltaY;
+        }
+        if (((featureAssetId == workspace00Entry->armyAssetId) &&
+            (entityDeltaX < (int)(g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12
+            )) && (entityOrDeltaY < (int)(g_AiKnowledgeData->parameters).
+                                terrainFeatureMinimumAxisSeparationQ12)) {
+          return;
+        }
+        if (entityDeltaX + entityOrDeltaY < nearestDistanceOrPriority) {
+          nearestDistanceOrPriority = entityDeltaX + entityOrDeltaY;
+        }
+      }
+      workspace00Entry++;
+    }
+    nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 -
+         nearestDistanceOrPriority;
+    if (nearestDistanceOrPriority < 0) {
+      nearestDistanceOrPriority = 0;
+    }
+    g_AiWorkspace08Count++;
+    terrainFeatureEntry->priority = nearestDistanceOrPriority;
+  }
 }
 
 
@@ -549,14 +538,7 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
   knowledgeData = g_AiKnowledgeData;
   countOrTritium = g_AiWorkspace08Count;
   featureEntry = g_AiWorkspace08TerrainFeatureSites;
-  while( true ) {
-    if (countOrTritium == 0) {
-      /* No site (CF set): EAX holds whatever the last check left there; callers read the score only with CF
-         clear. */
-      weightResult.noSite = true;
-      weightResult.score = 0;
-      return weightResult;
-    }
+  for (; countOrTritium != 0; featureEntry++, countOrTritium--) {
     workspaceRecord = featureEntry->cell;
     clusterRejected = AiPlacement_ReserveMode3SiteCluster
                       (featureEntry->armyAssetId,workspaceRecord,factionIndex,worldRuntime);
@@ -565,29 +547,32 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
          (int)AiHostileWorkspace_GetNearestUnseenHostileDistance(workspaceRecord->worldY,workspaceRecord->worldX))
         && ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <=
             (int)AiHostileWorkspace_GetNearestVisibleHostileDistance
-                   (workspaceRecord->worldY,workspaceRecord->worldX)))
-    break;
-    featureEntry++;
-    countOrTritium--;
-  }
-  countOrTritium = AiPrimaryWorkspace_CountAssignedEntriesById(featureEntry->armyAssetId);
-  baseWeight = (knowledgeData->parameters).specialSite14aBaseWeight;
-  if (featureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
-    baseWeight = (knowledgeData->parameters).specialSite14cBaseWeight;
-  }
-  weight = (baseWeight * 3) / (countOrTritium * 2 + 6U);
-  if (featureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
-    countOrTritium = g_GameFactionRuntimeImage.records[factionIndex].tritiumCurrentQ4 << 8;
-    if (countOrTritium != 0) {
-      weight = (uint32_t)(((int64_t)(int)weight *
-                     (int64_t)
-                     (int)(g_GameFactionRuntimeImage.records[factionIndex].unpoweredEnergyDemandQ4 *
-                           2 + g_GameFactionRuntimeImage.records[factionIndex].
-                               suppliedEnergyDemandQ4)) / (int64_t)countOrTritium);
+                   (workspaceRecord->worldY,workspaceRecord->worldX))) {
+      countOrTritium = AiPrimaryWorkspace_CountAssignedEntriesById(featureEntry->armyAssetId);
+      baseWeight = (knowledgeData->parameters).specialSite14aBaseWeight;
+      if (featureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
+        baseWeight = (knowledgeData->parameters).specialSite14cBaseWeight;
+      }
+      weight = (baseWeight * 3) / (countOrTritium * 2 + 6U);
+      if (featureEntry->armyAssetId != ARM_0330_BUILDING_MDL0303) {
+        countOrTritium = g_GameFactionRuntimeImage.records[factionIndex].tritiumCurrentQ4 << 8;
+        if (countOrTritium != 0) {
+          weight = (uint32_t)(((int64_t)(int)weight *
+                         (int64_t)
+                         (int)(g_GameFactionRuntimeImage.records[factionIndex].unpoweredEnergyDemandQ4 *
+                               2 + g_GameFactionRuntimeImage.records[factionIndex].
+                                   suppliedEnergyDemandQ4)) / (int64_t)countOrTritium);
+        }
+      }
+      weightResult.noSite = false;
+      weightResult.score = weight;
+      return weightResult;
     }
   }
-  weightResult.noSite = false;
-  weightResult.score = weight;
+  /* No site (CF set): EAX holds whatever the last check left there; callers read the score only with CF
+     clear. */
+  weightResult.noSite = true;
+  weightResult.score = 0;
   return weightResult;
 }
 

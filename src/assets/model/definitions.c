@@ -135,15 +135,16 @@ StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset)
     for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
       registrationResult = ModelDefinition_RegisterAndResolveReferences(definition,asset);
       registrationStatusCode = registrationResult.valueOrError;
-      if (registrationResult.failed) goto ReturnFailure;
+      if (registrationResult.failed) break;
       /* advance by the record's leading byte size */
       definition = (ModelDefinitionResolveView *)((uint8_t *)definition + definition->byteSize);
     }
-    registrationResult.failed = false;
-    registrationResult.valueOrError = registrationStatusCode;
-    return registrationResult;
+    if (recordsRemaining == 0) {
+      registrationResult.failed = false;
+      registrationResult.valueOrError = registrationStatusCode;
+      return registrationResult;
+    }
   }
-ReturnFailure:
   failureResult.failed = true;
   failureResult.valueOrError = registrationStatusCode;
   return failureResult;
@@ -258,6 +259,7 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
   MeshRayTriangleResult missResult;
   MeshRayTriangleResult hitResult;
   bool hitFound;
+  bool planeOutOfRange;
 
   normalX = triangle->planeNormalX << (Q28_SHIFT - Q12_SHIFT);
   normalY = triangle->planeNormalY << (Q28_SHIFT - Q12_SHIFT);
@@ -283,16 +285,22 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
     distanceOrCrossX =
          (uint32_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY);
     halfOffsetOrEdge1Y = (int)offsetHighOrCrossZ >> 1;
+    /* Range test: the plane distance must lie within the maximum distance on the ray's side. */
     if ((int64_t)planeOffsetDot < 0) {
-      if ((int)offsetHighOrCrossZ < scaledHighOrEdge1X ||
+      planeOutOfRange = (int)offsetHighOrCrossZ < scaledHighOrEdge1X ||
           (halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY &&
-           (distanceOrCrossX = (uint32_t)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY)))
-        goto ReturnMiss;
+           (distanceOrCrossX = (uint32_t)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY));
     }
-    else if (scaledHighOrEdge1X < (int)offsetHighOrCrossZ ||
+    else {
+      planeOutOfRange = scaledHighOrEdge1X < (int)offsetHighOrCrossZ ||
              ((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y &&
-              (distanceOrCrossX = (uint32_t)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y)))
-      goto ReturnMiss;
+              (distanceOrCrossX = (uint32_t)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y));
+    }
+    if (planeOutOfRange) {
+      missResult.hit = false;
+      missResult.distanceQ12 = distanceOrCrossX;
+      return missResult;
+    }
     hitResult.distanceQ12 =
          (int)((int64_t)planeOffsetDot / (int64_t)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
     vertexA = triangle->vertex0;
@@ -352,7 +360,6 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
       return hitResult;
     }
   }
-ReturnMiss:
   missResult.hit = false;
   missResult.distanceQ12 = distanceOrCrossX;
   return missResult;

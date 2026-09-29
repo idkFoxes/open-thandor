@@ -62,19 +62,18 @@ void UiTransferMailbox_ServiceAndRetransmitTimer(void)
   g_UiTransferMailboxTickCounter++;
   lockBusy = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
   if (!lockBusy) {
-    /* Receive loop: every handled (or rejected) record jumps back here until the backend has no more data.
+    /* Receive loop: handles (or rejects) one record per pass until the backend has no more data.
        The datagram goes to ring slot g_UiRuntimeRecordWriteIndex (0x100 bytes), the sender's address to
        the matching 0x80-byte slot of the auxiliary buffer; the slot is only kept (write index advanced)
        for packets that are not handled here. */
-receiveNextRecord:
-    slotIndexOrByteCount = g_UiRuntimeRecordWriteIndex;
-    ringRecord = g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex;
-    nextIndexOrChunkSize = g_UiRuntimeRecordWriteIndex + 1;
-    receiveResult = g_NetworkBackendSlot4
-                       ((WinSockAddress *)
-                        (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),256,
-                        (uint8_t *)ringRecord);
-    if (!receiveResult.failed) {
+    while (slotIndexOrByteCount = g_UiRuntimeRecordWriteIndex,
+           ringRecord = g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex,
+           nextIndexOrChunkSize = g_UiRuntimeRecordWriteIndex + 1,
+           receiveResult = g_NetworkBackendSlot4
+                              ((WinSockAddress *)
+                               (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),256,
+                               (uint8_t *)ringRecord),
+           !receiveResult.failed) {
       UiTransfer_DecryptPacketBlocks
                 (g_UiTransferRoundKeys16,ringRecord,256,ringRecord);
       LOCK();
@@ -107,7 +106,7 @@ receiveNextRecord:
             if (g_UiTransferMailbox.receivedAllocation != NULL) {
               if (g_UiTransferMailbox.receivedAllocation == UI_TRANSFER_MAILBOX_UNAVAILABLE) {
                 allocResult = g_MemoryApi.alloc(slotIndexOrByteCount);
-                if (allocResult.failed) goto receiveNextRecord;
+                if (allocResult.failed) continue;
                 counterOrOffset = 0;
                 g_UiTransferMailbox.receivedAllocation = (void *)allocResult.payloadOrError;
                 g_UiTransferMailbox.receivedByteCount = slotIndexOrByteCount;
@@ -162,7 +161,7 @@ receiveNextRecord:
                     playerRecord->endpoint.ipv4AddressNetworkOrder))) {
               playerRecord++;
               playersRemaining--;
-              if (playersRemaining == 0) goto receiveNextRecord;
+              if (playersRemaining == 0) goto nextRecord; /* not a player: drop the request */
             }
             /* original quirk: ESI (receive scratch slot) instead of EBX (player record), see above */
             senderEndpointSlot->transferTimeoutTicks =
@@ -240,7 +239,7 @@ receiveNextRecord:
           }
         }
       }
-      goto receiveNextRecord;
+nextRecord: ;
     }
     /* no more data: re-request the missing chunk when the retry countdown expires */
     if (((g_UiTransferMailbox.receiveRetryTicks != 0) &&

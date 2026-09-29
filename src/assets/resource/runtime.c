@@ -111,36 +111,37 @@ ResourceLoadResult Resource_Load(uint16_t *path)
     if (openResult.failed) {
       openResult = g_FileSystemOpen(0,path);
       fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
-      if (openResult.failed) goto ReturnFailure;
     }
-    sizeResult = g_FileSystemGetSize(fileOrPackageResult.bufferOrError);
-    fileSize = (uint8_t *)sizeResult.sizeOrError;
-    sizeOrErrorCode = fileSize;
-    if (!sizeResult.failed) {
-      allocResult = g_MemoryApi.alloc((uint32_t)fileSize);
-      fileLoadResult.bufferOrError = (void *)allocResult.payloadOrError;
-      failureByteCount = (uint32_t)fileSize;
-      if (allocResult.failed) {
-        /* the requested size becomes the detail line of the out-of-memory message */
-        g_WideNumberFormatUtf16
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)fileSize,g_FatalErrorDetail1Utf16);
-        sizeOrErrorCode = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
-      }
-      else {
-        readResult = g_FileSystemReadExact((FileIoByteCount)fileSize,fileLoadResult.bufferOrError,
-                                           fileOrPackageResult.bufferOrError);
-        sizeOrErrorCode = (uint8_t *)readResult.valueOrError;
-        if (!readResult.failed) {
-          g_FileSystemClose(fileOrPackageResult.bufferOrError);
-          fileLoadResult.byteCount = (uint32_t)fileSize;
-          fileLoadResult.failed = false;
-          return fileLoadResult;
+    if (!openResult.failed) {
+      sizeResult = g_FileSystemGetSize(fileOrPackageResult.bufferOrError);
+      fileSize = (uint8_t *)sizeResult.sizeOrError;
+      sizeOrErrorCode = fileSize;
+      if (!sizeResult.failed) {
+        allocResult = g_MemoryApi.alloc((uint32_t)fileSize);
+        fileLoadResult.bufferOrError = (void *)allocResult.payloadOrError;
+        failureByteCount = (uint32_t)fileSize;
+        if (allocResult.failed) {
+          /* the requested size becomes the detail line of the out-of-memory message */
+          g_WideNumberFormatUtf16
+                    (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)fileSize,g_FatalErrorDetail1Utf16);
+          sizeOrErrorCode = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
         }
-        g_MemoryApi.free(fileLoadResult.bufferOrError);
+        else {
+          readResult = g_FileSystemReadExact((FileIoByteCount)fileSize,fileLoadResult.bufferOrError,
+                                             fileOrPackageResult.bufferOrError);
+          sizeOrErrorCode = (uint8_t *)readResult.valueOrError;
+          if (!readResult.failed) {
+            g_FileSystemClose(fileOrPackageResult.bufferOrError);
+            fileLoadResult.byteCount = (uint32_t)fileSize;
+            fileLoadResult.failed = false;
+            return fileLoadResult;
+          }
+          g_MemoryApi.free(fileLoadResult.bufferOrError);
+        }
       }
+      g_FileSystemClose(fileOrPackageResult.bufferOrError);
+      fileOrPackageResult.bufferOrError = sizeOrErrorCode;
     }
-    g_FileSystemClose(fileOrPackageResult.bufferOrError);
-    fileOrPackageResult.bufferOrError = sizeOrErrorCode;
   }
   else {
     fileOrPackageResult.bufferOrError = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
@@ -160,7 +161,6 @@ ResourceLoadResult Resource_Load(uint16_t *path)
       }
     }
   }
-ReturnFailure:
   failureResult.byteCount = failureByteCount;
   failureResult.bufferOrError = (uint32_t)fileOrPackageResult.bufferOrError;
   failureResult.failed = true;
@@ -374,11 +374,10 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
   runtimeSlotsRemaining = EFFECT_RUNTIME_SLOT_COUNT;
   runtimeSlotCursor = g_EffectRuntimeSlots;
   do {
-    while( true ) {
-      slotCompletionAction = runtimeSlotCursor->completionAction;
-      ownerModelNode =
-           runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
-      if (runtimeSlotCursor->modelNodeOrSavedOffset.modelNode != NULL) break;
+    while (slotCompletionAction = runtimeSlotCursor->completionAction,
+           ownerModelNode =
+                runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode,
+           runtimeSlotCursor->modelNodeOrSavedOffset.modelNode == NULL) {
       /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
       for (clearDwordsRemaining = 16; effectRuntimeSlotsBase = g_EffectRuntimeSlots,
           clearDwordsRemaining != 0; clearDwordsRemaining--) {
@@ -444,10 +443,9 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
   runtimeSlotsRemaining = SHOT_RUNTIME_SLOT_COUNT;
   runtimeSlotCursor = g_ShotRuntimeSlots;
   do {
-    while( true ) {
-      runtimeStateRef = runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer;
-      ownerArmyRuntime = runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime;
-      if (runtimeSlotCursor->modelNodeOrSavedOffset.modelNode != NULL) break;
+    while (runtimeStateRef = runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer,
+           ownerArmyRuntime = runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime,
+           runtimeSlotCursor->modelNodeOrSavedOffset.modelNode == NULL) {
       /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
       for (clearDwordsRemaining = 16; shotRuntimeSlotsBase = g_ShotRuntimeSlots,
           clearDwordsRemaining != 0; clearDwordsRemaining--) {

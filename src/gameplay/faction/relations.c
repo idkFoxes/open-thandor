@@ -253,26 +253,24 @@ bool GameFactionRelations_EvaluateTransitionRules
            0xFC end, anything else pushes the satisfied bit of that condition index */
         expressionCursor = &conditionCursor->conditions[0].statusAndKind.kindAndExpression[1];
         kindOrStackValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
-        while( true ) {
-          while( true ) {
-            while( true ) {
-              while( true ) {
-                tokenOrFactionIndex = *expressionCursor;
-                expressionCursor = expressionCursor + 1;
-                if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_OR) break;
-                kindOrStackValue = kindOrStackValue >> 1 | kindOrStackValue & 1;
-              }
-              if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_AND) break;
-              kindOrStackValue = kindOrStackValue >> 1 & (kindOrStackValue | ~1u);
-            }
-            if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_NOT) break;
+        do {
+          /* read the next token; runs of OR tokens are applied in this inner loop (the original's code shape) */
+          while (tokenOrFactionIndex = *expressionCursor, expressionCursor = expressionCursor + 1,
+                 tokenOrFactionIndex == INGAME_CONDITION_TOKEN_OR) {
+            kindOrStackValue = kindOrStackValue >> 1 | kindOrStackValue & 1;
+          }
+          if (tokenOrFactionIndex == INGAME_CONDITION_TOKEN_AND) {
+            kindOrStackValue = kindOrStackValue >> 1 & (kindOrStackValue | ~1u);
+          }
+          else if (tokenOrFactionIndex == INGAME_CONDITION_TOKEN_NOT) {
             kindOrStackValue = kindOrStackValue ^ 1;
           }
-          if (tokenOrFactionIndex == INGAME_CONDITION_TOKEN_END) break;
-          kindOrStackValue =
-               ((levelConditionStorage->schedule).conditions[tokenOrFactionIndex].statusAndKind.kind &
-                INGAME_SCHEDULED_CONDITION_SATISFIED) + kindOrStackValue * 2;
-        }
+          else if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_END) {
+            kindOrStackValue =
+                 ((levelConditionStorage->schedule).conditions[tokenOrFactionIndex].statusAndKind.kind &
+                  INGAME_SCHEDULED_CONDITION_SATISFIED) + kindOrStackValue * 2;
+          }
+        } while (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_END);
         conditionCursor->conditions[0].statusAndKind.kind =
              conditionCursor->conditions[0].statusAndKind.kind | kindOrStackValue & 1;
       }

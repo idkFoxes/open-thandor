@@ -429,10 +429,11 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
         leftDeltaCursor = leftDeltaCursor - 1;
       } while (referenceMaterial == cellMaterial);
       /* the matching cells to its right; gridX ends one past the run */
-      while( true ) {
-        gridX = gridX + 1;
-        rightDeltaCursor = rightDeltaCursor + 1;
-        if ((widthOrColumn <= gridX) || (cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial != cellMaterial)) break;
+      for (gridX = gridX + 1, rightDeltaCursor = rightDeltaCursor + 1;
+           (widthOrColumn > gridX) &&
+           (cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK,
+            referenceMaterial == cellMaterial);
+           gridX = gridX + 1, rightDeltaCursor = rightDeltaCursor + 1) {
         columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
         rightCell[1].flagsAndMaterial = rightCell[1].flagsAndMaterial - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
@@ -499,10 +500,11 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
         leftCell = leftCell - 1;
         leftDeltaCursor = leftDeltaCursor - 1;
       } while (referenceMaterial != cellMaterial);
-      while( true ) {
-        gridX = gridX + 1;
-        rightDeltaCursor = rightDeltaCursor + 1;
-        if ((widthOrColumn <= gridX) || (cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial == cellMaterial)) break;
+      for (gridX = gridX + 1, rightDeltaCursor = rightDeltaCursor + 1;
+           (widthOrColumn > gridX) &&
+           (cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK,
+            referenceMaterial != cellMaterial);
+           gridX = gridX + 1, rightDeltaCursor = rightDeltaCursor + 1) {
         columnOrMaterialDelta = cellMaterial - referenceMaterial;
         rightCell[1].flagsAndMaterial = rightCell[1].flagsAndMaterial - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;

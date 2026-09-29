@@ -870,159 +870,157 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
   /* First record with this key whose modifier requirement matches: a record without required modifiers only
      matches when neither Ctrl nor Alt is held (Shift is ignored). The key-code 0 record terminates the table. */
   nextRecord = &g_InGameCameraCommandDispatchRecords16;
-  while( true ) {
-    currentRecord = nextRecord;
-    recordKeyCode = currentRecord->records[0].keyCode;
-    requiredModifiers = currentRecord->records[0].requiredModifierMask;
-    if (recordKeyCode == 0) {
-      return;
-    }
+  for (currentRecord = nextRecord;
+       recordKeyCode = currentRecord->records[0].keyCode,
+       requiredModifiers = currentRecord->records[0].requiredModifierMask, recordKeyCode != 0;
+       currentRecord = nextRecord) {
     nextRecord = (InGameCameraCommandDispatchTable *)(currentRecord->records + 1);
-    if (recordKeyCode != commandCode) continue;
-    if ((requiredModifiers == 0) ? ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0)
-                                 : ((modifierFlags & requiredModifiers) != 0))
-    break;
-  }
-  /* The original jumps to the record's continuation address; the cases are those addresses. */
-  switch(currentRecord->records[0].continuationEntryAddress) {
-  case 0x56f360: /* 1..7: recall bookmark n */
-    WorldRuntime_SetCameraPositionKeepingTarget
-              (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,
-               g_LevelCameraBookmark1PositionXQ12,worldRuntime);
-    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark1PackedAngles >> 16,bookmark1PackedAngles & FIXED_ANGLE16_MASK,
-               g_LevelCameraBookmark1PositionMagnitudeQ12,
-               worldRuntime);
-    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-    break;
-  case 0x56f3b0:
-    WorldRuntime_SetCameraPositionKeepingTarget
-              (g_LevelCameraBookmark2PositionZQ12,g_LevelCameraBookmark2PositionYQ12,
-               g_LevelCameraBookmark2PositionXQ12,worldRuntime);
-    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark2PackedAngles >> 16,bookmark2PackedAngles & FIXED_ANGLE16_MASK,
-               g_LevelCameraBookmark2PositionMagnitudeQ12,
-               worldRuntime);
-    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-    break;
-  case 0x56f400:
-    WorldRuntime_SetCameraPositionKeepingTarget
-              (g_LevelCameraBookmark3PositionZQ12,g_LevelCameraBookmark3PositionYQ12,
-               g_LevelCameraBookmark3PositionXQ12,worldRuntime);
-    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark3PackedAngles >> 16,bookmark3PackedAngles & FIXED_ANGLE16_MASK,
-               g_LevelCameraBookmark3PositionMagnitudeQ12,
-               worldRuntime);
-    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-    break;
-  case 0x56f450:
-    WorldRuntime_SetCameraPositionKeepingTarget
-              (g_LevelCameraBookmark4PositionZQ12,g_LevelCameraBookmark4PositionYQ12,
-               g_LevelCameraBookmark4PositionXQ12,worldRuntime);
-    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark4PackedAngles >> 16,bookmark4PackedAngles & FIXED_ANGLE16_MASK,
-               g_LevelCameraBookmark4PositionMagnitudeQ12,
-               worldRuntime);
-    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-    break;
-  case 0x56f4a0:
-    WorldRuntime_SetCameraPositionKeepingTarget
-              (g_LevelCameraBookmark5PositionZQ12,g_LevelCameraBookmark5PositionYQ12,
-               g_LevelCameraBookmark5PositionXQ12,worldRuntime);
-    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark5PackedAngles >> 16,bookmark5PackedAngles & FIXED_ANGLE16_MASK,
-               g_LevelCameraBookmark5PositionMagnitudeQ12,
-               worldRuntime);
-    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-    break;
-  case 0x56f4f0:
-    WorldRuntime_SetCameraPositionKeepingTarget
-              (g_LevelCameraBookmark6PositionZQ12,g_LevelCameraBookmark6PositionYQ12,
-               g_LevelCameraBookmark6PositionXQ12,worldRuntime);
-    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark6PackedAngles >> 16,bookmark6PackedAngles & FIXED_ANGLE16_MASK,
-               g_LevelCameraBookmark6PositionMagnitudeQ12,
-               worldRuntime);
-    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-    break;
-  case 0x56f540:
-    WorldRuntime_SetCameraPositionKeepingTarget
-              (g_LevelCameraBookmark7PositionZQ12,g_LevelCameraBookmark7PositionYQ12,
-               g_LevelCameraBookmark7PositionXQ12,worldRuntime);
-    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark7PackedAngles >> 16,bookmark7PackedAngles & FIXED_ANGLE16_MASK,
-               g_LevelCameraBookmark7PositionMagnitudeQ12,
-               worldRuntime);
-    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-    break;
-  case 0x56f590: /* Alt+1..7: store the camera as bookmark n (heading low word, pitch high word) */
-    g_LevelCameraBookmark1PositionXQ12 = (worldRuntime->motion).positionXQ12;
-    g_LevelCameraBookmark1PositionYQ12 = (worldRuntime->motion).positionYQ12;
-    g_LevelCameraBookmark1PositionZQ12 = (worldRuntime->motion).positionZQ12;
-    g_LevelCameraBookmark1PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-    g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-    break;
-  case 0x56f5e0:
-    g_LevelCameraBookmark2PositionXQ12 = (worldRuntime->motion).positionXQ12;
-    g_LevelCameraBookmark2PositionYQ12 = (worldRuntime->motion).positionYQ12;
-    g_LevelCameraBookmark2PositionZQ12 = (worldRuntime->motion).positionZQ12;
-    g_LevelCameraBookmark2PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-    g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-    break;
-  case 0x56f630:
-    g_LevelCameraBookmark3PositionXQ12 = (worldRuntime->motion).positionXQ12;
-    g_LevelCameraBookmark3PositionYQ12 = (worldRuntime->motion).positionYQ12;
-    g_LevelCameraBookmark3PositionZQ12 = (worldRuntime->motion).positionZQ12;
-    g_LevelCameraBookmark3PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-    g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-    break;
-  case 0x56f680:
-    g_LevelCameraBookmark4PositionXQ12 = (worldRuntime->motion).positionXQ12;
-    g_LevelCameraBookmark4PositionYQ12 = (worldRuntime->motion).positionYQ12;
-    g_LevelCameraBookmark4PositionZQ12 = (worldRuntime->motion).positionZQ12;
-    g_LevelCameraBookmark4PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-    g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-    break;
-  case 0x56f6d0:
-    g_LevelCameraBookmark5PositionXQ12 = (worldRuntime->motion).positionXQ12;
-    g_LevelCameraBookmark5PositionYQ12 = (worldRuntime->motion).positionYQ12;
-    g_LevelCameraBookmark5PositionZQ12 = (worldRuntime->motion).positionZQ12;
-    g_LevelCameraBookmark5PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-    g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-    break;
-  case 0x56f720:
-    g_LevelCameraBookmark6PositionXQ12 = (worldRuntime->motion).positionXQ12;
-    g_LevelCameraBookmark6PositionYQ12 = (worldRuntime->motion).positionYQ12;
-    g_LevelCameraBookmark6PositionZQ12 = (worldRuntime->motion).positionZQ12;
-    g_LevelCameraBookmark6PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-    g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-    break;
-  case 0x56f770:
-    g_LevelCameraBookmark7PositionXQ12 = (worldRuntime->motion).positionXQ12;
-    g_LevelCameraBookmark7PositionYQ12 = (worldRuntime->motion).positionYQ12;
-    g_LevelCameraBookmark7PositionZQ12 = (worldRuntime->motion).positionZQ12;
-    g_LevelCameraBookmark7PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-    g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 =
-         (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
-    break;
-  case 0x56f7d0: /* Alt+S */
-    worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_SHADING_ENABLED;
-    break;
-  case 0x56f7e0: /* Ctrl+C */
-    worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA;
+    if ((recordKeyCode != commandCode) ||
+        !((requiredModifiers == 0) ? ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) == 0)
+                                   : ((modifierFlags & requiredModifiers) != 0))) continue;
+    /* Matching record: run its command and stop. The original jumps to the record's continuation address; the
+       cases are those addresses. */
+    switch(currentRecord->records[0].continuationEntryAddress) {
+    case 0x56f360: /* 1..7: recall bookmark n */
+      WorldRuntime_SetCameraPositionKeepingTarget
+                (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,
+                 g_LevelCameraBookmark1PositionXQ12,worldRuntime);
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+                (2,(int)bookmark1PackedAngles >> 16,bookmark1PackedAngles & FIXED_ANGLE16_MASK,
+                 g_LevelCameraBookmark1PositionMagnitudeQ12,
+                 worldRuntime);
+      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+      break;
+    case 0x56f3b0:
+      WorldRuntime_SetCameraPositionKeepingTarget
+                (g_LevelCameraBookmark2PositionZQ12,g_LevelCameraBookmark2PositionYQ12,
+                 g_LevelCameraBookmark2PositionXQ12,worldRuntime);
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+                (2,(int)bookmark2PackedAngles >> 16,bookmark2PackedAngles & FIXED_ANGLE16_MASK,
+                 g_LevelCameraBookmark2PositionMagnitudeQ12,
+                 worldRuntime);
+      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+      break;
+    case 0x56f400:
+      WorldRuntime_SetCameraPositionKeepingTarget
+                (g_LevelCameraBookmark3PositionZQ12,g_LevelCameraBookmark3PositionYQ12,
+                 g_LevelCameraBookmark3PositionXQ12,worldRuntime);
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+                (2,(int)bookmark3PackedAngles >> 16,bookmark3PackedAngles & FIXED_ANGLE16_MASK,
+                 g_LevelCameraBookmark3PositionMagnitudeQ12,
+                 worldRuntime);
+      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+      break;
+    case 0x56f450:
+      WorldRuntime_SetCameraPositionKeepingTarget
+                (g_LevelCameraBookmark4PositionZQ12,g_LevelCameraBookmark4PositionYQ12,
+                 g_LevelCameraBookmark4PositionXQ12,worldRuntime);
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+                (2,(int)bookmark4PackedAngles >> 16,bookmark4PackedAngles & FIXED_ANGLE16_MASK,
+                 g_LevelCameraBookmark4PositionMagnitudeQ12,
+                 worldRuntime);
+      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+      break;
+    case 0x56f4a0:
+      WorldRuntime_SetCameraPositionKeepingTarget
+                (g_LevelCameraBookmark5PositionZQ12,g_LevelCameraBookmark5PositionYQ12,
+                 g_LevelCameraBookmark5PositionXQ12,worldRuntime);
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+                (2,(int)bookmark5PackedAngles >> 16,bookmark5PackedAngles & FIXED_ANGLE16_MASK,
+                 g_LevelCameraBookmark5PositionMagnitudeQ12,
+                 worldRuntime);
+      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+      break;
+    case 0x56f4f0:
+      WorldRuntime_SetCameraPositionKeepingTarget
+                (g_LevelCameraBookmark6PositionZQ12,g_LevelCameraBookmark6PositionYQ12,
+                 g_LevelCameraBookmark6PositionXQ12,worldRuntime);
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+                (2,(int)bookmark6PackedAngles >> 16,bookmark6PackedAngles & FIXED_ANGLE16_MASK,
+                 g_LevelCameraBookmark6PositionMagnitudeQ12,
+                 worldRuntime);
+      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+      break;
+    case 0x56f540:
+      WorldRuntime_SetCameraPositionKeepingTarget
+                (g_LevelCameraBookmark7PositionZQ12,g_LevelCameraBookmark7PositionYQ12,
+                 g_LevelCameraBookmark7PositionXQ12,worldRuntime);
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
+                (2,(int)bookmark7PackedAngles >> 16,bookmark7PackedAngles & FIXED_ANGLE16_MASK,
+                 g_LevelCameraBookmark7PositionMagnitudeQ12,
+                 worldRuntime);
+      WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
+      WorldRuntime_CommitCameraTargetDistance(worldRuntime);
+      break;
+    case 0x56f590: /* Alt+1..7: store the camera as bookmark n (heading low word, pitch high word) */
+      g_LevelCameraBookmark1PositionXQ12 = (worldRuntime->motion).positionXQ12;
+      g_LevelCameraBookmark1PositionYQ12 = (worldRuntime->motion).positionYQ12;
+      g_LevelCameraBookmark1PositionZQ12 = (worldRuntime->motion).positionZQ12;
+      g_LevelCameraBookmark1PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
+      g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 =
+           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
+      break;
+    case 0x56f5e0:
+      g_LevelCameraBookmark2PositionXQ12 = (worldRuntime->motion).positionXQ12;
+      g_LevelCameraBookmark2PositionYQ12 = (worldRuntime->motion).positionYQ12;
+      g_LevelCameraBookmark2PositionZQ12 = (worldRuntime->motion).positionZQ12;
+      g_LevelCameraBookmark2PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
+      g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 =
+           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
+      break;
+    case 0x56f630:
+      g_LevelCameraBookmark3PositionXQ12 = (worldRuntime->motion).positionXQ12;
+      g_LevelCameraBookmark3PositionYQ12 = (worldRuntime->motion).positionYQ12;
+      g_LevelCameraBookmark3PositionZQ12 = (worldRuntime->motion).positionZQ12;
+      g_LevelCameraBookmark3PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
+      g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 =
+           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
+      break;
+    case 0x56f680:
+      g_LevelCameraBookmark4PositionXQ12 = (worldRuntime->motion).positionXQ12;
+      g_LevelCameraBookmark4PositionYQ12 = (worldRuntime->motion).positionYQ12;
+      g_LevelCameraBookmark4PositionZQ12 = (worldRuntime->motion).positionZQ12;
+      g_LevelCameraBookmark4PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
+      g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 =
+           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
+      break;
+    case 0x56f6d0:
+      g_LevelCameraBookmark5PositionXQ12 = (worldRuntime->motion).positionXQ12;
+      g_LevelCameraBookmark5PositionYQ12 = (worldRuntime->motion).positionYQ12;
+      g_LevelCameraBookmark5PositionZQ12 = (worldRuntime->motion).positionZQ12;
+      g_LevelCameraBookmark5PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
+      g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 =
+           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
+      break;
+    case 0x56f720:
+      g_LevelCameraBookmark6PositionXQ12 = (worldRuntime->motion).positionXQ12;
+      g_LevelCameraBookmark6PositionYQ12 = (worldRuntime->motion).positionYQ12;
+      g_LevelCameraBookmark6PositionZQ12 = (worldRuntime->motion).positionZQ12;
+      g_LevelCameraBookmark6PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
+      g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 =
+           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
+      break;
+    case 0x56f770:
+      g_LevelCameraBookmark7PositionXQ12 = (worldRuntime->motion).positionXQ12;
+      g_LevelCameraBookmark7PositionYQ12 = (worldRuntime->motion).positionYQ12;
+      g_LevelCameraBookmark7PositionZQ12 = (worldRuntime->motion).positionZQ12;
+      g_LevelCameraBookmark7PositionMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
+      g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 =
+           (worldRuntime->motion).pitchAngle << 16 | (worldRuntime->motion).headingAngle;
+      break;
+    case 0x56f7d0: /* Alt+S */
+      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_SHADING_ENABLED;
+      break;
+    case 0x56f7e0: /* Ctrl+C */
+      worldRuntime->runtimeFlags = worldRuntime->runtimeFlags ^ WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA;
+    }
+    return;
   }
   return;
 }

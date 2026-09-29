@@ -3475,7 +3475,6 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   int dwordsRemaining;
   DDPIXELFORMAT *sourceFormatCursor;
   DDPIXELFORMAT *destinationFormatCursor;
-  bool evictFailed;
   TextureSizeResult logicalSize;
   uint32_t textureHandle;
   IDirect3DTexture2 *deviceTexture2;
@@ -3524,7 +3523,7 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
     sourceFormatCursor = (DDPIXELFORMAT *)&sourceFormatCursor->dwFlags;
     destinationFormatCursor = (DDPIXELFORMAT *)&destinationFormatCursor->dwFlags;
   }
-  for (;;) {
+  do {
     hresult = g_DirectDraw2->lpVtbl->CreateSurface
                       (g_DirectDraw2,&g_SurfaceDesc,&deviceSurfaceBase,NULL);
     if (hresult == 0) {
@@ -3564,9 +3563,9 @@ void GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
       deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
       deviceSurfaceBase = NULL;
     }
-    if ((hresult != DDERR_OUTOFVIDEOMEMORY) ||
-        (evictFailed = GraphicsTexture_EvictOldestDeviceTexture(texture), evictFailed)) break;
-  }
+    /* stop unless out of video memory and an eviction succeeded; the De Morgan form
+       (hresult == ... && !Evict(...)) changes the register load order after the loop */
+  } while (!((hresult != DDERR_OUTOFVIDEOMEMORY) || GraphicsTexture_EvictOldestDeviceTexture(texture)));
   if (deviceTexture2 != NULL) {
     deviceTexture2->lpVtbl->Release(deviceTexture2);
   }

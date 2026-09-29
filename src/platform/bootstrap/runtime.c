@@ -1220,9 +1220,7 @@ bool Game_PlayIntroMovies(void)
   }
   noIntroOption = g_CommandLineFindOption(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro);
   if (noIntroOption.notFound) {
-    while( true ) {
-      openResult = Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046);
-      if (openResult.failed) break;
+    while (!(openResult = Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046)).failed) {
       firstFrameResult = Movie_AdvanceFrame();
       if (firstFrameResult.ended) {
         Movie_Close();
@@ -1235,22 +1233,30 @@ bool Game_PlayIntroMovies(void)
       while( true ) {
         g_Win32PumpMessages();
         keyEvent = g_KeyboardReadEvent();
-        if (!keyEvent.queueEmpty) break;
+        if (!keyEvent.queueEmpty) {
+          /* [9] is the digit of "flm\intro0.flm"; Escape moves on to intro9 (normally absent, which ends the
+             intros) */
+          if (keyEvent.eventCode == KEYBOARD_KEY_CODE_ESCAPE) {
+            u_flm_intro0_flm_00573046[9] = L'8';
+          }
+          break;
+        }
         cursorEvent = g_GraphicsCursorConsumeEvent();
         /* event types above RIGHT_PRESS are the button releases */
-        if (!cursorEvent.queueEmpty && RIGHT_PRESS < cursorEvent.eventType) goto stopPlayback;
+        if (!cursorEvent.queueEmpty && RIGHT_PRESS < cursorEvent.eventType) break;
         if (g_IntroMoviePendingTicks != 0) {
           /* catch up at most three frames per pass */
           frameAdvanceBudget = 3;
           do {
             advanceResult = Movie_AdvanceFrame();
             frameHeightSnapshot = g_FramebufferHeight;
-            if (advanceResult.ended) goto stopPlayback;
+            if (advanceResult.ended) break;
             g_IntroMoviePendingTicks--;
           } while ((g_IntroMoviePendingTicks != 0) && (--frameAdvanceBudget != 0));
+          if (advanceResult.ended) break;
           quarterFrameHeight = g_FramebufferHeight >> 2;
           accessFailed = g_GraphicsFramebufferBeginAccess();
-          if (accessFailed) goto stopPlayback;
+          if (accessFailed) break;
           frameDimensions = Movie_GetFrameDimensions(); /* EDX:EAX = height:width */
           /* y = (H - H/4 - frameHeight) / 2 + H/8, i.e. vertically centred; the source is the movie
              returned by the first Movie_AdvanceFrame */
@@ -1264,11 +1270,7 @@ bool Game_PlayIntroMovies(void)
           g_GraphicsFramebufferPresent(g_FramebufferAccess);
         }
       }
-      /* [9] is the digit of "flm\intro0.flm"; Escape moves on to intro9 (normally absent, which ends the intros) */
-      if (keyEvent.eventCode == KEYBOARD_KEY_CODE_ESCAPE) {
-        u_flm_intro0_flm_00573046[9] = L'8';
-      }
-stopPlayback:
+      /* stop playback: key, mouse button release, movie end or framebuffer loss */
       g_TimerUnregisterPeriodic(IntroMovie_TimerTick);
       Movie_Close();
       u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + 1;
@@ -1299,13 +1301,7 @@ StatusResult DynAPI_Bootstrap(void)
   char *moduleName;
   uint32_t moduleSlotIndex;
 
-  bindingCursor = g_BootstrapApiBindings;
-  do {
-    if (bindingCursor->destination == NULL) {
-      successResult.failed = false;
-      successResult.valueOrError = (uint32_t)resolvedProcedure;
-      return successResult;
-    }
+  for (bindingCursor = g_BootstrapApiBindings; bindingCursor->destination != NULL; bindingCursor++) {
     procedureName = bindingCursor->destination;
     module = GetModuleHandleA(bindingCursor->moduleName);
     if (module == NULL) {
@@ -1339,8 +1335,10 @@ StatusResult DynAPI_Bootstrap(void)
       return procedureMissingResult;
     }
     bindingCursor->destination = resolvedProcedure;
-    bindingCursor++;
-  } while( true );
+  }
+  successResult.failed = false;
+  successResult.valueOrError = (uint32_t)resolvedProcedure;
+  return successResult;
 }
 
 
@@ -1366,12 +1364,7 @@ CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes leng
   char scannedByte;
 
   storedOption = g_CommandLine.optionBuffer;
-  do {
-    if (*storedOption == '\0') {
-      notFoundResult.notFound = true;
-      notFoundResult.option = NULL; /* EBX not written; all callers read it only with CF clear */
-      return notFoundResult;
-    }
+  while (*storedOption != '\0') {
     /* REPE CMPSB: with length 0 ZF stays as left by the compare with 0 above, i.e. clear */
     comparedBytesEqual = false;
     compareBytesRemaining = length;
@@ -1401,7 +1394,10 @@ CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes leng
       scannedByte = *compareOrScanCursor;
       compareOrScanCursor = storedOption;
     } while (scannedByte != '\0');
-  } while( true );
+  }
+  notFoundResult.notFound = true;
+  notFoundResult.option = NULL; /* EBX not written; all callers read it only with CF clear */
+  return notFoundResult;
 }
 
 

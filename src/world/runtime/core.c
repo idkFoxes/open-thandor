@@ -737,15 +737,15 @@ WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *
 
   recordsRemaining = worldRuntime->objectCount;
   recordCursor = worldRuntime->objectArray;
-  while( true ) {
-    if (recordsRemaining == 0) {
-      exhaustedResult.failed = true;
-      exhaustedResult.recordOrError = (WorldObjectRecord *)FATAL_ERROR_GENERAL_FAILURE;
-      return exhaustedResult;
-    }
-    if ((recordCursor->common.allocationFlags & WORLD_OBJECT_RECORD_ALLOCATED) == 0) break;
+  while (recordsRemaining != 0 &&
+         (recordCursor->common.allocationFlags & WORLD_OBJECT_RECORD_ALLOCATED) != 0) {
     recordCursor = recordCursor + 1;
     recordsRemaining--;
+  }
+  if (recordsRemaining == 0) {
+    exhaustedResult.failed = true;
+    exhaustedResult.recordOrError = (WorldObjectRecord *)FATAL_ERROR_GENERAL_FAILURE;
+    return exhaustedResult;
   }
   recordCursor->common.allocationFlags = WORLD_OBJECT_RECORD_ALLOCATED;
   recordCursor->common.ownerWorld = worldRuntime;

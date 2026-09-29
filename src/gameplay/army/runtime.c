@@ -475,15 +475,17 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
          modelRuntime->modelDefinition->linkedChildSlotCapacity)) {
         remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndexOrLimit].secondaryArmyAssetCount;
         dwordCursor = g_GameFactionRuntimeImage.records[factionIndexOrLimit].secondaryArmyAssetPointersOrIds;
-        if (remainingAssetCount != 0) {
-SelectAffordableAsset:
+        /* the first queued pad asset the faction can pay for */
+        for (; remainingAssetCount != 0; remainingAssetCount = remainingAssetCount - 1) {
           /* queued asset record: build ticks (buildTicks), Xenite cost (xeniteCostQ4), Energy load
              (energyLoadQ4), the sums of its model definitions' build metrics */
           candidateAsset = *dwordCursor;
           if (((((ArmyAssetRecord *)candidateAsset)->flags & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) == 0) ||
              (g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 <
-              ((ArmyAssetRecord *)candidateAsset)->xeniteCostQ4))
-          goto NextAssetCandidate;
+              ((ArmyAssetRecord *)candidateAsset)->xeniteCostQ4)) {
+            dwordCursor = dwordCursor + 1;
+            continue;
+          }
           g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 =
                g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 -
                ((ArmyAssetRecord *)candidateAsset)->xeniteCostQ4;
@@ -507,7 +509,7 @@ SelectAffordableAsset:
           } while (remainingAssetCount != 0);
           modelRuntime->secondaryArmyAssetBuildState = 1;
           modelRuntime->linkedChildRuntimeFlags = modelRuntime->linkedChildRuntimeFlags | ARMY_MODEL_STATE_PRODUCING;
-          break;
+          break; /* one asset at a time */
         }
       }
     }
@@ -578,12 +580,9 @@ StoreCompletedAssetId:
       }
     }
   }
-DispatchHangarState:
   linkedChildDefinition = modelRuntime->modelDefinition;
   modelNodeRuntime = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
   switch(modelRuntime->linkedChildTransitionState) {
-  case ARMY_PAD_HANGAR_IDLE:
-    goto ArmyRuntimeClass_ProcessPendingLinkedChildSpawnsAndDamageEffect;
   case ARMY_PAD_HANGAR_OPENING: /* scroll the hatch texture */
     modelNodeRuntime->primaryTextureOffsetV =
          modelNodeRuntime->primaryTextureOffsetV +
@@ -659,7 +658,8 @@ DispatchHangarState:
     break;
   case ARMY_PAD_HANGAR_CLOSED:
     modelRuntime->linkedChildTransitionState = ARMY_PAD_HANGAR_IDLE;
-ArmyRuntimeClass_ProcessPendingLinkedChildSpawnsAndDamageEffect:
+    /* fall through: the idle hangar launches the next pending aircraft */
+  case ARMY_PAD_HANGAR_IDLE:
     if (((modelRuntime->linkedChildRuntimeFlags & ARMY_MODEL_STATE_INACTIVE_MASK) == 0) &&
        (testResult = ArmyRuntime_TestWorldPointAllowedDefault
                            (linkedChildDefinition->visibilityRadius,(modelNodeRuntime->worldTransform).translation.y
@@ -751,11 +751,6 @@ ArmyRuntimeClass_ProcessPendingLinkedChildSpawnsAndDamageEffect:
   }
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
-NextAssetCandidate:
-  dwordCursor = dwordCursor + 1;
-  remainingAssetCount = remainingAssetCount - 1;
-  if (remainingAssetCount == 0) goto DispatchHangarState;
-  goto SelectAffordableAsset;
 }
 
 
@@ -2019,9 +2014,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
   slotsRemaining = ARMY_RUNTIME_SLOT_COUNT;
   slotCursor = g_ArmyRuntimeSlots;
   do {
-    while( true ) {
-      savedTargetOffset = slotCursor->commandTargetArmyRuntime;
-      if (slotCursor->modelNodeRuntime != NULL) break;
+    while (savedTargetOffset = slotCursor->commandTargetArmyRuntime, slotCursor->modelNodeRuntime == NULL) {
       /* an unused slot is zeroed dword by dword (one ArmyRuntimeSlot), which also advances the cursor */
       for (clearWordsRemaining = sizeof(ArmyRuntimeSlot) / 4; clearWordsRemaining != 0; clearWordsRemaining = clearWordsRemaining - 1) {
         (slotCursor->modelRuntimeOrSavedOffset).modelRuntime = NULL;
@@ -2609,13 +2602,13 @@ bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
   remainingEntries = spriteModelResource->packedLookupTableEntryCount;
   localPointRecord =
        (ModelPackedPointRecord *)((uint8_t *)spriteModelResource + spriteModelResource->packedLookupTableRelativeOffset);
-  while( true ) {
-    if (remainingEntries == 0) {
-      return true;
-    }
-    if (localPointRecord->packedLookupKey == (attachmentSelectorOrdinal << 4 | 2)) break;
+  /* find the attachment point record (key = selector << 4 | 2); none -> fail */
+  while (remainingEntries != 0 && localPointRecord->packedLookupKey != (attachmentSelectorOrdinal << 4 | 2)) {
     localPointRecord = localPointRecord + 1;
     remainingEntries = remainingEntries - 1;
+  }
+  if (remainingEntries == 0) {
+    return true;
   }
   launchPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNode);
   launchWorldZQ12 = launchPoint.zQ12;
@@ -3828,135 +3821,134 @@ ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
   slotScanContinueValue = (uint32_t)g_ArmyRuntimeSlots;
   while (resultOrModelNode = (ModelRuntimeNode *)FATAL_ERROR_GENERAL_FAILURE, slotScanContinueValue != 0) {
     if (armyRuntime->modelNodeRuntime == NULL) {
+      /* free slot found: look up the army asset record with this id */
       registryCursor = g_ArmyAssetRecordRegistry;
       remainingOrDefinition = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-      goto ScanAssetRegistry;
+      do {
+        armyAssetRecord = *registryCursor;
+        if ((armyAssetRecord != NULL) &&
+           (armyAssetRecord->registryId == armyAssetId)) {
+          armyRuntime->armyAssetId = armyAssetId;
+          if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
+              (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
+            definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
+                              (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
+            ((ModelDefinition *)definitionLookup.modelDefinition)->builtCount++;
+          }
+          /* the graphics bindings exist for faction slots 0-7 only */
+          if (7 < (uint32_t)factionIndex) {
+            factionIndex = 7;
+          }
+          armyRuntime->factionIndex = factionIndex;
+          if ((creationFlags & ARMY_CREATE_UNLOCK_TECHNOLOGY) != 0) {
+            ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
+                      (factionIndex,(ModelDefinitionHierarchyNodeAddress32)armyAssetRecord);
+          }
+          textureSet = g_ArmyGraphicsBindings[factionIndex].textureSet;
+          paletteAsset = g_ArmyGraphicsBindings[factionIndex].paletteAsset;
+          rootNodeOrClassValue = armyAssetRecord[7].selectionDetailTemplateVariantIndex;
+          classValue88 = armyAssetRecord[7].registryId;
+          armyRuntime->aiSiteScoreWeight = armyAssetRecord[7].byteSize;
+          armyRuntime->aiFactionAnchorScoreWeight = rootNodeOrClassValue;
+          armyRuntime->aiSecondaryWorkspaceScoreWeight = classValue88;
+          linkedEntity = (GameEntityRuntime *)armyAssetRecord[1].byteSize;
+          armyRuntime->occupancyMarkRadius = 0;
+          armyRuntime->visibilityRadius = 0;
+          armyRuntime->visibilityHeightOffset = 0;
+          armyRuntime->aiUnitFlags = 0;
+          rootNodeOrClassValue = armyAssetRecord->rootNodeOffsetOrPointer;
+          (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
+          (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
+          armyRuntime->linkedEntityRuntime = linkedEntity;
+          (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = NULL;
+          armyRuntime->aiUnitState = 0;
+          modelDefinitionId = ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,rootNodeOrClassValue);
+          modelCreateResult = ModelRuntimePool_CreateInstanceByDefinitionId
+                             (paletteAsset,textureSet,armyRuntime,modelDefinitionId,worldRuntime);
+          resultOrModelNode = modelCreateResult.modelNode;
+          if (!modelCreateResult.failed) {
+            /* the create result is the model runtime; +4 is its root model node */
+            modelNodeRuntime = (ModelRuntimeNode *)(resultOrModelNode->common).nextNode;
+            (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset = (uint32_t)resultOrModelNode;
+            armyRuntime->modelNodeRuntime = modelNodeRuntime;
+            /* worldYQ12 goes to translation.x and worldXQ12 to translation.y throughout, as in the original; the
+               parameter names are swapped relative to the node fields */
+            (modelNodeRuntime->worldTransform).translation.x = worldYQ12;
+            (modelNodeRuntime->worldTransform).translation.y = worldXQ12;
+            (modelNodeRuntime->worldTransform).translation.z = 0;
+            armyRuntime->movementRetryCountdown = 0;
+            armyRuntime->fallbackWorldYQ12 = worldYQ12;
+            armyRuntime->fallbackWorldXQ12 = worldXQ12;
+            armyRuntime->movementTarget0Q12 = worldYQ12;
+            armyRuntime->movementTarget1Q12 = worldXQ12;
+            (modelNodeRuntime->modelPayload).worldRotationAngle0 = 0;
+            (modelNodeRuntime->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
+            (modelNodeRuntime->modelPayload).worldRotationAngle2 = orientationAngle;
+            armyRuntime->commandTargetArmyRuntime = NULL;
+            armyRuntime->assignedTargetArmyRuntime = 0;
+            armyRuntime->commandCoordinate0Q12 = 0;
+            armyRuntime->commandCoordinate1Q12 = 0;
+            armyRuntime->commandCoordinate2Q12 = 0;
+            armyRuntime->commandModeFlags = 0;
+            armyRuntime->commandGeneration = 0;
+            (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
+            (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
+            (armyRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.
+            coordinateOrTargetQ12 = worldYQ12;
+            (armyRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.
+            coordinateOrTargetQ12 = worldXQ12;
+            armyRuntime->movementPosition0Q12 = worldYQ12;
+            armyRuntime->movementPosition1Q12 = worldXQ12;
+            armyRuntime->movementStateFlags = 0;
+            armyRuntime->actionVector1Q12 = 0;
+            armyRuntime->terrainOccupancyMask0 = 0;
+            armyRuntime->terrainOccupancyMask1 = 0;
+            armyRuntime->runtimeState40 = 0;
+            childCreateFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursive
+                              (factionIndex,paletteAsset,textureSet,
+                               (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime,rootNodeOrClassValue,worldRuntime)
+            ;
+            resultOrModelNode = (ModelRuntimeNode *)worldYQ12;
+            if (!childCreateFailed) {
+              WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
+              ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
+              /* remainingOrDefinition: the model runtime's definition (its first dword). Terrain contact by the
+                 definition's contact kind; depth class by its model class; depth radius from the definition. */
+              remainingOrDefinition = *THANDOR_BITCAST(ModelRuntimeSlotReferenceOrSavedOffset, int *, armyRuntime->modelRuntimeOrSavedOffset);
+              g_ArmyPlacementContactKindDispatchTable.callbacks[((ModelDefinition *)remainingOrDefinition)->placementContactKindIndex]
+                        (((ModelDefinition *)remainingOrDefinition)->placementHeightOffsetQ12,
+                         (modelNodeRuntime->worldTransform).translation.y,
+                         (modelNodeRuntime->worldTransform).translation.x,modelNodeRuntime,worldRuntime)
+              ;
+              ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
+              armyRuntime->depthBinClass =
+                   (ModelRuntimeClassId)
+                    g_ArmyRuntimeDepthBinClassByModelClass[((ModelDefinition *)remainingOrDefinition)->runtimeClassId];
+              ModelNodeRuntime_UpdateDepthBinMasks
+                        (((ModelDefinition *)remainingOrDefinition)->footprintRadius,modelNodeRuntime);
+              ArmyRuntime_InitializeTerrainOccupancyFlags(worldRuntime,armyRuntime);
+              ModelNodeRuntime_RefreshStateTint(modelNodeRuntime);
+              ArmyRuntime_RebuildDerivedSelectionMetrics(armyRuntime);
+              successResult.failed = false;
+              successResult.armyRuntimeOrError = (uint32_t)armyRuntime;
+              return successResult;
+            }
+          }
+          /* creating the model or its children failed */
+          goto ReturnFailure;
+        }
+        registryCursor++;
+        remainingOrDefinition--;
+      } while (remainingOrDefinition != 0);
+      /* the asset id as decimal text (base 10, at least one digit) for the error message */
+      g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath);
+      resultOrModelNode = (ModelRuntimeNode *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
+      break;
     }
     armyRuntime++;
     armySlotsRemaining--;
     slotScanContinueValue = armySlotsRemaining;
   }
-  goto ReturnFailure;
-  while( true ) {
-    registryCursor++;
-    remainingOrDefinition--;
-    if (remainingOrDefinition == 0) break;
-ScanAssetRegistry:
-    armyAssetRecord = *registryCursor;
-    if ((armyAssetRecord != NULL) &&
-       (armyAssetRecord->registryId == armyAssetId)) {
-      armyRuntime->armyAssetId = armyAssetId;
-      if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
-          (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
-        definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
-                          (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
-        ((ModelDefinition *)definitionLookup.modelDefinition)->builtCount++;
-      }
-      /* the graphics bindings exist for faction slots 0-7 only */
-      if (7 < (uint32_t)factionIndex) {
-        factionIndex = 7;
-      }
-      armyRuntime->factionIndex = factionIndex;
-      if ((creationFlags & ARMY_CREATE_UNLOCK_TECHNOLOGY) != 0) {
-        ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
-                  (factionIndex,(ModelDefinitionHierarchyNodeAddress32)armyAssetRecord);
-      }
-      textureSet = g_ArmyGraphicsBindings[factionIndex].textureSet;
-      paletteAsset = g_ArmyGraphicsBindings[factionIndex].paletteAsset;
-      rootNodeOrClassValue = armyAssetRecord[7].selectionDetailTemplateVariantIndex;
-      classValue88 = armyAssetRecord[7].registryId;
-      armyRuntime->aiSiteScoreWeight = armyAssetRecord[7].byteSize;
-      armyRuntime->aiFactionAnchorScoreWeight = rootNodeOrClassValue;
-      armyRuntime->aiSecondaryWorkspaceScoreWeight = classValue88;
-      linkedEntity = (GameEntityRuntime *)armyAssetRecord[1].byteSize;
-      armyRuntime->occupancyMarkRadius = 0;
-      armyRuntime->visibilityRadius = 0;
-      armyRuntime->visibilityHeightOffset = 0;
-      armyRuntime->aiUnitFlags = 0;
-      rootNodeOrClassValue = armyAssetRecord->rootNodeOffsetOrPointer;
-      (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
-      (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
-      armyRuntime->linkedEntityRuntime = linkedEntity;
-      (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = NULL;
-      armyRuntime->aiUnitState = 0;
-      modelDefinitionId = ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,rootNodeOrClassValue);
-      modelCreateResult = ModelRuntimePool_CreateInstanceByDefinitionId
-                         (paletteAsset,textureSet,armyRuntime,modelDefinitionId,worldRuntime);
-      resultOrModelNode = modelCreateResult.modelNode;
-      if (!modelCreateResult.failed) {
-        /* the create result is the model runtime; +4 is its root model node */
-        modelNodeRuntime = (ModelRuntimeNode *)(resultOrModelNode->common).nextNode;
-        (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset = (uint32_t)resultOrModelNode;
-        armyRuntime->modelNodeRuntime = modelNodeRuntime;
-        /* worldYQ12 goes to translation.x and worldXQ12 to translation.y throughout, as in the original; the
-           parameter names are swapped relative to the node fields */
-        (modelNodeRuntime->worldTransform).translation.x = worldYQ12;
-        (modelNodeRuntime->worldTransform).translation.y = worldXQ12;
-        (modelNodeRuntime->worldTransform).translation.z = 0;
-        armyRuntime->movementRetryCountdown = 0;
-        armyRuntime->fallbackWorldYQ12 = worldYQ12;
-        armyRuntime->fallbackWorldXQ12 = worldXQ12;
-        armyRuntime->movementTarget0Q12 = worldYQ12;
-        armyRuntime->movementTarget1Q12 = worldXQ12;
-        (modelNodeRuntime->modelPayload).worldRotationAngle0 = 0;
-        (modelNodeRuntime->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
-        (modelNodeRuntime->modelPayload).worldRotationAngle2 = orientationAngle;
-        armyRuntime->commandTargetArmyRuntime = NULL;
-        armyRuntime->assignedTargetArmyRuntime = 0;
-        armyRuntime->commandCoordinate0Q12 = 0;
-        armyRuntime->commandCoordinate1Q12 = 0;
-        armyRuntime->commandCoordinate2Q12 = 0;
-        armyRuntime->commandModeFlags = 0;
-        armyRuntime->commandGeneration = 0;
-        (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
-        (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
-        (armyRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.
-        coordinateOrTargetQ12 = worldYQ12;
-        (armyRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.
-        coordinateOrTargetQ12 = worldXQ12;
-        armyRuntime->movementPosition0Q12 = worldYQ12;
-        armyRuntime->movementPosition1Q12 = worldXQ12;
-        armyRuntime->movementStateFlags = 0;
-        armyRuntime->actionVector1Q12 = 0;
-        armyRuntime->terrainOccupancyMask0 = 0;
-        armyRuntime->terrainOccupancyMask1 = 0;
-        armyRuntime->runtimeState40 = 0;
-        childCreateFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursive
-                          (factionIndex,paletteAsset,textureSet,
-                           (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime,rootNodeOrClassValue,worldRuntime)
-        ;
-        resultOrModelNode = (ModelRuntimeNode *)worldYQ12;
-        if (!childCreateFailed) {
-          WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
-          ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
-          /* remainingOrDefinition: the model runtime's definition (its first dword). Terrain contact by the
-             definition's contact kind; depth class by its model class; depth radius from the definition. */
-          remainingOrDefinition = *THANDOR_BITCAST(ModelRuntimeSlotReferenceOrSavedOffset, int *, armyRuntime->modelRuntimeOrSavedOffset);
-          g_ArmyPlacementContactKindDispatchTable.callbacks[((ModelDefinition *)remainingOrDefinition)->placementContactKindIndex]
-                    (((ModelDefinition *)remainingOrDefinition)->placementHeightOffsetQ12,
-                     (modelNodeRuntime->worldTransform).translation.y,
-                     (modelNodeRuntime->worldTransform).translation.x,modelNodeRuntime,worldRuntime)
-          ;
-          ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
-          armyRuntime->depthBinClass =
-               (ModelRuntimeClassId)
-                g_ArmyRuntimeDepthBinClassByModelClass[((ModelDefinition *)remainingOrDefinition)->runtimeClassId];
-          ModelNodeRuntime_UpdateDepthBinMasks
-                    (((ModelDefinition *)remainingOrDefinition)->footprintRadius,modelNodeRuntime);
-          ArmyRuntime_InitializeTerrainOccupancyFlags(worldRuntime,armyRuntime);
-          ModelNodeRuntime_RefreshStateTint(modelNodeRuntime);
-          ArmyRuntime_RebuildDerivedSelectionMetrics(armyRuntime);
-          successResult.failed = false;
-          successResult.armyRuntimeOrError = (uint32_t)armyRuntime;
-          return successResult;
-        }
-      }
-      goto ReturnFailure;
-    }
-  }
-  /* the asset id as decimal text (base 10, at least one digit) for the error message */
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath);
-  resultOrModelNode = (ModelRuntimeNode *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
 ReturnFailure:
   failureResult.failed = true;
   failureResult.armyRuntimeOrError = (uint32_t)resultOrModelNode;
@@ -4160,96 +4152,96 @@ void ArmyRuntime_UpdateTimedShotAndEffectEmitters
   emitterTimer = &(modelRuntime->classState).effectEmitterTimerTicks;
   timerOverflow = SBORROW4(*emitterTimer,g_InGameSimulationStepTicks);
   *emitterTimer = *emitterTimer - g_InGameSimulationStepTicks;
-  if ((*emitterTimer != 0 && timerOverflow == (int)*emitterTimer < 0) ||
-     (((emitterDefinition->emitterEffectDefinitionReference).definition == NULL &&
-      ((emitterDefinition->waterEmitterEffectDefinitionReference).definition == NULL))))
-  goto EmitDamageEffect;
-  randomOrPointCount = 0;
-  if (emitterDefinition->effectEmitterRandomTicks != 0) {
-    nodeOrWorldX = g_RandomGeneratorState.next();
-    randomOrPointCount = nodeOrWorldX % emitterDefinition->effectEmitterRandomTicks;
-  }
-  (modelRuntime->classState).effectEmitterTimerTicks = randomOrPointCount + emitterDefinition->effectEmitterIntervalTicks;
-  nodeOrWorldX = emitterDefinition->rootNodeOffsetOrPointer;
-  if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-    nodeOrWorldX = ((MdlSerializedNodeHeader *)nodeOrWorldX)->childSerializedOffsets[0];
-  }
-  modelResourceAddress = (int)((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource;
-  remainingRecords = ((ModelResource *)modelResourceAddress)->packedLookupTableEntryCount;
-  worldContext = worldRuntime;
-  if (remainingRecords == 0) {
-UseRootPosition:
-    modelNode = modelRuntime->rootModelNode;
-    nodeOrWorldX = (modelNode->worldTransform).translation.x;
-    worldY = (modelNode->worldTransform).translation.y;
-    worldZQ12 = (modelNode->worldTransform).translation.z;
-  }
-  else {
+  /* the effect timer has reached 0 or below (signed) and there is an effect to emit */
+  if ((*emitterTimer == 0 || timerOverflow != (int)*emitterTimer < 0) &&
+      ((emitterDefinition->emitterEffectDefinitionReference).definition != NULL ||
+       (emitterDefinition->waterEmitterEffectDefinitionReference).definition != NULL)) {
     randomOrPointCount = 0;
-    pointRecordCursor =
-         (uint32_t *)
-         (modelResourceAddress +
-         ((ModelResource *)modelResourceAddress)->packedLookupTableRelativeOffset);
-    /* count the effect points: highest n + 1 of the packed keys n << 4 | 6 */
-    do {
-      if (((*pointRecordCursor & 0xf) == 6) && (randomOrPointCount <= *pointRecordCursor >> 4)) {
-        randomOrPointCount = (*pointRecordCursor >> 4) + 1;
-      }
-      remainingRecords = remainingRecords - 1;
-      pointRecordCursor = pointRecordCursor + 4;
-    } while (remainingRecords != 0);
-    if (randomOrPointCount == 0)
-    goto UseRootPosition;
-    pointSelector = (modelRuntime->classState).effectEmitterPointIndex;
-    if ((emitterDefinition->modelFlags & 1) == 0) {
-      pointSelector = g_RandomGeneratorState.next();
+    if (emitterDefinition->effectEmitterRandomTicks != 0) {
+      nodeOrWorldX = g_RandomGeneratorState.next();
+      randomOrPointCount = nodeOrWorldX % emitterDefinition->effectEmitterRandomTicks;
     }
+    (modelRuntime->classState).effectEmitterTimerTicks = randomOrPointCount + emitterDefinition->effectEmitterIntervalTicks;
     nodeOrWorldX = emitterDefinition->rootNodeOffsetOrPointer;
     if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
       nodeOrWorldX = ((MdlSerializedNodeHeader *)nodeOrWorldX)->childSerializedOffsets[0];
     }
-    lookupEntry = ModelLookupTable_ContainsPackedKey
-                       (pointSelector % randomOrPointCount,6,
-                        ((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource);
-    if (lookupEntry.notFound)
-    goto UseRootPosition;
-    modelNode = modelRuntime->rootModelNode;
-    if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-      modelNode = modelNode->childNodes[0];
+    modelResourceAddress = (int)((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource;
+    remainingRecords = ((ModelResource *)modelResourceAddress)->packedLookupTableEntryCount;
+    worldContext = worldRuntime;
+    if (remainingRecords == 0) {
+UseRootPosition:
+      modelNode = modelRuntime->rootModelNode;
+      nodeOrWorldX = (modelNode->worldTransform).translation.x;
+      worldY = (modelNode->worldTransform).translation.y;
+      worldZQ12 = (modelNode->worldTransform).translation.z;
     }
-    localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNode);
-    worldZQ12 = localPoint.zQ12;
-    worldY = localPoint.yQ12;
-    nodeOrWorldX = localPoint.xQ12;
-  }
-  selectedEffectDefinition = (emitterDefinition->emitterEffectDefinitionReference).definition;
-  effectDefinition = selectedEffectDefinition;
-  waterDelta = FieldGrid_GetNearestWaterDelta(worldY,nodeOrWorldX,worldRuntime->fieldGrid);
-  if (0 < waterDelta) {
-    selectedEffectDefinition = (emitterDefinition->waterEmitterEffectDefinitionReference).definition;
+    else {
+      randomOrPointCount = 0;
+      pointRecordCursor =
+           (uint32_t *)
+           (modelResourceAddress +
+           ((ModelResource *)modelResourceAddress)->packedLookupTableRelativeOffset);
+      /* count the effect points: highest n + 1 of the packed keys n << 4 | 6 */
+      do {
+        if (((*pointRecordCursor & 0xf) == 6) && (randomOrPointCount <= *pointRecordCursor >> 4)) {
+          randomOrPointCount = (*pointRecordCursor >> 4) + 1;
+        }
+        remainingRecords = remainingRecords - 1;
+        pointRecordCursor = pointRecordCursor + 4;
+      } while (remainingRecords != 0);
+      if (randomOrPointCount == 0)
+      goto UseRootPosition;
+      pointSelector = (modelRuntime->classState).effectEmitterPointIndex;
+      if ((emitterDefinition->modelFlags & 1) == 0) {
+        pointSelector = g_RandomGeneratorState.next();
+      }
+      nodeOrWorldX = emitterDefinition->rootNodeOffsetOrPointer;
+      if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+        nodeOrWorldX = ((MdlSerializedNodeHeader *)nodeOrWorldX)->childSerializedOffsets[0];
+      }
+      lookupEntry = ModelLookupTable_ContainsPackedKey
+                         (pointSelector % randomOrPointCount,6,
+                          ((MdlSerializedNodeHeader *)nodeOrWorldX)->spriteAssetReference.modelResource);
+      if (lookupEntry.notFound)
+      goto UseRootPosition;
+      modelNode = modelRuntime->rootModelNode;
+      if (emitterDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+        modelNode = modelNode->childNodes[0];
+      }
+      localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNode);
+      worldZQ12 = localPoint.zQ12;
+      worldY = localPoint.yQ12;
+      nodeOrWorldX = localPoint.xQ12;
+    }
+    selectedEffectDefinition = (emitterDefinition->emitterEffectDefinitionReference).definition;
     effectDefinition = selectedEffectDefinition;
+    waterDelta = FieldGrid_GetNearestWaterDelta(worldY,nodeOrWorldX,worldRuntime->fieldGrid);
+    if (0 < waterDelta) {
+      selectedEffectDefinition = (emitterDefinition->waterEmitterEffectDefinitionReference).definition;
+      effectDefinition = selectedEffectDefinition;
+    }
+    if ((selectedEffectDefinition == NULL) ||
+       ((selectedEffectDefinition->transitionPrefix).transitionKind !=
+        EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION)) {
+      modelNode = modelRuntime->rootModelNode;
+      orientationAngle2 = (modelNode->modelPayload).worldRotationAngle0;
+      orientationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
+      orientationAngle0 = (modelNode->modelPayload).worldRotationAngle2;
+    }
+    else {
+      randomValue = g_RandomGeneratorState.next();
+      orientationAngle0 = randomValue & FIXED_ANGLE16_MASK;
+      orientationAngle1 = FIXED_ANGLE16_QUARTER_TURN - (randomValue >> 20);
+      orientationAngle2 = orientationAngle0;
+    }
+    EffectRuntimePool_CreateInstanceFromDefinition
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),orientationAngle0,
+               orientationAngle1,orientationAngle2,worldZQ12,worldY,nodeOrWorldX,effectDefinition,
+               worldContext);
+    emitterTimer = &(modelRuntime->classState).effectEmitterPointIndex;
+    *emitterTimer = *emitterTimer + 1;
   }
-  if ((selectedEffectDefinition == NULL) ||
-     ((selectedEffectDefinition->transitionPrefix).transitionKind !=
-      EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION)) {
-    modelNode = modelRuntime->rootModelNode;
-    orientationAngle2 = (modelNode->modelPayload).worldRotationAngle0;
-    orientationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
-    orientationAngle0 = (modelNode->modelPayload).worldRotationAngle2;
-  }
-  else {
-    randomValue = g_RandomGeneratorState.next();
-    orientationAngle0 = randomValue & FIXED_ANGLE16_MASK;
-    orientationAngle1 = FIXED_ANGLE16_QUARTER_TURN - (randomValue >> 20);
-    orientationAngle2 = orientationAngle0;
-  }
-  EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),orientationAngle0,
-             orientationAngle1,orientationAngle2,worldZQ12,worldY,nodeOrWorldX,effectDefinition,
-             worldContext);
-  emitterTimer = &(modelRuntime->classState).effectEmitterPointIndex;
-  *emitterTimer = *emitterTimer + 1;
-EmitDamageEffect:
   ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
 }

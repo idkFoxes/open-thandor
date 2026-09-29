@@ -3679,7 +3679,10 @@ void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
         texture->residentAddress = placementAddress;
         g_GlideResidentTextureTail = texture;
         g_GlideResidentTextureHead = texture;
-        goto download;
+        g_GlideBoundTexture = NULL;
+        g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+                              &texture->glideInfo);
+        return;
       }
       if (residentCursor->residentNext == NULL) {
         asset = residentCursor->sourceAsset;
@@ -3697,7 +3700,10 @@ void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
           texture->residentAddress = placementAddress - tailFreeBytes;
           texture->residentNext = NULL;
           g_GlideResidentTextureTail = texture;
-          goto download;
+          g_GlideBoundTexture = NULL;
+          g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+                                &texture->glideInfo);
+          return;
         }
         tmuIndex++;
         nextResident = g_GlideResidentTextureHead; /* no next TMU: continue the round at the list head */
@@ -3708,7 +3714,10 @@ void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
           texture->residentAddress = placementAddress;
           texture->residentNext = NULL;
           g_GlideResidentTextureTail = texture;
-          goto download;
+          g_GlideBoundTexture = NULL;
+          g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+                                &texture->glideInfo);
+          return;
         }
       }
       else {
@@ -3731,18 +3740,15 @@ void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
           nextResident->residentNext = NULL;
           nextResident->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
           nextResident->residentAddress = 0;
-          goto download;
+          g_GlideBoundTexture = NULL;
+          g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+                                &texture->glideInfo);
+          return;
         }
       }
       residentCursor = nextResident;
     } while (residentCursor != g_GlideResidentTextureTail);
   }
-  return;
-download:
-  g_GlideBoundTexture = NULL;
-  g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
-                        &texture->glideInfo);
-  return;
 }
 
 

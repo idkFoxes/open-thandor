@@ -47,20 +47,21 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId r
   bool broaderAbsent;
   ArmyAssetIdSearchResult stepResult;
   
-  while( true ) {
-    baseId = recordId;
-    stepResult.armyAssetId = baseId + 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId);
-    if (!stepResult.notFound) break;
+  baseId = recordId;
+  stepResult.armyAssetId = baseId + 1;
+  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId)) != false) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
+      /* Left the run: walk back to its other end. */
       do {
         baseId--;
         broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
+    baseId = recordId;
+    stepResult.armyAssetId = baseId + 1;
   }
   return stepResult;
 }
@@ -79,20 +80,21 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId 
   bool broaderAbsent;
   ArmyAssetIdSearchResult stepResult;
   
-  while( true ) {
-    baseId = recordId;
-    stepResult.armyAssetId = baseId - 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId);
-    if (!stepResult.notFound) break;
+  baseId = recordId;
+  stepResult.armyAssetId = baseId - 1;
+  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId)) != false) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
+      /* Left the run: walk back to its other end. */
       do {
         baseId++;
         broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
+    baseId = recordId;
+    stepResult.armyAssetId = baseId - 1;
   }
   return stepResult;
 }
@@ -107,12 +109,10 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId 
 ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recordId)
 
 {
-  bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
-  for (;;) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(recordId);
-    if (broaderAbsent) break;
+  /* Leave the current run of unit ids first. */
+  while (!ArmyAssetRegistry_HasNoUnitWithId(recordId)) {
     recordId--;
     if ((int)recordId < 0) {
       recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
@@ -120,9 +120,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyA
     }
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
-  while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId);
-    if (!searchResult.notFound) break;
+  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) != false) {
     recordId--;
     if ((int)recordId < 0) {
       recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
@@ -170,20 +168,21 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId
   bool broaderAbsent;
   ArmyAssetIdSearchResult stepResult;
   
-  while( true ) {
-    baseId = recordId;
-    stepResult.armyAssetId = baseId + 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId);
-    if (!stepResult.notFound) break;
+  baseId = recordId;
+  stepResult.armyAssetId = baseId + 1;
+  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId)) != false) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
+      /* Left the run: walk back to its other end. */
       do {
         baseId--;
         broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
+    baseId = recordId;
+    stepResult.armyAssetId = baseId + 1;
   }
   return stepResult;
 }
@@ -202,20 +201,21 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetI
   bool broaderAbsent;
   ArmyAssetIdSearchResult stepResult;
   
-  while( true ) {
-    baseId = recordId;
-    stepResult.armyAssetId = baseId - 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId);
-    if (!stepResult.notFound) break;
+  baseId = recordId;
+  stepResult.armyAssetId = baseId - 1;
+  while ((stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId)) != false) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
+      /* Left the run: walk back to its other end. */
       do {
         baseId++;
         broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
+    baseId = recordId;
+    stepResult.armyAssetId = baseId - 1;
   }
   return stepResult;
 }
@@ -230,12 +230,10 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetI
 ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId recordId)
 
 {
-  bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
-  for (;;) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(recordId);
-    if (broaderAbsent) break;
+  /* Leave the current run of object ids first. */
+  while (!ArmyAssetRegistry_HasNoObjectWithId(recordId)) {
     recordId--;
     if ((int)recordId < 0) {
       recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
@@ -243,9 +241,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(Arm
     }
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
-  while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId);
-    if (!searchResult.notFound) break;
+  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) != false) {
     recordId--;
     if ((int)recordId < 0) {
       recordId = ARMY_ASSET_EDITOR_ID_LIMIT;
@@ -467,17 +463,13 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId)
 
 {
-  bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
-  while( true ) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(recordId);
-    if (broaderAbsent) break;
+  /* Leave the current run of unit ids first. */
+  while (!ArmyAssetRegistry_HasNoUnitWithId(recordId)) {
     recordId++;
   }
-  while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId);
-    if (!searchResult.notFound) break;
+  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId)) != false) {
     recordId++;
     if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
       recordId = 0;
@@ -497,17 +489,13 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAsset
 ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAssetId recordId)
 
 {
-  bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
-  while( true ) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(recordId);
-    if (broaderAbsent) break;
+  /* Leave the current run of object ids first. */
+  while (!ArmyAssetRegistry_HasNoObjectWithId(recordId)) {
     recordId++;
   }
-  while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId);
-    if (!searchResult.notFound) break;
+  while ((searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId)) != false) {
     recordId++;
     if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
       recordId = 0;

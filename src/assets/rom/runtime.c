@@ -248,20 +248,22 @@ void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
          The same tree is walked by RomAssetRecord_RegisterAndRelocate. */
       struct { uint8_t *node; uint32_t nextChild; uint32_t remaining; } frames[64];
       int depth = 0;
-      for (;;) {
+      do {
         frames[depth].remaining = ((RomSerializedNodeHeader *)node)->childCount;
         frames[depth].nextChild = 0;
         Resource_Release(((RomSerializedNodeHeader *)node)->spriteAssetReference.spriteAsset);
         frames[depth].node = node;
         depth++;
+        /* pop the finished frames; stop at the first one with children left */
         while (frames[depth - 1].remaining == 0 && --depth != 0) {
         }
-        if (depth == 0) break;
-        node = (uint8_t *)((RomSerializedNodeHeader *)frames[depth - 1].node)->
-               childReferences[frames[depth - 1].nextChild].node;
-        frames[depth - 1].nextChild++;
-        frames[depth - 1].remaining--;
-      }
+        if (depth != 0) {
+          node = (uint8_t *)((RomSerializedNodeHeader *)frames[depth - 1].node)->
+                 childReferences[frames[depth - 1].nextChild].node;
+          frames[depth - 1].nextChild++;
+          frames[depth - 1].remaining--;
+        }
+      } while (depth != 0);
     }
     slotCursor->record = NULL;
     slotCursor->runtimeRootNode = NULL;
@@ -337,15 +339,14 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
 
   recordsRemaining = ((RomRecord *)recordTable)->entryCount;
   /* the cursor starts at the header, so the entry it tests lies one header size further on */
-  while( true ) {
-    if (recordsRemaining == 0) {
-      return NULL;
+  while (recordsRemaining != 0) {
+    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)recordTable + 1))->linkedRecordId) {
+      return (RomRecord *)recordTable + 1;
     }
-    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)recordTable + 1))->linkedRecordId) break;
     recordsRemaining--;
     recordTable = (uint8_t *)recordTable + FRONTEND_ROM_ACTION_ENTRY_SIZE;
   }
-  return (RomRecord *)recordTable + 1;
+  return NULL;
 }
 
 
@@ -361,16 +362,15 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
 
   recordsRemaining = ((RomRecord *)table)->entryCount;
   recordIndex = 0;
-  while( true ) {
-    if (recordsRemaining == 0) {
-      return UINT32_MAX;
+  while (recordsRemaining != 0) {
+    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)table + 1))->linkedRecordId) {
+      return recordIndex;
     }
-    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)table + 1))->linkedRecordId) break;
     recordIndex++;
     recordsRemaining--;
     table = (uint8_t *)table + FRONTEND_ROM_ACTION_ENTRY_SIZE;
   }
-  return recordIndex;
+  return UINT32_MAX;
 }
 
 

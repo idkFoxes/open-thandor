@@ -1258,13 +1258,8 @@ bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerI
     }
     selectionEntryCursor++;
     entriesRemaining--;
-    if (entriesRemaining == 0) {
-      if (activeEntryCount == 0) {
-        return true;
-      }
-      return false;
-    }
-  } while( true );
+  } while (entriesRemaining != 0);
+  return activeEntryCount == 0;
 }
 
 
@@ -1581,15 +1576,13 @@ bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Sel
 
   pairRecordsRemaining = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCellCount;
   pairRecordCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCells;
-  while( true ) {
-    if (pairRecordsRemaining == 0) {
-      return true;
+  for (; pairRecordsRemaining != 0; pairRecordsRemaining--) {
+    if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
+      return false;
     }
-    if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) break;
     pairRecordCursor++;
-    pairRecordsRemaining--;
   }
-  return false;
+  return true;
 }
 
 

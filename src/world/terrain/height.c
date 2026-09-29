@@ -1543,18 +1543,19 @@ bool TerrainHeightBand_TestDirection1(TerrainDirectionalScanStep scanStep,FieldG
 {
   int terrainHeightDeltaQ12;
 
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return true;
     }
-    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-         (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
-         0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
-       || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
+    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
+    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
+        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
+      return true;
+    }
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 
@@ -1566,18 +1567,19 @@ bool TerrainHeightBand_TestDirection2(TerrainDirectionalScanStep scanStep,FieldG
 {
   int terrainHeightDeltaQ12;
 
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return true;
     }
-    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-         (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
-         0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
-       || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
+    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
+    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
+        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
+      return true;
+    }
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 
@@ -1589,18 +1591,19 @@ bool TerrainHeightBand_TestDirection3(TerrainDirectionalScanStep scanStep,FieldG
 {
   int terrainHeightDeltaQ12;
 
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return true;
     }
-    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-         (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
-         0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
-       || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
+    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
+    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
+        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
+      return true;
+    }
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell--;
   }
-  return true;
+  return false;
 }
 
 
@@ -1612,18 +1615,19 @@ bool TerrainHeightBand_TestDirection4(TerrainDirectionalScanStep scanStep,FieldG
 {
   int terrainHeightDeltaQ12;
 
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return true;
     }
-    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-         (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
-         0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
-       || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
+    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
+    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
+        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
+      return true;
+    }
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 
@@ -1635,18 +1639,19 @@ bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldG
 {
   int terrainHeightDeltaQ12;
 
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      return true;
     }
-    if (((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) ||
-         (terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight,
-         0 < cell->waterSurfaceDelta)) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12))
-       || (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) break;
+    terrainHeightDeltaQ12 = cell->terrainHeight - g_TerrainScanReferenceHeight;
+    if ((0 < cell->waterSurfaceDelta) || ((int)g_TerrainHeightBandMaximumDelta < terrainHeightDeltaQ12) ||
+        (terrainHeightDeltaQ12 < (int)g_TerrainHeightBandMinimumDelta)) {
+      return true;
+    }
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 
@@ -1658,16 +1663,15 @@ bool TerrainHeightBand_TestDirection5(TerrainDirectionalScanStep scanStep,FieldG
 bool TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
+        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
+      return true;
     }
-    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell++;
   }
-  return true;
+  return false;
 }
 
 
@@ -1678,16 +1682,15 @@ bool TerrainAuxHeightThreshold_TestDirection0(TerrainDirectionalScanStep scanSte
 bool TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
+        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
+      return true;
     }
-    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 
@@ -1698,16 +1701,15 @@ bool TerrainAuxHeightThreshold_TestDirection1(TerrainDirectionalScanStep scanSte
 bool TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
+        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
+      return true;
     }
-    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 
@@ -1718,16 +1720,15 @@ bool TerrainAuxHeightThreshold_TestDirection2(TerrainDirectionalScanStep scanSte
 bool TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
+        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
+      return true;
     }
-    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell--;
   }
-  return true;
+  return false;
 }
 
 
@@ -1738,16 +1739,15 @@ bool TerrainAuxHeightThreshold_TestDirection3(TerrainDirectionalScanStep scanSte
 bool TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
+        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
+      return true;
     }
-    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 
@@ -1758,16 +1758,15 @@ bool TerrainAuxHeightThreshold_TestDirection4(TerrainDirectionalScanStep scanSte
 bool TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  while( true ) {
-    if (g_TerrainScanStepLimit <= scanStep) {
-      return false;
+  while (g_TerrainScanStepLimit > scanStep) {
+    if (((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0) ||
+        ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) {
+      return true;
     }
-    if ((((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) || (cell->waterSurfaceDelta < 0)) ||
-       ((int)cell->triangle1NormalAngles >> 16 < (int)g_TerrainAuxHeightMinimum)) break;
     scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
     cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
   }
-  return true;
+  return false;
 }
 
 

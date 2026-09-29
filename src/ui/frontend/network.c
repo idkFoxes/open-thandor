@@ -151,13 +151,11 @@ backendOpened:
         optionTextCursor = commandLineOptionBytes + 6;
         remainingOrRootNode = 19;
         /* find the closing quote within 19 characters (stop at control characters) */
-        for (;;) {
-          optionChar = *optionTextCursor;
-          if (optionChar == 0 || optionChar < ' ') break;
+        for (optionChar = *optionTextCursor; optionChar != 0 && optionChar >= ' ';
+             optionChar = *++optionTextCursor) {
           if (optionChar == '"') break;
           remainingOrRootNode--;
           if (remainingOrRootNode == 0) break;
-          optionTextCursor++;
         }
         if (optionChar == '"') {
           destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,playerNameEdit))->textBuffer;
@@ -200,11 +198,7 @@ backendOpened:
         if (!findOptionResult.notFound) {
           remainingOrRootNode = FRONTEND_CLIENT_OPTION_SCAN_LIMIT;
           optionTextCursor = secondaryCommandLineOptionBytes + 8;
-          for (;;) {
-            optionChar = *optionTextCursor;
-            if (optionChar == 0) {
-              return;
-            }
+          for (optionChar = *optionTextCursor; optionChar != 0; optionChar = *++optionTextCursor) {
             if (optionChar < ' ') {
               return;
             }
@@ -213,7 +207,9 @@ backendOpened:
             if (remainingOrRootNode == 0) {
               return;
             }
-            optionTextCursor++;
+          }
+          if (optionChar == 0) { /* no closing quote */
+            return;
           }
           *optionTextCursor = 0;
           if (optionTextCursor[1] == 0) {
@@ -262,18 +258,17 @@ backendOpened:
       g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed a stale register */
     }
     backendIndex++;
-    if (g_NetworkBackendInstanceCount <= backendIndex) {
-      FatalError_ReportIfFailed(errorOrValue,true);
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-          SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
-      }
-      else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
-      }
-      return;
-    }
-  } while (true);
+  } while (g_NetworkBackendInstanceCount > backendIndex);
+  /* no backend opens: report the last error and leave the network page */
+  FatalError_ReportIfFailed(errorOrValue,true);
+  if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      SESSION_NETWORK_ROLE_LOCAL) {
+    FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
+  }
+  else {
+    FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
+  }
+  return;
 }
 
 
@@ -399,13 +394,11 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     optionTextCursor = optionText + 7;
     remainingChars = 19;
     /* find the closing quote within 19 characters (stop at control characters) */
-    for (;;) {
-      optionChar = *optionTextCursor;
-      if (optionChar == 0 || optionChar < ' ') break;
+    for (optionChar = *optionTextCursor; optionChar != 0 && optionChar >= ' ';
+         optionChar = *++optionTextCursor) {
       if (optionChar == '"') break;
       remainingChars--;
       if (remainingChars == 0) break;
-      optionTextCursor++;
     }
     if (optionChar == '"') {
       destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,gameNameEdit))->textBuffer;

@@ -699,10 +699,7 @@ UnlinkExpiredOrOrphanedProjectileAndReturn:
     }
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     ModelNodeRuntime_UpdateDepthBinMasks(0,modelNodeRuntime);
-    remainingStepTicks = remainingStepTicks - 1;
-    if (remainingStepTicks == 0) {
-      return;
-    }
-  } while( true );
+    remainingStepTicks--;
+  } while (remainingStepTicks != 0);
 }
 

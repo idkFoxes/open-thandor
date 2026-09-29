@@ -675,12 +675,10 @@ RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFac
       foundResult.runtimeGroupIndex = groupNumber;
       return foundResult;
     }
-    if (7 < groupNumber) {
-      notFoundResult.notFound = true;
-      notFoundResult.runtimeGroupIndex = (uint32_t)runtimeEntry;
-      return notFoundResult;
-    }
-  } while( true );
+  } while (groupNumber <= 7);
+  notFoundResult.notFound = true;
+  notFoundResult.runtimeGroupIndex = (uint32_t)runtimeEntry;
+  return notFoundResult;
 }
 
 
@@ -1526,179 +1524,178 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
   g_GameFactionRuntimeImage.records[firstFactionIndex].relationStateTicks[secondFactionIndex] =
        g_GameFactionRuntimeImage.tail.simulationTick;
   g_GameFactionRuntimeImage.records[secondFactionIndex].relationStateTicks[firstFactionIndex] = currentTick;
-  if (stateSecondTowardFirst != FACTION_RELATION_MERGE) goto rebuild_target_entries;
-  bitOrPlayerCountOrSlot = 0;
-  playerCountOrMaskWord = 0;
-  playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
-  playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
-  do {
-    if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
-      bitOrPlayerCountOrSlot++;
+  if (stateSecondTowardFirst == FACTION_RELATION_MERGE) {
+    bitOrPlayerCountOrSlot = 0;
+    playerCountOrMaskWord = 0;
+    playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
+    playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+    do {
+      if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+        bitOrPlayerCountOrSlot++;
+      }
+      if (firstFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+        playerCountOrMaskWord++;
+      }
+      playerBlockCursor++;
+      playerBlocksRemaining--;
+    } while (playerBlocksRemaining != 0);
+    /* State 11 merges the two factions. The second faction survives when it has players and the (bitwise) counts
+       do not overlap; with no players on either side, or overlapping counts, a random bit decides. */
+    if (((bitOrPlayerCountOrSlot & playerCountOrMaskWord) == 0) &&
+        ((bitOrPlayerCountOrSlot != 0) || (playerCountOrMaskWord != 0))) {
+      swapMergeDirection = bitOrPlayerCountOrSlot != 0;
     }
-    if (firstFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
-      playerCountOrMaskWord++;
+    else {
+      randomValue = g_RandomGeneratorState.next();
+      swapMergeDirection = (randomValue & FACTION_MERGE_RANDOM_DIRECTION_BIT) == 0;
     }
-    playerBlockCursor++;
-    playerBlocksRemaining--;
-  } while (playerBlocksRemaining != 0);
-  /* State 11 merges the two factions. The second faction survives when it has players and the (bitwise) counts
-     do not overlap; with no players on either side, or overlapping counts, a random bit decides. */
-  if (((bitOrPlayerCountOrSlot & playerCountOrMaskWord) == 0) &&
-      ((bitOrPlayerCountOrSlot != 0) || (playerCountOrMaskWord != 0))) {
-    swapMergeDirection = bitOrPlayerCountOrSlot != 0;
-  }
-  else {
-    randomValue = g_RandomGeneratorState.next();
-    swapMergeDirection = (randomValue & FACTION_MERGE_RANDOM_DIRECTION_BIT) == 0;
-  }
-  /* from here on firstFactionIndex survives and secondFactionIndex is absorbed */
-  if (swapMergeDirection) {
-    firstFactionIndex = secondFactionIndex;
-    secondFactionIndex = originalFirstFactionIndex;
-  }
-  runtimeRoot = g_InGameRuntimeRoot;
-  if (secondFactionIndex == g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex) {
-    g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex = firstFactionIndex;
-  }
-  survivingFactionTextureSet = g_ArmyGraphicsBindings[firstFactionIndex].textureSet;
-  survivingFactionPaletteAsset = g_ArmyGraphicsBindings[firstFactionIndex].paletteAsset;
-  playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
-  playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
-  for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead;
-      g_FrontendPlayerRuntimeBlocks = playerBlockCursor, g_FrontendPlayerRuntimeBlockCount = playerBlocksRemaining,
-      ownerNode != NULL; ownerNode = ownerNode->nextNode) {
-    /* re-own the absorbed faction's models (entity +0x0C) and repaint them in the survivor's colours */
-    if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-       (recordOrCountOrIndex =
-        (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
-       ((ArmyRuntimeSlot *)recordOrCountOrIndex)->factionIndex == secondFactionIndex)) {
-      ((ArmyRuntimeSlot *)recordOrCountOrIndex)->factionIndex = firstFactionIndex;
-      ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
-                (survivingFactionPaletteAsset,survivingFactionTextureSet,
-                 ((ArmyRuntimeSlot *)recordOrCountOrIndex)->modelNodeRuntime);
+    /* from here on firstFactionIndex survives and secondFactionIndex is absorbed */
+    if (swapMergeDirection) {
+      firstFactionIndex = secondFactionIndex;
+      secondFactionIndex = originalFirstFactionIndex;
     }
+    runtimeRoot = g_InGameRuntimeRoot;
+    if (secondFactionIndex == g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex) {
+      g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex = firstFactionIndex;
+    }
+    survivingFactionTextureSet = g_ArmyGraphicsBindings[firstFactionIndex].textureSet;
+    survivingFactionPaletteAsset = g_ArmyGraphicsBindings[firstFactionIndex].paletteAsset;
     playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
     playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
-  }
-  do {
-    if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
-      recordOrCountOrIndex = playerBlockCursor->playerRuntimeId;
-      (playerBlockCursor->factionAssignment).factionAssignmentIndex = firstFactionIndex;
-      g_SelectionPlayerRuntimeBlockPointers[recordOrCountOrIndex]->factionIndex =
-           firstFactionIndex;
+    for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead;
+        g_FrontendPlayerRuntimeBlocks = playerBlockCursor, g_FrontendPlayerRuntimeBlockCount = playerBlocksRemaining,
+        ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+      /* re-own the absorbed faction's models (entity +0x0C) and repaint them in the survivor's colours */
+      if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+         (recordOrCountOrIndex =
+          (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
+         ((ArmyRuntimeSlot *)recordOrCountOrIndex)->factionIndex == secondFactionIndex)) {
+        ((ArmyRuntimeSlot *)recordOrCountOrIndex)->factionIndex = firstFactionIndex;
+        ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
+                  (survivingFactionPaletteAsset,survivingFactionTextureSet,
+                   ((ArmyRuntimeSlot *)recordOrCountOrIndex)->modelNodeRuntime);
+      }
+      playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
+      playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
     }
-    playerBlockCursor++;
-    playerBlocksRemaining--;
-  } while (playerBlocksRemaining != 0);
-  /* the survivor also gets the absorbed faction's per-faction cell byte (cell +0x70 + faction) */
-  terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
-  recordOrCountOrIndex = terrainGrid->gridWidth * terrainGrid->gridHeight;
-  gridCell = terrainGrid->cells;
-  do {
-    ((uint8_t *)&gridCell->occupancyMask)[firstFactionIndex] =
-         ((uint8_t *)&gridCell->occupancyMask)[firstFactionIndex] |
-         ((uint8_t *)&gridCell->occupancyMask)[secondFactionIndex];
-    gridCell++;
-    recordOrCountOrIndex--;
-  } while (recordOrCountOrIndex != 0);
-  g_GameFactionRuntimeImage.tail.factionLifecycleStates[secondFactionIndex] = FACTION_RUNTIME_LIFECYCLE_INACTIVE;
-  tritiumAmount = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumCurrentQ4;
-  xeniteLimit = g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteStorageLimitQ4;
-  tritiumLimit = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumStorageLimitQ4;
-  g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteCurrentQ4 =
-       g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteCurrentQ4 +
-       g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteCurrentQ4;
-  tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumCurrentQ4;
-  *tritiumField = *tritiumField + tritiumAmount;
-  xeniteField = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteStorageLimitQ4;
-  *xeniteField = *xeniteField + xeniteLimit;
-  tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumStorageLimitQ4;
-  *tritiumField = *tritiumField + tritiumLimit;
-  energyCapacity = g_GameFactionRuntimeImage.records[secondFactionIndex].energyGenerationCapacityQ4;
-  energyField = &g_GameFactionRuntimeImage.records[firstFactionIndex].baselineEnergySupplyQ4;
-  *energyField = *energyField + g_GameFactionRuntimeImage.records[secondFactionIndex].baselineEnergySupplyQ4;
-  energyField = &g_GameFactionRuntimeImage.records[firstFactionIndex].energyGenerationCapacityQ4;
-  *energyField = *energyField + energyCapacity;
-  bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[1];
-  playerCountOrMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[2];
-  trailingMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[3];
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits;
-  *technologyMaskWord = *technologyMaskWord |
-       g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
-                      [0];
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 1;
-  *technologyMaskWord = *technologyMaskWord | bitOrPlayerCountOrSlot;
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 2;
-  *technologyMaskWord = *technologyMaskWord | playerCountOrMaskWord;
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 3;
-  *technologyMaskWord = *technologyMaskWord | trailingMaskWord;
-  bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[5];
-  playerCountOrMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[6];
-  trailingMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[7];
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 4;
-  *technologyMaskWord = *technologyMaskWord |
-       g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
-                      [4];
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 5;
-  *technologyMaskWord = *technologyMaskWord | bitOrPlayerCountOrSlot;
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 6;
-  *technologyMaskWord = *technologyMaskWord | playerCountOrMaskWord;
-  technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 7;
-  *technologyMaskWord = *technologyMaskWord | trailingMaskWord;
-  tritiumAmount = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumExtractedTotalQ4;
-  recordOrCountOrIndex = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterA;
-  counterValueBOrE = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterB;
-  xeniteField = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteExtractedTotalQ4;
-  *xeniteField = *xeniteField + g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteExtractedTotalQ4;
-  tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumExtractedTotalQ4;
-  *tritiumField = *tritiumField + tritiumAmount;
-  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterA;
-  *relationCounter = *relationCounter + recordOrCountOrIndex;
-  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterB;
-  *relationCounter = *relationCounter + counterValueBOrE;
-  recordOrCountOrIndex = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterD;
-  counterValueBOrE = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterE;
-  counterValueF = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterF;
-  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterC;
-  *relationCounter = *relationCounter + g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterC;
-  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterD;
-  *relationCounter = *relationCounter + recordOrCountOrIndex;
-  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterE;
-  *relationCounter = *relationCounter + counterValueBOrE;
-  relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterF;
-  *relationCounter = *relationCounter + counterValueF;
-  assetsRemaining = g_GameFactionRuntimeImage.records[secondFactionIndex].primaryArmyAssetCount;
-  recordOrCountOrIndex = 0;
-  /* append both army-asset lists (primary at record +0x1E0, secondary at +0xE0; 64 entries each) */
-  for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
-      (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < FACTION_ARMY_ASSET_LIST_CAPACITY)); bitOrPlayerCountOrSlot++) {
-    primaryArmyAssetReferenceDword =
-         g_GameFactionRuntimeImage.records[secondFactionIndex].primaryArmyAssetPointersOrIds[recordOrCountOrIndex];
-    armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
-    *armyAssetCount = *armyAssetCount + 1;
-    g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetPointersOrIds[bitOrPlayerCountOrSlot] =
-         primaryArmyAssetReferenceDword;
-    recordOrCountOrIndex++;
-    assetsRemaining--;
+    do {
+      if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
+        recordOrCountOrIndex = playerBlockCursor->playerRuntimeId;
+        (playerBlockCursor->factionAssignment).factionAssignmentIndex = firstFactionIndex;
+        g_SelectionPlayerRuntimeBlockPointers[recordOrCountOrIndex]->factionIndex =
+             firstFactionIndex;
+      }
+      playerBlockCursor++;
+      playerBlocksRemaining--;
+    } while (playerBlocksRemaining != 0);
+    /* the survivor also gets the absorbed faction's per-faction cell byte (cell +0x70 + faction) */
+    terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
+    recordOrCountOrIndex = terrainGrid->gridWidth * terrainGrid->gridHeight;
+    gridCell = terrainGrid->cells;
+    do {
+      ((uint8_t *)&gridCell->occupancyMask)[firstFactionIndex] =
+           ((uint8_t *)&gridCell->occupancyMask)[firstFactionIndex] |
+           ((uint8_t *)&gridCell->occupancyMask)[secondFactionIndex];
+      gridCell++;
+      recordOrCountOrIndex--;
+    } while (recordOrCountOrIndex != 0);
+    g_GameFactionRuntimeImage.tail.factionLifecycleStates[secondFactionIndex] = FACTION_RUNTIME_LIFECYCLE_INACTIVE;
+    tritiumAmount = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumCurrentQ4;
+    xeniteLimit = g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteStorageLimitQ4;
+    tritiumLimit = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumStorageLimitQ4;
+    g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteCurrentQ4 =
+         g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteCurrentQ4 +
+         g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteCurrentQ4;
+    tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumCurrentQ4;
+    *tritiumField = *tritiumField + tritiumAmount;
+    xeniteField = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteStorageLimitQ4;
+    *xeniteField = *xeniteField + xeniteLimit;
+    tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumStorageLimitQ4;
+    *tritiumField = *tritiumField + tritiumLimit;
+    energyCapacity = g_GameFactionRuntimeImage.records[secondFactionIndex].energyGenerationCapacityQ4;
+    energyField = &g_GameFactionRuntimeImage.records[firstFactionIndex].baselineEnergySupplyQ4;
+    *energyField = *energyField + g_GameFactionRuntimeImage.records[secondFactionIndex].baselineEnergySupplyQ4;
+    energyField = &g_GameFactionRuntimeImage.records[firstFactionIndex].energyGenerationCapacityQ4;
+    *energyField = *energyField + energyCapacity;
+    bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[1];
+    playerCountOrMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[2];
+    trailingMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[3];
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits;
+    *technologyMaskWord = *technologyMaskWord |
+         g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
+                        [0];
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 1;
+    *technologyMaskWord = *technologyMaskWord | bitOrPlayerCountOrSlot;
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 2;
+    *technologyMaskWord = *technologyMaskWord | playerCountOrMaskWord;
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 3;
+    *technologyMaskWord = *technologyMaskWord | trailingMaskWord;
+    bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[5];
+    playerCountOrMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[6];
+    trailingMaskWord = g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits[7];
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 4;
+    *technologyMaskWord = *technologyMaskWord |
+         g_GameFactionRuntimeImage.records[secondFactionIndex].technologyMasks256Bits
+                        [4];
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 5;
+    *technologyMaskWord = *technologyMaskWord | bitOrPlayerCountOrSlot;
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 6;
+    *technologyMaskWord = *technologyMaskWord | playerCountOrMaskWord;
+    technologyMaskWord = g_GameFactionRuntimeImage.records[firstFactionIndex].technologyMasks256Bits + 7;
+    *technologyMaskWord = *technologyMaskWord | trailingMaskWord;
+    tritiumAmount = g_GameFactionRuntimeImage.records[secondFactionIndex].tritiumExtractedTotalQ4;
+    recordOrCountOrIndex = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterA;
+    counterValueBOrE = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterB;
+    xeniteField = &g_GameFactionRuntimeImage.records[firstFactionIndex].xeniteExtractedTotalQ4;
+    *xeniteField = *xeniteField + g_GameFactionRuntimeImage.records[secondFactionIndex].xeniteExtractedTotalQ4;
+    tritiumField = &g_GameFactionRuntimeImage.records[firstFactionIndex].tritiumExtractedTotalQ4;
+    *tritiumField = *tritiumField + tritiumAmount;
+    relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterA;
+    *relationCounter = *relationCounter + recordOrCountOrIndex;
+    relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterB;
+    *relationCounter = *relationCounter + counterValueBOrE;
+    recordOrCountOrIndex = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterD;
+    counterValueBOrE = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterE;
+    counterValueF = g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterF;
+    relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterC;
+    *relationCounter = *relationCounter + g_GameFactionRuntimeImage.records[secondFactionIndex].relationCounterC;
+    relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterD;
+    *relationCounter = *relationCounter + recordOrCountOrIndex;
+    relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterE;
+    *relationCounter = *relationCounter + counterValueBOrE;
+    relationCounter = &g_GameFactionRuntimeImage.records[firstFactionIndex].relationCounterF;
+    *relationCounter = *relationCounter + counterValueF;
+    assetsRemaining = g_GameFactionRuntimeImage.records[secondFactionIndex].primaryArmyAssetCount;
+    recordOrCountOrIndex = 0;
+    /* append both army-asset lists (primary at record +0x1E0, secondary at +0xE0; 64 entries each) */
+    for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
+        (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < FACTION_ARMY_ASSET_LIST_CAPACITY)); bitOrPlayerCountOrSlot++) {
+      primaryArmyAssetReferenceDword =
+           g_GameFactionRuntimeImage.records[secondFactionIndex].primaryArmyAssetPointersOrIds[recordOrCountOrIndex];
+      armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
+      *armyAssetCount = *armyAssetCount + 1;
+      g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetPointersOrIds[bitOrPlayerCountOrSlot] =
+           primaryArmyAssetReferenceDword;
+      recordOrCountOrIndex++;
+      assetsRemaining--;
+    }
+    assetsRemaining = g_GameFactionRuntimeImage.records[secondFactionIndex].secondaryArmyAssetCount;
+    recordOrCountOrIndex = 0;
+    for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
+        (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < FACTION_ARMY_ASSET_LIST_CAPACITY)); bitOrPlayerCountOrSlot++) {
+      secondaryArmyAssetReferenceDword =
+           g_GameFactionRuntimeImage.records[secondFactionIndex].secondaryArmyAssetPointersOrIds[recordOrCountOrIndex];
+      armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
+      *armyAssetCount = *armyAssetCount + 1;
+      g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetPointersOrIds[bitOrPlayerCountOrSlot] =
+           secondaryArmyAssetReferenceDword;
+      recordOrCountOrIndex++;
+      assetsRemaining--;
+    }
+    InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
-  assetsRemaining = g_GameFactionRuntimeImage.records[secondFactionIndex].secondaryArmyAssetCount;
-  recordOrCountOrIndex = 0;
-  for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
-      (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < FACTION_ARMY_ASSET_LIST_CAPACITY)); bitOrPlayerCountOrSlot++) {
-    secondaryArmyAssetReferenceDword =
-         g_GameFactionRuntimeImage.records[secondFactionIndex].secondaryArmyAssetPointersOrIds[recordOrCountOrIndex];
-    armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
-    *armyAssetCount = *armyAssetCount + 1;
-    g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetPointersOrIds[bitOrPlayerCountOrSlot] =
-         secondaryArmyAssetReferenceDword;
-    recordOrCountOrIndex++;
-    assetsRemaining--;
-  }
-  InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-rebuild_target_entries:
   InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
-  return;
 }
 

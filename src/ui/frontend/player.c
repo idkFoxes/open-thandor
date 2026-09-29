@@ -354,14 +354,13 @@ void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
   searchRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   hostFlagOrRemaining = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST;
-  for (;;) {
-    if (hostFlagOrRemaining == SESSION_NETWORK_ROLE_LOCAL) {
-      return;
-    }
-    if (playerId == playerBlock->playerRuntimeId) break;
+  while (hostFlagOrRemaining != SESSION_NETWORK_ROLE_LOCAL && playerId != playerBlock->playerRuntimeId) {
     playerBlock++;
     searchRemaining--;
     hostFlagOrRemaining = searchRemaining;
+  }
+  if (hostFlagOrRemaining == SESSION_NETWORK_ROLE_LOCAL) {
+    return;
   }
   playerBlock->factionAssignment.readyOrWaitState = 1;
   /* are all clients ready? block 0 is the host */
@@ -1331,14 +1330,13 @@ void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
      g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
-  for (;;) {
-    if (remainingBlocks == 0) {
-      return;
-    }
-    if (playerId == playerBlock->playerRuntimeId) break;
+  while (remainingBlocks != 0 && playerId != playerBlock->playerRuntimeId) {
     remainingBlocks--;
     playerBlock++;
     messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES / 4;
+  }
+  if (remainingBlocks == 0) {
+    return;
   }
   *messageBuffer = FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET;
   return;
@@ -1367,14 +1365,13 @@ void FrontendPlayerMessageBuffer_AppendTripleById
      g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
-  for (;;) {
-    if (remainingBlocks == 0) {
-      return;
-    }
-    if (playerId == playerBlock->playerRuntimeId) break;
+  while (remainingBlocks != 0 && playerId != playerBlock->playerRuntimeId) {
     remainingBlocks--;
     playerBlock++;
     messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES / 4;
+  }
+  if (remainingBlocks == 0) {
+    return;
   }
   writeOffset = *messageBuffer;
   *messageBuffer = *messageBuffer + PLAYER_CHAT_PIECE_BYTES;
@@ -1407,14 +1404,13 @@ void FrontendPlayerMessageBuffer_PublishTextById
      g_FrontendNetworkState == FRONTEND_NETWORK_STATE_HOSTING)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;
   }
-  for (;;) {
-    if (remainingBlocks == 0) {
-      return;
-    }
-    if (playerId == playerBlock->playerRuntimeId) break;
+  while (remainingBlocks != 0 && playerId != playerBlock->playerRuntimeId) {
     remainingBlocks--;
     playerBlock++;
     messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES;
+  }
+  if (remainingBlocks == 0) {
+    return;
   }
   /* the 0x30 text bytes, widened into a 0x60-byte buffer */
   Text_CopyNarrowToUtf16(96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,

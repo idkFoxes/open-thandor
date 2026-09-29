@@ -64,13 +64,9 @@ void PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPrior
 
   selectedChildIndex = 0;
   currentHeapPair = heapBase;
-  while( true ) {
-    /* children of index i are 2i + 1 and 2i + 2 */
-    doubledParentIndex = selectedChildIndex * 2;
-    selectedChildIndex = doubledParentIndex + 1;
-    if (heapSize - 1U < selectedChildIndex) {
-      return;
-    }
+  /* children of index i are 2i + 1 and 2i + 2 */
+  while (doubledParentIndex = selectedChildIndex * 2, selectedChildIndex = doubledParentIndex + 1,
+         heapSize - 1U >= selectedChildIndex) {
     selectedChildPriority = heapBase[selectedChildIndex].priority;
     selectedChildEntity = heapBase[selectedChildIndex].entity;
     if ((selectedChildIndex < heapSize - 1U) &&

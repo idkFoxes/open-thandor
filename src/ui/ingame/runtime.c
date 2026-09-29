@@ -2917,10 +2917,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
     }
     frameOrFactionIndex++;
     factionRecordAddress = factionRecordAddress + sizeof(GameFactionRuntimeRecord);
-    if (7 < frameOrFactionIndex) {
-      return;
-    }
-  } while( true );
+  } while (frameOrFactionIndex <= 7);
 }
 
 

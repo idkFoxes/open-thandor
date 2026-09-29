@@ -186,10 +186,9 @@ AdvanceWaypoint:
       ownerMovementFlags = &linkedOrOwnerArmy->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | ARMY_MOVEMENT_ROUTE_POINT_REACHED;
     }
-    goto CommitPosition;
   }
-  /* no step running: choose the next one */
-  if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_TURN) == 0) {
+  else if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_TURN) == 0) {
+    /* no step running and no turn to finish: choose the next step */
     if ((modelRuntime->runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
@@ -221,37 +220,35 @@ AdvanceWaypoint:
            (targetAngleLength.angle - (rootNode->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK);
       if (0 < (int)targetAngleLength.length) {
         /* walk on when the route point lies within the eighth turn ahead (ARMY_ARTICULATED_WALK_ON_ANGLE16 while already walking) */
-        if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_WALK) == 0) {
-          if ((stepSteerOrWorldX < (ModelRuntimeNode *)(FIXED_ANGLE16_EIGHTH_TURN + 1)) ||
-             ((ModelRuntimeNode *)(FIXED_ANGLE16_FULL_TURN - FIXED_ANGLE16_EIGHTH_TURN - 1) < stepSteerOrWorldX)) {
-UpdateTerrainContact:
-            /* the keep mask also clears the stored turn angle in the upper 16 bits */
-            if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_LEFT_LAST) == 0) {
-              contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
-              *contactStateFlags = *contactStateFlags & ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK;
-              contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
-              *contactStateFlags = *contactStateFlags |
-                   (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_LEFT_LAST | ARMY_ARTICULATED_STEP_LEFT);
-              ArmyArticulatedRuntime_UpdateLeftTerrainContact
-                        (targetAngleLength.angle,targetAngleLength.length,
-                         (ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
-            }
-            else {
-              contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
-              *contactStateFlags = *contactStateFlags & ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK;
-              contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
-              *contactStateFlags = *contactStateFlags |
-                   (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_RIGHT);
-              ArmyArticulatedRuntime_UpdateRightTerrainContact
-                        (targetAngleLength.angle,targetAngleLength.length,
-                         (ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
-            }
-            goto CommitPosition;
+        if (((((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_WALK) == 0) &&
+             ((stepSteerOrWorldX < (ModelRuntimeNode *)(FIXED_ANGLE16_EIGHTH_TURN + 1)) ||
+              ((ModelRuntimeNode *)(FIXED_ANGLE16_FULL_TURN - FIXED_ANGLE16_EIGHTH_TURN - 1) < stepSteerOrWorldX))) ||
+            ((((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_WALK) != 0) &&
+             ((stepSteerOrWorldX < (ModelRuntimeNode *)(ARMY_ARTICULATED_WALK_ON_ANGLE16 + 1)) ||
+              ((ModelRuntimeNode *)(FIXED_ANGLE16_FULL_TURN - ARMY_ARTICULATED_WALK_ON_ANGLE16 - 1) < stepSteerOrWorldX)))) {
+          /* the keep mask also clears the stored turn angle in the upper 16 bits */
+          if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_LEFT_LAST) == 0) {
+            contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
+            *contactStateFlags = *contactStateFlags & ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK;
+            contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
+            *contactStateFlags = *contactStateFlags |
+                 (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_LEFT_LAST | ARMY_ARTICULATED_STEP_LEFT);
+            ArmyArticulatedRuntime_UpdateLeftTerrainContact
+                      (targetAngleLength.angle,targetAngleLength.length,
+                       (ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
           }
+          else {
+            contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
+            *contactStateFlags = *contactStateFlags & ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK;
+            contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
+            *contactStateFlags = *contactStateFlags |
+                 (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_RIGHT);
+            ArmyArticulatedRuntime_UpdateRightTerrainContact
+                      (targetAngleLength.angle,targetAngleLength.length,
+                       (ArmyArticulatedRuntimeSlotView *)modelRuntime,worldRuntime);
+          }
+          goto CommitPosition;
         }
-        else if ((stepSteerOrWorldX < (ModelRuntimeNode *)(ARMY_ARTICULATED_WALK_ON_ANGLE16 + 1)) ||
-                ((ModelRuntimeNode *)(FIXED_ANGLE16_FULL_TURN - ARMY_ARTICULATED_WALK_ON_ANGLE16 - 1) < stepSteerOrWorldX))
-        goto UpdateTerrainContact;
       }
       if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_WALK) != 0)
       goto InitializeTerrainContact;
@@ -823,10 +820,11 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
      (primaryDelta = waterDelta * movementDefinition->waterDamageMultiplier >> 7, -1 < primaryDelta)) {
     ArmyRuntime_ApplyDamageAndPropagateToParent(primaryDelta,(ModelRuntimeSlot *)modelRuntime);
   }
-  if (((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
-    waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
-                       (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-    if (waypointResult.arrived) goto StopAndTurn;
+  /* alive and still on its way to a route point */
+  if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+      (waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
+                          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime),
+       !waypointResult.arrived)) {
     secondaryDelta = waypointResult.worldYQ12 - (rootNode->worldTransform).translation.y;
     primaryDelta = waypointResult.worldXQ12 - (rootNode->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
@@ -937,7 +935,6 @@ SnapToHeading:
     linkedOrOwnerArmy->actionVector1Q12 = linkedOrOwnerArmy->actionVector1Q12 - 1;
   }
   else {
-StopAndTurn:
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
     (modelRuntime->movementControl).turnVelocityAngle16 = 0;
 PlaceStationary:
@@ -1784,10 +1781,11 @@ void ArmyRuntimeClass_UpdateGroundMovement
      (deltaXOrTilt = waterDelta * movementDefinition->waterDamageMultiplier >> 7, -1 < deltaXOrTilt)) {
     ArmyRuntime_ApplyDamageAndPropagateToParent(deltaXOrTilt,(ModelRuntimeSlot *)modelRuntime);
   }
-  if (((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
-    waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
-                       (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-    if (waypointResult.arrived) goto StopAndTurn;
+  /* alive and still on its way to a route point */
+  if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+      (waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
+                          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime),
+       !waypointResult.arrived)) {
     deltaYOrTurnLimit = waypointResult.worldYQ12 - (rootNode->worldTransform).translation.y;
     deltaXOrTilt = waypointResult.worldXQ12 - (rootNode->worldTransform).translation.x;
     if ((deltaXOrTilt == 0) && (deltaYOrTurnLimit == 0)) {
@@ -1902,7 +1900,6 @@ SnapToHeading:
     linkedOrOwnerArmy->actionVector1Q12 = linkedOrOwnerArmy->actionVector1Q12 - 1;
   }
   else {
-StopAndTurn:
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
     (modelRuntime->movementControl).turnVelocityAngle16 = 0;
 PlaceStationary:
@@ -2279,10 +2276,11 @@ void ArmyRuntimeClass_UpdateWaterSurfaceMovement
   previousRotationAngle = (rootNode->modelPayload).worldRotationAngle2;
   previousWorldX = (rootNode->worldTransform).translation.x;
   previousWorldY = (rootNode->worldTransform).translation.y;
-  if (((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
-    waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
-                       (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-    if (waypointResult.arrived) goto StopAndTurn;
+  /* alive and still on its way to a route point */
+  if ((((modelRuntime->classState).stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) &&
+      (waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
+                          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime),
+       !waypointResult.arrived)) {
     deltaYOrTurnLimit = waypointResult.worldYQ12 - (rootNode->worldTransform).translation.y;
     deltaXOrTilt = waypointResult.worldXQ12 - (rootNode->worldTransform).translation.x;
     if ((deltaXOrTilt == 0) && (deltaYOrTurnLimit == 0)) {
@@ -2389,7 +2387,6 @@ SnapToHeading:
     linkedOrOwnerArmy->actionVector1Q12 = linkedOrOwnerArmy->actionVector1Q12 - 1;
   }
   else {
-StopAndTurn:
     (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
     (modelRuntime->movementControl).turnVelocityAngle16 = 0;
 PlaceStationary:

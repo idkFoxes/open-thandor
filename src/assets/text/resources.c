@@ -351,11 +351,8 @@ TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_
           remainingStrings--) {
         textCursor = (uint16_t *)((uint8_t *)localeBlockOrError +
                                   ((uint32_t *)((TextResourceLocaleBlockPrefix *)localeBlockOrError + 1))[stringIndex]);
-        while( true ) {
-          recordStart = textCursor;
-          codeUnit = *recordStart;
-          textCursor = recordStart + 1;
-          if (codeUnit == 0) break;
+        while (recordStart = textCursor, codeUnit = *recordStart, textCursor = recordStart + 1,
+               codeUnit != 0) {
           if ((short)codeUnit < 0) {
             /* The converter stores the nested-stream selector and the image subresource as four UTF-16 decimal
                digits d0..d3 filling both payload dwords. They become a binary number (d0*1000 + d1*100 + d2*10

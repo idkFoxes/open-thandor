@@ -98,7 +98,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
         indexOrColor--;
       } while (indexOrColor != 0);
       /* Remove every bank without a used color, rescanning from the first bank after each removal. */
-      for (;;) {
+      do {
         bankSlotCursor = (int *)g_GraphicsPaletteBankSlots;
         remainingCount = ((GraphicsTextureSourceHeaderView *)textureSourceBase)->tableDescriptor.paletteBankCount;
         cursorOrBankIndex = 0;
@@ -112,10 +112,11 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
           cursorOrBankIndex++;
           remainingCount--;
         } while (remainingCount != 0);
-        if (!emptyBankFound) break;
-        GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
-                  (cursorOrBankIndex,(GraphicsTextureSourceHeaderView *)textureSourceBase);
-      }
+        if (emptyBankFound) {
+          GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
+                    (cursorOrBankIndex,(GraphicsTextureSourceHeaderView *)textureSourceBase);
+        }
+      } while (emptyBankFound);
       /* fold duplicates inside each bank: pixels using a later copy of a used colour move to the first one,
          and the copy is marked unused */
       cursorOrBankIndex = 0;
@@ -150,11 +151,8 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
       /* Merge bank pairs whose combined used colors fit into 256 entries; after a merge, retry the same first
          bank against the remaining ones. */
       indexOrColor = 0;
-      for (;;) {
-        secondIndex = indexOrColor + 1;
-        if (((GraphicsTextureSourceHeaderView *)textureSourceBase)->tableDescriptor.paletteBankCount <= secondIndex) {
-          break;
-        }
+      while (secondIndex = indexOrColor + 1,
+             ((GraphicsTextureSourceHeaderView *)textureSourceBase)->tableDescriptor.paletteBankCount > secondIndex) {
         banksMerged = false;
         do {
           colorOrCombinedCount = GraphicsPaletteTextureSource_CountCombinedUsedColors

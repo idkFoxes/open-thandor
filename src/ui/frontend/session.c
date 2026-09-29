@@ -328,7 +328,10 @@ void FrontendSession_PeriodicTick(void)
     return;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    if (g_InGameNetworkTickCountdown != 0) goto unlock;
+    if (g_InGameNetworkTickCountdown != 0) {
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
+      return;
+    }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
@@ -336,9 +339,7 @@ void FrontendSession_PeriodicTick(void)
       }
       else if ((g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2 ==
                g_SessionNetworkTickInterval) {
-        for (;;) {
-          ringRecord = UiRuntimeRecordRing_DiscardOldest();
-          if (ringRecord.empty) break;
+        while (ringRecord = UiRuntimeRecordRing_DiscardOldest(), !ringRecord.empty) {
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
                     ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
                      (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
@@ -347,7 +348,8 @@ void FrontendSession_PeriodicTick(void)
         if (callResult) {
           /* not every peer has synced yet: retry on the next timer tick */
           g_InGameNetworkTickCountdown = 1;
-          goto unlock;
+          g_SpinLockRelease(&g_InGameStateTickSpinLock);
+          return;
         }
       }
     }
@@ -356,7 +358,10 @@ void FrontendSession_PeriodicTick(void)
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
       /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
-      if (!callResult) goto unlock;
+      if (!callResult) {
+        g_SpinLockRelease(&g_InGameStateTickSpinLock);
+        return;
+      }
       do {
         ringRecord = UiRuntimeRecordRing_DiscardOldest();
         if (ringRecord.empty) break;
@@ -365,9 +370,15 @@ void FrontendSession_PeriodicTick(void)
                            (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
-      if (callResult) goto unlock;
+      if (callResult) {
+        g_SpinLockRelease(&g_InGameStateTickSpinLock);
+        return;
+      }
     }
-    else if (g_InGameNetworkTickCountdown != 0) goto unlock;
+    else if (g_InGameNetworkTickCountdown != 0) {
+      g_SpinLockRelease(&g_InGameStateTickSpinLock);
+      return;
+    }
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
   }
   g_SessionNetworkTickCounter++;
@@ -375,7 +386,6 @@ void FrontendSession_PeriodicTick(void)
      (inGameRoot->activeEndMovieRuntime != NULL)) {
     g_EndMoviePendingTicks++;
   }
-unlock:
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
   return;
 }

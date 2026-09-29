@@ -293,11 +293,10 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
       shotSlot->ownerAndTrajectory.ownerArmyRuntime = rebasedOwnerArmy;
       registryCursor = g_ShotDefinitionRegistry;
       registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-      for (;;) {
-        registryDefinition = *registryCursor;
-        if ((registryDefinition != NULL) &&
-           (shotSlot->definitionOrSavedId.definition ==
-            (ShotDefinition *)registryDefinition->definitionId)) break;
+      while (registryDefinition = *registryCursor,
+             (registryDefinition == NULL) ||
+             (shotSlot->definitionOrSavedId.definition !=
+              (ShotDefinition *)registryDefinition->definitionId)) {
         registryCursor++;
         registrySlotsRemaining--;
         if (registrySlotsRemaining == 0) {
@@ -310,10 +309,7 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
     }
     shotSlot++;
     shotSlotsRemaining--;
-    if (shotSlotsRemaining == 0) {
-      return;
-    }
-  } while( true );
+  } while (shotSlotsRemaining != 0);
 }
 
 
@@ -362,14 +358,14 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   slotsRemaining = (ShotRuntimeSlot *)SHOT_RUNTIME_SLOT_COUNT; /* a counter kept in a pointer-typed variable */
   shotRuntimeCursor = g_ShotRuntimeSlots;
   slotsRemainingOrPool = g_ShotRuntimeSlots;
-  while( true ) {
-    if (slotsRemainingOrPool == NULL) {
-      return;
-    }
-    if (shotRuntimeCursor->modelNodeOrSavedOffset.modelNode == NULL) break;
+  while ((slotsRemainingOrPool != NULL) &&
+         (shotRuntimeCursor->modelNodeOrSavedOffset.modelNode != NULL)) {
     shotRuntimeCursor = shotRuntimeCursor + 1;
     slotsRemaining = (ShotRuntimeSlot *)((int)slotsRemaining - 1);
     slotsRemainingOrPool = slotsRemaining;
+  }
+  if (slotsRemainingOrPool == NULL) {
+    return; /* no free slot */
   }
   allocatedRecord = WorldObjectArray_AllocateFreeRecord(worldRuntime);
   shotModelNode = (ShotModelRuntimeNode *)allocatedRecord.recordOrError;

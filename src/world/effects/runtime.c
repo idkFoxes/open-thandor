@@ -167,11 +167,10 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
       effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
       registryCursor = g_EffectDefinitionRegistry;
       registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
-      for (;;) {
-        registryDefinition = *registryCursor;
-        if ((registryDefinition != NULL) &&
-           (effectSlot->definitionOrSavedId.definition ==
-            (EffectDefinition *)registryDefinition->definitionId)) break;
+      while (registryDefinition = *registryCursor,
+             (registryDefinition == NULL) ||
+             (effectSlot->definitionOrSavedId.definition !=
+              (EffectDefinition *)registryDefinition->definitionId)) {
         registryCursor++;
         registrySlotsRemaining--;
         if (registrySlotsRemaining == 0) {
@@ -184,10 +183,7 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
     }
     effectSlot++;
     effectSlotsRemaining--;
-    if (effectSlotsRemaining == 0) {
-      return;
-    }
-  } while( true );
+  } while (effectSlotsRemaining != 0);
 }
 
 

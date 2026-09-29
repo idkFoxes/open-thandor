@@ -20,8 +20,8 @@ movies) come from an installation.
 | Functions with a header comment (what, why, who calls it) | `████████████████████` | **100 %** |
 | Functions without raw memory offsets | `████████████████████` | **100 %** |
 | Functions without placeholder names | `████████████████████` | **100 %** |
-| Functions without `goto` / `while (true)` | `██████████████████░░` | **91.7 %** |
-| Functions that pass all readability checks | `██████████████████░░` | **91.7 %** (1,897) |
+| Functions without `goto` or an endless loop (`while (true)`, `for (;;)`) | `███████████████████░` | **95.2 %** (100 left, 39 of them only a shared failure exit) |
+| Functions that pass all readability checks | `███████████████████░` | **95.2 %** (1,968) |
 | Magic hex numbers named (constants, fixed-point shifts) | `████████████████████` | **99.9 %** (5,182 → 2 left) |
 
 The readability numbers come from [`tools/readability_report.py`](tools/readability_report.py). What it counts:
@@ -30,8 +30,9 @@ string symbols named after their text are not); a raw offset is `*(T *)(p + 0x..
 without original addresses, the values of `#define`s (that is where they get their name), bit masks (one run of
 four or more set bits such as `0xff`, `0x3fffffff`, `0xffff0000`: they read best as hex; 331 of them) and the
 sample codec's MMX tables, whose offsets are genuine table positions. The 2 left are occupancy and production
-bits whose meaning is not known yet. The goto count is the next stage: restructuring
-changes the machine code and is checked by behaviour tests instead of the byte comparison. The data share comes from
+bits whose meaning is not known yet. Control flow was restructured byte-identically too (611 -> 362 gotos and
+endless loops): what is left mostly keeps one shared failure exit or jumps into shared blocks, and MSVC only emits
+the original code for that form; changing it is the next stage, checked by behaviour tests. The data share comes from
 [`tools/data/image_data_report.py`](tools/data/image_data_report.py): of the bytes that hold content (not zero storage, not the
 tables computed at startup), the part written with a real type and named fields, as text, as a UI template or as a
 jump table; the rest are code fragments between data and 16 bytes nobody uses.
@@ -55,8 +56,8 @@ jump table; the rest are code fragments between data and 16 bytes nobody uses.
   rasterizer, blitters, bilinear scaling, water simulation, movie decoder. `imagecmp` checks the compiled-in data
   against the original executable.
 - **Byte-identical refactoring.** Every readability pass so far (names, constants, comments, typed structs and
-  parameter types, fixed-point helpers such as `FIXED_MUL_SHR`) was checked function by function: the generated
-  machine code of our build did not change. Restructuring that
+  parameter types, fixed-point helpers such as `FIXED_MUL_SHR`, structured loops instead of goto) was checked
+  function by function: the generated machine code of our build did not change. Restructuring that
   changes code (loops, splitting large functions, helpers) is the next stage and needs behaviour tests instead.
 - **Game runs**: a scripted skirmish after every change, plus the all-missions run
   ([`run_all_maps.py`](tools/test/run_all_maps.py)) and the campaign run with carried-over units

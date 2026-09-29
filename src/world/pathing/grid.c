@@ -191,36 +191,36 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       backtrackResult = GridPathCost_BacktrackBestHexRoute
                          (callerBlockingMask,startRow,startColumnOrScratch,
                           (GridScratchCell *)((uint8_t *)routeScratchCell + cellCoordOrStrideBytes));
-      if (!backtrackResult.reachedTarget) {
-        /* both branches head for the centre of the selected cell (the original has two identical copies) */
-        if (backtrackResult.routeStateMask == 0) {
-          startColumnOrScratch = backtrackResult.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
-          wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
-          wideProductY = (int64_t)startColumnOrScratch * FIELD_GRID_WORLD_ROW_STEP_Y;
-          primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
-                             ((int)((uint64_t)wideProductY >> 32) << 20 | (uint32_t)wideProductY >> 12,
-                              (int)((uint64_t)wideProductXOrY >> 32) << 19 | (uint32_t)wideProductXOrY >> 13,
-                              routeEntityRuntime,worldRuntime);
-          fallbackWorldPosition = targetWorldPosition;
-        }
-        else {
-          startColumnOrScratch = backtrackResult.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
-          wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
-          wideProductY = (int64_t)startColumnOrScratch * FIELD_GRID_WORLD_ROW_STEP_Y;
-          primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
-                             ((int)((uint64_t)wideProductY >> 32) << 20 | (uint32_t)wideProductY >> 12,
-                              (int)((uint64_t)wideProductXOrY >> 32) << 19 | (uint32_t)wideProductXOrY >> 13,
-                              routeEntityRuntime,worldRuntime);
-        }
-        goto EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn;
+    }
+    if (segmentBlocked && !backtrackResult.reachedTarget) {
+      /* both branches head for the centre of the selected cell (the original has two identical copies) */
+      if (backtrackResult.routeStateMask == 0) {
+        startColumnOrScratch = backtrackResult.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
+        wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+        wideProductY = (int64_t)startColumnOrScratch * FIELD_GRID_WORLD_ROW_STEP_Y;
+        primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
+                           ((int)((uint64_t)wideProductY >> 32) << 20 | (uint32_t)wideProductY >> 12,
+                            (int)((uint64_t)wideProductXOrY >> 32) << 19 | (uint32_t)wideProductXOrY >> 13,
+                            routeEntityRuntime,worldRuntime);
+        fallbackWorldPosition = targetWorldPosition;
+      }
+      else {
+        startColumnOrScratch = backtrackResult.selectedRow * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12;
+        wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12) * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
+        wideProductY = (int64_t)startColumnOrScratch * FIELD_GRID_WORLD_ROW_STEP_Y;
+        primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
+                           ((int)((uint64_t)wideProductY >> 32) << 20 | (uint32_t)wideProductY >> 12,
+                            (int)((uint64_t)wideProductXOrY >> 32) << 19 | (uint32_t)wideProductXOrY >> 13,
+                            routeEntityRuntime,worldRuntime);
       }
     }
-    /* straight line clear (or the backtrack reached the target): head for the target itself */
-    primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
-                       (targetWorldYQ12,targetWorldXQ12,routeEntityRuntime,worldRuntime);
-    fallbackWorldPosition = primaryWorldPosition;
+    else {
+      /* straight line clear (or the backtrack reached the target): head for the target itself */
+      primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
+                         (targetWorldYQ12,targetWorldXQ12,routeEntityRuntime,worldRuntime);
+      fallbackWorldPosition = primaryWorldPosition;
+    }
   }
-EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
   targetWorldYQ12 = fallbackWorldPosition.worldYQ12;
   targetWorldXQ12 = fallbackWorldPosition.worldXQ12;
   overlappedEntity =
@@ -363,10 +363,8 @@ bool GridReachability_RebuildConnectedRegionAroundWorldPoint
     }
     scratchCursor = scratchCursor + 1;
     columnOrCellsRemaining--;
-    if (columnOrCellsRemaining == 0) {
-      return false;
-    }
-  } while( true );
+  } while (columnOrCellsRemaining != 0);
+  return false;
 }
 
 
@@ -1741,11 +1739,7 @@ void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasse
   for (;;) {
     /* next queued cell that is not already visited; ends at an empty queue or after the passes */
     do {
-      while( true ) {
-        if (queueReadCursor == queueWriteCursor) {
-          return;
-        }
-        if (queueReadCursor < g_GridPathCostQueuePassBoundary) break;
+      while (queueReadCursor != queueWriteCursor && queueReadCursor >= g_GridPathCostQueuePassBoundary) {
         /* end of a pass: stop when the mover's cell or a neighbour of it has been reached */
         g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + GRID_PATH_COST_QUEUE_PASS_ENTRIES;
         if (originCell->pathCost < GRID_PATH_COST_UNREACHED) {
@@ -1773,6 +1767,9 @@ void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasse
         if (remainingPasses == 0) {
           return;
         }
+      }
+      if (queueReadCursor == queueWriteCursor) {
+        return;
       }
       neighborCell = *queueReadCursor;
       queueReadCursor++;

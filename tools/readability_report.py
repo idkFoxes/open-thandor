@@ -8,7 +8,7 @@ For every function it checks:
                (int)&x + n address arithmetic
   named        no placeholder or offset-suffixed identifiers (fooXX_YY offsets, unknown*, arg0, payloadDword*,
                View<hex>, ...) in the body
-  structured   no `while( true )` and no goto
+  structured   no endless loop form (`while (true)`, `while (1)`, `for (;;)`) and no goto
 A function is "clean" when all four hold. Prints the totals as percentages (used for the README), and the number
 of hex literals in code that are neither original addresses nor bit masks (0xff, 0xffff0000, ...).
 audio/codec/sam.c is left out of the offset and number checks (MMX table positions, see RAW_EXEMPT)."""
@@ -35,7 +35,7 @@ def is_mask(digits):
     while value & 1 == 0:
         value >>= 1
     return value & (value + 1) == 0 and value >= 0xf
-FLOW = re.compile(r"while\( true \)|\bgoto\b")
+FLOW = re.compile(r"while\s*\(\s*(?:true|1)\s*\)|for\s*\(\s*;\s*;\s*\)|\bgoto\b")
 
 
 def functions():

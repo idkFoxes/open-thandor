@@ -91,15 +91,13 @@ EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
               tablePointerSlot = tablePointerSlot + 4;
               sourceRecord = sourceRecord + recordSizeBytes;
               remainingEntries--;
-              if (remainingEntries == 0) {
-                g_MemoryApi.shrinkInPlace(stringCursor - tableOrError,tableOrError);
-                g_MemoryApi.free(recordBuffer);
-                successResult.entryCountOrScratch = foundEntryCount;
-                successResult.tableOrError = (uint32_t)tableOrError;
-                successResult.failed = false;
-                return successResult;
-              }
-            } while( true );
+            } while (remainingEntries != 0);
+            g_MemoryApi.shrinkInPlace(stringCursor - tableOrError,tableOrError);
+            g_MemoryApi.free(recordBuffer);
+            successResult.entryCountOrScratch = foundEntryCount;
+            successResult.tableOrError = (uint32_t)tableOrError;
+            successResult.failed = false;
+            return successResult;
           }
 freeTable:
           /* the original returns free's EAX here, not an error code */
@@ -199,49 +197,49 @@ uint32_t __cdecl FileSystem_Init(void)
                g_ExecutableDirectoryUtf16);
     openResult = Win32File_Open(0,g_FileSystemCombinedPathScratchUtf16);
     configFile = (void *)openResult.handleOrError;
-    if (openResult.failed) goto mountEnginePackage;
   }
-  sizeResult = Win32File_GetSize(configFile);
-  configBytesLeft = sizeResult.sizeOrError;
-  if ((!sizeResult.failed) && (configBytesLeft != 0)) {
-    allocResult = ArenaHeap_Alloc(configBytesLeft);
-    configCursor = (uint8_t *)allocResult.payloadOrError;
-    if (!allocResult.failed) {
-      readResult = Win32File_ReadExact(configBytesLeft,configCursor,configFile);
-      if (readResult.failed) {
-        ArenaHeap_Free(configCursor);
-      }
-      else {
-        g_FileSystemInitComputerNameCapacityOrConfigCursor = configCursor;
-        g_FileSystemConfigRemainingBytes = configBytesLeft;
-        /* Normalize the text in place: separators (<= ' ') and [comments] become NUL, other
-           characters go through the normalization map. */
-        do {
-          configByte = *configCursor;
-          if (configByte == '[') {
-            /* blank the comment up to its closing ']', which is then blanked as a separator */
-            do {
+  if (!openResult.failed) {
+    sizeResult = Win32File_GetSize(configFile);
+    configBytesLeft = sizeResult.sizeOrError;
+    if ((!sizeResult.failed) && (configBytesLeft != 0)) {
+      allocResult = ArenaHeap_Alloc(configBytesLeft);
+      configCursor = (uint8_t *)allocResult.payloadOrError;
+      if (!allocResult.failed) {
+        readResult = Win32File_ReadExact(configBytesLeft,configCursor,configFile);
+        if (readResult.failed) {
+          ArenaHeap_Free(configCursor);
+        }
+        else {
+          g_FileSystemInitComputerNameCapacityOrConfigCursor = configCursor;
+          g_FileSystemConfigRemainingBytes = configBytesLeft;
+          /* Normalize the text in place: separators (<= ' ') and [comments] become NUL, other
+             characters go through the normalization map. */
+          do {
+            configByte = *configCursor;
+            if (configByte == '[') {
+              /* blank the comment up to its closing ']', which is then blanked as a separator */
+              do {
+                *configCursor = 0;
+                configCursor++;
+                configBytesLeft--;
+              } while ((configBytesLeft != 0) && (*configCursor != ']'));
+              if (configBytesLeft == 0) break;
+              configByte = 0;
+            }
+            if (configByte <= ' ') {
               *configCursor = 0;
-              configCursor++;
-              configBytesLeft--;
-            } while ((configBytesLeft != 0) && (*configCursor != ']'));
-            if (configBytesLeft == 0) break;
-            configByte = 0;
-          }
-          if (configByte <= ' ') {
-            *configCursor = 0;
-          }
-          else {
-            *configCursor = g_FileSystemConfigCharacterNormalizationMap[configByte];
-          }
-          configCursor++;
-          configBytesLeft--;
-        } while (configBytesLeft != 0);
+            }
+            else {
+              *configCursor = g_FileSystemConfigCharacterNormalizationMap[configByte];
+            }
+            configCursor++;
+            configBytesLeft--;
+          } while (configBytesLeft != 0);
+        }
       }
     }
+    Win32File_Close(configFile);
   }
-  Win32File_Close(configFile);
-mountEnginePackage:
   Win32File_GetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
   mountResult = Package_MountLowPriority(u_engine_pck_0040e255);
   if (!mountResult.failed) {
@@ -860,10 +858,8 @@ bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathA
     while (componentRejected = Win32Path_ValidateDos83
                              (flags | (FILESYSTEM_DOS83_ALLOW_PATH_CONTINUATION|
                                       FILESYSTEM_DOS83_COMPONENT_ONLY),pathAnsi), !componentRejected) {
-      while( true ) {
-        pathChar = *pathAnsi;
-        pathAnsi++;
-        if (pathChar == '\\') break;
+      /* skip past the next '\'; the terminator ends a valid path */
+      while (pathChar = *pathAnsi, pathAnsi++, pathChar != '\\') {
         if (pathChar == 0) {
           return false;
         }

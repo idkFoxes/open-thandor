@@ -465,8 +465,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
   slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
   modelRuntime = (ModelRuntimeSlotUnrebaseView *)g_ModelRuntimeSlots;
   do {
-    while( true ) {
-      if (modelRuntime->rootModelNodeSavedOffset != 0) break;
+    while (modelRuntime->rootModelNodeSavedOffset == 0) {
       /* unused slot: zero its 0x80 dwords, one dword step at a time (REP STOSD in the original) */
       for (dwordsRemaining = sizeof(ModelRuntimeSlot) / 4; dwordsRemaining != 0; dwordsRemaining--) {
         modelRuntime->definitionReferenceOrSavedId.definition = NULL;
@@ -572,7 +571,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
       modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
       registryEntry = g_ModelDefinitionRegistry;
       registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
-      for (;;) {
+      do {
         registeredDefinition = *registryEntry;
         if ((registeredDefinition != NULL) &&
            (modelRuntime->definitionOrSavedId.definition ==
@@ -616,16 +615,12 @@ void ModelRuntimePool_RebaseAfterLoad(void)
         if (registryRemaining == 0) {
           /* definition no longer registered: drop the instance */
           modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
-          break;
         }
-      }
+      } while (registryRemaining != 0);
     }
     modelRuntime++;
     slotsRemaining--;
-    if (slotsRemaining == 0) {
-      return;
-    }
-  } while( true );
+  } while (slotsRemaining != 0);
 }
 
 

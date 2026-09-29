@@ -87,36 +87,36 @@ FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId)
 nextFrame:
     do {
       for (;;) {
-        for (;;) {
-          for (;;) {
-            if (g_UiRootNode != UI_ROOT_STACK_END) {
-              FrontendRomTransition_ProcessPendingRecord();
-            }
-            UiRootStack_InvalidateAll();
-            UiFrame_ProcessAndPresent();
-            g_FrontendPendingPageActionDepth = 0;
-            if (g_FrontendPendingPageAction != FRONTEND_PAGE_ACTION_NONE) break;
-            if (g_UiRootNode == UI_ROOT_STACK_END) {
-              /* the last UI root was popped: the player quit the game */
-              FrontendRuntime_ShutdownAndReleaseResourcesRegs();
-              exitResult.failed = false;
-              /* The asm returns with CLC and EAX left over from UiFrame_ProcessAndPresent (the shutdown helper
-                 preserves EAX); the only caller hands it to the fatal-error dispatcher, which ignores it with CF
-                 clear. */
-              exitResult.errorOrValue = 0;
-              return exitResult;
-            }
+        /* present UI frames until a page action is pending */
+        do {
+          if (g_UiRootNode != UI_ROOT_STACK_END) {
+            FrontendRomTransition_ProcessPendingRecord();
           }
-          UiFrame_FlushInputAndResetPendingTicks();
-          g_FrontendPendingPageActionDepth++;
-          if (g_FrontendPendingPageAction != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) break;
-          FrontendNetworkSetupPage_InitializeBackendMode((FrontendUiImage *)g_FrontendRootNode);
-          g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
-        }
-        if (g_FrontendPendingPageAction != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) break;
+          UiRootStack_InvalidateAll();
+          UiFrame_ProcessAndPresent();
+          g_FrontendPendingPageActionDepth = 0;
+          if ((g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE) && (g_UiRootNode == UI_ROOT_STACK_END)) {
+            /* the last UI root was popped: the player quit the game */
+            FrontendRuntime_ShutdownAndReleaseResourcesRegs();
+            exitResult.failed = false;
+            /* The asm returns with CLC and EAX left over from UiFrame_ProcessAndPresent (the shutdown helper
+               preserves EAX); the only caller hands it to the fatal-error dispatcher, which ignores it with CF
+               clear. */
+            exitResult.errorOrValue = 0;
+            return exitResult;
+          }
+        } while (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_NONE);
+        UiFrame_FlushInputAndResetPendingTicks();
+        g_FrontendPendingPageActionDepth++;
+        if (g_FrontendPendingPageAction != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) break;
+        FrontendNetworkSetupPage_InitializeBackendMode((FrontendUiImage *)g_FrontendRootNode);
+        g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+      }
+      if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) {
         FrontendGameplaySettingsPage_InitializeFromPersistentSettings
                   ((UiRootNode *)g_FrontendRootNode);
         g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
+        continue;
       }
       if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_SCENARIO_SELECTION_PAGE) {
         /* In a network session first wait until every player's snapshot is published; a client takes the
@@ -3014,7 +3014,10 @@ void Frontend_StateTick(void)
   }
   switch(g_FrontendNetworkState) {
   case FRONTEND_NETWORK_STATE_IDLE:
-    if (g_FrontendTimerCountdownTicks != 0) goto unlock;
+    if (g_FrontendTimerCountdownTicks != 0) {
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      return;
+    }
     g_FrontendNetworkTickCounter++;
     g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
     break;
@@ -3026,31 +3029,29 @@ void Frontend_StateTick(void)
       if ((previousTickCounter & 15) != 0) {
         UiTransfer_SendDiscoveryProbe();
       }
-      while (true) {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-        if (discardedRecord.empty) break;
+      while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
         FrontendTransfer_HandleSessionListAndJoinAckPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
                    (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    goto unlock;
+    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+    return;
   case FRONTEND_NETWORK_STATE_HOSTING:
     if (g_FrontendTimerCountdownTicks == 0) {
       g_FrontendNetworkTickCounter++;
       g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
       FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(g_FrontendRootNode);
-      while (true) {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-        if (discardedRecord.empty) break;
+      while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
         FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
                    (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    goto unlock;
+    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+    return;
   case FRONTEND_NETWORK_STATE_JOINED:
     if (g_FrontendTimerCountdownTicks == 0) {
       g_FrontendNetworkTickCounter++;
@@ -3058,23 +3059,23 @@ void Frontend_StateTick(void)
       if ((previousTickCounter & 15) != 0) {
         FrontendTransfer_SendCapabilityHeartbeat();
       }
-      while (true) {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-        if (discardedRecord.empty) break;
+      while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
         FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
                    (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
-    goto unlock;
+    g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+    return;
   case FRONTEND_NETWORK_STATE_HOST_STARTING:
-    if (g_FrontendTimerCountdownTicks != 0) goto unlock;
+    if (g_FrontendTimerCountdownTicks != 0) {
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      return;
+    }
     g_FrontendNetworkTickCounter++;
     g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
-    while (true) {
-      discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-      if (discardedRecord.empty) break;
+    while (discardedRecord = UiRuntimeRecordRing_DiscardOldest(), !discardedRecord.empty) {
       FrontendNetwork_HandleHandshakeAndPlayerStatePackets
                 ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
                  (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
@@ -3083,13 +3084,17 @@ void Frontend_StateTick(void)
     if (callResult) {
       /* transfer still running: next tick at once */
       g_FrontendTimerCountdownTicks = 1;
-      goto unlock;
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      return;
     }
     break;
   case FRONTEND_NETWORK_STATE_CLIENT_STARTING:
     /* no pacing: works whenever a packet of this session has arrived */
     callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
-    if (!callResult) goto unlock;
+    if (!callResult) {
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      return;
+    }
     g_FrontendNetworkTickCounter++;
     do {
       discardedRecord = UiRuntimeRecordRing_DiscardOldest();
@@ -3100,12 +3105,14 @@ void Frontend_StateTick(void)
                          frontendRoot);
     } while (!callResult);
     callResult = FrontendTransfer_ConsumeProcessedFlagForMenuTick();
-    if (callResult) goto unlock;
+    if (callResult) {
+      g_SpinLockRelease(&g_FrontendStateTickSpinLock);
+      return;
+    }
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
   }
-unlock:
   g_SpinLockRelease(&g_FrontendStateTickSpinLock);
   return;
 }

@@ -563,14 +563,9 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
       return hitOrChildResult;
     }
   }
-  childrenRemaining = modelNode->childCount;
   childByteOffset = 0;
-  do {
-    if (childrenRemaining == 0) {
-      missResult.missed = true;
-      missResult.distanceQ12 = (uint32_t)transformA;
-      return missResult;
-    }
+  for (childrenRemaining = modelNode->childCount; childrenRemaining != 0;
+       childrenRemaining = childrenRemaining - 1) {
     childNode = *(ModelRuntimeNode **)((int)modelNode->childNodes + childByteOffset);
     if (childNode != NULL) {
       hitOrChildResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildren
@@ -581,8 +576,10 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
       }
     }
     childByteOffset = childByteOffset + 4;
-    childrenRemaining = childrenRemaining - 1;
-  } while( true );
+  }
+  missResult.missed = true;
+  missResult.distanceQ12 = (uint32_t)transformA;
+  return missResult;
 }
 
 

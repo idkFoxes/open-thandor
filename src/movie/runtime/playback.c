@@ -127,10 +127,8 @@ StatusResult Movie_EncodeFlmBufferFromFrameProvider
     byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels);
     outputCursor = (uint32_t *)((uint8_t *)outputCursor + byteCount);
     firstFrame = frameOrStatus;
-    while( true ) {
-      providerResult = frameProvider(NULL);
-      frameOrStatus = providerResult.frameOrError;
-      if (providerResult.noFrame) break;
+    while (providerResult = frameProvider(NULL), frameOrStatus = providerResult.frameOrError,
+           !providerResult.noFrame) {
       frameCount++;
       byteCount = Movie_EncodeFrame4x4Delta
                         (frameHeightPixels,frameWidthPixels,outputCursor,firstFramePixels,
@@ -511,9 +509,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
   /* The original keeps the movie in ESI: it re-reads g_ActiveMovie only at the loop top, after the wait
      and at the exit. */
-  for (;;) {
-    movie = g_ActiveMovie;
-    if (movie == NULL) break;
+  while ((movie = g_ActiveMovie) != NULL) {
     MsgWaitForMultipleObjects(1,&movie->refillSemaphore,FALSE,256,0);
     movie = g_ActiveMovie;
     if ((movie == NULL) || (movie->streamState == MOVIE_STREAM_SHUTDOWN) ||

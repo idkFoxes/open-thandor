@@ -117,7 +117,7 @@ bool UiTimedListControl_HandleKeyboardNavigation
            ((startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDED) == 0)) ||
          ((recordCursor = startRecord->childBlockOrParentRecord,
           recordCursor == NULL || (recordCursor->countOrLabelText == 0)))) {
-        while( true ) {
+        do {
           do {
             stepRecord = scanRecord;
             siblingIndex++;
@@ -130,9 +130,8 @@ bool UiTimedListControl_HandleKeyboardNavigation
           control->selectedRecord = scanRecord;
           if (scanRecord == NULL) {
             control->selectedRecord = startRecord;
-            break;
           }
-        }
+        } while (scanRecord != NULL);
       }
       else {
         control->selectedRecord = recordCursor + 1;
@@ -1004,11 +1003,8 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
   }
   record = header + 1;
   depth = 0;
-  for (;;) {
-    y = y - (int)list->base.rowHeight;
-    if (y <= 0) {
-      break;
-    }
+  /* Walk the visible rows until the pointer row is reached. */
+  while ((y = y - (int)list->base.rowHeight) > 0) {
     record++;
     remaining--;
     if ((((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&

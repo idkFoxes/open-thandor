@@ -46,7 +46,10 @@ void RecentTextHistory_SortAndBuildPointerList
   minimumRetainedSerial = g_RecentTextSerialCounter - RECENT_TEXT_HISTORY_LIFETIME;
   output->count = 0;
   do {
-    if (g_RecentTextEntrySerials[outputIndex] == 0) goto advanceSerial; /* the rest is empty already */
+    if (g_RecentTextEntrySerials[outputIndex] == 0) { /* the rest is empty already */
+      g_RecentTextSerialCounter++;
+      return;
+    }
     if ((int)g_RecentTextEntrySerials[outputIndex] < minimumRetainedSerial) break;
     output->entries[outputIndex] = slotCursor;
     output->count++;
@@ -57,7 +60,6 @@ void RecentTextHistory_SortAndBuildPointerList
   for (; outputIndex < RECENT_TEXT_HISTORY_SLOT_COUNT; outputIndex++) {
     g_RecentTextEntrySerials[outputIndex] = 0;
   }
-advanceSerial:
   g_RecentTextSerialCounter++;
   return;
 }
@@ -207,11 +209,7 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
 
   /* copy the leaf, dropping every character that is not allowed in a file name, and '.' */
   sanitizedPathCursor = g_LevelEndingMovieSourcePath;
-  while( true ) {
-    pathChar = *sourcePath;
-    *sanitizedPathCursor = pathChar;
-    sourcePath++;
-    if (pathChar == 0) break;
+  while (pathChar = *sourcePath, *sanitizedPathCursor = pathChar, sourcePath++, pathChar != 0) {
     if (pathChar != '*' && pathChar != '.' && pathChar != '?' && pathChar != '/' && pathChar != '\\' &&
         pathChar != '<' && pathChar != '>' && pathChar != '"' && pathChar != ':' && pathChar != '|') {
       sanitizedPathCursor++;

@@ -1517,58 +1517,55 @@ hidePlayerControl:
     remainingPlayers--;
     /* next player record */
     playerName = playerName + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
-    if (remainingPlayers == 0) {
-      /* once the local player has pressed Finish, the faction rows are hidden */
-      rowIndexOrCount = 7;
-      if ((((UiSelectableControl *)FRONTEND_UI(taskAssignmentRoot,factionSetupFinishButton))->stateFlags &
-           UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-        do {
-          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
-          if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
-            controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
-            *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
-          }
-          rowIndexOrCount--;
-          remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
-          playerRecord = g_FrontendPlayerRuntimeBlocks;
-        } while (rowIndexOrCount != 0);
+  } while (remainingPlayers != 0);
+  /* once the local player has pressed Finish, the faction rows are hidden */
+  rowIndexOrCount = 7;
+  if ((((UiSelectableControl *)FRONTEND_UI(taskAssignmentRoot,factionSetupFinishButton))->stateFlags &
+       UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+    do {
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
+      if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+        controlFlags = &THANDOR_UI_FIELD(taskAssignmentRoot,controlOffset + offsetof(UiNodeBase,nodeFlags),uint32_t);
+        *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       }
-      else {
-        do {
-          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
-          if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
-            controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,controlOffset)->nodeFlags;
-            *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
-          }
-          rowIndexOrCount--;
-          remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
-          playerRecord = g_FrontendPlayerRuntimeBlocks;
-        } while (rowIndexOrCount != 0);
+      rowIndexOrCount--;
+      remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+      playerRecord = g_FrontendPlayerRuntimeBlocks;
+    } while (rowIndexOrCount != 0);
+  }
+  else {
+    do {
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
+      if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
+        controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,controlOffset)->nodeFlags;
+        *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       }
-      /* another player with the local player's faction and a lower readyOrWaitState: hide the faction */
-      do {
-        if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
-          rowIndexOrCount = playerRecord->factionAssignment.factionAssignmentIndex;
-          otherPlayerRecord = g_FrontendPlayerRuntimeBlocks;
-          while ((rowIndexOrCount != otherPlayerRecord->factionAssignment.factionAssignmentIndex ||
-                 ((int)(playerRecord->factionAssignment).readyOrWaitState <=
-                  (int)(otherPlayerRecord->factionAssignment).readyOrWaitState))) {
-            otherPlayerRecord++;
-            remainingPlayers--;
-            if (remainingPlayers == 0) {
-              return;
-            }
-          }
-          controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount - 1])->nodeFlags;
-          *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+      rowIndexOrCount--;
+      remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
+      playerRecord = g_FrontendPlayerRuntimeBlocks;
+    } while (rowIndexOrCount != 0);
+  }
+  /* another player with the local player's faction and a lower readyOrWaitState: hide the faction */
+  do {
+    if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
+      rowIndexOrCount = playerRecord->factionAssignment.factionAssignmentIndex;
+      otherPlayerRecord = g_FrontendPlayerRuntimeBlocks;
+      while ((rowIndexOrCount != otherPlayerRecord->factionAssignment.factionAssignmentIndex ||
+             ((int)(playerRecord->factionAssignment).readyOrWaitState <=
+              (int)(otherPlayerRecord->factionAssignment).readyOrWaitState))) {
+        otherPlayerRecord++;
+        remainingPlayers--;
+        if (remainingPlayers == 0) {
           return;
         }
-        remainingPlayers--;
-        playerRecord++;
-      } while (remainingPlayers != 0);
+      }
+      controlFlags = (uint32_t *)&THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount - 1])->nodeFlags;
+      *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       return;
     }
-  } while (true);
+    remainingPlayers--;
+    playerRecord++;
+  } while (remainingPlayers != 0);
 }
 
 
