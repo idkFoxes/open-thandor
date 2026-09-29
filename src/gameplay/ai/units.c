@@ -367,7 +367,8 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
 
 
 /* Address: 0x0053B620.
-   AI behaviour of a runtime-class-18 unit, called from AiUnitBehavior_UpdateOwnUnits and, while
+   AI behaviour of a runtime-class-18 unit (the pioneer vehicle, which turns into a building at a resource
+   site): drives it to the best free resource site of workspace 08. Called from AiUnitBehavior_UpdateOwnUnits and, while
    movement flag 0x100 is set, from its movement update. Once it has arrived (flag clear): with as many
    workspace-00 as workspace-04 entries it moves on 0x2D05 along its heading; otherwise it drives to the best
    resource site of workspace 08 that is far enough from workspaces 03/02, scored by priority, distances to

@@ -621,10 +621,11 @@ void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCat
 
 
 /* Address: 0x0053A6E0.
-   Once Arms Factories is researched and the planning capacity allows it, scores the eligible army assets of
-   workspace 11 with weight profile A and proposes the best one. Its weight (armyVariantABaseWeight) is divided
+   Proposes the best producible army asset for base defence. Once Arms Factories is researched and the planning
+   capacity allows it, scores the eligible army assets of workspace 11 with weight profile A and proposes the best
+   one. Its weight (armyVariantABaseWeight) is divided
    by 1 + the number of pending requests with ARM ids 340..379, then taken x3/4 while the faction's primary
-   anchor cooldown is 0, else x2. Assets below ARM 300 are only proposed while workspace 01 has at most 10
+   anchor cooldown is 0, else x2 (the cooldown runs after one of the faction's buildings was attacked). Assets below ARM 300 are only proposed while workspace 01 has at most 10
    entries.
 */
 void AiArmyCandidate_AddBestDefenseAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -1200,6 +1201,8 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
 
 
 /* Address: 0x00539D20.
+   Proposes a resource storage building when the faction's free storage runs low (ARM 331 for Xenite, the
+   caller's candidate, ARM 333, for Tritium), plus extra weight per usable resource site.
    Proposes the resource structure candidateArmyAssetId unless one of it is still unassigned. ARM 331 (0x14B):
    with an ARM 330 present and the Xenite storage limit below the knowledge limit, when the free storage
    (limit - current Xenite) is below the gap limit; a full storage quadruples the weight. Any other candidate

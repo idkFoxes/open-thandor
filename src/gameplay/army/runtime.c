@@ -1895,7 +1895,8 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
 
 
 /* Address: 0x0051D310.
-   Tests the army's state/technology id at +0x100 for zero (CF set when it is zero, SETZ / RCR); used by
+   Tests the army's summed weapon damage against target class 0 (+0x100, targetClassShotDamage[0]) for zero, i.e.
+   an unarmed army (CF set when it is zero, SETZ / RCR); used by
    ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
 bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
@@ -1906,8 +1907,8 @@ bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 
 
 /* Address: 0x0051D330.
-   Tests the army's signed state/technology id at +0x100 for being non-negative (CF set when it is >= 0,
-   SETGE / RCR). No C code calls it directly.
+   Tests the army's summed weapon damage against target class 0 (+0x100, targetClassShotDamage[0]) for being
+   non-negative (CF set when it is >= 0, SETGE / RCR). No C code calls it directly.
 */
 bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 

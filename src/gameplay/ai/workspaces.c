@@ -1198,7 +1198,8 @@ void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell)
 
 
 /* Address: 0x00537FC0.
-   Same as the workspace-09 variant for workspace 10 (at most 256 cells).
+   Adds a field cell to workspace 10 (base sites with the wider clearance, at most 256 cells) when it lies inside
+   the extent of some own structure; otherwise the same as AiBaseSiteWorkspace_AddCellInsideBase (workspace 09).
 */
 void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 

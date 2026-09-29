@@ -1532,10 +1532,11 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 
 
 /* Address: 0x005607E0.
-   Handler of INGAME_COMMAND_ASSIGN_ARMY_TOKEN: turns modelOffset (a definition record offset from
-   g_ModelRuntimeRebaseDelta, sent when the technology page of a selected object opens) back into a pointer
-   and, if the record is live (dword +4 non-zero), records it for the player in assignmentToken80A0. Bit 0x80
-   of the record's flags at +0xEC is moved into assignmentFlags80A4 (and cleared on the record).
+   Handler of INGAME_COMMAND_ASSIGN_ARMY_TOKEN: turns modelOffset (the offset from g_ModelRuntimeRebaseDelta of
+   the building whose technology page opened) back into a pointer and, if it is live (dword +4 non-zero),
+   records it for the player in assignmentToken80A0. Its ARMY_MODEL_STATE_RESEARCH_UNPAID flag (bit 0x80 of
+   the state flags at +0xEC) is moved into assignmentFlags80A4 and cleared on the building until the page
+   closes.
 */
 void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,ArmyRuntimeSavedOffset modelOffset)

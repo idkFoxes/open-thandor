@@ -196,9 +196,9 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
 
 
 /* Address: 0x0056ACC0.
-   End movie view click (action 0x1009, g_InGameUiActionHandlersPage10[9]): skips the end movie. Despite the name
-   it does not toggle but clears UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING (clear mask of command 0x310, sent to
-   every machine in a network game).
+   End movie view click (action 0x1009, g_InGameUiActionHandlersPage10[9]): skips the end movie by clearing
+   UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING (clear mask of command 0x310, sent to every machine in a network
+   game).
 */
 void InGameEndMovie_Skip(void *source)
 
@@ -364,9 +364,10 @@ void UiCommandSpriteButtonControl_RightRelease
 
 
 /* Address: 0x00516490.
-   Pointer move over an army stock slot (pointerMove of g_UiNodeVtable_005162C0): shows the slot's army asset in
-   the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then sells the army,
-   see InGameArmyStock_TakeOrSellSlotArmy), 10 otherwise.
+   Pointer move over an army stock slot (pointerMove of g_UiNodeVtable_005162C0, which the seven diplomacy
+   relation buttons share; for them no slot matches and only the cursor frame is returned): shows the slot's
+   army asset in the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then
+   sells the army, see InGameArmyStock_TakeOrSellSlotArmy), 10 otherwise.
 */
 GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control)

@@ -828,8 +828,9 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
 
 
 /* Address: 0x0051C100.
-   Sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on every node of the model hierarchy rooted at *modelRuntime
-   that does not have flag 0x08 yet; the world context is not used.
+   Marks every not yet destroyed node of the model hierarchy rooted at *modelRuntime as destroyed, dismantling
+   and non-regenerating: sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on each node that does not have flag
+   0x08 yet. The world context is not used.
 */
 void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,int *modelRuntime)
 
