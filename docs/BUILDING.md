@@ -49,6 +49,7 @@ default build leaves them out and compiles to the same code as before they exist
 | `OPEN_THANDOR_NETLOG=1` | log every datagram sent and received |
 | `OPEN_THANDOR_LIST_SCENARIOS=1` | log the names of all single games and campaigns when the "Choose game" page opens, then quit |
 | `OPEN_THANDOR_CAMPAIGN=<name>` | start that campaign when the "Choose game" page opens (with `-KARTE="-"` to get there); `OPEN_THANDOR_CAMPAIGN_LEVEL=<n>` starts it at its n-th level, without the units the previous level would carry over |
+| `OPEN_THANDOR_AUTOWIN=<s>` | end a campaign level as won after <s> seconds: fires the level's end trigger that moves the campaign forward (a later level, else the campaign end) after moving local mobile units that stand outside the exit zone into it; `OPEN_THANDOR_AUTOWIN_LEVELS=<k>` limits it to the first k levels of the run |
 
 In the test build the real mouse is also ignored while `OPEN_THANDOR_SCRIPT` drives the game, and a
 failed `OPEN_THANDOR_AUTOSHOT` capture is logged. `python tools/test/run_multiplayer.py <game dir> 180
@@ -61,6 +62,12 @@ trigger fired) and how many units a campaign carries over into a level.
 game (ten at a time, each in its own linked copy of the game directory), sets the computer opponents to
 "stark" and the game speed to its maximum, lets each run a minute and reports per mission whether it loaded,
 ended early, hung or crashed; screenshots and a contact sheet per mission go to `<game dir>/soak/`.
+
+`python tools/test/run_campaign_chain.py <game dir> pairs` plays into each level that needs the previous
+level's units (tutorial 2 and 3, Hansolo 9, 13, 23) through the real level change and checks that units
+arrive; `... campaigns [--only tutorial,luke]` wins every level of each campaign in turn up to the campaign
+end. The script command `clickuntilnextlevel x y <ms>` clicks until the next level has loaded, then the times
+restart at 0. Results go to `<game dir>/chain/`.
 
 ## Generated files and tools
 

@@ -31,7 +31,7 @@ yet; original addresses and the sample codec's MMX tables are not counted.
 
 | Area | Status |
 |---|---|
-| Single player: menus, campaigns, skirmish, AI, save/load, movies, sound | playable. An automated run starts all 56 missions (on "strong" and the highest game speed); 50 play without problems, 5 campaign levels need the units carried over from the previous level, 1 level file is missing from the original data |
+| Single player: menus, campaigns, skirmish, AI, save/load, movies, sound | playable. An automated run starts all 56 missions (on "strong" and the highest game speed): 50 play without problems, 1 level file is missing from the original data, and the 5 levels that need the units carried over from the previous level play when reached through that level. A campaign run wins every level in turn and reaches the campaign end in all four campaigns (tutorial 3 levels, Luke 4, Nimm2 5, Hansolo 20 on the winning path); units are carried over into tutorial 2 and 3 and Hansolo 9, 13 and 23 |
 | Software renderer, DirectDraw, Direct3D | working; software rasterizer and blitters verified bit-exact against the original code ([details](docs/software_raster.md)) |
 | Glide (3dfx) | builds; the vertex output was fixed from the original code, not tested on 3dfx hardware |
 | Multiplayer (LAN, UDP) | works in a local two-instance test: lobby, map and faction choice, briefing, in-game commands |
@@ -49,7 +49,9 @@ yet; original addresses and the sample codec's MMX tables are not counted.
   parameter types, fixed-point helpers such as `FIXED_MUL_SHR`) was checked function by function: the generated
   machine code of our build did not change. Restructuring that
   changes code (loops, splitting large functions, helpers) is the next stage and needs behaviour tests instead.
-- **Game runs**: a scripted skirmish after every change, plus the all-missions run for larger changes.
+- **Game runs**: a scripted skirmish after every change, plus the all-missions run
+  ([`run_all_maps.py`](tools/test/run_all_maps.py)) and the campaign run with carried-over units
+  ([`run_campaign_chain.py`](tools/test/run_campaign_chain.py)) for larger changes.
 
 ## Building
 
@@ -63,7 +65,7 @@ cmake --build --preset release
 ```
 
 The result is `cmake-build-msvc-release\thandor.exe` (32-bit). Other presets: `debug`, `test` (adds test aids:
-windowed mode, several instances, scripted input, starting any campaign level) and `mapped` (maps the original
+windowed mode, several instances, scripted input, starting any campaign level, winning a level automatically) and `mapped` (maps the original
 image; only needed for the differential self-tests, which also want `thandor_original.exe` next to the exe).
 CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json).
 
