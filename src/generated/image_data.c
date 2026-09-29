@@ -569,12 +569,8 @@ ImageData_004080B4 g_ImageData_004080B4 = {
 ImageData_0040ABBC g_ImageData_0040ABBC = {
     {0x00, 0x90, 0x90, 0x90}, /* 0040ABBC gap */
     {0}, /* 0040ABC0 g_InitialWorkingDirectory */
-    0, /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
-    {0},
-    {0},
-    0, /* 0040AFC0 g_ExecutableDirectoryUtf16 */
-    {0},
-    {0},
+    {0}, /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
+    {0}, /* 0040AFC0 g_ExecutableDirectoryUtf16 */
     0, /* 0040B1C0 g_FileSystemOpen */
     0, /* 0040B1C4 g_FileSystemClose */
     0, /* 0040B1C8 g_FileSystemReadExact */
@@ -619,7 +615,7 @@ ImageData_0040F524 g_ImageData_0040F524 = {
     {0}, /* 0040FB50 g_UiTimedListHierarchyPathScratch */
     {0}, /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
     L"*.*", /* 0040FF50 g_WildcardAllFilesUtf16 */
-    L"?:\\*.*", /* 0040FF58 u________0040ff58 */
+    L"?:\\*.*", /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
@@ -1599,7 +1595,7 @@ ImageData_004AD92C g_ImageData_004AD92C = {
 ImageData_004AE95C g_ImageData_004AE95C = {
     {0x00, 0x90, 0x90, 0x90}, /* 004AE95C gap */
     0, /* 004AE960 g_UiRuntimeRecordRing */
-    0, /* 004AE964 g_UiRuntimeAuxiliaryBuffer8000 */
+    0, /* 004AE964 g_UiRuntimeRecordEndpointSlots */
     0, /* 004AE968 g_UiTransferDataBuffer */
     0, /* 004AE96C g_UiTransferEndpointBuffer */
     0, /* 004AE970 g_UiRuntimeRecordReadIndex */
@@ -1694,9 +1690,9 @@ ImageData_004B0A20 g_ImageData_004B0A20 = {
     0x4, /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
     0, /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
     {.handlers = {(void *)UiRootStack_Pop, (void *)FatalErrorDialog_DismissAndPopRoot}}, /* 004B0EB0 g_UiRootStackActionHandlerPage */
-    L"engine\\winclass.gfx", /* 004B0EB8 u_engine_winclass_gfx_004b0eb8 */
-    L"texte\\winclass.str", /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
-    L"engine\\win.gfx", /* 004B0F06 u_engine_win_gfx_004b0f06 */
+    L"engine\\winclass.gfx", /* 004B0EB8 g_UiWindowClassTexturePathUtf16 */
+    L"texte\\winclass.str", /* 004B0EE0 g_UiWindowClassTextPathUtf16 */
+    L"engine\\win.gfx", /* 004B0F06 g_UiWindowTexturePathUtf16 */
     0xFF, /* 004B0F24 g_UiPointerCaptureButton */
     {0x90, 0x90, 0x90},
     0, /* 004B0F28 g_UiImageControlHoverTarget */
@@ -2409,18 +2405,9 @@ ImageData_004BD880 g_ImageData_004BD880 = {
 
 ImageData_004BEA6C g_ImageData_004BEA6C = {
     {0x00, 0x00, 0x00, 0x90}, /* 004BEA6C gap */
-    0, /* 004BEA70 g_ModelTransformScratchMatrix */
-    {0},
-    {0},
-    0, /* 004BEA94 g_ModelTransformTranslationX */
-    0, /* 004BEA98 g_ModelTransformTranslationY */
-    0, /* 004BEA9C g_ModelTransformTranslationZ */
-    0, /* 004BEAA0 g_FixedTransformInputRotationScratch */
-    {0},
-    {0},
-    0, /* 004BEAD0 g_FixedTransformComposedRotationScratch */
-    {0},
-    {0},
+    {0}, /* 004BEA70 g_ModelTransformScratchMatrix */
+    {0}, /* 004BEAA0 g_FixedTransformInputRotationScratch */
+    {0}, /* 004BEAD0 g_FixedTransformComposedRotationScratch */
     0, /* 004BEB00 g_ModelTransformInputX */
     0, /* 004BEB04 g_ModelTransformInputY */
     0, /* 004BEB08 g_ModelTransformInputZ */
@@ -2810,41 +2797,7 @@ ImageData_00501184 g_ImageData_00501184 = {
 
 ImageData_00505F98 g_ImageData_00505F98 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00505F98 gap */
-    0, /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
-    {
-        0xCD000010, 0xAB00000C, 0x2500000A, 0x00000009, 0x1C000008, 0x66000007, 0xD1000006, 0x55000005,
-        0xEC000005, 0x92000004, 0x44000004, 0x00000004, 0xC4000004, 0x8E000003, 0x5E000003, 0x33000003,
-        0x0C000003, 0xE9000003, 0xC8000002, 0xAB000002, 0x8F000002, 0x76000002, 0x5F000002, 0x49000002,
-        0x35000002, 0x22000002, 0x11000002, 0x00000002, 0xF0000002, 0xE2000001, 0xD4000001, 0xC7000001,
-        0xBB000001, 0xAF000001, 0xA4000001, 0x9A000001, 0x90000001, 0x86000001, 0x7D000001, 0x74000001,
-        0x6C000001, 0x64000001, 0x5D000001, 0x55000001, 0x4E000001, 0x48000001, 0x41000001, 0x3B000001,
-        0x35000001, 0x2F000001, 0x2A000001, 0x25000001, 0x1F000001, 0x1A000001, 0x16000001, 0x11000001,
-        0x0D000001, 0x08000001, 0x04000001, 0x00000001, 0xFC000001, 0xF8000000, 0xF5000000, 0xF1000000,
-        0xED000000, 0xEA000000, 0xE7000000, 0xE4000000, 0xE0000000, 0xDD000000, 0xDA000000, 0xD8000000,
-        0xD5000000, 0xD2000000, 0xCF000000, 0xCD000000, 0xCA000000, 0xC8000000, 0xC5000000, 0xC3000000,
-        0xC1000000, 0xBF000000, 0xBC000000, 0xBA000000, 0xB8000000, 0xB6000000, 0xB4000000, 0xB2000000,
-        0xB0000000, 0xAE000000, 0xAC000000, 0xAB000000, 0xA9000000, 0xA7000000, 0xA5000000, 0xA4000000,
-        0xA2000000, 0xA1000000, 0x9F000000, 0x9E000000, 0x9C000000, 0x9B000000, 0x99000000, 0x98000000,
-        0x96000000, 0x95000000, 0x94000000, 0x92000000, 0x91000000, 0x90000000, 0x8E000000, 0x8D000000,
-        0x8C000000, 0x8B000000, 0x8A000000, 0x89000000, 0x87000000, 0x86000000, 0x85000000, 0x84000000,
-        0x83000000, 0x82000000, 0x81000000, 0x80000000, 0x7F000000, 0x7E000000, 0x7D000000, 0x7C000000,
-        0x7B000000, 0x7A000000, 0x79000000, 0x78000000, 0x78000000, 0x77000000, 0x76000000, 0x75000000,
-        0x74000000, 0x73000000, 0x73000000, 0x72000000, 0x71000000, 0x70000000, 0x6F000000, 0x6F000000,
-        0x6E000000, 0x6D000000, 0x6D000000, 0x6C000000, 0x6B000000, 0x6A000000, 0x6A000000, 0x69000000,
-        0x68000000, 0x68000000, 0x67000000, 0x66000000, 0x66000000, 0x65000000, 0x65000000, 0x64000000,
-        0x63000000, 0x63000000, 0x62000000, 0x62000000, 0x61000000, 0x60000000, 0x60000000, 0x5F000000,
-        0x5F000000, 0x5E000000, 0x5E000000, 0x5D000000, 0x5D000000, 0x5C000000, 0x5C000000, 0x5B000000,
-        0x5B000000, 0x5A000000, 0x5A000000, 0x59000000, 0x59000000, 0x58000000, 0x58000000, 0x57000000,
-        0x57000000, 0x56000000, 0x56000000, 0x55000000, 0x55000000, 0x54000000, 0x54000000, 0x54000000,
-        0x53000000, 0x53000000, 0x52000000, 0x52000000, 0x52000000, 0x51000000, 0x51000000, 0x50000000,
-        0x50000000, 0x50000000, 0x4F000000, 0x4F000000, 0x4E000000, 0x4E000000, 0x4E000000, 0x4D000000,
-        0x4D000000, 0x4D000000, 0x4C000000, 0x4C000000, 0x4C000000, 0x4B000000, 0x4B000000, 0x4A000000,
-        0x4A000000, 0x4A000000, 0x49000000, 0x49000000, 0x49000000, 0x48000000, 0x48000000, 0x48000000,
-        0x48000000, 0x47000000, 0x47000000, 0x47000000, 0x46000000, 0x46000000, 0x46000000, 0x45000000,
-        0x45000000, 0x45000000, 0x45000000, 0x44000000, 0x44000000, 0x44000000, 0x43000000, 0x43000000,
-        0x43000000, 0x43000000, 0x42000000, 0x42000000, 0x42000000, 0x42000000, 0x41000000, 0x41000000,
-        0x41000000, 0x41000000, 0x40000000, 0x40000000, 0x40000000, 0x40000000, 0x3F000000},
-    {0},
+    {0x1000, 0xCCD, 0xAAB, 0x925, 0x800, 0x71C, 0x666, 0x5D1, 0x555, 0x4EC, 0x492, 0x444, 0x400, 0x3C4, 0x38E, 0x35E, 0x333, 0x30C, 0x2E9, 0x2C8, 0x2AB, 0x28F, 0x276, 0x25F, 0x249, 0x235, 0x222, 0x211, 0x200, 0x1F0, 0x1E2, 0x1D4, 0x1C7, 0x1BB, 0x1AF, 0x1A4, 0x19A, 0x190, 0x186, 0x17D, 0x174, 0x16C, 0x164, 0x15D, 0x155, 0x14E, 0x148, 0x141, 0x13B, 0x135, 0x12F, 0x12A, 0x125, 0x11F, 0x11A, 0x116, 0x111, 0x10D, 0x108, 0x104, 0x100, 0xFC, 0xF8, 0xF5, 0xF1, 0xED, 0xEA, 0xE7, 0xE4, 0xE0, 0xDD, 0xDA, 0xD8, 0xD5, 0xD2, 0xCF, 0xCD, 0xCA, 0xC8, 0xC5, 0xC3, 0xC1, 0xBF, 0xBC, 0xBA, 0xB8, 0xB6, 0xB4, 0xB2, 0xB0, 0xAE, 0xAC, 0xAB, 0xA9, 0xA7, 0xA5, 0xA4, 0xA2, 0xA1, 0x9F, 0x9E, 0x9C, 0x9B, 0x99, 0x98, 0x96, 0x95, 0x94, 0x92, 0x91, 0x90, 0x8E, 0x8D, 0x8C, 0x8B, 0x8A, 0x89, 0x87, 0x86, 0x85, 0x84, 0x83, 0x82, 0x81, 0x80, 0x7F, 0x7E, 0x7D, 0x7C, 0x7B, 0x7A, 0x79, 0x78, 0x78, 0x77, 0x76, 0x75, 0x74, 0x73, 0x73, 0x72, 0x71, 0x70, 0x6F, 0x6F, 0x6E, 0x6D, 0x6D, 0x6C, 0x6B, 0x6A, 0x6A, 0x69, 0x68, 0x68, 0x67, 0x66, 0x66, 0x65, 0x65, 0x64, 0x63, 0x63, 0x62, 0x62, 0x61, 0x60, 0x60, 0x5F, 0x5F, 0x5E, 0x5E, 0x5D, 0x5D, 0x5C, 0x5C, 0x5B, 0x5B, 0x5A, 0x5A, 0x59, 0x59, 0x58, 0x58, 0x57, 0x57, 0x56, 0x56, 0x55, 0x55, 0x54, 0x54, 0x54, 0x53, 0x53, 0x52, 0x52, 0x52, 0x51, 0x51, 0x50, 0x50, 0x50, 0x4F, 0x4F, 0x4E, 0x4E, 0x4E, 0x4D, 0x4D, 0x4D, 0x4C, 0x4C, 0x4C, 0x4B, 0x4B, 0x4A, 0x4A, 0x4A, 0x49, 0x49, 0x49, 0x48, 0x48, 0x48, 0x48, 0x47, 0x47, 0x47, 0x46, 0x46, 0x46, 0x45, 0x45, 0x45, 0x45, 0x44, 0x44, 0x44, 0x43, 0x43, 0x43, 0x43, 0x42, 0x42, 0x42, 0x42, 0x41, 0x41, 0x41, 0x41, 0x40, 0x40, 0x40, 0x40, 0x3F}, /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
     0, /* 005063A0 g_TerrainScanRowStrideBytes */
     0, /* 005063A4 g_TerrainScanStepLimit */
     {0}, /* 005063A8 g_TerrainScanSharedSelectorValue */
@@ -3822,12 +3775,7 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
         0x00000006, 0x00000007, 0x00000002, 0x00000012, 0x00000000, 0x00000008, 0x00000010, 0x00000000,
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000008},
     {0x01},
-    0, /* 0051FB78 g_AiCombatTargetClassBaseScoreTable24 */
-    {
-        0x00000000, 0x00000008, 0x00000010, 0x00000010, 0x00000002, 0x00000000, 0x00000000, 0x00000000,
-        0x00000000, 0x80000000, 0x00000001, 0x00000001, 0x80000000, 0x00000000, 0x80000004, 0x00000003,
-        0x00000003, 0x00000010, 0x00000018, 0x00000010, 0x00000001, 0xC0000010, 0x40000000},
-    {0},
+    {0, 0x800, 0x1000, 0x1000, 0x200, 0, 0, 0, 0, 0, 0x180, 0x100, 0, 0x80, 0x400, 0x380, 0x300, 0x1000, 0x1800, 0x1000, 0x100, 0x1000, 0xC0, 0x40}, /* 0051FB78 g_AiCombatTargetClassBaseScores */
     /* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
     {
         .modelClass01Priority = 0x2,
@@ -4379,7 +4327,7 @@ ImageData_00536F08 g_ImageData_00536F08 = {
 };
 
 ImageData_00537410 g_ImageData_00537410 = {
-    0, /* 00537410 g_AiWorkspaceBuffer13_Size0400 */
+    0, /* 00537410 g_AiWorkspace13Candidates */
     0, /* 00537414 g_AiCandidateWorkspaceEntryCount */
     0, /* 00537418 g_AiPurchaseAppliedArmyClassMask */
     {
@@ -4388,31 +4336,31 @@ ImageData_00537410 g_ImageData_00537410 = {
 
 ImageData_0053795C g_ImageData_0053795C = {
     {0x00, 0x00, 0x00, 0x90}, /* 0053795C gap */
-    0, /* 00537960 g_AiWorkspaceBuffer00_Size0400 */
+    0, /* 00537960 g_AiWorkspace00Structures */
     0, /* 00537964 g_AiWorkspace00Count */
-    0, /* 00537968 g_AiWorkspaceBuffer01_Size0200 */
+    0, /* 00537968 g_AiWorkspace01Units */
     0, /* 0053796C g_AiWorkspace01Count */
-    0, /* 00537970 g_AiWorkspaceBuffer02_Size0400 */
+    0, /* 00537970 g_AiWorkspace02VisibleHostiles */
     0, /* 00537974 g_AiWorkspace02Count */
-    0, /* 00537978 g_AiWorkspaceBuffer03_Size1000 */
+    0, /* 00537978 g_AiWorkspace03UnseenHostiles */
     0, /* 0053797C g_AiWorkspace03Count */
-    0, /* 00537980 g_AiWorkspaceBuffer04_Size0040 */
+    0, /* 00537980 g_AiWorkspace04RequestedAssets */
     0, /* 00537984 g_AiWorkspace04Count */
-    0, /* 00537988 g_AiWorkspaceBuffer05_Size0200 */
+    0, /* 00537988 g_AiWorkspace05GeneralSites */
     0, /* 0053798C g_AiWorkspace05Count */
-    0, /* 00537990 g_AiWorkspaceBuffer06_Size0400 */
+    0, /* 00537990 g_AiWorkspace06FlaggedSites */
     0, /* 00537994 g_AiWorkspace06Count */
-    0, /* 00537998 g_AiWorkspaceBuffer07_Size0400 */
+    0, /* 00537998 g_AiWorkspace07Targets */
     0, /* 0053799C g_AiWorkspace07Count */
-    0, /* 005379A0 g_AiWorkspaceBuffer08_Size0200 */
+    0, /* 005379A0 g_AiWorkspace08TerrainFeatureSites */
     0, /* 005379A4 g_AiWorkspace08Count */
-    0, /* 005379A8 g_AiWorkspaceBuffer09_Size1000 */
+    0, /* 005379A8 g_AiWorkspace09Cells */
     0, /* 005379AC g_AiWorkspace09Count */
-    0, /* 005379B0 g_AiWorkspaceBuffer10_Size0400 */
+    0, /* 005379B0 g_AiWorkspace10Cells */
     0, /* 005379B4 g_AiWorkspace10Count */
-    0, /* 005379B8 g_AiWorkspaceBuffer11_Size1000 */
+    0, /* 005379B8 g_AiWorkspace11ProducibleAssets */
     0, /* 005379BC g_AiWorkspace11Count */
-    0, /* 005379C0 g_AiWorkspaceBuffer12_Size0200 */
+    0, /* 005379C0 g_AiWorkspace12TechnologyCandidates */
     0, /* 005379C4 g_AiWorkspace12Count */
     0, /* 005379C8 g_AiActiveGridMaskClass0 */
     0, /* 005379CC g_AiActiveGridMaskClass1 */
@@ -4454,7 +4402,7 @@ ImageData_00539974 g_ImageData_00539974 = {
 
 ImageData_0053B0CC g_ImageData_0053B0CC = {
     {0x00, 0x90, 0x90, 0x90}, /* 0053B0CC gap */
-    0, /* 0053B0D0 g_AiWorkspaceBuffer14_Size0100 */
+    0, /* 0053B0D0 g_AiWorkspace14CollectedArmies */
     0, /* 0053B0D4 g_AiCollectedEntityCount */
     {
         0x90909090, 0x90909090},
@@ -6593,8 +6541,8 @@ ImageData_00543E34 g_ImageData_00543E34 = {
 ImageData_005456F0 g_ImageData_005456F0 = {
     0, /* 005456F0 g_FrontendRootNode */
     0, /* 005456F4 g_FrontendPendingPageAction */
-    0, /* 005456F8 g_FrontendRomTransitionContextValue */
-    0, /* 005456FC g_FrontendActiveRomRecordTable */
+    0, /* 005456F8 g_FrontendRomTransitionPageAction */
+    0, /* 005456FC g_FrontendActiveRomRecord */
     0, /* 00545700 g_FrontendRuntimeFlags */
     0, /* 00545704 g_FrontendCentralTextureSet */
     0, /* 00545708 g_FrontendCentralPaletteAsset */
@@ -6605,7 +6553,7 @@ ImageData_005456F0 g_ImageData_005456F0 = {
     0, /* 0054571C g_FrontendRomTransitionElapsedTicks */
     0, /* 00545720 g_FrontendRomTransitionSplineKeyframes */
     0, /* 00545724 g_FrontendRomTransitionSplineKeyframeCount */
-    0, /* 00545728 g_FrontendRomTransitionPendingCount */
+    0, /* 00545728 g_FrontendRomTransitionTargetRecordId */
     0, /* 0054572C g_FrontendStateTickSpinLock */
     0, /* 00545730 g_FrontendTimerCountdownTicks */
     0, /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
@@ -6756,7 +6704,7 @@ ImageData_005456F0 g_ImageData_005456F0 = {
     {
         0x30003000, 0x2E003000, 0x6C006600, 0x00006D00},
     {0},
-    L"gfx\\panel\\credits.gfx", /* 00545C22 u_gfx_panel_credits_gfx_00545c22 */
+    L"gfx\\panel\\credits.gfx", /* 00545C22 g_CreditsTexturePathUtf16 */
     L"sound\\music00.sam", /* 00545C4E u_sound_music00_sam_00545c4e */
     0, /* 00545C72 g_FrontendScenarioPathScratchUtf16 */
     {0},
@@ -11068,7 +11016,7 @@ ImageData_00562498 g_ImageData_00562498 = {
 
 ImageData_005658BC g_ImageData_005658BC = {
     {0x00, 0x00, 0x00, 0x90}, /* 005658BC gap */
-    {{.commandCode = 0x71, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x565990}, {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0}}, /* 005658C0 g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30 */
+    {{.commandCode = 0x71, .modifierClassFlags = 0x30, .continuationEntryAddress = 0x565990}, {.commandCode = 0x70, .modifierClassFlags = 0xC, .continuationEntryAddress = 0x5658F0}}, /* 005658C0 g_EndMovieCommandDispatchRecords */
     /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
     {
         0x00000000, 0x90909090},
@@ -11261,9 +11209,7 @@ ImageData_00572AB0 g_ImageData_00572AB0 = {
     0, /* 00572B10 g_InstallRegistryValueDataA */
     {0},
     {0},
-    0, /* 00572C10 g_InstallDirectoryScratchUtf16 */
-    {0},
-    {0},
+    {0}, /* 00572C10 g_InstallDirectoryScratchUtf16 */
     L"Thandor", /* 00572E10 u_Thandor_00572e10 */
     "Software\\Planet4\\Thandor", /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
     0x43, /* 00572E39 s_InstallRegistryValueNameCD */
@@ -11526,12 +11472,12 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     "KERNEL32", /* 005744A4 sz_KERNEL32 */
     {0x90},
     "WINMM", /* 005744AE sz_WINMM */
-    "DDRAW", /* 005744B4 dynapi_2 */
+    "DDRAW", /* 005744B4 sz_DDRAW */
     "DINPUT", /* 005744BA dynapi_3 */
     {0x90},
     "DSOUND", /* 005744C2 dynapi_4 */
     {0x90},
-    "GLIDE3X", /* 005744CA dynapi_5 */
+    "GLIDE3X", /* 005744CA sz_GLIDE3X */
     "ADVAPI32", /* 005744D2 sz_ADVAPI32 */
     {0x90},
     "WSOCK32", /* 005744DC s_Wsock32ModuleName */
@@ -11548,9 +11494,9 @@ ImageData_00573EE8 g_ImageData_00573EE8 = {
     {0x90},
     "timeKillEvent", /* 00574540 dynapi_15 */
     "mciSendCommandA", /* 0057454E dynapi_16 */
-    "DirectDrawCreate", /* 0057455E dynapi_17 */
+    "DirectDrawCreate", /* 0057455E sz_DirectDrawCreate */
     {0x90},
-    "DirectDrawEnumerateA", /* 00574570 dynapi_18 */
+    "DirectDrawEnumerateA", /* 00574570 sz_DirectDrawEnumerateA */
     {0x90},
     "DirectInputCreateA", /* 00574586 dynapi_19 */
     {0x90},

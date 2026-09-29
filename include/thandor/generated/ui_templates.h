@@ -91,7 +91,7 @@ typedef struct DisplaySettingsUiImage {
     uint32_t colorBiasSlider_fields[6];
     UiNodeBase colorScaleValueText; /* +0ADC g_UiFocusProxyControlVtable: Text readout below the color scale slider. */
     uint32_t colorScaleValueText_fields[4];
-    UiNodeBase colorBiasValueText; /* +0B38 g_UiFocusProxyControlVtable: Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiRuntime_FormatSignedValues140And144. */
+    UiNodeBase colorBiasValueText; /* +0B38 g_UiFocusProxyControlVtable: Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiDisplaySettingsRoot_FormatColorReadouts. */
     uint32_t colorBiasValueText_fields[20];
 } DisplaySettingsUiImage;
 #define DISPLAY_SETTINGS_UI(root, node) (&((DisplaySettingsUiImage *)(uintptr_t)(root))->node)

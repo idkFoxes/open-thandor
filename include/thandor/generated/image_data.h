@@ -131,12 +131,8 @@ extern ImageData_004080B4 g_ImageData_004080B4;
 typedef struct ImageData_0040ABBC {
     uint8_t at_gap_0040ABBC[4]; /* 0040ABBC gap */
     WidePathBuffer256 at_g_InitialWorkingDirectory; /* 0040ABC0 g_InitialWorkingDirectory */
-    uint8_t at_g_FileSystemCombinedPathScratchUtf16; /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
-    uint32_t at_g_FileSystemCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_FileSystemCombinedPathScratchUtf16_rest_tail[3];
-    uint8_t at_g_ExecutableDirectoryUtf16; /* 0040AFC0 g_ExecutableDirectoryUtf16 */
-    uint32_t at_g_ExecutableDirectoryUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_ExecutableDirectoryUtf16_rest_tail[3];
+    uint16_t at_g_FileSystemCombinedPathScratchUtf16[256]; /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
+    uint16_t at_g_ExecutableDirectoryUtf16[256]; /* 0040AFC0 g_ExecutableDirectoryUtf16 */
     FileSystemOpenProc * at_g_FileSystemOpen; /* 0040B1C0 g_FileSystemOpen */
     FileSystemCloseProc * at_g_FileSystemClose; /* 0040B1C4 g_FileSystemClose */
     FileSystemReadExactProc * at_g_FileSystemReadExact; /* 0040B1C8 g_FileSystemReadExact */
@@ -183,8 +179,8 @@ typedef struct ImageData_0040F524 {
     WidePathBuffer256 at_g_UiTimedListHierarchyPathScratch; /* 0040FB50 g_UiTimedListHierarchyPathScratch */
     WidePathBuffer256 at_g_UiTimedListHierarchyParentPathScratch; /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
     uint16_t at_g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 */
-    uint16_t at_u________0040ff58[7]; /* 0040FF58 u________0040ff58 */
-    uint8_t at_u________0040ff58_padding[10];
+    uint16_t at_g_UiTimedListDriveWildcardUtf16[7]; /* 0040FF58 g_UiTimedListDriveWildcardUtf16 */
+    uint8_t at_g_UiTimedListDriveWildcardUtf16_padding[10];
 } ImageData_0040F524;
 extern ImageData_0040F524 g_ImageData_0040F524;
 
@@ -719,7 +715,7 @@ extern ImageData_004AD92C g_ImageData_004AD92C;
 typedef struct ImageData_004AE95C {
     uint8_t at_gap_004AE95C[4]; /* 004AE95C gap */
     UiRuntimeRecord * at_g_UiRuntimeRecordRing; /* 004AE960 g_UiRuntimeRecordRing */
-    uint32_t at_g_UiRuntimeAuxiliaryBuffer8000; /* 004AE964 g_UiRuntimeAuxiliaryBuffer8000 */
+    uint32_t at_g_UiRuntimeRecordEndpointSlots; /* 004AE964 g_UiRuntimeRecordEndpointSlots */
     uint8_t * at_g_UiTransferDataBuffer; /* 004AE968 g_UiTransferDataBuffer */
     UiTransferEndpointDescriptor * at_g_UiTransferEndpointBuffer; /* 004AE96C g_UiTransferEndpointBuffer */
     uint32_t at_g_UiRuntimeRecordReadIndex; /* 004AE970 g_UiRuntimeRecordReadIndex */
@@ -817,9 +813,9 @@ typedef struct ImageData_004B0A20 {
     uint32_t at_g_UiHorizontalGaugeLabelTopInset; /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
     uint32_t at_g_UiHorizontalGaugeLabelTextStyle; /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
     UiRootStackActionHandlerPage2 at_g_UiRootStackActionHandlerPage; /* 004B0EB0 g_UiRootStackActionHandlerPage */
-    uint16_t at_u_engine_winclass_gfx_004b0eb8[20]; /* 004B0EB8 u_engine_winclass_gfx_004b0eb8 */
-    uint16_t at_u_texte_winclass_str_004b0ee0[19]; /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
-    uint16_t at_u_engine_win_gfx_004b0f06[15]; /* 004B0F06 u_engine_win_gfx_004b0f06 */
+    uint16_t at_g_UiWindowClassTexturePathUtf16[20]; /* 004B0EB8 g_UiWindowClassTexturePathUtf16 */
+    uint16_t at_g_UiWindowClassTextPathUtf16[19]; /* 004B0EE0 g_UiWindowClassTextPathUtf16 */
+    uint16_t at_g_UiWindowTexturePathUtf16[15]; /* 004B0F06 g_UiWindowTexturePathUtf16 */
     UiPointerCaptureButton at_g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
     uint8_t at_g_UiPointerCaptureButton_rest_tail[3];
     UiImageControl * at_g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
@@ -1084,18 +1080,9 @@ extern ImageData_004BD880 g_ImageData_004BD880;
 /* original 0x004BEA6C-0x004BEB20 */
 typedef struct ImageData_004BEA6C {
     uint8_t at_gap_004BEA6C[4]; /* 004BEA6C gap */
-    uint8_t at_g_ModelTransformScratchMatrix; /* 004BEA70 g_ModelTransformScratchMatrix */
-    uint32_t at_g_ModelTransformScratchMatrix_rest[8]; /* beyond the declared type */
-    uint8_t at_g_ModelTransformScratchMatrix_rest_tail[3];
-    int32_t at_g_ModelTransformTranslationX; /* 004BEA94 g_ModelTransformTranslationX */
-    int32_t at_g_ModelTransformTranslationY; /* 004BEA98 g_ModelTransformTranslationY */
-    int32_t at_g_ModelTransformTranslationZ; /* 004BEA9C g_ModelTransformTranslationZ */
-    uint8_t at_g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
-    uint32_t at_g_FixedTransformInputRotationScratch_rest[11]; /* beyond the declared type */
-    uint8_t at_g_FixedTransformInputRotationScratch_rest_tail[3];
-    uint8_t at_g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
-    uint32_t at_g_FixedTransformComposedRotationScratch_rest[11]; /* beyond the declared type */
-    uint8_t at_g_FixedTransformComposedRotationScratch_rest_tail[3];
+    GraphicsFixedMatrix3x4 at_g_ModelTransformScratchMatrix; /* 004BEA70 g_ModelTransformScratchMatrix */
+    GraphicsFixedMatrix3x4 at_g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
+    GraphicsFixedMatrix3x4 at_g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
     int32_t at_g_ModelTransformInputX; /* 004BEB00 g_ModelTransformInputX */
     int32_t at_g_ModelTransformInputY; /* 004BEB04 g_ModelTransformInputY */
     int32_t at_g_ModelTransformInputZ; /* 004BEB08 g_ModelTransformInputZ */
@@ -1229,9 +1216,7 @@ extern ImageData_00501184 g_ImageData_00501184;
 /* original 0x00505F98-0x005063B0 */
 typedef struct ImageData_00505F98 {
     uint8_t at_gap_00505F98[8]; /* 00505F98 gap */
-    uint8_t at_g_TerrainHeightDeltaScaleByStepQ12; /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
-    uint32_t at_g_TerrainHeightDeltaScaleByStepQ12_rest[255]; /* beyond the declared type */
-    uint8_t at_g_TerrainHeightDeltaScaleByStepQ12_rest_tail[3];
+    int32_t at_g_TerrainHeightDeltaScaleByStepQ12[256]; /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
     uint32_t at_g_TerrainScanRowStrideBytes; /* 005063A0 g_TerrainScanRowStrideBytes */
     uint32_t at_g_TerrainScanStepLimit; /* 005063A4 g_TerrainScanStepLimit */
     TerrainScanSelectorUnion at_g_TerrainScanSharedSelectorValue; /* 005063A8 g_TerrainScanSharedSelectorValue */
@@ -1709,9 +1694,7 @@ typedef struct ImageData_0051EEE4 {
     uint8_t at_g_FactionEnergyAllocationPriorityByModelClass; /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass */
     uint32_t at_g_FactionEnergyAllocationPriorityByModelClass_rest[23]; /* beyond the declared type */
     uint8_t at_g_FactionEnergyAllocationPriorityByModelClass_rest_tail[3];
-    uint8_t at_g_AiCombatTargetClassBaseScoreTable24; /* 0051FB78 g_AiCombatTargetClassBaseScoreTable24 */
-    uint32_t at_g_AiCombatTargetClassBaseScoreTable24_rest[23]; /* beyond the declared type */
-    uint8_t at_g_AiCombatTargetClassBaseScoreTable24_rest_tail[3];
+    uint32_t at_g_AiCombatTargetClassBaseScores[24]; /* 0051FB78 g_AiCombatTargetClassBaseScores */
     RuntimeModelClassPriorityTable24 at_g_RuntimeModelClassPriorityByModelClassId; /* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
     uint8_t at_g_ArmyRuntimeDepthBinClassByModelClass; /* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass */
     uint32_t at_g_ArmyRuntimeDepthBinClassByModelClass_rest[23]; /* beyond the declared type */
@@ -1985,7 +1968,7 @@ extern ImageData_00536F08 g_ImageData_00536F08;
 
 /* original 0x00537410-0x00537420 */
 typedef struct ImageData_00537410 {
-    AiCandidateWorkspaceEntry * at_g_AiWorkspaceBuffer13_Size0400; /* 00537410 g_AiWorkspaceBuffer13_Size0400 */
+    AiCandidateWorkspaceEntry * at_g_AiWorkspace13Candidates; /* 00537410 g_AiWorkspace13Candidates */
     uint32_t at_g_AiCandidateWorkspaceEntryCount; /* 00537414 g_AiCandidateWorkspaceEntryCount */
     uint32_t at_g_AiPurchaseAppliedArmyClassMask; /* 00537418 g_AiPurchaseAppliedArmyClassMask */
     uint32_t at_g_AiPurchaseAppliedArmyClassMask_rest[1]; /* beyond the declared type */
@@ -1995,31 +1978,31 @@ extern ImageData_00537410 g_ImageData_00537410;
 /* original 0x0053795C-0x005379E0 */
 typedef struct ImageData_0053795C {
     uint8_t at_gap_0053795C[4]; /* 0053795C gap */
-    AiWorkspace00EntryView8 * at_g_AiWorkspaceBuffer00_Size0400; /* 00537960 g_AiWorkspaceBuffer00_Size0400 */
+    AiWorkspace00EntryView8 * at_g_AiWorkspace00Structures; /* 00537960 g_AiWorkspace00Structures */
     uint32_t at_g_AiWorkspace00Count; /* 00537964 g_AiWorkspace00Count */
-    AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer01_Size0200; /* 00537968 g_AiWorkspaceBuffer01_Size0200 */
+    AiRuntimeWorkspaceEntry * at_g_AiWorkspace01Units; /* 00537968 g_AiWorkspace01Units */
     uint32_t at_g_AiWorkspace01Count; /* 0053796C g_AiWorkspace01Count */
-    AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer02_Size0400; /* 00537970 g_AiWorkspaceBuffer02_Size0400 */
+    AiRuntimeWorkspaceEntry * at_g_AiWorkspace02VisibleHostiles; /* 00537970 g_AiWorkspace02VisibleHostiles */
     uint32_t at_g_AiWorkspace02Count; /* 00537974 g_AiWorkspace02Count */
-    AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer03_Size1000; /* 00537978 g_AiWorkspaceBuffer03_Size1000 */
+    AiRuntimeWorkspaceEntry * at_g_AiWorkspace03UnseenHostiles; /* 00537978 g_AiWorkspace03UnseenHostiles */
     uint32_t at_g_AiWorkspace03Count; /* 0053797C g_AiWorkspace03Count */
-    AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer04_Size0040; /* 00537980 g_AiWorkspaceBuffer04_Size0040 */
+    AiRuntimeWorkspaceEntry * at_g_AiWorkspace04RequestedAssets; /* 00537980 g_AiWorkspace04RequestedAssets */
     uint32_t at_g_AiWorkspace04Count; /* 00537984 g_AiWorkspace04Count */
-    AiScoredSiteWorkspaceEntry * at_g_AiWorkspaceBuffer05_Size0200; /* 00537988 g_AiWorkspaceBuffer05_Size0200 */
+    AiScoredSiteWorkspaceEntry * at_g_AiWorkspace05GeneralSites; /* 00537988 g_AiWorkspace05GeneralSites */
     uint32_t at_g_AiWorkspace05Count; /* 0053798C g_AiWorkspace05Count */
-    uint8_t * at_g_AiWorkspaceBuffer06_Size0400; /* 00537990 g_AiWorkspaceBuffer06_Size0400 */
+    uint8_t * at_g_AiWorkspace06FlaggedSites; /* 00537990 g_AiWorkspace06FlaggedSites */
     uint32_t at_g_AiWorkspace06Count; /* 00537994 g_AiWorkspace06Count */
-    AiTargetWorkspaceEntry * at_g_AiWorkspaceBuffer07_Size0400; /* 00537998 g_AiWorkspaceBuffer07_Size0400 */
+    AiTargetWorkspaceEntry * at_g_AiWorkspace07Targets; /* 00537998 g_AiWorkspace07Targets */
     uint32_t at_g_AiWorkspace07Count; /* 0053799C g_AiWorkspace07Count */
-    AiTerrainFeatureWorkspaceEntry * at_g_AiWorkspaceBuffer08_Size0200; /* 005379A0 g_AiWorkspaceBuffer08_Size0200 */
+    AiTerrainFeatureWorkspaceEntry * at_g_AiWorkspace08TerrainFeatureSites; /* 005379A0 g_AiWorkspace08TerrainFeatureSites */
     uint32_t at_g_AiWorkspace08Count; /* 005379A4 g_AiWorkspace08Count */
-    FieldGridCell ** at_g_AiWorkspaceBuffer09_Size1000; /* 005379A8 g_AiWorkspaceBuffer09_Size1000 */
+    FieldGridCell ** at_g_AiWorkspace09Cells; /* 005379A8 g_AiWorkspace09Cells */
     uint32_t at_g_AiWorkspace09Count; /* 005379AC g_AiWorkspace09Count */
-    FieldGridCell ** at_g_AiWorkspaceBuffer10_Size0400; /* 005379B0 g_AiWorkspaceBuffer10_Size0400 */
+    FieldGridCell ** at_g_AiWorkspace10Cells; /* 005379B0 g_AiWorkspace10Cells */
     uint32_t at_g_AiWorkspace10Count; /* 005379B4 g_AiWorkspace10Count */
-    ArmyAssetRecordPrefix ** at_g_AiWorkspaceBuffer11_Size1000; /* 005379B8 g_AiWorkspaceBuffer11_Size1000 */
+    ArmyAssetRecordPrefix ** at_g_AiWorkspace11ProducibleAssets; /* 005379B8 g_AiWorkspace11ProducibleAssets */
     uint32_t at_g_AiWorkspace11Count; /* 005379BC g_AiWorkspace11Count */
-    AiTechnologyPlanningCandidate * at_g_AiWorkspaceBuffer12_Size0200; /* 005379C0 g_AiWorkspaceBuffer12_Size0200 */
+    AiTechnologyPlanningCandidate * at_g_AiWorkspace12TechnologyCandidates; /* 005379C0 g_AiWorkspace12TechnologyCandidates */
     AiTechnologyPlanningCandidateCount at_g_AiWorkspace12Count; /* 005379C4 g_AiWorkspace12Count */
     uint32_t at_g_AiActiveGridMaskClass0; /* 005379C8 g_AiActiveGridMaskClass0 */
     uint32_t at_g_AiActiveGridMaskClass1; /* 005379CC g_AiActiveGridMaskClass1 */
@@ -2059,7 +2042,7 @@ extern ImageData_00539974 g_ImageData_00539974;
 /* original 0x0053B0CC-0x0053B0E0 */
 typedef struct ImageData_0053B0CC {
     uint8_t at_gap_0053B0CC[4]; /* 0053B0CC gap */
-    ArmyRuntimeSlot ** at_g_AiWorkspaceBuffer14_Size0100; /* 0053B0D0 g_AiWorkspaceBuffer14_Size0100 */
+    ArmyRuntimeSlot ** at_g_AiWorkspace14CollectedArmies; /* 0053B0D0 g_AiWorkspace14CollectedArmies */
     uint32_t at_g_AiCollectedEntityCount; /* 0053B0D4 g_AiCollectedEntityCount */
     uint32_t at_g_AiCollectedEntityCount_rest[2]; /* beyond the declared type */
 } ImageData_0053B0CC;
@@ -2152,8 +2135,8 @@ extern ImageData_00543E34 g_ImageData_00543E34;
 typedef struct ImageData_005456F0 {
     uint32_t at_g_FrontendRootNode; /* 005456F0 g_FrontendRootNode */
     uint32_t at_g_FrontendPendingPageAction; /* 005456F4 g_FrontendPendingPageAction */
-    uint32_t at_g_FrontendRomTransitionContextValue; /* 005456F8 g_FrontendRomTransitionContextValue */
-    uint32_t at_g_FrontendActiveRomRecordTable; /* 005456FC g_FrontendActiveRomRecordTable */
+    uint32_t at_g_FrontendRomTransitionPageAction; /* 005456F8 g_FrontendRomTransitionPageAction */
+    uint32_t at_g_FrontendActiveRomRecord; /* 005456FC g_FrontendActiveRomRecord */
     uint32_t at_g_FrontendRuntimeFlags; /* 00545700 g_FrontendRuntimeFlags */
     uint32_t at_g_FrontendCentralTextureSet; /* 00545704 g_FrontendCentralTextureSet */
     uint32_t at_g_FrontendCentralPaletteAsset; /* 00545708 g_FrontendCentralPaletteAsset */
@@ -2164,7 +2147,7 @@ typedef struct ImageData_005456F0 {
     uint32_t at_g_FrontendRomTransitionElapsedTicks; /* 0054571C g_FrontendRomTransitionElapsedTicks */
     uint32_t at_g_FrontendRomTransitionSplineKeyframes; /* 00545720 g_FrontendRomTransitionSplineKeyframes */
     uint32_t at_g_FrontendRomTransitionSplineKeyframeCount; /* 00545724 g_FrontendRomTransitionSplineKeyframeCount */
-    uint32_t at_g_FrontendRomTransitionPendingCount; /* 00545728 g_FrontendRomTransitionPendingCount */
+    uint32_t at_g_FrontendRomTransitionTargetRecordId; /* 00545728 g_FrontendRomTransitionTargetRecordId */
     uint32_t at_g_FrontendStateTickSpinLock; /* 0054572C g_FrontendStateTickSpinLock */
     uint32_t at_g_FrontendTimerCountdownTicks; /* 00545730 g_FrontendTimerCountdownTicks */
     uint32_t at_g_FrontendRomTransitionKeyframe0Channel0Q12; /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
@@ -2216,7 +2199,7 @@ typedef struct ImageData_005456F0 {
     uint8_t at_g_FrontendMissionBriefingLevelDigitsUtf16; /* 00545C10 g_FrontendMissionBriefingLevelDigitsUtf16 */
     uint32_t at_g_FrontendMissionBriefingLevelDigitsUtf16_rest[4]; /* beyond the declared type */
     uint8_t at_g_FrontendMissionBriefingLevelDigitsUtf16_rest_tail[1];
-    uint16_t at_u_gfx_panel_credits_gfx_00545c22[22]; /* 00545C22 u_gfx_panel_credits_gfx_00545c22 */
+    uint16_t at_g_CreditsTexturePathUtf16[22]; /* 00545C22 g_CreditsTexturePathUtf16 */
     uint16_t at_u_sound_music00_sam_00545c4e[18]; /* 00545C4E u_sound_music00_sam_00545c4e */
     uint16_t at_g_FrontendScenarioPathScratchUtf16; /* 00545C72 g_FrontendScenarioPathScratchUtf16 */
     uint32_t at_g_FrontendScenarioPathScratchUtf16_rest[127]; /* beyond the declared type */
@@ -2536,7 +2519,7 @@ extern ImageData_00562498 g_ImageData_00562498;
 /* original 0x005658BC-0x005658E0 */
 typedef struct ImageData_005658BC {
     uint8_t at_gap_005658BC[4]; /* 005658BC gap */
-    UiCommandDispatchRecord at_g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30[2]; /* 005658C0 g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30 */
+    UiCommandDispatchRecord at_g_EndMovieCommandDispatchRecords[2]; /* 005658C0 g_EndMovieCommandDispatchRecords */
     uint32_t at_g_EndMovieCommandDispatchRecords_Terminator[2]; /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
 } ImageData_005658BC;
 extern ImageData_005658BC g_ImageData_005658BC;
@@ -2735,9 +2718,7 @@ typedef struct ImageData_00572AB0 {
     uint8_t at_g_InstallRegistryValueDataA; /* 00572B10 g_InstallRegistryValueDataA */
     uint32_t at_g_InstallRegistryValueDataA_rest[63]; /* beyond the declared type */
     uint8_t at_g_InstallRegistryValueDataA_rest_tail[3];
-    uint8_t at_g_InstallDirectoryScratchUtf16; /* 00572C10 g_InstallDirectoryScratchUtf16 */
-    uint32_t at_g_InstallDirectoryScratchUtf16_rest[127]; /* beyond the declared type */
-    uint8_t at_g_InstallDirectoryScratchUtf16_rest_tail[3];
+    uint16_t at_g_InstallDirectoryScratchUtf16[256]; /* 00572C10 g_InstallDirectoryScratchUtf16 */
     uint16_t at_u_Thandor_00572e10[8]; /* 00572E10 u_Thandor_00572e10 */
     char at_s_Software_Planet4_Thandor_00572e20[25]; /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
     uint8_t at_s_InstallRegistryValueNameCD; /* 00572E39 s_InstallRegistryValueNameCD */
@@ -2882,12 +2863,12 @@ typedef struct ImageData_00573EE8 {
     char at_sz_KERNEL32[9]; /* 005744A4 sz_KERNEL32 */
     uint8_t at_sz_KERNEL32_padding[1];
     char at_sz_WINMM[6]; /* 005744AE sz_WINMM */
-    char at_dynapi_2[6]; /* 005744B4 dynapi_2 */
+    char at_sz_DDRAW[6]; /* 005744B4 sz_DDRAW */
     char at_dynapi_3[7]; /* 005744BA dynapi_3 */
     uint8_t at_dynapi_3_padding[1];
     char at_dynapi_4[7]; /* 005744C2 dynapi_4 */
     uint8_t at_dynapi_4_padding[1];
-    char at_dynapi_5[8]; /* 005744CA dynapi_5 */
+    char at_sz_GLIDE3X[8]; /* 005744CA sz_GLIDE3X */
     char at_sz_ADVAPI32[9]; /* 005744D2 sz_ADVAPI32 */
     uint8_t at_sz_ADVAPI32_padding[1];
     char at_s_Wsock32ModuleName[8]; /* 005744DC s_Wsock32ModuleName */
@@ -2904,10 +2885,10 @@ typedef struct ImageData_00573EE8 {
     uint8_t at_dynapi_14_padding[1];
     char at_dynapi_15[14]; /* 00574540 dynapi_15 */
     char at_dynapi_16[16]; /* 0057454E dynapi_16 */
-    char at_dynapi_17[17]; /* 0057455E dynapi_17 */
-    uint8_t at_dynapi_17_padding[1];
-    char at_dynapi_18[21]; /* 00574570 dynapi_18 */
-    uint8_t at_dynapi_18_padding[1];
+    char at_sz_DirectDrawCreate[17]; /* 0057455E sz_DirectDrawCreate */
+    uint8_t at_sz_DirectDrawCreate_padding[1];
+    char at_sz_DirectDrawEnumerateA[21]; /* 00574570 sz_DirectDrawEnumerateA */
+    uint8_t at_sz_DirectDrawEnumerateA_padding[1];
     char at_dynapi_19[19]; /* 00574586 dynapi_19 */
     uint8_t at_dynapi_19_padding[1];
     char at_dynapi_20[18]; /* 0057459A dynapi_20 */
@@ -3783,7 +3764,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0040fb50 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListHierarchyPathScratch)
 #define THANDOR_IMAGE_0x0040fd50 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListHierarchyParentPathScratch)
 #define THANDOR_IMAGE_0x0040ff50 ((uintptr_t)&g_ImageData_0040F524.at_g_WildcardAllFilesUtf16)
-#define THANDOR_IMAGE_0x0040ff58 ((uintptr_t)&g_ImageData_0040F524.at_u________0040ff58)
+#define THANDOR_IMAGE_0x0040ff58 ((uintptr_t)&g_ImageData_0040F524.at_g_UiTimedListDriveWildcardUtf16)
 #define THANDOR_IMAGE_0x004107f0 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorInputEvents)
 #define THANDOR_IMAGE_0x004167f0 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorInputWriteIndex)
 #define THANDOR_IMAGE_0x004167f4 ((uintptr_t)&g_ImageData_004107E8.at_g_CursorInputReadIndex)
@@ -4021,7 +4002,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004ad930 ((uintptr_t)&g_ImageData_004AD92C.at_g_GraphicsPaletteBankSlots)
 #define THANDOR_IMAGE_0x004ae130 ((uintptr_t)&g_ImageData_004AD92C.at_g_GraphicsPaletteRemapBytes)
 #define THANDOR_IMAGE_0x004ae960 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordRing)
-#define THANDOR_IMAGE_0x004ae964 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeAuxiliaryBuffer8000)
+#define THANDOR_IMAGE_0x004ae964 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordEndpointSlots)
 #define THANDOR_IMAGE_0x004ae968 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferDataBuffer)
 #define THANDOR_IMAGE_0x004ae96c ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferEndpointBuffer)
 #define THANDOR_IMAGE_0x004ae970 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordReadIndex)
@@ -4083,9 +4064,9 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004b0ea8 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiHorizontalGaugeLabelTopInset)
 #define THANDOR_IMAGE_0x004b0eac ((uintptr_t)&g_ImageData_004B0A20.at_g_UiHorizontalGaugeLabelTextStyle)
 #define THANDOR_IMAGE_0x004b0eb0 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiRootStackActionHandlerPage)
-#define THANDOR_IMAGE_0x004b0eb8 ((uintptr_t)&g_ImageData_004B0A20.at_u_engine_winclass_gfx_004b0eb8)
-#define THANDOR_IMAGE_0x004b0ee0 ((uintptr_t)&g_ImageData_004B0A20.at_u_texte_winclass_str_004b0ee0)
-#define THANDOR_IMAGE_0x004b0f06 ((uintptr_t)&g_ImageData_004B0A20.at_u_engine_win_gfx_004b0f06)
+#define THANDOR_IMAGE_0x004b0eb8 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowClassTexturePathUtf16)
+#define THANDOR_IMAGE_0x004b0ee0 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowClassTextPathUtf16)
+#define THANDOR_IMAGE_0x004b0f06 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiWindowTexturePathUtf16)
 #define THANDOR_IMAGE_0x004b0f24 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiPointerCaptureButton)
 #define THANDOR_IMAGE_0x004b0f28 ((uintptr_t)&g_ImageData_004B0A20.at_g_UiImageControlHoverTarget)
 #define THANDOR_IMAGE_0x004b15d0 ((uintptr_t)&g_ImageData_004B15C8.at_g_UiSpriteButtonControlVtable)
@@ -4121,9 +4102,9 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004bd8b8 ((uintptr_t)&g_ImageData_004BD880.at_g_ModelCullViewRelativeZ)
 #define THANDOR_IMAGE_0x004bd8c8 ((uintptr_t)&g_ImageData_004BD880.at_g_SpriteAssetRegistryHead)
 #define THANDOR_IMAGE_0x004bea70 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformScratchMatrix)
-#define THANDOR_IMAGE_0x004bea94 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformTranslationX)
-#define THANDOR_IMAGE_0x004bea98 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformTranslationY)
-#define THANDOR_IMAGE_0x004bea9c ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformTranslationZ)
+#define THANDOR_IMAGE_0x004bea94 ((uintptr_t)&g_ImageData_004BEA6C + 0x28)
+#define THANDOR_IMAGE_0x004bea98 ((uintptr_t)&g_ImageData_004BEA6C + 0x2C)
+#define THANDOR_IMAGE_0x004bea9c ((uintptr_t)&g_ImageData_004BEA6C + 0x30)
 #define THANDOR_IMAGE_0x004beaa0 ((uintptr_t)&g_ImageData_004BEA6C.at_g_FixedTransformInputRotationScratch)
 #define THANDOR_IMAGE_0x004bead0 ((uintptr_t)&g_ImageData_004BEA6C.at_g_FixedTransformComposedRotationScratch)
 #define THANDOR_IMAGE_0x004beb00 ((uintptr_t)&g_ImageData_004BEA6C.at_g_ModelTransformInputX)
@@ -4398,7 +4379,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0051eef0 ((uintptr_t)&g_ImageData_0051EEE4.at_g_ModelDefinitionRegistry)
 #define THANDOR_IMAGE_0x0051faf0 ((uintptr_t)&g_ImageData_0051EEE4.at_g_TerrainClassPlacementAndOverlayCallbacks10)
 #define THANDOR_IMAGE_0x0051fb18 ((uintptr_t)&g_ImageData_0051EEE4.at_g_FactionEnergyAllocationPriorityByModelClass)
-#define THANDOR_IMAGE_0x0051fb78 ((uintptr_t)&g_ImageData_0051EEE4.at_g_AiCombatTargetClassBaseScoreTable24)
+#define THANDOR_IMAGE_0x0051fb78 ((uintptr_t)&g_ImageData_0051EEE4.at_g_AiCombatTargetClassBaseScores)
 #define THANDOR_IMAGE_0x0051fbd8 ((uintptr_t)&g_ImageData_0051EEE4.at_g_RuntimeModelClassPriorityByModelClassId)
 #define THANDOR_IMAGE_0x0051fc38 ((uintptr_t)&g_ImageData_0051EEE4.at_g_ArmyRuntimeDepthBinClassByModelClass)
 #define THANDOR_IMAGE_0x0051fc98 ((uintptr_t)&g_ImageData_0051EEE4.at_g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes)
@@ -4503,34 +4484,34 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00536fb0 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetClassBaseScoreMultiplier)
 #define THANDOR_IMAGE_0x00536fb4 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetSelectedCommandGenerationRightShiftBits)
 #define THANDOR_IMAGE_0x00536fb8 ((uintptr_t)&g_ImageData_00536F08.at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits)
-#define THANDOR_IMAGE_0x00537410 ((uintptr_t)&g_ImageData_00537410.at_g_AiWorkspaceBuffer13_Size0400)
+#define THANDOR_IMAGE_0x00537410 ((uintptr_t)&g_ImageData_00537410.at_g_AiWorkspace13Candidates)
 #define THANDOR_IMAGE_0x00537414 ((uintptr_t)&g_ImageData_00537410.at_g_AiCandidateWorkspaceEntryCount)
 #define THANDOR_IMAGE_0x00537418 ((uintptr_t)&g_ImageData_00537410.at_g_AiPurchaseAppliedArmyClassMask)
-#define THANDOR_IMAGE_0x00537960 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer00_Size0400)
+#define THANDOR_IMAGE_0x00537960 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace00Structures)
 #define THANDOR_IMAGE_0x00537964 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace00Count)
-#define THANDOR_IMAGE_0x00537968 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer01_Size0200)
+#define THANDOR_IMAGE_0x00537968 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace01Units)
 #define THANDOR_IMAGE_0x0053796c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace01Count)
-#define THANDOR_IMAGE_0x00537970 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer02_Size0400)
+#define THANDOR_IMAGE_0x00537970 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace02VisibleHostiles)
 #define THANDOR_IMAGE_0x00537974 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace02Count)
-#define THANDOR_IMAGE_0x00537978 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer03_Size1000)
+#define THANDOR_IMAGE_0x00537978 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace03UnseenHostiles)
 #define THANDOR_IMAGE_0x0053797c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace03Count)
-#define THANDOR_IMAGE_0x00537980 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer04_Size0040)
+#define THANDOR_IMAGE_0x00537980 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace04RequestedAssets)
 #define THANDOR_IMAGE_0x00537984 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace04Count)
-#define THANDOR_IMAGE_0x00537988 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer05_Size0200)
+#define THANDOR_IMAGE_0x00537988 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace05GeneralSites)
 #define THANDOR_IMAGE_0x0053798c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace05Count)
-#define THANDOR_IMAGE_0x00537990 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer06_Size0400)
+#define THANDOR_IMAGE_0x00537990 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace06FlaggedSites)
 #define THANDOR_IMAGE_0x00537994 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace06Count)
-#define THANDOR_IMAGE_0x00537998 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer07_Size0400)
+#define THANDOR_IMAGE_0x00537998 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace07Targets)
 #define THANDOR_IMAGE_0x0053799c ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace07Count)
-#define THANDOR_IMAGE_0x005379a0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer08_Size0200)
+#define THANDOR_IMAGE_0x005379a0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace08TerrainFeatureSites)
 #define THANDOR_IMAGE_0x005379a4 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace08Count)
-#define THANDOR_IMAGE_0x005379a8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer09_Size1000)
+#define THANDOR_IMAGE_0x005379a8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace09Cells)
 #define THANDOR_IMAGE_0x005379ac ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace09Count)
-#define THANDOR_IMAGE_0x005379b0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer10_Size0400)
+#define THANDOR_IMAGE_0x005379b0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace10Cells)
 #define THANDOR_IMAGE_0x005379b4 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace10Count)
-#define THANDOR_IMAGE_0x005379b8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer11_Size1000)
+#define THANDOR_IMAGE_0x005379b8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace11ProducibleAssets)
 #define THANDOR_IMAGE_0x005379bc ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace11Count)
-#define THANDOR_IMAGE_0x005379c0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspaceBuffer12_Size0200)
+#define THANDOR_IMAGE_0x005379c0 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace12TechnologyCandidates)
 #define THANDOR_IMAGE_0x005379c4 ((uintptr_t)&g_ImageData_0053795C.at_g_AiWorkspace12Count)
 #define THANDOR_IMAGE_0x005379c8 ((uintptr_t)&g_ImageData_0053795C.at_g_AiActiveGridMaskClass0)
 #define THANDOR_IMAGE_0x005379cc ((uintptr_t)&g_ImageData_0053795C.at_g_AiActiveGridMaskClass1)
@@ -4550,7 +4531,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x005399c0 ((uintptr_t)&g_ImageData_00539974.at_g_AiArmyCandidateFlaggedDefinitionValueMaximum)
 #define THANDOR_IMAGE_0x005399c4 ((uintptr_t)&g_ImageData_00539974.at_g_AiStrategicClassTerrainWeights)
 #define THANDOR_IMAGE_0x00539a00 ((uintptr_t)&g_ImageData_00539974.at_g_TechnologyCategoryMasks)
-#define THANDOR_IMAGE_0x0053b0d0 ((uintptr_t)&g_ImageData_0053B0CC.at_g_AiWorkspaceBuffer14_Size0100)
+#define THANDOR_IMAGE_0x0053b0d0 ((uintptr_t)&g_ImageData_0053B0CC.at_g_AiWorkspace14CollectedArmies)
 #define THANDOR_IMAGE_0x0053b0d4 ((uintptr_t)&g_ImageData_0053B0CC.at_g_AiCollectedEntityCount)
 #define THANDOR_IMAGE_0x0053b9e0 ((uintptr_t)&g_ImageData_0053B9CC.at_g_AiTechnologyCandidateScoreCallbackTable)
 #define THANDOR_IMAGE_0x0053c5e0 ((uintptr_t)&g_ImageData_0053C5DC.at_g_AiKnowledgeData)
@@ -4577,8 +4558,8 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00543f40 ((uintptr_t)&g_ImageData_00543E34.at_g_FrontendCommandQueueEnd)
 #define THANDOR_IMAGE_0x005456f0 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRootNode)
 #define THANDOR_IMAGE_0x005456f4 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendPendingPageAction)
-#define THANDOR_IMAGE_0x005456f8 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionContextValue)
-#define THANDOR_IMAGE_0x005456fc ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendActiveRomRecordTable)
+#define THANDOR_IMAGE_0x005456f8 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionPageAction)
+#define THANDOR_IMAGE_0x005456fc ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendActiveRomRecord)
 #define THANDOR_IMAGE_0x00545700 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRuntimeFlags)
 #define THANDOR_IMAGE_0x00545704 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendCentralTextureSet)
 #define THANDOR_IMAGE_0x00545708 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendCentralPaletteAsset)
@@ -4589,7 +4570,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0054571c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionElapsedTicks)
 #define THANDOR_IMAGE_0x00545720 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionSplineKeyframes)
 #define THANDOR_IMAGE_0x00545724 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionSplineKeyframeCount)
-#define THANDOR_IMAGE_0x00545728 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionPendingCount)
+#define THANDOR_IMAGE_0x00545728 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionTargetRecordId)
 #define THANDOR_IMAGE_0x0054572c ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendStateTickSpinLock)
 #define THANDOR_IMAGE_0x00545730 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendTimerCountdownTicks)
 #define THANDOR_IMAGE_0x00545734 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendRomTransitionKeyframe0Channel0Q12)
@@ -4634,7 +4615,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00545be0 ((uintptr_t)&g_ImageData_005456F0.at_u_texte_inhalt_str_00545be0)
 #define THANDOR_IMAGE_0x00545c02 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMissionBriefingMoviePathUtf16)
 #define THANDOR_IMAGE_0x00545c10 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendMissionBriefingLevelDigitsUtf16)
-#define THANDOR_IMAGE_0x00545c22 ((uintptr_t)&g_ImageData_005456F0.at_u_gfx_panel_credits_gfx_00545c22)
+#define THANDOR_IMAGE_0x00545c22 ((uintptr_t)&g_ImageData_005456F0.at_g_CreditsTexturePathUtf16)
 #define THANDOR_IMAGE_0x00545c4e ((uintptr_t)&g_ImageData_005456F0.at_u_sound_music00_sam_00545c4e)
 #define THANDOR_IMAGE_0x00545c72 ((uintptr_t)&g_ImageData_005456F0.at_g_FrontendScenarioPathScratchUtf16)
 #define THANDOR_IMAGE_0x00545e72 ((uintptr_t)&g_ImageData_005456F0.at_s_SPIELER__SPIEL__NETZWERK__HOST_00545e72)
@@ -4860,7 +4841,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00563bbc ((uintptr_t)&g_ImageData_00562498.at_g_OldUnitSecondaryTable)
 #define THANDOR_IMAGE_0x00563bc0 ((uintptr_t)&g_ImageData_00562498.at_g_OldUnitPrimaryTable)
 #define THANDOR_IMAGE_0x00563bc4 ((uintptr_t)&g_ImageData_00562498.at_g_OldUnitRecordCount)
-#define THANDOR_IMAGE_0x005658c0 ((uintptr_t)&g_ImageData_005658BC.at_g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30)
+#define THANDOR_IMAGE_0x005658c0 ((uintptr_t)&g_ImageData_005658BC.at_g_EndMovieCommandDispatchRecords)
 #define THANDOR_IMAGE_0x00567110 ((uintptr_t)&g_ImageData_0056710C.at_g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30)
 #define THANDOR_IMAGE_0x005679b0 ((uintptr_t)&g_ImageData_005679AC.at_g_InGameCommandDispatchRecords_00_Code00030073_Modifier33)
 #define THANDOR_IMAGE_0x0056a604 ((uintptr_t)&g_ImageData_0056A604.at_g_InGameSessionStartedNetworked)
@@ -5051,14 +5032,14 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00574444 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_gethostbyname)
 #define THANDOR_IMAGE_0x00574478 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_WSAAddressToStringA)
 #define THANDOR_IMAGE_0x005744a0 ((uintptr_t)&g_ImageData_00573EE8.at_g_Ws2_32_WSAStringToAddressA)
-#define THANDOR_IMAGE_0x005744b4 ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_2)
+#define THANDOR_IMAGE_0x005744b4 ((uintptr_t)&g_ImageData_00573EE8.at_sz_DDRAW)
 #define THANDOR_IMAGE_0x005744ba ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_3)
 #define THANDOR_IMAGE_0x005744c2 ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_4)
-#define THANDOR_IMAGE_0x005744ca ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_5)
+#define THANDOR_IMAGE_0x005744ca ((uintptr_t)&g_ImageData_00573EE8.at_sz_GLIDE3X)
 #define THANDOR_IMAGE_0x005744dc ((uintptr_t)&g_ImageData_00573EE8.at_s_Wsock32ModuleName)
 #define THANDOR_IMAGE_0x005744ec ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_9)
-#define THANDOR_IMAGE_0x0057455e ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_17)
-#define THANDOR_IMAGE_0x00574570 ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_18)
+#define THANDOR_IMAGE_0x0057455e ((uintptr_t)&g_ImageData_00573EE8.at_sz_DirectDrawCreate)
+#define THANDOR_IMAGE_0x00574570 ((uintptr_t)&g_ImageData_00573EE8.at_sz_DirectDrawEnumerateA)
 #define THANDOR_IMAGE_0x00574586 ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_19)
 #define THANDOR_IMAGE_0x0057459a ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_20)
 #define THANDOR_IMAGE_0x005745ac ((uintptr_t)&g_ImageData_00573EE8.at_dynapi_21)
