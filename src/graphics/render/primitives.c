@@ -577,7 +577,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
           GraphicsProjectedVertexSource *vertex0Projected,
-          FrontendModelPointerContextRuntimeState17C *renderContext)
+          FrontendModelPointerContext *renderContext)
 
 {
   GraphicsPrimitiveQueue *primitiveQueue;
@@ -685,7 +685,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
           GraphicsProjectedVertexSource *vertex0Projected,
-          FrontendModelPointerContextRuntimeState17C *renderContext)
+          FrontendModelPointerContext *renderContext)
 
 {
   GraphicsPrimitiveQueue *primitiveQueue;

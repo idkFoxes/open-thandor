@@ -73,7 +73,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
        (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) != 0) {
     /* The definition lists 28 technology ids from +0x1C8, cycling through the seven areas; the one equal to
        the entity's current technology picks the tab. slotView walks the definition by one slot (4 bytes), so
-       researchTechnologyIds1C4[1] seen from it is the current slot (indexing the slot directly changes the
+       researchTechnologyIds[1] seen from it is the current slot (indexing the slot directly changes the
        generated code). */
     slotView = (selectedModelRuntime->definitionOrSavedId).runtimeDefinition;
     areaIndex = 0xffffffff;
@@ -83,7 +83,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
       if (TECHNOLOGY_AREA_TAB_COUNT - 1 < areaIndex) {
         areaIndex = 0;
       }
-      if (slotView->researchTechnologyIds1C4[1] == selectedModelRuntime->researchTechnologyId100) {
+      if (slotView->researchTechnologyIds[1] == selectedModelRuntime->researchTechnologyId) {
         tabStateFlags = (uint32_t *)&((UiFramedTextButtonControl *)
                          THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowFlagOffsets[areaIndex]))->selectable.stateFlags;
         *tabStateFlags = *tabStateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -114,7 +114,7 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   int32_t *layoutOffset;
   int32_t *slotOffsets;
   UiCatalogEntryControl *slotControl;
-  InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
+  InGameRuntimeRootUiGridView *inGameUiGridView;
   uint32_t capabilityFlags;
   uint32_t slotIndex;
   uint32_t columnCount;
@@ -131,11 +131,11 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
   UiGridDimensionsEdxEax8 gridDimensions;
   ArmyBuildXeniteCostQ4 xeniteCost;
 
-  inGameUiGridView = (InGameRuntimeUiGridViewC3E4 *)UiNode_GetRoot(node);
-  ownerNode = (inGameUiGridView->worldRuntime0A30).ownerListHead;
+  inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
+  ownerNode = (inGameUiGridView->worldRuntime).ownerListHead;
   /* The original loads EDX = root[+0xA80] (the local faction) before the call, which preserves it;
      the decompiler lost that load. */
-  factionIndex = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
+  factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   capabilityFlags = SelectionInfo_CollectCapabilityFlags();
   if (capabilityFlags == 0) {
     /* runtimePayload is a ModelRuntimeSlot */
@@ -144,10 +144,10 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
          (definition = (((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId).runtimeDefinition,
          (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex ==
          factionIndex)) {
-        if (definition->runtimeClassId4C == MODEL_RUNTIME_CLASS_22) {
+        if (definition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
           capabilityFlags = capabilityFlags | BUILD_CATALOG_ASSET_FLAG_CAPABILITY_8;
         }
-        else if (definition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) {
+        else if (definition->runtimeClassId == MODEL_RUNTIME_CLASS_13) {
           capabilityFlags = capabilityFlags | definition->classParameterC4;
         }
       }
@@ -191,29 +191,29 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCatalogGroup48ColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset = -31;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).rightOffset = -31;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset = -71;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).bottomOffset = -71;
+    (inGameUiGridView->buildCatalogFrame).leftOffset = -31;
+    (inGameUiGridView->buildCatalogFrame).rightOffset = -31;
+    (inGameUiGridView->buildCatalogFrame).topOffset = -71;
+    (inGameUiGridView->buildCatalogFrame).bottomOffset = -71;
   }
   else {
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset = -39;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).rightOffset = -39;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset = -89;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).bottomOffset = -89;
+    (inGameUiGridView->buildCatalogFrame).leftOffset = -39;
+    (inGameUiGridView->buildCatalogFrame).rightOffset = -39;
+    (inGameUiGridView->buildCatalogFrame).topOffset = -89;
+    (inGameUiGridView->buildCatalogFrame).bottomOffset = -89;
   }
   /* reusing one pointer for both offsets keeps the original register allocation */
-  layoutOffset = &(inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset;
+  layoutOffset = &(inGameUiGridView->buildCatalogFrame).leftOffset;
   *layoutOffset = *layoutOffset - panelWidth;
-  layoutOffset = &(inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset;
+  layoutOffset = &(inGameUiGridView->buildCatalogFrame).topOffset;
   *layoutOffset = *layoutOffset - panelHeight;
   /* taking the flags' address in each branch keeps the original branches (a plain |= / &= becomes cmov) */
   if (itemCount == 0) {
-    gridNodeFlags = &(inGameUiGridView->catalogGroup48GridNode5DB4).nodeFlags;
+    gridNodeFlags = &(inGameUiGridView->buildCatalogPanel).nodeFlags;
     *gridNodeFlags = *gridNodeFlags | UI_NODE_SUPPRESSED;
   }
   else {
-    gridNodeFlags = &(inGameUiGridView->catalogGroup48GridNode5DB4).nodeFlags;
+    gridNodeFlags = &(inGameUiGridView->buildCatalogPanel).nodeFlags;
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
   }
   /* slot controls (UiCatalogEntryControl) sit at root + offset table entry */
@@ -237,8 +237,8 @@ void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
     slotControl->runtimeDisplayValueQ4 = xeniteCost;
     recordCursor++;
   }
-  (*((inGameUiGridView->catalogGroup48GridNode5DB4).vtable)->layout)
-            (&inGameUiGridView->catalogGroup48GridNode5DB4);
+  (*((inGameUiGridView->buildCatalogPanel).vtable)->layout)
+            (&inGameUiGridView->buildCatalogPanel);
   return;
 }
 
@@ -259,7 +259,7 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   int32_t *layoutOffset;
   int32_t *slotOffsets;
   UiCatalogEntryControl *slotControl;
-  InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
+  InGameRuntimeRootUiGridView *inGameUiGridView;
   uint32_t columnCount;
   int factionIndex;
   int panelWidth;
@@ -275,14 +275,14 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
   UiGridDimensionsEdxEax8 gridDimensions;
   ArmyBuildXeniteCostQ4 xeniteCost;
   
-  inGameUiGridView = (InGameRuntimeUiGridViewC3E4 *)UiNode_GetRoot(node);
-  factionIndex = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
+  inGameUiGridView = (InGameRuntimeRootUiGridView *)UiNode_GetRoot(node);
+  factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
   /* count the faction's class-11 models (runtimePayload is a ModelRuntimeSlot) */
   structureCount = 0;
-  for (ownerNode = (inGameUiGridView->worldRuntime0A30).ownerListHead;
+  for (ownerNode = (inGameUiGridView->worldRuntime).ownerListHead;
       ownerNode != NULL; ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
-        (((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId).runtimeDefinition->runtimeClassId4C ==
+        (((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId).runtimeDefinition->runtimeClassId ==
         MODEL_RUNTIME_CLASS_11 &&
         (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex ==
         factionIndex) {
@@ -328,39 +328,39 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
            g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCatalogGroup42ColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset = -31;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).rightOffset = -31;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -42;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -42;
+    (inGameUiGridView->specialBuildCatalogFrame).leftOffset = -31;
+    (inGameUiGridView->specialBuildCatalogFrame).rightOffset = -31;
+    (inGameUiGridView->specialBuildCatalogFrame).topOffset = -42;
+    (inGameUiGridView->specialBuildCatalogFrame).bottomOffset = -42;
   }
   else {
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset = -39;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).rightOffset = -39;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -55;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -55;
+    (inGameUiGridView->specialBuildCatalogFrame).leftOffset = -39;
+    (inGameUiGridView->specialBuildCatalogFrame).rightOffset = -39;
+    (inGameUiGridView->specialBuildCatalogFrame).topOffset = -55;
+    (inGameUiGridView->specialBuildCatalogFrame).bottomOffset = -55;
   }
   /* pointer forms as in InGameBuildCatalog_RebuildGrid (they keep the original code) */
-  layoutOffset = &(inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset;
+  layoutOffset = &(inGameUiGridView->specialBuildCatalogFrame).leftOffset;
   *layoutOffset = *layoutOffset - panelWidth;
-  layoutOffset = &(inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset;
+  layoutOffset = &(inGameUiGridView->specialBuildCatalogFrame).topOffset;
   *layoutOffset = *layoutOffset - panelHeight;
   if (itemCount == 0) {
-    factionIndex = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
-    gridNodeFlags = &(inGameUiGridView->catalogGroup42GridNode7680).nodeFlags;
+    factionIndex = (inGameUiGridView->worldRuntime).activeFactionRuntimeIndex;
+    gridNodeFlags = &(inGameUiGridView->specialBuildCatalogPanel).nodeFlags;
     *gridNodeFlags = *gridNodeFlags | UI_NODE_SUPPRESSED;
     if (g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount == 0) {
-      gridNodeFlags = &(inGameUiGridView->commandSpriteVariantAGridNode8C4C).nodeFlags;
+      gridNodeFlags = &(inGameUiGridView->armyStockPanel).nodeFlags;
       *gridNodeFlags = *gridNodeFlags | UI_NODE_SUPPRESSED;
     }
     else {
-      gridNodeFlags = &(inGameUiGridView->commandSpriteVariantAGridNode8C4C).nodeFlags;
+      gridNodeFlags = &(inGameUiGridView->armyStockPanel).nodeFlags;
       *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
     }
   }
   else {
-    gridNodeFlags = &(inGameUiGridView->catalogGroup42GridNode7680).nodeFlags;
+    gridNodeFlags = &(inGameUiGridView->specialBuildCatalogPanel).nodeFlags;
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
-    gridNodeFlags = &(inGameUiGridView->commandSpriteVariantAGridNode8C4C).nodeFlags;
+    gridNodeFlags = &(inGameUiGridView->armyStockPanel).nodeFlags;
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
   }
   /* slot controls (UiCatalogEntryControl) as in InGameBuildCatalog_RebuildGrid */
@@ -384,8 +384,8 @@ void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
     slotControl->runtimeDisplayValueQ4 = xeniteCost;
     recordCursor++;
   }
-  (*((inGameUiGridView->catalogGroup42GridNode7680).vtable)->layout)
-            (&inGameUiGridView->catalogGroup42GridNode7680);
+  (*((inGameUiGridView->specialBuildCatalogPanel).vtable)->layout)
+            (&inGameUiGridView->specialBuildCatalogPanel);
   return;
 }
 
@@ -401,7 +401,7 @@ void InGameTechnologyResearch_StartSelected(void *source)
 {
   GameEntityRuntime *firstSelectedEntity;
   uint32_t doubledTechnologyId;
-  CommandPayloadDword04 modelOffset;
+  CommandPayload modelOffset;
   SelectableGroupNodeResult selectedArea;
 
   /* climb to the in-game root */
@@ -511,10 +511,10 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     areaIndex = TECHNOLOGY_AREA_TAB_COUNT - 1;
     do {
       isAvailable = Technology_IsAvailableForFaction
-                         (definition->researchTechnologyIds1C4[slotIndex],
+                         (definition->researchTechnologyIds[slotIndex],
                           (firstSelectedEntity->common).ownership.ownerIndex);
       if (isAvailable) {
-        technologyId = definition->researchTechnologyIds1C4[slotIndex];
+        technologyId = definition->researchTechnologyIds[slotIndex];
         /* the area tab's icon (technologyAreaTabNIcon) shows subresource technologyId of tech.gfx */
         ((UiImagePanelControl *)
          THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowValueOffsets[areaIndex]))->
@@ -537,7 +537,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         labelText = ((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].tooltipText;
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                   (int)g_TechnologyAsset->records[definition->researchTechnologyIds1C4[slotIndex]].xeniteCostQ4 >> 4,
+                   (int)g_TechnologyAsset->records[definition->researchTechnologyIds[slotIndex]].xeniteCostQ4 >> 4,
                    labelTemplate + 0xc0);
         RichTextCommandStream_PatchPayloadBySelector(1,labelTemplate + 0xc0,labelTemplate);
         RichTextCommandStream_CopyExpanded(0x180,labelText,labelTemplate);
@@ -567,7 +567,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
            TEXT_ID_TECHNOLOGY_BUTTON_NO_AREA;
       INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = 6;
       INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = 6;
-      if ((playerBlock->assignmentFlags80A4 & 0x80) == 0) {
+      if ((playerBlock->heldResearchUnpaidFlag & 0x80) == 0) {
         UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
       }
       scrollableControl = (UiScrollableControl *)INGAME_UI(inGameRoot,technologyDescriptionScroll);

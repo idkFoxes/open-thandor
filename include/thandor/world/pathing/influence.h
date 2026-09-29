@@ -13,7 +13,7 @@
 
 /* Submodule: world/pathing/influence. */
 
-/* The influence radius is ModelDefinition.placementRadiusOrClearanceDC (+0xDC); 0 = no grid influence.
+/* The influence radius is ModelDefinition.footprintRadius (+0xDC); 0 = no grid influence.
    Placement and selection read the same field. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

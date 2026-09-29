@@ -403,9 +403,9 @@ ModelDefinitionRegistry_FindBuildCostsById(PckModelDefinitionIdCatalog definitio
       return missResult;
     }
   }
-  foundResult.buildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks180;
-  foundResult.energyLoadQ4OrError = ((ModelDefinition *)registeredDefinition)->energyLoadQ4_188;
-  foundResult.xeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4_184;
+  foundResult.buildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks;
+  foundResult.energyLoadQ4OrError = ((ModelDefinition *)registeredDefinition)->buildEnergyLoadQ4;
+  foundResult.xeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4;
   foundResult.notFound = false;
   return foundResult;
 }
@@ -427,7 +427,7 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
   registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
   while ((candidateDefinition = *registryCursor,
          candidateDefinition == NULL ||
-         (runtimeClassId != ((ModelDefinition *)candidateDefinition)->requiredTechnologyBit1C0))) {
+         (runtimeClassId != ((ModelDefinition *)candidateDefinition)->requiredTechnologyBit))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -567,12 +567,12 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
       goto ReturnFailure;
     }
   }
-  nodeOffsetOrGridClass = definition->serializedNodeOffsetOrPointer64;
+  nodeOffsetOrGridClass = definition->rootNodeOffsetOrPointer;
   *registrySlotCursor = (ModelDefinitionRecordPrefix *)definition;
   if (nodeOffsetOrGridClass != 0) {
     /* asset start + serialized offset */
-    definition->serializedNodeOffsetOrPointer64 =
-         (uint32_t)((uint8_t *)asset + definition->serializedNodeOffsetOrPointer64);
+    definition->rootNodeOffsetOrPointer =
+         (uint32_t)((uint8_t *)asset + definition->rootNodeOffsetOrPointer);
     serializedNodeCursor = (MdlSerializedNodeHeader *)((uint8_t *)asset + nodeOffsetOrGridClass);
     /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
        {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
@@ -581,103 +581,103 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
     }
   }
   shotLookup = ShotDefinitionRegistry_FindByIdWithError
-                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference2C);
+                     ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference);
   resolvedShot = shotLookup.definitionOrError;
   resolverStatusOrSentinel = (uint32_t)resolvedShot;
   if (shotLookup.notFound) goto ReturnFailure;
-  definition->shotDefinitionReference2C = resolvedShot;
+  definition->shotDefinitionReference = resolvedShot;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference80);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect0);
   resolvedEffect = effectLookup.definitionOrError;
   resolverStatusOrSentinel = (uint32_t)resolvedEffect;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference80 = resolvedEffect;
+  definition->destructionEffect0 = resolvedEffect;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference88);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect1);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference88 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->destructionEffect1 = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference90);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect2);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference90 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->destructionEffect2 = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference98);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect3);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference98 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->destructionEffect3 = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceA0);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect4);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReferenceA0 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->destructionEffect4 = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceA8);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect5);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReferenceA8 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->destructionEffect5 = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceB0);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect6);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReferenceB0 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->destructionEffect6 = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceB8);
+                     ((PckEffectDefinitionIdCatalog)definition->destructionEffect7);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReferenceB8 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->destructionEffect7 = (EffectDefinition *)resolverStatusOrSentinel;
   /* -1: the definition has no shot at +0x168 */
-  if (definition->shotDefinitionReference168 != (ShotDefinition *)0xffffffff) {
+  if (definition->emitterShotDefinitionReference != (ShotDefinition *)0xffffffff) {
     shotLookup = ShotDefinitionRegistry_FindByIdWithError
-                       ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference168);
+                       ((PckShotDefinitionIdCatalog)definition->emitterShotDefinitionReference);
     resolvedEmitterShot = shotLookup.definitionOrError;
     resolverStatusOrSentinel = (uint32_t)resolvedEmitterShot;
     if (shotLookup.notFound) goto ReturnFailure;
-    definition->shotDefinitionReference168 = resolvedEmitterShot;
+    definition->emitterShotDefinitionReference = resolvedEmitterShot;
   }
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference174);
+                     ((PckEffectDefinitionIdCatalog)definition->emitterEffectDefinitionReference);
   resolvedEmitterEffect = effectLookup.definitionOrError;
   resolverStatusOrSentinel = (uint32_t)resolvedEmitterEffect;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference174 = resolvedEmitterEffect;
+  definition->emitterEffectDefinitionReference = resolvedEmitterEffect;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference58);
+                     ((PckEffectDefinitionIdCatalog)definition->waterEmitterEffectDefinitionReference);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference58 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->waterEmitterEffectDefinitionReference = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference190);
+                     ((PckEffectDefinitionIdCatalog)definition->removalEffectDefinitionReference);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference190 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->removalEffectDefinitionReference = (EffectDefinition *)resolverStatusOrSentinel;
   effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference254);
+                     ((PckEffectDefinitionIdCatalog)definition->damageEffectDefinitionReference);
   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
   if (effectLookup.notFound) goto ReturnFailure;
-  definition->effectDefinitionReference254 = (EffectDefinition *)resolverStatusOrSentinel;
+  definition->damageEffectDefinitionReference = (EffectDefinition *)resolverStatusOrSentinel;
   /* negative grid classes keep the serialized values; the contact kind at +0x278 selects which grid tables
      the class at +0x264 indexes (kind 4 from class 1, the fallback tables from class 4) */
-  nodeOffsetOrGridClass = definition->gridClassification264;
-  if (-1 < (int)definition->gridClassification260) {
-    resolverStatusOrSentinel = (&g_GridInfluenceRadiusOffset0)[definition->gridClassification260];
-    definition->placementRadiusOrClearanceDC = resolverStatusOrSentinel;
-    definition->gridDerivedRuntimeValue1A0 = resolverStatusOrSentinel;
+  nodeOffsetOrGridClass = definition->terrainTraversalClass;
+  if (-1 < (int)definition->footprintRadiusClass) {
+    resolverStatusOrSentinel = (&g_GridInfluenceRadiusOffset0)[definition->footprintRadiusClass];
+    definition->footprintRadius = resolverStatusOrSentinel;
+    definition->footprintRadiusCopy = resolverStatusOrSentinel;
   }
   if (-1 < (int)nodeOffsetOrGridClass) {
-    if (definition->placementContactKindIndex278 == 1) {
+    if (definition->placementContactKindIndex == 1) {
       resolverStatusOrSentinel = (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[nodeOffsetOrGridClass];
       nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[nodeOffsetOrGridClass];
       ((ModelDefinition *)definition)->classParameterCC = resolverStatusOrSentinel;
       definition->runtimeValue24 = nodeOffsetOrGridClass;
     }
-    else if (definition->placementContactKindIndex278 == 4) {
+    else if (definition->placementContactKindIndex == 4) {
       resolverStatusOrSentinel =
            ((uint32_t *)&g_ModelTraversalClass4SecondaryThresholdTable3)[nodeOffsetOrGridClass - 1];
       definition->runtimeValue24 =
            (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)[nodeOffsetOrGridClass - 1];
-      definition->runtimeValue268 = resolverStatusOrSentinel;
+      definition->traversalSecondaryThreshold = resolverStatusOrSentinel;
     }
     else {
       slotsRemainingOrClassIndex = nodeOffsetOrGridClass - 4;
@@ -685,9 +685,9 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
       nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[slotsRemainingOrClassIndex];
       secondaryThreshold =
            ((uint32_t *)&g_ModelTraversalFallbackSecondaryThresholdTable3)[slotsRemainingOrClassIndex];
-      definition->runtimeValue198 = resolverStatusOrSentinel;
+      definition->waterDamageThreshold = resolverStatusOrSentinel;
       definition->runtimeValue24 = nodeOffsetOrGridClass;
-      definition->runtimeValue268 = secondaryThreshold;
+      definition->traversalSecondaryThreshold = secondaryThreshold;
     }
   }
   successResult.failed = false;
@@ -713,7 +713,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if (!lookupResult.notFound) {
     Technology_UnlockForFaction
-              (0,0,((ModelDefinition *)lookupResult.modelDefinition)->researchTechnologyIds1C4[0],factionIndex);
+              (0,0,((ModelDefinition *)lookupResult.modelDefinition)->researchTechnologyIds[0],factionIndex);
   }
 }
 
@@ -732,7 +732,7 @@ bool ModelDefinition_IsFactionTechnologyUnlocked
 
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if ((!lookupResult.notFound) &&
-     (technologyBitIndex = ((ModelDefinition *)lookupResult.modelDefinition)->requiredTechnologyBit1C0,
+     (technologyBitIndex = ((ModelDefinition *)lookupResult.modelDefinition)->requiredTechnologyBit,
      (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 0x1f)) != 0)) {
     return false;
   }

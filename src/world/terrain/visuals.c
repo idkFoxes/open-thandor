@@ -70,7 +70,7 @@ StatusResult TerrainCompositeTexture_Create(void)
   FieldGridAsset *terrainFieldGrid;
   AssetDimension fieldWidth;
   AssetDimension fieldHeight;
-  InGameRuntimeRootImageC3E4 *inGameRoot;
+  InGameRuntimeRoot *inGameRoot;
   AssetRelativeOffset plane2DataOffset;
   uint32_t totalImageBytes;
   int planeSizeBytes;
@@ -79,7 +79,7 @@ StatusResult TerrainCompositeTexture_Create(void)
   TerrainCompositeTextureRuntime *compositeTexture;
   
   inGameRoot = g_InGameRuntimeRoot;
-  terrainFieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  terrainFieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   fieldWidth = terrainFieldGrid->gridWidth;
   fieldHeight = terrainFieldGrid->gridHeight;
   /* layout: 0x200-byte gfx header, three 0x20-byte source entries (pixels from 0x260), three planes of
@@ -88,7 +88,7 @@ StatusResult TerrainCompositeTexture_Create(void)
   compositeTexture = (TerrainCompositeTextureRuntime *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_TerrainCompositeTexture = compositeTexture;
-    *(TerrainCompositeTextureRuntime **)(inGameRoot->opaque9A74_9B4B + 8) = compositeTexture;
+    inGameRoot->minimapTextureSource = compositeTexture;
     /* paletteIndex -1: direct ARGB colour, no palette */
     compositeTexture->sourceEntries[0].pixelWidth = fieldWidth;
     compositeTexture->sourceEntries[0].pixelHeight = fieldHeight;
@@ -121,10 +121,10 @@ StatusResult TerrainCompositeTexture_Create(void)
     (compositeTexture->textureSource).tableDescriptor.subresourceCount = 3;
     (compositeTexture->textureSource).tableDescriptor.paletteBankCount = 0;
     (compositeTexture->textureSource).tableDescriptor.subresourceTableOffset = 0x200;
-    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[0] = 0;
-    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[1] = 0;
-    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[2] = 0;
-    (compositeTexture->textureSource).opaqueTablePayloadBC_1FF[3] = 0;
+    (compositeTexture->textureSource).reservedBC_FF[0] = 0;
+    (compositeTexture->textureSource).reservedBC_FF[1] = 0;
+    (compositeTexture->textureSource).reservedBC_FF[2] = 0;
+    (compositeTexture->textureSource).reservedBC_FF[3] = 0;
     (compositeTexture->textureSource).common.allocationSizeBytes = totalImageBytes;
     TerrainCompositeTexture_FillPlane1();
     TerrainCompositeTexture_FillPlane2();
@@ -766,8 +766,8 @@ void TerrainCompositeTexture_Destroy(void)
 /* Address: 0x00561EA0.
    In-game command 0x2D70 (INGAME_COMMAND_EDITOR_TURN_LIGHT; issued by Ctrl editor hotkeys in
    ui/ingame/runtime.c with steps of +-0x400): turns the terrain light and relights the field region. The
-   elevation (+0x17C of the world runtime, named fieldRegionOriginWorldYQ12_0BAC in the root) is kept between
-   -0x4000 (straight down) and -0x1000, the azimuth (+0x178, fieldRegionOriginWorldXQ12_0BA8) wraps around.
+   elevation (the root's lightElevationAngle) is kept between -0x4000 (straight down) and -0x1000, the
+   azimuth (lightAzimuthAngle) wraps around.
 */
 void TerrainLighting_AdjustDirectionAndRecomputeField
           (uint32_t playerRuntimeId,uint32_t reservedZero,uint32_t deltaElevationAngle,
@@ -776,7 +776,7 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
 {
   Q12 lightElevationAngle;
 
-  lightElevationAngle = deltaElevationAngle + g_InGameRuntimeRoot->fieldRegionOriginWorldYQ12_0BAC;
+  lightElevationAngle = deltaElevationAngle + g_InGameRuntimeRoot->lightElevationAngle;
   if (-0x1000 < lightElevationAngle) {
     lightElevationAngle = -0x1000;
   }
@@ -784,10 +784,10 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
     lightElevationAngle = -FIXED_ANGLE16_QUARTER_TURN;
   }
   WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-            ((g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionHeight,
-             (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionWidth,lightElevationAngle,
-             deltaAzimuthAngle + g_InGameRuntimeRoot->fieldRegionOriginWorldXQ12_0BA8 & 0xffff,
-             &g_InGameRuntimeRoot->worldRuntime0A30);
+            ((g_InGameRuntimeRoot->worldRuntime).fieldRegion.auxiliaryElevationAngle,
+             (g_InGameRuntimeRoot->worldRuntime).fieldRegion.auxiliaryAzimuthAngle,lightElevationAngle,
+             deltaAzimuthAngle + g_InGameRuntimeRoot->lightAzimuthAngle & 0xffff,
+             &g_InGameRuntimeRoot->worldRuntime);
   return;
 }
 
@@ -818,7 +818,7 @@ void TerrainCompositeTexture_FillPlane1(void)
   rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
   planePixelCursor = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   panelSubresourceIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)g_InGamePanelTextureSource + (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset))[36].paletteIndex;
-  fieldCell = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
+  fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
   do {
     do {
@@ -900,7 +900,7 @@ void TerrainCompositeTexture_FillPlane2(void)
   rowsRemaining = g_TerrainCompositeTexture->sourceEntries[0].pixelHeight;
   planePixelCursor = (uint8_t *)g_TerrainCompositeTexture + g_TerrainCompositeTexture->sourceEntries[2].dataOffset;
   panelSubresourceIndex = ((GraphicsTextureSourceEntry *)((uint8_t *)g_InGamePanelTextureSource + (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset))[36].paletteIndex;
-  fieldCell = ((g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid)->cells;
+  fieldCell = ((g_InGameRuntimeRoot->worldRuntime).fieldGrid)->cells;
   columnsRemaining = textureWidth;
   do {
     do {
@@ -992,7 +992,7 @@ void TerrainCompositeTexture_FillPlane2(void)
 
 /* Address: 0x0053D840.
    Builds the displayed minimap (plane 0): copies plane 1 (terrain) or, with bit 1 of
-   observedTerrainCompositeFlags4938, plane 2 (resources), hides cells the active faction has never seen
+   minimapResourceButtonStateFlags, plane 2 (resources), hides cells the active faction has never seen
    (almost black) and darkens those it does not see now, then draws a pixel for each model runtime with an
    alpha tint whose faction has a non-zero factionClassOrMode, in the panel colour of variant
    factionClassOrMode when selected, variant 0 otherwise (blended 50/50 for a tint alpha below 0xFF).
@@ -1005,7 +1005,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   AssetDimension textureHeight;
   WorldOwnerListNode *ownerNode;
   GameEntityRuntime *ownerEntity;
-  InGameRuntimeRootImageC3E4 *inGameRoot;
+  InGameRuntimeRoot *inGameRoot;
   GraphicsTextureSourceAsset *panelTextureSource;
   uint32_t pixelArgb;
   int cellsRemainingOrRowQ12;
@@ -1018,10 +1018,10 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   uint8_t *plane0Pixels;
   uint8_t *plane0WriteCursor;
   bool isSelected;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
   
   inGameRoot = g_InGameRuntimeRoot;
-  if ((g_InGameRuntimeRoot->observedTerrainCompositeFlags4938 & 2) == 0) {
+  if ((g_InGameRuntimeRoot->minimapResourceButtonStateFlags & 2) == 0) {
     assetOffset = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   }
   else {
@@ -1038,8 +1038,8 @@ void TerrainCompositeTexture_RebuildPlane0(void)
     pixelCursor = pixelCursor + 4;
     plane0WriteCursor = plane0WriteCursor + 4;
   }
-  counterOrGridColumn = (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex;
-  fieldCell = ((inGameRoot->worldRuntime0A30).fieldGrid)->cells;
+  counterOrGridColumn = (inGameRoot->worldRuntime).activeFactionRuntimeIndex;
+  fieldCell = ((inGameRoot->worldRuntime).fieldGrid)->cells;
   pixelCursor = plane0Pixels;
   do {
     visibilityFlags = ((uint8_t *)&fieldCell->occupancyMask)[counterOrGridColumn];
@@ -1055,7 +1055,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
     pixelCursor = pixelCursor + 4;
     cellsRemainingOrRowQ12--;
   } while (cellsRemainingOrRowQ12 != 0);
-  for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != NULL;
+  for (ownerNode = (inGameRoot->worldRuntime).ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < ownerNode->modelTintArgb)) {
       gridCoordinates = FieldGrid_WorldToGridQ12(ownerNode->worldYQ12,ownerNode->worldXQ12);

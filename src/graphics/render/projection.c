@@ -88,7 +88,7 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
     assetOrDepthBuffer[9] = packedTimeOrDate;
     g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetOrDepthBuffer + 0xc));
     g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetOrDepthBuffer + 0x1c));
-    *(uint8_t *)(assetOrDepthBuffer + 0x40) = 0;
+    *(uint8_t *)(assetOrDepthBuffer + 0x40) = 0; /* +0x100 unusedText: empty */
     /* table descriptor at +0xB0: one subresource, no palette banks, entry table at +0x200 */
     assetOrDepthBuffer[0x2c] = 1;
     assetOrDepthBuffer[0x2d] = 0;

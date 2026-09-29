@@ -40,7 +40,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance (ArmyPlaceme
 
 /* 0x00524570 */
 bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 /* ECX/EDX results of ArmyPlacement_ValidateAssetAtPointAndCellCorners: the accepted point. */
 extern Q12 g_ArmyPlacementValidatedWorldXQ12;
@@ -57,11 +57,11 @@ PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancy (ArmyPlacemen
 
 /* 0x00524F70 */
 bool ArmyPlacement_TestGridOccupancyMask
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementClass14View *modelRuntime);
 
 /* 0x00528110 */
 bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 /* 0x005281A0 */
 PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
@@ -114,7 +114,7 @@ bool ArmyCollision_TestPointAgainstRuntimeList
 
 /* 0x00529E60 */
 ArmyCollisionResult ArmyCollision_FindBlockingRuntimeForCurrentUnit
-          (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryViewF4 *currentRuntime,
+          (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryView *currentRuntime,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0051D450 */
@@ -136,7 +136,7 @@ bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
 
 /* 0x00527740 */
 bool ArmyPlacementCollision_TestCurrentRuntime
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 /* 0x005278D0 */
 PlacementCandidateResult

@@ -16,8 +16,8 @@
    record of (commandCode << 8 | local player id) and three payload dwords. The queue holds 16 records;
    further commands are dropped. The lobby chat command (0x1540) is sent this way.
 */
-void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
+void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,CommandPayload payload1,
+          CommandPayload payload2,CommandPayload payload3)
 
 {
   uint32_t packedCommandAndPlayerId;
@@ -26,9 +26,9 @@ void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,Comma
   writeRecord = g_FrontendCommandQueueEnd;
   packedCommandAndPlayerId = commandCode << 8 | g_LocalPlayerRuntimeId;
   if (g_FrontendCommandQueueEnd < g_FrontendCommandQueueRecords + COMMAND_QUEUE_CAPACITY) { /* the end of the record buffer */
-    g_FrontendCommandQueueEnd->payloadDword04 = payloadDword04;
-    writeRecord->payloadDword08 = payloadDword08;
-    writeRecord->payloadDword0C = payloadDword0C;
+    g_FrontendCommandQueueEnd->payload3 = payload3;
+    writeRecord->payload2 = payload2;
+    writeRecord->payload1 = payload1;
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
     g_FrontendCommandQueueEnd++;
   }
@@ -84,8 +84,8 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
    INGAME_COMMAND_* handler offsets (relative to this function's address). The queue holds 16 records;
    further commands are dropped.
 */
-void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandPayloadDword0C payloadDword0C,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
+void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandPayload payload1,
+          CommandPayload payload2,CommandPayload payload3)
 
 {
   uint32_t packedCommandAndPlayerId;
@@ -94,9 +94,9 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
   writeRecord = g_InGameCommandQueueEnd;
   packedCommandAndPlayerId = commandCode << 8 | g_LocalPlayerRuntimeId;
   if (g_InGameCommandQueueEnd < g_InGameCommandQueueRecords + COMMAND_QUEUE_CAPACITY) { /* the end of the record buffer */
-    g_InGameCommandQueueEnd->payloadDword04 = payloadDword04;
-    writeRecord->payloadDword08 = payloadDword08;
-    writeRecord->payloadDword0C = payloadDword0C;
+    g_InGameCommandQueueEnd->payload3 = payload3;
+    writeRecord->payload2 = payload2;
+    writeRecord->payload1 = payload1;
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
     g_InGameCommandQueueEnd++;
   }
@@ -165,8 +165,8 @@ bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 
       nextRecord = record + 1;
       if (((commandHandlerAddress - INGAME_COMMAND_CODE_BASE) * 0x100 | g_LocalPlayerRuntimeId) ==
             record->packedCommandAndPlayerId &&
-          (payloadValue == record->payloadDword04 || payloadValue == record->payloadDword08 ||
-           payloadValue == record->payloadDword0C)) {
+          (payloadValue == record->payload3 || payloadValue == record->payload2 ||
+           payloadValue == record->payload1)) {
         return true;
       }
     }

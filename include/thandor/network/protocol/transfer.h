@@ -82,11 +82,11 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
           uint32_t unusedDispatchArg);
 
 /* 0x00545640 */
-void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04);
+void FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t senderPlayerId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
 /* 0x00545660 */
 void FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
-          (int playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04);
+          (int playerRuntimeId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
 /* 0x0054E230 */
 bool UiTransfer_SendDiscoveryProbe(void);

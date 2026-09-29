@@ -169,14 +169,14 @@ bool GameFactionRelations_EvaluateTransitionRules
 
 {
   uint8_t tokenOrFactionIndex;
-  InGameLevelConditionStorageView800 *levelConditionStorage;
+  InGameLevelConditionStorage *levelConditionStorage;
   uint32_t actualActiveMask;
   int remainingCount;
   uint32_t currentFactionBit;
   InGameScheduledConditionKind kindOrStackValue;
   uint8_t *expressionCursor;
   uint8_t movieVariant;
-  InGameConditionScheduleImageView480 *conditionCursor;
+  InGameConditionSchedule *conditionCursor;
   InGameEndConditionTriggerRecord8ReferenceView *triggerCursor;
 
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
@@ -276,7 +276,7 @@ bool GameFactionRelations_EvaluateTransitionRules
         conditionCursor->conditions[0].statusAndKind.kind =
              conditionCursor->conditions[0].statusAndKind.kind | kindOrStackValue & 1;
       }
-      conditionCursor = (InGameConditionScheduleImageView480 *)(conditionCursor->conditions + 1);
+      conditionCursor = (InGameConditionSchedule *)(conditionCursor->conditions + 1);
       remainingCount--;
     } while (remainingCount != 0);
     triggerCursor = (levelConditionStorage->schedule).triggers;
@@ -429,12 +429,12 @@ void PlayerPairList_InsertUnique
   uint32_t recordsRemaining;
   SelectionPlayerRuntimeBlock *playerRuntimeBlock;
   uint32_t appendRecordIndex;
-  InGameRuntimeRootImageC3E4 *inGameRuntimeRoot;
+  InGameRuntimeRoot *inGameRuntimeRoot;
   
   inGameRuntimeRoot = g_InGameRuntimeRoot;
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  recordsRemaining = playerRuntimeBlock->activePairCount8084;
-  pairRecordCursor = playerRuntimeBlock->pairRecords80_807F;
+  recordsRemaining = playerRuntimeBlock->markedCellCount;
+  pairRecordCursor = playerRuntimeBlock->markedCells;
   if (recordsRemaining < PLAYER_PAIR_LIST_CAPACITY) {
     for (; recordsRemaining != 0; recordsRemaining--) {
       if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
@@ -442,12 +442,12 @@ void PlayerPairList_InsertUnique
       }
       pairRecordCursor++;
     }
-    appendRecordIndex = playerRuntimeBlock->activePairCount8084;
-    playerRuntimeBlock->activePairCount8084++;
-    playerRuntimeBlock->pairRecords80_807F[appendRecordIndex].pairKey = worldXQ12;
-    playerRuntimeBlock->pairRecords80_807F[appendRecordIndex].pairValue = worldYQ12;
+    appendRecordIndex = playerRuntimeBlock->markedCellCount;
+    playerRuntimeBlock->markedCellCount++;
+    playerRuntimeBlock->markedCells[appendRecordIndex].pairKey = worldXQ12;
+    playerRuntimeBlock->markedCells[appendRecordIndex].pairValue = worldYQ12;
     if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-      inGameRuntimeRoot->localPlayerPairCount0BA4++;
+      inGameRuntimeRoot->localPlayerMarkedCellCount++;
     }
   }
   return;
@@ -470,12 +470,12 @@ void PlayerPairList_RemoveFirstMatch
   uint32_t recordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
   SelectionPlayerRuntimeBlock *playerRuntimeBlock;
-  InGameRuntimeRootImageC3E4 *inGameRuntimeRoot;
+  InGameRuntimeRoot *inGameRuntimeRoot;
   
   inGameRuntimeRoot = g_InGameRuntimeRoot;
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  recordsRemaining = playerRuntimeBlock->activePairCount8084;
-  pairRecordCursor = playerRuntimeBlock->pairRecords80_807F;
+  recordsRemaining = playerRuntimeBlock->markedCellCount;
+  pairRecordCursor = playerRuntimeBlock->markedCells;
   if (recordsRemaining < PLAYER_PAIR_LIST_CAPACITY) {
     for (; recordsRemaining != 0; recordsRemaining--) {
       if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
@@ -483,14 +483,14 @@ void PlayerPairList_RemoveFirstMatch
         copyTargetDword = (uint32_t *)pairRecordCursor;
         /* the records behind the match move down one dword at a time (REP MOVSD in the original) */
         trailingDwordsToMove = recordsRemaining * 2 - 2;
-        playerRuntimeBlock->activePairCount8084--;
+        playerRuntimeBlock->markedCellCount--;
         for (; trailingDwordsToMove != 0; trailingDwordsToMove--) {
           *copyTargetDword = *copySourceDword;
           copySourceDword++;
           copyTargetDword++;
         }
         if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-          inGameRuntimeRoot->localPlayerPairCount0BA4--;
+          inGameRuntimeRoot->localPlayerMarkedCellCount--;
         }
         return;
       }

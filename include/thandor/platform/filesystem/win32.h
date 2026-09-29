@@ -72,7 +72,7 @@ StatusResult Win32File_RemoveDirectory(uint16_t *path);
 Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode32 driveLetter);
 
 /* 0x005766B0 */
-DriveLetterEnumerationEaxEcx8 Win32Drive_EnumerateLetters(uint8_t *lettersOut);
+DriveLetterEnumeration Win32Drive_EnumerateLetters(uint8_t *lettersOut);
 
 /* 0x00576790 */
 bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi);

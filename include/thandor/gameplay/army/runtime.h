@@ -84,22 +84,22 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */
-void ArmyRuntimeClass_UpdateAircraft (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateAircraft (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView *modelRuntime);
 
 /* 0x00526620 */
-void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode (WorldRuntimeContext *worldRuntime, ModelRuntimeLinkedChildSpawnAndBuildView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode (WorldRuntimeContext *worldRuntime, ModelRuntimeLinkedChildSpawnAndBuildView *modelRuntime);
 
 /* 0x00524740 */
 void ArmyRuntimeClass_UpdateUnitFactory
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 /* 0x005240F0 */
 void ArmyRuntimeClass_UpdateStructureFactory
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 /* 0x00525020 */
 void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeClass14UpdateView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeClass14UpdateView *modelRuntime);
 
 /* 0x005274D0 */
 void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
@@ -120,7 +120,7 @@ void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
 ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath);
 
 /* 0x00528330 */
-void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy (WorldRuntimeContext *worldRuntime,ModelRuntimeDestroyEffectsView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy (WorldRuntimeContext *worldRuntime,ModelRuntimeDestroyEffectsView *modelRuntime);
 
 /* 0x00531130 */
 void ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
@@ -169,19 +169,19 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
 void ArmyRuntimePool_RebaseAfterLoad(void);
 
 /* 0x00520CF0 */
-void ArmyRuntimeClass_UpdateGroundPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime);
+void ArmyRuntimeClass_UpdateGroundPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView *armyRuntime);
 
 /* 0x00522B70 */
 void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00523E70 */
-void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProjectileView200 *modelRuntime, WorldOwnerListNode *candidateNode);
+void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProjectileView *modelRuntime, WorldOwnerListNode *candidateNode);
 
 /* 0x00523FC0 */
-void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedTargetProjectileView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedTargetProjectileView *modelRuntime);
 
 /* 0x00525960 */
-void ArmyRuntimeClass_UpdateWaterPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime);
+void ArmyRuntimeClass_UpdateWaterPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView *armyRuntime);
 
 /* 0x00526FE0 */
 ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeterRegs(ArmyRuntimeSlot *armyRuntime);
@@ -193,11 +193,11 @@ int ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyR
 void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x005283D0 */
-void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState (WorldRuntimeContext *worldRuntime,ModelRuntimeVerticalDeploymentView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState (WorldRuntimeContext *worldRuntime,ModelRuntimeVerticalDeploymentView *modelRuntime);
 
 /* 0x00529720 */
 bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
-          (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
+          (ShotTargetModelReference targetModelReference,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
           MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime);
@@ -282,10 +282,10 @@ ArmyRuntimeCreateResult ArmyRuntime_CreateInstanceFromAsset
 void ArmyRuntime_InitializeTerrainOccupancyFlags (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00527E70 */
-void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
+void ArmyRuntime_UpdateAnimatedModelSubnodes(WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 /* 0x00527C00 */
 void ArmyRuntime_UpdateTimedShotAndEffectEmitters
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_RUNTIME_H */

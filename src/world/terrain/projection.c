@@ -65,7 +65,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
   int centerCellIndex;
   FieldGridCell *wedgeCellA;
   FieldGridCell *wedgeCellB;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
   uint32_t gridRow;
   uint32_t gridColumn;
 
@@ -82,8 +82,8 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
     referenceHeight = g_TerrainScanReferenceHeight;
     baseColumn = gridCoordinates.columnQ12 >> 12;
     gridRow = gridCoordinates.rowQ12 >> 12;
-    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
+    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
@@ -163,7 +163,7 @@ bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
   FieldGridCell *wedgeCellA;
   FieldGridCell *wedgeCellB;
   FieldGridCell *fieldCell;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
   uint32_t gridRow;
   uint32_t gridColumn;
   
@@ -181,8 +181,8 @@ bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     baseColumn = gridCoordinates.columnQ12 >> 12;
     gridRow = gridCoordinates.rowQ12 >> 12;
-    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
+    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
@@ -256,7 +256,7 @@ bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
   FieldGridCell *wedgeCellA;
   FieldGridCell *wedgeCellB;
   FieldGridCell *fieldCell;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
   uint32_t gridRow;
   uint32_t gridColumn;
   
@@ -274,8 +274,8 @@ bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
     baseColumn = gridCoordinates.columnQ12 >> 12;
     gridRow = gridCoordinates.rowQ12 >> 12;
-    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
+    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
@@ -337,7 +337,7 @@ bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
    queues every grid quad between two rows of the spans as two triangles.
 */
 void TerrainProjectedGrid_TransformShadeAndQueue
-          (FieldGridAsset *fieldGrid,FrontendModelPointerContextRuntimeState17C *renderContext)
+          (FieldGridAsset *fieldGrid,FrontendModelPointerContext *renderContext)
 
 {
   FieldGridDimension gridWidth;
@@ -1474,7 +1474,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scan
 */
 void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
           (uint32_t rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
-          FrontendModelPointerContextRuntimeState17C *renderContext)
+          FrontendModelPointerContext *renderContext)
 
 {
   /* + rowStrideBytes: the vertex one row down */
@@ -1686,15 +1686,15 @@ void TerrainProjectedVertex_ReshadeKeepingProjection(TerrainProjectedVertexWorkR
    vertices have different materials, one or two blend triangles of the other materials follow. When any vertex
    lies under water (or WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY is set) and the secondary points can be
    visible, the secondary-surface triangle is queued as well. Along the way the cursor is picked: when it lies
-   inside the projected triangle and nearer than the best hit so far, the hit depth (callbackArgumentF0) and the
-   interpolated world X/Y (callbackArgumentE8/EC) are stored; the top byte of g_UiCommandModeGColorVariantLimit
+   inside the projected triangle and nearer than the best hit so far, the hit depth (surfaceHitDepth) and the
+   interpolated world X/Y (surfaceHitWorldX/EC) are stored; the top byte of g_UiCommandModeGColorVariantLimit
    chooses between the terrain (0) and the secondary surface. Skipped entirely when the OR of the three material
    bytes is 0xFF, which it always is when a vertex has no terrain.
 */
 void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
           (int surfacePacketIndex,TerrainProjectedVertexWorkRecord *vertex2,
           TerrainProjectedVertexWorkRecord *vertex1,TerrainProjectedVertexWorkRecord *vertex0,
-          FrontendModelPointerContextRuntimeState17C *renderContext)
+          FrontendModelPointerContext *renderContext)
 
 {
   GraphicsPrimitiveDispatchFlags *packetRenderFlags;
@@ -1720,7 +1720,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
   TerrainProjectedVertexWorkRecord *vertex2Projected;
   TerrainProjectedVertexWorkRecord *vertex1Projected;
   TerrainProjectedVertexWorkRecord *vertex0Projected;
-  FrontendModelPointerContextRuntimeState17C *savedRenderContext;
+  FrontendModelPointerContext *savedRenderContext;
   
   flagsOrClampedDepth0 = vertex0->projectionFlags | vertex1->projectionFlags | vertex2->projectionFlags;
   if ((flagsOrClampedDepth0 & TERRAIN_VERTEX_MATERIAL_MASK) != TERRAIN_VERTEX_MATERIAL_NONE) {
@@ -1738,24 +1738,24 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                             renderContext->cursorWorldXQ12);
         outsideTriangle = g_Triangle2DBarycentricOutside; /* the original's JC after the call */
         vertex0ViewDepth = (vertex0->viewPointA).z;
-        if ((!outsideTriangle) && ((int)vertex0ViewDepth < (int)renderContext->callbackArgumentF0)) {
-          renderContext->callbackArgumentF0 = vertex0ViewDepth;
+        if ((!outsideTriangle) && ((int)vertex0ViewDepth < (int)renderContext->surfaceHitDepth)) {
+          renderContext->surfaceHitDepth = vertex0ViewDepth;
           yOrTableIndexA = (vertex1->sourcePoint).y;
           yOrTableIndexB = (vertex0->sourcePoint).y;
           yOrTableIndexC = (vertex0->sourcePoint).y;
-          renderContext->callbackArgumentE8 =
+          renderContext->surfaceHitWorldX =
                (((vertex1->sourcePoint).x - (vertex0->sourcePoint).x) * barycentricWeights.weightVertexB_Q12 >>
                0xc) + (vertex0->sourcePoint).x;
-          renderContext->callbackArgumentEC =
+          renderContext->surfaceHitWorldY =
                ((yOrTableIndexA - yOrTableIndexB) * barycentricWeights.weightVertexB_Q12 >> 0xc) + yOrTableIndexC;
           yOrTableIndexA = (vertex2->sourcePoint).y;
           yOrTableIndexB = (vertex0->sourcePoint).y;
-          renderContext->callbackArgumentE8 =
-               renderContext->callbackArgumentE8 +
+          renderContext->surfaceHitWorldX =
+               renderContext->surfaceHitWorldX +
                (((vertex2->sourcePoint).x - (vertex0->sourcePoint).x) * barycentricWeights.weightVertexA_Q12 >>
                0xc);
-          renderContext->callbackArgumentEC =
-               renderContext->callbackArgumentEC +
+          renderContext->surfaceHitWorldY =
+               renderContext->surfaceHitWorldY +
                ((yOrTableIndexA - yOrTableIndexB) * barycentricWeights.weightVertexA_Q12 >> 0xc);
         }
       }
@@ -1893,24 +1893,24 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                             renderContext->cursorWorldXQ12);
         outsideTriangle = g_Triangle2DBarycentricOutside; /* the original's JC after the call */
         vertex0ViewDepth = (vertex0->viewPointB).z;
-        if ((!outsideTriangle) && ((int)vertex0ViewDepth < (int)renderContext->callbackArgumentF0)) {
-          renderContext->callbackArgumentF0 = vertex0ViewDepth;
+        if ((!outsideTriangle) && ((int)vertex0ViewDepth < (int)renderContext->surfaceHitDepth)) {
+          renderContext->surfaceHitDepth = vertex0ViewDepth;
           yOrTableIndexA = (vertex1->sourcePoint).y;
           yOrTableIndexB = (vertex0->sourcePoint).y;
           yOrTableIndexC = (vertex0->sourcePoint).y;
-          renderContext->callbackArgumentE8 =
+          renderContext->surfaceHitWorldX =
                (((vertex1->sourcePoint).x - (vertex0->sourcePoint).x) * barycentricWeights.weightVertexB_Q12 >>
                0xc) + (vertex0->sourcePoint).x;
-          renderContext->callbackArgumentEC =
+          renderContext->surfaceHitWorldY =
                ((yOrTableIndexA - yOrTableIndexB) * barycentricWeights.weightVertexB_Q12 >> 0xc) + yOrTableIndexC;
           yOrTableIndexA = (vertex2->sourcePoint).y;
           yOrTableIndexB = (vertex0->sourcePoint).y;
-          renderContext->callbackArgumentE8 =
-               renderContext->callbackArgumentE8 +
+          renderContext->surfaceHitWorldX =
+               renderContext->surfaceHitWorldX +
                (((vertex2->sourcePoint).x - (vertex0->sourcePoint).x) * barycentricWeights.weightVertexA_Q12 >>
                0xc);
-          renderContext->callbackArgumentEC =
-               renderContext->callbackArgumentEC +
+          renderContext->surfaceHitWorldY =
+               renderContext->surfaceHitWorldY +
                ((yOrTableIndexA - yOrTableIndexB) * barycentricWeights.weightVertexA_Q12 >> 0xc);
         }
       }

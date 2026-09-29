@@ -393,7 +393,7 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  armourSum = ((ModelDefinition *)selected.modelDefinition)->maximumHealth60;
+  armourSum = ((ModelDefinition *)selected.modelDefinition)->maximumHealth;
   for (childIndex = 0; childIndex < node->childCount; childIndex++) {
     ArmyModelTreeNode *child = node->children[childIndex];
     if (child != NULL) {
@@ -429,9 +429,9 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  energySum = ((ModelDefinition *)selected.modelDefinition)->energyLoadQ4_18C;
+  energySum = ((ModelDefinition *)selected.modelDefinition)->energyLoadQ4;
   childCount = node->childCount;
-  if ((((ModelDefinition *)selected.modelDefinition)->runtimeValue68 &
+  if ((((ModelDefinition *)selected.modelDefinition)->modelFlags &
        MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) == 0) {
     childCount = 0; /* only definitions with this flag contribute their children */
   }
@@ -633,7 +633,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
     renderResult = ArmyRuntime_RenderPreviewTexture
                       (INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
                        INGAME_UI(g_InGameRuntimeRoot,modePreviewPageStack)->layoutHeight,
-                       factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime0A30);
+                       factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime);
     if (renderResult.failed) {
       return 0;
     }

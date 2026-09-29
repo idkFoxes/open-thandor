@@ -56,7 +56,7 @@ void ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   uint32_t probeOccupancyMask;
   uint64_t tintProductWords;
   FixedDirection probeOffset;
-  TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
+  TerrainOccupancyResolvedMasks resolvedMasks;
   uint32_t combinedOccupancyMask;
   ShotRuntimeSlot *shotRuntime;
   
@@ -197,7 +197,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   TerrainRaycastResult surfaceRaycast;
   FixedVectorAngles targetAngles;
   ModelWorldPoint emitterWorldPoint;
-  FixedLengthAnglesEaxEcxEdx12 ballisticAngles;
+  FixedLengthAzimuthElevation ballisticAngles;
   FixedDirection directionOffset;
   EffectDefinition *effectDefinition;
   WorldRuntimeContext *effectWorldRuntime;
@@ -244,7 +244,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                            (emitterLookup.entry,(ModelRuntimeNode *)modelNode);
         emitterWorldYQ12 = emitterWorldPoint.yQ12;
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                    emitterWorldPoint.zQ12,emitterWorldYQ12,emitterWorldPoint.xQ12,effectDefinition,effectWorldRuntime);
       }
@@ -271,7 +271,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       /* hits on target classes and materials without an impact effect do not stop the shot */
       if ((armyRaycast.hit) &&
          (targetClassIndex = (nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime->
-                               definitionOrSavedId).runtimeDefinition->targetClassIndex5C,
+                               definitionOrSavedId).runtimeDefinition->targetClassIndex,
          shotRuntime->definitionOrSavedId.definition->targetClassImpactEffectDefinitions8
          [targetClassIndex] == NULL)) {
         frameAccumulatorOrDistance = MODEL_RAYCAST_NO_HIT_DISTANCE;
@@ -315,7 +315,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,secondaryHitDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                        directionOffset.z + modelNode->worldTransform.translation.z,
                        directionOffset.y + modelNode->worldTransform.translation.y,
@@ -348,7 +348,7 @@ HandleNearestArmyHitAndContinueMotion:
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
               EffectRuntimePool_CreateInstanceFromDefinition
-                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
                          -modelNode->modelPayload.worldRotationAngle1,
                          modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & 0xffff,
                          directionOffset.z + modelNode->worldTransform.translation.z,
@@ -375,8 +375,8 @@ HandleNearestArmyHitAndContinueMotion:
                               modelNode->modelPayload.worldRotationAngle0,terrainHitDistance);
           EffectRuntimePool_CreateInstanceFromDefinition
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4,
-                                     (ModelRuntimeNode *)(shotDefinition->terrainImpactEffectOwnerSlots31 +
+                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference,
+                                     (ModelRuntimeNode *)(shotDefinition->terrainImpactHeightDeltasQ12 +
                                                           terrainMaterialIndex)),
                      0,FIXED_ANGLE16_QUARTER_TURN,0,directionOffset.z + modelNode->worldTransform.translation.z,
                      directionOffset.y + modelNode->worldTransform.translation.y,
@@ -408,7 +408,7 @@ HandleNearestArmyHitAndContinueMotion:
       /* hits on target classes and materials without an impact effect do not stop the shot */
       if ((armyRaycast.hit) &&
          (targetClassIndex = (nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime->
-                               definitionOrSavedId).runtimeDefinition->targetClassIndex5C,
+                               definitionOrSavedId).runtimeDefinition->targetClassIndex,
          shotRuntime->definitionOrSavedId.definition->targetClassImpactEffectDefinitions8
          [targetClassIndex] == NULL)) {
         frameCountDistanceOrAge = MODEL_RAYCAST_NO_HIT_DISTANCE;
@@ -450,7 +450,7 @@ HandleNearestArmyHitAndContinueMotion:
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                        directionOffset.z + modelNode->worldTransform.translation.z,
                        directionOffset.y + modelNode->worldTransform.translation.y,
@@ -482,7 +482,7 @@ HandleNearestArmyHitAndTerminateProjectile:
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameCountDistanceOrAge);
               EffectRuntimePool_CreateInstanceFromDefinition
-                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
                          -modelNode->modelPayload.worldRotationAngle1,
                          modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & 0xffff,
                          directionOffset.z + modelNode->worldTransform.translation.z,
@@ -511,8 +511,8 @@ HandleNearestArmyHitAndTerminateProjectile:
                               movingTerrainHitDistance);
           EffectRuntimePool_CreateInstanceFromDefinition
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
-                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4,
-                                     (ModelRuntimeNode *)(shotDefinition->terrainImpactEffectOwnerSlots31 +
+                     THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference,
+                                     (ModelRuntimeNode *)(shotDefinition->terrainImpactHeightDeltasQ12 +
                                                           terrainMaterialIndex)),
                      0,FIXED_ANGLE16_QUARTER_TURN,0,directionOffset.z + modelNode->worldTransform.translation.z,
                      directionOffset.y + modelNode->worldTransform.translation.y,
@@ -547,7 +547,7 @@ HandleNearestArmyHitAndTerminateProjectile:
         if ((shotDefinition->guidanceTurnLimitAngle16 != 0) && (targetStateRecord != NULL)) {
           /* the target's root model node; for an aircraft its first child */
           workingValue = (int)((ModelRuntimeSlot *)targetStateRecord)->rootModelNodeOrSavedOffset.modelNode;
-          if (((ModelRuntimeSlot *)targetStateRecord)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C ==
+          if (((ModelRuntimeSlot *)targetStateRecord)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
               MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
             workingValue = (int)((ModelRuntimeNode *)workingValue)->childNodes[0];
           }

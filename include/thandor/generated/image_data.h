@@ -279,8 +279,8 @@ typedef struct ImageData_0041A53C {
     NetworkBackendSendCallback * at_g_NetworkBackendSlot5; /* 0041A560 g_NetworkBackendSlot5 */
     NetworkBackendParseEndpointCallback * at_g_NetworkBackendSlot6; /* 0041A564 g_NetworkBackendSlot6 */
     NetworkBackendFormatAddressCallback * at_g_NetworkBackendSlot7; /* 0041A568 g_NetworkBackendSlot7 */
-    UiTransferEndpointDescriptor at_g_NetworkLocalEndpointDescriptor16; /* 0041A56C g_NetworkLocalEndpointDescriptor16 */
-    uint32_t at_g_NetworkLocalEndpointDescriptor16_rest[1]; /* beyond the declared type */
+    UiTransferEndpointDescriptor at_g_NetworkLocalEndpoint; /* 0041A56C g_NetworkLocalEndpoint */
+    uint32_t at_g_NetworkLocalEndpoint_rest[1]; /* beyond the declared type */
 } ImageData_0041A53C;
 extern ImageData_0041A53C g_ImageData_0041A53C;
 
@@ -544,7 +544,7 @@ typedef struct ImageData_00422978 {
     uint8_t at_gap_00422978[40]; /* 00422978 gap */
     UiRootCallbacks at_g_UiDisplaySettingsRootCallbacks; /* 004229A0 g_UiDisplaySettingsRootCallbacks */
     DisplaySettingsUiImage at_g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
-    UiDisplayModeSelectionActionHandlerTable20 at_g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
+    UiDisplayModeSelectionActionHandlerTable at_g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch0; /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch1; /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch2; /* 004235E0 g_UiDisplayModeDistinctValueScratch2 */
@@ -692,11 +692,11 @@ typedef struct ImageData_004A8E60 {
     uint32_t at_g_GraphicsFramebufferCopyRegionToOrigin[1]; /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin */
     uint32_t at_g_GraphicsFramebufferCopyOriginToRegion[1]; /* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion */
     GraphicsTextureSourceLoadPackageAssetProc * at_g_GraphicsTextureSourceLoadPackageAsset; /* 004A8F3C g_GraphicsTextureSourceLoadPackageAsset */
-    GraphicsTextureSourceLifecycleCallbackTable3 at_g_GraphicsTextureSourceLifecycleCallbacks3; /* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
+    GraphicsTextureSourceLifecycleCallbackTable at_g_GraphicsTextureSourceLifecycleCallbacks3; /* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
     GraphicsTextureSourceConvertPaletteEntriesProc * at_g_GraphicsTextureSourceConvertPaletteEntries; /* 004A8F4C g_GraphicsTextureSourceConvertPaletteEntries */
     GraphicsTextureSourceResolveAllocationBaseProc * at_g_GraphicsTextureSourceResolveAllocationBase; /* 004A8F50 g_GraphicsTextureSourceResolveAllocationBase */
     GraphicsPaletteAssetLoadPackageProc * at_g_GraphicsPaletteAssetLoadPackage; /* 004A8F54 g_GraphicsPaletteAssetLoadPackage */
-    GraphicsPaletteAssetLifecycleCallbackTable3 at_g_GraphicsPaletteAssetLifecycleCallbacks3; /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
+    GraphicsPaletteAssetLifecycleCallbackTable at_g_GraphicsPaletteAssetLifecycleCallbacks3; /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
     GraphicsPaletteAssetValidateProc * at_g_GraphicsPaletteAssetValidate; /* 004A8F64 g_GraphicsPaletteAssetValidate */
     GraphicsPaletteAssetResolveAllocationBaseProc * at_g_GraphicsPaletteAssetResolveAllocationBase; /* 004A8F68 g_GraphicsPaletteAssetResolveAllocationBase */
     uint32_t at_g_GraphicsPaletteAssetResolveAllocationBase_rest[5]; /* beyond the declared type */
@@ -1133,7 +1133,7 @@ typedef struct ImageData_004CCDE8 {
     uint32_t at_g_GraphicsShadingGeneratedTextureCompletedTraversalCount; /* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
     int32_t at_g_GraphicsShadingPositiveGridOriginQ12; /* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
     int32_t at_g_GraphicsShadingNegativeGridOriginQ12; /* 004CCE44 g_GraphicsShadingNegativeGridOriginQ12 */
-    GeneratedTextureScratchRuntime1A8 at_g_GeneratedTextureScratchRuntime; /* 004CCE48 g_GeneratedTextureScratchRuntime */
+    GeneratedTextureScratchRuntime at_g_GeneratedTextureScratchRuntime; /* 004CCE48 g_GeneratedTextureScratchRuntime */
 } ImageData_004CCDE8;
 extern ImageData_004CCDE8 g_ImageData_004CCDE8;
 
@@ -1978,7 +1978,7 @@ extern ImageData_00537410 g_ImageData_00537410;
 /* original 0x0053795C-0x005379E0 */
 typedef struct ImageData_0053795C {
     uint8_t at_gap_0053795C[4]; /* 0053795C gap */
-    AiWorkspace00EntryView8 * at_g_AiWorkspace00Structures; /* 00537960 g_AiWorkspace00Structures */
+    AiStructureWorkspaceEntry * at_g_AiWorkspace00Structures; /* 00537960 g_AiWorkspace00Structures */
     uint32_t at_g_AiWorkspace00Count; /* 00537964 g_AiWorkspace00Count */
     AiRuntimeWorkspaceEntry * at_g_AiWorkspace01Units; /* 00537968 g_AiWorkspace01Units */
     uint32_t at_g_AiWorkspace01Count; /* 0053796C g_AiWorkspace01Count */
@@ -2111,13 +2111,13 @@ extern ImageData_0053D358 g_ImageData_0053D358;
 typedef struct ImageData_0053DA68 {
     uint8_t at_gap_0053DA68[8]; /* 0053DA68 gap */
     UiRootCallbacks at_g_UiRootCallbacks_0053DA70; /* 0053DA70 g_UiRootCallbacks_0053DA70 */
-    FrontendSessionDiscoveryRecordB0 ** at_g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
-    FrontendSessionDiscoveryRecordB0 * at_g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
+    FrontendSessionDiscoveryRecord ** at_g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
+    FrontendSessionDiscoveryRecord * at_g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
     FrontendUiImage at_g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
     FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeRecordPointers32[31]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
-    FrontendTaskAssignmentControlOffsetTablesA8 at_g_FrontendTaskAssignmentControlOffsets; /* 0054345C g_FrontendTaskAssignmentControlOffsets */
+    FrontendTaskAssignmentControlOffsetTables at_g_FrontendTaskAssignmentControlOffsets; /* 0054345C g_FrontendTaskAssignmentControlOffsets */
     uint32_t at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
-    FrontendUiSemanticScratch280 at_g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
+    FrontendUiScratch at_g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
     uint32_t at_g_FrontendUiDisplayModeAndTaskAssignmentScratch_rest[1]; /* beyond the declared type */
 } ImageData_0053DA68;
 extern ImageData_0053DA68 g_ImageData_0053DA68;
@@ -2169,7 +2169,7 @@ typedef struct ImageData_005456F0 {
     uint32_t at_g_FrontendCentralRomAsset; /* 00545774 g_FrontendCentralRomAsset */
     RomRegistrySlot * at_g_RomRegistrySlots; /* 00545778 g_RomRegistrySlots */
     WorldObjectRecord * at_g_FrontendWorldObjectRecords; /* 0054577C g_FrontendWorldObjectRecords */
-    FrontendLoadedLevelRuntimeImage370 * at_g_FrontendLoadedLevelAsset; /* 00545780 g_FrontendLoadedLevelAsset */
+    FrontendLoadedLevelAsset * at_g_FrontendLoadedLevelAsset; /* 00545780 g_FrontendLoadedLevelAsset */
     uint32_t at_g_FrontendMenuSoundVoiceSetTable100; /* 00545784 g_FrontendMenuSoundVoiceSetTable100 */
     uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1; /* 00545788 g_FrontendMenuSoundVoiceSetLoadBaseEntry1 */
     uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1_rest[98]; /* beyond the declared type */
@@ -2182,7 +2182,7 @@ typedef struct ImageData_005456F0 {
     uint32_t at_g_FrontendMusicVoiceSet; /* 0054592C g_FrontendMusicVoiceSet */
     uint32_t at_g_FrontendMusicActiveBuffer; /* 00545930 g_FrontendMusicActiveBuffer */
     uint32_t at_g_FrontendPendingPageActionDepth; /* 00545934 g_FrontendPendingPageActionDepth */
-    FrontendUiActionHandlerPage20Prefix86 at_g_FrontendUiActionHandlersPage20; /* 00545938 g_FrontendUiActionHandlersPage20 */
+    FrontendUiActionHandlerPage20Prefix at_g_FrontendUiActionHandlersPage20; /* 00545938 g_FrontendUiActionHandlersPage20 */
     ScenarioCatalogRefreshSelectedRecordCallback * at_g_FrontendScenarioMapOptionHandlerTable[3]; /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
     uint16_t at_u_engine_zentrale_rom_00545aa4[20]; /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
     uint16_t at_u_gfx_texturen_zentrale_gfx_00545acc[26]; /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
@@ -2419,7 +2419,7 @@ typedef struct ImageData_00562498 {
     uint32_t at_g_EndGameResultsCurrentMusicTrackId; /* 00563270 g_EndGameResultsCurrentMusicTrackId */
     uint32_t at_g_InGameNetworkTickCountdown; /* 00563274 g_InGameNetworkTickCountdown */
     uint32_t at_g_InGameStateTickSpinLock; /* 00563278 g_InGameStateTickSpinLock */
-    InGameRuntimeRootImageC3E4 * at_g_InGameRuntimeRoot; /* 0056327C g_InGameRuntimeRoot */
+    InGameRuntimeRoot * at_g_InGameRuntimeRoot; /* 0056327C g_InGameRuntimeRoot */
     GraphicsTextureSourceAsset * at_g_InGamePanelTextureSource; /* 00563280 g_InGamePanelTextureSource */
     uint32_t at_g_InGameDiagramTextureSource; /* 00563284 g_InGameDiagramTextureSource */
     uint32_t at_g_InGameTechnologyTextureSource; /* 00563288 g_InGameTechnologyTextureSource */
@@ -3833,7 +3833,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0041a560 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot5)
 #define THANDOR_IMAGE_0x0041a564 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot6)
 #define THANDOR_IMAGE_0x0041a568 ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkBackendSlot7)
-#define THANDOR_IMAGE_0x0041a56c ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkLocalEndpointDescriptor16)
+#define THANDOR_IMAGE_0x0041a56c ((uintptr_t)&g_ImageData_0041A53C.at_g_NetworkLocalEndpoint)
 #define THANDOR_IMAGE_0x0041a750 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette0Argb)
 #define THANDOR_IMAGE_0x0041a754 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette1Argb)
 #define THANDOR_IMAGE_0x0041a758 ((uintptr_t)&g_ImageData_0041A740.at_g_RichTextColorPalette2Argb)

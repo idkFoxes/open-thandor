@@ -38,54 +38,54 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payloadDword04);
+                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[0].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[0].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[0].payload3);
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[0].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[0].payloadDword04);
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[0].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[0].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[0].payload3);
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payloadDword04);
+                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[1].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[1].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[1].payload3);
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[1].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[1].payloadDword04);
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[1].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[1].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[1].payload3);
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payloadDword04);
+                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[2].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[2].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[2].payload3);
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[2].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[2].payloadDword04);
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[2].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[2].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[2].payload3);
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendPlayerMessageBuffer_AppendTripleById
-                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payloadDword04);
+                (g_LocalPlayerRuntimeId,g_UiSevenSlotCommandPayloadText.triples[3].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[3].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[3].payload3);
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand
-                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[3].payloadDword0C,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payloadDword08,
-                 g_UiSevenSlotCommandPayloadText.triples[3].payloadDword04);
+                (FRONTEND_COMMAND_CHAT_APPEND,g_UiSevenSlotCommandPayloadText.triples[3].payload1,
+                 g_UiSevenSlotCommandPayloadText.triples[3].payload2,
+                 g_UiSevenSlotCommandPayloadText.triples[3].payload3);
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -121,7 +121,7 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
           RuntimeToken modelToken)
 
 {
-  InGameRuntimeRootImageC3E4 *inGameRoot;
+  InGameRuntimeRoot *inGameRoot;
 
   /* note the crossed bases: modelToken is an army-slot offset, armyToken one from g_ModelRuntimeRebaseDelta */
   if ((((modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne != 0) &&
@@ -132,8 +132,8 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
     inGameRoot = g_InGameRuntimeRoot;
     if (playerIndex == g_LocalPlayerRuntimeId) {
       /* page 2 of the game window: the technology panel */
-      UiPageStack_SetActiveIndex(2,&g_InGameRuntimeRoot->gameWindowPageStack0BD0);
-      InGameTechnologyPanel_ResetAndSelectCurrentArea(&inGameRoot->rootUi0000);
+      UiPageStack_SetActiveIndex(2,&g_InGameRuntimeRoot->gameWindowPageStack);
+      InGameTechnologyPanel_ResetAndSelectCurrentArea(&inGameRoot->rootUi);
     }
     FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch(playerIndex,0,0,armyToken);
   }
@@ -274,7 +274,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 
 /* Address: 0x00514EF0.
-   Tells whether any player other than excludedPlayerId has assignmentToken recorded in assignmentToken80A0
+   Tells whether any player other than excludedPlayerId has assignmentToken recorded in technologyPageBuilding
    (see FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch); the in-game HUD uses it to decide whether the
    technology window of a selected object is offered. CF set when such a player exists.
 */
@@ -288,7 +288,7 @@ bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   while ((playerBlock->playerRuntimeId == excludedPlayerId ||
-         (g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId]->assignmentToken80A0 !=
+         (g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId]->technologyPageBuilding !=
           assignmentToken))) {
     playerBlock++;
     remainingBlocks--;
@@ -315,8 +315,8 @@ void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentTo
   do {
     if (assignmentToken ==
         g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId]->
-        assignmentToken80A0) {
-      g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId]->assignmentToken80A0
+        technologyPageBuilding) {
+      g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId]->technologyPageBuilding
            = 0;
     }
     playerBlockCursor++;
@@ -490,9 +490,9 @@ void FrontendPlayerRuntime_MarkTaskAssignmentReadyById
    No handler is called directly: only network clients send it.
 */
 void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
-          (PlayerRuntimeId playerId,FrontendPlayerValue8C scenarioAvailabilityMask2,
-          FrontendPlayerValue88 scenarioAvailabilityMask1,
-          FrontendPlayerValue84 scenarioAvailabilityMask0)
+          (PlayerRuntimeId playerId,FrontendScenarioAvailabilityMask2 scenarioAvailabilityMask2,
+          FrontendScenarioAvailabilityMask1 scenarioAvailabilityMask1,
+          FrontendScenarioAvailabilityMask0 scenarioAvailabilityMask0)
 
 {
   FrontendRoleStateFlags *roleFlags;
@@ -526,7 +526,7 @@ void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
 void FrontendPlayerRuntime_InitializeFactionAssignments(void)
 
 {
-  FrontendLoadedLevelRuntimeImage370 *loadedLevel;
+  FrontendLoadedLevelAsset *loadedLevel;
   uint32_t activeRemaining;
   uint32_t factionSlot;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -535,8 +535,8 @@ void FrontendPlayerRuntime_InitializeFactionAssignments(void)
 
   loadedLevel = g_FrontendLoadedLevelAsset;
   factionSlot = 1; /* slot 0 is not a player faction */
-  activeRemaining = g_FrontendLoadedLevelAsset->runtimeTail2E0.activeFactionCount;
-  assignableRemaining = g_FrontendLoadedLevelAsset->runtimeTail2E0.assignableFactionCount;
+  activeRemaining = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
+  assignableRemaining = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
   /* the assignable factions come first, the remaining active (computer-only) ones follow */
   do {
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionSlot] = FACTION_RUNTIME_LIFECYCLE_ACTIVE;
@@ -564,8 +564,8 @@ void FrontendPlayerRuntime_InitializeFactionAssignments(void)
     playerBlock->factionAssignment.consensusValue = 0;
     factionSlot++;
     playerBlock++;
-    if (loadedLevel->runtimeTail2E0.assignableFactionCount < factionSlot) {
-      factionSlot = factionSlot - loadedLevel->runtimeTail2E0.assignableFactionCount;
+    if (loadedLevel->worldSettings.assignableFactionCount < factionSlot) {
+      factionSlot = factionSlot - loadedLevel->worldSettings.assignableFactionCount;
     }
     remainingBlocks--;
   } while (remainingBlocks != 0);
@@ -593,7 +593,7 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
             (FRONTEND_PAGE_HOST_GAME_SETUP,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   sessionTickInterval = g_SessionNetworkTickInterval;
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
@@ -921,7 +921,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
 
 {
   GameEntityRuntime *selectionEntry;
-  InGameRuntimeRootImageC3E4 *node;
+  InGameRuntimeRoot *node;
   int memberOrEntryRemaining;
   int scanRemaining;
   int entriesRemaining;
@@ -960,7 +960,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
       sourceCursor = (SelectionPlayerRuntimeBlock *)(destCursor->selection.entries + 1);
     } while (entriesRemaining != 0);
     /* back to the first selection entry (the typed expression is Ghidra's): selection -> group */
-    sourceCursor = (SelectionPlayerRuntimeBlock *)&destCursor[-1].packedSelectionState809C;
+    sourceCursor = (SelectionPlayerRuntimeBlock *)&destCursor[-1].chatRecipientMaskAndWriteOffset;
     destCursor = groupOrScanCursor;
   }
   entriesRemaining = SELECTION_GROUP_ENTRY_COUNT;
@@ -1018,10 +1018,10 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
       averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
       if (!averagePosition.unresolved) {
         WorldRuntime_PointCameraAtTarget
-                  (node->worldRuntime0A30.motion.pitchAngle,
-                   node->worldRuntime0A30.motion.headingAngle,
-                   node->worldRuntime0A30.motion.committedDistanceQ12,averagePosition.worldZQ12,
-                   averagePosition.worldYQ12,averagePosition.worldXQ12,&node->worldRuntime0A30);
+                  (node->worldRuntime.motion.pitchAngle,
+                   node->worldRuntime.motion.headingAngle,
+                   node->worldRuntime.motion.committedDistanceQ12,averagePosition.worldZQ12,
+                   averagePosition.worldYQ12,averagePosition.worldXQ12,&node->worldRuntime);
       }
     }
   }
@@ -1032,7 +1032,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
 /* Address: 0x00560830.
    Handler of INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE, sent when the technology page of a selected building closes:
    modelOffset is the building's record as an offset from g_ModelRuntimeRebaseDelta. While the record is live the
-   player's assignmentToken80A0 is cleared, then a positive technologyIndexOrRestore starts that research
+   player's technologyPageBuilding is cleared, then a positive technologyIndexOrRestore starts that research
    (Technology_ApplyRecordToEntity, InGameTechnologyResearch_StartSelected), a negative one (cancel,
    InGameCommandAction_ClearSelectedArmyTokenAndClosePage) gives back the flag 0x80 that
    FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch took away when the page opened, and 0 does neither.
@@ -1050,11 +1050,11 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
   if ((modelOffset != 0) &&
      (entity = (GameEntityRuntime *)(modelOffset + g_ModelRuntimeRebaseDelta),
      entity->common.ownership.modelNode != NULL)) {
-    playerBlock->assignmentToken80A0 = 0;
+    playerBlock->technologyPageBuilding = 0;
     if (technologyIndexOrRestore != 0) {
       if ((int)technologyIndexOrRestore < 0) {
         entityFlags = &entity->common.runtimeFlags;
-        *entityFlags = *entityFlags | playerBlock->assignmentFlags80A4;
+        *entityFlags = *entityFlags | playerBlock->heldResearchUnpaidFlag;
       }
       else {
         Technology_ApplyRecordToEntity(technologyIndexOrRestore,entity);
@@ -1068,20 +1068,20 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
 /* Address: 0x005608A0.
    Handler of INGAME_COMMAND_CHAT_SET_RECIPIENTS, the first command of an in-game chat line
    (InGameChatInput_SendLineOrCheckCheatPhrase): stores the recipient mask (bits 8+faction and 16+player, 0xFFFFFF00 for all)
-   in the player's packedSelectionState809C and resets the staging write offset in its low byte to 0.
+   in the player's chatRecipientMaskAndWriteOffset and resets the staging write offset in its low byte to 0.
 */
 void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,
           FrontendPackedTextCommandState packedState)
 
 {
-  g_SelectionPlayerRuntimeBlockPointers[playerIndex]->packedSelectionState809C = packedState;
+  g_SelectionPlayerRuntimeBlockPointers[playerIndex]->chatRecipientMaskAndWriteOffset = packedState;
   return;
 }
 
 
 /* Address: 0x005608D0.
    Handler of INGAME_COMMAND_CHAT_APPEND: writes 12 more bytes of the player's chat line (value0 first) into the
-   staging text at +0x80C0, at the write offset kept in the low byte of packedSelectionState809C, and advances
+   staging text at +0x80C0, at the write offset kept in the low byte of chatRecipientMaskAndWriteOffset, and advances
    the offset. The offset stops at 0x24, the last of the four 12-byte pieces of the 0x30-byte line, so extra
    pieces overwrite it instead of running past the buffer.
 */
@@ -1094,16 +1094,16 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
   uint32_t nextOffset;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  writeOffset = playerBlock->packedSelectionState809C & 0xff;
-  *(FrontendTextCommandValue0 *)(playerBlock->chatStagingText80C0 + writeOffset) = value0;
-  *(FrontendTextCommandValue1 *)(playerBlock->chatStagingText80C0 + writeOffset + 4) = value1;
+  writeOffset = playerBlock->chatRecipientMaskAndWriteOffset & 0xff;
+  *(FrontendTextCommandValue0 *)(playerBlock->chatStagingText + writeOffset) = value0;
+  *(FrontendTextCommandValue1 *)(playerBlock->chatStagingText + writeOffset + 4) = value1;
   nextOffset = writeOffset + PLAYER_CHAT_PIECE_BYTES;
-  playerBlock->packedSelectionState809C = playerBlock->packedSelectionState809C & 0xffffff00;
+  playerBlock->chatRecipientMaskAndWriteOffset = playerBlock->chatRecipientMaskAndWriteOffset & 0xffffff00;
   if (PLAYER_CHAT_LAST_PIECE_OFFSET < nextOffset) {
     nextOffset = PLAYER_CHAT_LAST_PIECE_OFFSET;
   }
-  *(FrontendTextCommandValue2 *)(playerBlock->chatStagingText80C0 + writeOffset + 8) = value2;
-  playerBlock->packedSelectionState809C = playerBlock->packedSelectionState809C | nextOffset;
+  *(FrontendTextCommandValue2 *)(playerBlock->chatStagingText + writeOffset + 8) = value2;
+  playerBlock->chatRecipientMaskAndWriteOffset = playerBlock->chatRecipientMaskAndWriteOffset | nextOffset;
   return;
 }
 
@@ -1123,20 +1123,20 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
   TextResolveResult messageText;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  if ((((playerBlock->packedSelectionState809C &
-        1 << ((char)(g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex + 8U & 0x1f))
+  if ((((playerBlock->chatRecipientMaskAndWriteOffset &
+        1 << ((char)(g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex + 8U & 0x1f))
         != 0) ||
-      ((playerBlock->packedSelectionState809C &
-       1 << ((char)(g_InGameRuntimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId + 0x10U &
+      ((playerBlock->chatRecipientMaskAndWriteOffset &
+       1 << ((char)(g_InGameRuntimeRoot->worldRuntime).selection.activePlayerRuntimeId + 0x10U &
             0x1f)) != 0)) &&
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
     /* +0x80C0: the 0x30 staged bytes, widened into a 0x60-byte buffer */
     Text_CopyNarrowToUtf16
-              (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText80C0);
+              (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText);
     messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
     stream = messageText.text;
-    RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->playerNameUtf16_80F0,stream);
+    RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->playerNameUtf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
     InGameRecentTextHistory_InsertAndRebuild8(stream);
   }
@@ -1163,7 +1163,7 @@ void FrontendPlayerSelection_ApplyEntryOrAll
 
   selectionCursor = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   targetEntity = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
-  worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
+  worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   remainingEntries = 0x20;
   /* SelectionPointerArray_Contains sets CF (true) when the army is NOT in the selection */
   notInSelection = SelectionPointerArray_Contains(targetEntity,&selectionCursor->selection);
@@ -1484,7 +1484,7 @@ void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsR
           /* REP MOVSD of one 0x13B0-byte player block */
           for (copyRemaining = sizeof(FrontendPlayerRuntimeRecord) / sizeof(uint32_t); copyRemaining != 0;
                copyRemaining--) {
-            nextDestBlock->runtimeState00 = nextSourceBlock->runtimeState00;
+            nextDestBlock->reserved00 = nextSourceBlock->reserved00;
             nextSourceBlock = (FrontendPlayerRuntimeRecord *)&nextSourceBlock->peerSequenceToken;
             nextDestBlock = (FrontendPlayerRuntimeRecord *)&nextDestBlock->peerSequenceToken;
           }
@@ -1534,8 +1534,8 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 /* Address: 0x005607E0.
    Handler of INGAME_COMMAND_ASSIGN_ARMY_TOKEN: turns modelOffset (the offset from g_ModelRuntimeRebaseDelta of
    the building whose technology page opened) back into a pointer and, if it is live (dword +4 non-zero),
-   records it for the player in assignmentToken80A0. Its ARMY_MODEL_STATE_RESEARCH_UNPAID flag (bit 0x80 of
-   the state flags at +0xEC) is moved into assignmentFlags80A4 and cleared on the building until the page
+   records it for the player in technologyPageBuilding. Its ARMY_MODEL_STATE_RESEARCH_UNPAID flag (bit 0x80 of
+   the state flags at +0xEC) is moved into heldResearchUnpaidFlag and cleared on the building until the page
    closes.
 */
 void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
@@ -1551,8 +1551,8 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
      (army = (ModelRuntimeSlot *)(modelOffset + g_ModelRuntimeRebaseDelta),
       army->rootModelNodeOrSavedOffset.modelNode != NULL)) {
     armyFlags = army->classState.stateFlags;
-    playerBlock->assignmentToken80A0 = (uint32_t)army;
-    playerBlock->assignmentFlags80A4 = armyFlags & 0x80;
+    playerBlock->technologyPageBuilding = (uint32_t)army;
+    playerBlock->heldResearchUnpaidFlag = armyFlags & 0x80;
     army->classState.stateFlags = army->classState.stateFlags & ~0x80;
   }
   return;

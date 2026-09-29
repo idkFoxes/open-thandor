@@ -33,7 +33,7 @@ void ShotRuntime_RebaseSlotsAfterLoad(void);
 
 /* 0x0052BDB0 */
 void ShotRuntimePool_CreateProjectileFromDefinition
-          (ShotRuntimeState14 shotRuntimeState14,ArmyRuntimeSlot *ownerArmyRuntime,
+          (ShotTargetModelReference targetModelReference,ArmyRuntimeSlot *ownerArmyRuntime,
           Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,Q12 launchWorldZQ12,
           Q12 launchWorldYQ12,Q12 launchWorldXQ12,ShotDefinition *shotDefinition,
           WorldRuntimeContext *worldRuntime);

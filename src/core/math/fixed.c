@@ -17,13 +17,13 @@
    of the product again. Used by the army movement code to add a local rotation to a heading.
    Returns EAX = azimuth, EBX = elevation, EDX = roll of the composed rotation.
 */
-FixedEulerAnglesEaxEbxEdx12 FixedTransform_ComposeEulerAnglesRegs
+FixedAzimuthElevationRoll FixedTransform_ComposeEulerAnglesRegs
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2)
 
 {
-  FixedEulerAnglesEaxEcxEdx12 extractedAngles;
-  FixedEulerAnglesEaxEbxEdx12 composedAngles;
+  FixedRollAzimuthElevation extractedAngles;
+  FixedAzimuthElevationRoll composedAngles;
   
   FixedTransform_BuildRotationBasis(&g_ModelTransformScratchMatrix,basisAngle0,basisAngle1,basisAngle2);
   FixedTransform_BuildRotationBasis(&g_FixedTransformInputRotationScratch,inputAngle0,inputAngle1,inputAngle2);
@@ -31,9 +31,9 @@ FixedEulerAnglesEaxEbxEdx12 FixedTransform_ComposeEulerAnglesRegs
                          &g_ModelTransformScratchMatrix);
   extractedAngles = FixedTransform_ExtractEulerAnglesRegs(&g_FixedTransformComposedRotationScratch);
   /* extracted EAX = roll, ECX = azimuth, EDX = elevation, rotated into EDX, EAX, EBX */
-  composedAngles.angle2 = extractedAngles.eaxAngle;
-  composedAngles.angle0 = (int)THANDOR_PART(uint64_t, extractedAngles, 4);
-  composedAngles.angle1 = (int)((uint64_t)THANDOR_PART(uint64_t, extractedAngles, 4) >> 32);
+  composedAngles.rollAngle = extractedAngles.rollAngle;
+  composedAngles.azimuthAngle = (int)THANDOR_PART(uint64_t, extractedAngles, 4);
+  composedAngles.elevationAngle = (int)((uint64_t)THANDOR_PART(uint64_t, extractedAngles, 4) >> 32);
   return composedAngles;
 }
 
@@ -43,7 +43,7 @@ FixedEulerAnglesEaxEbxEdx12 FixedTransform_ComposeEulerAnglesRegs
    and the azimuth within that plane. Returned in registers: EAX = length, EDX = elevation, ECX = azimuth (low
    16 bits); squares are summed in 64 bits so Q12 components cannot overflow.
 */
-FixedLengthAnglesEaxEcxEdx12
+FixedLengthAzimuthElevation
 FixedMath_VectorToAnglesAndLength3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
@@ -52,7 +52,7 @@ FixedMath_VectorToAnglesAndLength3Regs
   uint32_t elevationAngle;
   uint32_t azimuthAngle;
   uint32_t vectorLengthQ12;
-  FixedLengthAnglesEaxEcxEdx12 lengthAnglesResult;
+  FixedLengthAzimuthElevation lengthAnglesResult;
   int64_t planeSquaredLengthQ24;
   int64_t totalSquaredLengthQ24;
 
@@ -75,14 +75,14 @@ FixedMath_VectorToAnglesAndLength3Regs
    Returns EAX = length, EDX = elevation, ECX = azimuth (low 16 bits); squares are summed in 64 bits.
    Used by the shot maintenance code for ballistic angles.
 */
-FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
+FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
 
 {
   uint32_t horizontalLengthQ12;
   uint32_t elevationAngleResult;
   uint32_t azimuthAngle16;
   uint32_t vectorLengthQ12;
-  FixedLengthAnglesEaxEcxEdx12 lengthAnglesResult;
+  FixedLengthAzimuthElevation lengthAnglesResult;
   int y;
   int x;
   int64_t totalSquaredLengthQ24;
@@ -110,13 +110,13 @@ FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsF
    turn), EAX = floor(sqrt(component0^2 + component1^2)). Used by the army movement and combat code and the
    shot catalog for planar headings and distances.
 */
-FixedLengthAngleEaxEdx8 FixedMath_Vector2AngleAndLengthRegs
+FixedLengthAngle FixedMath_Vector2AngleAndLengthRegs
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1)
 
 {
   uint32_t vectorAngle16;
   uint32_t vectorLengthQ12;
-  FixedLengthAngleEaxEdx8 lengthAngle;
+  FixedLengthAngle lengthAngle;
 
   vectorAngle16 = FixedMath_Atan2Angle16(component0,component1);
   vectorLengthQ12 = FixedMath_Length2(component0,component1);
@@ -131,13 +131,13 @@ FixedLengthAngleEaxEdx8 FixedMath_Vector2AngleAndLengthRegs
    EAX = x, ECX = y, EDX = z. The parameters are in the original's stack order (z first). Works through the
    shared model-transform scratch globals; used by the model hierarchy for view-relative vectors.
 */
-FixedVectorEaxEcxEdx12
+FixedVectorQ12
 FixedTransform_ApplyEulerRotationToVectorRegs
           (Q12 inputZQ12,Q12 inputYQ12,Q12 inputXQ12,AngleTurn32 rotationAngle0,
           AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  FixedVectorEaxEcxEdx12 rotatedVector;
+  FixedVectorQ12 rotatedVector;
   
   FixedTransform_BuildRotationBasis(&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,rotationAngle2);
   g_ModelTransformInputX = inputXQ12;
@@ -184,7 +184,7 @@ void FixedVector_StepBackwardAlongOwnDirection
    joint of s0 and s1). The height over the base comes from 64-bit sums of squares; when the triangle cannot
    close or the base is at most 0x10, both angles are 0 when s0 < s2 (unsigned) and 0x8000 (half turn) otherwise.
 */
-FixedTriangleJointAnglesEaxEdx8 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
+FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
 
 {
   int64_t projectionOrHeightSquared;
@@ -196,8 +196,8 @@ FixedTriangleJointAnglesEaxEdx8 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 s
   uint32_t firstAngle16;
   AngleTurn32 fallbackAngle0;
   AngleTurn32 fallbackAngle1;
-  FixedTriangleJointAnglesEaxEdx8 solvedAngles;
-  FixedTriangleJointAnglesEaxEdx8 fallbackAngles;
+  FixedTriangleJointAngles solvedAngles;
+  FixedTriangleJointAngles fallbackAngles;
   int64_t cosineNumerator0;
   
   projectionOrSquaredLow = (int)(((int64_t)sideLength0Q12 * (int64_t)sideLength0Q12 -
@@ -304,14 +304,14 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
    EAX = x, ECX = y, EDX = z instead of the core's EAX/EBX/EDX (MOV ECX,EBX), keeping EBX. Used by the model
    hierarchy.
 */
-FixedVectorEaxEcxEdx12
+FixedVectorQ12
 FixedTransform_RotateDirectionScaledRegs
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  FixedVectorEaxEcxEdx12 rotatedVector;
-  FixedVectorXEaxYEbxZEdx12 coreRotatedVector;
+  FixedVectorQ12 rotatedVector;
+  FixedVectorQ12 coreRotatedVector;
   
   coreRotatedVector = FixedTransform_RotateDirectionScaledCoreRegs
                     (directionScale,elevationAngle,azimuthAngle,rotationAngle0,rotationAngle1,
@@ -702,12 +702,12 @@ FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 
    rotation basis of the three rotation angles and returns it in EAX = x, EBX = y, EDX = z. Works through the
    shared model-transform scratch globals; called only by FixedTransform_RotateDirectionScaledRegs.
 */
-FixedVectorXEaxYEbxZEdx12 FixedTransform_RotateDirectionScaledCoreRegs
+FixedVectorQ12 FixedTransform_RotateDirectionScaledCoreRegs
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2)
 
 {
-  FixedVectorXEaxYEbxZEdx12 rotatedVector;
+  FixedVectorQ12 rotatedVector;
   
   FixedTransform_BuildRotationBasis(&g_ModelTransformScratchMatrix,rotationAngle0,rotationAngle1,rotationAngle2);
   FixedMath_WriteDirectionScaled
@@ -759,24 +759,24 @@ FixedElevationAzimuth FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector
    (EDX) and azimuth (ECX) from the third column and the roll (EAX) from the upper 2x2 block. Used to turn
    a composed suspension rotation back into a model node's local angles.
 */
-FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform)
+FixedRollAzimuthElevation FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 {
   uint32_t rollAngle16;
   uint32_t rollMinusTwoAzimuth16;
   FixedVectorAngles forwardAngles;
-  FixedEulerAnglesEaxEcxEdx12 eulerAngles;
+  FixedRollAzimuthElevation eulerAngles;
 
   forwardAngles = FixedMath_VectorToAngles3Regs
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
-  eulerAngles.edxAngle = forwardAngles.elevationAngle;
-  eulerAngles.ecxAngle = forwardAngles.azimuthAngle;
+  eulerAngles.elevationAngle = forwardAngles.elevationAngle;
+  eulerAngles.azimuthAngle = forwardAngles.azimuthAngle;
   if ((int)forwardAngles.elevationAngle < 0) { /* TEST EDX,EDX: elevation sign */
     /* for a negative elevation the 2x2 block yields roll - 2 * azimuth */
     rollMinusTwoAzimuth16 = FixedMath_Atan2Angle16
                       (transform->basisRow1[0] + transform->basisRow0[1],
                        transform->basisRow1[1] - transform->basisRow0[0]);
-    rollAngle16 = (rollMinusTwoAzimuth16 + eulerAngles.ecxAngle * 2) & FIXED_ANGLE16_MASK;
+    rollAngle16 = (rollMinusTwoAzimuth16 + eulerAngles.azimuthAngle * 2) & FIXED_ANGLE16_MASK;
   }
   else {
     rollAngle16 =
@@ -784,7 +784,7 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
                    (transform->basisRow1[0] - transform->basisRow0[1],
                     transform->basisRow1[1] + transform->basisRow0[0]);
   }
-  eulerAngles.eaxAngle = rollAngle16;
+  eulerAngles.rollAngle = rollAngle16;
   return eulerAngles;
 }
 

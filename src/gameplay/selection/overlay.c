@@ -49,7 +49,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
   GameEntityRuntime *commandTargetEntity;
   
   pendingPlacementAsset = g_InGamePendingPlacementArmyAsset;
-  if (((worldRuntime->interaction).interactionFlags48 & 8) != 0) {
+  if (((worldRuntime->interaction).nodeFlags & 8) != 0) {
     return;
   }
   if ((worldRuntime->runtimeFlags & 0x10) != 0) {
@@ -131,7 +131,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
         currentModelNode->tintArgb = previewTint;
         recordOrCount = *classRecord;
         ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
-        if (((((ModelDefinition *)recordOrCount)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) &&
+        if (((((ModelDefinition *)recordOrCount)->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
             (3 < currentModelNode->childCount)) &&
            (currentModelNode->childNodes[3] != NULL)) {
           /* class-13 armies keep child node 3 opaque */
@@ -157,7 +157,7 @@ RefreshMarkers:
       do {
         if (((modelNodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (armySlot = (modelNodeCursor->runtimePayload).armyRuntime,
-            armySlot->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13)) &&
+            armySlot->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)) &&
            (((armySlot->runtimeFlags & ARMY_MODEL_STATE_RALLY_POINT_SET) != 0 &&
             ((armySlot->linkedEntityRuntime->common).ownership.ownerIndex ==
              worldRuntime->activeFactionRuntimeIndex)))) {
@@ -165,7 +165,7 @@ RefreshMarkers:
                              (armySlot->movementTarget1Q12,armySlot->movementTarget0Q12,
                               worldRuntime->fieldGrid);
           createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
-                             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
                               0x4000,0,surfaceHeight.heightQ12,armySlot->movementTarget1Q12,
                               armySlot->movementTarget0Q12,markerDefinition.definitionOrError,worldRuntime);
           if (!createdEffect.failed) {
@@ -185,7 +185,7 @@ RefreshMarkers:
       targetDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0149_ETARG0);
       if (!targetDefinition.notFound) {
         /* the markers use scale 0x1000 (1.0 in Q12) except at an army target, which uses the target's own
-           marker scale (its definition's placementRadiusOrClearanceDC); at most OVERLAY_COMMAND_TARGET_MARKER_CAPACITY markers */
+           marker scale (its definition's footprintRadius); at most OVERLAY_COMMAND_TARGET_MARKER_CAPACITY markers */
         recordOrCount = 0x20; /* selection-info slots */
         selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
         do {
@@ -193,7 +193,7 @@ RefreshMarkers:
           if ((entityRuntime != NULL) &&
              (worldRuntime->activeFactionRuntimeIndex == (entityRuntime->common).ownership.ownerIndex)) {
             if ((((ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-                 runtimeDefinition->accelerationPerTick18 != 0)
+                 runtimeDefinition->accelerationPerTick != 0)
                && (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_ACTIVE) != 0)) {
               InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                         (0x1000,(entityRuntime->common).ownership.modelNode,
@@ -233,7 +233,7 @@ RefreshMarkers:
                (currentModelNode = (commandTargetEntity->common).ownership.modelNode,
                InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                          (((ModelRuntimeSlot *)(commandTargetEntity->common).ownership.definitionOrClassRecord)->
-                          definitionOrSavedId.runtimeDefinition->placementRadiusOrClearanceDC,
+                          definitionOrSavedId.runtimeDefinition->footprintRadius,
                           (entityRuntime->common).ownership.modelNode,
                           (currentModelNode->worldTransform).translation.y,
                           (currentModelNode->worldTransform).translation.x,targetDefinition.definitionOrError,
@@ -448,7 +448,7 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinat
    Draws the SELECTION_OVERLAY_MARKER_GRID_POINT marker centred on the screen position of each of markerPointCount
    grid coordinate pairs: each pair is converted to a world point, snapped to the nearest terrain point and
    projected; points off the field or not beyond the near plane are skipped. Called by
-   FrontendModelPointerContext_RenderWorldViewQueuesClipped with its terrainMarkerCoordinatePairs170 when context
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped with its terrainMarkerCoordinatePairs when context
    flag 0x200000 is set.
 */
 void SelectionOverlay_DrawTerrainPointMarkers
@@ -517,8 +517,8 @@ void SelectionOverlay_DrawTerrainPointMarkers
 /* Address: 0x0052F5A0.
    Draws the SELECTION_OVERLAY_MARKER_WORLD_POINT marker centred on the projected nearest terrain point (or top
    surface point when useTopSurface is nonzero) of a world position; nothing when it is off the field. Called by
-   FrontendModelPointerContext_RenderWorldViewQueuesClipped with the point in its callbackArgumentEC/E8 when
-   context flag 0x100000 is set and callbackArgumentF0 is not WORLD_POINTER_NO_HIT; useTopSurface is set when the
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped with the point in its surfaceHitWorldY/X when
+   context flag 0x100000 is set and surfaceHitDepth is not WORLD_POINTER_NO_HIT; useTopSurface is set when the
    high byte of g_UiCommandModeGColorVariantLimit is nonzero.
 */
 void SelectionOverlay_DrawWorldPointMarker
@@ -610,7 +610,7 @@ void SelectionOverlay_DrawGridVertexMarkers
     columnCount = gridColumns >> 2;
     rowsRemaining = fieldGrid->gridHeight >> 2;
     /* &fieldGrid->cells[gridColumns + 1]: row 1, column 1 (0x200-byte header, then 0x80-byte cells) */
-    vertexCursor = fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 + gridColumns * 0x80 + -0x28;
+    vertexCursor = fieldGrid[1].common.buildMetadata.reserved28_2F + gridColumns * 0x80 + -0x28;
     columnsRemaining = columnCount;
     rowStart = vertexCursor;
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
@@ -733,7 +733,7 @@ void SelectionOverlay_DrawFluidExclusionMarkers
    Marks the field cells that support Xenite or Tritium: SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE when the cell
    supports the resource selectedResourceIndex picks (0 Xenite, 1 Tritium), SELECTION_OVERLAY_MARKER_OTHER_RESOURCE
    when it supports the other one, at the cell's projected point A. Called by
-   FrontendModelPointerContext_RenderWorldViewQueuesClipped with the low byte of its overlayMarkerStateB4 when
+   FrontendModelPointerContext_RenderWorldViewQueuesClipped with the low byte of its selectedResourceMarkerIndex when
    context flag 0x2000000 is set.
 */
 void SelectionOverlay_DrawResourceCellMarkers
@@ -998,7 +998,7 @@ void InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
     surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                       (worldYQ12,worldXQ12,((WorldRuntimeContext *)inGameRuntime)->fieldGrid);
     createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,0x4000,0,
                        surfaceHeight.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
     g_InGameCommandTargetTransientEffectMarkers[markerSlotIndex] = createdEffect.effectRuntime;
     markerModelNode = ((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode;

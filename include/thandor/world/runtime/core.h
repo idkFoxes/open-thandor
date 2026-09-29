@@ -46,7 +46,7 @@
 #define WORLD_RUNTIME_FLAG_SOUND_LISTENER 0x10000
 /* WorldOwnerListNode.runtimeFlags bit: the node is linked into its world's owner list. */
 #define WORLD_OWNER_NODE_LINKED 0x80000000
-/* Range of the auxiliary elevation angle (fieldRegion.regionHeight) set by WorldRuntime_AdjustFieldOriginWrappedClamped */
+/* Range of the auxiliary elevation angle (fieldRegion.auxiliaryElevationAngle) set by WorldRuntime_AdjustFieldOriginWrappedClamped */
 #define WORLD_AUXILIARY_ELEVATION_MINIMUM (-0x4000) /* a quarter turn down */
 #define WORLD_AUXILIARY_ELEVATION_MAXIMUM (-0x1000)
 /* Smallest camera magnitude WorldRuntime_SetCameraAnglesAndMagnitudeClamped accepts (0.25 in Q12) */
@@ -64,7 +64,7 @@ void WorldRuntime_SetCameraPositionKeepingTarget
 
 /* 0x0050D150 */
 void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-          (WorldMotionValue78 value78,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
+          (WorldMotionValue78 projectionShift,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
           ,WorldRuntimeContext *runtime);
 
 /* 0x0050D1E0 */
@@ -93,7 +93,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 w
 
 /* 0x0050A610 */
 bool WorldRuntimeNode_IsPositionInsideBounds
-          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl);
+          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl);
 
 /* 0x0050D260 */
 void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime);
@@ -121,10 +121,10 @@ void WorldRuntime_ClearFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world);
 
 /* 0x0050D610 */
-WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world);
+WorldCameraPosition WorldRuntime_GetVector0Regs(WorldRuntimeContext *world);
 
 /* 0x0050D630 */
-WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world);
+WorldCameraOrientation WorldRuntime_GetVector1Regs(WorldRuntimeContext *world);
 
 /* 0x0050D650 */
 WorldFlagsResult WorldRuntime_GetFlags(WorldRuntimeContext *world);
@@ -177,11 +177,11 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
 
 /* 0x005233F0 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass5
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 /* 0x00523400 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass6
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 /* 0x00527B70 */
 void UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
@@ -194,7 +194,7 @@ uint32_t UnifiedRuntimeDefault_OneArgReturnZero(void *context);
 
 /* 0x00527BE0 */
 bool UnifiedRuntimeDefault_TwoArgSuccess
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime);
 
 /* 0x00527BF0 */
 void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);

@@ -19,7 +19,7 @@
    factionWeightRaster, each showing the stat table sample at x / width of the game so far.
 */
 void FrontendResultsTable_DrawColumnSequenceByType(int clipTop,int clipLeft,int clipBottom,int clipRight,
-          FrontendResultsColumnSequenceControl68 *control)
+          FrontendResultsColumnSequenceControl *control)
 
 {
   UiPixelCoordinate drawY;
@@ -196,7 +196,7 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipTop,int clipLeft,int 
       do {
         control->factionWeightRaster
                   (control->base.bottom,control->base.top,pixelColumn + control->base.left,
-                   (FrontendResultsFactionWeightPair8 *)
+                   (FrontendResultsFactionWeightPair *)
                    ((int)(((uint64_t)pixelColumn * (uint64_t)historySampleCount) /
                          (uint64_t)(uint32_t)(control->base).layoutWidth) * RESULTS_STAT_SAMPLE_BYTES +
                     (int)statTableImage));
@@ -230,7 +230,7 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 */
 void FrontendResultsGraph_DrawFactionWeightSumColumn
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
-          FrontendResultsFactionWeightPair8 *factionWeights)
+          FrontendResultsFactionWeightPair *factionWeights)
 
 {
   uint32_t packedColor;
@@ -290,7 +290,7 @@ void FrontendResultsGraph_DrawFactionWeightSumColumn
 */
 void FrontendResultsGraph_DrawFactionWeightLane0Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
-          FrontendResultsFactionWeightPair8 *factionWeights)
+          FrontendResultsFactionWeightPair *factionWeights)
 
 {
   uint32_t packedColor;
@@ -347,7 +347,7 @@ void FrontendResultsGraph_DrawFactionWeightLane0Column
 */
 void FrontendResultsGraph_DrawFactionWeightLane1Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
-          FrontendResultsFactionWeightPair8 *factionWeights)
+          FrontendResultsFactionWeightPair *factionWeights)
 
 {
   uint32_t packedColor;
@@ -662,7 +662,7 @@ void FrontendResultsTable_DrawPlayerColumn
 {
   int offsetOrRowY;
   uint32_t factionIndex;
-  FrontendPlayerNameUtf16_28 *playerNameCursor;
+  FrontendPlayerNameUtf16 *playerNameCursor;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   int nameDrawX;
   int coordinateOrAdvance;
@@ -708,7 +708,7 @@ void FrontendResultsTable_DrawPlayerColumn
           coordinateOrAdvance = coordinateOrAdvance + 0x1a;
         }
         /* next player block */
-        playerNameCursor = playerNameCursor + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16_28);
+        playerNameCursor = playerNameCursor + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
         remainingBlocks--;
       } while (remainingBlocks != 0);
       coordinateOrAdvance = rowMetrics->rowAdvancePixels;

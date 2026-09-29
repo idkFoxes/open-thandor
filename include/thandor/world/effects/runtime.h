@@ -33,7 +33,7 @@ void EffectRuntime_RebaseSlotsAfterLoad(void);
 
 /* 0x0051E4A0 */
 EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
-          (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference4 ownerRuntime,
+          (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
           Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,
           WorldRuntimeContext *worldRuntime);

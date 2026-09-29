@@ -53,19 +53,18 @@ StatusResult InGameSaveGame_CreatePackage(void *packagePath)
   header[0xd] = 0;
   header[0xe] = 1;
   header[0xf] = 0;
-  /* three date/time pairs all set to now; as in GlideCapture the time goes to the dateValue fields (the lower
-     dword of each pair) and the date to the timeValue fields */
+  /* three time/date pairs all set to now */
   packedTimeOrDate = g_LocaleGetPackedCurrentTime();
-  ((PckArchiveHeader *)header)->dateValue0 = packedTimeOrDate;
-  ((PckArchiveHeader *)header)->dateValue1 = packedTimeOrDate;
-  ((PckArchiveHeader *)header)->dateValue2 = packedTimeOrDate;
-  packedTimeOrDate = g_LocaleGetPackedCurrentDate();
   ((PckArchiveHeader *)header)->timeValue0 = packedTimeOrDate;
   ((PckArchiveHeader *)header)->timeValue1 = packedTimeOrDate;
   ((PckArchiveHeader *)header)->timeValue2 = packedTimeOrDate;
+  packedTimeOrDate = g_LocaleGetPackedCurrentDate();
+  ((PckArchiveHeader *)header)->dateValue0 = packedTimeOrDate;
+  ((PckArchiveHeader *)header)->dateValue1 = packedTimeOrDate;
+  ((PckArchiveHeader *)header)->dateValue2 = packedTimeOrDate;
   g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->producerName);
   g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->sourceName);
-  header[0x100] = 0;
+  header[0x100] = 0; /* unusedText: empty */
   /* +0xB0 entryCount = 0 */
   header[0xb0] = 0;
   header[0xb1] = 0;
@@ -365,7 +364,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
 
 {
   EffectRuntimeCompletionAction slotCompletionAction;
-  EffectDefinitionReferenceOrSavedId4 serializedDefinitionId;
+  EffectDefinitionReferenceOrSavedId serializedDefinitionId;
   int clearDwordsRemaining;
   int runtimeSlotsRemaining;
   ModelRuntimeNode *ownerModelNode;
@@ -410,7 +409,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
          (int)g_RuntimeObjectRebaseBaseMinusOne);
     runtimeSlotCursor->completionAction = slotCompletionAction;
     serializedDefinitionId =
-         THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId4,
+         THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId,
                          runtimeSlotCursor->definitionOrSavedId.definition->definitionId);
     runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
          ownerModelNode;
@@ -433,7 +432,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
 ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
 
 {
-  ShotDefinitionReferenceOrSavedId4 serializedDefinitionId;
+  ShotDefinitionReferenceOrSavedId serializedDefinitionId;
   void *runtimeStateRef;
   int clearDwordsRemaining;
   int runtimeSlotsRemaining;
@@ -478,7 +477,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
          (int)g_RuntimeObjectRebaseBaseMinusOne);
     runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer = runtimeStateRef;
     serializedDefinitionId =
-         THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId4,
+         THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId,
                          runtimeSlotCursor->definitionOrSavedId.definition->definitionId);
     runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
     runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
@@ -499,9 +498,9 @@ void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *r
 
 {
   LevelPlayerSlotByteOffset32 playerSlotByteOffset;
-  InGameLevelConditionStorageView800 *levelConditionStorage;
-  WorldVector1EaxEcxEdx12 cameraOrientation;
-  WorldVector0EaxEcxEdx12 cameraPosition;
+  InGameLevelConditionStorage *levelConditionStorage;
+  WorldCameraOrientation cameraOrientation;
+  WorldCameraPosition cameraPosition;
   LevelPlayerSlotRecord *playerSlot;
   
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;

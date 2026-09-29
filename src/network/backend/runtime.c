@@ -126,7 +126,7 @@ void FrontendNetwork_HandleHandshakeAndPlayerStatePackets
   if ((((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_SOURCE_AVAILABLE) != 0) &&
       ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0)) &&
      (packetChunkOffset == playerRecord->snapshotChunkOffset)) {
-    sourceDword = &packet->command10011Or10021.command.payloadDword08;
+    sourceDword = &packet->command10011Or10021.command.payload2;
     payloadCursor = playerRecord->snapshotPayload + packetChunkOffset;
     dwordCount = UI_TRANSFER_CHUNK_PAYLOAD_BYTES / sizeof(uint32_t);
     if (packetChunkOffset == FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET) {
@@ -266,8 +266,8 @@ bool FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
                      (FRONTEND_COMMAND_CODE_BASE,FRONTEND_COMMAND_HANDLER_REGION_END,commandHandlerIndex);
       if (commandHandler != NULL) {
         (*commandHandler)
-                  (packedCommandOrDwordCount & 0xff,commandRecord->command.payloadDword0C,
-                   commandRecord->command.payloadDword08,commandRecord->command.payloadDword04);
+                  (packedCommandOrDwordCount & 0xff,commandRecord->command.payload1,
+                   commandRecord->command.payload2,commandRecord->command.payload3);
       }
     }
     remainingPlayerCount = g_FrontendPlayerRuntimeBlockCount;
@@ -372,7 +372,7 @@ void FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-      ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRootBase,menuRoomModelView))->contextFlags &=
+      ((FrontendModelPointerContext *)FRONTEND_UI(frontendRootBase,menuRoomModelView))->contextFlags &=
            ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
       g_FrontendRomTransitionPageAction = 0;
@@ -466,9 +466,9 @@ bool FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           if (commandHandler != NULL) {
             (*commandHandler)
                       (packet->command10011Or10021.command.packedCommandAndPlayerId & 0xff,
-                       packet->command10011Or10021.command.payloadDword0C,
-                       packet->command10011Or10021.command.payloadDword08,
-                       packet->command10011Or10021.command.payloadDword04);
+                       packet->command10011Or10021.command.payload1,
+                       packet->command10011Or10021.command.payload2,
+                       packet->command10011Or10021.command.payload3);
           }
         }
         packet = (FrontendTransferPacketUnion *)(&packet->command10011Or10021 + 1);

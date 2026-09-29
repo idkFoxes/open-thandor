@@ -107,11 +107,11 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
 
 /* 0x00561FF0 */
 void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
-          PlayerState8090Value placementFactionIndex);
+          PlacementFactionIndex placementFactionIndex);
 
 /* 0x00562020 */
 void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
-          PlayerState8094Value armyToken);
+          PlacedArmyToken armyToken);
 
 /* 0x005622C0 */
 void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,

@@ -139,7 +139,7 @@ ShotDefinitionResult ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionI
    pass the points in Z, Y, X order (Z = height). Called directly by the weapon aiming code (gameplay/army/combat.c,
    movement.c, runtime.c) and the shot launch in world/shots/runtime.c.
 */
-ShotLaunchAnglesEaxEdx8 ShotDefinition_ComputeLaunchAnglesRegs
+ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
           (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition)
 
@@ -150,10 +150,10 @@ ShotLaunchAnglesEaxEdx8 ShotDefinition_ComputeLaunchAnglesRegs
   int heightDelta;
   uint32_t computedElevation;
   uint32_t computedHeading;
-  ShotLaunchAnglesEaxEdx8 clampedAngles;
-  ShotLaunchAnglesEaxEdx8 fixedRangeAngles;
-  FixedLengthAngleEaxEdx8 planarLengthAngle;
-  ShotLaunchAnglesEaxEdx8 launchAngles;
+  ShotLaunchAngles clampedAngles;
+  ShotLaunchAngles fixedRangeAngles;
+  FixedLengthAngle planarLengthAngle;
+  ShotLaunchAngles launchAngles;
   FixedVectorAngles vectorAngles;
 
   heightDelta = targetZ - launchZ;

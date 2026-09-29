@@ -70,7 +70,7 @@ bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
 
 /* 0x00500F50 */
 void TerrainProjectedGrid_TransformShadeAndQueue
-          (FieldGridAsset *fieldGrid,FrontendModelPointerContextRuntimeState17C *renderContext);
+          (FieldGridAsset *fieldGrid,FrontendModelPointerContext *renderContext);
 
 /* 0x005066D0 */
 void TerrainProjectedOcclusion_TraceWedge0(uint64_t occupancyMaskBits,
@@ -141,7 +141,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scan
 /* 0x00500CE0 */
 void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
           (uint32_t rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
-          FrontendModelPointerContextRuntimeState17C *renderContext);
+          FrontendModelPointerContext *renderContext);
 
 /* 0x005004A0 */
 void TerrainProjectedVertex_TransformProjectAndShade(TerrainProjectedVertexWorkRecord *vertex);
@@ -153,7 +153,7 @@ void TerrainProjectedVertex_ReshadeKeepingProjection(TerrainProjectedVertexWorkR
 void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
           (int surfacePacketIndex,TerrainProjectedVertexWorkRecord *vertex2,
           TerrainProjectedVertexWorkRecord *vertex1,TerrainProjectedVertexWorkRecord *vertex0,
-          FrontendModelPointerContextRuntimeState17C *renderContext);
+          FrontendModelPointerContext *renderContext);
 
 /* 0x00500D30 */
 void TerrainProjectedGrid_ClipRowSpansAgainstPlane(FieldGridAsset *fieldGrid,GraphicsFixedVec3 *planeNormal);

@@ -36,7 +36,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
   if (candidateDefinition == NULL) {
     return 0;
   }
-  runtimeClassId = ((ModelDefinition *)candidateDefinition)->runtimeClassId4C;
+  runtimeClassId = ((ModelDefinition *)candidateDefinition)->runtimeClassId;
   if (runtimeClassId != MODEL_RUNTIME_CLASS_01_GROUND) {
     if (runtimeClassId != MODEL_RUNTIME_CLASS_21_AIRCRAFT && runtimeClassId != MODEL_RUNTIME_CLASS_02_TRACKED &&
         runtimeClassId != MODEL_RUNTIME_CLASS_03_ARTICULATED_WALKER &&
@@ -94,7 +94,7 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
 {
   AiWorkspaceRuntimeSlotAddress32 runtimeSlotAddress;
   int remainingCount;
-  AiWorkspace00EntryView8 *workspaceEntry;
+  AiStructureWorkspaceEntry *workspaceEntry;
 
   workspaceEntry = g_AiWorkspace00Structures;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
@@ -102,7 +102,7 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
     if (((runtimeSlotAddress != 0) &&
         ((((ModelRuntimeSlot *)runtimeSlotAddress)->classState.stateFlags &
           (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) != 0)) &&
-       (technologyIndex == ((ModelRuntimeSlot *)runtimeSlotAddress)->researchTechnologyId100)) {
+       (technologyIndex == ((ModelRuntimeSlot *)runtimeSlotAddress)->researchTechnologyId)) {
       return true;
     }
     workspaceEntry++;
@@ -164,7 +164,7 @@ AiTechnologyPlanning_AddCandidateRecord
   AiTechnologyPlanningCandidate *candidateBuffer;
   AiTechnologyPlanningCandidateCount candidateIndex;
   AiTechnologyPlanningLoopRegisterContinuityResult continuityResult;
-  MdlDefinitionSemanticPrefix80 *sourceArmyModelDefinition;
+  MdlDefinitionSemanticPrefix *sourceArmyModelDefinition;
   
   candidateIndex = g_AiWorkspace12Count;
   candidateBuffer = g_AiWorkspace12TechnologyCandidates;
@@ -175,7 +175,7 @@ AiTechnologyPlanning_AddCandidateRecord
     g_AiWorkspace12Count++;
     /* each test passed raises the score kind by one; the first match stops the chain */
     sourceArmyModelDefinition =
-         (MdlDefinitionSemanticPrefix80 *)
+         (MdlDefinitionSemanticPrefix *)
          (sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
     if ((((technologyId != TEC_216_WALL) &&
          (((technologyId != TEC_217_HIGH_WALL &&

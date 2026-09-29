@@ -43,7 +43,7 @@ FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId)
   void *levelRecordCursor;
   void *campaignRecordCursor;
   uint8_t *transferSourceBytes;
-  FrontendLoadedLevelRuntimeImage370 *loadedLevelAsset;
+  FrontendLoadedLevelAsset *loadedLevelAsset;
   FrontendPlayerRuntimeRecord *roleScanBlock;
   FrontendSnapshotTransferFlags *receivedFlagsCursor;
   uint32_t *transferDwordCursor;
@@ -206,7 +206,7 @@ nextFrame:
           UiTransferMailbox_SetOutgoingBuffer(0,NULL);
         }
         FrontendScenarioSelectionPage_InitializeAndApplyMapOption
-                  ((FrontendScenarioSelectionPageView26C4 *)g_FrontendRootNode);
+                  ((FrontendScenarioSelectionPageView *)g_FrontendRootNode);
         g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
         goto nextFrame;
       }
@@ -256,7 +256,7 @@ nextFrame:
           if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_START_SESSION) {
             PersistentSettings_Flush();
             sessionRunResult = InGameRuntime_RunSessionUntilExit
-                               ((LevelAssetRuntimeImagePrefix370 *)g_FrontendLoadedLevelAsset,0,
+                               ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,0,
                                 (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
             FatalError_ExitIfFailed(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
             PersistentSettings_Flush();
@@ -312,7 +312,7 @@ advanceCampaign:
           if (g_FrontendPendingPageAction == FRONTEND_PAGE_ACTION_RESUME_SAVED_SESSION) {
             /* unlike FRONTEND_PAGE_ACTION_START_SESSION the settings are not flushed before the session */
             sessionRunResult = InGameRuntime_RunSessionUntilExit
-                               ((LevelAssetRuntimeImagePrefix370 *)g_FrontendLoadedLevelAsset,1,
+                               ((LevelAssetRuntimePrefix *)g_FrontendLoadedLevelAsset,1,
                                 (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
             FatalError_ExitIfFailed(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
             PersistentSettings_Flush();
@@ -374,9 +374,9 @@ loadSelectedLevel:
       g_FrontendLoadedLevelAsset = NULL;
       packageLoadResult = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16);
       checkedResult = FatalError_ExitIfFailed((uint32_t)packageLoadResult.bufferOrError,packageLoadResult.failed);
-      g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
+      g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedResult.valueOrError;
       encodeCursorOrSize = g_FrontendLoadedLevelAsset->header.common.buildMetadata.
-                assetRelativeAddressAnchor28 +
+                reserved28_2F +
                 (g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid -
                 0x28);
       /* the field grid file: the level's path with the extension "fld", under the executable directory */
@@ -444,7 +444,7 @@ rebuildMenu:
 /* Address: 0x0050C380.
    Pointer-move handler of the model pointer context (pointerMove of g_FrontendModelPointerContextVtable): stores
    the best model hit under the pointer, then returns the cursor frame. While a non-right button is held
-   (ROUTE_TO_SECONDARY_CALLBACK) resolvedActionCallback108 decides it, with no button resolvedActionCallback104;
+   (ROUTE_TO_SECONDARY_CALLBACK) heldButtonCursorCallback decides it, with no button hoverCursorCallback;
    while the right button drags the camera (ROUTE_TO_BUILTIN_ACTION_RESOLUTION) the frame shows the camera
    motion FrontendModelPointerContext_DispatchWorldCameraPointerInput will perform for the camera scheme bits,
    the left button and the modifier keys (1 move, 0x0F pitch, 0x10 heading and pitch, 0x11 distance, 0x25
@@ -452,7 +452,7 @@ rebuildMenu:
 */
 GraphicsCursorFrameIndex
 FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
-          (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context)
+          (int pointerY,int pointerX,FrontendModelPointerHitContext *context)
 
 {
   uint32_t callbackResult;
@@ -463,11 +463,11 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   context->selectedHitMetric = (int)bestHit;
   context->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK) != 0) {
-    if (context->resolvedActionCallback108 != NULL)
+    if (context->heldButtonCursorCallback != NULL)
     {
-      callbackResult = context->resolvedActionCallback108
-                        (context->callbackArgumentF0,context->callbackArgumentEC,
-                         context->callbackArgumentE8,context->selectedHitMetric,
+      callbackResult = context->heldButtonCursorCallback
+                        (context->surfaceHitDepth,context->surfaceHitWorldY,
+                         context->surfaceHitWorldX,context->selectedHitMetric,
                          context->selectedModelNode,context);
       return callbackResult;
     }
@@ -475,11 +475,11 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
   }
   if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION) ==
       0) {
-    if (context->resolvedActionCallback104 != NULL)
+    if (context->hoverCursorCallback != NULL)
     {
-      callbackResult = context->resolvedActionCallback104
-                        (context->callbackArgumentF0,context->callbackArgumentEC,
-                         context->callbackArgumentE8,context->selectedHitMetric,
+      callbackResult = context->hoverCursorCallback
+                        (context->surfaceHitDepth,context->surfaceHitWorldY,
+                         context->surfaceHitWorldX,context->selectedHitMetric,
                          context->selectedModelNode,context);
       return callbackResult;
     }
@@ -566,32 +566,32 @@ FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction
 /* Address: 0x0050C5A0.
    Press of a non-right button on the model pointer context (nonRightPress of
    g_FrontendModelPointerContextVtable): remembers the press point (corner of the drag frame), stores the best
-   model hit, routes the following pointer moves to resolvedActionCallback108 and reports the press to
-   resolvedActionCallback10C.
+   model hit, routes the following pointer moves to heldButtonCursorCallback and reports the press to
+   buttonPressCallback.
 */
 void FrontendModelPointerContext_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext)
+          FrontendModelPointerContext *callbackContext)
 
 {
   uint64_t bestHit;
   
-  callbackContext->scratchCoordinate160 = pointerX;
-  callbackContext->scratchCoordinate164 = pointerY;
+  callbackContext->dragFrameStartX = pointerX;
+  callbackContext->dragFrameStartY = pointerY;
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
-                    (pointerY,pointerX,(FrontendModelPointerContextRuntimeState118 *)callbackContext
+                    (pointerY,pointerX,(FrontendModelPointerHitContext *)callbackContext
                     );
   callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
   callbackContext->contextFlags =
        callbackContext->contextFlags | FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
-  if (callbackContext->resolvedActionCallback10C !=
+  if (callbackContext->buttonPressCallback !=
       NULL) {
-    callbackContext->resolvedActionCallback10C
-              (callbackContext->callbackArgumentF0,callbackContext->callbackArgumentEC,
-               callbackContext->callbackArgumentE8,callbackContext->selectedHitMetric,
+    callbackContext->buttonPressCallback
+              (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
+               callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
                callbackContext->selectedModelNode,
-               (FrontendModelPointerContextRuntimeState118 *)callbackContext);
+               (FrontendModelPointerHitContext *)callbackContext);
   }
   return;
 }
@@ -600,11 +600,11 @@ void FrontendModelPointerContext_NonRightPress
 /* Address: 0x0050C610.
    Release of a non-right button on the model pointer context (nonRightRelease of
    g_FrontendModelPointerContextVtable): stores the best model hit, routes pointer moves back to the hover
-   callback and reports the release to resolvedActionCallback114.
+   callback and reports the release to buttonReleaseCallback.
 */
 void FrontendModelPointerContext_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState118 *callbackContext)
+          FrontendModelPointerHitContext *callbackContext)
 
 {
   uint64_t bestHit;
@@ -615,11 +615,11 @@ void FrontendModelPointerContext_NonRightRelease
   callbackContext->selectedHitMetric = (int)bestHit;
   callbackContext->contextFlags =
        callbackContext->contextFlags & ~FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK;
-  if (callbackContext->resolvedActionCallback114 !=
+  if (callbackContext->buttonReleaseCallback !=
       NULL) {
-    callbackContext->resolvedActionCallback114
-              (callbackContext->callbackArgumentF0,callbackContext->callbackArgumentEC,
-               callbackContext->callbackArgumentE8,callbackContext->selectedHitMetric,
+    callbackContext->buttonReleaseCallback
+              (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
+               callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
                callbackContext->selectedModelNode,callbackContext);
   }
   return;
@@ -629,29 +629,29 @@ void FrontendModelPointerContext_NonRightRelease
 /* Address: 0x0050C670.
    Drag with a non-right button on the model pointer context (nonRightDrag of
    g_FrontendModelPointerContextVtable): remembers the current point (the other corner of the drag frame),
-   stores the best model hit and reports the drag to resolvedActionCallback110.
+   stores the best model hit and reports the drag to buttonDragCallback.
 */
 void FrontendModelPointerContext_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext)
+          FrontendModelPointerContext *callbackContext)
 
 {
   uint64_t bestHit;
   
-  callbackContext->scratchCoordinate168 = pointerX;
-  callbackContext->scratchCoordinate16C = pointerY;
+  callbackContext->dragFrameEndX = pointerX;
+  callbackContext->dragFrameEndY = pointerY;
   bestHit = FrontendModelPointerContext_FindBestEligibleModelHitTarget
-                    (pointerY,pointerX,(FrontendModelPointerContextRuntimeState118 *)callbackContext
+                    (pointerY,pointerX,(FrontendModelPointerHitContext *)callbackContext
                     );
   callbackContext->selectedModelNode = (ModelRuntimeNode *)(bestHit >> 32);
   callbackContext->selectedHitMetric = (int)bestHit;
-  if (callbackContext->resolvedActionCallback110 !=
+  if (callbackContext->buttonDragCallback !=
       NULL) {
-    callbackContext->resolvedActionCallback110
-              (callbackContext->callbackArgumentF0,callbackContext->callbackArgumentEC,
-               callbackContext->callbackArgumentE8,callbackContext->selectedHitMetric,
+    callbackContext->buttonDragCallback
+              (callbackContext->surfaceHitDepth,callbackContext->surfaceHitWorldY,
+               callbackContext->surfaceHitWorldX,callbackContext->selectedHitMetric,
                callbackContext->selectedModelNode,
-               (FrontendModelPointerContextRuntimeState118 *)callbackContext);
+               (FrontendModelPointerHitContext *)callbackContext);
   }
   return;
 }
@@ -666,7 +666,7 @@ void FrontendModelPointerContext_NonRightDrag
 void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
 
 {
-  CommandPayloadDword04 rowIndex;
+  CommandPayload rowIndex;
   
   rowIndex = 0;
   do {
@@ -696,7 +696,7 @@ void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
 void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
 
 {
-  CommandPayloadDword04 rowIndex;
+  CommandPayload rowIndex;
   
   rowIndex = 0;
   do {
@@ -726,7 +726,7 @@ void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
 void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
 
 {
-  CommandPayloadDword04 rowIndex;
+  CommandPayload rowIndex;
   
   rowIndex = 0;
   do {
@@ -754,7 +754,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
 */
 void FrontendModelPointerContext_Relocate
                (UiSerializedRelocationDelta relocationDelta,
-               FrontendModelPointerContextRuntimeState17C *control)
+               FrontendModelPointerContext *control)
 
 {
   control->targetPositionXQ12 = 0;
@@ -774,8 +774,8 @@ void FrontendModelPointerContext_Relocate
   if (control->maximumDistanceOrSurfaceLimitQ12 == 0) {
     control->maximumDistanceOrSurfaceLimitQ12 = 0x7f000;
   }
-  control->contextValue58 = 0;
-  control->objectCountOrFrontendStateAC = 0;
+  control->worldObjectArray = 0;
+  control->worldObjectCount = 0;
   control->candidateModelListHead = NULL;
   control->selectedOverlayEntity = NULL;
   UiContainer_RelocateChildren(relocationDelta,&control->base);
@@ -808,7 +808,7 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext)
 */
 void FrontendModelPointerContext_RenderWorldViewQueuesClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FrontendModelPointerContextRuntimeState17C *control)
+          UiPixelCoordinate clipRight,FrontendModelPointerContext *control)
 
 {
   UiPixelCoordinate cursorOverrideX;
@@ -849,9 +849,9 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   cursorOverrideX = g_CursorOverrideX;
   control->selectedModelNode = NULL;
   control->selectedHitMetric = WORLD_POINTER_NO_HIT;
-  control->callbackArgumentE8 = WORLD_POINTER_NO_HIT;
-  control->callbackArgumentEC = WORLD_POINTER_NO_HIT;
-  control->callbackArgumentF0 = WORLD_POINTER_NO_HIT;
+  control->surfaceHitWorldX = WORLD_POINTER_NO_HIT;
+  control->surfaceHitWorldY = WORLD_POINTER_NO_HIT;
+  control->surfaceHitDepth = WORLD_POINTER_NO_HIT;
   overlayClipTop = cursorOverrideY << 12;
   control->cursorWorldXQ12 = cursorOverrideX << 12;
   control->cursorWorldYQ12 = overlayClipTop;
@@ -888,8 +888,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
   if (!queueResult.failed) {
     Graphics_SetActivePrimitiveQueue(queueResult.queue);
     control->activePrimitiveQueue = queueResult.queue;
-    if (control->renderPhaseCallback15C != NULL) {
-      control->renderPhaseCallback15C(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
+    if (control->renderPhaseCallback != NULL) {
+      control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
     }
     renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
     if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
@@ -904,8 +904,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
         renderHierarchyProc(modelNode);
       }
     }
-    if (control->renderPhaseCallback15C != NULL) {
-      control->renderPhaseCallback15C(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
+    if (control->renderPhaseCallback != NULL) {
+      control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
     }
     PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
               (control->base.nodeFlags & 8,control->activePrimitiveQueue);
@@ -964,8 +964,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     if (!queueResult.failed) {
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
       control->activePrimitiveQueue = queueResult.queue;
-      if (control->renderPhaseCallback15C != NULL) {
-        control->renderPhaseCallback15C(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
+      if (control->renderPhaseCallback != NULL) {
+        control->renderPhaseCallback(GRAPHICS_STATE_DISABLED,(WorldRuntimeContext *)control);
       }
       renderHierarchyProc = ModelRuntime_CullAndRenderHierarchyRecursive;
       if ((control->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0)
@@ -980,8 +980,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
           renderHierarchyProc(modelNode);
         }
       }
-      if (control->renderPhaseCallback15C != NULL) {
-        control->renderPhaseCallback15C(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
+      if (control->renderPhaseCallback != NULL) {
+        control->renderPhaseCallback(GRAPHICS_STATE_ENABLED,(WorldRuntimeContext *)control);
       }
       PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844
                 (control->base.nodeFlags & 8,control->activePrimitiveQueue);
@@ -1027,22 +1027,22 @@ endScene:
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
       SelectionOverlay_DrawBoundsFrame
                 (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->scratchCoordinate16C,
-                 control->scratchCoordinate168,control->scratchCoordinate164,
-                 control->scratchCoordinate160);
+                 overlayClipRight,control->dragFrameEndY,
+                 control->dragFrameEndX,control->dragFrameStartY,
+                 control->dragFrameStartX);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS) != 0) {
       SelectionOverlay_DrawTerrainPointMarkers
                 (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,control->terrainMarkerPointCount174,
-                 control->terrainMarkerCoordinatePairs170,control->fieldGrid);
+                 overlayClipRight,control->terrainMarkerPointCount,
+                 control->terrainMarkerCoordinatePairs,control->fieldGrid);
     }
-    if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER) != 0) && (control->callbackArgumentF0 != WORLD_POINTER_NO_HIT)) {
+    if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER) != 0) && (control->surfaceHitDepth != WORLD_POINTER_NO_HIT)) {
       SelectionOverlay_DrawWorldPointMarker
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,
                  (uint32_t)((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0),
-                 control->callbackArgumentEC,control->callbackArgumentE8,control->fieldGrid);
+                 control->surfaceHitWorldY,control->surfaceHitWorldX,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS) != 0) {
       SelectionOverlay_DrawGridVertexMarkers
@@ -1057,7 +1057,7 @@ endScene:
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS) != 0) {
       SelectionOverlay_DrawResourceCellMarkers
                 (overlayClipTop,originY,overlayClipBottom,
-                 overlayClipRight,(uint8_t)control->overlayMarkerStateB4,
+                 overlayClipRight,(uint8_t)control->selectedResourceMarkerIndex,
                  control->fieldGrid);
     }
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL))
@@ -1071,7 +1071,7 @@ endScene:
   g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledSourceAlpha;
   g_SpinLockReleaseAndInvoke(control->renderSpinLockReleaseCallback,control->renderSpinLock);
   if ((control->selectedModelNode != NULL) &&
-     ((int)control->callbackArgumentF0 < control->selectedHitMetric)) {
+     ((int)control->surfaceHitDepth < control->selectedHitMetric)) {
     control->selectedModelNode = NULL;
   }
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
@@ -1082,12 +1082,12 @@ endScene:
 /* Address: 0x0050C6E0.
    Right-button press on the model pointer context (rightPress of g_FrontendModelPointerContextVtable): starts a
    camera drag. Remembers the press point (the pointer is put back there after every drag step), routes pointer
-   moves to the camera cursor resolution, restarts the held-tick counter (rightButtonState11C, counted by
+   moves to the camera cursor resolution, restarts the held-tick counter (rightButtonHeldTicks, counted by
    FrontendModelPointerContext_Tick) and pins the drawn cursor.
 */
 void FrontendModelPointerContext_RightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext)
+          FrontendModelPointerContext *callbackContext)
 
 {
   callbackContext->capturedPointerX = pointerX;
@@ -1096,7 +1096,7 @@ void FrontendModelPointerContext_RightPress
   callbackContext->contextFlags =
        callbackContext->contextFlags |
        FRONTEND_MODEL_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION;
-  callbackContext->rightButtonState11C = 0;
+  callbackContext->rightButtonHeldTicks = 0;
   g_CursorUseOverridePosition++;
   return;
 }
@@ -1105,19 +1105,19 @@ void FrontendModelPointerContext_RightPress
 /* Address: 0x0050C730.
    Right-button release on the model pointer context (rightRelease of g_FrontendModelPointerContextVtable): ends
    the camera drag and unpins the cursor. A release within 7 ticks of the press counts as a click and is
-   reported to rightReleaseCallback118 (the menu room stops its camera flight with it).
+   reported to rightClickCallback (the menu room stops its camera flight with it).
 */
 void FrontendModelPointerContext_RightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext)
+          FrontendModelPointerContext *callbackContext)
 
 {
   g_CursorUseOverridePosition = 0;
   /* clears ROUTE_TO_BUILTIN_ACTION_RESOLUTION and the camera motion bits 0..3 */
   callbackContext->contextFlags = callbackContext->contextFlags & 0xffffffb0;
-  if ((callbackContext->rightButtonState11C < 7) &&
-     (callbackContext->rightReleaseCallback118 != NULL)) {
-    callbackContext->rightReleaseCallback118(callbackContext);
+  if ((callbackContext->rightButtonHeldTicks < 7) &&
+     (callbackContext->rightClickCallback != NULL)) {
+    callbackContext->rightClickCallback(callbackContext);
   }
   return;
 }
@@ -1291,7 +1291,7 @@ void FrontendModelPointerContext_PointerWheel
    (UiNode_DefaultKeyboardEventMoveFocusNext) decides. Returns CF.
 */
 bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          FrontendModelPointerContextRuntimeState118 *control)
+          FrontendModelPointerHitContext *control)
 
 {
   bool keyboardEventCarry;
@@ -1308,7 +1308,7 @@ bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardState
 
 /* Address: 0x0050CF90.
    Tick method of the model pointer context (tick of g_FrontendModelPointerContextVtable): counts the ticks the
-   right button is held (rightButtonState11C, read by FrontendModelPointerContext_RightRelease) and, in a view
+   right button is held (rightButtonHeldTicks, read by FrontendModelPointerContext_RightRelease) and, in a view
    without camera scheme 0x100/0x8000, camera input block (0x10) and WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA, eases
    the camera distance by one convergence step per tick until it is within 15/16..17/16 of the clamped committed
    distance, placing the camera behind the target.
@@ -1322,10 +1322,10 @@ void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
   UQ12 clampedCommittedDistance;
   FixedDirection cameraOffset;
   
-  /* 0x40: right button held (ROUTE_TO_BUILTIN_ACTION_RESOLUTION); +0x11C is rightButtonState11C of the
+  /* 0x40: right button held (ROUTE_TO_BUILTIN_ACTION_RESOLUTION); +0x11C is rightButtonHeldTicks of the
      pointer-context view of this record */
   if ((callbackContext->runtimeFlags & 0x40) != 0) {
-    callbackStateCounter = &callbackContext->selection.reservedCallbackState40;
+    callbackStateCounter = &callbackContext->selection.rightButtonHoldTicks;
     *callbackStateCounter = *callbackStateCounter + 1;
   }
   if ((callbackContext->runtimeFlags & 0x48110) == 0) {
@@ -1375,33 +1375,33 @@ void FrontendRuntime_UpdateCurrentFactionMetricCache(void)
   FactionProgressAmountQ4 baselineEnergySupplyQ4;
   FactionProgressAmountQ4 energyGenerationCapacityQ4;
   FactionArmyContributionValue tritiumExtractionRate;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   int activeFactionIndex;
   
   runtimeRoot = g_InGameRuntimeRoot;
-  activeFactionIndex = g_InGameRuntimeRoot->worldRuntime0A30.activeFactionRuntimeIndex;
+  activeFactionIndex = g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex;
   xeniteStorageLimit = g_GameFactionRuntimeImage.records[activeFactionIndex].xeniteStorageLimitQ4;
   xeniteCurrentDisplay = (int)g_GameFactionRuntimeImage.records[activeFactionIndex].xeniteCurrentQ4 >> 4;
-  g_InGameRuntimeRoot->primaryResourceDisplayCurrent49B4 = xeniteCurrentDisplay;
-  runtimeRoot->primaryResourceDisplayLimit49B8 = (int)xeniteStorageLimit >> 4;
+  g_InGameRuntimeRoot->primaryResourceDisplayCurrent = xeniteCurrentDisplay;
+  runtimeRoot->primaryResourceDisplayLimit = (int)xeniteStorageLimit >> 4;
   /* decimal, no fraction digits */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,xeniteCurrentDisplay,
              (uint16_t *)&g_FrontendCurrentFactionPrimaryResourceTextUtf16);
   tritiumStorageLimit = g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumStorageLimitQ4;
   baselineEnergySupplyQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].baselineEnergySupplyQ4;
-  runtimeRoot->secondaryResourceDisplayCurrent4A4C =
+  runtimeRoot->secondaryResourceDisplayCurrent =
        (int)g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumCurrentQ4 >> 4;
-  runtimeRoot->secondaryResourceDisplayLimit4A50 = (int)tritiumStorageLimit >> 4;
+  runtimeRoot->secondaryResourceDisplayLimit = (int)tritiumStorageLimit >> 4;
   energyGenerationCapacityQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].energyGenerationCapacityQ4;
   tritiumExtractionRate =
        g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumExtractionRateQ4PerTick;
-  runtimeRoot->transientContributionDisplay4AE4 =
+  runtimeRoot->energyDemandDisplay =
        (int)(g_GameFactionRuntimeImage.records[activeFactionIndex].suppliedEnergyDemandQ4 +
             g_GameFactionRuntimeImage.records[activeFactionIndex].unpoweredEnergyDemandQ4) >> 4;
-  runtimeRoot->progressLimitDisplay4AE8 = (int)energyGenerationCapacityQ4 >> 4;
+  runtimeRoot->energyCapacityDisplay = (int)energyGenerationCapacityQ4 >> 4;
   /* the extraction rate is added unshifted, as in the original */
-  runtimeRoot->combinedProgressOrArmyScaleDisplay4B28 =
+  runtimeRoot->baselineEnergySupplyDisplay =
        ((int)baselineEnergySupplyQ4 >> 4) + tritiumExtractionRate;
   return;
 }
@@ -1511,7 +1511,7 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       g_NetworkBackendSlot3();
       g_NetworkBackendSlot1();
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
-      ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(root,menuRoomModelView))->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      ((FrontendModelPointerContext *)FRONTEND_UI(root,menuRoomModelView))->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
       g_FrontendRomTransitionPageAction = 0;
       FrontendRomTransition_ActivateRecordById
@@ -1528,7 +1528,7 @@ bool FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       g_NetworkBackendSlot3();
       g_NetworkBackendSlot1();
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
-      ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(root,menuRoomModelView))->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      ((FrontendModelPointerContext *)FRONTEND_UI(root,menuRoomModelView))->contextFlags &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
       g_FrontendRomTransitionPageAction = 0;
       player = g_FrontendPlayerRuntimeBlocks;
@@ -1573,7 +1573,7 @@ void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
 
 
 /* Address: 0x00548910.
-   Hover handler of the menu room's pointer context (resolvedActionCallback104/108). On the main page (not on a
+   Hover handler of the menu room's pointer context (hoverCursorCallback/108). On the main page (not on a
    network client) an object of the room that has a usable ROM action record starts a camera flight towards
    the record's keyframe and makes the pointer cursor frame 7; the record's hint text (text id 0x2000 + hint)
    is shown in the hint box, hint 1 while a page action is still being processed, none otherwise.
@@ -1701,7 +1701,7 @@ uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
 
 
 /* Address: 0x00548BE0.
-   Button-press handler of the menu room's pointer context (resolvedActionCallback10C): the frontend does nothing
+   Button-press handler of the menu room's pointer context (buttonPressCallback): the frontend does nothing
    on press, it acts on release (FrontendMenuRoom_ExecuteClickedRomAction).
 */
 void FrontendMenuRoom_PressNoOp
@@ -1713,7 +1713,7 @@ void FrontendMenuRoom_PressNoOp
 }
 
 /* Address: 0x00548BF0.
-   Drag handler of the menu room's pointer context (resolvedActionCallback110); dragging does nothing in the
+   Drag handler of the menu room's pointer context (buttonDragCallback); dragging does nothing in the
    frontend.
 */
 void FrontendMenuRoom_DragNoOp
@@ -1725,7 +1725,7 @@ void FrontendMenuRoom_DragNoOp
 }
 
 /* Address: 0x00548C00.
-   Button-release handler of the menu room's pointer context (resolvedActionCallback114): clicking an object of
+   Button-release handler of the menu room's pointer context (buttonReleaseCallback): clicking an object of
    the menu room runs the ROM action record that belongs to it (FrontendRomActionTable_ExecuteRecord). In a
    network game the host sends it as a frontend command so every player follows; clients ignore clicks.
 */
@@ -1757,7 +1757,7 @@ void FrontendMenuRoom_ExecuteClickedRomAction
 
 
 /* Address: 0x00548C70.
-   Right-button release handler of the menu room's pointer context (rightReleaseCallback118): stops the running
+   Right-button release handler of the menu room's pointer context (rightClickCallback): stops the running
    camera flight (ScenarioCatalog_RequestRomTransitionStopCallback), in a network game as a frontend command
    sent by the host; clients ignore it.
 */
@@ -1941,7 +1941,7 @@ void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
   }
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     compactLayoutFlags =
-         &((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRootPage,menuRoomModelView))->contextFlags;
+         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRootPage,menuRoomModelView))->contextFlags;
     *compactLayoutFlags = *compactLayoutFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,&frontendRootPage->primaryPageStack);
@@ -1976,7 +1976,7 @@ void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsP
                                                frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContextRuntimeState17C *)
+         &((FrontendModelPointerContext *)
            FRONTEND_UI((uint8_t *)source - offsetof(FrontendUiImage,graphicsSettingsButton),menuRoomModelView))->
          contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
@@ -2428,7 +2428,7 @@ void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendLis
     openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
     fatalCheckResult = FatalError_ReportIfFailed(openBindResult.valueOrError,openBindResult.failed);
     if (!fatalCheckResult.failed) {
-      endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
+      endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
       for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
            remainingDwords--) {
@@ -2480,7 +2480,7 @@ void Frontend_PlaySelectedEndMovie(void)
   UiRootCallbacks *rootCallbacks;
   uint32_t previousResultCount;
   uint64_t elapsedTimeUnits;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   int32_t endMovieNumber;
   int countOrActiveFactions;
   uint32_t playbackRateHz;
@@ -2504,7 +2504,7 @@ void Frontend_PlaySelectedEndMovie(void)
   g_GraphicsCursorSetFrame(0);
   g_CursorVisibilityToken--;
   if ((runtimeRoot != NULL) &&
-     (rootCallbacks = runtimeRoot->rootUi0000.callbacks, g_EndMoviePath != NULL)) {
+     (rootCallbacks = runtimeRoot->rootUi.callbacks, g_EndMoviePath != NULL)) {
     rootCallbacks->keyboardFallback = EndMovieUiRuntime_DispatchCommandByFlags;
     rootCallbacks->frameUpdate = EndMovieUiRuntime_HandleModeTransition;
     /* Campaign level records (CampaignLevelRecord) as in OldUnitRuntime_RebuildScenarioReplayTables: the end
@@ -2562,8 +2562,8 @@ void Frontend_PlaySelectedEndMovie(void)
       UiPageStack_SetActiveIndex(1,stack);
       frameAdvanceResult = Movie_AdvanceFrame();
       if (!frameAdvanceResult.ended) {
-        runtimeRoot->activeEndMovieRuntime022C = (MovieRuntime *)frameAdvanceResult.movieOrError;
-        runtimeRoot->endMoviePlaybackState0230 = 0;
+        runtimeRoot->activeEndMovieRuntime = (MovieRuntime *)frameAdvanceResult.movieOrError;
+        runtimeRoot->endMoviePlaybackState = 0;
         g_EndMoviePendingTicks = 0;
         /* one movie frame per timer tick until the movie ends (or the end-movie flag is cleared elsewhere) */
         do {
@@ -2579,7 +2579,7 @@ void Frontend_PlaySelectedEndMovie(void)
         } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0);
       }
       g_CursorVisibilityToken++;
-      UiPageStack_SetActiveIndex(1,&runtimeRoot->endMoviePageStack02F8);
+      UiPageStack_SetActiveIndex(1,&runtimeRoot->endMoviePageStack);
       recordCursorOrRemaining = 7;
       factionLifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
       countOrActiveFactions = 0;
@@ -2590,18 +2590,18 @@ void Frontend_PlaySelectedEndMovie(void)
         if (*factionLifecycleState != 0) {
           countOrActiveFactions++;
           GameFactionRuntime_RecomputeProgressAndScoreMetrics
-                    (factionIndex,&runtimeRoot->worldRuntime0A30);
+                    (factionIndex,&runtimeRoot->worldRuntime);
         }
         factionIndex++;
         recordCursorOrRemaining--;
       } while (recordCursorOrRemaining != 0);
       if (countOrActiveFactions != 0) {
         /* row counts of the three results lists */
-        ((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart1))->rowCount =
+        ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->rowCount =
              countOrActiveFactions;
-        ((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart2))->rowCount =
+        ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart2))->rowCount =
              countOrActiveFactions;
-        ((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart3))->rowCount =
+        ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart3))->rowCount =
              countOrActiveFactions;
         /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
         elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
@@ -2638,16 +2638,16 @@ void Frontend_PlaySelectedEndMovie(void)
             SESSION_NETWORK_ROLE_LOCAL) {
           /* local game: remove column 2 (the third) of resultsChart1; the shift copies the count - 3 later ones */
           previousResultCount =
-               ((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount;
-          ((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount =
-               ((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount - 1;
+               ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount;
+          ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount =
+               ((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->columnTypeCount - 1;
           countOrActiveFactions = previousResultCount - 3;
           if (2 < previousResultCount && countOrActiveFactions != 0) {
             copySource =
-                 (uint8_t *)&((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart1))->
+                 (uint8_t *)&((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->
                  columnTypes[3];
             copyDestination =
-                 (uint8_t *)&((FrontendResultsColumnSequenceTemplate8_84 *)INGAME_UI(runtimeRoot,resultsChart1))->
+                 (uint8_t *)&((FrontendResultsEightColumnTemplate *)INGAME_UI(runtimeRoot,resultsChart1))->
                  columnTypes[2];
             for (; countOrActiveFactions != 0; countOrActiveFactions--) {
               *(uint32_t *)copyDestination = *(uint32_t *)copySource;
@@ -2675,7 +2675,7 @@ void Frontend_PlaySelectedEndMovie(void)
   else {
     g_CursorVisibilityToken++;
   }
-  rootCallbacks = g_InGameRuntimeRoot->rootUi0000.callbacks;
+  rootCallbacks = g_InGameRuntimeRoot->rootUi.callbacks;
   rootCallbacks->keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
   rootCallbacks->frameUpdate = EndGameResultsUiRuntime_UpdateAndHandleInput;
   return;
@@ -2727,9 +2727,9 @@ FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId)
   FrontendInitResult failureResult;
   ResourceLoadResult sampleLoadResult;
   WorldRuntimeContext *worldRuntime;
-  FrontendModelPointerContextRuntimeState17C *pointerContext;
+  FrontendModelPointerContext *pointerContext;
   typedef uint32_t FrontendModelPointerResolvedActionProc
-          (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerContextRuntimeState118 *);
+          (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerHitContext *);
 
   settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = settingValue >> 1;
@@ -2880,23 +2880,23 @@ loadCentralRom:
               }
               /* The 3D pointer-context control lives at root+0x368 (EBX = EDI+0x368 in the asm); the installed
                  handlers do not all match the generic callback field types, hence the casts. */
-              pointerContext = (FrontendModelPointerContextRuntimeState17C *)worldRuntime;
+              pointerContext = (FrontendModelPointerContext *)worldRuntime;
               pointerContext->keyboardFallback =
                    (bool (*)(UiKeyboardStateMask,UiActionId,struct UiRootNode *))
                    FrontendRuntime_DispatchCommandByCodeAndModifierFlags;
-              pointerContext->resolvedActionCallback104 =
+              pointerContext->hoverCursorCallback =
                    (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
-              pointerContext->resolvedActionCallback108 =
+              pointerContext->heldButtonCursorCallback =
                    (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
-              pointerContext->resolvedActionCallback10C =
+              pointerContext->buttonPressCallback =
                    (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_PressNoOp;
-              pointerContext->resolvedActionCallback110 =
+              pointerContext->buttonDragCallback =
                    (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_DragNoOp;
-              pointerContext->resolvedActionCallback114 =
+              pointerContext->buttonReleaseCallback =
                    (FrontendModelPointerResolvedActionProc *)FrontendMenuRoom_ExecuteClickedRomAction;
-              pointerContext->transientClearCallbackOrFrontendStateB0 = 0;
-              pointerContext->rightReleaseCallback118 =
-                   (void (*)(FrontendModelPointerContextRuntimeState17C *))FrontendMenuRoom_StopCameraFlight;
+              pointerContext->clearTransientStateCallback = 0;
+              pointerContext->rightClickCallback =
+                   (void (*)(FrontendModelPointerContext *))FrontendMenuRoom_StopCameraFlight;
               pointerContext->renderSpinLock = (RuntimeSpinLockValue *)&g_FrontendStateTickSpinLock;
               pointerContext->renderSpinLockReleaseCallback = Frontend_StateTick;
               RecentTextHistory_SortAndBuildPointerList
@@ -3257,7 +3257,7 @@ void FrontendFactionSetup_CycleFactionColour
 {
   int *levelCycleCounterField;
   LevelPlayerSlotByteOffset32 playerSlotOffset;
-  FrontendLoadedLevelRuntimeImage370 *loadedLevelAsset;
+  FrontendLoadedLevelAsset *loadedLevelAsset;
   uint32_t nextSelectionTextId;
   uint32_t playerRecordsRemaining;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
@@ -3407,8 +3407,8 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
   uint32_t freeArenaBytes;
   WideNumberDenominator32 denominator;
   WorldRuntimeContext *world;
-  WorldVector0EaxEcxEdx12 worldVector0;
-  WorldVector1EaxEcxEdx12 worldVector1;
+  WorldCameraPosition worldVector0;
+  WorldCameraOrientation worldVector1;
   
   denominator = g_RenderedFrameCountSinceDebugRefresh;
   g_DebugOverlayCounterRefreshCountdown--;
@@ -3536,7 +3536,7 @@ void FrontendRuntime_ShutdownAndReleaseResourcesRegs(void)
    node in EDX and its hit metric in EAX (NULL and WORLD_POINTER_NO_HIT without a hit).
 */
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
-                (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context)
+                (int pointerY,int pointerX,FrontendModelPointerHitContext *context)
 
 {
   ModelRuntimeNode *modelNode;
@@ -3563,10 +3563,10 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
         /* Higher model-class priority wins; equal priority falls back to the smaller hit metric. */
         candidatePriority =
              (int)(&g_RuntimeModelClassPriorityByModelClassId.modelClass00Priority)
-                  [modelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C];
+                  [modelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
         bestPriority =
              (int)(&g_RuntimeModelClassPriorityByModelClassId.modelClass00Priority)
-                  [bestModelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C];
+                  [bestModelNode->runtimePayload.modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId];
         if (candidatePriority < bestPriority) continue;
         if ((candidatePriority == bestPriority) && ((int)bestHitMetric <= (int)hitTestResult.distanceQ12))
         continue;

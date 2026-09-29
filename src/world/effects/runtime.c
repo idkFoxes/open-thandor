@@ -200,7 +200,7 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
    allocation error with CF set. A NULL definition returns the pool base with CF clear.
 */
 EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
-          (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference4 ownerRuntime,
+          (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
           Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,
           WorldRuntimeContext *worldRuntime)
@@ -230,7 +230,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
   EffectCreateResult successResult;
   EffectCreateResult failureResult;
   ModelWorldPoint localPoint;
-  TerrainOccupancyResolvedMasksRegs12 occupancyMasks;
+  TerrainOccupancyResolvedMasks occupancyMasks;
   char runtimeClassIndex;
   uint32_t soundTableIndex;
   

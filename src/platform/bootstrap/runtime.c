@@ -1025,13 +1025,13 @@ bindDebugOverlayTexts:
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
-                      g_FrontendSessionListRows = (FrontendSessionDiscoveryRecordB0 **)allocResult.payloadOrError;
+                      g_FrontendSessionListRows = (FrontendSessionDiscoveryRecord **)allocResult.payloadOrError;
                       allocResult = g_MemoryApi.alloc(0x1600);
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
                       g_FrontendSessionDiscoveryRecords =
-                           (FrontendSessionDiscoveryRecordB0 *)allocResult.payloadOrError;
+                           (FrontendSessionDiscoveryRecord *)allocResult.payloadOrError;
                       allocResult = g_MemoryApi.alloc(0x2000);
                       textBuffer = (uint16_t *)allocResult.payloadOrError;
                       if (allocResult.failed) {

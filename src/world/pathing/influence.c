@@ -23,9 +23,9 @@ void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
   
   modelNode = (entityRuntime->common).ownership.modelNode;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
+  if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
     GridInfluence_SetLowDistanceBandsAroundWorldPoint
-              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,
+              (((ModelDefinition *)entityDefinition)->footprintRadius,
                (modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x);
   }
 }
@@ -44,9 +44,9 @@ void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
   
   modelNode = (entityRuntime->common).ownership.modelNode;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
+  if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
     GridInfluence_ClearLowDistanceBandsAroundWorldPoint
-              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,
+              (((ModelDefinition *)entityDefinition)->footprintRadius,
                (modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x);
   }
 }
@@ -70,13 +70,13 @@ void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
   linkedRuntime = (entityRuntime->common).ownership.runtimeLink;
   modelNode = (entityRuntime->common).ownership.modelNode;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
+  if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
     worldXQ12 = (modelNode->worldTransform).translation.x;
     worldYQ12 = (modelNode->worldTransform).translation.y;
     *(Q12 *)((int)linkedRuntime + 0x68) = worldXQ12;
     *(Q12 *)((int)linkedRuntime + 0x6c) = worldYQ12;
     GridInfluence_SetHighDistanceBandsAroundWorldPoint
-              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,worldYQ12,worldXQ12);
+              (((ModelDefinition *)entityDefinition)->footprintRadius,worldYQ12,worldXQ12);
   }
 }
 
@@ -94,9 +94,9 @@ void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
   
   linkedRuntime = (entityRuntime->common).ownership.runtimeLink;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
+  if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
     GridInfluence_ClearHighDistanceBandsAroundWorldPoint
-              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,
+              (((ModelDefinition *)entityDefinition)->footprintRadius,
                *(Q12 *)((int)linkedRuntime + 0x6c),*(Q12 *)((int)linkedRuntime + 0x68));
   }
 }
@@ -167,7 +167,7 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *enti
     if (entityListHead->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
         [((ModelDefinition *)(((GameEntityRuntime *)entityListHead->runtimePayload)->common).ownership.
-          definitionOrClassRecord)->runtimeClassId4C])(entityListHead->runtimePayload);
+          definitionOrClassRecord)->runtimeClassId])(entityListHead->runtimePayload);
     }
   }
 }

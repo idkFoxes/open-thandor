@@ -179,8 +179,8 @@ void InGameCommand_TogglePauseRequest
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x005604D0 */
-void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,CommandPayloadDword04 headingAngle,
-          CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12);
+void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,CommandPayload headingAngle,
+          CommandPayload worldXQ12,CommandPayload worldYQ12);
 
 /* 0x0056A2A0 */
 void InGameArmyStock_RebuildGrid(UiNodeBase *node);
@@ -330,6 +330,6 @@ void UiCommandModeG_HideRegionMarkers(WorldRuntimeContext *context);
 void UiCommandModeG_ShowGridVertexMarkers(WorldRuntimeContext *context);
 
 /* 0x0056DA90 */
-InGameRuntimeRootImageC3E4 * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source);
+InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source);
 
 #endif /* THANDOR_UI_INGAME_COMMANDS_H */

@@ -29,7 +29,7 @@
 #define TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE3 0x21C3 /* the two resource components */
 /* End-of-game results title: selector 0 = level title, selector 1 = elapsed time (Frontend_MainLoop). */
 #define TEXT_ID_RESULTS_TITLE_TEMPLATE 0x21C0
-/* FrontendResultsColumnSequenceControl68.modeFlags bit 0: graph (factionWeightRaster) instead of the table. */
+/* FrontendResultsColumnSequenceControl.modeFlags bit 0: graph (factionWeightRaster) instead of the table. */
 #define FRONTEND_RESULTS_MODE_GRAPH 0x1
 /* Column types of the results table (columnTypes0..); each advances by its g_FrontendResultsColumnAdvance*. */
 #define FRONTEND_RESULTS_COLUMN_SPACER0 0
@@ -49,7 +49,7 @@
 
 /* 0x00517020 */
 void FrontendResultsTable_DrawColumnSequenceByType(int clipTop,int clipLeft,int clipBottom,int clipRight,
-          FrontendResultsColumnSequenceControl68 *control);
+          FrontendResultsColumnSequenceControl *control);
 
 /* 0x00517FB0 */
 UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
@@ -102,16 +102,16 @@ void FrontendResultsTable_DrawPlayerColumn
 /* 0x005174E0 */
 void FrontendResultsGraph_DrawFactionWeightSumColumn
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
-          FrontendResultsFactionWeightPair8 *factionWeights);
+          FrontendResultsFactionWeightPair *factionWeights);
 
 /* 0x005175F0 */
 void FrontendResultsGraph_DrawFactionWeightLane0Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
-          FrontendResultsFactionWeightPair8 *factionWeights);
+          FrontendResultsFactionWeightPair *factionWeights);
 
 /* 0x005176F0 */
 void FrontendResultsGraph_DrawFactionWeightLane1Column
           (UiPixelCoordinate spanEndY,UiPixelCoordinate spanStartY,UiPixelCoordinate drawX,
-          FrontendResultsFactionWeightPair8 *factionWeights);
+          FrontendResultsFactionWeightPair *factionWeights);
 
 #endif /* THANDOR_UI_FRONTEND_RESULTS_H */

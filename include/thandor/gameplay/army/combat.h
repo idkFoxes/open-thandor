@@ -24,14 +24,14 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00523980 */
-void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime);
+void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 
 /* 0x00525130 */
 void ArmyRuntimeClass_UpdateTransformAndDamageEffect
-          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime);
 
 /* 0x00527AC0 */
-void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedEffectsUpdateView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedEffectsUpdateView *modelRuntime);
 
 /* 0x0052A2E0 */
 void ArmyRuntime_ApplyImpactDamageAndFinalizeState

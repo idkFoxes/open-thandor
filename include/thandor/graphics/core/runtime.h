@@ -112,7 +112,7 @@ void Graphics_RebuildFrustumPlanes(void);
 void GraphicsBackend_RefreshActiveAdapterNoOp(void);
 
 /* 0x004BCFE0 */
-FixedEulerAnglesEaxEcxEdx12
+FixedRollAzimuthElevation
 GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsObject);
 
 /* 0x004BD000 */

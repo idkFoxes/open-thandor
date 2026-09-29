@@ -80,8 +80,8 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
   uint32_t *editPlaneCursor;
 
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  editPlaneCursor = playerBlock->terrainMaterialEditPlane;
   for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX--) {
     *editPlaneCursor = 0;
     editPlaneCursor = editPlaneCursor + 1;
@@ -92,7 +92,7 @@ void TerrainMaterialEdit_SeedMatchingRegionReplacement
      && (gridY < (int)fieldGridAsset->gridHeight)) {
     referenceMaterial = fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + countOrGridX].flagsAndMaterial &
             FIELD_CELL_MATERIAL_ID_MASK;
-    editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+    editPlaneCursor = playerBlock->terrainMaterialEditPlane;
     if (referenceMaterial != replacementMaterialByte) {
       fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
       g_TerrainMaterialEditReplacementMaterialByte = replacementMaterialByte;
@@ -124,8 +124,8 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
   uint32_t *editPlaneCursor;
 
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
-  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  editPlaneCursor = playerBlock->terrainMaterialEditPlane;
   for (countOrGridX = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight; countOrGridX != 0; countOrGridX--) {
     *editPlaneCursor = 0;
     editPlaneCursor = editPlaneCursor + 1;
@@ -134,7 +134,7 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
   countOrGridX = worldXQ12 >> 12;
   if ((((-1 < countOrGridX) && (gridY = worldYQ12 >> 12, -1 < gridY)) && (countOrGridX < (int)fieldGridAsset->gridWidth))
      && (gridY < (int)fieldGridAsset->gridHeight)) {
-    editPlaneCursor = playerBlock->terrainMaterialEditPlane808C;
+    editPlaneCursor = playerBlock->terrainMaterialEditPlane;
     if ((fieldGridAsset->cells[gridY * fieldGridAsset->gridWidth + countOrGridX].flagsAndMaterial &
         FIELD_CELL_MATERIAL_ID_MASK) != referenceMaterialByte) {
       fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -168,8 +168,8 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
   FieldGridCell *fieldCell;
   int *heightDeltaCursor;
 
-  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  heightDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  heightDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   widthCells = fieldGridAsset->gridWidth;
   remainingCount = widthCells * fieldGridAsset->gridHeight;
   fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -240,9 +240,9 @@ void TerrainEditBuffer_CopyCellMaterialBytes
   FieldGridCell *fieldCell;
   TerrainMaterialIndex *materialCursor;
 
-  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   materialCursor = (TerrainMaterialIndex *)
-           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
+           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
   do {
@@ -270,8 +270,8 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
   FieldGridCell *fieldCell;
   uint32_t *materialDeltaCursor;
 
-  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
   do {
@@ -299,8 +299,8 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   FieldGridCell *fieldCell;
   uint32_t *materialDeltaCursor;
 
-  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   /* The original ORs 1 into the dword 0x14C bytes before the field grid asset (OR [ESI-0x14C],1) instead of
      its runtimeStateFlags at +0xB4, so the surface is not marked dirty here; kept as in the original. */
@@ -332,8 +332,8 @@ void TerrainEditBuffer_ConvertHeightsToDeltas
   FieldGridCell *fieldCell;
   int *heightCursor;
 
-  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  heightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  heightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   fieldCell = fieldGridAsset->cells;
   do {

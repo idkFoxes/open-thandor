@@ -22,7 +22,7 @@
 #define MODEL_NODE_FLAG_RENDERED 0x2 /* drawn in the current frame (set by the model renderers) */
 #define MODEL_NODE_FLAG_RAY_TRANSPARENT 0x2000 /* skipped by ModelRuntime_RaycastCandidateListNearest; set at
                                                  creation when the definition has flag 0x100 at +0x68 */
-/* ModelDefinition flags dword (+0x68, runtimeValue68) bit that makes the model's root node ray transparent */
+/* ModelDefinition flags dword (+0x68, modelFlags) bit that makes the model's root node ray transparent */
 #define MODEL_DEFINITION_FLAG_RAY_TRANSPARENT 0x100
 /* ModelDefinition flags (+0x68) bit: the energy demand of directly attached models counts
    (ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs, ArmyAssetHierarchy_SumEnergyFrom) */
@@ -31,7 +31,7 @@
 #define MODEL_NODE_FLAG_FORCE_TRANSPARENT 0x1000
 /* Aim tolerance of ModelNodeRuntime_SmoothYaw/PitchTowardTarget: outsideTolerance beyond +-0x3FF */
 #define MODEL_AIM_TOLERANCE_ANGLE16 0x3ff
-/* ModelDefinition.variantModelDefinitionIds238[] entries (ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive) */
+/* ModelDefinition.variantModelDefinitionIds[] entries (ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive) */
 #define MODEL_TECHNOLOGY_VARIANT_COUNT 6
 /* nearest distance of a ray that hit nothing (ModelRuntime_RaycastCandidateListNearest) */
 #define MODEL_RAYCAST_NO_HIT_DISTANCE 0x7fffffff
@@ -86,7 +86,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
 
 /* 0x00529690 */
 void ModelRuntime_EmitProjectilesFromAttachmentPoints
-          (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
+          (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
           Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
           MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime);
 

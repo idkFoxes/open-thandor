@@ -64,7 +64,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   PackedArgb32 primaryColorB;
   PackedArgb32 alternateColorA;
   PackedArgb32 alternateColorB;
-  InGameLevelConditionStorageView800 *levelConditions;
+  InGameLevelConditionStorage *levelConditions;
   uint32_t mixedColor0A;
   uint32_t mixedColor0B;
   uint32_t mixedColor1A;
@@ -86,57 +86,57 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   PackedArgb32 primaryColorA;
   
   levelConditions = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  cycleDurationOrPhase = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+  cycleDurationOrPhase = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
           terrainLightingCycleDurationTicks;
-  worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
+  worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   if (cycleDurationOrPhase != 0) {
     /* phase in the cycle as a 16-bit angle; its cosine (Q28, -1..1) becomes a blend index 0..256 */
     cycleDurationOrPhase =
          (g_GameFactionRuntimeImage.tail.simulationTick % cycleDurationOrPhase << 16) / cycleDurationOrPhase;
     blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
     primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
          terrainBaseColorArgb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             terrainRampColor124Argb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainBaseColorArgb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainRampColor124Argb;
     forwardFactors = g_SoftwareBilinearForwardFactors[blendIndexOrPrimaryValue];
     inverseFactors = g_SoftwareBilinearInverseFactors[blendIndexOrPrimaryValue];
     mixedColor0A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor0B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
     primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
          terrainLightingColor128Argb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             terrainRampColor12CArgb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainLightingColor128Argb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainRampColor12CArgb;
     mixedColor1A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor1B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
     primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
          terrainLightingColor130Argb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             terrainLightingColor134Argb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainLightingColor130Argb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainLightingColor134Argb;
     mixedColor2A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor2B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
     primaryColorA =
-         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
          terrainLightingColor138Argb;
-    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             terrainLightingColor13CArgb;
-    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainLightingColor138Argb;
-    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
             alternateTerrainLightingColor13CArgb;
     mixedColor3A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor3B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
@@ -145,7 +145,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
               (mixedColor3B | 0xff000000,mixedColor3A & 0xffffff,mixedColor2B | 0xff000000,
                mixedColor2A & 0xffffff,
                mixedColor1B |
-               g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
+               g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.worldSettings.
                terrainRampColor12CArgb & 0xff000000,
                mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
     /* Low 16 bits of the pairs: triangular blend over the phase byte (0x80 = half cycle); the value that
@@ -153,8 +153,8 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
        High 16 bits: the same cosine weight as the colours. */
     phaseByteOrAlternateSize = cycleDurationOrPhase >> 8;
     blendIndexOrPrimaryValue =
-         (uint32_t)(uint16_t)levelConditions->levelImage.runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
-    alternateOriginOrBlendWeight = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
+         (uint32_t)(uint16_t)levelConditions->levelImage.worldSettings.packedFieldRegionOriginYHigh16XLow16;
+    alternateOriginOrBlendWeight = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
                            alternatePackedFieldRegionOriginYHigh16XLow16;
     if (phaseByteOrAlternateSize < 0x80) {
       if (alternateOriginOrBlendWeight < blendIndexOrPrimaryValue) {
@@ -172,10 +172,10 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
     }
     alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
     inverseBlendWeight = 0x100 - alternateOriginOrBlendWeight;
-    blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
+    blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
                            packedFieldRegionHeightHigh16WidthLow16;
     cycleDurationOrPhase = cycleDurationOrPhase >> 8;
-    phaseByteOrAlternateSize = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
+    phaseByteOrAlternateSize = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
                            alternatePackedFieldRegionHeightHigh16WidthLow16;
     if (cycleDurationOrPhase < 0x80) {
       if (phaseByteOrAlternateSize < blendIndexOrPrimaryValue) {
@@ -193,14 +193,14 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
     }
     /* ((uint16_t *)&pair)[1]: the high 16 bits of a packed pair */
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-              ((int)((uint32_t)((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+              ((int)((uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
                                  alternatePackedFieldRegionHeightHigh16WidthLow16)[1] * inverseBlendWeight +
-                     (uint32_t)((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+                     (uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
                                  packedFieldRegionHeightHigh16WidthLow16)[1] * (0x100 - inverseBlendWeight)) >> 8,
                (uint32_t)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
-               (int)((uint32_t)((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+               (int)((uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
                                  alternatePackedFieldRegionOriginYHigh16XLow16)[1] * inverseBlendWeight +
-                     ((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+                     ((uint16_t *)&levelConditions->levelImage.worldSettings.
                        packedFieldRegionOriginYHigh16XLow16)[1] * alternateOriginOrBlendWeight) >> 8,
                (uint32_t)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
   }
@@ -233,11 +233,11 @@ void WorldRuntime_SetCameraPositionKeepingTarget
 
 /* Address: 0x0050D150.
    Sets the camera's magnitude (at least 0x400 = 0.25 in Q12), heading (16-bit turn) and pitch and the
-   motion value at +0x78. The pitch is clamped to the world's pitch limits (unless the camera is unlimited)
+   projection shift (motion.projectionShift). The pitch is clamped to the world's pitch limits (unless the camera is unlimited)
    and always to a quarter turn up or down (+-0x4000).
 */
 void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-          (WorldMotionValue78 value78,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
+          (WorldMotionValue78 projectionShift,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
           ,WorldRuntimeContext *runtime)
 
 {
@@ -263,7 +263,7 @@ void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
   runtime->motion.positionMagnitudeQ12 = magnitude;
   runtime->motion.headingAngle = headingAngle & 0xffff;
   runtime->motion.pitchAngle = pitchAngle;
-  runtime->motion.motionValue78 = value78;
+  runtime->motion.projectionShift = projectionShift;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
   return;
 }
@@ -348,7 +348,7 @@ void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext
 /* Address: 0x00561E30.
    Keyboard command of the in-game root (called directly in a local game, in a networked one queued as
    command 0x2D00 from InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags): turns the
-   auxiliary angle pair (stored in fieldRegion.regionHeight/regionWidth, see
+   auxiliary angle pair (stored in fieldRegion.auxiliaryElevationAngle/auxiliaryAzimuthAngle, see
    WorldRuntime_RecomputeFieldRegionNormalsAndLighting) by the given deltas, the elevation clamped to
    -0x4000..-0x1000 and the azimuth wrapped to 16 bits, and relights the field with the unchanged light
    direction. The name is historical: nothing here is a field origin.
@@ -360,7 +360,7 @@ void WorldRuntime_AdjustFieldOriginWrappedClamped
   FieldGridDimensionCells auxiliaryElevationAngle;
 
   auxiliaryElevationAngle =
-       deltaElevationAngle + g_InGameRuntimeRoot->worldRuntime0A30.fieldRegion.regionHeight;
+       deltaElevationAngle + g_InGameRuntimeRoot->worldRuntime.fieldRegion.auxiliaryElevationAngle;
   if (WORLD_AUXILIARY_ELEVATION_MAXIMUM < auxiliaryElevationAngle) {
     auxiliaryElevationAngle = WORLD_AUXILIARY_ELEVATION_MAXIMUM;
   }
@@ -369,10 +369,10 @@ void WorldRuntime_AdjustFieldOriginWrappedClamped
   }
   WorldRuntime_RecomputeFieldRegionNormalsAndLighting
             (auxiliaryElevationAngle,
-             deltaAzimuthAngle + g_InGameRuntimeRoot->worldRuntime0A30.fieldRegion.regionWidth & 0xffff,
-             g_InGameRuntimeRoot->fieldRegionOriginWorldYQ12_0BAC,
-             g_InGameRuntimeRoot->fieldRegionOriginWorldXQ12_0BA8,
-             &g_InGameRuntimeRoot->worldRuntime0A30);
+             deltaAzimuthAngle + g_InGameRuntimeRoot->worldRuntime.fieldRegion.auxiliaryAzimuthAngle & 0xffff,
+             g_InGameRuntimeRoot->lightElevationAngle,
+             g_InGameRuntimeRoot->lightAzimuthAngle,
+             &g_InGameRuntimeRoot->worldRuntime);
   return;
 }
 
@@ -439,11 +439,11 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
 
 /* Address: 0x0050A610.
    Drag selection test: projects the node's world position to the screen and returns CF set when that pixel
-   lies inside the rectangle spanned by the two corners at +0x160/+0x164 and +0x168/+0x16C of boundsControl
-   (inclusive, in either corner order).
+   lies inside the rectangle spanned by the pointer press position and the current pointer position of
+   boundsControl (inclusive, in either corner order).
 */
 bool WorldRuntimeNode_IsPositionInsideBounds
-          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl)
+          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView *boundsControl)
 
 {
   int boundsSecondX;
@@ -462,10 +462,10 @@ bool WorldRuntimeNode_IsPositionInsideBounds
   projectedPositionPair =
        THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8,
                        Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3));
-  boundsMinX = boundsControl->extendedCoordinate160;
-  boundsSecondX = boundsControl->extendedCoordinate168;
-  boundsMinY = boundsControl->extendedCoordinate164;
-  boundsSecondY = boundsControl->extendedCoordinate16C;
+  boundsMinX = boundsControl->pointerPressX;
+  boundsSecondX = boundsControl->pointerX;
+  boundsMinY = boundsControl->pointerPressY;
+  boundsSecondY = boundsControl->pointerY;
   /* EAX = Q12 screen x, EDX = Q12 screen y */
   projectedScreenX = (int)projectedPositionPair >> 12;
   projectedScreenY = (int)((int64_t)projectedPositionPair >> (32 + 12));
@@ -616,10 +616,10 @@ void WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world
 /* Address: 0x0050D610.
    Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68) in EAX, ECX and EDX.
 */
-WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
+WorldCameraPosition WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
 
 {
-  WorldVector0EaxEcxEdx12 positionVector;
+  WorldCameraPosition positionVector;
 
   positionVector.xQ12= world->motion.positionXQ12;
   positionVector.yQ12 = world->motion.positionYQ12;
@@ -632,10 +632,10 @@ WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
    Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle, context
    +0x6C..+0x74) in EAX, ECX and EDX.
 */
-WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
+WorldCameraOrientation WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
 
 {
-  WorldVector1EaxEcxEdx12 motionVector;
+  WorldCameraOrientation motionVector;
 
   motionVector.magnitudeQ12= world->motion.positionMagnitudeQ12;
   motionVector.headingAngle = world->motion.headingAngle;
@@ -897,8 +897,8 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,(int *)modelRuntime);
     /* the army that owns the model */
     ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-    if (releasedObject== (void *)ownerArmy->runtimeState98) {
-      ownerArmy->runtimeState98 = 0;
+    if (releasedObject== (void *)ownerArmy->assignedTargetArmyRuntime) {
+      ownerArmy->assignedTargetArmyRuntime = 0;
     }
     /* the command target is only a live reference while ARMY_COMMAND_MODE_TARGET_ARMY is set; it is cleared
        together with the INTERRUPTED and AI_COMBAT_TARGET bits */
@@ -947,21 +947,21 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
     if (!definitionLookup.notFound) {
       overlayExtent = 0xffffffff;
       ownerNode = worldRuntime->ownerListHead;
-      overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags1A8;
+      overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;
       if (ownerNode != NULL) {
-        if (((ModelDefinition *)definitionRecord)->runtimeClassId4C == MODEL_RUNTIME_CLASS_14) {
+        if (((ModelDefinition *)definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
           overlayExtent =
                0x800 << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 0x1f);
         }
         overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
-                 [((ModelDefinition *)definitionRecord)->placementContactKindIndex278];
+                 [((ModelDefinition *)definitionRecord)->placementContactKindIndex];
         do {
           if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
               worldRuntime->activeFactionRuntimeIndex ==
               ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->
               factionIndex &&
               (modelOverlayBase = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.
-                                  runtimeDefinition->supportRadius19C,
+                                  runtimeDefinition->supportRadius,
                modelOverlayBase != 0)) {
             overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,
                             ownerNode->worldXQ12,worldRuntime->fieldGrid);
@@ -980,7 +980,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
    that class has nothing to update, so this does nothing.
 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass5
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
   return;
@@ -992,7 +992,7 @@ void ArmyRuntimeClass_NoOpTickUpdateForClass5
    that class has nothing to update, so this does nothing.
 */
 void ArmyRuntimeClass_NoOpTickUpdateForClass6
-               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
+               (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView *modelRuntime)
 
 {
   return;
@@ -1038,7 +1038,7 @@ uint32_t UnifiedRuntimeDefault_OneArgReturnZero(void *context)
    0, 5-9, 12 and 21): accepts every placement (CF clear).
 */
 bool UnifiedRuntimeDefault_TwoArgSuccess
-          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
+          (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView *modelRuntime)
 
 {
   return false;
@@ -1080,9 +1080,9 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
     if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime) {
       modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = NULL;
     }
-    if (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT &&
-        detachedObject == modelRuntime->classLinkState.modelLinkOrState60.modelRuntime) {
-      modelRuntime->classLinkState.modelLinkOrState60.modelRuntime = NULL;
+    if (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT &&
+        detachedObject == modelRuntime->classLinkState.modelLinkOrState.modelRuntime) {
+      modelRuntime->classLinkState.modelLinkOrState.modelRuntime = NULL;
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
@@ -1212,7 +1212,7 @@ void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CA
   worldRuntime->lighting.color13CArgb = lightingColor13CArgb;
   worldRuntime->lighting.baseColorArgb = baseColorArgb;
   worldRuntime->lighting.rampColorArgb = rampColor124Argb;
-  worldRuntime->lighting.color12CArgb = rampColor12CArgb;
+  worldRuntime->lighting.secondaryColorArgb = rampColor12CArgb;
   TerrainLighting_BuildColorRampAndSetBaseColor(rampColor12CArgb,rampColor124Argb,baseColorArgb);
   return;
 }
@@ -1220,8 +1220,8 @@ void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CA
 
 /* Address: 0x0050D5C0.
    Sets the terrain light direction (elevation, azimuth) and relights the field: recomputes the triangle normals
-   and the directional lighting of the field grid. The auxiliary angle pair is only stored (in the fields named
-   fieldRegion.regionHeight/regionWidth; callers clamp and wrap it like the light direction, elevation
+   and the directional lighting of the field grid. The auxiliary angle pair is only stored (in
+   fieldRegion.auxiliaryElevationAngle/auxiliaryAzimuthAngle; callers clamp and wrap it like the light direction, elevation
    -0x4000..-0x1000, azimuth & 0xFFFF). Callers: level load, the periodic lighting cycle and the light-direction
    commands.
 */
@@ -1230,17 +1230,16 @@ void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
           Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime)
 
 {
-  /* worldRuntime is the world embedded in the in-game root; the light angles are stored in the root fields
-     named fieldRegionOriginWorldXQ12_0BA8 (azimuth) and fieldRegionOriginWorldYQ12_0BAC (elevation) */
-  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->
-       fieldRegionOriginWorldXQ12_0BA8 = lightAzimuthAngle;
-  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->
-       fieldRegionOriginWorldYQ12_0BAC = lightElevationAngle;
+  /* worldRuntime is the world embedded in the in-game root; the light angles are stored in the root */
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRoot, worldRuntime)->
+       lightAzimuthAngle = lightAzimuthAngle;
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRoot, worldRuntime)->
+       lightElevationAngle = lightElevationAngle;
   FieldGrid_RecomputeInteriorTriangleNormalAngles(worldRuntime->fieldGrid);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (lightElevationAngle,lightAzimuthAngle,worldRuntime->fieldGrid);
-  worldRuntime->fieldRegion.regionWidth = auxiliaryAzimuthAngle;
-  worldRuntime->fieldRegion.regionHeight = auxiliaryElevationAngle;
+  worldRuntime->fieldRegion.auxiliaryAzimuthAngle = auxiliaryAzimuthAngle;
+  worldRuntime->fieldRegion.auxiliaryElevationAngle = auxiliaryElevationAngle;
   return;
 }
 

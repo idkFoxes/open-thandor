@@ -23,7 +23,7 @@ void Technology_UnlockForFaction
 {
   WorldOwnerListNode *ownerNode;
   ArmyRuntimeSlot *modelRuntimeHolder;
-  InGameRuntimeRootImageC3E4 *node;
+  InGameRuntimeRoot *node;
   uint32_t technologyBitMask;
   uint32_t *factionTechnologyMaskWord;
   TechnologyAsset *technologyAsset;
@@ -38,7 +38,7 @@ void Technology_UnlockForFaction
     *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
     /* no announcement while the session still waits for its players */
     if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) &&
-       (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex)) {
+       (factionIndex == (node->worldRuntime).activeFactionRuntimeIndex)) {
       if ((notificationYQ12 == 0) && (notificationXQ12 == 0)) {
         InGameNotificationQueue_InsertPriorityRecord
                   (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,5,
@@ -53,7 +53,7 @@ void Technology_UnlockForFaction
     Technology_UnlockForFaction
               (0,0,technologyAsset->records[technologyIndex].dependencyTechnologyIndex,factionIndex)
     ;
-    for (ownerNode = (node->worldRuntime0A30).ownerListHead; ownerNode != NULL;
+    for (ownerNode = (node->worldRuntime).ownerListHead; ownerNode != NULL;
         ownerNode = ownerNode->nextNode) {
       if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (modelRuntimeHolder =
@@ -62,7 +62,7 @@ void Technology_UnlockForFaction
         ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(factionIndex,modelRuntimeHolder);
       }
     }
-    if (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex) {
+    if (factionIndex == (node->worldRuntime).activeFactionRuntimeIndex) {
       InGameBuildCatalog_RebuildGrid((UiNodeBase *)node);
       InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)node);
     }
@@ -131,13 +131,13 @@ bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fac
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7]) {
     /* scan the world's model owner nodes for an army of the faction that is already researching (runtime flag
        0x40) this technology (+0x100) */
-    for (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead; ownerNode != NULL;
+    for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead; ownerNode != NULL;
         ownerNode = ownerNode->nextNode) {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         researchingModel = ownerNode->runtimePayload;
         if ((researchingModel->classState.stateFlags & ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING) != 0 &&
             factionIndex == researchingModel->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
-            technologyIndex == researchingModel->researchTechnologyId100) {
+            technologyIndex == researchingModel->researchTechnologyId) {
           return false;
         }
       }
@@ -223,13 +223,13 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
       definitionRecord = (ModelDefinition *)modelLookup.modelDefinition;
       if (!modelLookup.notFound) {
         /* per target class (+0x5C) the largest armour (+0x60); for mobile models (+0x18) the top speed (+0x0C) */
-        if ((int)(&g_TechnologyCategoryMaximum0)[definitionRecord->targetClassIndex5C] <
-            (int)definitionRecord->maximumHealth60) {
-          (&g_TechnologyCategoryMaximum0)[definitionRecord->targetClassIndex5C] = definitionRecord->maximumHealth60;
+        if ((int)(&g_TechnologyCategoryMaximum0)[definitionRecord->targetClassIndex] <
+            (int)definitionRecord->maximumHealth) {
+          (&g_TechnologyCategoryMaximum0)[definitionRecord->targetClassIndex] = definitionRecord->maximumHealth;
         }
-        if ((definitionRecord->accelerationPerTick18 != 0) &&
-           ((int)g_AiArmyCandidateFlaggedDefinitionValueMaximum < definitionRecord->movementSpeed0C)) {
-          g_AiArmyCandidateFlaggedDefinitionValueMaximum = definitionRecord->movementSpeed0C;
+        if ((definitionRecord->accelerationPerTick != 0) &&
+           ((int)g_AiArmyCandidateFlaggedDefinitionValueMaximum < definitionRecord->movementSpeed)) {
+          g_AiArmyCandidateFlaggedDefinitionValueMaximum = definitionRecord->movementSpeed;
         }
       }
     }

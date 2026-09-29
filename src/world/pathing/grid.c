@@ -30,8 +30,8 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   ModelRuntimeClassId runtimeClassId;
   int64_t wideProductXOrY;
   int64_t wideProductY;
-  WorldPositionXYEaxEdx8 targetWorldPosition;
-  WorldPositionXYEaxEdx8 fallbackWorldPosition;
+  WorldPositionXY targetWorldPosition;
+  WorldPositionXY fallbackWorldPosition;
   uint8_t gridClassShift;
   int startColumnOrScratch; /* also the Q12 row of a cell centre and the class id at the end */
   uint32_t columnLimitOrWidth;
@@ -45,7 +45,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   GridPathUnreachableReferenceRow32 targetRow;
   GridScratchCell *routeScratchCell;
   bool segmentBlocked;
-  WorldPositionXYEaxEdx8 primaryWorldPosition;
+  WorldPositionXY primaryWorldPosition;
   NearestCellResult nearestCell;
   GridPathMarkedRegionCellRegisterResult reachableRegionCell;
   PathingDestinationResult resolvedDestination;
@@ -107,21 +107,21 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   modelDefinition = (routeEntityRuntime->common).ownership.definitionOrClassRecord;
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
-  runtimeClassId = modelDefinition->runtimeClassId4C;
+  runtimeClassId = modelDefinition->runtimeClassId;
   if (overlappedEntity != NULL) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
-      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
+      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId])
               (overlappedEntity);
   }
   armyRuntime = (routeEntityRuntime->common).ownership.runtimeLink;
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[runtimeClassId]
             (routeEntityRuntime);
   g_GridPathEntityClassMask = 1 << ((uint8_t)armyRuntime->factionIndex & 0x1f);
-  gridClassShift = (uint8_t)modelDefinition->gridClassification260;
+  gridClassShift = (uint8_t)modelDefinition->footprintRadiusClass;
   g_GridPathHighCostMask = GRID_SCRATCH_HIGH_BAND0 << (gridClassShift & 0x1f);
   g_GridPathBlockingMask =
        GRID_SCRATCH_LOW_BAND0 << (gridClassShift & 0x1f) |
-       GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)modelDefinition->gridClassification264 & 0x1f);
+       GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)modelDefinition->terrainTraversalClass & 0x1f);
   nearestCell = GridPathCost_FindNearestUnblockedCell(startRow,startColumnOrScratch);
   columnLimitOrWidth = g_GridScratchWidth;
   if (nearestCell.relocated) {
@@ -225,10 +225,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
   targetWorldXQ12 = fallbackWorldPosition.worldXQ12;
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
-  startColumnOrScratch = ((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->runtimeClassId4C;
+  startColumnOrScratch = ((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->runtimeClassId;
   if (overlappedEntity != NULL) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
+      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId])
               (overlappedEntity);
   }
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[startColumnOrScratch](routeEntityRuntime);
@@ -592,7 +592,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
     do {
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0)) &&
-         ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex278 != 1)) {
+         ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex != 1)) {
         wideProductX = (int64_t)ownerNode->worldXQ12 * 0x1c6e9c;
         wideProductY = (int64_t)ownerNode->worldYQ12 * -0x20c8cc;
         scaledRowTerm = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
@@ -628,7 +628,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
     do {
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex != 0)) &&
-         ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex278 != 1)) {
+         ((int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->placementContactKindIndex != 1)) {
         wideProductX = (int64_t)ownerNode->worldXQ12 * 0x1c6e9c;
         wideProductY = (int64_t)ownerNode->worldYQ12 * -0x20c8cc;
         scaledRowTerm = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
@@ -678,8 +678,8 @@ bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
   targetModelDefinition = (ModelDefinition *)
           (targetRuntimePair->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   unreachable = GridScratch_TestWorldPointReachability
-                    (GRID_SCRATCH_LOW_BAND0 << ((uint8_t)targetModelDefinition->gridClassification260 & 0x1f) |
-                     GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)targetModelDefinition->gridClassification264 & 0x1f),
+                    (GRID_SCRATCH_LOW_BAND0 << ((uint8_t)targetModelDefinition->footprintRadiusClass & 0x1f) |
+                     GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)targetModelDefinition->terrainTraversalClass & 0x1f),
                      sourceWorldPoint->worldYQ12,sourceWorldPoint->worldXQ12,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.y,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.x);
@@ -930,7 +930,7 @@ bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t 
    routeEntityRuntime's own segment (the input target when fewer than two models were found).
 */
 
-WorldPositionXYEaxEdx8
+WorldPositionXY
 EntityPathing_RebuildOverlappingGroupRoutes
           (UQ12 targetWorldY,UQ12 targetWorldX,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime)
@@ -955,8 +955,8 @@ EntityPathing_RebuildOverlappingGroupRoutes
   EntityPathingPriorityPair *influencePair;
   EntityPathingPriorityPair *pairCursor;
   bool masksOverlap;
-  WorldPositionXYEaxEdx8 routeTarget;
-  WorldPositionXYEaxEdx8 resolvedTarget;
+  WorldPositionXY routeTarget;
+  WorldPositionXY resolvedTarget;
   ModelRuntimeNode *entityModelNode;
   
   routeTarget.worldYQ12 = targetWorldY;
@@ -979,7 +979,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     searchRadius = deltaY;
   }
   /* the definition's clearance radius */
-  searchRadius = searchRadius + (int)((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->placementRadiusOrClearanceDC;
+  searchRadius = searchRadius + (int)((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->footprintRadius;
   secondMaskHigh = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldXOrScratch + targetWorldX) >> 1);
   secondMaskLow = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldY + targetWorldY) >> 1);
   entityWorldXOrScratch = 32; /* capacity of g_EntityPathingPriorityPairs */
@@ -992,7 +992,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
       masksOverlap = DepthBinMasks_Overlap
                          (ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear,
                           secondMaskLow,secondMaskHigh);
-      if ((masksOverlap) && (((ModelDefinition *)candidateRecord)->accelerationPerTick18 != 0)) {
+      if ((masksOverlap) && (((ModelDefinition *)candidateRecord)->accelerationPerTick != 0)) {
         pairCursor->entity = candidateEntity;
         pairCursor->priority = 0;
         g_EntityPathingPriorityPairCount++;
@@ -1017,7 +1017,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
           entityWorldXOrScratch == ((ArmyRuntimeSlot *)candidateRecord)->factionIndex)) &&
          (pairCursor->priority = pairCursor->priority + 1,
          (((ArmyRuntimeSlot *)candidateRecord)->movementStateFlags & 1) == 0)) {
-        pairCursor->priority = pairCursor->priority + ((ModelDefinition *)candidateDefinition)->movementSpeed0C;
+        pairCursor->priority = pairCursor->priority + ((ModelDefinition *)candidateDefinition)->movementSpeed;
       }
       heapBase = g_EntityPathingPriorityPairs;
       pairCursor++;
@@ -1053,7 +1053,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     } while (1 < heapSize);
     do {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [((ModelDefinition *)(influencePair->entity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
+        [((ModelDefinition *)(influencePair->entity->common).ownership.definitionOrClassRecord)->runtimeClassId])
                 (influencePair->entity);
       pairsRemaining--;
       routesRemaining = g_EntityPathingPriorityPairCount;
@@ -1069,7 +1069,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
         entityModelNode = (candidateEntity->common).ownership.modelNode;
         GridInfluence_SetLowDistanceBandsAroundWorldPoint
                   (((ModelDefinition *)(candidateEntity->common).ownership.definitionOrClassRecord)->
-                   placementRadiusOrClearanceDC,(entityModelNode->worldTransform).translation.y,
+                   footprintRadius,(entityModelNode->worldTransform).translation.y,
                    (entityModelNode->worldTransform).translation.x);
       }
       else if (candidateEntity == routeEntityRuntime) {
@@ -1214,7 +1214,7 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
    a blocked line snaps it to the target cell's centre. Another model whose target changed gets it as new
    pending move target. Returns the target used.
 */
-WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
+WorldPositionXY EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
           EntityPathingRouteEntityRuntimeView *routeEntityRuntime)
 
@@ -1231,13 +1231,13 @@ WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
   int targetRow;
   uint32_t rowLimit;
   bool segmentBlocked;
-  WorldPositionXYEaxEdx8 resolvedTarget;
+  WorldPositionXY resolvedTarget;
   NearestCellResult nearestCell;
   ModelRuntimeNode *entityModelNode;
 
   entityModelNode = routeEntityRuntime->modelNode;
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
-    [routeEntityRuntime->modelDefinition->runtimeClassId4C])
+    [routeEntityRuntime->modelDefinition->runtimeClassId])
             ((GameEntityRuntime *)routeEntityRuntime);
   /* start cell from the model position, clamped to 1..size-2 */
   wideProductXOrY = (int64_t)(entityModelNode->worldTransform).translation.x * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
@@ -1289,11 +1289,11 @@ WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
     rowLimit = g_GridScratchHeight;
   }
   g_GridPathEntityClassMask = 1 << ((uint8_t)entityMovement->factionIndex & 0x1f);
-  gridClassShift = (uint8_t)routeEntityRuntime->modelDefinition->gridClassification260;
+  gridClassShift = (uint8_t)routeEntityRuntime->modelDefinition->footprintRadiusClass;
   g_GridPathHighCostMask = GRID_SCRATCH_HIGH_BAND0 << (gridClassShift & 0x1f);
   g_GridPathBlockingMask =
        GRID_SCRATCH_LOW_BAND0 << (gridClassShift & 0x1f) |
-       GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)routeEntityRuntime->modelDefinition->gridClassification264 & 0x1f);
+       GRID_SCRATCH_TERRAIN_CLASS_BIT24 << ((uint8_t)routeEntityRuntime->modelDefinition->terrainTraversalClass & 0x1f);
   nearestCell = GridPathCost_FindNearestUnblockedCell(startRowOrDeltaY,startColumnOrDeltaX);
   targetColumn = nearestCell.selectedColumn;
   targetRow = nearestCell.selectedRow;
@@ -1309,7 +1309,7 @@ WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
     wideProductXOrY = (int64_t)startColumnOrDeltaX * FIELD_GRID_WORLD_ROW_STEP_Y;
     targetWorldYQ12 = (int)((uint64_t)wideProductXOrY >> 32) << 20 | (uint32_t)wideProductXOrY >> 12;
   }
-  columnLimitOrRadius = routeEntityRuntime->modelDefinition->placementRadiusOrClearanceDC;
+  columnLimitOrRadius = routeEntityRuntime->modelDefinition->footprintRadius;
   {
     /* Rewritten from the assembly (0x00536BB0-0x00536C89). The segment from the entity to the
        target is split in halves until each piece spans at most 0x240 on both axes (or 64 pieces
@@ -1529,7 +1529,7 @@ GridPathRegion_MarkUnreachableFromCell
   uint64_t markedCellIndex;
   int rowBaseIndex;
   GridPathMarkedRegionCellRegisterResult markedCell;
-  GridPathUnreachableRecursiveEdiEdx8 recursionResult;
+  GridPathBestUnreachableCell recursionResult;
 
   g_GridPathUnreachableRegionReferenceColumn = referenceColumn;
   g_GridPathUnreachableRegionReferenceRow = referenceRow;
@@ -1538,7 +1538,7 @@ GridPathRegion_MarkUnreachableFromCell
   recursionResult = GridPathRegion_MarkUnreachableRecursive
                     (g_GridScratchWidth << 3,g_GridScratchPrimary + rowBaseIndex + column,0x7fffffff
                      ,(rowBaseIndex + column) * 8);
-  markedCellIndex = THANDOR_BITCAST(GridPathUnreachableRecursiveEdiEdx8, uint64_t, recursionResult) >> 3 & 0x1fffffff;
+  markedCellIndex = THANDOR_BITCAST(GridPathBestUnreachableCell, uint64_t, recursionResult) >> 3 & 0x1fffffff;
   markedCell.selectedRow = (FieldGridCellCoordinate)(markedCellIndex / g_GridScratchWidth);
   markedCell.selectedColumn = (FieldGridCellCoordinate)(markedCellIndex % (uint64_t)g_GridScratchWidth);
   return markedCell;
@@ -1948,7 +1948,7 @@ void GridScratch_ResetTraversalFlagsAndCosts(void)
    bestCost, and recurses into the unvisited open cells of the rows above and below. Returns the best distance
    and the best cell's byte offset in the scratch grid.
 */
-GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
+GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
           (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
           uint32_t bestCellByteOffset)
 
@@ -1963,7 +1963,7 @@ GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
   GridPathCost columnDistance;
   GridScratchCell *leftEndCell;
   GridScratchCell *probeOrRowCursor;
-  GridPathUnreachableRecursiveEdiEdx8 bestResult;
+  GridPathBestUnreachableCell bestResult;
   GridPathCost updatedBestCost;
   
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;

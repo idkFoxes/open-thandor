@@ -29,7 +29,7 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
   
   if (((asset->common).magic == ASSET_MAGIC_LEV) &&
      ((asset->common).converterVersion == PCK_CONVERTER_LEV_00070001)) {
-    path = (asset->common).buildMetadata.assetRelativeAddressAnchor28 +
+    path = (asset->common).buildMetadata.reserved28_2F +
            ((asset->pathOffsets).endingMovieBasePathOffset - 0x28);
     remainingDwordCount = 0x80; /* 256 UTF-16 code units of the level path */
     /* UTF-16 characters 4 and 5 of the movie path, read as one dword */
@@ -104,11 +104,11 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
 */
 
 LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
-          (LevelAssetRuntimeImagePrefix370 *levelImage,WorldRuntimeContext *worldRuntime)
+          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
   LevelPlayerSlotByteOffset32 playerSlotByteOffset;
-  InGameLevelConditionStorageView800 *levelConditionStorage;
+  InGameLevelConditionStorage *levelConditionStorage;
   void **loadedResourcePointerArray;
   void *resultOrPointer;
   TechnologyAsset *loadedTechnologyAsset;
@@ -188,7 +188,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
         }
         g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
         g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
-        assetPath = (levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+        assetPath = (levelImage->header).common.buildMetadata.reserved28_2F +
                   ((levelImage->header).pathOffsets.technologyPathOffset - 0x28);
         WidePath_SetExtensionCode(0x636574,(uint16_t *)assetPath); /* "tec" */
         loadEntryResult = Package_LoadEntry((uint16_t *)assetPath);
@@ -285,7 +285,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
           g_GameFactionRuntimeImage.records[3].factionClassOrMode =
                levelImage->playerSlots[2].aiClassOrMode + 3;
           g_GameFactionRuntimeImage.tail.activeFactionCount =
-               (levelImage->runtimeTail2E0).activeFactionCount;
+               (levelImage->worldSettings).activeFactionCount;
           g_GameFactionRuntimeImage.records[4].factionClassOrMode =
                levelImage->playerSlots[3].aiClassOrMode + 4;
           g_GameFactionRuntimeImage.records[5].factionClassOrMode =
@@ -302,7 +302,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                (levelImage->header).resourceTables.armyAssetPathCount;
           g_MoviePlaybackBaseFrameGroup = 0;
           g_MoviePlaybackScheduleCounter = 0;
-          assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+          assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F
                             + ((levelImage->header).resourceTables.effectAssetPathTableOffset - 0x28
                               ));
           for (remainingRecordCount = (levelImage->header).resourceTables.effectAssetPathCount;
@@ -323,7 +323,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
             MoviePlayback_AdvanceScheduledFrameAndTick();
             assetPathCursor = assetPathCursor + 0x20; /* next 0x40-byte path record */
           }
-          assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+          assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F
                             + ((levelImage->header).resourceTables.shotAssetPathTableOffset - 0x28))
           ;
           for (remainingRecordCount = (levelImage->header).resourceTables.shotAssetPathCount;
@@ -348,7 +348,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
           resultOrPointer = (void *)statusResult.valueOrError;
           if (!statusResult.failed) {
             assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
-                               assetRelativeAddressAnchor28 +
+                               reserved28_2F +
                               ((levelImage->header).resourceTables.modelAssetPathTableOffset - 0x28)
                               );
             for (remainingRecordCount = (levelImage->header).resourceTables.modelAssetPathCount;
@@ -370,7 +370,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
               assetPathCursor = assetPathCursor + 0x20; /* next 0x40-byte path record */
             }
             assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
-                               assetRelativeAddressAnchor28 +
+                               reserved28_2F +
                               ((levelImage->header).resourceTables.armyAssetPathTableOffset - 0x28))
             ;
             for (remainingRecordCount = (levelImage->header).resourceTables.armyAssetPathCount;
@@ -399,11 +399,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
               /* stage 1: terrain textures (surface, ground) and the field grid */
               statusResult = TerrainVisualResources_LoadPrimary
                                  ((uint16_t *)((levelImage->header).common.buildMetadata.
-                                           assetRelativeAddressAnchor28 +
+                                           reserved28_2F +
                                           ((levelImage->header).pathOffsets.
                                            surfaceTextureBasePathOffset - 0x28)),
                                   (uint16_t *)((levelImage->header).common.buildMetadata.
-                                           assetRelativeAddressAnchor28 +
+                                           reserved28_2F +
                                           ((levelImage->header).pathOffsets.
                                            groundTextureBasePathOffset - 0x28)),
                                   (FieldGridAsset *)(levelImage->header).pathOffsets.levelPathOffset
@@ -422,10 +422,10 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                     /* The decompiler lost these two locals; the original reads them from the level header
                        (+0xC0 army and +0xC8 effect texture base paths). */
                     armyTextureBasePath =
-                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                         (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F +
                                       ((levelImage->header).pathOffsets.armyTextureBasePathOffset - 0x28));
                     effectTextureBasePath =
-                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                         (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F +
                                       ((levelImage->header).pathOffsets.effectTextureBasePathOffset - 0x28));
                     armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath);
                     resultOrPointer = (void *)armyInitResult.errorOrValue;
@@ -435,7 +435,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                       g_MoviePlaybackScheduleSpan = 4;
                       statusResult = ShotRuntime_InitGraphicsResources
                                          ((uint16_t *)((levelImage->header).common.buildMetadata.
-                                                   assetRelativeAddressAnchor28 +
+                                                   reserved28_2F +
                                                   ((levelImage->header).pathOffsets.
                                                    shotTextureBasePathOffset - 0x28)));
                       resultOrPointer = (void *)statusResult.valueOrError;
@@ -450,14 +450,14 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                           g_MoviePlaybackScheduleCounter = 0;
                           g_MoviePlaybackScheduleSpan = 6;
                           WorldRuntime_SetTerrainLightingConfiguration
-                                    ((levelImage->runtimeTail2E0).terrainLightingColor13CArgb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor138Argb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor134Argb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor130Argb,
-                                     (levelImage->runtimeTail2E0).terrainRampColor12CArgb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor128Argb,
-                                     (levelImage->runtimeTail2E0).terrainRampColor124Argb,
-                                     (levelImage->runtimeTail2E0).terrainBaseColorArgb,worldRuntime)
+                                    ((levelImage->worldSettings).terrainLightingColor13CArgb,
+                                     (levelImage->worldSettings).terrainLightingColor138Argb,
+                                     (levelImage->worldSettings).terrainLightingColor134Argb,
+                                     (levelImage->worldSettings).terrainLightingColor130Argb,
+                                     (levelImage->worldSettings).terrainRampColor12CArgb,
+                                     (levelImage->worldSettings).terrainLightingColor128Argb,
+                                     (levelImage->worldSettings).terrainRampColor124Argb,
+                                     (levelImage->worldSettings).terrainBaseColorArgb,worldRuntime)
                           ;
                           /* start camera from the local faction's player slot, then the lit field region
                              from the tail */
@@ -482,11 +482,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                     (2,(int)countOrPackedValue >> 0x10,countOrPackedValue & 0xffff,
                                      *(UQ12 *)((uint8_t *)&levelImage->playerSlots[0].
                                                      startCameraMagnitudeQ12 + playerSlotByteOffset),worldRuntime);
-                          countOrPackedValue = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
+                          countOrPackedValue = (levelImage->worldSettings).packedFieldRegionOriginYHigh16XLow16;
                           WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
                           regionOriginOrRelationMask = countOrPackedValue;
                           WorldRuntime_CommitCameraTargetDistance(worldRuntime);
-                          flagsOrRelationMask = (levelImage->runtimeTail2E0).
+                          flagsOrRelationMask = (levelImage->worldSettings).
                                    packedFieldRegionHeightHigh16WidthLow16;
                           WorldRuntime_RecomputeFieldRegionNormalsAndLighting
                                     ((int)flagsOrRelationMask >> 0x10,flagsOrRelationMask & 0xffff,
@@ -495,7 +495,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                           /* initial army placements (0x20-byte records at LEV +[0xDC]) */
                           remainingRecordCount = (levelImage->header).initialArmyPlacementRecordCount;
                           placementCursor = (LevelInitialArmyPlacementRecord20 *)
-                                            ((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                                            ((levelImage->header).common.buildMetadata.reserved28_2F +
                                              ((levelImage->header).resourceTables.
                                               runtimePrefixByteSizeAndInitialArmyPlacementOffset - 0x28));
                           MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -534,7 +534,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                             soundSlotCursor++;
                           }
                           assetPath = (levelImage->header).common.buildMetadata.
-                                    assetRelativeAddressAnchor28 +
+                                    reserved28_2F +
                                     ((levelImage->header).pathOffsets.soundBasePathOffset - 0x28);
                           WidePath_SetExtensionCode(0x6d6173,(uint16_t *)assetPath); /* "sam" */
                           WidePath_SplitParentAndLeaf
@@ -589,11 +589,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                     g_InGameLevelMusicVoiceSet2 = (DirectSoundVoiceSet *)0x0;
                                     g_InGameLevelMusicVoiceSet3 = (DirectSoundVoiceSet *)0x0;
                                     /* the four level effect and four music samples of the tail */
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.effectSampleNumbers[0]
+                                    if ((levelConditionStorage->levelImage).worldSettings.effectSampleNumbers[0]
                                         != 0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[0],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
@@ -606,11 +606,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
                                       }
                                     }
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.effectSampleNumbers[1]
+                                    if ((levelConditionStorage->levelImage).worldSettings.effectSampleNumbers[1]
                                         != 0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[1],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
@@ -623,11 +623,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
                                       }
                                     }
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.effectSampleNumbers[2]
+                                    if ((levelConditionStorage->levelImage).worldSettings.effectSampleNumbers[2]
                                         != 0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[2],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
@@ -640,11 +640,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
                                       }
                                     }
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.effectSampleNumbers[3]
+                                    if ((levelConditionStorage->levelImage).worldSettings.effectSampleNumbers[3]
                                         != 0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  effectSampleNumbers[3],
                                                  (uint16_t *)(u_sound_level00_sam_0050df6c + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_level00_sam_0050df6c);
@@ -657,11 +657,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
                                       }
                                     }
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.musicSampleNumbers[0] !=
+                                    if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[0] !=
                                         0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[0],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
@@ -674,11 +674,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
                                       }
                                     }
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.musicSampleNumbers[1] !=
+                                    if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[1] !=
                                         0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[1],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
@@ -691,11 +691,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
                                       }
                                     }
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.musicSampleNumbers[2] !=
+                                    if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[2] !=
                                         0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[2],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
@@ -708,11 +708,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         Resource_Release((SoundSampleAsset *)resourceLoadResult.bufferOrError);
                                       }
                                     }
-                                    if ((levelConditionStorage->levelImage).runtimeTail2E0.musicSampleNumbers[3] !=
+                                    if ((levelConditionStorage->levelImage).worldSettings.musicSampleNumbers[3] !=
                                         0) {
                                       g_WideNumberFormatUtf16
                                                 (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                 (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                 (levelConditionStorage->levelImage).worldSettings.
                                                  musicSampleNumbers[3],
                                                  (uint16_t *)(u_sound_music00_sam_0050df90 + 0xb));
                                       resourceLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_0050df90);
@@ -747,7 +747,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                              rootNodeOffsetOrPointer)->linkedDefinitionIds[0]);
                                         modelFlagsOrSoundIndex =
                                              ((ModelDefinition *)modelLookupResult.modelDefinition)->
-                                                                 runtimeClassId4C;
+                                                                 runtimeClassId;
                                         nextClass0BArmyDefinition = registryArmyDefinition;
                                         if (((modelFlagsOrSoundIndex != 0xb) &&
                                             ((nextClass10ArmyDefinition = registryArmyDefinition,
@@ -782,7 +782,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                                 ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->
                                                 ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) {
                                               counterOrClassId = ((ModelRuntimeSlot *)ownerListNode->runtimePayload)->
-                                                                 definitionOrSavedId.runtimeDefinition->runtimeClassId4C;
+                                                                 definitionOrSavedId.runtimeDefinition->runtimeClassId;
                                               if (counterOrClassId == 0x12) {
                                                 flagsOrRelationMask = flagsOrRelationMask | 2;
                                               }
@@ -817,12 +817,12 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                     /* initial relations: every pair inside one 8-bit faction group of tail +0x40
                                        gets state 4/4, of tail +0x3C state 8/8 */
                                     countOrPackedValue = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->
-                                            levelImage).runtimeTail2E0.relationUiFlags;
+                                            levelImage).worldSettings.relationUiFlags;
                                     flagsOrRelationMask = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->
-                                             levelImage).runtimeTail2E0.
+                                             levelImage).worldSettings.
                                              relationState4FactionGroupMasks;
                                     regionOriginOrRelationMask = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->
-                                             levelImage).runtimeTail2E0.
+                                             levelImage).worldSettings.
                                              relationState8FactionGroupMasks;
                                     g_GameFactionRuntimeImage.tail.relationUiFlags = countOrPackedValue;
                                     sourceBitOrIndex = flagsOrRelationMask & 0xff;
@@ -953,11 +953,11 @@ load_failed:
 */
 
 LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
-          (FrontendLoadedLevelRuntimeImage370 *levelImage,WorldRuntimeContext *worldRuntime)
+          (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
   LevelPlayerSlotByteOffset32 playerSlotByteOffset;
-  InGameLevelConditionStorageView800 *levelConditionStorage;
+  InGameLevelConditionStorage *levelConditionStorage;
   void **loadedResourcePointerArray;
   void *resultOrPointer;
   TechnologyAsset *loadedTechnologyAsset;
@@ -1021,7 +1021,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
         }
         g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
         g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
-        assetPath = (levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+        assetPath = (levelImage->header).common.buildMetadata.reserved28_2F +
                   ((levelImage->header).pathState.technologyPathOffset - 0x28);
         WidePath_SetExtensionCode(0x636574,(uint16_t *)assetPath); /* "tec" */
         loadEntryResult = Package_LoadEntry((uint16_t *)assetPath);
@@ -1041,7 +1041,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                (levelImage->header).resourceTables.armyAssetPathCount;
           g_MoviePlaybackBaseFrameGroup = 0;
           g_MoviePlaybackScheduleCounter = 0;
-          pathTableCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+          pathTableCursor = (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F
                             + ((levelImage->header).resourceTables.effectAssetPathTableOffset - 0x28
                               ));
           for (remainingPathCount = (levelImage->header).resourceTables.effectAssetPathCount; remainingPathCount != 0;
@@ -1061,7 +1061,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathTableCursor = pathTableCursor + 0x20; /* next 0x40-byte path record */
           }
-          pathTableCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+          pathTableCursor = (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F
                             + ((levelImage->header).resourceTables.shotAssetPathTableOffset - 0x28))
           ;
           for (remainingPathCount = (levelImage->header).resourceTables.shotAssetPathCount; remainingPathCount != 0;
@@ -1085,7 +1085,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
           resultOrPointer = (void *)statusResult.valueOrError;
           if (!statusResult.failed) {
             pathTableCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
-                               assetRelativeAddressAnchor28 +
+                               reserved28_2F +
                               ((levelImage->header).resourceTables.modelAssetPathTableOffset - 0x28)
                               );
             for (remainingPathCount = (levelImage->header).resourceTables.modelAssetPathCount; remainingPathCount != 0;
@@ -1106,7 +1106,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
               pathTableCursor = pathTableCursor + 0x20; /* next 0x40-byte path record */
             }
             pathTableCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
-                               assetRelativeAddressAnchor28 +
+                               reserved28_2F +
                               ((levelImage->header).resourceTables.armyAssetPathTableOffset - 0x28))
             ;
             for (remainingPathCount = (levelImage->header).resourceTables.armyAssetPathCount; remainingPathCount != 0;
@@ -1134,11 +1134,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
               /* stage 1: terrain textures (surface, ground) and the field grid */
               statusResult = TerrainVisualResources_LoadAndClearCellOverlayFlags
                                  ((uint16_t *)((levelImage->header).common.buildMetadata.
-                                           assetRelativeAddressAnchor28 +
+                                           reserved28_2F +
                                           ((levelImage->header).pathState.
                                            surfaceTextureBasePathOffset - 0x28)),
                                   (uint16_t *)((levelImage->header).common.buildMetadata.
-                                           assetRelativeAddressAnchor28 +
+                                           reserved28_2F +
                                           ((levelImage->header).pathState.
                                            groundTextureBasePathOffset - 0x28)),
                                   (FieldGridAsset *)
@@ -1157,10 +1157,10 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                     /* The decompiler lost these two locals; the original reads them from the level header
                        (+0xC0 army and +0xC8 effect texture base paths). */
                     armyTextureBasePath =
-                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                         (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F +
                                       ((levelImage->header).pathState.armyTextureBasePathOffset - 0x28));
                     effectTextureBasePath =
-                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                         (uint16_t *)((levelImage->header).common.buildMetadata.reserved28_2F +
                                       ((levelImage->header).pathState.effectTextureBasePathOffset - 0x28));
                     armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath);
                     resultOrPointer = (void *)armyInitResult.errorOrValue;
@@ -1170,7 +1170,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                       g_MoviePlaybackScheduleSpan = 4;
                       statusResult = ShotRuntime_InitGraphicsResources
                                          ((uint16_t *)((levelImage->header).common.buildMetadata.
-                                                   assetRelativeAddressAnchor28 +
+                                                   reserved28_2F +
                                                   ((levelImage->header).pathState.
                                                    shotTextureBasePathOffset - 0x28)));
                       resultOrPointer = (void *)statusResult.valueOrError;
@@ -1186,14 +1186,14 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                           g_MoviePlaybackScheduleSpan = 6;
                           GameFactionRuntime_RebaseLoadedArmyReferences();
                           WorldRuntime_SetTerrainLightingConfiguration
-                                    ((levelImage->runtimeTail2E0).terrainLightingColor13CArgb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor138Argb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor134Argb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor130Argb,
-                                     (levelImage->runtimeTail2E0).terrainRampColor12CArgb,
-                                     (levelImage->runtimeTail2E0).terrainLightingColor128Argb,
-                                     (levelImage->runtimeTail2E0).terrainRampColor124Argb,
-                                     (levelImage->runtimeTail2E0).terrainBaseColorArgb,worldRuntime)
+                                    ((levelImage->worldSettings).terrainLightingColor13CArgb,
+                                     (levelImage->worldSettings).terrainLightingColor138Argb,
+                                     (levelImage->worldSettings).terrainLightingColor134Argb,
+                                     (levelImage->worldSettings).terrainLightingColor130Argb,
+                                     (levelImage->worldSettings).terrainRampColor12CArgb,
+                                     (levelImage->worldSettings).terrainLightingColor128Argb,
+                                     (levelImage->worldSettings).terrainRampColor124Argb,
+                                     (levelImage->worldSettings).terrainBaseColorArgb,worldRuntime)
                           ;
                           /* start camera from the local faction's player slot, then the lit field region
                              from the tail */
@@ -1219,13 +1219,13 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                     (2,(int)countOrPackedValue >> 0x10,countOrPackedValue & 0xffff,
                                      *(UQ12 *)((uint8_t *)&levelImage->playerSlots[0].
                                                      startCameraMagnitudeQ12 + playerSlotByteOffset),worldRuntime);
-                          countOrPackedValue = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
+                          countOrPackedValue = (levelImage->worldSettings).packedFieldRegionOriginYHigh16XLow16;
                           WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
                           packedRegionValue = countOrPackedValue;
                           WorldRuntime_CommitCameraTargetDistance(worldRuntime);
                           countOrPackedValue = countOrPackedValue & 0xffff;
                           factionIndexOrOriginY = (int)packedRegionValue >> 0x10;
-                          packedRegionValue = (levelImage->runtimeTail2E0).
+                          packedRegionValue = (levelImage->worldSettings).
                                   packedFieldRegionHeightHigh16WidthLow16;
                           soundLoopWorldRuntime = worldRuntime;
                           MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -1283,7 +1283,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                         soundSlotCursor++;
                                       }
                                       assetPath = (levelImage->header).common.buildMetadata.
-                                                assetRelativeAddressAnchor28 +
+                                                reserved28_2F +
                                                 ((levelImage->header).pathState.soundBasePathOffset
                                                 - 0x28);
                                       WidePath_SetExtensionCode(0x6d6173,(uint16_t *)assetPath); /* "sam" */
@@ -1345,11 +1345,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                 g_InGameLevelMusicVoiceSet3 = (void *)0x0;
                                                 sampleOrVoiceSet = (SoundSampleAsset *)freeResult.valueOrError;
                                                 /* the four level effect and four music samples of the tail */
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     effectSampleNumbers[0] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              effectSampleNumbers[0],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      0xb));
@@ -1367,11 +1367,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     effectSampleNumbers[1] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              effectSampleNumbers[1],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      0xb));
@@ -1389,11 +1389,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     effectSampleNumbers[2] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              effectSampleNumbers[2],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      0xb));
@@ -1411,11 +1411,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     effectSampleNumbers[3] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              effectSampleNumbers[3],
                                                              (uint16_t *)(u_sound_level00_sam_0050df6c +
                                                                      0xb));
@@ -1433,11 +1433,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     musicSampleNumbers[0] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              musicSampleNumbers[0],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      0xb));
@@ -1455,11 +1455,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     musicSampleNumbers[1] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              musicSampleNumbers[1],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      0xb));
@@ -1477,11 +1477,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     musicSampleNumbers[2] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              musicSampleNumbers[2],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      0xb));
@@ -1499,11 +1499,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                     Resource_Release(loadedSampleAsset);
                                                   }
                                                 }
-                                                if ((levelConditionStorage->levelImage).runtimeTail2E0.
+                                                if ((levelConditionStorage->levelImage).worldSettings.
                                                     musicSampleNumbers[3] != 0) {
                                                   g_WideNumberFormatUtf16
                                                             (WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,
-                                                             (levelConditionStorage->levelImage).runtimeTail2E0.
+                                                             (levelConditionStorage->levelImage).worldSettings.
                                                              musicSampleNumbers[3],
                                                              (uint16_t *)(u_sound_music00_sam_0050df90 +
                                                                      0xb));
@@ -1667,7 +1667,7 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
   WorldOwnerListNode *ownerListNode;
   AngleTurn32 modelRotationAngle;
   uint8_t *levelImageBytes;
-  LevelAssetRuntimeImagePrefix370 *levelImage;
+  LevelAssetRuntimePrefix *levelImage;
   uint32_t bookmarkZ;
   uint32_t bookmarkMagnitude;
   uint32_t bookmarkPackedHeadingPitch;
@@ -1678,7 +1678,7 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
   statusResult = Package_LoadEntryIntoBuffer(PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                                              g_LevelEndingMovieSourcePath);
   levelImageBytes = g_PackageScratchBuffer;
-  levelImage = (LevelAssetRuntimeImagePrefix370 *)levelImageBytes;
+  levelImage = (LevelAssetRuntimePrefix *)levelImageBytes;
   statusOrFieldValue = statusResult.valueOrError;
   if (!statusResult.failed) {
     /* the placement table is the last part of the image: the file is cut there and regrown per record */
@@ -1726,12 +1726,12 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
         placementRecordCursor++;
       }
     }
-    levelImage->runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16 =
-         saveWorldView->fieldRegionOriginWorldXQ12 & 0xffffU |
-         saveWorldView->fieldRegionOriginWorldYQ12 << 16;
-    levelImage->runtimeTail2E0.packedFieldRegionHeightHigh16WidthLow16 =
-         (saveWorldView->worldRuntime).fieldRegion.regionWidth & 0xffff |
-         (saveWorldView->worldRuntime).fieldRegion.regionHeight << 16;
+    levelImage->worldSettings.packedFieldRegionOriginYHigh16XLow16 =
+         saveWorldView->lightAzimuthAngle & 0xffffU |
+         saveWorldView->lightElevationAngle << 16;
+    levelImage->worldSettings.packedFieldRegionHeightHigh16WidthLow16 =
+         (saveWorldView->worldRuntime).fieldRegion.auxiliaryAzimuthAngle & 0xffff |
+         (saveWorldView->worldRuntime).fieldRegion.auxiliaryElevationAngle << 16;
     bookmarkPackedHeadingPitch = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
     bookmarkMagnitude = g_LevelCameraBookmark1PositionMagnitudeQ12;
     bookmarkZ = g_LevelCameraBookmark1PositionZQ12;

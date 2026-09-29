@@ -119,7 +119,7 @@ void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listC
 
 /* 0x0054A280 */
 void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
-          (FrontendScenarioSelectionPageView26C4 *scenarioSelectionPage);
+          (FrontendScenarioSelectionPageView *scenarioSelectionPage);
 
 /* 0x0054A610 */
 void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode);
@@ -173,11 +173,11 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
 
 /* 0x00545140 */
 void ScenarioCatalog_SelectSavedGameAndShowDescription
-          (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
 /* 0x00545240 */
 void ScenarioCatalog_SelectCampaignAndShowDescription
-          (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
 /* 0x00549CC0 */
 void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionControlAddress32 selectionControl);

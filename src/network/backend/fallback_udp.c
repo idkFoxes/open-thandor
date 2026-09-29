@@ -196,10 +196,10 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
     g_NetworkFallbackBindEndpoint.zeroPadding[3] = 0;
     /* the local descriptor gets the same family and port (family in the low word, port in the high word) */
 #ifdef THANDOR_TEST_AIDS
-    g_NetworkLocalEndpointDescriptor16.addressHeader.packedFamilyAndPort =
+    g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
          (uint32_t)g_WinSock_htons((uint16_t)localPort) << 16 | NETWORK_ADDRESS_FAMILY_IPV4;
 #else
-    g_NetworkLocalEndpointDescriptor16.addressHeader.packedFamilyAndPort =
+    g_NetworkLocalEndpoint.addressHeader.packedFamilyAndPort =
          (uint32_t)g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder << 16 |
          NETWORK_ADDRESS_FAMILY_IPV4;
 #endif
@@ -217,15 +217,15 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
         winsockResultOrError = g_WinSock_ioctlsocket(socketResult.valueOrError,FIONBIO,
                                                      &g_NetworkFallbackSocketOptionOn);
         if (winsockResultOrError == 0) {
-          g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder = INADDR_BROADCAST;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[1] = 0;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[2] = 0;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[3] = 0;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[4] = 0;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[5] = 0;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[6] = 0;
-          g_NetworkLocalEndpointDescriptor16.zeroPadding[7] = 0;
+          g_NetworkLocalEndpoint.ipv4AddressNetworkOrder = INADDR_BROADCAST;
+          g_NetworkLocalEndpoint.zeroPadding[0] = 0;
+          g_NetworkLocalEndpoint.zeroPadding[1] = 0;
+          g_NetworkLocalEndpoint.zeroPadding[2] = 0;
+          g_NetworkLocalEndpoint.zeroPadding[3] = 0;
+          g_NetworkLocalEndpoint.zeroPadding[4] = 0;
+          g_NetworkLocalEndpoint.zeroPadding[5] = 0;
+          g_NetworkLocalEndpoint.zeroPadding[6] = 0;
+          g_NetworkLocalEndpoint.zeroPadding[7] = 0;
           g_NetworkFallbackSocket = socketResult.valueOrError;
           socketResult.failed = false;
           return socketResult;
@@ -353,7 +353,7 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
   if (copyStatus.failed) {
     return true;
   }
-  ipv4AddressNetworkOrder = g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder;
+  ipv4AddressNetworkOrder = g_NetworkLocalEndpoint.ipv4AddressNetworkOrder;
   if ((g_NetworkEndpointTextScratchA != '\0') &&
      (ipv4AddressNetworkOrder = g_WinSock_inet_addr((uint8_t *)&g_NetworkEndpointTextScratchA),
      ipv4AddressNetworkOrder == INADDR_NONE)) {
@@ -367,7 +367,7 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
   /* The original copies family and port from g_NetworkFallbackBindEndpoint. The local descriptor holds the
      same header (family, game port); it is read here so the OPEN_THANDOR_NET_PORT test aid, which binds to
      another port, still addresses the peer's game port. */
-  bindAddressHeader = g_NetworkLocalEndpointDescriptor16.addressHeader;
+  bindAddressHeader = g_NetworkLocalEndpoint.addressHeader;
 #else
   bindAddressHeader = g_NetworkFallbackBindEndpoint.addressHeader;
 #endif
@@ -477,25 +477,25 @@ StatusResult NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
         if (winsockResultOrError == 0) {
           if (g_NetworkBackendActiveAddressFamily == AF_INET) {
             /* 255.255.255.255 on the game port */
-            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.addressFamily =
+            g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
                  NETWORK_ADDRESS_FAMILY_IPV4;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 0) = 0xffff;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 2) = 0xffff;
-            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.portNetworkOrder =
+            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 0) = 0xffff;
+            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 2) = 0xffff;
+            g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder =
                  (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
           }
           else if (g_NetworkBackendActiveAddressFamily == AF_IPX) {
             /* SOCKADDR_IPX: network 0 (this network), node FF:FF:FF:FF:FF:FF (broadcast), the game socket */
-            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.addressFamily =
+            g_NetworkLocalEndpoint.addressHeader.fields.addressFamily =
                  NETWORK_ADDRESS_FAMILY_IPX;
-            g_NetworkLocalEndpointDescriptor16.addressHeader.fields.portNetworkOrder = 0;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 0) = 0;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder, 2) = 0xffff;
-            g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0xff;
-            g_NetworkLocalEndpointDescriptor16.zeroPadding[1] = 0xff;
-            g_NetworkLocalEndpointDescriptor16.zeroPadding[2] = 0xff;
-            g_NetworkLocalEndpointDescriptor16.zeroPadding[3] = 0xff;
-            THANDOR_PART(uint16_t, g_NetworkLocalEndpointDescriptor16.zeroPadding, 4) =
+            g_NetworkLocalEndpoint.addressHeader.fields.portNetworkOrder = 0;
+            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 0) = 0;
+            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.ipv4AddressNetworkOrder, 2) = 0xffff;
+            g_NetworkLocalEndpoint.zeroPadding[0] = 0xff;
+            g_NetworkLocalEndpoint.zeroPadding[1] = 0xff;
+            g_NetworkLocalEndpoint.zeroPadding[2] = 0xff;
+            g_NetworkLocalEndpoint.zeroPadding[3] = 0xff;
+            THANDOR_PART(uint16_t, g_NetworkLocalEndpoint.zeroPadding, 4) =
                  (NetworkPortNetworkOrder)g_NetworkBackendPortNetworkOrderCarrier;
           }
           g_NetworkFallbackSocket = socketHandle;
@@ -652,7 +652,7 @@ bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut
     return false;
   }
   remainingDwords = g_NetworkBackendActiveSocketAddressLength >> 2;
-  sourceCursor = &g_NetworkLocalEndpointDescriptor16.addressHeader;
+  sourceCursor = &g_NetworkLocalEndpoint.addressHeader;
   for (; remainingDwords != 0; remainingDwords--) {
     *endpointOut = *sourceCursor;
     sourceCursor = sourceCursor + 1;

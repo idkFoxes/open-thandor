@@ -32,7 +32,7 @@
 #define TEXT_ID_TECHNOLOGY_AREA_TAB_LABEL 0x2181     /* rich text: selector 0 = name, selector 1 = Xenite cost */
 /* Model name texts: 0x18004F + the definition's name index (ModelDefinitionRecordPrefix.flags) */
 #define TEXT_ID_MODEL_NAME_BASE 0x18004F
-/* Technology slots of a model definition (researchTechnologyIds1C4[1..28]), dealt out over the seven area tabs */
+/* Technology slots of a model definition (researchTechnologyIds[1..28]), dealt out over the seven area tabs */
 #define TECHNOLOGY_DEFINITION_SLOT_COUNT 28
 #define TECHNOLOGY_AREA_TAB_COUNT 7
 /* Build catalog (InGameBuildCatalog_RebuildGrid) and special build catalog (InGameSpecialBuildCatalog_RebuildGrid) */

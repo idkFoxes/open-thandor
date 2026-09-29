@@ -35,7 +35,7 @@ StatusResult ShotDefinitions_ValidateTerrainMaterialReferences(void);
 ShotDefinitionResult ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId);
 
 /* 0x0052B8C0 */
-ShotLaunchAnglesEaxEdx8 ShotDefinition_ComputeLaunchAnglesRegs
+ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
           (Q12 targetZ,Q12 targetY,Q12 targetX,Q12 launchZ,Q12 launchY,Q12 launchX,
           ShotDefinition *definition);
 

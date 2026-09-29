@@ -475,11 +475,11 @@ void GraphicsBackend_RefreshActiveAdapterNoOp(void)
    at +0x10. Part of an object-transform helper family (0x004BCFE0-0x004BD0B0) that nothing in the executable
    calls; it is only listed in g_ThandorFunctionMap.
 */
-FixedEulerAnglesEaxEcxEdx12
+FixedRollAzimuthElevation
 GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsObject)
 
 {
-  FixedEulerAnglesEaxEcxEdx12 eulerAngles;
+  FixedRollAzimuthElevation eulerAngles;
   
   eulerAngles = FixedTransform_ExtractEulerAnglesRegs(&((GraphicsObject *)graphicsObject)->worldTransform);
   return eulerAngles;

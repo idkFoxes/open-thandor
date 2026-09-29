@@ -136,22 +136,22 @@
 FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId);
 
 /* 0x0050C380 */
-GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context);
+GraphicsCursorFrameIndex FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
 /* 0x0050C5A0 */
 void FrontendModelPointerContext_NonRightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext);
+          FrontendModelPointerContext *callbackContext);
 
 /* 0x0050C610 */
 void FrontendModelPointerContext_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState118 *callbackContext);
+          FrontendModelPointerHitContext *callbackContext);
 
 /* 0x0050C670 */
 void FrontendModelPointerContext_NonRightDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext);
+          FrontendModelPointerContext *callbackContext);
 
 /* 0x00549B40 */
 void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl);
@@ -165,7 +165,7 @@ void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl);
 /* 0x0050BB80 */
 void FrontendModelPointerContext_Relocate
                (UiSerializedRelocationDelta relocationDelta,
-               FrontendModelPointerContextRuntimeState17C *control);
+               FrontendModelPointerContext *control);
 
 /* 0x0050BC30 */
 void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext);
@@ -173,17 +173,17 @@ void FrontendModelPointerContext_Layout(WorldRuntimeContext *callbackContext);
 /* 0x0050BC60 */
 void FrontendModelPointerContext_RenderWorldViewQueuesClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,FrontendModelPointerContextRuntimeState17C *control);
+          UiPixelCoordinate clipRight,FrontendModelPointerContext *control);
 
 /* 0x0050C6E0 */
 void FrontendModelPointerContext_RightPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext);
+          FrontendModelPointerContext *callbackContext);
 
 /* 0x0050C730 */
 void FrontendModelPointerContext_RightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          FrontendModelPointerContextRuntimeState17C *callbackContext);
+          FrontendModelPointerContext *callbackContext);
 
 /* 0x0050CC80 */
 void FrontendModelPointerContext_DispatchWorldCameraPointerInput
@@ -197,7 +197,7 @@ void FrontendModelPointerContext_PointerWheel
 
 /* 0x0050CF50 */
 bool FrontendModelPointerContext_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          FrontendModelPointerContextRuntimeState118 *control);
+          FrontendModelPointerHitContext *control);
 
 /* 0x0050CF90 */
 void FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext);
@@ -314,6 +314,6 @@ void FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void);
 void FrontendRuntime_ShutdownAndReleaseResourcesRegs(void);
 
 /* 0x0050AD90 */
-uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context);
+uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerHitContext *context);
 
 #endif /* THANDOR_UI_FRONTEND_RUNTIME_H */

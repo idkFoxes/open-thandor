@@ -796,14 +796,14 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
    Lists the existing drives: writes one letter 'A'..'Z' per set bit of GetLogicalDrives to lettersOut
    (no terminator) and returns the number of letters in EAX and ECX.
 */
-DriveLetterEnumerationEaxEcx8 Win32Drive_EnumerateLetters(uint8_t *lettersOut)
+DriveLetterEnumeration Win32Drive_EnumerateLetters(uint8_t *lettersOut)
 
 {
   uint32_t logicalDriveMask;
   uint32_t enumeratedDriveCount;
   uint8_t currentDriveLetter;
   int driveLettersRemaining;
-  DriveLetterEnumerationEaxEcx8 enumerationResult;
+  DriveLetterEnumeration enumerationResult;
 
   logicalDriveMask = GetLogicalDrives();
   enumeratedDriveCount = 0;

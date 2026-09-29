@@ -87,7 +87,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
           GraphicsProjectedVertexSource *vertex0Projected,
-          FrontendModelPointerContextRuntimeState17C *renderContext);
+          FrontendModelPointerContext *renderContext);
 
 /* 0x004D0F20 */
 PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
@@ -96,7 +96,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
           GraphicsProjectedVertexSource *vertex0Projected,
-          FrontendModelPointerContextRuntimeState17C *renderContext);
+          FrontendModelPointerContext *renderContext);
 
 /* 0x004FFC10 */
 DepthBinMask32 DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);

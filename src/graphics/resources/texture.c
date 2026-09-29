@@ -711,11 +711,11 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
     offsetOrColumnCount = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrColumnCount))->dataOffset;
     /* the new asset is stamped with the current time and date and this computer's name */
     packedDateTime = g_LocaleGetPackedCurrentTime();
-    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue1 = packedDateTime;
-    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue2 = packedDateTime;
-    packedDateTime = g_LocaleGetPackedCurrentDate();
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.timeValue1 = packedDateTime;
     ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.timeValue2 = packedDateTime;
+    packedDateTime = g_LocaleGetPackedCurrentDate();
+    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue1 = packedDateTime;
+    ((decomposedAsset.assetOrError)->common).buildMetadata.timestamps.dateValue2 = packedDateTime;
     g_LocaleCopyDefaultComputerLabelUtf16
               (((decomposedAsset.assetOrError)->common).buildMetadata.names.sourceName);
     entryOrByteCursor = (uint8_t *)sourceAsset + offsetOrColumnCount;
@@ -976,13 +976,13 @@ TrueColorPackRegion:
             copySourceOrError = decomposedAsset.assetOrError + 1;
             entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
             /* each record seen through the asset header layout: converterVersion = pixel offset,
-               dateValue1/timeValue1 = pixel width/height, dateValue2 = the next record */
+               timeValue1/dateValue1 = pixel width/height, timeValue2 = the next record */
             do {
-              pixelDataOffset = pixelDataOffset + (copySourceOrError->common).buildMetadata.timestamps.dateValue1 *
-                                (copySourceOrError->common).buildMetadata.timestamps.timeValue1 * -4;
+              pixelDataOffset = pixelDataOffset + (copySourceOrError->common).buildMetadata.timestamps.timeValue1 *
+                                (copySourceOrError->common).buildMetadata.timestamps.dateValue1 * -4;
               (copySourceOrError->common).converterVersion = pixelDataOffset;
               copySourceOrError = (GraphicsTextureSourceAsset *)
-                       &(copySourceOrError->common).buildMetadata.timestamps.dateValue2;
+                       &(copySourceOrError->common).buildMetadata.timestamps.timeValue2;
               entryCount--;
             } while (entryCount != 0);
             successResult.failed = false;
@@ -1259,12 +1259,12 @@ PalettedPackRegion:
                 copySourceOrError = decomposedAsset.assetOrError + 5;
                 entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
                 do {
-                  pixelDataOffset = pixelDataOffset - ((copySourceOrError->common).buildMetadata.timestamps.dateValue1 *
-                                     (copySourceOrError->common).buildMetadata.timestamps.timeValue1 + 3 &
+                  pixelDataOffset = pixelDataOffset - ((copySourceOrError->common).buildMetadata.timestamps.timeValue1 *
+                                     (copySourceOrError->common).buildMetadata.timestamps.dateValue1 + 3 &
                                     0xfffffffc);
                   (copySourceOrError->common).converterVersion = pixelDataOffset;
                   copySourceOrError = (GraphicsTextureSourceAsset *)
-                           &(copySourceOrError->common).buildMetadata.timestamps.dateValue2;
+                           &(copySourceOrError->common).buildMetadata.timestamps.timeValue2;
                   entryCount--;
                 } while (entryCount != 0);
                 decomposedAsset.failed = false;
@@ -1970,7 +1970,7 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
         offsetOrRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrRemaining))->dataOffset;
         if (paletteIndexOrCounter < 0) {
           sourceTexel = (AssetProducerSourceNames *)
-                    ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+                    ((sourceAsset->common).buildMetadata.reserved28_2F +
                     offsetOrRemaining - GFX_ASSET_ANCHOR28_OFFSET);
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             paletteIndexOrCounter = sourceWidth;
@@ -2479,15 +2479,15 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                               (sourceAsset->tableDescriptor).subresourceTableOffset;
         savedPitch = g_SurfaceDesc.lPitch;
         savedSurfaceBits = g_SurfaceDesc.lpSurface;
-        paletteIndexOrCounter = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+        paletteIndexOrCounter = *(int *)((sourceAsset->common).buildMetadata.reserved28_2F +
                          offsetOrGreenTopBit + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET));
-        sourceWidth = *(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+        sourceWidth = *(uint32_t *)((sourceAsset->common).buildMetadata.reserved28_2F +
                              offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.reserved28_2F +
                             offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
         offsetOrGreenTopBit = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->dataOffset;
         if (paletteIndexOrCounter < 0) {
-          sourceTexel = (uint16_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+          sourceTexel = (uint16_t *)((sourceAsset->common).buildMetadata.reserved28_2F +
                             offsetOrGreenTopBit - GFX_ASSET_ANCHOR28_OFFSET);
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             columnsOrMask = sourceWidth;
@@ -2761,7 +2761,7 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
           }
         }
         else {
-          byteCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + offsetOrGreenTopBit -
+          byteCursor = (sourceAsset->common).buildMetadata.reserved28_2F + offsetOrGreenTopBit -
                        GFX_ASSET_ANCHOR28_OFFSET
           ;
           paletteBank = sourceAsset + paletteIndexOrCounter * 4 + 1;
@@ -2880,53 +2880,53 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                 do {
                   do {
                     texel00 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel01 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel02 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel03 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel04 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel05 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel06 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel07 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[sourceWidth + 3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     byteCursor = byteCursor + sourceWidth * 2;
                     texel08 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel09 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel10 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel11 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel12 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel13 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel14 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel15 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[sourceWidth + 3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
                                           TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
@@ -2992,25 +2992,25 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                 do {
                   do {
                     texel00 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel01 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel02 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel03 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel04 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel05 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                             ((paletteBank->common).buildMetadata.reserved28_2F +
                              (uint32_t)byteCursor[3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel06 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
+                              ((paletteBank->common).buildMetadata.reserved28_2F +
                               (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
                     texel07 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 3]].argb8888;
                     byteCursor = byteCursor + sourceWidth * 2;

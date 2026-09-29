@@ -127,19 +127,19 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
         siteEntry->cellWorldYQ12 = cellWorldY;
         siteEntry->cell = currentCell;
         knowledgeData = g_AiKnowledgeData;
-        primaryCapOrWeight = (g_AiKnowledgeData->parameters).unknownParameterDword33;
+        primaryCapOrWeight = (g_AiKnowledgeData->parameters).generalSitePrimaryDistanceCapQ12;
         deltaXOrPrimaryTerm = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         deltaXOrPrimaryTerm = primaryCapOrWeight - deltaXOrPrimaryTerm;
         if (deltaXOrPrimaryTerm < 0) {
           deltaXOrPrimaryTerm = 0;
         }
-        primaryCapOrWeight = (knowledgeData->parameters).unknownParameterDwords36_37[1];
-        workspace02CapOrWeight = (knowledgeData->parameters).unknownParameterDwords36_37[0];
+        primaryCapOrWeight = (knowledgeData->parameters).generalSitePrimaryDistanceCoefficient;
+        workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCapQ12;
         workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
         if ((int)workspace02CapOrWeight < (int)workspace02Distance) {
           workspace02Distance = workspace02CapOrWeight;
         }
-        workspace02CapOrWeight = (knowledgeData->parameters).unknownParameterDwords40_47[0];
+        workspace02CapOrWeight = (knowledgeData->parameters).generalSiteVisibleHostileDistanceCoefficient;
         secondaryDistanceCap = (knowledgeData->parameters).generalSiteSecondaryDistanceCapQ12;
         secondaryDistance = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if ((int)secondaryDistanceCap < (int)secondaryDistance) {
@@ -199,27 +199,27 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
         ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cellWorldYQ12 = cellWorldY;
         ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->cell = currentCell;
         /* the wrong-base reads (see above): the ki.dat parameter layout applied to the new entry's address */
-        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords49_50[0];
+        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCapQ12;
         deltaYOrDistanceOrWeight = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         deltaXOrCapTerm = deltaXOrCapTerm - deltaYOrDistanceOrWeight;
         if (deltaXOrCapTerm < 0) {
           deltaXOrCapTerm = 0;
         }
-        deltaYOrDistanceOrWeight = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[1];
-        workspace02CapOrScore = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[0];
+        deltaYOrDistanceOrWeight = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSitePrimaryDistanceCoefficient;
+        workspace02CapOrScore = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCapQ12;
         workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
         if (workspace02CapOrScore < workspace02Distance) {
           workspace02Distance = workspace02CapOrScore;
         }
         workspace02CapOrScore =
              deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance *
-                  (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords56_66[0];
-        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords49_50[1];
+                  (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteVisibleHostileDistanceCoefficient;
+        deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCapQ12;
         deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if (-1 < deltaXOrCapTerm - deltaYOrDistanceOrWeight) {
           workspace02CapOrScore =
                workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) *
-                    (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[2];
+                    (int)((AiKnowledgeParameters *)siteEntryBytes)->flaggedSiteSecondaryDistanceCoefficient;
         }
         g_AiWorkspace06Count++;
         ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->score = workspace02CapOrScore;
@@ -264,7 +264,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
   uint32_t duplicateSeparation;
   int entityOrDeltaY;
   PckArmyAssetIdCatalog featureAssetId;
-  AiWorkspace00EntryView8 *workspace00Entry;
+  AiStructureWorkspaceEntry *workspace00Entry;
   ModelLookupEntryResult markerLookup;
   ModelWorldPoint markerPoint;
   int nearestDistanceOrPriority;
@@ -284,7 +284,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
     /* runtimeSlot is a ModelRuntimeSlot: [0] the model definition, [1] the model node */
     if ((runtimeSlot != NULL) &&
        (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1],
-       ((ModelRuntimeSlot *)runtimeSlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C ==
+       ((ModelRuntimeSlot *)runtimeSlot)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
        MODEL_RUNTIME_CLASS_13)) {
       markerLookup = ModelLookupTable_ContainsPackedKey
                          (1,5,(modelNodeRuntime->modelPayload).modelResource);

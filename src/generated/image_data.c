@@ -714,7 +714,7 @@ ImageData_0041A53C g_ImageData_0041A53C = {
     (void *)NetworkBackendFallback_SendDatagram, /* 0041A560 g_NetworkBackendSlot5 */
     (void *)NetworkBackendFallback_ParsePeerEndpoint, /* 0041A564 g_NetworkBackendSlot6 */
     (void *)NetworkBackendFallback_FormatPeerAddress, /* 0041A568 g_NetworkBackendSlot7 */
-    {0}, /* 0041A56C g_NetworkLocalEndpointDescriptor16 */
+    {0}, /* 0041A56C g_NetworkLocalEndpoint */
     {
         0x90909090},
 };

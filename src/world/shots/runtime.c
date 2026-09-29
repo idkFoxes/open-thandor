@@ -54,7 +54,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArm
 {
   ArmyRuntimeSlot *shooterArmy;
   InGameSimulationTick currentTick;
-  InGameRuntimeRootImageC3E4 *inGameRoot;
+  InGameRuntimeRoot *inGameRoot;
   FactionRelationState relationState;
   bool alreadyHostile;
   ModelRuntimeScaleRatioRegisterPairQ12 conditionRatio;
@@ -98,8 +98,8 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArm
           g_GameFactionRuntimeImage.records[targetFactionIndex].relationStateTicks[shooterFactionIndex] =
                currentTick;
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
-                    (targetArmyRuntime,&inGameRoot->worldRuntime0A30);
-          ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime0A30);
+                    (targetArmyRuntime,&inGameRoot->worldRuntime);
+          ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime);
         }
         else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
                   (shooterArmy->commandTargetArmyRuntime != NULL &&
@@ -329,7 +329,7 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
    or record is free; this version just returns.
 */
 void ShotRuntimePool_CreateProjectileFromDefinition
-          (ShotRuntimeState14 shotRuntimeState14,ArmyRuntimeSlot *ownerArmyRuntime,
+          (ShotTargetModelReference targetModelReference,ArmyRuntimeSlot *ownerArmyRuntime,
           Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,Q12 launchWorldZQ12,
           Q12 launchWorldYQ12,Q12 launchWorldXQ12,ShotDefinition *shotDefinition,
           WorldRuntimeContext *worldRuntime)
@@ -350,13 +350,13 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   uint32_t directionZOrNeighborhoodMask;
   ShotRuntimeSlot *shotRuntimeCursor;
   uint64_t tintProduct;
-  ShotLaunchAnglesEaxEdx8 launchAngles;
+  ShotLaunchAngles launchAngles;
   WorldObjectAllocResult allocatedRecord;
   ModelLookupEntryResult lookupEntry;
   ShadingRecordResult shadingAllocation;
   FixedDirection launchDirection;
   ModelWorldPoint localPoint;
-  TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
+  TerrainOccupancyResolvedMasks resolvedMasks;
   char runtimeClassIndex;
   
   slotsRemaining = (ShotRuntimeSlot *)SHOT_RUNTIME_SLOT_COUNT; /* a counter kept in a pointer-typed variable */
@@ -420,7 +420,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotRuntimeCursor->ownerAndTrajectory.animationFrameIndex = 0;
   shotRuntimeCursor->impactEffectEmissionFlags = 0;
   shotRuntimeCursor->animationFrameAccumulatorQ4 = frameThresholdQ4;
-  shotRuntimeCursor->runtimeStateOrSavedOffset.runtimeState = shotRuntimeState14;
+  shotRuntimeCursor->runtimeStateOrSavedOffset.runtimeState = targetModelReference;
   shotRuntimeCursor->elevationOffsetAngle16 = elevationOffsetAngle;
   shotModelNode->modelPayload.meshGroupMask = 0xffffffff;
   secondaryEffectInterval = shotDefinition->secondaryEffectIntervalTicks;
@@ -465,7 +465,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
                shotModelNode->modelPayload.worldRotationAngle2,
                shotModelNode->modelPayload.worldRotationAngle1,
                shotModelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,

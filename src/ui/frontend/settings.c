@@ -28,7 +28,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   uint32_t rowControlOffset;
   UiNodeVtable *rootVtable;
   int localPlayerRuntimeId;
-  FrontendLoadedLevelRuntimeImage370 *loadedLevel;
+  FrontendLoadedLevelAsset *loadedLevel;
   uint32_t activeCountOffsetOrLocalRow; /* active factions left, then a control offset, then the local row */
   uint32_t rowOrAssignmentIndex;
   uint32_t rowCursor;
@@ -42,12 +42,12 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_FACTION_SETUP,&frontendRootPage->primaryPageStack);
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRootPage,menuRoomModelView))->contextFlags;
+         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRootPage,menuRoomModelView))->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   loadedLevel = g_FrontendLoadedLevelAsset;
-  activeCountOffsetOrLocalRow = g_FrontendLoadedLevelAsset->runtimeTail2E0.activeFactionCount;
-  assignableCountOrOffset = g_FrontendLoadedLevelAsset->runtimeTail2E0.assignableFactionCount;
+  activeCountOffsetOrLocalRow = g_FrontendLoadedLevelAsset->worldSettings.activeFactionCount;
+  assignableCountOrOffset = g_FrontendLoadedLevelAsset->worldSettings.assignableFactionCount;
   /* Rows 1..assignable count: factions a player may take; mode button active, caption "Computer". */
   rowOrAssignmentIndex = 0;
   do {
@@ -175,8 +175,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
     }
     rowOrAssignmentIndex++;
     playerRecord++;
-    if (loadedLevel->runtimeTail2E0.assignableFactionCount < rowOrAssignmentIndex) {
-      rowOrAssignmentIndex = rowOrAssignmentIndex - loadedLevel->runtimeTail2E0.assignableFactionCount;
+    if (loadedLevel->worldSettings.assignableFactionCount < rowOrAssignmentIndex) {
+      rowOrAssignmentIndex = rowOrAssignmentIndex - loadedLevel->worldSettings.assignableFactionCount;
     }
     remainingPlayerRecords--;
   } while (remainingPlayerRecords != 0);
@@ -356,11 +356,11 @@ void FrontendDisplaySettings_ApplyMode(void *control)
   }
   /* the new resolution decides whether the dialog pages cover the menu room */
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(control,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   else {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(control,menuRoomModelView))->contextFlags &=
+    ((FrontendModelPointerContext *)FRONTEND_UI(control,menuRoomModelView))->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   return;
@@ -402,7 +402,7 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
                                   PERSISTENT_SETTING_PLAYER_NAME);
     sourceDwordCursor = (uint32_t *)control->textBuffer;
     playerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
-    for (remainingDwords = sizeof(FrontendPlayerNameUtf16_28) / sizeof(uint32_t); remainingDwords != 0;
+    for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
          remainingDwords--) {
       *playerNameDwordCursor = *sourceDwordCursor;
       sourceDwordCursor++;
@@ -612,7 +612,7 @@ void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *f
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_OPTIONS,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     menuRoomContextFlags =
-         &((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+         &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
@@ -665,7 +665,7 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_GRAPHICS_SETTINGS,
                              (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   persistedValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
@@ -1259,9 +1259,9 @@ void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
                 rootNode->commonState.commonPrefix.parent;
     parentCursor = rootNode->commonState.commonPrefix.parent;
   }
-  /* networkSettings is the sessionList node (a UiListControl of FrontendSessionDiscoveryRecordB0 rows). */
+  /* networkSettings is the sessionList node (a UiListControl of FrontendSessionDiscoveryRecord rows). */
   if (((((UiListControl *)networkSettings)->rowCount == 0) ||
-      (((FrontendSessionDiscoveryRecordB0 *)*((UiListControl *)networkSettings)->selectedRowSlot)->advertisement.
+      (((FrontendSessionDiscoveryRecord *)*((UiListControl *)networkSettings)->selectedRowSlot)->advertisement.
        joinAvailableFlag == 0)) ||
      (g_FrontendLocalPlayerNameUtf16[0] == 0)) {
     UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,(UiNodeBase *)&rootNode->commonState);
@@ -1296,13 +1296,13 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   uint32_t controlOffset;
   uint32_t factionIndexOrSetMask;
   SessionNetworkRoleFlags networkedOrRemainingCount;
-  FrontendLoadedLevelRuntimeImage370 *loadedLevelOrClearMask;
+  FrontendLoadedLevelAsset *loadedLevelOrClearMask;
   FrontendFactionAssignmentIndex localFactionIndex;
   SessionNetworkRoleFlags remainingSearchCount;
   int rowIndexOrCount;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
-  FrontendPlayerNameUtf16_28 *playerName;
-  FrontendPlayerNameUtf16_28 *nameCharCursor;
+  FrontendPlayerNameUtf16 *playerName;
+  FrontendPlayerNameUtf16 *nameCharCursor;
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendPlayerRuntimeRecord *otherPlayerRecord;
   FrontendTaskAssignmentFactionTextRow *textRowCursor;
@@ -1499,7 +1499,7 @@ hidePlayerControl:
         nameCharCursor = playerName;
         for (; rowIndexOrCount != 0; rowIndexOrCount--) {
           rosterTextCursor[1] = nameCharCursor->textUtf16[0];
-          nameCharCursor = (FrontendPlayerNameUtf16_28 *)(nameCharCursor->textUtf16 + 1);
+          nameCharCursor = (FrontendPlayerNameUtf16 *)(nameCharCursor->textUtf16 + 1);
           rosterTextCursor++;
         }
         rosterTextCursor[0] = FRONTEND_TEXT_STYLE_NORMAL;
@@ -1510,7 +1510,7 @@ hidePlayerControl:
         nameCharCursor = playerName;
         for (; rowIndexOrCount != 0; rowIndexOrCount--) {
           rosterTextCursor[1] = nameCharCursor->textUtf16[0];
-          nameCharCursor = (FrontendPlayerNameUtf16_28 *)(nameCharCursor->textUtf16 + 1);
+          nameCharCursor = (FrontendPlayerNameUtf16 *)(nameCharCursor->textUtf16 + 1);
           rosterTextCursor++;
         }
         *rosterTextCursor = 0;
@@ -1518,7 +1518,7 @@ hidePlayerControl:
     }
     remainingPlayers--;
     /* next player record */
-    playerName = playerName + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16_28);
+    playerName = playerName + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
     if (remainingPlayers == 0) {
       /* once the local player has pressed Finish, the faction rows are hidden */
       rowIndexOrCount = 7;
@@ -1592,11 +1592,11 @@ bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSett
   
   /* networkSettings is the frontend template's networkGameJoinButton; the session list is a sibling. */
   g_FrontendSessionToken =
-       ((FrontendSessionDiscoveryRecordB0 *)
+       ((FrontendSessionDiscoveryRecord *)
         *((UiListControl *)FRONTEND_UI((uint8_t *)networkSettings - offsetof(FrontendUiImage,networkGameJoinButton),
                                        sessionList))->selectedRowSlot)->advertisement.header.sequenceToken;
   selectedPlayerRecordDwordCursor =
-       (uint32_t *)&((FrontendSessionDiscoveryRecordB0 *)
+       (uint32_t *)&((FrontendSessionDiscoveryRecord *)
                      *((UiListControl *)FRONTEND_UI((uint8_t *)networkSettings -
                                                     offsetof(FrontendUiImage,networkGameJoinButton),
                                                     sessionList))->selectedRowSlot)->senderEndpoint;

@@ -32,7 +32,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
           (Q12 neighborhoodRadiusQ12,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x005138F0 */
-TerrainOccupancyResolvedMasksRegs12
+TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
           (FieldGridRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex);

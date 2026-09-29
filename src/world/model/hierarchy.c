@@ -187,7 +187,7 @@ void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime
 
 {
   uint32_t viewFacingAngle16;
-  FixedVectorEaxEcxEdx12 viewRelativeVector;
+  FixedVectorQ12 viewRelativeVector;
 
   viewRelativeVector = FixedTransform_ApplyEulerRotationToVectorRegs
                     (modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z,
@@ -316,14 +316,14 @@ ModelNodeRuntime_TransformLocalPointRegs
    relative by adding the node's local rotation angle 2 (+0x2C).
 */
 
-ModelRelativeDirectionAnglesEaxEdx8 ModelNodeRuntime_ComputeRelativeDirectionAngle
+ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
           (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
   uint32_t negatedAngle2;
   FixedVectorAngles directionAngles;
-  FixedVectorEaxEcxEdx12 rotatedDirection;
-  ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
+  FixedVectorQ12 rotatedDirection;
+  ModelRelativeDirectionAngles relativeAngles;
 
   negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
   rotatedDirection = FixedTransform_RotateDirectionScaledRegs
@@ -349,7 +349,7 @@ ModelRelativeDirectionAnglesEaxEdx8 ModelNodeRuntime_ComputeRelativeDirectionAng
 */
 ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
-          FrontendModelPointerContextRuntimeState118 *context)
+          FrontendModelPointerHitContext *context)
 
 {
   ModelResource *resourceView;
@@ -811,10 +811,10 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
   
   if (modelRuntime != NULL) {
     childrenRemaining = ((ModelRuntimeSlot *)modelRuntime)->attachmentCount;
-    if (((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C ==
+    if (((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
         MODEL_RUNTIME_CLASS_13 &&
-        targetRuntimeId == ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState6C.classState) {
-      ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState6C.classState = 0;
+        targetRuntimeId == ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState.classState) {
+      ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState.classState = 0;
     }
     for (; childrenRemaining != 0; childrenRemaining--) {
       ModelRuntimeHierarchy_ClearMatchingTargetRecursive
@@ -1019,13 +1019,13 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   definitionOrChildrenRemaining = modelRuntime->definitionOrSavedId.savedIdOrOffset;
   newNode->tintArgb = 0xffffffff;
   /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->runtimeValue68 & 0x10) != 0) {
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & 0x10) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x10;
   }
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->runtimeValue68 & 0x20) != 0) {
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & 0x20) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x200;
   }
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->runtimeValue68 & 0x40) == 0) {
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & 0x40) == 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x100;
   }
   resourceView = definitionNode->spriteAssetReference.modelResource;
@@ -1159,28 +1159,28 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   linkedRuntime = (int)((ModelRuntimeSlot *)modelRuntime)->rootModelNodeOrSavedOffset.modelNode;
   /* a switched-off model counts with the definition's alternative value at +0x1A4 */
   if ((((ModelRuntimeSlot *)modelRuntime)->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
-    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue48;
+    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->visibilityRadius;
   }
   else {
-    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue1A4;
+    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->switchedOffVisibilityRadius;
   }
-  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 <
-      ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue27C) {
-    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 =
-         ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue27C;
+  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->occupancyMarkRadius <
+      ((ModelDefinition *)definitionArmyOrRemaining)->occupancyMarkRadius) {
+    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->occupancyMarkRadius =
+         ((ModelDefinition *)definitionArmyOrRemaining)->occupancyMarkRadius;
   }
-  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState44 < metricValue) {
-    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState44 = metricValue;
+  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityRadius < metricValue) {
+    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityRadius = metricValue;
   }
   metricValue = (((ModelRuntimeNode *)linkedRuntime)->worldTransform.translation.z -
                 ((ArmyRuntimeSlot *)armyOrCategoryIndex)->modelNodeRuntime->worldTransform.translation.z) +
-                ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue70;
-  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState48 < metricValue) {
-    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState48 = metricValue;
+                ((ModelDefinition *)definitionArmyOrRemaining)->visibilityHeightOffset;
+  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityHeightOffset < metricValue) {
+    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->visibilityHeightOffset = metricValue;
   }
-  /* the model's shot definition, used when runtimeValue30 is non-zero */
-  definition = ((ModelDefinition *)definitionArmyOrRemaining)->shotDefinitionReference2C.definition;
-  if (((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue30 != 0) {
+  /* the model's shot definition, used when reloadTicks is non-zero */
+  definition = ((ModelDefinition *)definitionArmyOrRemaining)->shotDefinitionReference.definition;
+  if (((ModelDefinition *)definitionArmyOrRemaining)->reloadTicks != 0) {
     selectionRange = ShotDefinition_ComputeSelectionRange(definition);
     definitionArmyOrRemaining = (int)((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     armyOrCategoryIndex = 7;
@@ -1242,7 +1242,7 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
                              (int64_t)accumulatedHierarchyScaleQ12) /
                             (int64_t)
                             (scaleSampleCount *
-                            (int)modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth60));
+                            (int)modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth));
 }
 
 
@@ -1267,7 +1267,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
   if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
     activeMetricTotal = totalMetric;
   }
-  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeValue68 &
+  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags &
        MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0) {
     for (; attachmentsRemaining != 0; attachmentsRemaining--) {
       currentChildModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
@@ -1294,11 +1294,11 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
 */
 
 AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
-          (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState,
+          (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState,
           AngleTurn32 targetYawAngle16)
 
 {
-  ArmyWeaponDefinitionView68 *aimDefinition;
+  ArmyWeaponDefinitionView *aimDefinition;
   int turnRateLimit;
   AngleTurn32 currentYawAngle;
   uint32_t yawAngle;
@@ -1324,9 +1324,9 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
     }
     else {
       yawAngle = yawAngle + yawStep;
-      turnRateLimit = aimDefinition->yawTurnRateLimitAnglePerTick10;
+      turnRateLimit = aimDefinition->yawTurnRateLimitAnglePerTick;
       acceleratedVelocity = smoothingState->yawTurnVelocityAngle16 +
-              g_InGameSimulationStepTicks * aimDefinition->yawTurnRateAccelerationAnglePerTick1C;
+              g_InGameSimulationStepTicks * aimDefinition->yawTurnRateAccelerationAnglePerTick;
       smoothingState->yawTurnVelocityAngle16 = turnRateLimit;
       if (acceleratedVelocity < turnRateLimit) {
         smoothingState->yawTurnVelocityAngle16 = acceleratedVelocity;
@@ -1341,9 +1341,9 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
   }
   else {
     yawAngle = yawAngle + yawStep;
-    turnRateLimit = aimDefinition->yawTurnRateLimitAnglePerTick10;
+    turnRateLimit = aimDefinition->yawTurnRateLimitAnglePerTick;
     acceleratedVelocity = smoothingState->yawTurnVelocityAngle16 -
-            g_InGameSimulationStepTicks * aimDefinition->yawTurnRateAccelerationAnglePerTick1C;
+            g_InGameSimulationStepTicks * aimDefinition->yawTurnRateAccelerationAnglePerTick;
     smoothingState->yawTurnVelocityAngle16 = -turnRateLimit;
     if (-turnRateLimit < acceleratedVelocity) {
       smoothingState->yawTurnVelocityAngle16 = acceleratedVelocity;
@@ -1382,11 +1382,11 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
 */
 
 AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
-          (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState,
+          (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState,
           AngleTurn32 targetPitchAngle16)
 
 {
-  ArmyWeaponDefinitionView68 *aimDefinition;
+  ArmyWeaponDefinitionView *aimDefinition;
   uint32_t pitchAngle;
   int pitchStepOrRateLimit;
   int acceleratedVelocity;
@@ -1397,11 +1397,11 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
   pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
   aimDefinition = smoothingState->modelDefinition;
   clampedTargetResult.value = targetPitchAngle16;
-  if ((int)aimDefinition->maximumPitchAngle28 < (int)targetPitchAngle16) {
-    clampedTargetResult.value = aimDefinition->maximumPitchAngle28;
+  if ((int)aimDefinition->maximumPitchAngle < (int)targetPitchAngle16) {
+    clampedTargetResult.value = aimDefinition->maximumPitchAngle;
   }
-  if ((int)clampedTargetResult.value < (int)aimDefinition->minimumPitchAngle24) {
-    clampedTargetResult.value = aimDefinition->minimumPitchAngle24;
+  if ((int)clampedTargetResult.value < (int)aimDefinition->minimumPitchAngle) {
+    clampedTargetResult.value = aimDefinition->minimumPitchAngle;
   }
   pitchStepOrRateLimit = smoothingState->pitchTurnVelocityAngle16 * g_InGameSimulationStepTicks;
   snapToTarget = true; /* already there, or reached within this step */
@@ -1414,9 +1414,9 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
       }
       else if (pitchStepOrRateLimit < (int)(clampedTargetResult.value - pitchAngle)) {
         pitchAngle = pitchAngle + pitchStepOrRateLimit;
-        pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick14;
+        pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
         acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 +
-                g_InGameSimulationStepTicks * aimDefinition->pitchTurnRateAccelerationAnglePerTick20;
+                g_InGameSimulationStepTicks * aimDefinition->pitchTurnRateAccelerationAnglePerTick;
         smoothingState->pitchTurnVelocityAngle16 = pitchStepOrRateLimit;
         if (acceleratedVelocity < pitchStepOrRateLimit) {
           smoothingState->pitchTurnVelocityAngle16 = acceleratedVelocity;
@@ -1430,9 +1430,9 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
     }
     else if ((int)(clampedTargetResult.value - pitchAngle) < pitchStepOrRateLimit) {
       pitchAngle = pitchAngle + pitchStepOrRateLimit;
-      pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick14;
+      pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick;
       acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 -
-              g_InGameSimulationStepTicks * aimDefinition->pitchTurnRateAccelerationAnglePerTick20;
+              g_InGameSimulationStepTicks * aimDefinition->pitchTurnRateAccelerationAnglePerTick;
       smoothingState->pitchTurnVelocityAngle16 = -pitchStepOrRateLimit;
       if (-pitchStepOrRateLimit < acceleratedVelocity) {
         smoothingState->pitchTurnVelocityAngle16 = acceleratedVelocity;
@@ -1496,7 +1496,7 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
 {
   ModelRuntimeNode *currentChild;
   uint32_t childIndex;
-  FixedEulerAnglesEaxEcxEdx12 childEulerAngles;
+  FixedRollAzimuthElevation childEulerAngles;
   PackedArgb32 inheritedTintArgb;
 
   childIndex = 0;
@@ -1526,9 +1526,9 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
                    (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
                    &modelNodeRuntime->worldTransform);
         childEulerAngles = FixedTransform_ExtractEulerAnglesRegs(&currentChild->worldTransform);
-        currentChild->modelPayload.worldRotationAngle2 = childEulerAngles.eaxAngle;
-        currentChild->modelPayload.worldRotationAngle0 = childEulerAngles.ecxAngle;
-        currentChild->modelPayload.worldRotationAngle1 = childEulerAngles.edxAngle;
+        currentChild->modelPayload.worldRotationAngle2 = childEulerAngles.rollAngle;
+        currentChild->modelPayload.worldRotationAngle0 = childEulerAngles.azimuthAngle;
+        currentChild->modelPayload.worldRotationAngle1 = childEulerAngles.elevationAngle;
         g_ModelTransformTranslationX = 0;
         g_ModelTransformTranslationY = 0;
         g_ModelTransformTranslationZ = 0;
@@ -1563,7 +1563,7 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   do {
     /* the cursor steps 4 bytes per variant, so element 0 is the current variant */
     modelDefinitionId =
-         ((ModelDefinition *)variantCursorOrRemaining)->variantModelDefinitionIds238[0];
+         ((ModelDefinition *)variantCursorOrRemaining)->variantModelDefinitionIds[0];
     /* ModelDefinition_IsFactionTechnologyUnlocked returns true (CF set) when the variant is NOT unlocked */
     if ((modelDefinitionId != 0) &&
        (variantLocked = ModelDefinition_IsFactionTechnologyUnlocked
@@ -1575,8 +1575,8 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
       *modelRuntime = (int)lookupResult.modelDefinition;
       ((ModelRuntimeSlot *)modelRuntime)->health =
            (int)(((int64_t)(int)((ModelRuntimeSlot *)modelRuntime)->health *
-                 (int64_t)(int)((ModelDefinition *)lookupResult.modelDefinition)->maximumHealth60) /
-                (int64_t)(int)((ModelDefinition *)variantCursorOrRemaining)->maximumHealth60);
+                 (int64_t)(int)((ModelDefinition *)lookupResult.modelDefinition)->maximumHealth) /
+                (int64_t)(int)((ModelDefinition *)variantCursorOrRemaining)->maximumHealth);
       ArmyRuntime_RebuildDerivedSelectionMetrics
                 (((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
       break;

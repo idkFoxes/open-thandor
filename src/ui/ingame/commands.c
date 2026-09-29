@@ -19,11 +19,11 @@
 void InGameCommandModeG_Select0(UiSelectableControl *source)
 
 {
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   WorldRuntimeContext *worldRuntime;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_TERRAIN_HEIGHT,source);
-  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  worldRuntime = &runtimeRoot->worldRuntime;
   UiCommandModeG_ShowSurfacePointMarker(worldRuntime);
   UiCommandModeG_ShowTerrainPointMarkers(worldRuntime);
   UiCommandModeG_HideArmyMetricsAndEndDragSelect(worldRuntime);
@@ -43,11 +43,11 @@ void InGameCommandModeG_Select0(UiSelectableControl *source)
 void InGameCommandModeG_Select1(UiSelectableControl *source)
 
 {
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   WorldRuntimeContext *worldRuntime;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_TERRAIN_MATERIAL,source);
-  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  worldRuntime = &runtimeRoot->worldRuntime;
   UiCommandModeG_ShowSurfacePointMarker(worldRuntime);
   UiCommandModeG_ShowTerrainPointMarkers(worldRuntime);
   UiCommandModeG_HideArmyMetricsAndEndDragSelect(worldRuntime);
@@ -68,11 +68,11 @@ void InGameCommandModeG_Select1(UiSelectableControl *source)
 void InGameCommandModeG_Select2(UiSelectableControl *source)
 
 {
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   WorldRuntimeContext *worldRuntime;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_TERRAIN_SMOOTHING,source);
-  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  worldRuntime = &runtimeRoot->worldRuntime;
   UiCommandModeG_ShowSurfacePointMarker(worldRuntime);
   UiCommandModeG_HideTerrainPointMarkers(worldRuntime);
   UiCommandModeG_HideArmyMetricsAndEndDragSelect(worldRuntime);
@@ -93,13 +93,13 @@ void InGameCommandModeG_Select2(UiSelectableControl *source)
 void InGameCommandModeG_Select3(UiSelectableControl *source)
 
 {
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   WorldRuntimeContext *worldRuntime;
   ArmyAssetLookupResult armyAssetLookup;
   FatalErrorCheckResult checkedAssetLookup;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_UNIT_PLACEMENT,source);
-  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  worldRuntime = &runtimeRoot->worldRuntime;
   UiCommandModeG_HideSurfacePointMarker(worldRuntime);
   UiCommandModeG_HideTerrainPointMarkers(worldRuntime);
   UiCommandModeG_ShowArmyMetrics(worldRuntime);
@@ -123,11 +123,11 @@ void InGameCommandModeG_Select3(UiSelectableControl *source)
 void InGameCommandModeG_Select4(UiSelectableControl *source)
 
 {
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   WorldRuntimeContext *worldRuntime;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_OBJECT_PLACEMENT,source);
-  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  worldRuntime = &runtimeRoot->worldRuntime;
   UiCommandModeG_HideSurfacePointMarker(worldRuntime);
   UiCommandModeG_HideTerrainPointMarkers(worldRuntime);
   UiCommandModeG_ShowArmyMetrics(worldRuntime);
@@ -148,11 +148,11 @@ void InGameCommandModeG_Select4(UiSelectableControl *source)
 void InGameCommandModeG_Select5(UiSelectableControl *source)
 
 {
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   WorldRuntimeContext *worldRuntime;
 
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(EDITOR_MODE_REGION,source);
-  worldRuntime = &runtimeRoot->worldRuntime0A30;
+  worldRuntime = &runtimeRoot->worldRuntime;
   UiCommandModeG_ShowSurfacePointMarker(worldRuntime);
   UiCommandModeG_HideTerrainPointMarkers(worldRuntime);
   UiCommandModeG_ShowArmyMetrics(worldRuntime);
@@ -160,7 +160,7 @@ void InGameCommandModeG_Select5(UiSelectableControl *source)
   UiCommandModeG_ClearSecondarySurfaceOnly(worldRuntime);
   UiCommandModeG_ApplyRawColorVariant(worldRuntime);
   UiCommandModeG_ShowRegionMarkers(worldRuntime);
-  (runtimeRoot->worldRuntime0A30).fieldRegion.reservedCallbackState04 = g_UiCommandModeF;
+  (runtimeRoot->worldRuntime).fieldRegion.regionToolMode = g_UiCommandModeF;
   return;
 }
 
@@ -485,8 +485,8 @@ void InGameCommand_TogglePauseRequest
    given heading, counts it for the faction and spawns the asset's placement effect. A rejected placement leaves
    the asset pending; a successful one ends the local placement mode.
 */
-void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,CommandPayloadDword04 headingAngle,
-          CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12)
+void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,CommandPayload headingAngle,
+          CommandPayload worldXQ12,CommandPayload worldYQ12)
 
 {
   FactionRelationCounter *relationCounter;
@@ -496,7 +496,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
   ArmyRuntimeSlot *modelNodeRuntime;
   ArmyRuntimeSlot *armySlot;
   ModelRuntimeSlot *slotModelRuntime;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   ArmyRuntimeSlot **createdArmySlots;
   WorldRuntimeContext *worldRuntime;
   bool placementRejected;
@@ -504,32 +504,32 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
 
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];
-  worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
+  worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   /* XCHG in the original: take the pending entry and clear it atomically */
   LOCK();
-  pendingEntry = playerBlock->pendingSelectionEntityOffset8098;
-  playerBlock->pendingSelectionEntityOffset8098 = 0;
+  pendingEntry = playerBlock->pendingPlacementArmyAsset;
+  playerBlock->pendingPlacementArmyAsset = 0;
   UNLOCK();
   if (pendingEntry != 0) {
     /* the pending entry is the chosen army asset record */
     placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                       (0,headingAngle,worldXQ12,worldYQ12,
-                       (ArmyPlacementContext)((ArmyAssetRecordPrefix *)pendingEntry)->registryId,playerBlock->primaryEntityOrFactionToken8080,
+                       (ArmyPlacementContext)((ArmyAssetRecordPrefix *)pendingEntry)->registryId,playerBlock->factionIndex,
                        worldRuntime);
     if (!placementRejected) {
       /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
       createResult = ArmyRuntime_CreateInstanceFromAsset
                         (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
-                         playerBlock->primaryEntityOrFactionToken8080,
+                         playerBlock->factionIndex,
                          ((ArmyAssetRecordPrefix *)pendingEntry)->registryId,worldRuntime);
       createdArmySlots = (ArmyRuntimeSlot **)createResult.armyRuntimeOrError;
       if (!createResult.failed) {
-        ownerFactionIndex = playerBlock->primaryEntityOrFactionToken8080;
+        ownerFactionIndex = playerBlock->factionIndex;
         modelNodeRuntime = createdArmySlots[1];
         armySlot = *createdArmySlots;
         modelNodeRuntime->movementPosition0Q12 = 0;
-        if (ownerFactionIndex == (runtimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
+        if (ownerFactionIndex == (runtimeRoot->worldRuntime).activeFactionRuntimeIndex) {
           modelNodeRuntime->movementPosition0Q12 = 0x7fffffff;
         }
         relationCounter = &g_GameFactionRuntimeImage.records[ownerFactionIndex].relationCounterB;
@@ -538,13 +538,13 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(createdArmySlots,worldRuntime);
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
-                   (modelNodeRuntime->movementControl).turnVelocityAngle16,
-                   (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
-                   ((WorldRuntimeNodeModelPayload *)&modelNodeRuntime->factionIndex)->
-                   worldRotationAngle0,modelNodeRuntime->depthBinClass,
-                   modelNodeRuntime->runtimeState98,
-                   ((GraphicsFixedVec3 *)&modelNodeRuntime->runtimeState94)->x,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
+                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
                    (EffectDefinition *)slotModelRuntime->attachments[2].childLocalRotationAngle0,
                    worldRuntime);
         InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
@@ -557,7 +557,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
         return;
       }
     }
-    g_SelectionPlayerRuntimeBlockPointers[playerId]->pendingSelectionEntityOffset8098 = pendingEntry;
+    g_SelectionPlayerRuntimeBlockPointers[playerId]->pendingPlacementArmyAsset = pendingEntry;
   }
   return;
 }
@@ -677,7 +677,7 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
 
 {
   GameEntityRuntime *firstSelectedEntity;
-  CommandPayloadDword04 modelOffset;
+  CommandPayload modelOffset;
 
   /* control becomes the in-game UI root */
   while (control->parent != UI_NODE_NONE) {
@@ -772,7 +772,7 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayloadDword04)factionIndex);
+                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayload)factionIndex);
       }
     }
     else {
@@ -785,7 +785,7 @@ void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayloadDword04)factionIndex);
+                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayload)factionIndex);
       }
     }
   }
@@ -830,7 +830,7 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayloadDword04)factionIndex);
+                  (INGAME_COMMAND_QUEUE_ARMY,1,assetId,(CommandPayload)factionIndex);
       }
     }
     else {
@@ -843,7 +843,7 @@ void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayloadDword04)factionIndex);
+                  (INGAME_COMMAND_CANCEL_QUEUED_ARMY,1,assetId,(CommandPayload)factionIndex);
       }
     }
   }
@@ -895,7 +895,7 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand
-                  (INGAME_COMMAND_CONSUME_PENDING_ARMY,0,0,(CommandPayloadDword04)factionIndex);
+                  (INGAME_COMMAND_CONSUME_PENDING_ARMY,0,0,(CommandPayload)factionIndex);
       }
       if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0)
       {
@@ -908,7 +908,7 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand
-                    (INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT,0,assetId,(CommandPayloadDword04)factionIndex);
+                    (INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT,0,assetId,(CommandPayload)factionIndex);
         }
       }
       else {
@@ -921,7 +921,7 @@ void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand
-                    (INGAME_COMMAND_SELL_ARMY,0,assetId,(CommandPayloadDword04)factionIndex);
+                    (INGAME_COMMAND_SELL_ARMY,0,assetId,(CommandPayload)factionIndex);
         }
       }
     }
@@ -942,8 +942,8 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
 {
   UiCommandSpriteButtonControl *root;
   FactionRuntimeIndex factionIndex;
-  CommandPayloadDword04 groupIndex;
-  CommandPayloadDword08 transferModeFlags;
+  CommandPayload groupIndex;
+  CommandPayload transferModeFlags;
   bool selectionBlocked;
 
   if ((g_UiCommandRuntimeFlags &
@@ -976,7 +976,7 @@ void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl 
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
             SESSION_NETWORK_ROLE_LOCAL) {
           InGameCommandQueue_AppendLocalPlayerCommand
-                    (INGAME_COMMAND_SELECTION_GROUP,(CommandPayloadDword0C)factionIndex,transferModeFlags,
+                    (INGAME_COMMAND_SELECTION_GROUP,(CommandPayload)factionIndex,transferModeFlags,
                      groupIndex);
           return;
         }
@@ -1027,11 +1027,11 @@ void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source
       INGAME_UI(root,resultsChartModeButtonB));
   selectedIndexValue = (UiNodeVtable *)selectionResult.controlIndexOrCount;
   /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
-  ((FrontendResultsColumnSequenceControl68 *)INGAME_UI(root,resultsChart1))->modeFlags =
+  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart1))->modeFlags =
        (uint32_t)selectedIndexValue;
-  ((FrontendResultsColumnSequenceControl68 *)INGAME_UI(root,resultsChart2))->modeFlags =
+  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart2))->modeFlags =
        (uint32_t)selectedIndexValue;
-  ((FrontendResultsColumnSequenceControl68 *)INGAME_UI(root,resultsChart3))->modeFlags =
+  ((FrontendResultsColumnSequenceControl *)INGAME_UI(root,resultsChart3))->modeFlags =
        (uint32_t)selectedIndexValue;
   ((UiImagePanelControl *)INGAME_UI(root,resultsScreenPanel))->subresource =
        (GraphicsSubresourceIndex)selectedIndexValue;
@@ -1400,7 +1400,7 @@ void InGameCommandModeF_Select0(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption0,regionToolOption0));
   g_UiCommandModeF = 0;
   ((WorldRuntimeContext *)THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption0,worldView))
-       ->fieldRegion.reservedCallbackState04 = 0;
+       ->fieldRegion.regionToolMode = 0;
   return;
 }
 
@@ -1417,7 +1417,7 @@ void InGameCommandModeF_Select1(UiSpriteButtonControl *source)
       THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption1,regionToolOption0));
   g_UiCommandModeF = 1;
   ((WorldRuntimeContext *)THANDOR_UI_SIBLING(source,InGameUiImage,regionToolOption1,worldView))
-       ->fieldRegion.reservedCallbackState04 = 1;
+       ->fieldRegion.regionToolMode = 1;
   return;
 }
 
@@ -1446,7 +1446,7 @@ void InGameCommand_HandlePlayerDeparture
   WorldRuntimeContext *worldRuntime;
   uint32_t factionToken;
   GameEntityRuntime *entityRuntime;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
   TextResolveResult departureText;
@@ -1454,7 +1454,7 @@ void InGameCommand_HandlePlayerDeparture
   
   runtimeRoot = g_InGameRuntimeRoot;
   if ((flags & INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION) == 0) {
-    worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
+    worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     if ((flags & INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER) == 0) {
@@ -1464,7 +1464,7 @@ void InGameCommand_HandlePlayerDeparture
           if (playerRecord == g_FrontendPlayerRuntimeBlocks) {
             g_SessionTransferTimeoutTicks = 0;
           }
-          if (playerOrFactionId == (runtimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId) {
+          if (playerOrFactionId == (runtimeRoot->worldRuntime).selection.activePlayerRuntimeId) {
             g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT;
             Resource_Release(g_FrontendLoadedCampaignAsset);
             g_FrontendLoadedCampaignAsset = NULL;
@@ -1499,8 +1499,8 @@ void InGameCommand_HandlePlayerDeparture
     }
     else {
       factionToken = g_SelectionPlayerRuntimeBlockPointers[playerOrFactionId]->
-              primaryEntityOrFactionToken8080;
-      for (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+              factionIndex;
+      for (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
           ownerNode != NULL; ownerNode = ownerNode->nextNode) {
         if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
            (entityRuntime = (GameEntityRuntime *)(((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime,
@@ -1520,18 +1520,18 @@ void InGameCommand_HandlePlayerDeparture
 /* Address: 0x0056D980.
    Terrain colours of the smoothing tool (InGameCommandModeG_Select2): rebuilds the terrain lighting colour ramp
    from the world runtime's lighting colours (lighting.baseColorArgb, rampColorArgb) with their alpha removed and the secondary
-   colour (color12CArgb) made opaque, relights the field grid with the light angles stored in the root, then sets
+   colour (secondaryColorArgb) made opaque, relights the field grid with the light angles stored in the root, then sets
    UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED and the limit read by the terrain triangle and marker drawing.
 */
 void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (((WorldRuntimeContext *)worldRuntime)->lighting.color12CArgb | 0xff000000,
+            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb | 0xff000000,
              ((WorldRuntimeContext *)worldRuntime)->lighting.rampColorArgb & 0xffffff,
              ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb & 0xffffff);
   FieldGrid_RecomputeInteriorDirectionalLighting
-            (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldYQ12_0BAC,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldXQ12_0BA8,
+            (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightElevationAngle,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightAzimuthAngle,
              ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags | UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED;
   g_UiCommandModeGColorVariantLimit = UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED;
@@ -1776,7 +1776,7 @@ void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context)
 /* Address: 0x0056D9F0.
    Terrain colours of every editor mode except smoothing (and of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
    when the editor is switched off): rebuilds the terrain colour ramp from the world runtime's lighting colours
-   (lighting.baseColorArgb, rampColorArgb, color12CArgb) unchanged, relights the field grid with the light
+   (lighting.baseColorArgb, rampColorArgb, secondaryColorArgb) unchanged, relights the field grid with the light
    angles stored in the root, clears bit 0x1000 of g_UiCommandModeGColorVariantFlags and sets the limit to 0x00FFFFFF. The
    counterpart of UiCommandModeG_ApplyMaskedColorVariant.
 */
@@ -1784,10 +1784,10 @@ void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (((WorldRuntimeContext *)worldRuntime)->lighting.color12CArgb,((WorldRuntimeContext *)worldRuntime)->lighting.rampColorArgb,
+            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb,((WorldRuntimeContext *)worldRuntime)->lighting.rampColorArgb,
              ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb);
   FieldGrid_RecomputeInteriorDirectionalLighting
-            (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldYQ12_0BAC,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRootImageC3E4,worldRuntime0A30)->fieldRegionOriginWorldXQ12_0BA8,
+            (THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightElevationAngle,THANDOR_CONTAINER_OF(worldRuntime,InGameRuntimeRoot,worldRuntime)->lightAzimuthAngle,
              ((WorldRuntimeContext *)worldRuntime)->fieldGrid);
   g_UiCommandModeGColorVariantFlags = g_UiCommandModeGColorVariantFlags & ~UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED;
   g_UiCommandModeGColorVariantLimit = UI_COMMAND_MODE_G_COLOR_LIMIT_RAW;
@@ -1824,14 +1824,14 @@ void UiCommandModeG_ShowGridVertexMarkers(WorldRuntimeContext *context)
    the mode's pages in modePreviewPageStack, modeDetailPageStack and modeCommandPageStack (page tables
    g_UiCommandModeG*PageIndices) and stores the mode in g_UiCommandModeG. Returns the in-game root.
 */
-InGameRuntimeRootImageC3E4 * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source)
+InGameRuntimeRoot * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source)
 
 {
-  InGameRuntimeRootImageC3E4 *root;
+  InGameRuntimeRoot *root;
 
-  root = (InGameRuntimeRootImageC3E4 *)source;
-  while ((root->rootUi0000).base.parent != UI_NODE_NONE) {
-    root = (InGameRuntimeRootImageC3E4 *)(root->rootUi0000).base.parent;
+  root = (InGameRuntimeRoot *)source;
+  while ((root->rootUi).base.parent != UI_NODE_NONE) {
+    root = (InGameRuntimeRoot *)(root->rootUi).base.parent;
   }
   UiSelectableGroup_NoneVisibleSelected(6,
       INGAME_UI(root,editorModeTabRegion),

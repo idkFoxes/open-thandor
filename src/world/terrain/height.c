@@ -32,7 +32,7 @@ bool TerrainHeightBand_TestAroundWorldPoint
   FieldGridCell *wedgeCell;
   FieldGridCell *otherWedgeCell;
   bool wedgeBlocked;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
   uint32_t cellRow;
   uint32_t cellColumn;
 
@@ -48,8 +48,8 @@ bool TerrainHeightBand_TestAroundWorldPoint
     gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     baseColumn = gridCoordinates.columnQ12 >> 12;
     cellRow = gridCoordinates.rowQ12 >> 12;
-    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
+    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
     cellColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {
@@ -130,7 +130,7 @@ bool TerrainAuxHeightThreshold_TestAroundWorldPoint
   FieldGridCell *wedgeCell;
   FieldGridCell *otherWedgeCell;
   bool wedgeBlocked;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
   uint32_t cellRow;
   uint32_t cellColumn;
 
@@ -146,8 +146,8 @@ bool TerrainAuxHeightThreshold_TestAroundWorldPoint
     gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
     baseColumn = gridCoordinates.columnQ12 >> 12;
     cellRow = gridCoordinates.rowQ12 >> 12;
-    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
+    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     fractionSumOrGridWidth = rowFractionQ12 + columnFractionQ12 * 2;
     cellColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {

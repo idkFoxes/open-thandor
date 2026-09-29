@@ -54,7 +54,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-      ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+      ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     }
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
@@ -71,14 +71,14 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     firstPlayerRecord->peerSequenceToken = sequenceToken;
     localPlayerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
     localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
-    for (remainingOrRootNode = sizeof(FrontendPlayerNameUtf16_28) / sizeof(uint32_t); remainingOrRootNode != 0;
+    for (remainingOrRootNode = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingOrRootNode != 0;
          remainingOrRootNode--) {
       *localPlayerRecordDwordCursor = *localPlayerNameDwordCursor;
       localPlayerNameDwordCursor++;
       localPlayerRecordDwordCursor++;
     }
     /* the cursor continues into firstPlayerRecord->endpoint and then commandSyncPending */
-    endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
+    endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
     for (remainingOrRootNode = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingOrRootNode != 0;
          remainingOrRootNode--) {
       *localPlayerRecordDwordCursor = *endpointSourceDwordCursor;
@@ -102,7 +102,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
                (uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-      ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+      ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     }
     g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
@@ -135,7 +135,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
 backendOpened:
       UiPointerList_SelectTextListIndex
                 (backendIndex,(UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
-      localEndpointCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
+      localEndpointCursor = (uint32_t *)&g_NetworkLocalEndpoint;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
       /* copies the 16-byte local endpoint dword by dword */
       for (remainingOrRootNode = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingOrRootNode != 0;
@@ -176,7 +176,7 @@ backendOpened:
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
       UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
       if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-        ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+        ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
       }
       g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
@@ -347,7 +347,7 @@ void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,hostGameSetupBackButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_BROWSING;
@@ -433,7 +433,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   frontendUi = (FrontendUiImage *)((uint8_t *)hostButton - offsetof(FrontendUiImage,networkGameHostButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_GAME_SETUP,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
@@ -478,7 +478,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
@@ -494,13 +494,13 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   firstPlayerRecord->playerRuntimeId = 0;
   localPlayerNameCursor = (void *)g_FrontendLocalPlayerNameUtf16;
   localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
-  for (remainingDwords = sizeof(FrontendPlayerNameUtf16_28) / sizeof(uint32_t); remainingDwords != 0;
+  for (remainingDwords = sizeof(FrontendPlayerNameUtf16) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
     *localPlayerRecordDwordCursor = *localPlayerNameCursor;
     localPlayerNameCursor++;
     localPlayerRecordDwordCursor++;
   }
-  localEndpointDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
+  localEndpointDwordCursor = (uint32_t *)&g_NetworkLocalEndpoint;
   for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
     *localPlayerRecordDwordCursor = *localEndpointDwordCursor;

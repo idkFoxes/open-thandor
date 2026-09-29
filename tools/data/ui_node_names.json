@@ -1070,11 +1070,11 @@
   },
   "0x017C": {
    "name": "PrimaryPageStack",
-   "note": "Top-level page stack (primaryPageStack017C); page 1 is the end-movie/results view, it also lists the level movie page and the side panel stack 0x40AC."
+   "note": "Top-level page stack (InGameRuntimeRoot.primaryPageStack); page 1 is the end-movie/results view, it also lists the level movie page and the side panel stack 0x40AC."
   },
   "0x01D8": {
    "name": "EndMovieView",
-   "note": "Image/action surface that shows the end movie (activeEndMovieRuntime022C); action 0x1009 clears the playback flag to skip the movie."
+   "note": "Image/action surface that shows the end movie (activeEndMovieRuntime); action 0x1009 clears the playback flag to skip the movie."
   },
   "0x0240": {
    "name": "EndMovieLetterboxTop",
@@ -1142,15 +1142,15 @@
   },
   "0x0880": {
    "name": "LevelMovieView",
-   "note": "Image/action surface playing the level movie (levelMovieRuntime08D4 lives in this node)."
+   "note": "Image/action surface playing the level movie (levelMovieRuntime lives in this node)."
   },
   "0x08E4": {
    "name": "PlayerStatusBox",
-   "note": "Multiplayer player status box (types.h: playerStatusNode08E4): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback."
+   "note": "Multiplayer player status box (types.h: playerStatusNode): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback."
   },
   "0x0960": {
    "name": "MessageHistoryPanel",
-   "note": "Recent message history display (recentTextHistory09B8 lives inside it); action 0x100F trims the history to three lines."
+   "note": "Recent message history display (recentTextHistory lives inside it); action 0x100F trims the history to three lines."
   },
   "0x09DC": {
    "name": "WorldViewArea",
@@ -1158,7 +1158,7 @@
   },
   "0x0A30": {
    "name": "WorldView",
-   "note": "The 3D world view control (worldRuntime0A30) that receives map pointer input and hosts the on-screen status texts."
+   "note": "The 3D world view control (InGameRuntimeRoot.worldRuntime) that receives map pointer input and hosts the on-screen status texts."
   },
   "0x0BD0": {
    "name": "GameWindowPageStack",
@@ -1218,7 +1218,7 @@
   },
   "0x1100": {
    "name": "MissionBriefingScroll",
-   "note": "Scrollable view of the mission briefing text (textPanel0_1100)."
+   "note": "Scrollable view of the mission briefing text (InGameMissionHelpRootView.missionBriefingPanel)."
   },
   "0x1190": {
    "name": "MissionBriefingText",
@@ -1226,7 +1226,7 @@
   },
   "0x11EC": {
    "name": "KeyboardHelpScroll",
-   "note": "Scrollable view of the keyboard help (textPanel1_11EC)."
+   "note": "Scrollable view of the keyboard help (keyboardHelpPanel)."
   },
   "0x127C": {
    "name": "KeyboardHelpKeyColumn",
@@ -1238,7 +1238,7 @@
   },
   "0x1334": {
    "name": "MouseHelpScroll",
-   "note": "Scrollable view of help text 0x2402 (textPanel2_1334)."
+   "note": "Scrollable view of help text 0x2402 (mouseHelpPanel)."
   },
   "0x13C4": {
    "name": "MouseHelpText",
@@ -1742,7 +1742,7 @@
   },
   "0x4388": {
    "name": "InGameMenuButton",
-   "note": "Sprite toggle (action 0x1003) that opens/closes the in-game menu page (sharedSettingsToggle4388)."
+   "note": "Sprite toggle (action 0x1003) that opens/closes the in-game menu page (InGameMissionHelpRootView.inGameMenuButton)."
   },
   "0x4400": {
    "name": "MissionObjectivesButton",
@@ -1830,7 +1830,7 @@
   },
   "0x4D0C": {
    "name": "DiplomacyPanel",
-   "note": "Image-control window (image 0xC, otherPlayerTargetGridNode4D0C) listing the other active players and relations."
+   "note": "Image-control window (image 0xC, InGameRuntimeRootUiGridView.diplomacyPanel) listing the other active players and relations."
   },
   "0x4D78": {
    "name": "DiplomacyFrame",
@@ -2006,11 +2006,11 @@
   },
   "0x5DB4": {
    "name": "BuildCatalogPanel",
-   "note": "Image-control window (id 0xD, catalogGroup48GridNode5DB4) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid)."
+   "note": "Image-control window (id 0xD, InGameRuntimeRootUiGridView.buildCatalogPanel) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid)."
   },
   "0x5E20": {
    "name": "BuildCatalogFrame",
-   "note": "Nine-slice frame of the 48-entry build catalog (catalogGroup48LayoutNode5E20); resized to the computed grid in UiCatalogGroup48_RebuildGrid."
+   "note": "Nine-slice frame of the 48-entry build catalog (InGameRuntimeRootUiGridView.buildCatalogFrame); resized to the computed grid in UiCatalogGroup48_RebuildGrid."
   },
   "0x5E7C": {
    "name": "BuildCatalogEntry00",
@@ -2206,11 +2206,11 @@
   },
   "0x7680": {
    "name": "SpecialBuildCatalogPanel",
-   "note": "Image-control window (id 0xE, catalogGroup42GridNode7680) holding the 42-entry catalog of flag-0x10 army assets, only offered while the faction owns a model-class-0x0B structure (UiCatalogGroup42_RebuildGrid)."
+   "note": "Image-control window (id 0xE, InGameRuntimeRootUiGridView.specialBuildCatalogPanel) holding the 42-entry catalog of flag-0x10 army assets, only offered while the faction owns a model-class-0x0B structure (UiCatalogGroup42_RebuildGrid)."
   },
   "0x76EC": {
    "name": "SpecialBuildCatalogFrame",
-   "note": "Nine-slice frame of the 42-entry special build catalog (catalogGroup42LayoutNode76EC); resized to the computed grid."
+   "note": "Nine-slice frame of the 42-entry special build catalog (InGameRuntimeRootUiGridView.specialBuildCatalogFrame); resized to the computed grid."
   },
   "0x7748": {
    "name": "SpecialBuildCatalogEntry00",
@@ -2382,11 +2382,11 @@
   },
   "0x8C4C": {
    "name": "ArmyStockPanel",
-   "note": "Image-control window (id 0xF, commandSpriteVariantAGridNode8C4C) showing up to 24 army assets held in the faction's primary army-asset pool (UiCommandSpriteVariantA_RebuildGrid)."
+   "note": "Image-control window (id 0xF, InGameRuntimeRootUiGridView.armyStockPanel) showing up to 24 army assets held in the faction's primary army-asset pool (UiCommandSpriteVariantA_RebuildGrid)."
   },
   "0x8CB8": {
    "name": "ArmyStockFrame",
-   "note": "Nine-slice frame of the 24-slot army stock grid (commandSpriteVariantALayoutNode8CB8); resized/suppressed by the rebuild."
+   "note": "Nine-slice frame of the 24-slot army stock grid (InGameRuntimeRootUiGridView.armyStockFrame); resized/suppressed by the rebuild."
   },
   "0x8D14": {
    "name": "ArmyStockSlot00",
@@ -2498,7 +2498,7 @@
   },
   "0x9A1C": {
    "name": "MinimapView",
-   "note": "Rotating minimap (UiSelectionGeometryControl draws a rotated/scaled texture); +0x50 holds the cursor grid position (fieldGridPosition9A6C)."
+   "note": "Rotating minimap (UiSelectionGeometryControl draws a rotated/scaled texture); +0x50 holds the cursor grid position (InGameRuntimeRoot.minimapOriginGridPosition; +0x58..+0x60 are minimapSampleScaleQ12, minimapRotationAngle, minimapTextureSource)."
   },
   "0x9A8C": {
    "name": "ModePreviewPageStack",
@@ -2550,7 +2550,7 @@
   },
   "0x9FAC": {
    "name": "SelectionDetailPageStack",
-   "note": "Page stack switched by InGameSelectionDetailPanel_Rebuild: 1 single unit, 2 multi-selection grid, 3 hovered build item (root field selectionDetailPageStack9FAC)."
+   "note": "Page stack switched by InGameSelectionDetailPanel_Rebuild: 1 single unit, 2 multi-selection grid, 3 hovered build item (root field selectionDetailPageStack)."
   },
   "0xA00C": {
    "name": "SingleSelectionMetrics",

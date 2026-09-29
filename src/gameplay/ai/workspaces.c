@@ -85,7 +85,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   GraphicsWorldCoordinateQ12 translationX;
   GraphicsWorldCoordinateQ12 translationY;
   ModelRuntimeSlot *slotModelRuntime;
-  AiWorkspace00EntryView8 *primaryBuffer;
+  AiStructureWorkspaceEntry *primaryBuffer;
   uint32_t countSnapshotOrRemaining;
   AiRuntimeWorkspaceEntry *workspace03Buffer;
   GridScratchStateMask neighborhoodMask;
@@ -96,7 +96,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   uint32_t countOrMask;
   uint32_t scratchWidthOrFactionOffset;
   int rowStrideOrClassId;
-  AiWorkspace00EntryView8 *primaryEntryCursor;
+  AiStructureWorkspaceEntry *primaryEntryCursor;
   FieldGridCell *fieldCell;
   uint8_t *cellByteCursor;
   ArmyAssetRecordPrefix **workspace11Cursor;
@@ -169,7 +169,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
                (((countOrMask & 1) == 0 ||
                 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
                  [((ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-                  runtimeDefinition->runtimeClassId4C] !=
+                  runtimeDefinition->runtimeClassId] !=
                  ArmyRuntime_ClassCommandHandlerGroupA)))) {
               assetId = (entityRuntime->common).runtimeIdentityOrArmyAssetId;
               if (g_AiWorkspace03Count < AI_WORKSPACE03_CAPACITY) {
@@ -254,7 +254,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
       primarySlotWords = (int *)primaryEntryCursor->runtimeSlotAddressOrZero;
       if (primarySlotWords != NULL) {
         remainingOrClassRecord = *primarySlotWords;
-        if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId4C == 0xb) {
+        if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == 0xb) {
           assetId = primarySlotWords[0x18];
           if ((primarySlotWords[0x2e] == 1) && (countOrMask < AI_WORKSPACE00_CAPACITY)) {
             primaryBuffer[countOrMask].runtimeSlotAddressOrZero = 0;
@@ -262,7 +262,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
             g_AiWorkspace00Count++;
           }
         }
-        else if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId4C == 0x16) {
+        else if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == 0x16) {
           assetId = primarySlotWords[0x18];
           if ((primarySlotWords[0x2b] == 1) && (widthOrCount < AI_WORKSPACE01_CAPACITY)) {
             runtimeEntryCursor[widthOrCount].armyRuntime = NULL;
@@ -270,7 +270,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
             g_AiWorkspace01Count++;
           }
         }
-        else if (((((ModelDefinition *)remainingOrClassRecord)->runtimeClassId4C == 0xd) &&
+        else if (((((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == 0xd) &&
                  (assetId = primarySlotWords[0x18], primarySlotWords[0x2e] == 1)) &&
                 (widthOrCount < AI_WORKSPACE01_CAPACITY)) {
           runtimeEntryCursor[widthOrCount].armyRuntime = NULL;
@@ -429,7 +429,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   for (widthOrCount = g_AiWorkspace00Count; widthOrCount != 0; widthOrCount--) {
     if ((int *)primaryEntryCursor->runtimeSlotAddressOrZero != NULL) {
       remainingOrClassRecord = *(int *)primaryEntryCursor->runtimeSlotAddressOrZero;
-      rowStrideOrClassId = ((ModelDefinition *)remainingOrClassRecord)->runtimeClassId4C;
+      rowStrideOrClassId = ((ModelDefinition *)remainingOrClassRecord)->runtimeClassId;
       if (rowStrideOrClassId == 0xd) {
         countOrMask = countOrMask | ((ModelDefinition *)remainingOrClassRecord)->classParameterC4;
       }
@@ -1045,13 +1045,13 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(createdSlotPair,worldRuntime);
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
-                   (modelNodeRuntime->movementControl).turnVelocityAngle16,
-                   (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
-                   ((WorldRuntimeNodeModelPayload *)&modelNodeRuntime->factionIndex)->
-                   worldRotationAngle0,modelNodeRuntime->depthBinClass,
-                   modelNodeRuntime->runtimeState98,
-                   ((GraphicsFixedVec3 *)&modelNodeRuntime->runtimeState94)->x,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
+                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.z,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.y,
+                   ((ModelRuntimeNode *)modelNodeRuntime)->worldTransform.translation.x,
                    (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
                    worldRuntime);
         AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
@@ -1096,7 +1096,7 @@ StatusResult AiRuntime_InitWorkspace(void)
   loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
   workspaceAllocation = loadResult.bufferOrError;
   if (!loadResult.failed) {
-    g_AiWorkspace00Structures = (AiWorkspace00EntryView8 *)workspaceAllocation;
+    g_AiWorkspace00Structures = (AiStructureWorkspaceEntry *)workspaceAllocation;
     loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
     if (!loadResult.failed) {
       g_AiWorkspace01Units = loadResult.bufferOrError;
@@ -1367,8 +1367,8 @@ bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
       if (deltaYAbsQ12 < 0) {
         deltaYAbsQ12 = -deltaYAbsQ12;
       }
-      if ((deltaXAbsQ12 < ((ModelDefinition *)*workspaceEntryEntityRecord)->supportRadius19C) &&
-         (deltaYAbsQ12 < ((ModelDefinition *)*workspaceEntryEntityRecord)->supportRadius19C)) {
+      if ((deltaXAbsQ12 < ((ModelDefinition *)*workspaceEntryEntityRecord)->supportRadius) &&
+         (deltaYAbsQ12 < ((ModelDefinition *)*workspaceEntryEntityRecord)->supportRadius)) {
         return false;
       }
     }

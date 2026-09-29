@@ -14,7 +14,7 @@
 typedef AiTechnologyCandidateScore AiTechnologyCandidateScoreCallback(FactionRuntimeIndex factionIndex, PckTechnologyIdCatalog technologyId, WorldRuntimeContext * worldRuntime); /* Ghidra FunctionDefinition /Thandor/AI/Callbacks */
 typedef ArenaFreeResult ArenaFreeProc(void * memory); /* Ghidra FunctionDefinition /Thandor/ABI */
 typedef ArenaShrinkResult ArenaShrinkProc(uint32_t newSize, void * memory); /* Ghidra FunctionDefinition /Thandor/ABI */
-typedef CommandLineOptionResult CommandLineFindOptionProc(uint32_t arg0, char * arg1); /* Ghidra FunctionDefinition /Thandor/CommandLine/Methods */
+typedef CommandLineOptionResult CommandLineFindOptionProc(uint32_t length, char * option); /* Ghidra FunctionDefinition /Thandor/CommandLine/Methods */
 typedef uint32_t __cdecl CpuDetectFeaturesProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef FatalErrorCheckResult FatalErrorPassThroughProc(uint32_t errorOrValue, bool carryIn); /* Ghidra FunctionDefinition /Thandor/ABI */
 typedef void FileSystemCloseProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
@@ -23,7 +23,7 @@ typedef StatusResult FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDire
 typedef uint32_t FileSystemDeleteProc(uint32_t unusedFlags, uint16_t * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef bool FileSystemDriveReadyProc(uint32_t driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef DirectoryEnumerationResult FileSystemEnumerateDirectoryOrVolumeEntriesProc(FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef DriveLetterEnumerationEaxEcx8 FileSystemEnumerateDriveLettersEaxEcxProc(uint8_t * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef DriveLetterEnumeration FileSystemEnumerateDriveLettersEaxEcxProc(uint8_t * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef StatusResult FileSystemGetCurrentDirectoryProc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef EngineDriveTypeCode FileSystemGetDriveTypeCodePreserveProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef Win32DriveCapacityEdxEax8 FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
@@ -40,71 +40,71 @@ typedef FileSystemSeekResult FileSystemSeekProc(FileSystemSeekOrigin moveMethod,
 typedef StatusResult FileSystemSetCurrentDirectoryProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef bool FileSystemValidateDos83Proc(FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef FileSystemWriteResult FileSystemWriteExactOrFlushProc(FileIoByteCount byteCount, void * source, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t FrontendModelPointerContextUpdateCallbackProc(int pointerY, int pointerX, FrontendModelPointerContextRuntimeState118 * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t FrontendModelPointerResolvedActionCallbackProc(uint32_t callbackArgumentF0, uint32_t callbackArgumentEC, uint32_t callbackArgumentE8, int selectedHitMetric, ModelRuntimeNode * selectedModelNode, FrontendModelPointerContextRuntimeState118 * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef void GlideTextureUploadProc(GraphicsTextureResource * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void __stdcall GrAlphaBlendFunctionImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrAlphaCombineImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrBufferClearImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef uint32_t FrontendModelPointerContextUpdateCallbackProc(int pointerY, int pointerX, FrontendModelPointerHitContext * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef uint32_t FrontendModelPointerResolvedActionCallbackProc(uint32_t surfaceHitDepth, uint32_t surfaceHitWorldY, uint32_t surfaceHitWorldX, int selectedHitMetric, ModelRuntimeNode * selectedModelNode, FrontendModelPointerHitContext * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef void GlideTextureUploadProc(GraphicsTextureResource * texture); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __stdcall GrAlphaBlendFunctionImportProc(uint32_t rgbSourceFactor, uint32_t rgbDestinationFactor, uint32_t alphaSourceFactor, uint32_t alphaDestinationFactor); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrAlphaCombineImportProc(uint32_t function, uint32_t factor, uint32_t local, uint32_t other, uint32_t invert); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrBufferClearImportProc(uint32_t color, uint32_t alpha, uint32_t depth); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrBufferSwapImportProc(uint32_t swapInterval); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrClipWindowImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrColorCombineImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrCoordinateSpaceImportProc(uint32_t arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrCullModeImportProc(uint32_t arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrDepthBufferFunctionImportProc(uint32_t arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrDepthBufferModeImportProc(uint32_t arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrDepthMaskImportProc(uint32_t arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrClipWindowImportProc(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrColorCombineImportProc(uint32_t function, uint32_t factor, uint32_t local, uint32_t other, uint32_t invert); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrCoordinateSpaceImportProc(uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrCullModeImportProc(uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrDepthBufferFunctionImportProc(uint32_t function); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrDepthBufferModeImportProc(uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrDepthMaskImportProc(uint32_t enabled); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrDrawTriangleImportProc(uint32_t * vertexA, uint32_t * vertexB, uint32_t * vertexC); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrFinishImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef uint32_t __stdcall GrGetImportProc(uint32_t selector, uint32_t sizeBytes, void * output); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef char * __stdcall GrGetStringImportProc(uint32_t selector); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrGlideInitImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrGlideShutdownImportProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef uint32_t __stdcall GrLfbLockImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4, void * arg5); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef uint32_t __stdcall GrLfbLockImportProc(uint32_t lockType, uint32_t buffer, uint32_t writeMode, uint32_t origin, uint32_t pixelPipeline, void * lfbInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef uint32_t __stdcall GrLfbReadRegionImportProc(uint32_t buffer, GraphicsScreenCoordinate sourceX, GraphicsScreenCoordinate sourceY, GraphicsPixelDimension width, GraphicsPixelDimension height, uint32_t destinationStrideBytes, uint16_t * destinationPixels); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrLfbUnlockImportProc(uint32_t arg0, uint32_t arg1); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrLfbUnlockImportProc(uint32_t lockType, uint32_t buffer); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef uint32_t __stdcall GrQueryResolutionsImportProc(void * query, void * output); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrSstSelectImportProc(uint32_t arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrSstWinCloseImportProc(uint32_t arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef uint32_t __stdcall GrSstWinOpenImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4, uint32_t arg5, uint32_t arg6); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexClampModeImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexCombineImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4, uint32_t arg5, uint32_t arg6); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrSstSelectImportProc(uint32_t boardIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrSstWinCloseImportProc(uint32_t context); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef uint32_t __stdcall GrSstWinOpenImportProc(uint32_t windowHandle, uint32_t screenResolution, uint32_t refreshRate, uint32_t colorFormat, uint32_t origin, uint32_t colorBufferCount, uint32_t auxiliaryBufferCount); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexClampModeImportProc(uint32_t tmuIndex, uint32_t sClampMode, uint32_t tClampMode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexCombineImportProc(uint32_t tmuIndex, uint32_t rgbFunction, uint32_t rgbFactor, uint32_t alphaFunction, uint32_t alphaFactor, uint32_t rgbInvert, uint32_t alphaInvert); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrTexDownloadMipMapImportProc(GraphicsTextureResidentTmuIndex tmuIndex, GraphicsTextureMemoryAddress startAddress, uint32_t evenOddMask, GrTexInfo * textureInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexFilterModeImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexFilterModeImportProc(uint32_t tmuIndex, uint32_t minifyFilter, uint32_t magnifyFilter); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef GraphicsTextureMemoryAddress __stdcall GrTexMaxAddressImportProc(GraphicsTextureResidentTmuIndex tmuIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef GraphicsTextureMemoryAddress __stdcall GrTexMinAddressImportProc(GraphicsTextureResidentTmuIndex tmuIndex); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrTexMipMapModeImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrTexMipMapModeImportProc(uint32_t tmuIndex, uint32_t mode, uint32_t lodBlend); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __stdcall GrTexSourceImportProc(GraphicsTextureResidentTmuIndex tmuIndex, GraphicsTextureMemoryAddress residentAddress, uint32_t mode, GrTexInfo * textureInfo); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrVertexLayoutImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
-typedef void __stdcall GrViewportImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrVertexLayoutImportProc(uint32_t parameter, uint32_t byteOffset, uint32_t mode); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef void __stdcall GrViewportImportProc(uint32_t x, uint32_t y, uint32_t width, uint32_t height); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void GraphicsBackendRefreshActiveAdapterProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsBeginScenePreserveAllProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef CursorEventResult GraphicsCursorConsumeEventProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void GraphicsDrawPrimitiveQueueProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, GraphicsPrimitiveQueue * arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void GraphicsDrawPrimitiveQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsEndSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef OffscreenRenderResult GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, uint32_t param_2, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputWidth, GraphicsPixelDimension outputHeight, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef PaletteAssetResult GraphicsPaletteAssetLoadPackageProc(uint16_t * arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef PaletteAssetResult GraphicsPaletteAssetValidateProc(GraphicsPaletteAsset * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef OffscreenRenderResult GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, uint32_t auxiliaryOrientationAngles, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputHeight, GraphicsPixelDimension outputWidth, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef PaletteAssetResult GraphicsPaletteAssetLoadPackageProc(uint16_t * pathUtf16); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef PaletteAssetResult GraphicsPaletteAssetValidateProc(GraphicsPaletteAsset * paletteAsset); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsPrimitiveQueueRadixSortProc(GraphicsBooleanState halveVertexRgb, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void GraphicsSetViewportProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void GraphicsSetViewportProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void __cdecl GraphicsTextureRebuildAllProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef TextureSetResult GraphicsTextureSetCreateProc(GraphicsTextureSourceAsset * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef GraphicsTextureSourceAsset * GraphicsTextureSetDestroyProc(GraphicsTextureSet * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef TextureSetResult GraphicsTextureSetCreateProc(GraphicsTextureSourceAsset * sourceAsset); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef GraphicsTextureSourceAsset * GraphicsTextureSetDestroyProc(GraphicsTextureSet * set); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef TextureSetResult GraphicsTextureSetLoadPackageProc(uint16_t * pathUtf16); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void GraphicsTextureSetRefreshProc(uint32_t arg0, GraphicsTextureSet * arg1); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void GraphicsTextureSetRefreshProc(uint32_t subresourceIndex, GraphicsTextureSet * set); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsTextureSetReleasePackageProc(GraphicsTextureSet * set); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef PaletteTextureSourceResult GraphicsTextureSourceConvertPaletteEntriesProc(GraphicsPaletteTextureSourceAsset * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void __stdcall GuGammaCorrectionRGBImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
+typedef PaletteTextureSourceResult GraphicsTextureSourceConvertPaletteEntriesProc(GraphicsPaletteTextureSourceAsset * sourceAsset); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void __stdcall GuGammaCorrectionRGBImportProc(uint32_t redGamma, uint32_t greenGamma, uint32_t blueGamma); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void InGameWorldOverlayPhaseCallbackProc(GraphicsBooleanState releaseMode, WorldRuntimeContext * worldRuntime); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void InGameWorldOverlayRebuildCallbackProc(uint32_t arg0, WorldRuntimeContext * arg1); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void InGameWorldTransientStateClearCallbackProc(WorldRuntimeContext * arg0); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void KeyboardFlushEventsProc(void); /* Ghidra FunctionDefinition /Thandor/Input/Methods */
 typedef KeyboardEventResult KeyboardReadEventProc(void); /* Ghidra FunctionDefinition /Thandor/Input/Methods */
-typedef void LocaleCopyDefaultComputerLabelUtf16Proc(uint16_t * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef uint32_t LocaleFormatCurrentDateUtf16Proc(uint16_t * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef uint32_t LocaleFormatCurrentTimeUtf16Proc(uint16_t * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef uint32_t LocaleFormatDateFieldsUtf16Proc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint16_t * arg3); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef uint32_t LocaleFormatTimeFieldsUtf16Proc(uint32_t arg0, uint32_t arg1, uint16_t * arg2); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void LocaleCopyDefaultComputerLabelUtf16Proc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef uint32_t LocaleFormatCurrentDateUtf16Proc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef uint32_t LocaleFormatCurrentTimeUtf16Proc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef uint32_t LocaleFormatDateFieldsUtf16Proc(uint32_t year, uint32_t month, uint32_t day, uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef uint32_t LocaleFormatTimeFieldsUtf16Proc(uint32_t hour, uint32_t minute, uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef uint32_t LocaleGetPackedCurrentDateProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef uint32_t LocaleGetPackedCurrentTimeProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef uint32_t LocaleGetTelephoneCountryCodeProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
@@ -123,20 +123,20 @@ typedef PcxEncodeResult PcxEncodeProc(FncModuleHeader * module, void * framebuff
 typedef void PointerFlushEventsProc(void); /* Ghidra FunctionDefinition /Thandor/Input */
 typedef void PointerSetPositionProc(int32_t positionY, int32_t positionX); /* Ghidra FunctionDefinition /Thandor/Input */
 typedef void ScenarioCatalogRefreshSelectedRecordCallback(uint32_t arg0, uint32_t arg1, uint32_t arg2, UiListRowIndex selectionIndex); /* Ghidra FunctionDefinition /Thandor/UI/ActionHandlers/Callbacks */
-typedef void SoftwareBuildPixelPackTablesProc(int32_t arg0, int32_t arg1); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void SoftwareDrawQueueProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, GraphicsPrimitiveQueue * arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef SoftwareFramebufferAccess * SoftwareFramebufferCreateProc(uint32_t arg0, uint32_t arg1, uint32_t arg2); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef void SoftwareRasterHandler(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, GraphicsPrimitivePacket * arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef uint64_t SoundQueryVoiceRegsProc(IDirectSoundBuffer * arg0); /* Ghidra FunctionDefinition /Thandor/Sound/Methods */
-typedef void SpinLockAcquireProc(RuntimeSpinLockValue * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void SoftwareBuildPixelPackTablesProc(int32_t colorScaleQ16, int32_t colorBiasQ16); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void SoftwareDrawQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef SoftwareFramebufferAccess * SoftwareFramebufferCreateProc(uint32_t bytesPerPixel, uint32_t height, uint32_t width); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef void SoftwareRasterHandler(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitivePacket * packet); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef uint64_t SoundQueryVoiceRegsProc(IDirectSoundBuffer * voice); /* Ghidra FunctionDefinition /Thandor/Sound/Methods */
+typedef void SpinLockAcquireProc(RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void SpinLockReleaseCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef void SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * arg0, RuntimeSpinLockValue * arg1); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef void SpinLockReleaseProc(RuntimeSpinLockValue * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef bool SpinLockTryAcquireFlagsProc(RuntimeSpinLockValue * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void SpinLockReleaseAndInvokeProc(SpinLockReleaseCallbackProc * callback, RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void SpinLockReleaseProc(RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef bool SpinLockTryAcquireFlagsProc(RuntimeSpinLockValue * lockValue); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef bool TerrainClassOverlayCallback(uint32_t cellFlagMask, int cellValue, uint32_t radiusWorldUnits, Q12 worldXQ12, Q12 worldYQ12, FieldGridAsset * fieldGrid); /* Ghidra FunctionDefinition /Thandor/Assets/FieldGrid/Callbacks */
 typedef void __cdecl TimerCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef void TimerRegisterPeriodicProc(uint32_t arg0, TimerCallbackProc * arg1); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void TimerRegisterPeriodicProc(uint32_t frequencyHz, TimerCallbackProc * callback); /* Ghidra FunctionDefinition /Thandor/System/Methods */
+typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * callback); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef bool UiRootCloseCallback(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef void UiRootFrameCallback(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef bool UiRootKeyboardFallback(UiKeyboardStateMask modifierFlags, UiActionId commandCode, UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
@@ -333,7 +333,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_UiDisplayModeDistinctValueScratch5 (*(DisplayModeScratchWord *)THANDOR_IMAGE(0x004235ec))
 #define g_UiDisplayModeDistinctValueScratch6 (*(DisplayModeScratchWord *)THANDOR_IMAGE(0x004235f0))
 #define g_UiDisplayModeDistinctValueScratch7 (*(DisplayModeScratchWord *)THANDOR_IMAGE(0x004235f4))
-#define g_UiDisplayModeSelectionActionHandlers20 (*(UiDisplayModeSelectionActionHandlerTable20 *)THANDOR_IMAGE(0x00423588))
+#define g_UiDisplayModeSelectionActionHandlers20 (*(UiDisplayModeSelectionActionHandlerTable *)THANDOR_IMAGE(0x00423588))
 #define g_CursorVisibilityToken (*(int32_t *)THANDOR_IMAGE(0x00416834))
 #define g_GraphicsSetDisplayMode (*(SoftwareDisplayModeHookProc * *)THANDOR_IMAGE(0x004a8ed0))
 #define g_UiFourValueDialogRootCallbacks (*(UiRootCallbacks *)THANDOR_IMAGE(0x00424324))
@@ -550,7 +550,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_GraphicsShadingPositiveGridOriginQ12 (*(int32_t *)THANDOR_IMAGE(0x004cce40))
 #define g_GraphicsShadingNegativeGridOriginQ12 (*(int32_t *)THANDOR_IMAGE(0x004cce44))
 #define g_GraphicsShadingTextureDimension (*(uint32_t *)THANDOR_IMAGE(0x004cce00))
-#define g_GeneratedTextureScratchRuntime (*(GeneratedTextureScratchRuntime1A8 *)THANDOR_IMAGE(0x004cce48))
+#define g_GeneratedTextureScratchRuntime (*(GeneratedTextureScratchRuntime *)THANDOR_IMAGE(0x004cce48))
 #define g_TextureDownsampleShift (*(uint32_t *)THANDOR_IMAGE(0x00485814))
 #define g_GraphicsShadingGeneratedTexturePixelCursor (*(uint8_t * *)THANDOR_IMAGE(0x004cce08))
 #define g_GraphicsShadingGeneratedTextureTileX (*(uint32_t *)THANDOR_IMAGE(0x004cce0c))
@@ -589,7 +589,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_GraphicsPaletteAssetLoadPackage (*(GraphicsPaletteAssetLoadPackageProc * *)THANDOR_IMAGE(0x004a8f54))
 #define g_MoviePlaybackScheduleSpan (*(uint32_t *)THANDOR_IMAGE(0x00563328))
 #define g_GraphicsTextureSetReleasePackage (*(GraphicsTextureSetReleasePackageProc * *)THANDOR_IMAGE(0x00485830))
-#define g_GraphicsPaletteAssetLifecycleCallbacks3 (*(GraphicsPaletteAssetLifecycleCallbackTable3 *)THANDOR_IMAGE(0x004a8f58))
+#define g_GraphicsPaletteAssetLifecycleCallbacks3 (*(GraphicsPaletteAssetLifecycleCallbackTable *)THANDOR_IMAGE(0x004a8f58))
 #define g_FieldGridOccupancyMmxHighBitMask (*(uint64_t *)THANDOR_IMAGE(0x0041f6c0))
 #define g_TerrainDirectionalLightColorLut (*(PackedArgb32 (*)[257])THANDOR_IMAGE(0x00501590))
 #define g_TerrainDirectionalLightSecondaryColor (*(uint32_t *)THANDOR_IMAGE(0x00501994))
@@ -692,7 +692,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_InGameLevelRuntimeGlobalBlock (*(InGameLevelRuntimeGlobalBlock20 *)THANDOR_IMAGE(0x00531060))
 #define g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes (*(ArmyRuntimeOrderHandlerMatrix11x24 *)THANDOR_IMAGE(0x0051fc98))
 #define g_EndMoviePath (*(uint16_t * *)THANDOR_IMAGE(0x00563bb4))
-#define g_InGameRuntimeRoot (*(InGameRuntimeRootImageC3E4 * *)THANDOR_IMAGE(0x0056327c))
+#define g_InGameRuntimeRoot (*(InGameRuntimeRoot * *)THANDOR_IMAGE(0x0056327c))
 #define g_InGameSimulationStepTicks (*(InGameSimulationStepBatchTicks *)THANDOR_IMAGE(0x00563264))
 #define g_GameFactionRuntimeImage (*(GameFactionRuntimeImage *)THANDOR_IMAGE(0x0050f340))
 #define g_EffectRuntimeRebaseBaseMinusOne (*(uint8_t * *)THANDOR_IMAGE(0x0051dbcc))
@@ -841,7 +841,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define u_gfx_panel_info_dat_0052ce92 (*(uint16_t (*)[19])THANDOR_IMAGE(0x0052ce92))
 #define g_SelectionPlayerBlocks (*(SelectionPlayerRuntimeBlock * *)THANDOR_IMAGE(0x00514d60))
 #define g_SelectionInfoEntitySlots (*(SelectionInfoEntitySlots * *)THANDOR_IMAGE(0x0052ce14))
-#define g_GraphicsTextureSourceLifecycleCallbacks3 (*(GraphicsTextureSourceLifecycleCallbackTable3 *)THANDOR_IMAGE(0x004a8f40))
+#define g_GraphicsTextureSourceLifecycleCallbacks3 (*(GraphicsTextureSourceLifecycleCallbackTable *)THANDOR_IMAGE(0x004a8f40))
 #define g_SelectionPanelNumberTextStyle (*(uint32_t *)THANDOR_IMAGE(0x0052ce00))
 #define g_SelectionPanelNumberScratchUtf16 (*(uint8_t *)THANDOR_IMAGE(0x0052ceb8))
 #define g_ModelProjectedBoundsPixels (*(ModelProjectedBoundsPixels *)THANDOR_IMAGE(0x0052ce04))
@@ -952,7 +952,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_AiCandidateWorkspaceEntryCount (*(uint32_t *)THANDOR_IMAGE(0x00537414))
 #define g_AiWorkspace13Candidates (*(AiCandidateWorkspaceEntry * *)THANDOR_IMAGE(0x00537410))
 #define g_AiPurchaseAppliedArmyClassMask (*(uint32_t *)THANDOR_IMAGE(0x00537418))
-#define g_AiWorkspace00Structures (*(AiWorkspace00EntryView8 * *)THANDOR_IMAGE(0x00537960))
+#define g_AiWorkspace00Structures (*(AiStructureWorkspaceEntry * *)THANDOR_IMAGE(0x00537960))
 #define g_AiWorkspace00Count (*(uint32_t *)THANDOR_IMAGE(0x00537964))
 #define g_AiWorkspace01Count (*(uint32_t *)THANDOR_IMAGE(0x0053796c))
 #define g_AiWorkspace01Units (*(AiRuntimeWorkspaceEntry * *)THANDOR_IMAGE(0x00537968))
@@ -1015,7 +1015,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define u_gfx_panel_menue_gfx_00545b78 (*(uint16_t (*)[20])THANDOR_IMAGE(0x00545b78))
 #define g_UiButtonSoundVoiceSets7 (*(DirectSoundVoiceSet * (*)[7])THANDOR_IMAGE(0x00572ad8))
 #define g_FrontendMenuTextureSource (*(GraphicsTextureSourceAsset * *)THANDOR_IMAGE(0x0054570c))
-#define g_FrontendTaskAssignmentControlOffsets (*(FrontendTaskAssignmentControlOffsetTablesA8 *)THANDOR_IMAGE(0x0054345c))
+#define g_FrontendTaskAssignmentControlOffsets (*(FrontendTaskAssignmentControlOffsetTables *)THANDOR_IMAGE(0x0054345c))
 #define g_FrontendCommandQueueEnd (*(UiCommandQueueRecord * *)THANDOR_IMAGE(0x00543f40))
 #define g_LocalPlayerRuntimeId (*(uint32_t *)THANDOR_IMAGE(0x0050f0ac))
 #define g_FrontendCommandQueueRecords (*(UiCommandQueueRecord (*)[16])THANDOR_IMAGE(0x00543e40))
@@ -1023,7 +1023,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_FrontendRuntimeFlags (*(uint32_t *)THANDOR_IMAGE(0x00545700))
 #define g_FrontendRootNode (*(uint32_t *)THANDOR_IMAGE(0x005456f0))
 #define g_FrontendScenarioInitializationCount (*(uint32_t *)THANDOR_IMAGE(0x00545928))
-#define g_FrontendLoadedLevelAsset (*(FrontendLoadedLevelRuntimeImage370 * *)THANDOR_IMAGE(0x00545780))
+#define g_FrontendLoadedLevelAsset (*(FrontendLoadedLevelAsset * *)THANDOR_IMAGE(0x00545780))
 #define g_FrontendScenarioTransferState (*(uint32_t *)THANDOR_IMAGE(0x00545918))
 #define g_FrontendFactionAssignmentReadyStateGeneration (*(uint32_t *)THANDOR_IMAGE(0x00545718))
 #define u_level_0050daac (*(uint16_t (*)[6])THANDOR_IMAGE(0x0050daac))
@@ -1108,7 +1108,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_FrontendRomTransitionKeyframe1TimeQ12 (*(uint32_t *)THANDOR_IMAGE(0x0054576c))
 #define g_UiSevenSlotCommandPayloadText (*(UiCommandPayloadTextBatch48 *)THANDOR_IMAGE(0x00514e04))
 #define g_CreditsTexturePathUtf16 (*(uint16_t (*)[22])THANDOR_IMAGE(0x00545c22))
-#define g_FrontendUiDisplayModeAndTaskAssignmentScratch (*(FrontendUiSemanticScratch280 *)THANDOR_IMAGE(0x005438ec))
+#define g_FrontendUiDisplayModeAndTaskAssignmentScratch (*(FrontendUiScratch *)THANDOR_IMAGE(0x005438ec))
 #define u_save_0050daa2 (*(uint16_t (*)[5])THANDOR_IMAGE(0x0050daa2))
 #define u_save___sve_0050d9c8 (*(uint16_t (*)[11])THANDOR_IMAGE(0x0050d9c8))
 #define g_ScenarioCampaignDataPathTemplateUtf16 (*(ScenarioCampaignDataPathTemplate2A *)THANDOR_IMAGE(0x0050da78))
@@ -1117,7 +1117,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_ScenarioCatalogPathScratchUtf16 (*(uint8_t *)THANDOR_IMAGE(0x0050dac4))
 #define g_ScenarioLevelDataPathTemplateUtf16 (*(ScenarioLevelDataPathTemplate24 *)THANDOR_IMAGE(0x0050da2e))
 #define g_FrontendScenarioMapOptionHandlerTable (*(ScenarioCatalogRefreshSelectedRecordCallback * (*)[3])THANDOR_IMAGE(0x00545a98))
-#define g_FrontendUiActionHandlersPage20 (*(FrontendUiActionHandlerPage20Prefix86 *)THANDOR_IMAGE(0x00545938))
+#define g_FrontendUiActionHandlersPage20 (*(FrontendUiActionHandlerPage20Prefix *)THANDOR_IMAGE(0x00545938))
 #define g_GraphicsAdapterCount (*(uint32_t *)THANDOR_IMAGE(0x004a8ea8))
 #define g_GraphicsRebuildAllStagingTextures (*(GraphicsTextureRebuildAllProc * *)THANDOR_IMAGE(0x00485828))
 #define g_MovieAlternateAudioGainQ15 (*(MovieAudioGainQ15 *)THANDOR_IMAGE(0x004a6da0))
@@ -1129,9 +1129,9 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 /* 31 slots before g_FrontendTaskAssignmentControlOffsets; Game_LoadCoreAssets fills 32, the last one
    landing in that table's unused slot 0 (original behaviour) */
 #define g_FrontendPlayerRuntimeRecordPointers32 (*(FrontendPlayerRuntimeRecord * (*)[31])THANDOR_IMAGE(0x005433e0))
-#define g_FrontendSessionListRows (*(FrontendSessionDiscoveryRecordB0 ** *)THANDOR_IMAGE(0x0053da84))
+#define g_FrontendSessionListRows (*(FrontendSessionDiscoveryRecord ** *)THANDOR_IMAGE(0x0053da84))
 #define g_FrontendNetworkRuntimeCountTextUtf16 (*(uint8_t *)THANDOR_IMAGE(0x0054dde0))
-#define g_NetworkLocalEndpointDescriptor16 (*(UiTransferEndpointDescriptor *)THANDOR_IMAGE(0x0041a56c))
+#define g_NetworkLocalEndpoint (*(UiTransferEndpointDescriptor *)THANDOR_IMAGE(0x0041a56c))
 #define g_FrontendNetworkEndpointScratch (*(UiTransferEndpointDescriptor *)THANDOR_IMAGE(0x0054ddd0))
 #define g_NetworkBackendSlot0 (*(NetworkBackendSetSessionCallback * *)THANDOR_IMAGE(0x0041a54c))
 #define g_NetworkBackendSlot1 (*(NetworkBackendCleanupCallback * *)THANDOR_IMAGE(0x0041a550))
@@ -1148,7 +1148,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_PcxFunctionExport2 (*(PcxDecodeProc * *)THANDOR_IMAGE(0x00572afc))
 #define g_FrontendPacket10000Buffer (*(FrontendPacket10000Handshake *)THANDOR_IMAGE(0x0054d7a0))
 #define g_FrontendPlayerListRows (*(uint32_t *)THANDOR_IMAGE(0x0054ddb0))
-#define g_FrontendSessionDiscoveryRecords (*(FrontendSessionDiscoveryRecordB0 * *)THANDOR_IMAGE(0x0053da88))
+#define g_FrontendSessionDiscoveryRecords (*(FrontendSessionDiscoveryRecord * *)THANDOR_IMAGE(0x0053da88))
 #define g_FrontendPacket20002Buffer (*(FrontendPacket20002PlayerDescriptor *)THANDOR_IMAGE(0x0054d860))
 #define g_FrontendLocalPlayerPcxPreview (*(uint32_t *)THANDOR_IMAGE(0x00545920))
 #define g_FrontendPacket50001Buffer (*(FrontendPacket50001SessionAdvertisement *)THANDOR_IMAGE(0x0054d7c0))
@@ -1241,7 +1241,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_InGameWorldRuntimeDwordArray256 (*(uint8_t *)THANDOR_IMAGE(0x005637ac))
 #define g_InGameSessionNotificationTimeoutTicks (*(uint32_t *)THANDOR_IMAGE(0x0056326c))
 #define g_HostCommandBatchSyncSentThisInterval (*(uint32_t *)THANDOR_IMAGE(0x0050f0dc))
-#define g_InGameRuntimeDefaultImageTemplate (*(InGameRuntimeRootImageC3E4 *)THANDOR_IMAGE(0x005505a0))
+#define g_InGameRuntimeDefaultImageTemplate (*(InGameRuntimeRoot *)THANDOR_IMAGE(0x005505a0))
 #define g_InGameWorldObjectRecords (*(WorldObjectRecord * *)THANDOR_IMAGE(0x005636fc))
 #define g_SessionNetworkTickCounter (*(uint32_t *)THANDOR_IMAGE(0x0050f0d8))
 #define g_InGameNetworkTickCountdown (*(uint32_t *)THANDOR_IMAGE(0x00563274))

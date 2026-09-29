@@ -23,7 +23,7 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
   uint8_t *cooldownCounterBytes;
   int workspaceEntriesRemaining;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  MdlDefinitionSemanticPrefix80 *modelDefinition;
+  MdlDefinitionSemanticPrefix *modelDefinition;
   int *behaviorCooldownCounter;
   ArmyRuntimeSlot *armySlot;
   GameEntityRuntime *slotEntityRuntime;
@@ -48,7 +48,7 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
       }
     }
     modelDefinition =
-         (MdlDefinitionSemanticPrefix80 *)armySlot->modelRuntimeOrSavedOffset.modelRuntime;
+         (MdlDefinitionSemanticPrefix *)armySlot->modelRuntimeOrSavedOffset.modelRuntime;
     if (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
       AiUnitBehavior_UpdatePioneerVehicle
                 (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
@@ -77,7 +77,7 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
    AiUnitGroup_AssignCollectedEntitiesToBestTarget.
 */
 void AiUnitBehavior_SelectBestAnchorAction
-          (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot,
+          (MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -86,8 +86,8 @@ void AiUnitBehavior_SelectBestAnchorAction
   uint32_t selectedAnchorActionKind;
   int currentBestScore;
   AiScoredSiteWorkspaceEntry *selectedWorkspaceEntry;
-  AiWorkspace05DistanceSelectionRegs8 workspaceSelection;
-  AiSecondaryWorkspaceDistanceSelectionRegs8 secondarySelection;
+  AiGeneralSiteDistanceSelection workspaceSelection;
+  AiSecondaryWorkspaceDistanceSelection secondarySelection;
   
   workspaceSelection = AiUnitBehavior_ComputeGeneralSiteDistanceScore(0,modelDefinition,armyRuntimeSlot);
   workspaceScore = workspaceSelection.score;
@@ -127,13 +127,13 @@ void AiUnitBehavior_SelectBestAnchorAction
 
 /* Address: 0x0053B1D0.
    Scores the general sites (workspace 05) for a unit and returns the best one if it beats currentBestScore:
-   score = ((max(0, bias - Manhattan distance) * scale + site score) >> 12) * the unit's definitionClassValue80,
+   score = ((max(0, bias - Manhattan distance) * scale + site score) >> 12) * the unit's aiSiteScoreWeight,
    so nearer and richer sites score higher. Returns currentBestScore and a NULL entry when none beats it.
    modelDefinition is not used.
    Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
-AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeGeneralSiteDistanceScore
-          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
+AiGeneralSiteDistanceSelection AiUnitBehavior_ComputeGeneralSiteDistanceScore
+          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot)
 
 {
@@ -142,7 +142,7 @@ AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeGeneralSiteDistanceSco
   Q12 negAbsDeltaYQ12;
   AiScoredSiteWorkspaceEntry *bestEntry;
   AiScoredSiteWorkspaceEntry *workspaceRecordCursor;
-  AiWorkspace05DistanceSelectionRegs8 selection;
+  AiGeneralSiteDistanceSelection selection;
   
   bestEntry = NULL;
   workspaceRecordCursor = g_AiWorkspace05GeneralSites;
@@ -162,7 +162,7 @@ AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeGeneralSiteDistanceSco
       negDeltaXOrScore = 0;
     }
     negDeltaXOrScore = (negDeltaXOrScore * (g_AiKnowledgeData->parameters).workspace05DistanceScaleQ12 +
-             workspaceRecordCursor->score >> 0xc) * armyRuntimeSlot->definitionClassValue80;
+             workspaceRecordCursor->score >> 0xc) * armyRuntimeSlot->aiSiteScoreWeight;
     if (negDeltaXOrScore - currentBestScore != 0 && currentBestScore <= negDeltaXOrScore) {
       bestEntry = workspaceRecordCursor;
       currentBestScore = negDeltaXOrScore;
@@ -177,12 +177,12 @@ AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeGeneralSiteDistanceSco
 
 /* Address: 0x0053B260.
    Scores the faction's primary and secondary anchor points (each only while its cooldown runs) for a unit like
-   the general sites: ((max(0, bias - distance) * scale) >> 12) * definitionClassValue84, and returns the
+   the general sites: ((max(0, bias - distance) * scale) >> 12) * aiFactionAnchorScoreWeight, and returns the
    highest of these and currentBestScore. modelDefinition is not used.
 */
 AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
           (FactionRuntimeIndex factionIndex,AiCandidateScore32 currentBestScore,
-          MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot)
+          MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot)
 
 {
   int negDeltaOrScore;
@@ -211,7 +211,7 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
       negDeltaOrScore = 0;
     }
     negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
-            armyRuntimeSlot->definitionClassValue84;
+            armyRuntimeSlot->aiFactionAnchorScoreWeight;
     if (negDeltaOrScore - currentBestScore != 0 && currentBestScore <= negDeltaOrScore) {
       currentBestScore = negDeltaOrScore;
     }
@@ -233,7 +233,7 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
       negDeltaOrScore = 0;
     }
     negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
-            armyRuntimeSlot->definitionClassValue84;
+            armyRuntimeSlot->aiFactionAnchorScoreWeight;
     if (negDeltaOrScore - currentBestScore != 0 && currentBestScore <= negDeltaOrScore) {
       currentBestScore = negDeltaOrScore;
     }
@@ -244,13 +244,13 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
 
 /* Address: 0x0053B330.
    Scores the target entries of workspace 07 for a unit, or those of workspace 03 at three quarters of the score
-   when workspace 07 is empty: ((max(0, bias - Manhattan distance) * scale) >> 12) * definitionClassValue88.
+   when workspace 07 is empty: ((max(0, bias - Manhattan distance) * scale) >> 12) * aiSecondaryWorkspaceScoreWeight.
    Returns the best entry if it beats currentBestScore, else currentBestScore and NULL. modelDefinition is not
    used.
    Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
-AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
-          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
+AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
+          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot)
 
 {
@@ -259,7 +259,7 @@ AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorksp
   Q12 negAbsDeltaYQ12;
   AiTargetWorkspaceEntry *bestEntry;
   AiTargetWorkspaceEntry *workspaceRecordCursor;
-  AiSecondaryWorkspaceDistanceSelectionRegs8 selection;
+  AiSecondaryWorkspaceDistanceSelection selection;
   
   bestEntry = NULL;
   recordsRemaining = g_AiWorkspace07Count;
@@ -286,7 +286,7 @@ AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorksp
       negDeltaXOrScore = 0;
     }
     negDeltaXOrScore = (negDeltaXOrScore * (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceScaleQ12 >> 0xc) *
-            armyRuntimeSlot->definitionClassValue88;
+            armyRuntimeSlot->aiSecondaryWorkspaceScoreWeight;
     if (g_AiWorkspace07Count == 0) {
       negDeltaXOrScore = negDeltaXOrScore * 3 >> 2;
     }
@@ -312,8 +312,8 @@ void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot
           WorldRuntimeContext *worldRuntimeContext)
 
 {
-  armyRuntime->runtimeState8C = AI_UNIT_COMMANDED_STATE;
-  armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
+  armyRuntime->aiUnitState = AI_UNIT_COMMANDED_STATE;
+  armyRuntime->aiUnitFlags = armyRuntime->aiUnitFlags & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
   workspacePoint[2] = 0; /* AiScoredSiteWorkspaceEntry.score */
   ArmyRuntime_StartRoutedMoveCommand
             (workspacePoint[1],*workspacePoint,(ArmyMovementRuntime *)armyRuntime);
@@ -341,8 +341,8 @@ void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,Arm
     targetWorldX = g_GameFactionRuntimeImage.records[factionIndex].secondaryAnchorYQ12;
     targetWorldY = g_GameFactionRuntimeImage.records[factionIndex].secondaryAnchorXQ12;
   }
-  armyRuntime->runtimeState8C = AI_UNIT_COMMANDED_STATE;
-  armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
+  armyRuntime->aiUnitState = AI_UNIT_COMMANDED_STATE;
+  armyRuntime->aiUnitFlags = armyRuntime->aiUnitFlags & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
   ArmyRuntime_StartRoutedMoveCommand
             (targetWorldY,targetWorldX,(ArmyMovementRuntime *)armyRuntime);
   return;
@@ -358,7 +358,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
 
 {
   if ((g_AiCollectedEntityCount < AI_WORKSPACE14_CAPACITY) &&
-      ((armyRuntimeSlot->runtimeState94 & AI_UNIT_STATE94_GROUP_ASSIGNED) == 0)) {
+      ((armyRuntimeSlot->aiUnitFlags & AI_UNIT_STATE94_GROUP_ASSIGNED) == 0)) {
     g_AiWorkspace14CollectedArmies[g_AiCollectedEntityCount] = armyRuntimeSlot;
     g_AiCollectedEntityCount++;
   }
@@ -379,7 +379,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
    on both axes.
 */
 void AiUnitBehavior_UpdatePioneerVehicle
-          (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntime,
+          (MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -409,7 +409,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
       headingOffset = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,0x2d05);
       sitesRemainingOrX = (modelNode->worldTransform).translation.x;
       siteScoreOrY = (modelNode->worldTransform).translation.y;
-      armyRuntime->runtimeState8C = 8;
+      armyRuntime->aiUnitState = 8;
       ArmyRuntime_StartRoutedMoveCommand
                 ((int)(headingOffset >> 0x20) + siteScoreOrY,(int)headingOffset + sitesRemainingOrX,
                  (ArmyMovementRuntime *)armyRuntime)
@@ -496,7 +496,7 @@ void AiUnitBehavior_UpdatePioneerVehicle
         sitesRemainingOrX--;
       } while (sitesRemainingOrX != 0);
       if (bestScore != 0) {
-        armyRuntime->runtimeState8C = 8;
+        armyRuntime->aiUnitState = 8;
         ArmyRuntime_StartRoutedMoveCommand
                   (bestCell->worldY,bestCell->worldX,(ArmyMovementRuntime *)armyRuntime);
       }

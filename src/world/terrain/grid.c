@@ -35,8 +35,8 @@ void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
   FieldGridCell *cell;
   FieldGridCell *normalCell;
   FieldGridCell *lightCell;
-  FieldGridCoordinatesEaxEdx8 minCornerGrid;
-  FieldGridCoordinatesEaxEdx8 maxCornerGrid;
+  FieldGridCoordinates minCornerGrid;
+  FieldGridCoordinates maxCornerGrid;
   FieldGridCell *heightOrLightRowStart;
   FieldGridCell *normalRowStart;
   
@@ -134,7 +134,7 @@ void TerrainGrid_RunDirectionalRelaxationPasses(FrontendPlayerRuntimeId playerRu
 {
   FieldGridAsset *fieldGrid;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   if ((mode & TERRAIN_RELAXATION_UNGATED_LAND_TOOL) == TERRAIN_RELAXATION_SIGN_GATED) {
     do {
       TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(fieldGrid);
@@ -182,8 +182,8 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   int *accumulatorPlane;
   int applyRowStrideBytes;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  scratchHeightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  scratchHeightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   rowLength = fieldGrid->gridWidth;
   remainingCellCount = rowLength * fieldGrid->gridHeight;
   rowStrideBytes = rowLength * 0x80;
@@ -247,9 +247,9 @@ void FieldGrid_ApplyPositiveCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
     scratchHeightCursor = accumulatorPlane;
   }
   else {
-    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
+    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCells;
     scratchHeightCursor = accumulatorPlane;
-    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
+    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCellCount;
         remainingPairCount != 0; remainingPairCount--) {
       FieldGrid_ProcessHorizontalSpan
                 (anchorRowQ12,anchorColumnQ12,(int)packedDragDeltaXY16 >> 16,
@@ -339,8 +339,8 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
   int *accumulatorPlane;
   int applyRowStrideBytes;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  scratchHeightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
+  scratchHeightCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   rowLength = fieldGrid->gridWidth;
   remainingCellCount = rowLength * fieldGrid->gridHeight;
   rowStrideBytes = rowLength * 0x80;
@@ -402,9 +402,9 @@ void FieldGrid_ApplyNegativeCellDeltas(PlayerRuntimeId playerRuntimeId,Q12 ancho
     scratchHeightCursor = accumulatorPlane;
   }
   else {
-    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pairRecords80_807F;
+    pairRecord = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCells;
     scratchHeightCursor = accumulatorPlane;
-    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->activePairCount8084;
+    for (remainingPairCount = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->markedCellCount;
         remainingPairCount != 0; remainingPairCount--) {
       FieldGrid_ProcessVerticalSpan
                 ((int)packedDragDeltaXY16 >> 16,(int)(short)packedDragDeltaXY16,pairRecord->pairValue,
@@ -486,20 +486,20 @@ void FieldGrid_RebuildLocalInfluenceState
   bool containsAnchorPair;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   containsAnchorPair = SelectionPlayerPairList_ContainsPair(gridRowQ12,gridColumnQ12,playerRuntimeId);
   if (containsAnchorPair) {
     FieldGrid_ApplyRectangularTransition(gridRowQ12,gridColumnQ12,fieldGrid);
   }
   else {
-    pairRecord = playerBlock->pairRecords80_807F;
-    for (remainingPairCount = playerBlock->activePairCount8084; remainingPairCount != 0; remainingPairCount--) {
+    pairRecord = playerBlock->markedCells;
+    for (remainingPairCount = playerBlock->markedCellCount; remainingPairCount != 0; remainingPairCount--) {
       FieldGrid_ApplyRectangularTransition(pairRecord->pairValue,pairRecord->pairKey,fieldGrid);
       pairRecord++;
     }
   }
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
-  scratchHeightCursor = playerBlock->terrainHeightScratchPlane8088;
+  scratchHeightCursor = playerBlock->terrainHeightScratchPlane;
   rowLength = fieldGrid->gridWidth;
   remainingCellCount = rowLength * fieldGrid->gridHeight;
   rowStrideBytes = rowLength * 0x80;
@@ -644,7 +644,7 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
   FieldGridCell *wedgeCellA;
   FieldGridCell *wedgeCellB;
   FieldGridCell *cell;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
   uint32_t targetRow;
   uint32_t targetColumn;
   
@@ -661,8 +661,8 @@ void FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     baseColumn = gridCoordinates.columnQ12 >> 12;
     targetRow = gridCoordinates.rowQ12 >> 12;
-    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
+    columnFractionQ12 = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFractionQ12 = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinates, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
     /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrWidth = rowFractionQ12 + columnFractionQ12 * 2;
     targetColumn = baseColumn;
@@ -735,14 +735,14 @@ void FieldGrid_ApplyLocalCellUpdate
   bool containsAnchorPair;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   containsAnchorPair = SelectionPlayerPairList_ContainsPair(gridRowQ12,gridColumnQ12,playerRuntimeId);
   if (containsAnchorPair) {
     FieldGrid_ApplySingleCellTransition(transitionValue,gridRowQ12,gridColumnQ12,fieldGrid);
   }
   else {
-    pairRecord = playerBlock->pairRecords80_807F;
-    for (remainingPairCount = playerBlock->activePairCount8084; remainingPairCount != 0; remainingPairCount--) {
+    pairRecord = playerBlock->markedCells;
+    for (remainingPairCount = playerBlock->markedCellCount; remainingPairCount != 0; remainingPairCount--) {
       FieldGrid_ApplySingleCellTransition
                 (transitionValue,pairRecord->pairValue,pairRecord->pairKey,fieldGrid);
       pairRecord++;
@@ -767,7 +767,7 @@ void FieldGrid_ApplyEncodedCellUpdate(PlayerRuntimeId playerRuntimeId,Q12 gridRo
   FieldGridAsset *fieldGrid;
   FieldGridRuntimeFlags *runtimeFlagsField;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   runtimeFlagsField = &fieldGrid->runtimeStateFlags;
   *runtimeFlagsField = *runtimeFlagsField | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   FieldGrid_ApplyEncodedUpdateCore((int)packedDragDeltaXY16 >> 16,gridRowQ12,gridColumnQ12,fieldGrid);
@@ -787,7 +787,7 @@ void FieldGrid_SetCellFluidReceiverExcluded
   FieldGridAsset *fieldGrid;
   FieldGridRuntimeFlags *runtimeFlagsField;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_RECEIVER_EXCLUDED,setMask,gridRowQ12,gridColumnQ12,fieldGrid);
   runtimeFlagsField = &fieldGrid->runtimeStateFlags;
   *runtimeFlagsField = *runtimeFlagsField | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -808,7 +808,7 @@ void FieldGrid_SetCellFluidSourceExcluded
   FieldGridAsset *fieldGrid;
   FieldGridRuntimeFlags *runtimeFlagsField;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   FieldGrid_ApplyMaskedRegionCore(~FIELD_CELL_FLUID_SOURCE_EXCLUDED,setMask,gridRowQ12,gridColumnQ12,fieldGrid);
   runtimeFlagsField = &fieldGrid->runtimeStateFlags;
   *runtimeFlagsField = *runtimeFlagsField | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -833,7 +833,7 @@ void FieldGrid_SetCellResourceSupportFlag
   uint32_t preserveMask;
   FieldGridRuntimeFlags *runtimeFlagsField;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   setMask = FIELD_CELL_XENITE_SUPPORT << ((uint8_t)materialBitIndex & 0x1f);
   preserveMask = setMask ^ 0xffffffff;
   if (materialBitIndex < 0) {
@@ -2711,9 +2711,9 @@ void FieldGrid_ClearPlayerScratchPlane
   int *scratchHeightCursor;
   FieldGridAsset *fieldGrid;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   scratchHeightCursor =
-       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   for (cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight; cellsRemaining != 0;
       cellsRemaining--) {
     *scratchHeightCursor = 0;
@@ -2739,9 +2739,9 @@ void FieldGrid_ResetLocalInfluenceState
   int *scratchHeightCursor;
   FieldGridAsset *fieldGrid;
   
-  fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+  fieldGrid = (g_InGameRuntimeRoot->worldRuntime).fieldGrid;
   scratchHeightCursor =
-       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
+       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane;
   cellsRemaining = fieldGrid->gridWidth * fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
   do {
@@ -3447,11 +3447,11 @@ void FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,Field
    column shift by half a cell per row.
    Original register convention: result in EAX and EDX, CF flag; ECX preserved; uses MMX register MM0.
 */
-FieldGridCoordinatesEaxEdx8 FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
+FieldGridCoordinates FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX)
 
 {
   uint32_t gridHalfRowCoordinateQ12;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
 
   /* Q12 * Q20 >> 21: half the row coordinate */
   gridHalfRowCoordinateQ12 =

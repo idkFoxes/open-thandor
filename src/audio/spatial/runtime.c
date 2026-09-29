@@ -93,7 +93,7 @@ void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDi
   uint32_t distanceOrPannedGainQ15;
   uint32_t azimuthOrRightGainQ15;
   uint32_t volumeOrLeftGainQ15;
-  FixedLengthAnglesEaxEcxEdx12 lengthAngles;
+  FixedLengthAzimuthElevation lengthAngles;
 
   volumeOrLeftGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 15;
   if ((voiceSetRef != NULL) && (volumeOrLeftGainQ15 != 0)) {
@@ -163,7 +163,7 @@ void SpatialSound_UpdateDesiredPositionedGains
   uint32_t distanceOrPannedGainQ15;
   uint32_t azimuthOrLeftGainQ15;
   uint32_t volumeOrRightGainQ15;
-  FixedLengthAnglesEaxEcxEdx12 lengthAngles;
+  FixedLengthAzimuthElevation lengthAngles;
   
   volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 15;
   if ((slot != NULL) && (volumeOrRightGainQ15 != 0)) {

@@ -431,7 +431,7 @@ void ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
   for (registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryRemaining != 0; registryRemaining--) {
     /* the root of the definition's node tree */
     if (*registryEntry != NULL &&
-        (rootNode = (MdlSerializedNodeHeader *)((ModelDefinition *)*registryEntry)->serializedNodeOffsetOrPointer64,
+        (rootNode = (MdlSerializedNodeHeader *)((ModelDefinition *)*registryEntry)->rootNodeOffsetOrPointer,
          rootNode != NULL)) {
       ModelRuntimePool_ReleaseDefinitionNodeResources(rootNode);
     }
@@ -491,9 +491,9 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     }
     modelRuntime->linkedModelRuntimeSavedOffset = (uint32_t)linkedModelOffset;
     modelRuntime->classState.linkedArmyRuntimeSavedOffset = offsetClassOrCount;
-    offsetClassOrCount = modelRuntime->definitionReferenceOrSavedId.runtimeDefinition->runtimeClassId4C;
+    offsetClassOrCount = modelRuntime->definitionReferenceOrSavedId.runtimeDefinition->runtimeClassId;
     modelRuntime->definitionReferenceOrSavedId =
-         THANDOR_BITCAST(PckModelDefinitionIdCatalog, ModelDefinitionReferenceOrSavedId4,
+         THANDOR_BITCAST(PckModelDefinitionIdCatalog, ModelDefinitionReferenceOrSavedId,
                          modelRuntime->definitionReferenceOrSavedId.definition->definitionId);
     g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelUnrebase[offsetClassOrCount]
               ((ModelRuntimeSlot *)modelRuntime);
@@ -577,7 +577,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
         if ((registeredDefinition != NULL) &&
            (modelRuntime->definitionOrSavedId.definition ==
             (ModelDefinitionRecordPrefix *)registeredDefinition->definitionId)) {
-          classIndexOrCount = ((ModelDefinition *)registeredDefinition)->runtimeClassId4C;
+          classIndexOrCount = ((ModelDefinition *)registeredDefinition)->runtimeClassId;
           modelRuntime->definitionOrSavedId.definition = registeredDefinition;
           g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair[classIndexOrCount]
                     (modelRuntime);
@@ -607,7 +607,7 @@ void ModelRuntimePool_RebaseAfterLoad(void)
             ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                       (modelRuntime,modelRuntime,
                        (MdlSerializedNodeHeader *)
-                       modelRuntime->definitionOrSavedId.runtimeDefinition->serializedNodeOffsetOrPointer64);
+                       modelRuntime->definitionOrSavedId.runtimeDefinition->rootNodeOffsetOrPointer);
           }
           break;
         }
@@ -654,7 +654,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
 
   modelDefinition =
        (ModelDefinitionRecordPrefix *)modelRuntime->definitionOrSavedId.savedIdOrOffset;
-  classIndexOrCount = ((ModelDefinition *)modelDefinition)->runtimeClassId4C;
+  classIndexOrCount = ((ModelDefinition *)modelDefinition)->runtimeClassId;
   FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[classIndexOrCount]
             (modelDefinition,modelRuntime);
@@ -687,11 +687,11 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
       ownerDefinition = *ownerRecord;
       /* ownerRecord is the owner's root ModelRuntimeSlot */
       if ((((ModelRuntimeSlot *)ownerRecord)->classState.stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0 &&
-         (((ModelDefinition *)ownerDefinition)->destroyedReplacementArmyAssetId74 != -1)) {
+         (((ModelDefinition *)ownerDefinition)->destroyedReplacementArmyAssetId != -1)) {
         /* the third parameter of ArmyRuntime_CreateInstanceFromAsset takes y, as at its other callers */
         ArmyRuntime_CreateInstanceFromAsset
                   (0,orientationAngle,translationY,translationX,0,
-                   ((ModelDefinition *)ownerDefinition)->destroyedReplacementArmyAssetId74,
+                   ((ModelDefinition *)ownerDefinition)->destroyedReplacementArmyAssetId,
                    worldRuntime);
       }
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
@@ -719,7 +719,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
    src/gameplay/army/runtime.c).
 */
 void ModelRuntime_EmitProjectilesFromAttachmentPoints
-          (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
+          (ShotTargetModelReference targetModelReference,Q12 targetWorldZQ12,Q12 targetWorldYQ12,
           Q12 targetWorldXQ12,ShotDefinition *shotDefinition,ModelRuntimeNode *modelNodeRuntime,
           MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime)
 
@@ -743,7 +743,7 @@ void ModelRuntime_EmitProjectilesFromAttachmentPoints
     if ((localPointRecord->packedLookupKey & 0xf) == MODEL_POINT_CLASS_SHOT) {
       launchPointWorld = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
       ShotRuntimePool_CreateProjectileFromDefinition
-                (shotRuntimeState14,
+                (targetModelReference,
                  (ArmyRuntimeSlot *)
                  modelNodeRuntime->runtimePayload.armyRuntime->linkedEntityRuntime,
                  targetWorldZQ12,
@@ -803,67 +803,67 @@ ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
     definitionView = (ModelDefinition *)*registryEntry;
     if ((definitionView != NULL) && (definitionView->definitionId == modelDefinitionId)) {
       modelRuntime->definitionOrSavedId.definition = (ModelDefinitionRecordPrefix *)definitionView;
-      copiedValueA = definitionView->maximumHealth60;
-      state44CandidateOrFlags = definitionView->runtimeValue48;
-      state90Candidate = definitionView->runtimeValue27C;
+      copiedValueA = definitionView->maximumHealth;
+      state44CandidateOrFlags = definitionView->visibilityRadius;
+      state90Candidate = definitionView->occupancyMarkRadius;
       modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
       modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = armyRuntime;
       modelRuntime->attachmentCount = 0;
       modelRuntime->health = copiedValueA;
-      if (armyRuntime->runtimeState44 < state44CandidateOrFlags) {
-        armyRuntime->runtimeState44 = state44CandidateOrFlags;
+      if (armyRuntime->visibilityRadius < state44CandidateOrFlags) {
+        armyRuntime->visibilityRadius = state44CandidateOrFlags;
       }
-      if (armyRuntime->runtimeState90 < state90Candidate) {
-        armyRuntime->runtimeState90 = state90Candidate;
+      if (armyRuntime->occupancyMarkRadius < state90Candidate) {
+        armyRuntime->occupancyMarkRadius = state90Candidate;
       }
-      modelRuntime->reserved10_37[0] = 0;
-      modelRuntime->reserved10_37[1] = 0;
-      modelRuntime->reserved10_37[2] = 0;
-      modelRuntime->reserved10_37[3] = 0;
-      modelRuntime->reserved10_37[4] = 0;
-      modelRuntime->reserved10_37[5] = 0;
-      modelRuntime->reserved10_37[6] = 0;
-      modelRuntime->reserved10_37[7] = 0;
-      modelRuntime->reserved10_37[8] = 0;
-      modelRuntime->reserved10_37[9] = 0;
-      modelRuntime->reserved10_37[10] = 0;
-      modelRuntime->reserved10_37[0xb] = 0;
-      modelRuntime->reserved10_37[0xc] = 0;
-      modelRuntime->reserved10_37[0xd] = 0;
-      modelRuntime->reserved10_37[0xe] = 0;
-      modelRuntime->reserved10_37[0xf] = 0;
-      modelRuntime->reserved10_37[0x10] = 0;
-      modelRuntime->reserved10_37[0x11] = 0;
-      modelRuntime->reserved10_37[0x12] = 0;
-      modelRuntime->reserved10_37[0x13] = 0;
-      modelRuntime->reserved10_37[0x14] = 0;
-      modelRuntime->reserved10_37[0x15] = 0;
-      modelRuntime->reserved10_37[0x16] = 0;
-      modelRuntime->reserved10_37[0x17] = 0;
-      modelRuntime->reserved10_37[0x18] = 0;
-      modelRuntime->reserved10_37[0x19] = 0;
-      modelRuntime->reserved10_37[0x1a] = 0;
-      modelRuntime->reserved10_37[0x1b] = 0;
-      modelRuntime->reserved10_37[0x1c] = 0;
-      modelRuntime->reserved10_37[0x1d] = 0;
-      modelRuntime->reserved10_37[0x1e] = 0;
-      modelRuntime->reserved10_37[0x1f] = 0;
+      modelRuntime->classPrefixState[0] = 0;
+      modelRuntime->classPrefixState[1] = 0;
+      modelRuntime->classPrefixState[2] = 0;
+      modelRuntime->classPrefixState[3] = 0;
+      modelRuntime->classPrefixState[4] = 0;
+      modelRuntime->classPrefixState[5] = 0;
+      modelRuntime->classPrefixState[6] = 0;
+      modelRuntime->classPrefixState[7] = 0;
+      modelRuntime->classPrefixState[8] = 0;
+      modelRuntime->classPrefixState[9] = 0;
+      modelRuntime->classPrefixState[10] = 0;
+      modelRuntime->classPrefixState[0xb] = 0;
+      modelRuntime->classPrefixState[0xc] = 0;
+      modelRuntime->classPrefixState[0xd] = 0;
+      modelRuntime->classPrefixState[0xe] = 0;
+      modelRuntime->classPrefixState[0xf] = 0;
+      modelRuntime->classPrefixState[0x10] = 0;
+      modelRuntime->classPrefixState[0x11] = 0;
+      modelRuntime->classPrefixState[0x12] = 0;
+      modelRuntime->classPrefixState[0x13] = 0;
+      modelRuntime->classPrefixState[0x14] = 0;
+      modelRuntime->classPrefixState[0x15] = 0;
+      modelRuntime->classPrefixState[0x16] = 0;
+      modelRuntime->classPrefixState[0x17] = 0;
+      modelRuntime->classPrefixState[0x18] = 0;
+      modelRuntime->classPrefixState[0x19] = 0;
+      modelRuntime->classPrefixState[0x1a] = 0;
+      modelRuntime->classPrefixState[0x1b] = 0;
+      modelRuntime->classPrefixState[0x1c] = 0;
+      modelRuntime->classPrefixState[0x1d] = 0;
+      modelRuntime->classPrefixState[0x1e] = 0;
+      modelRuntime->classPrefixState[0x1f] = 0;
       modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = NULL;
-      copiedValueA = definitionView->runtimeValue8C;
-      copiedValueB = definitionView->runtimeValue94;
-      copiedValueC = definitionView->runtimeValue9C;
-      modelRuntime->destructionEffectTimers[0] = definitionView->runtimeValue84;
+      copiedValueA = definitionView->destructionEffectDelayTicks1;
+      copiedValueB = definitionView->destructionEffectDelayTicks2;
+      copiedValueC = definitionView->destructionEffectDelayTicks3;
+      modelRuntime->destructionEffectTimers[0] = definitionView->destructionEffectDelayTicks0;
       modelRuntime->destructionEffectTimers[1] = copiedValueA;
       modelRuntime->destructionEffectTimers[2] = copiedValueB;
       modelRuntime->destructionEffectTimers[3] = copiedValueC;
-      copiedValueA = definitionView->runtimeValueAC;
-      copiedValueB = definitionView->runtimeValueB4;
-      copiedValueC = definitionView->runtimeValueBC;
-      modelRuntime->destructionEffectTimers[4] = definitionView->runtimeValueA4;
+      copiedValueA = definitionView->destructionEffectDelayTicks5;
+      copiedValueB = definitionView->destructionEffectDelayTicks6;
+      copiedValueC = definitionView->destructionEffectDelayTicks7;
+      modelRuntime->destructionEffectTimers[4] = definitionView->destructionEffectDelayTicks4;
       modelRuntime->destructionEffectTimers[5] = copiedValueA;
       modelRuntime->destructionEffectTimers[6] = copiedValueB;
       modelRuntime->destructionEffectTimers[7] = copiedValueC;
-      copiedValueA = definitionView->energyLoadQ4_18C;
+      copiedValueA = definitionView->energyLoadQ4;
       modelRuntime->classState.shotEmitterTimerTicks = 1;
       modelRuntime->classState.effectEmitterTimerTicks = 1;
       modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = NULL;
@@ -872,11 +872,11 @@ ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
       modelRuntime->classState.healthRegenerationDelayTicks = 0;
       modelRuntime->classState.dismantleTickCountdown = 0;
       modelRuntime->classState118 = 0;
-      state44CandidateOrFlags = definitionView->runtimeValue68;
-      if ((MdlSerializedNodeHeader *)definitionView->serializedNodeOffsetOrPointer64 != NULL) {
+      state44CandidateOrFlags = definitionView->modelFlags;
+      if ((MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer != NULL) {
         createResult = ModelNodeRuntime_CreateHierarchyRecursive
                           (paletteAsset,textureSet,modelRuntime,
-                           (MdlSerializedNodeHeader *)definitionView->serializedNodeOffsetOrPointer64,
+                           (MdlSerializedNodeHeader *)definitionView->rootNodeOffsetOrPointer,
                            worldRuntime);
         modelNodeRuntime = createResult.modelNode;
         if (createResult.failed) {
@@ -891,7 +891,7 @@ ModelNodeCreateResult ModelRuntimePool_CreateInstanceByDefinitionId
         }
       }
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
-        [modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C])
+        [modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId])
                 (modelRuntime->definitionOrSavedId.definition,modelRuntime);
       createResult.failed = false;
       createResult.modelNode = (ModelRuntimeNode *)modelRuntime;

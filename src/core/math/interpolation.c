@@ -54,7 +54,7 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
       pitchAngle = CubicSpline_EvaluateValueQ12
                              (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-                ((worldRuntime->motion).motionValue78,pitchAngle,yawAngle,magnitude,runtimeCopy);
+                ((worldRuntime->motion).projectionShift,pitchAngle,yawAngle,magnitude,runtimeCopy);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
                      (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[0]);
@@ -84,7 +84,7 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
   WorldRuntime_SetCameraPositionKeepingTarget
             (currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
   WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-            ((worldRuntime->motion).motionValue78,currentKeyframe->channel5Q12,yawAngle & FIXED_ANGLE16_MASK,
+            ((worldRuntime->motion).projectionShift,currentKeyframe->channel5Q12,yawAngle & FIXED_ANGLE16_MASK,
              currentKeyframe->channel3Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
   return false;

@@ -23,11 +23,11 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
 
 /* 0x005311D0 */
 LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
-          (LevelAssetRuntimeImagePrefix370 *levelImage,WorldRuntimeContext *worldRuntime);
+          (LevelAssetRuntimePrefix *levelImage,WorldRuntimeContext *worldRuntime);
 
 /* 0x00532020 */
 LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
-          (FrontendLoadedLevelRuntimeImage370 *levelImage,WorldRuntimeContext *worldRuntime);
+          (FrontendLoadedLevelAsset *levelImage,WorldRuntimeContext *worldRuntime);
 
 /* 0x005329C0 */
 void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntime);

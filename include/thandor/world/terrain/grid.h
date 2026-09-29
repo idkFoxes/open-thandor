@@ -270,7 +270,7 @@ void FieldGrid_ApplySingleCellTransition(FieldGridTransitionValue transitionValu
 void FieldGrid_ApplyRectangularTransition(Q12 gridRowQ12,Q12 gridColumnQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FEA50 */
-FieldGridCoordinatesEaxEdx8 FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX);
+FieldGridCoordinates FieldGrid_WorldToGridQ12(Q12 worldY,Q12 worldX);
 
 /* 0x00571FE0 */
 void FieldGrid_ApplyMaskedRegionCore

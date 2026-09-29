@@ -1003,13 +1003,13 @@ void UiSelectionGeometryControl_DrawClipped
     subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
     /* the subresource entry fields (paletteIndex, dataOffset, pixelWidth, pixelHeight) are read relative to
        the asset's address anchor */
-    if (*(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x20)) < 0) {
+    if (*(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0x20)) < 0) {
       sourceWidth =
-           *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x10));
+           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0x10));
       sourceHeight =
-           *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0xc));
+           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0xc));
       pixelDataOffset =
-           *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x1c));
+           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0x1c));
       framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
         rowStepUHigh = (int)(rowStepU >> 0x20);
@@ -1039,13 +1039,13 @@ void UiSelectionGeometryControl_DrawClipped
                   if (-1 < sourceColumn) {
                     sourcePixelSample0 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           texelIndexOrFraction * 4 + pixelDataOffset + -0x28);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample1 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           texelIndexOrFraction * 4 + pixelDataOffset + -0x24);
                   }
                 }
@@ -1053,13 +1053,13 @@ void UiSelectionGeometryControl_DrawClipped
                   if (-1 < sourceColumn) {
                     sourcePixelSample2 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x28);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample3 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x24);
                   }
                 }
@@ -1112,13 +1112,13 @@ void UiSelectionGeometryControl_DrawClipped
                   if (-1 < sourceColumn) {
                     sourcePixelSample0 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           texelIndexOrFraction * 4 + pixelDataOffset + -0x28);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample1 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           texelIndexOrFraction * 4 + pixelDataOffset + -0x24);
                   }
                 }
@@ -1126,13 +1126,13 @@ void UiSelectionGeometryControl_DrawClipped
                   if (-1 < sourceColumn) {
                     sourcePixelSample2 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x28);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample3 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 +
+                          ((sourceTexture->common).buildMetadata.reserved28_2F +
                           (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x24);
                   }
                 }

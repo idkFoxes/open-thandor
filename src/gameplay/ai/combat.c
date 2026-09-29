@@ -41,7 +41,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
     else if ((selectedTargetArmyRuntime == NULL) &&
             (selectionResult.sourceClassCount != 0 &&
              -1 < THANDOR_BITCAST(AiCombatTargetSelectionResult, int64_t, selectionResult))) {
-      ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->runtimeState98,armyRuntime);
+      ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->assignedTargetArmyRuntime,armyRuntime);
       if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
       }
@@ -110,7 +110,7 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
           candidateTargetArmy = targetCandidateRecordCursor->armyRuntime;
           /* ties go to the later candidate */
           if ((candidateTargetArmy != NULL) &&
-             (targetClassIndex = candidateTargetArmy->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C,
+             (targetClassIndex = candidateTargetArmy->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId,
               remainingOrBestScore <= g_AiCombatTargetClassBaseScores[targetClassIndex])) {
             remainingOrBestScore = g_AiCombatTargetClassBaseScores[targetClassIndex];
             targetArmy = candidateTargetArmy;
@@ -127,11 +127,11 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
         do {
           targetArmy = *collectedArmyCursor;
           ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,targetArmy);
-          targetArmy->runtimeState98 = (uint32_t)targetRuntime;
+          targetArmy->assignedTargetArmyRuntime = (uint32_t)targetRuntime;
           targetArmy->commandModeFlags = targetArmy->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
-          targetArmy->runtimeState94 = targetArmy->runtimeState94 | 1;
+          targetArmy->aiUnitFlags = targetArmy->aiUnitFlags | 1;
           targetArmy->movementStateFlags = targetArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
-          targetArmy->runtimeState8C = 8;
+          targetArmy->aiUnitState = 8;
           targetArmy->commandGeneration = assignedCommandGeneration;
           collectedArmyCursor++;
           remainingOrBestScore--;
@@ -310,8 +310,8 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
            candidate's class; a zero candidate counter selects the shorter command time (shift 2) */
         reachDeltaOrSourceCounter = candidateArmyRuntime->targetClassShotDamage
                         [(((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                         definitionOrSavedId).runtimeDefinition->targetClassIndex5C];
-        deltaXOrCandidateCounter = sourceArmyRuntime->targetClassShotDamage[candidateDefinition->targetClassIndex5C];
+                         definitionOrSavedId).runtimeDefinition->targetClassIndex];
+        deltaXOrCandidateCounter = sourceArmyRuntime->targetClassShotDamage[candidateDefinition->targetClassIndex];
         g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 0;
         if (reachDeltaOrSourceCounter == 0) {
           g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 2;
@@ -324,7 +324,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
           }
           classBaseScore =
                g_AiCombatTargetClassBaseScores
-                 [candidateDefinition->runtimeClassId4C] *
+                 [candidateDefinition->runtimeClassId] *
                g_AiCombatTargetClassBaseScoreMultiplier;
           hierarchyScaleRatioPairQ12 =
                ModelRuntime_QueryHierarchyScaleRatioQ12Regs
@@ -363,7 +363,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                    (sourceWeaponModelRuntime != NULL)))))) {
                 /* the weapon is the first or second attachment; aircraft are aimed at their first child
                    node, all targets at the definition's height offset (+0x50) above the node */
-                if (candidateDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+                if (candidateDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
                   candidateAimModelNode = candidateAimModelNode->childNodes[0];
                 }
                 testPassed = ArmyWeaponRuntime_TestTargetLineOfFire
@@ -371,12 +371,12 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                                    (candidateAimModelNode->worldTransform).translation.z,
                                    (candidateAimModelNode->worldTransform).translation.y,
                                    (candidateAimModelNode->worldTransform).translation.x,
-                                   &g_InGameRuntimeRoot->worldRuntime0A30,
+                                   &g_InGameRuntimeRoot->worldRuntime,
                                    (ArmyRuntimeSlot *)sourceWeaponModelRuntime);
                 if ((testPassed) &&
                    (candidateScore = candidateScore >> 2,
                    (((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                    definitionOrSavedId).runtimeDefinition->accelerationPerTick18 == 0)) {
+                    definitionOrSavedId).runtimeDefinition->accelerationPerTick == 0)) {
                   return 0;
                 }
               }

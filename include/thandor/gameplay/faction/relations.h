@@ -14,7 +14,7 @@
 /* Submodule: gameplay/faction/relations. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
-/* Records in a player's marked-cell list (SelectionPlayerRuntimeBlock.pairRecords80_807F[4096]); the
+/* Records in a player's marked-cell list (SelectionPlayerRuntimeBlock.markedCells[4096]); the
    PlayerPairList_* functions ignore a list whose count has reached this value. */
 #define PLAYER_PAIR_LIST_CAPACITY 4096
 

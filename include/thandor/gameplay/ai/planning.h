@@ -76,11 +76,11 @@ void AiStructureCandidate_AddResourceStorage
 void AiResourceCandidate_AddPowerPlant(FactionRuntimeIndex factionIndex);
 
 /* 0x0053A9D0 */
-AiStrategicClassSelectionRegs8 AiStrategicClass_SelectTerrainSuitedBuilding
+AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AF00 */
-AiStrategicClassSelectionRegs8 AiStrategicClass_SelectPressureWeightedBuilding
+AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539600 */

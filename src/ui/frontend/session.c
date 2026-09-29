@@ -190,7 +190,7 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi)
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_QUIT_CONFIRM,
                              (UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
 }
@@ -215,7 +215,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   frontendUi = (FrontendUiImage *)((uint8_t *)source - offsetof(FrontendUiImage,clientLobbyLeaveButton));
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
+    ((FrontendModelPointerContext *)FRONTEND_UI(frontendUi,menuRoomModelView))->contextFlags |=
          FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
@@ -251,12 +251,12 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
   UiListRowCount *rowCountField;
   void ***selectedSlotField;
   void **currentSelectedSlot;
-  FrontendSessionDiscoveryRecordB0 *sourceRecord;
-  FrontendSessionDiscoveryRecordB0 *destinationRecord;
+  FrontendSessionDiscoveryRecord *sourceRecord;
+  FrontendSessionDiscoveryRecord *destinationRecord;
   UiListRowCount rowsRemaining;
   int dwordsRemaining;
   void **rowSlotCursor;
-  FrontendSessionDiscoveryRecordB0 **rowPointerCursor;
+  FrontendSessionDiscoveryRecord **rowPointerCursor;
   uint32_t *sourceDwordCursor;
   uint32_t *destinationDwordCursor;
   
@@ -291,7 +291,7 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
       if (destinationDwordCursor != sourceDwordCursor) {
         sourceDwordCursor = (uint32_t *)sourceRecord;
         destinationDwordCursor = (uint32_t *)destinationRecord;
-        for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecordB0) / sizeof(uint32_t); dwordsRemaining != 0;
+        for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecord) / sizeof(uint32_t); dwordsRemaining != 0;
             dwordsRemaining--) {
           *destinationDwordCursor = *sourceDwordCursor;
           sourceDwordCursor++;
@@ -300,8 +300,8 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
       }
     }
     rowSlotCursor++;
-    sourceRecord = (FrontendSessionDiscoveryRecordB0 *)sourceDwordCursor;
-    destinationRecord = (FrontendSessionDiscoveryRecordB0 *)destinationDwordCursor;
+    sourceRecord = (FrontendSessionDiscoveryRecord *)sourceDwordCursor;
+    destinationRecord = (FrontendSessionDiscoveryRecord *)destinationDwordCursor;
   }
   UiPointerList_RefreshSelectionAndQueueAction(&frontendRuntime->sessionDiscoveryList);
   return;
@@ -318,7 +318,7 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
 void FrontendSession_PeriodicTick(void)
 
 {
-  InGameRuntimeRootImageC3E4 *inGameRoot;
+  InGameRuntimeRoot *inGameRoot;
   bool callResult;
   RecordRingDiscardResult ringRecord;
   
@@ -372,7 +372,7 @@ void FrontendSession_PeriodicTick(void)
   }
   g_SessionNetworkTickCounter++;
   if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) &&
-     (inGameRoot->activeEndMovieRuntime022C != NULL)) {
+     (inGameRoot->activeEndMovieRuntime != NULL)) {
     g_EndMoviePendingTicks++;
   }
 unlock:
@@ -475,7 +475,7 @@ void FrontendClientSession_TickHostTimeout(void)
 {
   PlayerRuntimeId previousLocalPlayerId;
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
-  InGameRuntimeRootImageC3E4 *inGameRoot;
+  InGameRuntimeRoot *inGameRoot;
   FrontendPlayerRuntimeBlockCount playersRemaining;
   FrontendPlayerRuntimeRecord *playerRecord;
   TextResolveResult shutdownText;
@@ -506,7 +506,7 @@ void FrontendClientSession_TickHostTimeout(void)
         g_FrontendPlayerRuntimeBlockCount = 1;
         /* XCHG: the timer thread reads the id (InGameCommandQueue_AppendLocalPlayerCommand) */
         previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
-        inGameRoot->worldRuntime0A30.selection.activePlayerRuntimeId = 0;
+        inGameRoot->worldRuntime.selection.activePlayerRuntimeId = 0;
         g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
         playerRecord->playerName.textUtf16[0] = 0;
         playerRecord->playerName.textUtf16[1] = 0;
@@ -519,7 +519,7 @@ void FrontendClientSession_TickHostTimeout(void)
     } while (playersRemaining != 0);
     g_FrontendPlayerRuntimeBlockCount = 1;
     previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
-    inGameRoot->worldRuntime0A30.selection.activePlayerRuntimeId = 0;
+    inGameRoot->worldRuntime.selection.activePlayerRuntimeId = 0;
     g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
     firstPlayerRecord->playerName.textUtf16[0] = 0;
     firstPlayerRecord->playerName.textUtf16[1] = 0;
@@ -571,7 +571,7 @@ void FrontendSession_ReturnToMainPage(uint32_t playerRuntimeId,uint32_t unusedAr
 
   frontendRootAddress = g_FrontendRootNode;
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-  ((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRootAddress,menuRoomModelView))->contextFlags &=
+  ((FrontendModelPointerContext *)FRONTEND_UI(frontendRootAddress,menuRoomModelView))->contextFlags &=
          ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   FrontendState_DispatchCode(romActionIndex);
   return;

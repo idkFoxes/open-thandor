@@ -49,12 +49,12 @@ ModelNodeRuntime_TransformLocalPointRegs
           (ModelPackedPointRecord *localPointRecord,ModelRuntimeNode *modelNodeRuntime);
 
 /* 0x004BEBC0 */
-ModelRelativeDirectionAnglesEaxEdx8 ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
+ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x0050A7A0 */
 ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
-          FrontendModelPointerContextRuntimeState118 *context);
+          FrontendModelPointerHitContext *context);
 
 /* 0x0050B1D0 */
 ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime);
@@ -103,10 +103,10 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
 ModelRuntimeActiveTotalMetricRegisterPair ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRuntime);
 
 /* 0x0052AAC0 */
-AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState, AngleTurn32 targetYawAngle16);
+AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetYawAngle16);
 
 /* 0x0052AC00 */
-AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState, AngleTurn32 targetPitchAngle16);
+AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView *smoothingState, AngleTurn32 targetPitchAngle16);
 
 /* 0x004BD1A0 */
 void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode);

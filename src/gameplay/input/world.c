@@ -26,7 +26,7 @@ typedef void InGamePointerModeHandler
    there and switches the interaction to state 27. Jump table 0x0056D340: kinds 1, 2, 3 are handled, the rest
    do nothing.
 */
-void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView9E60 *targetingContext)
+void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView *targetingContext)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
@@ -35,8 +35,8 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
   Q12 secondaryCoordinateQ12;
   WorldOwnerListNode *ownerNode;
   int payloadEntityAddress;
-  CommandPayloadDword04 modelToken;
-  CommandPayloadDword08 armyToken;
+  CommandPayload modelToken;
+  CommandPayload armyToken;
   TerrainPointResult nearestTerrainPoint;
   
   if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
@@ -46,26 +46,26 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
     /* walk up to the in-game root node */
     parentNode = targetingContext->base.parent;
     while (parentNode != UI_NODE_NONE) {
-      targetingContext = (InGameTargetingRootTraversalView9E60 *)targetingContext->base.parent;
+      targetingContext = (InGameTargetingRootTraversalView *)targetingContext->base.parent;
       parentNode = targetingContext->base.parent;
     }
-    payloadKind = targetingContext->activeNotificationPayload9E40.payloadKind14;
-    if ((targetingContext->worldRuntime0A30.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
-      WorldRuntime_CaptureMotionStateToSnapshot(&targetingContext->worldRuntime0A30);
+    payloadKind = targetingContext->activeNotificationPayload.payloadKind;
+    if ((targetingContext->worldRuntime.runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
+      WorldRuntime_CaptureMotionStateToSnapshot(&targetingContext->worldRuntime);
     }
     switch(payloadKind) {
     case TECHNOLOGY_UNLOCK_POSITION:
       /* own model at exactly the payload position; the tokens are the rebased army/model offsets */
-      for (ownerNode = targetingContext->worldRuntime0A30.ownerListHead;
+      for (ownerNode = targetingContext->worldRuntime.ownerListHead;
           ownerNode != NULL; ownerNode = ownerNode->nextNode) {
         if ((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
              (ownerNode->worldXQ12 ==
-              (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00)) &&
+              (targetingContext->activeNotificationPayload).worldXQ12)) &&
             (payloadEntityAddress =
                   (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
             ownerNode->worldYQ12 ==
-            (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04)) &&
-           ((targetingContext->worldRuntime0A30).activeFactionRuntimeIndex ==
+            (targetingContext->activeNotificationPayload).worldYQ12)) &&
+           ((targetingContext->worldRuntime).activeFactionRuntimeIndex ==
             ((ArmyRuntimeSlot *)payloadEntityAddress)->factionIndex)
            ) {
           modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
@@ -78,34 +78,34 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
           else {
             InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_MODEL_AND_ARMY,0,armyToken,modelToken);
           }
-          targetingContext->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
+          targetingContext->notificationButtonCursorFrame = NOTIFICATION_INTERACTION_NONE;
           return;
         }
       }
       break;
     case FACTION_IMPACT_ANCHOR:
-      secondaryCoordinateQ12 = (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04;
-      targetingContext->targetingPrimaryWorldCoordinateQ12_9E58 =
-           (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00;
-      targetingContext->targetingSecondaryWorldCoordinateQ12_9E5C = secondaryCoordinateQ12;
+      secondaryCoordinateQ12 = (targetingContext->activeNotificationPayload).worldYQ12;
+      targetingContext->targetingWorldXQ12 =
+           (targetingContext->activeNotificationPayload).worldXQ12;
+      targetingContext->targetingWorldYQ12 = secondaryCoordinateQ12;
       /* falls through */
     case ARMY_CREATED:
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint
-                        ((targetingContext->activeNotificationPayload9E40).
-                         secondaryWorldCoordinateQ12_04,
-                         (targetingContext->activeNotificationPayload9E40).
-                         primaryWorldCoordinateQ12_00,(targetingContext->worldRuntime0A30).fieldGrid
+                        ((targetingContext->activeNotificationPayload).
+                         worldYQ12,
+                         (targetingContext->activeNotificationPayload).
+                         worldXQ12,(targetingContext->worldRuntime).fieldGrid
                         );
       WorldRuntime_PointCameraAtTarget
-                ((targetingContext->worldRuntime0A30).motion.pitchAngle,
-                 (targetingContext->activeNotificationPayload9E40).primaryOrientationAngle08,
-                 (targetingContext->worldRuntime0A30).motion.targetDistanceQ12,nearestTerrainPoint.terrainHeightQ12,
-                 (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04,
-                 (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00,
-                 &targetingContext->worldRuntime0A30);
-      runtimeFlagsField = &targetingContext->worldRuntime0A30.runtimeFlags;
+                ((targetingContext->worldRuntime).motion.pitchAngle,
+                 (targetingContext->activeNotificationPayload).headingAngle,
+                 (targetingContext->worldRuntime).motion.targetDistanceQ12,nearestTerrainPoint.terrainHeightQ12,
+                 (targetingContext->activeNotificationPayload).worldYQ12,
+                 (targetingContext->activeNotificationPayload).worldXQ12,
+                 &targetingContext->worldRuntime);
+      runtimeFlagsField = &targetingContext->worldRuntime.runtimeFlags;
       *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
-      targetingContext->sessionNotificationInteractionState9B4C = 0x1b; /* 27: next click cancels */
+      targetingContext->notificationButtonCursorFrame = 0x1b; /* 27: next click cancels */
     }
   }
   return;
@@ -134,7 +134,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   classifySelectedState = false;
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = WORLD_POINTER_NO_HIT;
   (inGameRuntime->selection).selectedEntity = NULL;
-  if (((inGameRuntime->interaction).interactionFlags48 & 8) != 0) {
+  if (((inGameRuntime->interaction).nodeFlags & 8) != 0) {
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) != 0) {
@@ -154,7 +154,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     g_UiHoverSelectionRecord =
          (UiCommandRuntimeRecordPrefix *)
          g_SelectionPlayerRuntimeBlockPointers[(inGameRuntime->selection).activePlayerRuntimeId]->
-         pendingSelectionEntityOffset8098;
+         pendingPlacementArmyAsset;
     cursorOrVariantMask = WORLD_CURSOR_PLACEMENT_VALID;
     testResult = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                       (0,g_InGamePlacementHeading16,pointerWorldXQ12,pointerWorldYQ12,
@@ -313,14 +313,14 @@ void InGameWorldInput_BeginPointerCapture
 {
   FactionRuntimeIndex ownerIndex;
   int payloadEntityAddress;
-  CommandPayloadDword04 modelToken;
+  CommandPayload modelToken;
   bool testResult;
   
   if (((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) ==
        0) &&
      (inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags & ~WORLD_RUNTIME_FLAG_REPLACE_SELECTION,
-     ((inGameRuntime->interaction).interactionFlags48 & 8) == 0)) {
-    if (((inGameRuntime->interaction).interactionFlags48 & 0x80) != 0) {
+     ((inGameRuntime->interaction).nodeFlags & 8) == 0)) {
+    if (((inGameRuntime->interaction).nodeFlags & 0x80) != 0) {
       /* makes the release replace the selection instead of selecting a single army */
       inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_REPLACE_SELECTION;
     }
@@ -351,17 +351,17 @@ void InGameWorldInput_BeginPointerCapture
             return;
           }
           g_InGameCommandPointerCaptureX =
-               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressX0B90;
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerPressX;
           g_InGameCommandPointerCaptureY =
-               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressY0B94;
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerPressY;
           g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED;
         }
       }
       else {
         g_InGamePlacementPointerCaptureX =
-             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressX0B90;
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerPressX;
         g_InGamePlacementPointerCaptureY =
-             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressY0B94;
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerPressY;
       }
     }
     else {
@@ -391,13 +391,13 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
   InGameCommandPayloadTripletValue32 payloadValue;
   uint32_t *clearCursor;
   WorldOwnerListNode *runtimeNode;
-  CommandPayloadDword04 *tripletCursor;
+  CommandPayload *tripletCursor;
   bool testResult;
   GameEntityRuntime *entry;
   
   if (((((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) ==
          0) &&
-       (((inGameRuntime->interaction).interactionFlags48 & 8) == 0)) &&
+       (((inGameRuntime->interaction).nodeFlags & 8) == 0)) &&
       ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0)) &&
      ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0)) {
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
@@ -407,14 +407,14 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
         if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) == 0) {
           /* pointer travel since the press (the pointer positions are kept in the in-game root) */
           deltaXOrTripletCount =
-               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerPressX0B90 -
-               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98;
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerPressX -
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX;
           if ((int)deltaXOrTripletCount < 0) {
             deltaXOrTripletCount = -deltaXOrTripletCount;
           }
-          deltaY = THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4,
-                                        worldRuntime0A30)->pointerPressY0B94 -
-                  THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerY0B9C;
+          deltaY = THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot,
+                                        worldRuntime)->pointerPressY -
+                  THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerY;
           if ((int)deltaY < 0) {
             deltaY = -deltaY;
           }
@@ -449,7 +449,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
                 payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
                 testResult = WorldRuntimeNode_IsPositionInsideBounds
                                   (runtimeNode,
-                                   (WorldRuntimeExtendedMapControlView170 *)inGameRuntime);
+                                   (WorldRuntimeExtendedMapControlView *)inGameRuntime);
                 if (testResult) {
                   testResult = SelectionInfo_FindEntry(entry);
                   deltaXOrTripletCount = g_InGameSelectionInsertTripletDwordCount;
@@ -484,7 +484,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
               runtimeNode = runtimeNode->nextNode;
             } while (runtimeNode != NULL);
             if (g_InGameSelectionRemoveTripletDwordCount != 0) {
-              tripletCursor = (CommandPayloadDword04 *)&g_InGameSelectionRemoveTripletDwords;
+              tripletCursor = (CommandPayload *)&g_InGameSelectionRemoveTripletDwords;
               do {
                 if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                     SESSION_NETWORK_ROLE_LOCAL) {
@@ -502,7 +502,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
               } while (g_InGameSelectionRemoveTripletDwordCount != 0 && 2 < (int)deltaXOrTripletCount);
             }
             if (g_InGameSelectionInsertTripletDwordCount != 0) {
-              tripletCursor = (CommandPayloadDword04 *)&g_InGameSelectionInsertTripletDwords;
+              tripletCursor = (CommandPayload *)&g_InGameSelectionInsertTripletDwords;
               do {
                 if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                     SESSION_NETWORK_ROLE_LOCAL) {
@@ -530,7 +530,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
           /* The original adds the horizontal mouse delta since capture (computed before snapping the
              pointer back) - not the pointer function's return value. */
           countOrOwnerOrDelta =
-               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98 -
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX -
                     g_InGameCommandPointerCaptureX;
           g_PointerSetPosition(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + countOrOwnerOrDelta * 0x40;
@@ -538,9 +538,9 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
         }
         else {
           g_InGameCommandPointerCaptureX =
-               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98;
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX;
           g_InGameCommandPointerCaptureY =
-               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerY0B9C;
+               THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerY;
         }
       }
     }
@@ -549,7 +549,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
         /* The original adds the horizontal mouse delta since capture (computed before snapping the
            pointer back) - not the pointer function's return value. */
         countOrOwnerOrDelta =
-             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98 -
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX -
                   g_InGamePlacementPointerCaptureX;
         g_PointerSetPosition(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + countOrOwnerOrDelta * 0x40;
@@ -557,9 +557,9 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
       }
       else {
         g_InGamePlacementPointerCaptureX =
-             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerX0B98;
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX;
         g_InGamePlacementPointerCaptureY =
-             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->pointerY0B9C;
+             THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerY;
       }
     }
   }
@@ -581,18 +581,18 @@ void InGameWorldInput_CommitPointerAction
 {
   InGamePointerModeHandler *modeHandler;
   uint32_t variantMaskOrSurfaceHeight;
-  CommandPayloadDword04 payloadDword0C;
+  CommandPayload targetWorldYQ12;
   uint32_t modifierModeMask;
   int ownerIndex;
-  CommandPayloadDword08 payloadDword08;
+  CommandPayload targetWorldXQ12;
   GameEntityRuntime *entry;
-  CommandPayloadDword04 armyRuntimeIndex;
+  CommandPayload armyRuntimeIndex;
   bool testResult;
   ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
   
   if (((((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) !=
          0) ||
-       (((inGameRuntime->interaction).interactionFlags48 & 8) != 0)) ||
+       (((inGameRuntime->interaction).nodeFlags & 8) != 0)) ||
       ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) != 0)) ||
      ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) != 0))
   goto release_pointer_capture;
@@ -759,16 +759,16 @@ test_candidate_capability:
         variantMaskOrSurfaceHeight = WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
                           (pointerWorldXQ12,pointerWorldYQ12,inGameRuntime);
         /* The original passes the same EDX/ECX point on (lost locals in the decompilation). */
-        payloadDword08 = pointerWorldXQ12;
-        payloadDword0C = pointerWorldYQ12;
+        targetWorldXQ12 = pointerWorldXQ12;
+        targetWorldYQ12 = pointerWorldYQ12;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           InGamePlayerSelection_ApplyTargetPositionCommand
-                    (g_LocalPlayerRuntimeId,variantMaskOrSurfaceHeight,payloadDword08,payloadDword0C);
+                    (g_LocalPlayerRuntimeId,variantMaskOrSurfaceHeight,targetWorldXQ12,targetWorldYQ12);
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_TARGET_POSITION,variantMaskOrSurfaceHeight,
-                                                      payloadDword08,payloadDword0C);
+                                                      targetWorldXQ12,targetWorldYQ12);
         }
       }
       goto release_pointer_capture;
@@ -1033,7 +1033,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
    of its world runtimeFlags and restores the camera saved by InGameTargetingContext_AdvanceOrResolveTarget.
    Also the queued UI action handler for INGAME_PAGE10[14] (0x100E).
 */
-void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E60 *targetingContext)
+void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView *targetingContext)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
@@ -1043,12 +1043,12 @@ void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalVi
     targetingContext->actionState = INGAME_TARGETING_OBSERVED_IDLE;
     parentCursor = targetingContext->base.parent;
     while (parentCursor != UI_NODE_NONE) {
-      targetingContext = (InGameTargetingRootTraversalView9E60 *)targetingContext->base.parent;
+      targetingContext = (InGameTargetingRootTraversalView *)targetingContext->base.parent;
       parentCursor = targetingContext->base.parent;
     }
-    runtimeFlagsField = &targetingContext->worldRuntime0A30.runtimeFlags;
+    runtimeFlagsField = &targetingContext->worldRuntime.runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
-    WorldRuntime_RestoreMotionStateFromSnapshot(&targetingContext->worldRuntime0A30);
+    WorldRuntime_RestoreMotionStateFromSnapshot(&targetingContext->worldRuntime);
   }
   return;
 }

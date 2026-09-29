@@ -49,24 +49,24 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BECB0 */
-FixedEulerAnglesEaxEbxEdx12 FixedTransform_ComposeEulerAnglesRegs
+FixedAzimuthElevationRoll FixedTransform_ComposeEulerAnglesRegs
           (AngleTurn32 inputAngle0,AngleTurn32 inputAngle1,AngleTurn32 inputAngle2,
           AngleTurn32 basisAngle0,AngleTurn32 basisAngle1,AngleTurn32 basisAngle2);
 
 /* 0x00484930 */
-FixedLengthAnglesEaxEcxEdx12
+FixedLengthAzimuthElevation
 FixedMath_VectorToAnglesAndLength3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z);
 
 /* 0x00484A10 */
-FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector);
+FixedLengthAzimuthElevation FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector);
 
 /* 0x00484B70 */
-FixedLengthAngleEaxEdx8 FixedMath_Vector2AngleAndLengthRegs
+FixedLengthAngle FixedMath_Vector2AngleAndLengthRegs
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1);
 
 /* 0x004BEB20 */
-FixedVectorEaxEcxEdx12
+FixedVectorQ12
 FixedTransform_ApplyEulerRotationToVectorRegs
           (Q12 inputZQ12,Q12 inputYQ12,Q12 inputXQ12,AngleTurn32 rotationAngle0,
           AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
@@ -77,7 +77,7 @@ void FixedVector_StepBackwardAlongOwnDirection
           FixedVectorStateAddress32 vectorState);
 
 /* 0x00521FA0 */
-FixedTriangleJointAnglesEaxEdx8 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12);
+FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12);
 
 /* 0x004849D0 */
 uint32_t FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
@@ -90,7 +90,7 @@ FixedVectorAngles FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4
 void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input);
 
 /* 0x004BEC20 */
-FixedVectorEaxEcxEdx12
+FixedVectorQ12
 FixedTransform_RotateDirectionScaledRegs
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
@@ -132,7 +132,7 @@ void FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperan
 FixedPlanarPointEdxEax8 FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 baseX);
 
 /* 0x004BEC50 */
-FixedVectorXEaxYEbxZEdx12 FixedTransform_RotateDirectionScaledCoreRegs
+FixedVectorQ12 FixedTransform_RotateDirectionScaledCoreRegs
           (FixedMathScale32 directionScale,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
@@ -140,7 +140,7 @@ FixedVectorXEaxYEbxZEdx12 FixedTransform_RotateDirectionScaledCoreRegs
 FixedElevationAzimuth FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector);
 
 /* 0x00484E00 */
-FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform);
+FixedRollAzimuthElevation FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform);
 
 /* 0x00484AC0 */
 uint32_t FixedMath_LengthVec3(GraphicsFixedVec3 *vector);

@@ -38,7 +38,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056D2D0 */
-void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView9E60 *targetingContext);
+void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalView *targetingContext);
 
 /* 0x005688A0 */
 uint32_t InGameWorldInput_ResolveContextActionAndCursor
@@ -69,6 +69,6 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
           (uint32_t modifierFlags,uint32_t commandCode,WorldRuntimeContext *worldRuntime);
 
 /* 0x0056D4B0 */
-void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E60 *targetingContext);
+void InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView *targetingContext);
 
 #endif /* THANDOR_GAMEPLAY_INPUT_WORLD_H */

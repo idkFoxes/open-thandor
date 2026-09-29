@@ -55,7 +55,7 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
   PackedArgb32 definitionTintArgb;
   uint32_t primaryOccupancyMask;
   uint64_t modulatedLanes;
-  TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
+  TerrainOccupancyResolvedMasks resolvedMasks;
   EffectRuntimeSlot *effectRuntime;
 
   primaryOccupancyMask =
@@ -135,7 +135,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   uint32_t fadeOutStartTicks;
   int frameAdvancedOrScratch;
   GameEntityRuntime *spawnArmyCompletionEntity;
-  EffectCompletionLinkedHandlerOwnerColumns104 *linkedHandlerCompletionOwner;
+  ShotTerrainImpactDeformationColumns *linkedHandlerCompletionOwner;
   void *completionOwnerCarrier;
   uint64_t modulatedLanes;
   ModelLookupEntryResult lookupResult;
@@ -261,7 +261,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                            (lookupResult.entry,(ModelRuntimeNode *)modelNode);
         /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                    localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,periodicDefinition,worldRuntime);
       }
@@ -277,7 +277,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
                        modelNode->modelPayload.worldRotationAngle2,
                        modelNode->modelPayload.worldRotationAngle1,
                        modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
@@ -318,7 +318,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
                        modelNode->modelPayload.worldRotationAngle2,
                        modelNode->modelPayload.worldRotationAngle1,
                        modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
@@ -345,9 +345,9 @@ SpawnArmyFromOwner:
                 ownerModelNode = spawnArmyCompletionEntity->common.ownership.modelNode;
                 /* frameAdvancedOrScratch now holds the owner's model definition: only class 18 turns into the
                    army asset named by classParameterC0. The new model keeps the owner's armour points (+0x3C) in
-                   proportion, rescaled by the two definitions' maximumHealth60 (presumably the full armour). */
+                   proportion, rescaled by the two definitions' maximumHealth (presumably the full armour). */
                 frameAdvancedOrScratch = *ownerClassRecord;
-                if (((ModelDefinition *)frameAdvancedOrScratch)->runtimeClassId4C == MODEL_RUNTIME_CLASS_18) {
+                if (((ModelDefinition *)frameAdvancedOrScratch)->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
                   armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
                                      (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,
                                       ownerModelNode->modelPayload.worldRotationAngle2,
@@ -362,9 +362,9 @@ SpawnArmyFromOwner:
                     (*(ModelRuntimeSlot **)armyCreateResult.armyRuntimeOrError)->health =
                          (int)(((int64_t)(int)((ModelRuntimeSlot *)ownerClassRecord)->health *
                                (int64_t)(int)(*(ModelRuntimeSlot **)armyCreateResult.armyRuntimeOrError)->
-                                              definitionOrSavedId.runtimeDefinition->maximumHealth60) /
+                                              definitionOrSavedId.runtimeDefinition->maximumHealth) /
                               (int64_t)(int)((ModelDefinition *)frameAdvancedOrScratch)->
-                                            maximumHealth60);
+                                            maximumHealth);
                     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,spawnArmyCompletionEntity);
                   }
                 }
@@ -415,14 +415,14 @@ SpawnArmyFromOwner:
         terrainNormalDirection.z = scaledDirection.z;
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
                   (modelNode->modelPayload.worldRotationAngle1 -
-                   effectSlot->effectAgeTicks * effectSlot->effectAgeTicks * effectDefinition->unknown58,
+                   effectSlot->effectAgeTicks * effectSlot->effectAgeTicks * effectDefinition->pitchDropPerAgeSquared,
                    modelNode->modelPayload.worldRotationAngle0,Q28_ONE);
         motionDirection.x = scaledDirection.x;
         motionDirection.y = scaledDirection.y;
         motionDirection.z = scaledDirection.z;
         normalDotMotion = FixedVec3_DotQ28(&terrainNormalDirection,&motionDirection);
         if (normalDotMotion < 0) {
-          /* moving into the ground: fade the alpha by unknown5C per step, end once it is already 0 */
+          /* moving into the ground: fade the alpha by groundContactAlphaFadeStep per step, end once it is already 0 */
           if (effectSlot->stateTintArgb < 0x1000000) {
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (effectDefinition->shadingReleaseTransitionDurationTicks,
@@ -432,8 +432,8 @@ SpawnArmyFromOwner:
             return;
           }
           frameAgeOrTintValue = effectSlot->stateTintArgb >> 24;
-          frameAdvancedOrScratch = frameAgeOrTintValue - effectDefinition->unknown5C;
-          if (frameAgeOrTintValue < effectDefinition->unknown5C) {
+          frameAdvancedOrScratch = frameAgeOrTintValue - effectDefinition->groundContactAlphaFadeStep;
+          if (frameAgeOrTintValue < effectDefinition->groundContactAlphaFadeStep) {
             frameAdvancedOrScratch = 0;
           }
           frameAgeOrTintValue = effectSlot->stateTintArgb & 0xffffff | frameAdvancedOrScratch << 24;
@@ -441,7 +441,7 @@ SpawnArmyFromOwner:
         else {
           frameAgeOrTintValue = 0xffffffff;
           modelNode->modelPayload.worldRotationAngle1 -= effectSlot->effectAgeTicks * effectSlot->effectAgeTicks *
-                              effectDefinition->unknown58;
+                              effectDefinition->pitchDropPerAgeSquared;
         }
         effectSlot->stateTintArgb = frameAgeOrTintValue;
         if ((modelNode->runtimeFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) != 0) {
@@ -462,11 +462,11 @@ SpawnArmyFromOwner:
           if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) {
 InvokeLinkedHandler:
             if ((linkedHandlerCompletionOwner != NULL) &&
-                (0 < (int)linkedHandlerCompletionOwner->auxiliaryValue80)) {
+                (0 < (int)linkedHandlerCompletionOwner->radiusWorldUnits)) {
               FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
-                        (linkedHandlerCompletionOwner->terrainMaterialIndex100,
-                         linkedHandlerCompletionOwner->auxiliaryValue80,
-                         linkedHandlerCompletionOwner->ownerSlot0,
+                        (linkedHandlerCompletionOwner->terrainMaterialIndex,
+                         linkedHandlerCompletionOwner->radiusWorldUnits,
+                         linkedHandlerCompletionOwner->heightDeltaQ12,
                          modelNode->worldTransform.translation.y,
                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
             }

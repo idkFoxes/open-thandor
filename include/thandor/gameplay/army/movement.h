@@ -56,25 +56,25 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00520F60 */
-void ArmyRuntimeClass_UpdateArticulatedMovement (WorldRuntimeContext *worldRuntime, ModelRuntimeArticulatedMovementDefinitionView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateArticulatedMovement (WorldRuntimeContext *worldRuntime, ModelRuntimeArticulatedMovementDefinitionView *modelRuntime);
 
 /* 0x0051C5A0 */
 void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00520DF0 */
-void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
+void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime );
 
 /* 0x00523410 */
-void ArmyRuntimeClass_UpdateSingleBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateSingleBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 
 /* 0x00523690 */
-void ArmyRuntimeClass_UpdateTwinBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateTwinBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView *modelRuntime);
 
 /* 0x00520140 */
-void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementTrackView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementTrackView *modelRuntime);
 
 /* 0x00522C00 */
-void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
+void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime );
 
 /* 0x0051C3E0 */
 void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime);
@@ -106,7 +106,7 @@ void ArmyRuntime_StartNextQueuedWaypointMove
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime);
 
 /* 0x00520840 */
-void ArmyRuntimeClass_UpdateGroundMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
+void ArmyRuntimeClass_UpdateGroundMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime );
 
 /* 0x00522090 */
 void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,Q12 routeDistanceQ12,
@@ -117,7 +117,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
           ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x005254F0 */
-void ArmyRuntimeClass_UpdateWaterSurfaceMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
+void ArmyRuntimeClass_UpdateWaterSurfaceMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView *modelRuntime );
 
 /* 0x0051CC60 */
 void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime);

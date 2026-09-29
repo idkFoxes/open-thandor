@@ -27,7 +27,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   FrontendNetworkListsRuntimeView *frontendRoot;
   uint32_t networkState;
   UiNodeBase *hoveredNode;
-  ScenarioCatalogRuntimeExpandedRecord100 *levelRecord;
+  ScenarioCatalogDisplayRecord *levelRecord;
   GraphicsCursorFrameIndex cursorFrame;
   uint32_t levelMaskBit;
   ScenarioCatalogRecordCount levelsRemaining;
@@ -79,7 +79,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   }
   g_FrontendModelPointerContextUpdateCallback
             (g_CursorOverrideY,g_CursorOverrideX,
-             (FrontendModelPointerContextRuntimeState118 *)FRONTEND_UI(frontendRoot,menuRoomModelView));
+             (FrontendModelPointerHitContext *)FRONTEND_UI(frontendRoot,menuRoomModelView));
   hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
                     (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
   if (hoveredNode == UI_NODE_NONE) {
@@ -103,7 +103,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
         (selectedGroup.selectedIndexOrCount == SCENARIO_SELECTION_TAB_SINGLE_GAMES)) &&
        (g_ScenarioCatalog != NULL)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
-      levelRecord = (ScenarioCatalogRuntimeExpandedRecord100 *)
+      levelRecord = (ScenarioCatalogDisplayRecord *)
                     ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
       if (levelsRemaining != 0) {
         /* level n has bit n of the players' scenarioAvailabilityMask0..2; its title starts with the rich-text
@@ -156,7 +156,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   FrontendModelPointerContextFlags *menuRoomContextFlags;
   UiAnchorFractionQ31 *control;
   UiTextResourceId titleTextId;
-  FrontendLoadedLevelRuntimeImage370 *loadedLevel;
+  FrontendLoadedLevelAsset *loadedLevel;
   uint32_t savedGameSpeedPercent;
   int factionSlot;
   FrontendPlayerRuntimeBlockCount playersRemaining;
@@ -179,7 +179,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
-    menuRoomContextFlags = &((FrontendModelPointerContextRuntimeState17C *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
+    menuRoomContextFlags = &((FrontendModelPointerContext *)FRONTEND_UI(frontendRoot,menuRoomModelView))->contextFlags;
     *menuRoomContextFlags = *menuRoomContextFlags | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;

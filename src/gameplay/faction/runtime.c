@@ -140,7 +140,7 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   if ((g_InGameRuntimeRoot != NULL) &&
      (sourceOrRecordCursor = (uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                          staleCallerEsi *
-                         (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex),
+                         (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex),
      g_FrontendLoadedCampaignAsset != 0)) {
     remainingOrWorldY = ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->levelRecordCount;
     scenarioRecord = g_FrontendLoadedCampaignAsset;
@@ -196,7 +196,7 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   /* Primary records (8 dwords each, at most 0x200): [0] army asset id, [1] faction, [2] X, [3] Y,
      [4] rotation angle. */
   if (((g_InGameRuntimeRoot != NULL) &&
-      (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead, (skipMaskBits & 1) == 0)) &&
+      (ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead, (skipMaskBits & 1) == 0)) &&
      (g_OldUnitRecordCount = 0, sourceOrRecordCursor = g_OldUnitPrimaryTable, (carryOverMaskBits & 1) != 0)) {
     for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
       /* the owner army holds the faction and the army asset id. Only a model whose classState
@@ -466,7 +466,7 @@ void GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
   ownershipRecord = (targetArmyRuntime->linkedEntityRuntime->common).ownership.definitionOrClassRecord;
   ownerFactionIndex = (targetArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
   hitModelAddress = ownershipRecord[1];
-  if (((ModelRuntimeSlot *)ownershipRecord)->definitionOrSavedId.runtimeDefinition->accelerationPerTick18 == 0) {
+  if (((ModelRuntimeSlot *)ownershipRecord)->definitionOrSavedId.runtimeDefinition->accelerationPerTick == 0) {
     previousCooldown = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorCooldown;
     distanceYOrLinkRecord = g_GameFactionRuntimeImage.records[ownerFactionIndex].primaryAnchorYQ12 -
          ((ModelRuntimeNode *)hitModelAddress)->worldTransform.translation.x;
@@ -710,13 +710,13 @@ bool FactionRuntime_HasArmyAssetOrActiveStructure
     }
   }
   /* Structures of class 0xB or 0xD in state 1 that are currently producing armyAssetRecord. */
-  for (ownerNode = g_InGameRuntimeRoot->worldRuntime0A30.ownerListHead;
+  for (ownerNode = g_InGameRuntimeRoot->worldRuntime.ownerListHead;
       ownerNode != NULL; ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
        (modelPayload = ownerNode->runtimePayload,
        factionIndex == ((ModelRuntimeSlot *)modelPayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
-       ((((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0xb) ||
-        (((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0xd)) &&
+       ((((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == 0xb) ||
+        (((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId == 0xd)) &&
        (modelPayload[0x2e] == 1)) {
       activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[0x18];
       if (armyAssetRecord == activeAssetRecord) {
@@ -795,7 +795,7 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
       targetDefinitionRecord = (commandTargetEntity->common).ownership.definitionOrClassRecord;
       if (((commandTargetEntity->common).damageState.factionVisibilityBits1C & visibilityMask) != 0) {
         targetModelNode = (commandTargetEntity->common).ownership.modelNode;
-        if (((ModelRuntimeSlot *)targetDefinitionRecord)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C ==
+        if (((ModelRuntimeSlot *)targetDefinitionRecord)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
             MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
           targetModelNode = targetModelNode->childNodes[0];
         }
@@ -848,7 +848,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
   if (0 < (targetEntityRuntime->common).damageState.remainingIntegrity) {
     maxIntegrityOrClassOrCount =
          ((ModelDefinition *)(targetEntityRuntime->common).ownership.definitionOrClassRecord)->
-         maximumHealth60;
+         maximumHealth;
     integrityField = &(targetEntityRuntime->common).damageState.remainingIntegrity;
     integrityDeltaOrFaction = *integrityField;
     *integrityField = *integrityField - impactValue;
@@ -864,8 +864,8 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
       (targetEntityRuntime->common).damageState.remainingIntegrity = 0;
       if (modelOrParentNode == NULL) {
         definitionRecord = (targetEntityRuntime->common).ownership.definitionOrClassRecord;
-        if ((((ModelDefinition *)definitionRecord)->runtimeClassId4C == 0) &&
-           (((ModelDefinition *)definitionRecord)->placementContactKindIndex278 == 0)) {
+        if ((((ModelDefinition *)definitionRecord)->runtimeClassId == 0) &&
+           (((ModelDefinition *)definitionRecord)->placementContactKindIndex == 0)) {
           (((targetEntityRuntime->common).ownership.modelNode)->modelPayload).worldRotationAngle0 =
                impactAngle;
         }
@@ -878,7 +878,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
                ((ArmyRuntimeSlot *)(targetEntityRuntime->common).ownership.runtimeLink)->factionIndex;
           maxIntegrityOrClassOrCount =
                ((ModelDefinition *)(targetEntityRuntime->common).ownership.definitionOrClassRecord)->
-               runtimeClassId4C;
+               runtimeClassId;
           relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterC;
           *relationCounter = *relationCounter + 1;
           relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
@@ -917,7 +917,7 @@ void GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
           if ((armyRuntime != NULL) &&
              ((ModelRuntimeSlot *)armyRuntime->actionVector2Q12 !=
               (((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classLinkState).
-              modelLinkOrState60.modelRuntime)) {
+              modelLinkOrState.modelRuntime)) {
             ArmyRuntime_ApplyDamageAndPropagateToParent(integrityDeltaOrFaction,armyRuntime);
             return;
           }
@@ -1018,7 +1018,7 @@ void GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
     }
 cancelInStructures:
     if (requestedCount != 0) {
-      ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+      ownerNode = (g_InGameRuntimeRoot->worldRuntime).ownerListHead;
       if (ownerNode != NULL) {
         /* the structure class that produces this army */
         readIndexOrClassId = 0xb;
@@ -1032,7 +1032,7 @@ cancelInStructures:
             if ((factionIndex ==
                  ((ModelRuntimeSlot *)modelPayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
                (readIndexOrClassId ==
-                ((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C))
+                ((ModelRuntimeSlot *)modelPayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId))
             {
               /* payload [0x18] = army in production; stopping clears it with its state word and flag 0x100 of
                  [0x3B] and takes its share [0x1D] back out of [0x3D] */
@@ -1108,7 +1108,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
 {
   FactionArmyAssetCount *primaryCount;
   SelectionPlayerRuntimeBlock *playerBlock;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   ArmyAssetRecordPrefix *armyDefinition;
   int byteOffsetOrActiveFaction;
   FactionArmyAssetCount assetsRemaining;
@@ -1120,7 +1120,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
     byteOffsetOrActiveFaction = factionIndex * (int)sizeof(GameFactionRuntimeRecord);
     assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-    playerBlock->pendingSelectionEntityOffset8098 = (uint32_t)armyDefinition;
+    playerBlock->pendingPlacementArmyAsset = (uint32_t)armyDefinition;
     for (; assetsRemaining != 0; assetsRemaining--) {
       if (armyDefinition ==
           *(ArmyAssetRecordPrefix **)
@@ -1136,7 +1136,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
           byteOffsetOrActiveFaction += 4;
           assetsRemaining--;
         } while (assetsRemaining != 0);
-        byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+        byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
         primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
         *primaryCount = *primaryCount - 1;
         if (factionIndex != byteOffsetOrActiveFaction) {
@@ -1153,7 +1153,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
       }
       byteOffsetOrActiveFaction += 4;
     }
-    playerBlock->pendingSelectionEntityOffset8098 = 0;
+    playerBlock->pendingPlacementArmyAsset = 0;
   }
 }
 
@@ -1172,11 +1172,11 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   FactionArmyAssetCount *primaryCount;
   uint32_t pendingAsset;
   uint32_t assetCount;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
 
   LOCK();
-  pendingAsset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingSelectionEntityOffset8098;
-  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingSelectionEntityOffset8098 = 0;
+  pendingAsset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingPlacementArmyAsset;
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->pendingPlacementArmyAsset = 0;
   runtimeRoot = g_InGameRuntimeRoot;
   UNLOCK();
   if (pendingAsset != 0) {
@@ -1187,7 +1187,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
       primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
       *primaryCount = *primaryCount + 1;
     }
-    if (factionIndex == runtimeRoot->worldRuntime0A30.activeFactionRuntimeIndex) {
+    if (factionIndex == runtimeRoot->worldRuntime.activeFactionRuntimeIndex) {
       InGameArmyStock_RebuildGrid((UiNodeBase *)runtimeRoot);
       if (playerRuntimeId == g_LocalPlayerRuntimeId) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
@@ -1211,7 +1211,7 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
 {
   FactionArmyAssetCount *primaryCount;
   PckArmyAssetIdCatalog price;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   int byteOffsetOrActiveFaction;
   FactionArmyAssetCount assetsRemaining;
   ArmyAssetLookupResult resolvedAsset;
@@ -1236,7 +1236,7 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           assetsRemaining--;
         } while (assetsRemaining != 0);
         price = resolvedAsset.recordOrError[2].registryId;
-        byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+        byteOffsetOrActiveFaction = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
         primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
         *primaryCount = *primaryCount - 1;
         g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
@@ -1269,15 +1269,15 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
 
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   createdRuntime = ArmyRuntime_CreateInstanceFromAsset
-                    (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,worldXQ12,worldYQ12,playerBlock->constructionLookupState8090,
+                    (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,worldXQ12,worldYQ12,playerBlock->placementFactionIndex,
                      armyAssetId,
-                     &g_InGameRuntimeRoot->worldRuntime0A30);
+                     &g_InGameRuntimeRoot->worldRuntime);
   if (!createdRuntime.failed) {
-    playerBlock->primarySelectionEntityOffset8094 = createdRuntime.armyRuntimeOrError -
+    playerBlock->placedArmyToken = createdRuntime.armyRuntimeOrError -
          (int)g_ArmyRuntimeRebaseBaseMinusOne;
     return;
   }
-  playerBlock->primarySelectionEntityOffset8094 = 0;
+  playerBlock->placedArmyToken = 0;
 }
 
 
@@ -1286,10 +1286,10 @@ void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerSta
    INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (+0x8090) that the player's next placed army belongs to.
 */
 void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
-          PlayerState8090Value placementFactionIndex)
+          PlacementFactionIndex placementFactionIndex)
 
 {
-  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->constructionLookupState8090 = placementFactionIndex;
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placementFactionIndex = placementFactionIndex;
 }
 
 
@@ -1299,10 +1299,10 @@ void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t 
    g_ArmyRuntimeRebaseBaseMinusOne.
 */
 void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
-          PlayerState8094Value armyToken)
+          PlacedArmyToken armyToken)
 
 {
-  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094 = armyToken;
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken = armyToken;
 }
 
 
@@ -1314,7 +1314,7 @@ void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t u
           uint32_t unusedZero2)
 
 {
-  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094 = 0;
+  g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->placedArmyToken = 0;
 }
 
 
@@ -1327,7 +1327,7 @@ void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t u
 void OldUnitRuntime_MergeMasksAndReplayRecords(void)
 
 {
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   uint32_t *nextMaskCursor;
   int factionsRemaining;
   OldUnitRecordCount recordsRemaining;
@@ -1356,7 +1356,7 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
     nextMaskCursor = maskCursor + 0x1c9;
   } while (factionsRemaining != 0);
   if ((g_InGameRuntimeRoot != NULL) && (g_OldUnitRecordCount != 0)) {
-    worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
+    worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
     recordsRemaining = g_OldUnitRecordCount;
     primaryRecordCursor = g_OldUnitPrimaryTable;
     do {
@@ -1376,8 +1376,8 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
               (worldRuntime,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
                worldRuntime);
     FieldGrid_ClassifyCellFlagsToRuntimeByte
-              ((runtimeRoot->worldRuntime0A30).activeFactionRuntimeIndex,
-               (runtimeRoot->worldRuntime0A30).fieldGrid);
+              ((runtimeRoot->worldRuntime).activeFactionRuntimeIndex,
+               (runtimeRoot->worldRuntime).fieldGrid);
   }
   return;
 }
@@ -1475,15 +1475,15 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
   GraphicsTextureSet *survivingFactionTextureSet;
   GraphicsPaletteAsset *survivingFactionPaletteAsset;
   FieldGridAsset *terrainGrid;
-  InGameRuntimeRootImageC3E4 *runtimeRoot;
+  InGameRuntimeRoot *runtimeRoot;
   WorldOwnerListNode *ownerNode;
   
   originalFirstFactionIndex = firstFactionIndex;
-  if (g_InGameRuntimeRoot->worldRuntime0A30.activeFactionRuntimeIndex == secondFactionIndex) {
+  if (g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex == secondFactionIndex) {
     InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForSecond +
                                                  500);
   }
-  else if (g_InGameRuntimeRoot->worldRuntime0A30.activeFactionRuntimeIndex == firstFactionIndex) {
+  else if (g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex == firstFactionIndex) {
     InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForFirst + 500);
   }
   /* each record's packedRelationStates holds a nibble per other faction */
@@ -1551,14 +1551,14 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     secondFactionIndex = originalFirstFactionIndex;
   }
   runtimeRoot = g_InGameRuntimeRoot;
-  if (secondFactionIndex == g_InGameRuntimeRoot->worldRuntime0A30.activeFactionRuntimeIndex) {
-    g_InGameRuntimeRoot->worldRuntime0A30.activeFactionRuntimeIndex = firstFactionIndex;
+  if (secondFactionIndex == g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex) {
+    g_InGameRuntimeRoot->worldRuntime.activeFactionRuntimeIndex = firstFactionIndex;
   }
   survivingFactionTextureSet = g_ArmyGraphicsBindings[firstFactionIndex].textureSet;
   survivingFactionPaletteAsset = g_ArmyGraphicsBindings[firstFactionIndex].paletteAsset;
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
-  for (ownerNode = (runtimeRoot->worldRuntime0A30).ownerListHead;
+  for (ownerNode = (runtimeRoot->worldRuntime).ownerListHead;
       g_FrontendPlayerRuntimeBlocks = playerBlockCursor, g_FrontendPlayerRuntimeBlockCount = playerBlocksRemaining,
       ownerNode != NULL; ownerNode = ownerNode->nextNode) {
     /* re-own the absorbed faction's models (entity +0x0C) and repaint them in the survivor's colours */
@@ -1578,14 +1578,14 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     if (secondFactionIndex == (playerBlockCursor->factionAssignment).factionAssignmentIndex) {
       recordOrCountOrIndex = playerBlockCursor->playerRuntimeId;
       (playerBlockCursor->factionAssignment).factionAssignmentIndex = firstFactionIndex;
-      g_SelectionPlayerRuntimeBlockPointers[recordOrCountOrIndex]->primaryEntityOrFactionToken8080 =
+      g_SelectionPlayerRuntimeBlockPointers[recordOrCountOrIndex]->factionIndex =
            firstFactionIndex;
     }
     playerBlockCursor++;
     playerBlocksRemaining--;
   } while (playerBlocksRemaining != 0);
   /* the survivor also gets the absorbed faction's per-faction cell byte (cell +0x70 + faction) */
-  terrainGrid = runtimeRoot->worldRuntime0A30.fieldGrid;
+  terrainGrid = runtimeRoot->worldRuntime.fieldGrid;
   recordOrCountOrIndex = terrainGrid->gridWidth * terrainGrid->gridHeight;
   gridCell = terrainGrid->cells;
   do {

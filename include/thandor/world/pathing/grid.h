@@ -86,7 +86,7 @@ void GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGr
 bool GridScratch_TestProjectedCellMaskBands(Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
 /* 0x00536C90 */
-WorldPositionXYEaxEdx8
+WorldPositionXY
 EntityPathing_RebuildOverlappingGroupRoutes
           (UQ12 targetWorldY,UQ12 targetWorldX,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime);
@@ -96,7 +96,7 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12);
 
 /* 0x005369A0 */
-WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
+WorldPositionXY EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
           EntityPathingRouteEntityRuntimeView *routeEntityRuntime);
 
@@ -135,7 +135,7 @@ void GridPathCost_PropagateWeightedHexNeighbors(GridPathPassCount remainingPasse
 void GridScratch_ResetTraversalFlagsAndCosts(void);
 
 /* 0x00534780 */
-GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
+GridPathBestUnreachableCell GridPathRegion_MarkUnreachableRecursive
           (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
           uint32_t bestCellByteOffset);
 

@@ -56,17 +56,17 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
     descriptionBox->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
     if (selectedIndex != lastRowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = ((ScenarioCatalogSaveRecord *)selectedRowRecord)->localizedStringId70;
+        resourceId = ((ScenarioCatalogSaveRecord *)selectedRowRecord)->levelTitleTextId;
         descriptionText = TextResource_Resolve(resourceId);
         *descriptionText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         descriptionBox->text = (uint16_t *)resourceId;
       }
       else {
         descriptionText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
-        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->localizedStringId70);
+        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->levelTitleTextId);
         *fieldText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,descriptionText.text);
-        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->optionalLocalizedStringId90);
+        fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->campaignTitleTextId);
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,descriptionText.text);
         descriptionBox->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
       }
@@ -201,10 +201,10 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
         g_FileSystemReadExact(0x100,destination,handle);
         g_FileSystemClose(closeHandle);
         /* level index -> level title text, campaign index -> campaign title text */
-        ((ScenarioCatalogSaveRecord *)destination)->localizedStringId70 =
-             ((ScenarioCatalogSaveRecord *)destination)->localizedStringId70 + TEXT_ID_LEVEL_TITLE_BASE;
-        ((ScenarioCatalogSaveRecord *)destination)->optionalLocalizedStringId90 =
-             ((ScenarioCatalogSaveRecord *)destination)->optionalLocalizedStringId90 + TEXT_ID_CAMPAIGN_TITLE_BASE;
+        ((ScenarioCatalogSaveRecord *)destination)->levelTitleTextId =
+             ((ScenarioCatalogSaveRecord *)destination)->levelTitleTextId + TEXT_ID_LEVEL_TITLE_BASE;
+        ((ScenarioCatalogSaveRecord *)destination)->campaignTitleTextId =
+             ((ScenarioCatalogSaveRecord *)destination)->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE;
       }
       rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
       destination = destination + 0x40;
@@ -247,17 +247,17 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     descriptionText->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
     if (listRowCount - 1 != selectionResult.rowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = selectedRecord->localizedStringId70;
+        resourceId = selectedRecord->levelTitleTextId;
         resolvedText = TextResource_Resolve(resourceId);
         *resolvedText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         descriptionText->text = (uint16_t *)resourceId;
       }
       else {
         resolvedText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
-        fieldText = TextResource_Resolve(selectedRecord->localizedStringId70);
+        fieldText = TextResource_Resolve(selectedRecord->levelTitleTextId);
         *fieldText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,resolvedText.text);
-        fieldText = TextResource_Resolve(selectedRecord->optionalLocalizedStringId90);
+        fieldText = TextResource_Resolve(selectedRecord->campaignTitleTextId);
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,resolvedText.text);
         descriptionText->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
       }

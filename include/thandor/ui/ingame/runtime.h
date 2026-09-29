@@ -57,7 +57,7 @@
 /* Mission help text: TEXT_ID_LEVEL_DESCRIPTION_BASE + 7 + TEXT_ID_LEVEL_DESCRIPTION_STRIDE * level title index +
    active faction (InGameMissionHelpPage_Toggle) */
 #define TEXT_ID_MISSION_HELP_BASE 0x230017
-/* Slots of the in-game notification queue (notificationQueue9E60, InGameNotificationQueue_InsertPriorityRecord) */
+/* Slots of the in-game notification queue (notificationQueue, InGameNotificationQueue_InsertPriorityRecord) */
 #define INGAME_NOTIFICATION_QUEUE_SLOTS 4
 
 /* The 0x200-byte header at the start of a save-game package, patched by InGameSaveGame_WritePackage
@@ -157,13 +157,13 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
 /* 0x0056FA70 */
 void InGameUiCommand_BeginInteractionByMode
           (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,uint32_t reservedArg3,
-          ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView170 *mapControl
+          ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView *mapControl
           );
 
 /* 0x005703D0 */
 void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCode,GraphicsScreenCoordinate pointerX,
           GraphicsScreenCoordinate pointerY,uint32_t reservedArg3,int optionalContext,
-          WorldRuntimeExtendedMapControlView170 *mapControl);
+          WorldRuntimeExtendedMapControlView *mapControl);
 
 /* 0x00570D60 */
 void InGameUiCommand_EndInteractionByMode
@@ -175,11 +175,11 @@ void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime);
 
 /* 0x005609F0 */
 void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
-          (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t activeStateFlags);
+          (uint32_t playerRuntimeId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t activeStateFlags);
 
 /* 0x005622F0 */
 void InGameUiCommand_SaveFieldAndLevelAssetImages
-          (uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,uint32_t payloadDword04);
+          (uint32_t playerRuntimeId,uint32_t unusedPayload1,uint32_t unusedPayload2,uint32_t unusedPayload3);
 
 /* 0x00567040 */
 void InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text);

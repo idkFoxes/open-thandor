@@ -13,9 +13,9 @@
 
 /* Submodule: gameplay/ai/units. */
 
-/* ArmyRuntimeSlot.runtimeState8C value the AI stores whenever it gives a unit a command (units.c, combat.c) */
+/* ArmyRuntimeSlot.aiUnitState value the AI stores whenever it gives a unit a command (units.c, combat.c) */
 #define AI_UNIT_COMMANDED_STATE 8
-/* ArmyRuntimeSlot.runtimeState94 bit 0: set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit
+/* ArmyRuntimeSlot.aiUnitFlags bit 0: set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit
    to a group target, cleared by the direct AI move commands; AiUnitBehavior_CollectUnassignedEntity skips it */
 #define AI_UNIT_STATE94_GROUP_ASSIGNED 0x1
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
@@ -25,22 +25,22 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
 
 /* 0x0053B4C0 */
 void AiUnitBehavior_SelectBestAnchorAction
-          (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot,
+          (MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B1D0 */
-AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeGeneralSiteDistanceScore
-          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
+AiGeneralSiteDistanceSelection AiUnitBehavior_ComputeGeneralSiteDistanceScore
+          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
 /* 0x0053B260 */
 AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
           (FactionRuntimeIndex factionIndex,AiCandidateScore32 currentBestScore,
-          MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot);
+          MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot);
 
 /* 0x0053B330 */
-AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
-          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
+AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
+          (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
 /* 0x0053B3E0 */
@@ -56,7 +56,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
 
 /* 0x0053B620 */
 void AiUnitBehavior_UpdatePioneerVehicle
-          (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntime,
+          (MdlDefinitionSemanticPrefix *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 #endif /* THANDOR_GAMEPLAY_AI_UNITS_H */

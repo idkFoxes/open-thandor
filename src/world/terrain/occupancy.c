@@ -29,7 +29,7 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
   FieldGridCell *wedge0Or3Cell;
   FieldGridCell *wedge1Or4Cell;
   FieldGridCell *cell;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
 
   if (fieldGrid != NULL) {
     g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
@@ -112,7 +112,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
   uint64_t currentPresenceSums;
   uint64_t persistentOnlyBytes;
   uint64_t persistentOnlySums;
-  FieldGridCoordinatesEaxEdx8 gridCoordinates;
+  FieldGridCoordinates gridCoordinates;
 
   if (fieldGrid != NULL) {
     /* cells per ray, rounded; the original divides by 0x901, not by the cell size 0x900 */
@@ -216,7 +216,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
    (secondaryOccupancyMask, which gains both bits of every faction present now) says it was seen. Also returns
    the updated history and the combined mask the callers store as terrain class state.
 */
-TerrainOccupancyResolvedMasksRegs12
+TerrainOccupancyResolvedMasks
 TerrainOccupancyMask_ResolveRuntimeClassFlags
           (FieldGridRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
           FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex)
@@ -225,7 +225,7 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
   FieldGridRuntimeFlags resolvedClassFlags;
   uint32_t combinedOccupancyMask;
   uint32_t factionSeenBit;
-  TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
+  TerrainOccupancyResolvedMasks resolvedMasks;
 
   /* every faction present now (odd bit) sets both of its bits in the history */
   resolvedMasks.secondaryOccupancyMask =

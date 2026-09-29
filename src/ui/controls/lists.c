@@ -1146,7 +1146,7 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
   ArenaAllocResult allocResult;
   ArenaLargestAllocResult largestBlock;
   DirectoryEnumerationResult enumResult;
-  DriveLetterEnumerationEaxEcx8 driveEnum;
+  DriveLetterEnumeration driveEnum;
   
   if (*pathUtf16 == 0) {
     /* header, the "computer" row and its label */
@@ -3199,7 +3199,7 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
    Draws a build catalog entry of the in-game command panel (g_UiNodeVtable_00516530 drawClipped): the
    sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
    faction's xenite does not cover it), how many of this army asset the faction already owns (top left) and
-   the highest ownerValue64/ownerValue68 percentage among the faction's armies of this asset in a given
+   the highest classState64/classState68 percentage among the faction's armies of this asset in a given
    model state (top right, alert colour when that army has runtimeFlags bit 0). The entry is looked up by its
    offset in the in-game root in the group-42 and group-48 catalog tables.
 */
@@ -3259,7 +3259,7 @@ void UiCatalogEntryControl_DrawClipped
   g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top,
              (control->command).sprite.selectable.base.left,subresourceOrTextLength,spriteTextureSource,framebuffer);
-  factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+  factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
   if ((int)g_GameFactionRuntimeImage.records[factionIndexOrPercent].xeniteCurrentQ4 <
       (int)control->runtimeDisplayValueQ4) {
     overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
@@ -3309,18 +3309,18 @@ void UiCatalogEntryControl_DrawClipped
       }
       factionIndexOrPercent = -1;
       for (modelNodePrimary =
-                (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+                (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead;
           modelNodePrimary != NULL;
           modelNodePrimary = (ModelRuntimeNode *)(modelNodePrimary->common).nextNode) {
         if (((modelNodePrimary->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (armyRuntime = (modelNodePrimary->runtimePayload).armyRuntime,
-            armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_11))
+            armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11))
            && (((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1 &&
-               (((((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex ==
+               (((((g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex ==
                    (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex &&
                   (catalogArmyAssetId == armyRuntime->classState60)) &&
-                 (recordIndexOrPercent = (int)(((int64_t)(int)armyRuntime->ownerValue64 * 100) /
-                               (int64_t)(int)armyRuntime->ownerValue68),
+                 (recordIndexOrPercent = (int)(((int64_t)(int)armyRuntime->classState64 * 100) /
+                               (int64_t)(int)armyRuntime->classState68),
                   factionIndexOrPercent <= recordIndexOrPercent)) &&
                 (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, factionIndexOrPercent = recordIndexOrPercent,
                  (armyRuntime->runtimeFlags & 1) != 0)))))) {
@@ -3379,31 +3379,31 @@ void UiCatalogEntryControl_DrawClipped
               (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                factionIndexOrPercent + 2,(control->command).sprite.selectable.base.left);
   }
-  factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
+  factionIndexOrPercent = (g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex;
   recordIndexOrPercent = -1;
-  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+  for (modelNode = (ModelRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime).ownerListHead;
       modelNode != NULL;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       slotArmyRuntime = (modelNode->runtimePayload).armyRuntime;
-      if (slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_22) {
+      if (slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
         if ((((slotArmyRuntime->articulatedContact).terrainContactMode ==
               ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) &&
             (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
            ((catalogArmyAssetId == slotArmyRuntime->classState60 &&
-            ((assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
-                           (int64_t)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent &&
+            ((assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->classState64 * 100) /
+                           (int64_t)(int)slotArmyRuntime->classState68), recordIndexOrPercent <= assetCountOrPercent &&
              (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
               (slotArmyRuntime->runtimeFlags & 1) != 0)))))) {
           overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
         }
       }
-      else if ((((slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13)
+      else if ((((slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)
                 && ((slotArmyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
                (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
               (((catalogArmyAssetId == slotArmyRuntime->classState60 &&
-                (assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
-                              (int64_t)(int)slotArmyRuntime->ownerValue68),
+                (assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->classState64 * 100) /
+                              (int64_t)(int)slotArmyRuntime->classState68),
                  recordIndexOrPercent <= assetCountOrPercent)) &&
                (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
                 (slotArmyRuntime->runtimeFlags & 1) != 0)))) {

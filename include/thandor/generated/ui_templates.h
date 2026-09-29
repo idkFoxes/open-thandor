@@ -580,9 +580,9 @@ typedef struct InGameUiImage {
     uint32_t chatInputPageStack_fields[3];
     UiNodeBase chatInputTextEdit; /* +00B0 g_UiRequiredTextEditControlVtable: Chat/command text entry (action 0x1024): sends the typed text to the selected players; in single player it checks the developer cheat phrase. */
     uint32_t chatInputTextEdit_fields[32];
-    UiNodeBase primaryPageStack; /* +017C g_UiLayoutContainerControlVtable: Top-level page stack (primaryPageStack017C); page 1 is the end-movie/results view, it also lists the level movie page and the side panel stack 0x40AC. */
+    UiNodeBase primaryPageStack; /* +017C g_UiLayoutContainerControlVtable: Top-level page stack (InGameRuntimeRoot.primaryPageStack); page 1 is the end-movie/results view, it also lists the level movie page and the side panel stack 0x40AC. */
     uint32_t primaryPageStack_fields[4];
-    UiNodeBase endMovieView; /* +01D8 g_UiImageActionControlVtable: Image/action surface that shows the end movie (activeEndMovieRuntime022C); action 0x1009 clears the playback flag to skip the movie. */
+    UiNodeBase endMovieView; /* +01D8 g_UiImageActionControlVtable: Image/action surface that shows the end movie (activeEndMovieRuntime); action 0x1009 clears the playback flag to skip the movie. */
     uint32_t endMovieView_fields[7];
     UiNodeBase endMovieLetterboxTop; /* +0240 g_UiFillPanelControlVtable: Black fill bar over the top eighth of the screen while the end movie plays. */
     uint32_t endMovieLetterboxTop_fields[4];
@@ -616,15 +616,15 @@ typedef struct InGameUiImage {
     uint32_t resultsChartModeButtonB_fields[5];
     UiNodeBase resultsSummaryText; /* +0824 g_UiListOffsetControlVtable: Results summary text 0x21C0 patched with the level title and elapsed game time. */
     uint32_t resultsSummaryText_fields[4];
-    UiNodeBase levelMovieView; /* +0880 g_UiImageActionControlVtable: Image/action surface playing the level movie (levelMovieRuntime08D4 lives in this node). */
+    UiNodeBase levelMovieView; /* +0880 g_UiImageActionControlVtable: Image/action surface playing the level movie (levelMovieRuntime lives in this node). */
     uint32_t levelMovieView_fields[6];
-    UiNodeBase playerStatusBox; /* +08E4 g_UiConditionalActionControlVtable: Multiplayer player status box (types.h: playerStatusNode08E4): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback. */
+    UiNodeBase playerStatusBox; /* +08E4 g_UiConditionalActionControlVtable: Multiplayer player status box (types.h: playerStatusNode): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback. */
     uint32_t playerStatusBox_fields[12];
-    UiNodeBase messageHistoryPanel; /* +0960 g_UiConditionalActionControlVtable: Recent message history display (recentTextHistory09B8 lives inside it); action 0x100F trims the history to three lines. */
+    UiNodeBase messageHistoryPanel; /* +0960 g_UiConditionalActionControlVtable: Recent message history display (recentTextHistory lives inside it); action 0x100F trims the history to three lines. */
     uint32_t messageHistoryPanel_fields[12];
     UiNodeBase worldViewArea; /* +09DC g_UiLayoutContainerControlVtable: Container for the main play area left of the side panel (right offset set from the panel width); holds world view, windows, messages and chat input. */
     uint32_t worldViewArea_fields[2];
-    UiNodeBase worldView; /* +0A30 g_FrontendModelPointerContextVtable: The 3D world view control (worldRuntime0A30) that receives map pointer input and hosts the on-screen status texts. */
+    UiNodeBase worldView; /* +0A30 g_FrontendModelPointerContextVtable: The 3D world view control (InGameRuntimeRoot.worldRuntime) that receives map pointer input and hosts the on-screen status texts. */
     uint32_t worldView_fields[85];
     UiNodeBase gameWindowPageStack; /* +0BD0 g_UiLayoutContainerControlVtable: Page stack of the in-game windows (types.h technologyPageStack0BD0): 0 none, 1 message, 2 technology, 3 game menu, 4 quit, 5 save, 6 graphics, 7 audio, 8 mission help. */
     uint32_t gameWindowPageStack_fields[10];
@@ -654,17 +654,17 @@ typedef struct InGameUiImage {
     uint32_t missionHelpMouseTab_fields[5];
     UiNodeBase missionHelpTabPageStack; /* +10A4 g_UiLayoutContainerControlVtable: Page stack holding the three scrollable help text pages. */
     uint32_t missionHelpTabPageStack_fields[4];
-    UiNodeBase missionBriefingScroll; /* +1100 g_UiScrollableControlVtable: Scrollable view of the mission briefing text (textPanel0_1100). */
+    UiNodeBase missionBriefingScroll; /* +1100 g_UiScrollableControlVtable: Scrollable view of the mission briefing text (InGameMissionHelpRootView.missionBriefingPanel). */
     uint32_t missionBriefingScroll_fields[17];
     UiNodeBase missionBriefingText; /* +1190 g_UiListOffsetControlVtable: Briefing text; its resource id is set from the level title and active faction when the window opens. */
     uint32_t missionBriefingText_fields[4];
-    UiNodeBase keyboardHelpScroll; /* +11EC g_UiScrollableControlVtable: Scrollable view of the keyboard help (textPanel1_11EC). */
+    UiNodeBase keyboardHelpScroll; /* +11EC g_UiScrollableControlVtable: Scrollable view of the keyboard help (keyboardHelpPanel). */
     uint32_t keyboardHelpScroll_fields[17];
     UiNodeBase keyboardHelpKeyColumn; /* +127C g_UiListOffsetControlVtable: Keyboard help text 0x2400 (likely the key column). */
     uint32_t keyboardHelpKeyColumn_fields[4];
     UiNodeBase keyboardHelpDescriptionColumn; /* +12D8 g_UiListOffsetControlVtable: Keyboard help text 0x2401 next to the key column (likely the descriptions). */
     uint32_t keyboardHelpDescriptionColumn_fields[4];
-    UiNodeBase mouseHelpScroll; /* +1334 g_UiScrollableControlVtable: Scrollable view of help text 0x2402 (textPanel2_1334). */
+    UiNodeBase mouseHelpScroll; /* +1334 g_UiScrollableControlVtable: Scrollable view of help text 0x2402 (mouseHelpPanel). */
     uint32_t mouseHelpScroll_fields[17];
     UiNodeBase mouseHelpText; /* +13C4 g_UiListOffsetControlVtable: Help text 0x2402 bound to the cursor texture (mouse/cursor explanations). */
     uint32_t mouseHelpText_fields[4];
@@ -916,7 +916,7 @@ typedef struct InGameUiImage {
     uint32_t sidePanelFrameBottomCap_fields[4];
     UiNodeBase sidePanelMenuButtonStack; /* +432C g_UiLayoutContainerControlVtable: Two-page container (page 0 = menu button row, page 1 empty) holding the menu and objectives buttons and the countdown display. */
     uint32_t sidePanelMenuButtonStack_fields[4];
-    UiNodeBase inGameMenuButton; /* +4388 g_UiSpriteButtonControlVtable: Sprite toggle (action 0x1003) that opens/closes the in-game menu page (sharedSettingsToggle4388). */
+    UiNodeBase inGameMenuButton; /* +4388 g_UiSpriteButtonControlVtable: Sprite toggle (action 0x1003) that opens/closes the in-game menu page (InGameMissionHelpRootView.inGameMenuButton). */
     uint32_t inGameMenuButton_fields[11];
     UiNodeBase missionObjectivesButton; /* +4400 g_UiSpriteButtonControlVtable: Sprite toggle (action 0x101F) that opens menu page 8 (mission briefing/objectives text panels) and pauses local play. */
     uint32_t missionObjectivesButton_fields[11];
@@ -960,7 +960,7 @@ typedef struct InGameUiImage {
     uint32_t editorModeTabTerrainMaterial_fields[11];
     UiNodeBase editorModeTabTerrainSmoothing; /* +4C94 g_UiSpriteButtonControlVtable: Editor mode tab G2 (action 0x1102, InGameCommandModeG_Select2): terrain relaxation/smoothing tool (role partly resolved). */
     uint32_t editorModeTabTerrainSmoothing_fields[11];
-    UiNodeBase diplomacyPanel; /* +4D0C g_UiNodeVtable_004BC570: Image-control window (image 0xC, otherPlayerTargetGridNode4D0C) listing the other active players and relations. */
+    UiNodeBase diplomacyPanel; /* +4D0C g_UiNodeVtable_004BC570: Image-control window (image 0xC, InGameRuntimeRootUiGridView.diplomacyPanel) listing the other active players and relations. */
     uint32_t diplomacyPanel_fields[8];
     UiNodeBase diplomacyFrame; /* +4D78 g_UiNineSlicePanelControlVtable: Nine-slice frame of the diplomacy panel holding the seven player row stacks (rebuilt by InGameOtherPlayerCommand_RebuildTargetEntries). */
     uint32_t diplomacyFrame_fields[4];
@@ -1048,9 +1048,9 @@ typedef struct InGameUiImage {
     uint32_t diplomacyRow6RelationButton_fields[12];
     UiNodeBase diplomacyRow7RelationButton; /* +5D34 g_UiNodeVtable_005162C0: Action-0x1012 command sprite button of diplomacy row 7; shows the relation-state sprite and advances/resets the relation to that player (InGameOtherPlayerCommand_DispatchSelectedTarget). */
     uint32_t diplomacyRow7RelationButton_fields[13];
-    UiNodeBase buildCatalogPanel; /* +5DB4 g_UiNodeVtable_004BC570: Image-control window (id 0xD, catalogGroup48GridNode5DB4) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid). */
+    UiNodeBase buildCatalogPanel; /* +5DB4 g_UiNodeVtable_004BC570: Image-control window (id 0xD, InGameRuntimeRootUiGridView.buildCatalogPanel) holding the 48-entry build catalog of items the selected/owned production buildings can make; suppressed when empty (UiCatalogGroup48_RebuildGrid). */
     uint32_t buildCatalogPanel_fields[8];
-    UiNodeBase buildCatalogFrame; /* +5E20 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 48-entry build catalog (catalogGroup48LayoutNode5E20); resized to the computed grid in UiCatalogGroup48_RebuildGrid. */
+    UiNodeBase buildCatalogFrame; /* +5E20 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 48-entry build catalog (InGameRuntimeRootUiGridView.buildCatalogFrame); resized to the computed grid in UiCatalogGroup48_RebuildGrid. */
     uint32_t buildCatalogFrame_fields[4];
     UiNodeBase buildCatalogEntry00; /* +5E7C g_UiNodeVtable_00516530: Catalog entry 0 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[0] under column count 0). */
     uint32_t buildCatalogEntry00_fields[13];
@@ -1148,9 +1148,9 @@ typedef struct InGameUiImage {
     uint32_t buildCatalogEntry46_fields[13];
     UiNodeBase buildCatalogEntry47; /* +75FC g_UiNodeVtable_00516530: Catalog entry 47 of the 48-entry build catalog (action 0x100B: queue or, with modifier, cancel/refund the army asset g_UiCatalogGroup48Records[47] under column count 0). */
     uint32_t buildCatalogEntry47_fields[14];
-    UiNodeBase specialBuildCatalogPanel; /* +7680 g_UiNodeVtable_004BC570: Image-control window (id 0xE, catalogGroup42GridNode7680) holding the 42-entry catalog of flag-0x10 army assets, only offered while the faction owns a model-class-0x0B structure (UiCatalogGroup42_RebuildGrid). */
+    UiNodeBase specialBuildCatalogPanel; /* +7680 g_UiNodeVtable_004BC570: Image-control window (id 0xE, InGameRuntimeRootUiGridView.specialBuildCatalogPanel) holding the 42-entry catalog of flag-0x10 army assets, only offered while the faction owns a model-class-0x0B structure (UiCatalogGroup42_RebuildGrid). */
     uint32_t specialBuildCatalogPanel_fields[8];
-    UiNodeBase specialBuildCatalogFrame; /* +76EC g_UiNineSlicePanelControlVtable: Nine-slice frame of the 42-entry special build catalog (catalogGroup42LayoutNode76EC); resized to the computed grid. */
+    UiNodeBase specialBuildCatalogFrame; /* +76EC g_UiNineSlicePanelControlVtable: Nine-slice frame of the 42-entry special build catalog (InGameRuntimeRootUiGridView.specialBuildCatalogFrame); resized to the computed grid. */
     uint32_t specialBuildCatalogFrame_fields[4];
     UiNodeBase specialBuildCatalogEntry00; /* +7748 g_UiNodeVtable_00516530: Catalog entry 0 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[0]). */
     uint32_t specialBuildCatalogEntry00_fields[13];
@@ -1236,9 +1236,9 @@ typedef struct InGameUiImage {
     uint32_t specialBuildCatalogEntry40_fields[13];
     UiNodeBase specialBuildCatalogEntry41; /* +8BC8 g_UiNodeVtable_00516530: Catalog entry 41 of the 42-entry special build catalog (action 0x100C: queue or cancel/refund g_UiCatalogGroup42Records[41]). */
     uint32_t specialBuildCatalogEntry41_fields[14];
-    UiNodeBase armyStockPanel; /* +8C4C g_UiNodeVtable_004BC570: Image-control window (id 0xF, commandSpriteVariantAGridNode8C4C) showing up to 24 army assets held in the faction's primary army-asset pool (UiCommandSpriteVariantA_RebuildGrid). */
+    UiNodeBase armyStockPanel; /* +8C4C g_UiNodeVtable_004BC570: Image-control window (id 0xF, InGameRuntimeRootUiGridView.armyStockPanel) showing up to 24 army assets held in the faction's primary army-asset pool (UiCommandSpriteVariantA_RebuildGrid). */
     uint32_t armyStockPanel_fields[8];
-    UiNodeBase armyStockFrame; /* +8CB8 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 24-slot army stock grid (commandSpriteVariantALayoutNode8CB8); resized/suppressed by the rebuild. */
+    UiNodeBase armyStockFrame; /* +8CB8 g_UiNineSlicePanelControlVtable: Nine-slice frame of the 24-slot army stock grid (InGameRuntimeRootUiGridView.armyStockFrame); resized/suppressed by the rebuild. */
     uint32_t armyStockFrame_fields[4];
     UiNodeBase armyStockSlot00; /* +8D14 g_UiNodeVtable_005162C0: Army stock slot 0 (action 0x1001): click stages the pooled asset for deployment/transfer, modifier-click sells it for a 7/8 refund. */
     uint32_t armyStockSlot00_fields[12];
@@ -1294,7 +1294,7 @@ typedef struct InGameUiImage {
     uint32_t editorModeTabUnitPlacement_fields[11];
     UiNodeBase editorModeTabObjectPlacement; /* +99A8 g_UiSpriteButtonControlVtable: Editor mode tab G4 (action 0x1106): place ownerless army assets with flags 0x100|0x200 (objects). */
     uint32_t editorModeTabObjectPlacement_fields[10];
-    UiNodeBase minimapView; /* +9A1C g_UiSelectionGeometryControlVtable: Rotating minimap (UiSelectionGeometryControl draws a rotated/scaled texture); +0x50 holds the cursor grid position (fieldGridPosition9A6C). */
+    UiNodeBase minimapView; /* +9A1C g_UiSelectionGeometryControlVtable: Rotating minimap (UiSelectionGeometryControl draws a rotated/scaled texture); +0x50 holds the cursor grid position (InGameRuntimeRoot.minimapOriginGridPosition; +0x58..+0x60 are minimapSampleScaleQ12, minimapRotationAngle, minimapTextureSource). */
     uint32_t minimapView_fields[9];
     UiNodeBase modePreviewPageStack; /* +9A8C g_UiLayoutContainerControlVtable: 8-page stack synced by mode G (primary index table): page 0 normal game, pages 1-5/7 editor tool previews. */
     uint32_t modePreviewPageStack_fields[9];
@@ -1320,7 +1320,7 @@ typedef struct InGameUiImage {
     uint32_t modeDetailPageStack_fields[9];
     UiNodeBase selectionDetailPanel; /* +9F50 g_UiImagePanelControlVtable: Page 0 of ModeDetailPageStack: background image hosting the selection detail page stack. */
     uint32_t selectionDetailPanel_fields[4];
-    UiNodeBase selectionDetailPageStack; /* +9FAC g_UiLayoutContainerControlVtable: Page stack switched by InGameSelectionDetailPanel_Rebuild: 1 single unit, 2 multi-selection grid, 3 hovered build item (root field selectionDetailPageStack9FAC). */
+    UiNodeBase selectionDetailPageStack; /* +9FAC g_UiLayoutContainerControlVtable: Page stack switched by InGameSelectionDetailPanel_Rebuild: 1 single unit, 2 multi-selection grid, 3 hovered build item (root field selectionDetailPageStack). */
     uint32_t selectionDetailPageStack_fields[5];
     UiNodeBase singleSelectionMetrics; /* +A00C g_UiArmyMetricsPanelVtable: Single-selection page: army metrics panel (portrait/health/value) of the one selected own entity. */
     uint32_t singleSelectionMetrics_fields[5];

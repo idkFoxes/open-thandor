@@ -32,7 +32,7 @@
 #define TEXT_ID_CHAT_MESSAGE 0xFF07 /* rich text: selector 0 = sender name, selector 1 = message */
 /* Recipient mask of a chat line to everybody (bits 8+faction and 16+player); the lobby ignores the mask. */
 #define PLAYER_CHAT_RECIPIENTS_ALL 0xFFFFFF00
-/* In-game chat staging: the write offset (low byte of packedSelectionState809C) advances 12 bytes per piece
+/* In-game chat staging: the write offset (low byte of chatRecipientMaskAndWriteOffset) advances 12 bytes per piece
    and stops at the last piece of the 0x30-byte line. */
 #define PLAYER_CHAT_PIECE_BYTES 0xC
 #define PLAYER_CHAT_LAST_PIECE_OFFSET 0x24
@@ -87,9 +87,9 @@ void FrontendPlayerRuntime_MarkTaskAssignmentReadyById
 
 /* 0x00544D50 */
 void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
-          (PlayerRuntimeId playerId,FrontendPlayerValue8C scenarioAvailabilityMask2,
-          FrontendPlayerValue88 scenarioAvailabilityMask1,
-          FrontendPlayerValue84 scenarioAvailabilityMask0);
+          (PlayerRuntimeId playerId,FrontendScenarioAvailabilityMask2 scenarioAvailabilityMask2,
+          FrontendScenarioAvailabilityMask1 scenarioAvailabilityMask1,
+          FrontendScenarioAvailabilityMask0 scenarioAvailabilityMask0);
 
 /* 0x00549190 */
 void FrontendPlayerRuntime_InitializeFactionAssignments(void);
@@ -137,11 +137,11 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
           FrontendFactionAssignmentIndex selectionGroupIndex);
 
 /* 0x00560830 */
-void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology(FrontendPlayerIndex playerIndex,uint32_t arg1,
+void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology(FrontendPlayerIndex playerIndex,uint32_t unusedArg1,
           TechnologyIndexOrRestoreCode technologyIndexOrRestore,ArmyRuntimeSavedOffset modelOffset);
 
 /* 0x005608A0 */
-void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,uint32_t arg1,uint32_t arg2,
+void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,
           FrontendPackedTextCommandState packedState);
 
 /* 0x005608D0 */
@@ -150,7 +150,7 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
 
 /* 0x00560940 */
 void FrontendPlayerTextCommand_PublishConditionalRichText
-          (FrontendPlayerIndex playerIndex,uint32_t arg1,uint32_t arg2,uint32_t arg3);
+          (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
 /* 0x00561F10 */
 void FrontendPlayerSelection_ApplyEntryOrAll
@@ -168,7 +168,7 @@ void FrontendPlayerRuntime_SetConsensusValueAndRefresh
 
 /* 0x00545490 */
 void FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
-          (PlayerRuntimeId playerId,uint32_t arg1,uint32_t arg2,uint32_t arg3);
+          (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
 /* 0x00545500 */
 void FrontendPlayerMessageBuffer_AppendTripleById
@@ -176,7 +176,8 @@ void FrontendPlayerMessageBuffer_AppendTripleById
           FrontendMessageValueC valueC);
 
 /* 0x00545590 */
-void FrontendPlayerMessageBuffer_PublishTextById(PlayerRuntimeId playerId,uint32_t arg1,uint32_t arg2,uint32_t arg3);
+void FrontendPlayerMessageBuffer_PublishTextById(PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,
+          uint32_t unusedArg3);
 
 /* 0x0054EBD0 */
 void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsRuntimeView *frontendRoot);
@@ -188,6 +189,6 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 
 /* 0x005607E0 */
 void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
-          (FrontendPlayerIndex playerIndex,uint32_t arg1,uint32_t arg2,ArmyRuntimeSavedOffset modelOffset);
+          (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,ArmyRuntimeSavedOffset modelOffset);
 
 #endif /* THANDOR_UI_FRONTEND_PLAYER_H */

@@ -25,7 +25,7 @@
    handler directly. */
 #define INGAME_COMMAND_TOGGLE_PAUSE 0x370 /* InGameCommand_TogglePauseRequest */
 #define INGAME_COMMAND_ADJUST_GAME_SPEED 0x3F0 /* InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks */
-/* Level script (InGameLevelConditionStorageView800.schedule): 64 condition records of 16 bytes and 16 end
+/* Level script (InGameLevelConditionStorage.schedule): 64 condition records of 16 bytes and 16 end
    triggers of 8 bytes, evaluated by InGameConditionRuntime_UpdateScheduledRecords. */
 #define INGAME_SCHEDULED_CONDITION_COUNT 64
 #define INGAME_END_CONDITION_TRIGGER_COUNT 16
@@ -38,11 +38,11 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00564F70 */
-SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimeImagePrefix370 *levelAsset,
+SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16);
 
 /* 0x00566290 */
-void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endGameResultsRuntime);
+void EndGameResultsUiRuntime_UpdateAndHandleInput(InGameRuntimeRootFrameView *inGameRoot);
 
 /* 0x0050EA90 */
 void ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage);
@@ -52,13 +52,13 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void);
 
 /* 0x00567060 */
 bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiActionId commandCode,
-          EndGameResultsRuntimeView44C4 *endGameResultsRuntime);
+          InGameRuntimeRootFrameView *inGameRoot);
 
 /* 0x00569920 */
 void InGameRuntime_ProcessQueuedSessionNotificationTimer(void);
 
 /* 0x005641D0 */
-NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,uint16_t *levelMoviePath);
+NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix *levelAsset,uint16_t *levelMoviePath);
 
 /* 0x00564920 */
 LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath);

@@ -62,29 +62,29 @@ static __inline uint64_t Glide_UnpackArgbToWordLanes(uint32_t argb,int shift)
 }
 
 /* 'gfx' texture source access (layout: GFX_* in graphics/resources/texture.h). The original addresses the
-   asset through buildMetadata.assetRelativeAddressAnchor28, GFX_ASSET_ANCHOR28_OFFSET bytes into it; these
+   asset through buildMetadata.reserved28_2F, GFX_ASSET_ANCHOR28_OFFSET bytes into it; these
    macros keep that addressing and name the field instead of the biased offset. */
 /* Asset-relative offset of the subresource record of subresourceIndex. */
 #define GLIDE_RECORD_OFFSET(asset,subresourceIndex) \
   ((subresourceIndex) * GFX_SUBRESOURCE_RECORD_SIZE + ((asset)->tableDescriptor).subresourceTableOffset)
 /* Field GFX_SUBRESOURCE_<field> of the subresource record at asset-relative recordOffset. */
 #define GLIDE_RECORD_INT(asset,recordOffset,field) \
-  (*(int *)((asset)->common.buildMetadata.assetRelativeAddressAnchor28 + (recordOffset) + \
+  (*(int *)((asset)->common.buildMetadata.reserved28_2F + (recordOffset) + \
             (GFX_SUBRESOURCE_##field - GFX_ASSET_ANCHOR28_OFFSET)))
 #define GLIDE_RECORD_UINT(asset,recordOffset,field) \
-  (*(uint32_t *)((asset)->common.buildMetadata.assetRelativeAddressAnchor28 + (recordOffset) + \
+  (*(uint32_t *)((asset)->common.buildMetadata.reserved28_2F + (recordOffset) + \
                  (GFX_SUBRESOURCE_##field - GFX_ASSET_ANCHOR28_OFFSET)))
 /* Address of the byte at an asset-relative offset (a record's GFX_SUBRESOURCE_PIXEL_OFFSET). */
 #define GLIDE_ASSET_BYTES(asset,offset) \
-  ((asset)->common.buildMetadata.assetRelativeAddressAnchor28 + (offset) - GFX_ASSET_ANCHOR28_OFFSET)
+  ((asset)->common.buildMetadata.reserved28_2F + (offset) - GFX_ASSET_ANCHOR28_OFFSET)
 /* Palette entry `index` of palette bank `bank`: 8 bytes at asset + GFX_ASSET_HEADER_SIZE +
    bank * GFX_PALETTE_BANK_SIZE + index * 8 (asset[bank * 4 + 1], the asset struct being 0x200 bytes), holding
    the ARGB8888 colour and then the native framebuffer pixel. */
 #define GLIDE_PALETTE_ARGB(asset,bank,index) \
-  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 + (index) * 8 - \
+  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.reserved28_2F + (index) * 8 - \
                  GFX_ASSET_ANCHOR28_OFFSET))
 #define GLIDE_PALETTE_NATIVE(asset,bank,index) \
-  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 + (index) * 8 + \
+  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.reserved28_2F + (index) * 8 + \
                  (4 - GFX_ASSET_ANCHOR28_OFFSET)))
 
 /* Address: 0x005801B0.
@@ -1011,16 +1011,16 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
     (capturedAsset->common).formatVersion = 1;
     (capturedAsset->common).converterVersion = 0;
     strideOrTimestamp = g_LocaleGetPackedCurrentTime();
-    (capturedAsset->common).buildMetadata.timestamps.dateValue0 = strideOrTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.dateValue1 = strideOrTimestamp;
-    (capturedAsset->common).buildMetadata.timestamps.dateValue2 = strideOrTimestamp;
-    strideOrTimestamp = g_LocaleGetPackedCurrentDate();
     (capturedAsset->common).buildMetadata.timestamps.timeValue0 = strideOrTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue1 = strideOrTimestamp;
     (capturedAsset->common).buildMetadata.timestamps.timeValue2 = strideOrTimestamp;
+    strideOrTimestamp = g_LocaleGetPackedCurrentDate();
+    (capturedAsset->common).buildMetadata.timestamps.dateValue0 = strideOrTimestamp;
+    (capturedAsset->common).buildMetadata.timestamps.dateValue1 = strideOrTimestamp;
+    (capturedAsset->common).buildMetadata.timestamps.dateValue2 = strideOrTimestamp;
     g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.producerName);
     g_LocaleCopyDefaultComputerLabelUtf16((capturedAsset->common).buildMetadata.names.sourceName);
-    capturedAsset->opaqueTablePayloadBC_1FF[0x44] = 0;
+    capturedAsset->unusedText[0] = 0;
     (capturedAsset->tableDescriptor).subresourceCount = 1;
     (capturedAsset->tableDescriptor).paletteBankCount = 0;
     (capturedAsset->tableDescriptor).subresourceTableOffset = GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET;

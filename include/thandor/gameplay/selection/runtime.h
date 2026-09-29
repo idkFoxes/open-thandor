@@ -63,13 +63,13 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
 
 /* 0x0055FE70 */
 void InGamePlayerSelection_ApplyMoveCommand
-          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
-          CommandPayloadDword0C worldYQ12);
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayload worldXQ12,
+          CommandPayload worldYQ12);
 
 /* 0x0055FEA0 */
 void InGamePlayerSelection_ApplyPositionCommand
-          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
-          CommandPayloadDword0C worldYQ12);
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayload worldXQ12,
+          CommandPayload worldYQ12);
 
 /* 0x0055FED0 */
 void InGamePlayerSelection_SelectArmyRuntimeIndex
@@ -77,27 +77,27 @@ void InGamePlayerSelection_SelectArmyRuntimeIndex
           RuntimeToken armyRuntimeIndex);
 
 /* 0x0055FF10 */
-void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,CommandPayloadDword04 surfaceHeightQ12,
-          CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12);
+void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,CommandPayload surfaceHeightQ12,
+          CommandPayload worldXQ12,CommandPayload worldYQ12);
 
 /* 0x0055FF40 */
-void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
-          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
+void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayload unusedPayload1,
+          CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
 /* 0x0055FF60 */
 void PlayerSelection_StopMovement
-          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
-          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
+          (PlayerRuntimeId playerId,CommandPayload unusedPayload1,
+          CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
 /* 0x0055FF80 */
 void PlayerSelection_CancelTargets
-          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
-          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
+          (PlayerRuntimeId playerId,CommandPayload unusedPayload1,
+          CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
 /* 0x0055FFA0 */
 void PlayerSelection_SelfDestruct
-          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
-          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
+          (PlayerRuntimeId playerId,CommandPayload unusedPayload1,
+          CommandPayload unusedPayload2,CommandPayload unusedPayload3);
 
 /* 0x0055FFC0 */
 void InGameSelection_SetAircraftPadTargetLane1

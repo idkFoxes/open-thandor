@@ -23,7 +23,7 @@
 
 /* Subresource table of a 'gfx' texture source: one 32-byte record per subresource at
    asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE). The code reaches it through
-   buildMetadata.assetRelativeAddressAnchor28, which lies GFX_ASSET_ANCHOR28_OFFSET bytes into the asset, so
+   the address of buildMetadata.reserved28_2F, which lies GFX_ASSET_ANCHOR28_OFFSET bytes into the asset, so
    every field offset below appears as (GFX_SUBRESOURCE_* - GFX_ASSET_ANCHOR28_OFFSET). The pixel data offset is
    relative to the asset start as well. */
 #define GFX_ASSET_ANCHOR28_OFFSET 0x28

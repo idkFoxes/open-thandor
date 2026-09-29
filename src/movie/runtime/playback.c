@@ -388,18 +388,18 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
               frameWidth = header->widthPixels;
               frameHeight = header->heightPixels;
               sizeOrValue = g_LocaleGetPackedCurrentTime();
-              movie->textureCommon.buildMetadata.timestamps.dateValue0 = sizeOrValue;
-              movie->textureCommon.buildMetadata.timestamps.dateValue1 = sizeOrValue;
-              movie->textureCommon.buildMetadata.timestamps.dateValue2 = sizeOrValue;
-              sizeOrValue = g_LocaleGetPackedCurrentDate();
               movie->textureCommon.buildMetadata.timestamps.timeValue0 = sizeOrValue;
               movie->textureCommon.buildMetadata.timestamps.timeValue1 = sizeOrValue;
               movie->textureCommon.buildMetadata.timestamps.timeValue2 = sizeOrValue;
+              sizeOrValue = g_LocaleGetPackedCurrentDate();
+              movie->textureCommon.buildMetadata.timestamps.dateValue0 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.dateValue1 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.dateValue2 = sizeOrValue;
               g_LocaleCopyDefaultComputerLabelUtf16
                         (movie->textureCommon.buildMetadata.names.producerName);
               g_LocaleCopyDefaultComputerLabelUtf16
                         (movie->textureCommon.buildMetadata.names.sourceName);
-              movie->reserved100_1FF[0] = 0;
+              movie->unusedText[0] = 0;
               movie->subresourceTableOffset = offsetof(MovieRuntime,sourceEntry); /* right after the gfx header */
               movie->paletteBankCount = 0;
               movie->subresourceCount = 1;
@@ -2135,7 +2135,7 @@ uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 
 {
   uint32_t green;
-  FixedLengthAngleEaxEdx8 angleAndLength;
+  FixedLengthAngle angleAndLength;
   
   green = rgb888 >> 8 & 0xff;
   /* 0xDDB4 = 0x8000 * sqrt(3) */
