@@ -20,9 +20,20 @@
 #define GRAPHICS_INTENSITY_CLAMP_MAX_STEP 21
 /* 64 KiB table plus 64 KiB slack so it can be aligned to a 64 KiB boundary */
 #define GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES 0x20000
+#define GRAPHICS_INTENSITY_CLAMP_TABLE_ALIGNMENT 0x10000
 /* Generated shadow texture (GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy): a shadow vertex fades
    out linearly with its ray distance to the caster and vanishes at 5.0 world units (Q12) */
 #define GRAPHICS_SHADING_SHADOW_FADE_DISTANCE_Q12 0x5000
+/* Projected point pool of the generated shadow texture: 0x80-byte primitive blocks of 16 point pairs, three
+   0x20-byte vertices (4 pairs each) and a 0x20-byte header at +0x60 (pairs 12..15). A shadow patch reserves 14
+   consecutive blocks (GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks). */
+#define GRAPHICS_PROJECTED_BLOCK_BYTES 0x80
+#define GRAPHICS_PROJECTED_BLOCK_PAIRS 16
+#define GRAPHICS_SHADOW_PATCH_BLOCK_COUNT 14
+/* Index of point pair `pair` of block `block` in a GraphicsProjectedPointPair array of consecutive blocks */
+#define GRAPHICS_PROJECTED_PAIR(block, pair) ((block) * GRAPHICS_PROJECTED_BLOCK_PAIRS + (pair))
+/* Highest light level of g_ShadingIntensityScaleMmx (256 entries) */
+#define GRAPHICS_SHADING_INTENSITY_MAX 255
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004CDD40 */

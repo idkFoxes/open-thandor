@@ -17,7 +17,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0052CC60 */
-void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArmyRuntime,ShotRuntimeSlot *shotRuntime);
+void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetModelRuntime,ShotRuntimeSlot *shotRuntime);
 
 /* 0x0052B540 */
 StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath);

@@ -105,7 +105,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
                  &targetingContext->worldRuntime);
       runtimeFlagsField = &targetingContext->worldRuntime.runtimeFlags;
       *runtimeFlagsField = *runtimeFlagsField & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
-      targetingContext->notificationButtonCursorFrame = 0x1b; /* 27: next click cancels */
+      targetingContext->notificationButtonCursorFrame = 27; /* next click cancels */
     }
   }
   return;
@@ -173,7 +173,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & ~WORLD_POINTER_STATE_OVER_OWN_ARMY;
     if ((((candidateNode != NULL) &&
          (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
-        ((int)(candidateHeightQ12 - 0x1000) <= (int)pickedHeightQ12)) &&
+        ((int)(candidateHeightQ12 - Q12_ONE) <= (int)pickedHeightQ12)) &&
        (testResult = GameFactionRuntime_TestCapabilityBitClear
                           (((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->
                            factionIndex,
@@ -209,7 +209,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   if (((candidateNode == NULL) ||
       (candidateNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) ||
      ((entry = *(GameEntityRuntime **)((int)candidateNode->runtimePayload + 8),
-      (int)pickedHeightQ12 < (int)(candidateHeightQ12 - 0x1000) ||
+      (int)pickedHeightQ12 < (int)(candidateHeightQ12 - Q12_ONE) ||
       ((entry->common).ownership.ownerIndex == 0)))) {
     candidateNode = NULL;
   }
@@ -337,7 +337,7 @@ void InGameWorldInput_BeginPointerCapture
                (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
               (payloadEntityAddress =
                     (int)((ModelRuntimeSlot *)candidateNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
-              (int)(candidateHeightQ12 - 0x1000) <= (int)pickedHeightQ12)) &&
+              (int)(candidateHeightQ12 - Q12_ONE) <= (int)pickedHeightQ12)) &&
              (testResult = GameFactionRuntime_TestCapabilityBitClear
                                 (((ArmyRuntimeSlot *)payloadEntityAddress)->factionIndex,ownerIndex), !testResult)) {
             modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
@@ -433,7 +433,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
         else {
           /* clears both 12-dword batches and their two counters (0x1A dwords from 0x0055F0C4) */
           clearCursor = (uint32_t *)&g_InGameSelectionInsertTripletDwords;
-          for (countOrOwnerOrDelta = 0x1a; countOrOwnerOrDelta != 0; countOrOwnerOrDelta--) {
+          for (countOrOwnerOrDelta = 26; countOrOwnerOrDelta != 0; countOrOwnerOrDelta--) {
             *clearCursor = 0;
             clearCursor = clearCursor + 1;
           }
@@ -459,7 +459,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
                     if ((!testResult) &&
                        (*(InGameCommandPayloadTripletValue32 *)
                          (&g_InGameSelectionInsertTripletDwords + deltaXOrTripletCount * 4) = payloadValue,
-                       deltaXOrTripletCount < 0xb)) {
+                       deltaXOrTripletCount < 11)) {
                       g_InGameSelectionInsertTripletDwordCount =
                            g_InGameSelectionInsertTripletDwordCount + 1;
                     }
@@ -474,7 +474,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
                     if ((!testResult) &&
                        (*(InGameCommandPayloadTripletValue32 *)
                          (&g_InGameSelectionRemoveTripletDwords + deltaXOrTripletCount * 4) = payloadValue,
-                       deltaXOrTripletCount < 0xb)) {
+                       deltaXOrTripletCount < 11)) {
                       g_InGameSelectionRemoveTripletDwordCount =
                            g_InGameSelectionRemoveTripletDwordCount + 1;
                     }
@@ -533,8 +533,8 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
                THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX -
                     g_InGameCommandPointerCaptureX;
           g_PointerSetPosition(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
-          g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + countOrOwnerOrDelta * 0x40;
-          g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & 0xffff;
+          g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + countOrOwnerOrDelta * 64;
+          g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & FIXED_ANGLE16_MASK;
         }
         else {
           g_InGameCommandPointerCaptureX =
@@ -552,8 +552,8 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
              THANDOR_CONTAINER_OF(inGameRuntime, InGameRuntimeRoot, worldRuntime)->pointerX -
                   g_InGamePlacementPointerCaptureX;
         g_PointerSetPosition(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
-        g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + countOrOwnerOrDelta * 0x40;
-        g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & 0xffff;
+        g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + countOrOwnerOrDelta * 64;
+        g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & FIXED_ANGLE16_MASK;
       }
       else {
         g_InGamePlacementPointerCaptureX =
@@ -669,7 +669,7 @@ void InGameWorldInput_CommitPointerAction
   if (((candidateNode == NULL) ||
       (candidateNode->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) ||
      ((entry = *(GameEntityRuntime **)((int)candidateNode->runtimePayload + 8),
-      (int)pickedHeightQ12 < (int)(candidateHeightQ12 - 0x1000) ||
+      (int)pickedHeightQ12 < (int)(candidateHeightQ12 - Q12_ONE) ||
       ((entry->common).ownership.ownerIndex == 0)))) {
     candidateNode = NULL;
   }
@@ -890,7 +890,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,
                g_LevelCameraBookmark1PositionXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark1PackedAngles >> 16,bookmark1PackedAngles & 0xffff,
+              (2,(int)bookmark1PackedAngles >> 16,bookmark1PackedAngles & FIXED_ANGLE16_MASK,
                g_LevelCameraBookmark1PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -901,7 +901,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark2PositionZQ12,g_LevelCameraBookmark2PositionYQ12,
                g_LevelCameraBookmark2PositionXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark2PackedAngles >> 16,bookmark2PackedAngles & 0xffff,
+              (2,(int)bookmark2PackedAngles >> 16,bookmark2PackedAngles & FIXED_ANGLE16_MASK,
                g_LevelCameraBookmark2PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -912,7 +912,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark3PositionZQ12,g_LevelCameraBookmark3PositionYQ12,
                g_LevelCameraBookmark3PositionXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark3PackedAngles >> 16,bookmark3PackedAngles & 0xffff,
+              (2,(int)bookmark3PackedAngles >> 16,bookmark3PackedAngles & FIXED_ANGLE16_MASK,
                g_LevelCameraBookmark3PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -923,7 +923,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark4PositionZQ12,g_LevelCameraBookmark4PositionYQ12,
                g_LevelCameraBookmark4PositionXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark4PackedAngles >> 16,bookmark4PackedAngles & 0xffff,
+              (2,(int)bookmark4PackedAngles >> 16,bookmark4PackedAngles & FIXED_ANGLE16_MASK,
                g_LevelCameraBookmark4PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -934,7 +934,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark5PositionZQ12,g_LevelCameraBookmark5PositionYQ12,
                g_LevelCameraBookmark5PositionXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark5PackedAngles >> 16,bookmark5PackedAngles & 0xffff,
+              (2,(int)bookmark5PackedAngles >> 16,bookmark5PackedAngles & FIXED_ANGLE16_MASK,
                g_LevelCameraBookmark5PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -945,7 +945,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark6PositionZQ12,g_LevelCameraBookmark6PositionYQ12,
                g_LevelCameraBookmark6PositionXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark6PackedAngles >> 16,bookmark6PackedAngles & 0xffff,
+              (2,(int)bookmark6PackedAngles >> 16,bookmark6PackedAngles & FIXED_ANGLE16_MASK,
                g_LevelCameraBookmark6PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
@@ -956,7 +956,7 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
               (g_LevelCameraBookmark7PositionZQ12,g_LevelCameraBookmark7PositionYQ12,
                g_LevelCameraBookmark7PositionXQ12,worldRuntime);
     WorldRuntime_SetCameraAnglesAndMagnitudeClamped
-              (2,(int)bookmark7PackedAngles >> 16,bookmark7PackedAngles & 0xffff,
+              (2,(int)bookmark7PackedAngles >> 16,bookmark7PackedAngles & FIXED_ANGLE16_MASK,
                g_LevelCameraBookmark7PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);

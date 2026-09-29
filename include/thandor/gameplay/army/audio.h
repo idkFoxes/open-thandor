@@ -26,34 +26,34 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
 
 /* 0x00520740 */
 void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00520E60 */
-void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00523240 */
 void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00523DD0 */
-void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeAudio_UpdateTurretTurnSound
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00524410 */
-void ArmyRuntimeAudio_UpdateConditionalProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00524DA0 */
-void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeAudio_UpdateUnitFactorySounds
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00526490 */
-void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00526EB0 */
-void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00527B20 */
-void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_AUDIO_H */

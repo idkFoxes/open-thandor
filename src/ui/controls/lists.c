@@ -1203,7 +1203,7 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
         closeLabelEmpty = mediaCheckResult;
         if (!closeLabelEmpty) {
           enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                             (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8, /* the label buffer after "X:[" */
+                             (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,504, /* the label buffer after "X:[" */
                               (uint8_t *)((uint16_t *)labelCursor + 3),(uint8_t *)g_UiTimedListDriveWildcardUtf16);
           closeLabelEmpty = enumResult.failed;
           if (!closeLabelEmpty) {
@@ -1226,7 +1226,7 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
               ((uint16_t *)nextScanPointer)[0] = 0;
             }
             enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                               (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
+                               (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,512,
                                 (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                 (uint8_t *)g_UiTimedListDriveWildcardUtf16);
             closeLabelEmpty = enumResult.failed;
@@ -1298,7 +1298,7 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
                                     0),
                            g_UiTimedListRecordPathScratch.codeUnits);
                 enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                                   (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
+                                   (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,512,
                                     (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                     (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
                 if ((!enumResult.failed) && (enumResult.entryCount != 0)) {
@@ -1312,13 +1312,13 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
                   leafCodeUnitPair = *scanCursor;
                   scanCursor = (uint32_t *)((uint16_t *)scanCursor + 1);
                 } while ((uint16_t)leafCodeUnitPair != 0);
-                scanCursor = (uint32_t *)(0x102U - scanRemaining & 0xfffffffe);
+                scanCursor = (uint32_t *)(258U - scanRemaining & ~1U);
                 bytesAfterLabel = (uint32_t *)((int)remainingBytes - (int)scanCursor);
                 if ((remainingBytes < scanCursor || bytesAfterLabel == NULL) ||
                    (remainingBytes = (uint32_t *)((int)bytesAfterLabel - (int)scanCursor),
                    bytesAfterLabel < scanCursor || remainingBytes == NULL)) break;
                 scanCursor = leaf;
-                for (scanValue = 0x102U - scanRemaining >> 1; scanValue != 0; scanValue--) {
+                for (scanValue = 258U - scanRemaining >> 1; scanValue != 0; scanValue--) {
                   *labelWriteCursor = *scanCursor;
                   scanCursor++;
                   labelWriteCursor++;
@@ -1366,7 +1366,7 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   /* The original keeps one (record, block) pair per level on the machine stack (PUSH record,
      PUSH block) and pops them again when linking the levels. A path buffer holds at most 256
      code units, so there are at most 255 path levels plus the root-level match. */
-  UiTimedListTreeRecord *levelStack[0x202];
+  UiTimedListTreeRecord *levelStack[514];
   int levelStackTop;
   int copyRemaining;
   uint32_t recordsRemaining;
@@ -1390,7 +1390,7 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
     }
     if ((g_UiTimedListHierarchyPathScratch.codeUnits[3] == 0) ||
        (g_UiTimedListHierarchyPathScratch.codeUnits[2] == 0)) break;
-    if (levelStackTop >= 0x200) {
+    if (levelStackTop >= 512) {
       /* Only reachable when splitting stops shortening the path; the original then pushes until
          its stack overflows. */
       builtBlock.recordBlockOrError = NULL;
@@ -1569,7 +1569,7 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
     }
   }
   else {
-    g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = 0x3a0061; /* "a:": list the drives */
+    g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = L':' << 16 | L'a'; /* "a:": list the drives */
     THANDOR_PART(uint32_t, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
   }
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlock
@@ -3199,8 +3199,9 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
    Draws a build catalog entry of the in-game command panel (g_UiNodeVtable_00516530 drawClipped): the
    sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
    faction's xenite does not cover it), how many of this army asset the faction already owns (top left) and
-   the highest classState64/classState68 percentage among the faction's armies of this asset in a given
-   model state (top right, alert colour when that army has runtimeFlags bit 0). The entry is looked up by its
+   the highest build progress (elapsed / required ticks at model runtime +0x64 / +0x68) among the faction's
+   factories (class 11, 13) and pads (class 22) currently building this asset (top right, alert colour when that
+   model is switched off). The entry is looked up by its
    offset in the in-game root in the group-42 and group-48 catalog tables.
 */
 void UiCatalogEntryControl_DrawClipped
@@ -3208,7 +3209,7 @@ void UiCatalogEntryControl_DrawClipped
           UiPixelCoordinate clipLeft,UiCatalogEntryControl *control)
 
 {
-  ArmyRuntimeSlot *slotArmyRuntime;
+  ModelRuntimeSlot *slotModelRuntime;
   uint32_t subresourceOrTextLength;
   int recordIndexOrPercent;
   int assetCountOrPercent;
@@ -3222,7 +3223,7 @@ void UiCatalogEntryControl_DrawClipped
   PckArmyAssetIdCatalog catalogArmyAssetId;
   UiPackedTextStyle overlayTextStyle;
   ModelRuntimeNode *modelNode;
-  ArmyRuntimeSlot *armyRuntime;
+  ModelRuntimeSlot *factoryModelRuntime;
   ModelRuntimeNode *modelNodePrimary;
   
   if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
@@ -3290,7 +3291,9 @@ void UiCatalogEntryControl_DrawClipped
            assetSlotIndex != 0; assetSlotIndex--) {
         if (g_UiCatalogGroup42Records[recordIndexOrPercent] ==
             *(UiCommandRuntimeRecordPrefix **)
-             (factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
+             (factionIndexOrPercent * sizeof(GameFactionRuntimeRecord) +
+              THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,secondaryArmyAssetPointersOrIds) - 4) +
+              assetSlotIndex * 4)) {
           assetCountOrPercent++;
         }
       }
@@ -3313,17 +3316,18 @@ void UiCatalogEntryControl_DrawClipped
           modelNodePrimary != NULL;
           modelNodePrimary = (ModelRuntimeNode *)(modelNodePrimary->common).nextNode) {
         if (((modelNodePrimary->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (armyRuntime = (modelNodePrimary->runtimePayload).armyRuntime,
-            armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11))
-           && (((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1 &&
+            (factoryModelRuntime = (modelNodePrimary->runtimePayload).modelRuntime,
+            factoryModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_11))
+           && (((factoryModelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING &&
                (((((g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex ==
-                   (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex &&
-                  (catalogArmyAssetId == armyRuntime->classState60)) &&
-                 (recordIndexOrPercent = (int)(((int64_t)(int)armyRuntime->classState64 * 100) /
-                               (int64_t)(int)armyRuntime->classState68),
+                   factoryModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex &&
+                  (catalogArmyAssetId == (factoryModelRuntime->classLinkState).modelLinkOrState.classState)) &&
+                 (recordIndexOrPercent =
+                       (int)(((int64_t)(int)(factoryModelRuntime->classLinkState).classState64 * 100) /
+                             (int64_t)(int)(factoryModelRuntime->classLinkState).classState68),
                   factionIndexOrPercent <= recordIndexOrPercent)) &&
                 (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, factionIndexOrPercent = recordIndexOrPercent,
-                 (armyRuntime->runtimeFlags & 1) != 0)))))) {
+                 ((factoryModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0)))))) {
           overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
         }
       }
@@ -3363,7 +3367,9 @@ void UiCatalogEntryControl_DrawClipped
        assetSlotIndex != 0; assetSlotIndex--) {
     if (g_UiCatalogGroup48Records[recordIndexOrPercent] ==
         *(UiCommandRuntimeRecordPrefix **)
-         (factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
+         (factionIndexOrPercent * sizeof(GameFactionRuntimeRecord) +
+              THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,secondaryArmyAssetPointersOrIds) - 4) +
+              assetSlotIndex * 4)) {
       assetCountOrPercent++;
     }
   }
@@ -3385,28 +3391,33 @@ void UiCatalogEntryControl_DrawClipped
       modelNode != NULL;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      slotArmyRuntime = (modelNode->runtimePayload).armyRuntime;
-      if (slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
-        if ((((slotArmyRuntime->articulatedContact).terrainContactMode ==
-              ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) &&
-            (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
-           ((catalogArmyAssetId == slotArmyRuntime->classState60 &&
-            ((assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->classState64 * 100) /
-                           (int64_t)(int)slotArmyRuntime->classState68), recordIndexOrPercent <= assetCountOrPercent &&
+      slotModelRuntime = (modelNode->runtimePayload).modelRuntime;
+      if (slotModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+        /* class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView): +0xAC == 1 while it builds, +0x60/+0x64/+0x68
+           the selected secondary asset and its elapsed / required build ticks */
+        if ((((slotModelRuntime->classState).classStateAC == 1) &&
+            (factionIndexOrPercent == slotModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) &&
+           ((catalogArmyAssetId == (slotModelRuntime->classLinkState).modelLinkOrState.classState &&
+            ((assetCountOrPercent =
+                   (int)(((int64_t)(int)(slotModelRuntime->classLinkState).classState64 * 100) /
+                         (int64_t)(int)(slotModelRuntime->classLinkState).classState68),
+              recordIndexOrPercent <= assetCountOrPercent &&
              (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
-              (slotArmyRuntime->runtimeFlags & 1) != 0)))))) {
+              ((slotModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0)))))) {
           overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
         }
       }
-      else if ((((slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_13)
-                && ((slotArmyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
-               (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
-              (((catalogArmyAssetId == slotArmyRuntime->classState60 &&
-                (assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->classState64 * 100) /
-                              (int64_t)(int)slotArmyRuntime->classState68),
+      else if ((((slotModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
+                  MODEL_RUNTIME_CLASS_13)
+                && ((slotModelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING)) &&
+               (factionIndexOrPercent == slotModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) &&
+              (((catalogArmyAssetId == (slotModelRuntime->classLinkState).modelLinkOrState.classState &&
+                (assetCountOrPercent =
+                      (int)(((int64_t)(int)(slotModelRuntime->classLinkState).classState64 * 100) /
+                            (int64_t)(int)(slotModelRuntime->classLinkState).classState68),
                  recordIndexOrPercent <= assetCountOrPercent)) &&
                (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
-                (slotArmyRuntime->runtimeFlags & 1) != 0)))) {
+                ((slotModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) != 0)))) {
         overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
       }
     }
@@ -3495,10 +3506,10 @@ void UiCatalogEntryControl_NonRightRelease
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     (control->command).activationInputState = activationInputState;
     if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-       ((control->command).sprite.activationSoundId != 0)) {
+       ((control->command).sprite.activationSound != NULL)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (DirectSoundVoiceSet *)(control->command).sprite.activationSoundId);
+                 (control->command).sprite.activationSound);
     }
     UiActionQueue_Enqueue((control->command).sprite.selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);

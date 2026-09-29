@@ -158,7 +158,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
     effectDefinition = effectSlot->definitionOrSavedId.definition;
     /* one step adds 1.0 (Q4) to the frame accumulator; a frame advances when it reaches the definition's
        threshold */
-    frameAgeOrTintValue = effectSlot->lifecycleOwnerAndDefinition.animationFrameAccumulatorQ4 + 0x10;
+    frameAgeOrTintValue = effectSlot->lifecycleOwnerAndDefinition.animationFrameAccumulatorQ4 + (1 << Q4_SHIFT);
     frameAdvancedOrScratch = 0;
     effectSlot->lifecycleOwnerAndDefinition.animationFrameAccumulatorQ4 = frameAgeOrTintValue;
     if (effectDefinition->frameAdvanceThresholdQ4 <= frameAgeOrTintValue) {
@@ -261,7 +261,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                            (lookupResult.entry,(ModelRuntimeNode *)modelNode);
         /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                    localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,periodicDefinition,worldRuntime);
       }
@@ -277,7 +277,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
                        modelNode->modelPayload.worldRotationAngle2,
                        modelNode->modelPayload.worldRotationAngle1,
                        modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
@@ -318,7 +318,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
                        modelNode->modelPayload.worldRotationAngle2,
                        modelNode->modelPayload.worldRotationAngle1,
                        modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
@@ -392,7 +392,7 @@ SpawnArmyFromOwner:
       ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
       /* each step moves rotation angle 1 a 64th of the way towards a quarter turn */
       modelNode->modelPayload.worldRotationAngle1 =
-           (int)(previousRotationAngle1 * 0x3f + FIXED_ANGLE16_QUARTER_TURN) >> 6;
+           (int)(previousRotationAngle1 * 63 + FIXED_ANGLE16_QUARTER_TURN) >> 6;
       if (activeShadingRecord != NULL) {
         activeShadingRecord->worldXQ12 = activeShadingRecord->worldXQ12 + scaledDirection.x;
         activeShadingRecord->worldYQ12 = activeShadingRecord->worldYQ12 + scaledDirection.y;
@@ -408,7 +408,7 @@ SpawnArmyFromOwner:
            them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. Both are unit vectors
            (0x10000000 = 1.0 in Q28); the motion elevation drops with the square of the effect's age. */
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
-                  ((int)terrainSample.packedNormalAngles >> 16,terrainSample.packedNormalAngles & 0xffff,
+                  ((int)terrainSample.packedNormalAngles >> 16,terrainSample.packedNormalAngles & FIXED_ANGLE16_MASK,
                    Q28_ONE);
         terrainNormalDirection.x = scaledDirection.x;
         terrainNormalDirection.y = scaledDirection.y;
@@ -423,7 +423,7 @@ SpawnArmyFromOwner:
         normalDotMotion = FixedVec3_DotQ28(&terrainNormalDirection,&motionDirection);
         if (normalDotMotion < 0) {
           /* moving into the ground: fade the alpha by groundContactAlphaFadeStep per step, end once it is already 0 */
-          if (effectSlot->stateTintArgb < 0x1000000) {
+          if (effectSlot->stateTintArgb < ARGB8888_ALPHA_ONE) {
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (effectDefinition->shadingReleaseTransitionDurationTicks,
                        modelNode->shadingRecord);

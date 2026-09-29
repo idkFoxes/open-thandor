@@ -98,7 +98,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
               (&g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
     RichTextCommandStream_CopyExpanded
-              (0x80,((UiRequiredTextEditControl *)FRONTEND_UI(frontendUi,hostAddressEdit))->textBuffer,
+              (128,((UiRequiredTextEditControl *)FRONTEND_UI(frontendUi,hostAddressEdit))->textBuffer,
                (uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -164,9 +164,9 @@ backendOpened:
           *optionTextCursor = 0;
           if (optionTextCursor[1] == 0) {
             *commandLineOptionBytes = 'n';
-            Text_CopyNarrowToUtf16(0x28,destination,commandLineOptionBytes + 6);
+            Text_CopyNarrowToUtf16(40,destination,commandLineOptionBytes + 6);
             Text_CopyNarrowToUtf16
-                      (0x28,g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
+                      (40,g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
             *optionTextCursor = '"';
           }
         }
@@ -192,7 +192,7 @@ backendOpened:
                 (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
       UiTransfer_SendDiscoveryProbe();
       /* -HOST */
-      findOptionResult = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
+      findOptionResult = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 26);
       if (findOptionResult.notFound) {
         /* -CLIENT="host address" */
         findOptionResult = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
@@ -235,7 +235,7 @@ backendOpened:
                         (&g_FrontendNetworkEndpointTextUtf16,
                          (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
               RichTextCommandStream_CopyExpanded
-                        (0x80,
+                        (128,
                          ((UiRequiredTextEditControl *)FRONTEND_UI(remainingOrRootNode,hostAddressEdit))
                          ->textBuffer,(uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
             }
@@ -296,7 +296,7 @@ void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
   sourceCursor = (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(root,hostAddressEdit))->textBuffer;
   destinationCursor = (int32_t *)g_FrontendHostAddressTextTemplate;
   g_InGameTemplateWorldViewInfoTextResourceId = g_FrontendTemplateStatusTextResourceId;
-  for (dwordsRemaining = 0x20; dwordsRemaining != 0; dwordsRemaining--) { /* 0x40 code units */
+  for (dwordsRemaining = 32; dwordsRemaining != 0; dwordsRemaining--) { /* 0x40 code units */
     *destinationCursor = *sourceCursor;
     sourceCursor++;
     destinationCursor++;
@@ -412,14 +412,14 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
       *optionTextCursor = 0;
       if (optionTextCursor[1] == 0) {
         *optionText = 's';
-        Text_CopyNarrowToUtf16(0x28,destination,optionText + 7);
+        Text_CopyNarrowToUtf16(40,destination,optionText + 7);
         *optionTextCursor = '"';
         appliedOptionMask = appliedOptionMask + 2;
       }
     }
   }
   /* -NETZWERK="n" */
-  findOptionResult = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
+  findOptionResult = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 16);
   optionText = findOptionResult.option;
   if (!findOptionResult.notFound && optionText[11] == '"' &&
       (digitValueOrSpeed = optionText[10] - '0', '/' < optionText[10] && digitValueOrSpeed != 0) &&
@@ -446,7 +446,7 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   /* the speed caption */
   resolvedText = TextResource_Resolve(digitValueOrSpeed + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (0x40,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText.text);
+            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,resolvedText.text);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   if (appliedOptionMask == 7) {
@@ -517,19 +517,19 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   localPlayerRecordDwordCursor[6] = 0; /* snapshotTransferFlags */
   /* the preview goes into snapshotPayload (+0xB0), its name is the player name (+0x18) */
   previewLoadFailed = PcxPreview_Load64x64PaletteAndPixels
-                    ((PcxPreview64 *)(localPlayerRecordDwordCursor + 0x18),
-                     (uint16_t *)(localPlayerRecordDwordCursor + -0xe));
+                    ((PcxPreview64 *)(localPlayerRecordDwordCursor + 24),
+                     (uint16_t *)(localPlayerRecordDwordCursor + -14));
   if (!previewLoadFailed) {
     localPlayerRecordDwordCursor[6] = FRONTEND_SNAPSHOT_SOURCE_AVAILABLE | FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE;
   }
   /* +0x90..+0x9B: two empty code units, then L"0ms" */
-  localPlayerRecordDwordCursor[0x10] = 0;
-  localPlayerRecordDwordCursor[0x11] = 0x6d0030;
-  localPlayerRecordDwordCursor[0x12] = 0x73;
+  localPlayerRecordDwordCursor[16] = 0;
+  localPlayerRecordDwordCursor[17] = L'm' << 16 | L'0';
+  localPlayerRecordDwordCursor[18] = L's';
   localPlayerRecordDwordCursor[9] = FRONTEND_CAPABILITY_CD; /* capabilityFlags */
   localPlayerRecordDwordCursor[10] = 0;
-  localPlayerRecordDwordCursor[0xb] = 0;
-  localPlayerRecordDwordCursor[10] = 0x440043; /* L"CD" at +0x78 */
+  localPlayerRecordDwordCursor[11] = 0;
+  localPlayerRecordDwordCursor[10] = L'D' << 16 | L'C'; /* L"CD" at +0x78 */
   FrontendPlayerRuntime_UpdateStartButtonByCdShare();
   return;
 }

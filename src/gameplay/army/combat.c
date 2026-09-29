@@ -154,7 +154,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
         if (((smoothResult.value == targetPitchAngle16) &&
             (weaponDefinitionView = modelRuntime->modelDefinition, modelRuntime->sharedInterShotTicks == 0)) &&
            (callCarry = ArmyRuntimeCommand_UpdateTargetFollowingState
-                              (aimZQ12,aimYQ12,aimXQ12,worldRuntime,(ArmyRuntimeSlot *)modelRuntime)
+                              (aimZQ12,aimYQ12,aimXQ12,worldRuntime,(ModelRuntimeSlot *)modelRuntime)
            , !callCarry)) {
           currentNode = pitchNode->childNodes[0];
           attachmentNodeHeader = weaponDefinitionView->rootNode;
@@ -185,11 +185,11 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
                 nodeMeshMask = &(modelRuntime->rootModelNode->childNodes[0]->childNodes[0]->modelPayload).
                           meshGroupMask;
                 /* hides the fired projectile; SHL (not ROL) as in the original, so bits below it go too */
-                *nodeMeshMask = *nodeMeshMask & -2 << ((uint8_t)attachmentSelectorOrdinal & 0x1f);
+                *nodeMeshMask = *nodeMeshMask & -2 << ((uint8_t)attachmentSelectorOrdinal & 31);
                 break;
               }
               /* launch failed: -1 runs out on the next tick, so the slot is ready again right away */
-              modelRuntime->attachmentReloadTicks[attachmentSelectorOrdinal] = 0xffffffff;
+              modelRuntime->attachmentReloadTicks[attachmentSelectorOrdinal] = UINT32_MAX;
             }
           }
         }
@@ -197,7 +197,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     }
   }
   ModelNodeRuntime_RebuildTransformsFromRoot(modelRuntime->rootModelNode);
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ArmyRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
 }
 
@@ -222,7 +222,7 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
      tritiumCurrentQ4 / tritiumStorageLimitQ4 (reserved78_87 - 0x78 is the record start) */
   factionRecordByteOffset = modelRuntime->ownerArmyRuntime->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   if (classDefinition->classParameterC0 == 1) {
-    factionRecordByteOffset = factionRecordByteOffset + 0x10;
+    factionRecordByteOffset = factionRecordByteOffset + 16;
   }
   rootModelNodeRuntime = modelRuntime->rootModelNode;
   childNode = rootModelNodeRuntime->childNodes[0];
@@ -230,13 +230,13 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
     (childNode->modelPayload).localTranslationZQ12 =
          (int)(((int64_t)(int)(classDefinition->runtimeValue28 - classDefinition->runtimeValue24) *
                (int64_t)
-               *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -0x78)) /
-              (int64_t)*(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -0x74)
+               *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -120)) /
+              (int64_t)*(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -116)
               ) + classDefinition->runtimeValue24;
     childNode->runtimeFlags = childNode->runtimeFlags | 1;
     ModelNodeRuntime_RebuildTransformsFromRoot(rootModelNodeRuntime);
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ArmyRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
 }
 
@@ -258,7 +258,7 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
               (worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
     ArmyRuntime_UpdateAnimatedModelSubnodes(worldRuntime,(ModelRuntimeUpdateView *)modelRuntime);
   }
-  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ArmyRuntimeSlot *)modelRuntime);
+  ArmyRuntime_EmitDamageThresholdEffect(worldRuntime,(ModelRuntimeSlot *)modelRuntime);
   return;
 }
 
@@ -270,7 +270,7 @@ void ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
    counter D).
 */
 void ArmyRuntime_ApplyImpactDamageAndFinalizeState
-          (AngleTurn32 impactAngle,DamageAmount32 damageAmount,ArmyRuntimeSlot *armyRuntime)
+          (AngleTurn32 impactAngle,DamageAmount32 damageAmount,ModelRuntimeSlot *modelRuntime)
 
 {
   Q12 *healthField;
@@ -281,34 +281,36 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
   bool rotateToImpact;
   ModelRuntimeNode *parentModelNode;
   
-  armyRuntime->healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
-  if (0 < armyRuntime->health) {
-    maxHealth = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->maximumHealth;
-    healthField = &armyRuntime->health;
+  (modelRuntime->classState).healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
+  if (0 < (int)modelRuntime->health) {
+    maxHealth = modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth;
+    healthField = (Q12 *)&modelRuntime->health;
     healthOrOwnerIndex = *healthField;
     *healthField = *healthField - damageAmount;
     /* SUB / JLE: the new health is <= 0 */
     if (*healthField == 0 || SBORROW4(healthOrOwnerIndex,damageAmount) != *healthField < 0) {
-      healthOrOwnerIndex = armyRuntime->health; /* <= 0; its negation is the excess damage */
-      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | ARMY_RUNTIME_FLAG_DESTROYED;
-      parentModelNode = armyRuntime->modelNodeRuntime->parentNode;
-      armyRuntime->actionVector1Q12 = (Q12)armyRuntime;
-      armyRuntime->health = 0;
+      healthOrOwnerIndex = modelRuntime->health; /* <= 0; its negation is the excess damage */
+      (modelRuntime->classState).stateFlags =
+           (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
+      parentModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode->parentNode;
+      /* a destroyed model links to itself */
+      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = modelRuntime;
+      modelRuntime->health = 0;
       if (parentModelNode == NULL) {
         /* The original tests ZF after IMUL EBX,[EDI+0xC],0x740 (0x0052A395 / JZ 0x0052A39C). ZF is undefined
            after IMUL on paper; measured on an AMD Zen 3 it is left unchanged, so it still holds the result of the
            CMP [+0x4C] / CMP [+0x278] tests: the counters are updated unless the army was turned to the impact.
            The C follows that. */
         rotateToImpact = false;
-        if ((armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_00) &&
+        if ((modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_00) &&
            (rotateToImpact =
-                 armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->placementContactKindIndex == 0,
+                 modelRuntime->definitionOrSavedId.runtimeDefinition->placementContactKindIndex == 0,
             rotateToImpact)) {
-          (armyRuntime->modelNodeRuntime->modelPayload).worldRotationAngle0 = impactAngle;
+          (modelRuntime->rootModelNodeOrSavedOffset.modelNode->modelPayload).worldRotationAngle0 = impactAngle;
         }
-        healthOrOwnerIndex = (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex;
+        healthOrOwnerIndex = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex;
         if ((!rotateToImpact) &&
-           (classId = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId,
+           (classId = modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId,
            relationCounter = &g_GameFactionRuntimeImage.records[healthOrOwnerIndex].relationCounterC,
            *relationCounter = *relationCounter + 1,
            g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[classId] ==
@@ -321,15 +323,15 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
         }
       }
       else {
-        ArmyRuntime_ApplyDamageAndPropagateToParent(-healthOrOwnerIndex,(parentModelNode->runtimePayload).armyRuntime)
+        ArmyRuntime_ApplyDamageAndPropagateToParent(-healthOrOwnerIndex,(parentModelNode->runtimePayload).modelRuntime)
         ;
       }
     }
     else {
       /* SUB / JG: a negative damage (repair) never raises the health above maxHealth */
-      healthOrOwnerIndex = maxHealth - armyRuntime->health;
-      if (healthOrOwnerIndex == 0 || maxHealth < armyRuntime->health) {
-        armyRuntime->health = armyRuntime->health + healthOrOwnerIndex;
+      healthOrOwnerIndex = maxHealth - modelRuntime->health;
+      if (healthOrOwnerIndex == 0 || maxHealth < (int)modelRuntime->health) {
+        modelRuntime->health = modelRuntime->health + healthOrOwnerIndex;
       }
     }
   }
@@ -344,7 +346,7 @@ void ArmyRuntime_ApplyImpactDamageAndFinalizeState
    table slot referencing it was found in src/ or src/generated/image_data.c.
 */
 void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFactionIndex,DamageAmount32 damageAmount,
-          ArmyRuntimeSlot *armyRuntime)
+          ModelRuntimeSlot *modelRuntime)
 
 {
   Q12 *healthField;
@@ -352,21 +354,23 @@ void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFa
   int healthOrDelta;
   ModelRuntimeNode *parentModelNode;
 
-  armyRuntime->healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
-  if (0 < armyRuntime->health) {
-    maxHealth = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->maximumHealth;
-    healthField = &armyRuntime->health;
+  (modelRuntime->classState).healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
+  if (0 < (int)modelRuntime->health) {
+    maxHealth = modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth;
+    healthField = (Q12 *)&modelRuntime->health;
     healthOrDelta = *healthField;
     *healthField = *healthField - damageAmount;
     /* SUB / JLE: the new health is <= 0 */
     if (*healthField == 0 || SBORROW4(healthOrDelta,damageAmount) != *healthField < 0) {
-      healthOrDelta = armyRuntime->health; /* <= 0; its negation is the excess damage */
-      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | ARMY_RUNTIME_FLAG_DESTROYED;
-      armyRuntime->actionVector1Q12 = (Q12)armyRuntime;
-      parentModelNode = armyRuntime->modelNodeRuntime->parentNode;
-      armyRuntime->health = 0;
+      healthOrDelta = modelRuntime->health; /* <= 0; its negation is the excess damage */
+      (modelRuntime->classState).stateFlags =
+           (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
+      /* a destroyed model links to itself */
+      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = modelRuntime;
+      parentModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode->parentNode;
+      modelRuntime->health = 0;
       if (parentModelNode != NULL) {
-        ArmyRuntime_ApplyDamageAndPropagateToParent(-healthOrDelta,(parentModelNode->runtimePayload).armyRuntime)
+        ArmyRuntime_ApplyDamageAndPropagateToParent(-healthOrDelta,(parentModelNode->runtimePayload).modelRuntime)
         ;
       }
       /* Without a parent the original (0x0052A470) would count the army in the relation counters of its owner
@@ -377,9 +381,9 @@ void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFa
     }
     else {
       /* SUB / JG: a negative damage (repair) never raises the health above maxHealth */
-      healthOrDelta = maxHealth - armyRuntime->health;
-      if (healthOrDelta == 0 || maxHealth < armyRuntime->health) {
-        armyRuntime->health = armyRuntime->health + healthOrDelta;
+      healthOrDelta = maxHealth - modelRuntime->health;
+      if (healthOrDelta == 0 || maxHealth < (int)modelRuntime->health) {
+        modelRuntime->health = modelRuntime->health + healthOrDelta;
       }
     }
   }
@@ -393,22 +397,23 @@ void ArmyRuntime_ApplyDamageAndFactionRelationState(FactionRuntimeIndex sourceFa
    directly by the shot impact handling in world/shots/maintenance.c.
 */
 void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,FactionRuntimeIndex sourceFactionIndex,
-          ImpactDamageValue32 impactValue,ArmyRuntimeSlot *targetArmyRuntime)
+          ImpactDamageValue32 impactValue,ModelRuntimeSlot *targetModelRuntime)
 
 {
   ModelRuntimeNode *targetModelNodeRuntime;
 
-  targetModelNodeRuntime = targetArmyRuntime->modelNodeRuntime;
+  /* GameEntityRuntime_ApplyImpactDamageAndFactionRelationState gets the model runtime under its
+     GameEntityRuntime parameter type */
+  targetModelNodeRuntime = targetModelRuntime->rootModelNodeOrSavedOffset.modelNode;
   GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
-            (impactAngle,sourceFactionIndex,impactValue >> 1,(GameEntityRuntime *)targetArmyRuntime)
+            (impactAngle,sourceFactionIndex,impactValue >> 1,(GameEntityRuntime *)targetModelRuntime)
   ;
   if (targetModelNodeRuntime->parentNode != NULL) {
-    targetArmyRuntime =
-         (ArmyRuntimeSlot *)(targetModelNodeRuntime->parentNode->runtimePayload).modelRuntime;
+    targetModelRuntime = (targetModelNodeRuntime->parentNode->runtimePayload).modelRuntime;
   }
   GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
             (impactAngle,sourceFactionIndex,impactValue - (impactValue >> 1),
-             (GameEntityRuntime *)targetArmyRuntime);
+             (GameEntityRuntime *)targetModelRuntime);
   return;
 }
 
@@ -424,7 +429,7 @@ void ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(AngleTurn32 impactAngle,Fac
    directly by the AI combat target selection (gameplay/ai/combat.c) and gameplay/army/movement.c.
 */
 bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
-          WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+          WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   ArmyWeaponDefinitionView *weaponDefinition;
@@ -452,11 +457,10 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   GameEntityRuntime *ownOrTargetEntity;
   ModelRuntimeNode *originNode;
   
-  originNode = armyRuntime->modelNodeRuntime;
-  ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
-  /* the army's weapon definition (the "army" is the weapon's model runtime, whose first dword is the
-     ArmyWeaponDefinitionView) */
-  weaponDefinition = (ArmyWeaponDefinitionView *)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  /* modelRuntime is the weapon's model runtime; ownOrTargetEntity starts as its owning army */
+  originNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  ownOrTargetEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+  weaponDefinition = (ArmyWeaponDefinitionView *)modelRuntime->definitionOrSavedId.runtimeDefinition;
   deltaXOrScaledLength = targetWorldXQ12 - (originNode->worldTransform).translation.x;
   minAngleOwnerOrDistance = weaponDefinition->minimumPitchAngle;
   maxAngleOrRange = weaponDefinition->maximumPitchAngle;
@@ -473,8 +477,8 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
     if (discriminant < 0) {
       return true;
     }
-    angleOrDistance = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)discriminant >> 0x20),(UInt64Half32)discriminant);
-    if ((-0x1000 < deltaZ) && (deltaZ < 0x1000)) {
+    angleOrDistance = FIXED_UINT64_SQRT(discriminant);
+    if ((-Q12_ONE < deltaZ) && (deltaZ < Q12_ONE)) {
       angleOrDistance = -angleOrDistance;
     }
     angleOrDistance = FixedMath_Atan2Angle16(deltaYOrSpeedSquared + angleOrDistance,deltaXOrScaledLength);
@@ -484,21 +488,22 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
     if (maxAngleOrRange < (int)angleOrDistance) {
       return true;
     }
-    originNode = armyRuntime->modelNodeRuntime;
+    originNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
     modelHit = ModelRuntime_RaycastCandidateListNearest
-                       (angleOrDistance,horizontalVector.angle & 0xffff,horizontalVector.length,
+                       (angleOrDistance,horizontalVector.angle & FIXED_ANGLE16_MASK,horizontalVector.length,
                         (originNode->worldTransform).translation.z,
                         (originNode->worldTransform).translation.y,
                         (originNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
-                        (armyRuntime->linkedEntityRuntime->common).ownership.modelNode,worldRuntime)
+                        (modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).ownership.modelNode,
+                        worldRuntime)
     ;
     if (!modelHit.hit) {
       return false;
     }
     /* As in the original (MOV EAX,[EDI+0x48] at 0x0052BC55, EDI = own model node): this tests the shooter's
        own entity, not the model that was hit (the other path uses the hit node from EDX). */
-    ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
-    hitEntity = ((originNode->runtimePayload).armyRuntime)->linkedEntityRuntime;
+    ownOrTargetEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+    hitEntity = ((originNode->runtimePayload).modelRuntime)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     minAngleOwnerOrDistance = (ownOrTargetEntity->common).ownership.ownerIndex;
     if ((ownOrTargetEntity->common).commandState < 1) {
       if (minAngleOwnerOrDistance == (hitEntity->common).ownership.ownerIndex) {
@@ -542,7 +547,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   modelHit = ModelRuntime_RaycastCandidateListNearest
                      (elevationAngle,azimuthAngle,maxAngleOrRange,originZQ12,originYQ12,originXQ12,
                       requiredOwnerId,excludedNode,worldRuntime);
-  if ((!modelHit.hit) ? (minAngleOwnerOrDistance <= 0x7ffffffe) :
+  if ((!modelHit.hit) ? (minAngleOwnerOrDistance <= INT32_MAX - 1) :
       (minAngleOwnerOrDistance < modelHit.nearestDistanceQ12)) {
     /* The terrain is hit first: only a ground shot without an entity target landing within 0x400 of the
        aim distance is clear. */
@@ -550,7 +555,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
     if ((int)distanceDifference < 0) {
       distanceDifference = -distanceDifference;
     }
-    if (((armyRuntime->linkedEntityRuntime->common).commandTarget.targetEntity == NULL) &&
+    if (((modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity == NULL) &&
         (distanceDifference < ARMY_GROUND_SHOT_LANDING_TOLERANCE_Q12 + 1)) {
       return false;
     }
@@ -559,9 +564,9 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   if (modelHit.hit) {
     /* A model is hit first: blocked (CF set) when its owner fails the commandState owner test and it is not
        the command target; otherwise fall through to the range check. */
-    ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
-    hitEntity =
-         (((modelHit.nearestNodeOrScratch.nearestModelNode)->runtimePayload).armyRuntime)->linkedEntityRuntime;
+    ownOrTargetEntity = modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
+    hitEntity = (((modelHit.nearestNodeOrScratch.nearestModelNode)->runtimePayload).modelRuntime)->
+                ownerArmyRuntimeOrSavedOffset.entityRuntime;
     minAngleOwnerOrDistance = (ownOrTargetEntity->common).ownership.ownerIndex;
     if (((ownOrTargetEntity->common).commandState < 1) ?
         (minAngleOwnerOrDistance != (hitEntity->common).ownership.ownerIndex) :
@@ -573,7 +578,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
   }
   /* range check: distance to the target minus half its radius (+0xDC of its class record) against
      speed * (lifetime - 2/3 of the ramp ticks - 1); -0xAAA / 0x1000 = -2/3 in Q12 */
-  ownOrTargetEntity = (armyRuntime->linkedEntityRuntime->common).commandTarget.targetEntity;
+  ownOrTargetEntity = (modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity;
   if (ownOrTargetEntity != NULL) {
     angleOrDistance = (int)(angleOrDistance * 2 -
                  ((ModelRuntimeSlot *)(ownOrTargetEntity->common).ownership.definitionOrClassRecord)->
@@ -581,7 +586,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
                  ) >> 1;
   }
   if (shotDefinition->launchSpeedQ12 *
-      (((int)shotDefinition->trajectoryRampDurationTicks * -0xaaa >> 0xc) +
+      (((int)shotDefinition->trajectoryRampDurationTicks * -0xaaa >> Q12_SHIFT) +
        (int)shotDefinition->projectileLifetimeTicks - 1) < (int)angleOrDistance) {
     return true;
   }
@@ -595,7 +600,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
    so destroying a mounted part also damages its carrier; a negative damage (repair) is capped at the maximum
    health.
 */
-void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,ModelRuntimeSlot *modelRuntime)
 
 {
   Q12 *healthField;
@@ -603,21 +608,23 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Arm
   int maxHealth;
   ModelRuntimeNode *parentModelNode;
 
-  armyRuntime->healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
-  if (0 < armyRuntime->health) {
-    maxHealth = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->maximumHealth;
-    healthField = &armyRuntime->health;
+  (modelRuntime->classState).healthRegenerationDelayTicks = ARMY_DAMAGE_REGENERATION_DELAY_TICKS;
+  if (0 < (int)modelRuntime->health) {
+    maxHealth = modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth;
+    healthField = (Q12 *)&modelRuntime->health;
     healthValue = *healthField;
     *healthField = *healthField - damageAmount;
     /* SUB / JLE: the new health is <= 0 */
     if (*healthField == 0 || SBORROW4(healthValue,damageAmount) != *healthField < 0) {
-      healthValue = armyRuntime->health; /* <= 0; its negation is the excess damage */
-      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | ARMY_RUNTIME_FLAG_DESTROYED;
-      armyRuntime->actionVector1Q12 = (Q12)armyRuntime;
-      parentModelNode = armyRuntime->modelNodeRuntime->parentNode;
-      armyRuntime->health = 0;
+      healthValue = modelRuntime->health; /* <= 0; its negation is the excess damage */
+      (modelRuntime->classState).stateFlags =
+           (modelRuntime->classState).stateFlags | ARMY_RUNTIME_FLAG_DESTROYED;
+      /* a destroyed model links to itself */
+      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = modelRuntime;
+      parentModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode->parentNode;
+      modelRuntime->health = 0;
       if (parentModelNode != NULL) {
-        ArmyRuntime_ApplyDamageAndPropagateToParent(-healthValue,(parentModelNode->runtimePayload).armyRuntime)
+        ArmyRuntime_ApplyDamageAndPropagateToParent(-healthValue,(parentModelNode->runtimePayload).modelRuntime)
         ;
       }
       /* Without a parent the original goes on at 0x0052A290 to the owner faction's relationCounterC/D update of
@@ -626,10 +633,10 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Arm
          TEST EDX,EDX with EDX = parent = 0, so the jump is always taken and the update never runs: the C
          omits it. */
     }
-    else if (maxHealth < armyRuntime->health) {
+    else if (maxHealth < (int)modelRuntime->health) {
       /* a negative damage (repair) never raises the health above maxHealth */
-      armyRuntime->health =
-           armyRuntime->health + (maxHealth - armyRuntime->health);
+      modelRuntime->health =
+           modelRuntime->health + (maxHealth - modelRuntime->health);
     }
   }
   return;
@@ -644,7 +651,7 @@ void ArmyRuntime_ApplyDamageAndPropagateToParent(DamageAmount32 damageAmount,Arm
    at the end of nearly every army class runtime update (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
    .runtimeUpdate slots, e.g. [4], [9], [15] in this file).
 */
-void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeNode *modelNodeRuntime;
@@ -660,20 +667,21 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Arm
   ModelWorldPoint transformedPoint;
   EffectDefinition *effectDefinition;
 
-  /* selectionMetric3 (+0x114) is the emission cooldown, selectionMetric4 (+0x118) the next damage point */
-  if ((armyRuntime->runtimeFlags & (ARMY_MODEL_STATE_DISMANTLING | ARMY_MODEL_STATE_DISMANTLED)) != 0) {
+  if (((modelRuntime->classState).stateFlags & (ARMY_MODEL_STATE_DISMANTLING | ARMY_MODEL_STATE_DISMANTLED)) != 0)
+  {
     return;
   }
-  definition = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition;
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   if ((int)definition->maximumHealth < 1) {
     return;
   }
   if (definition->damageEffectHealthPercent <=
-      (armyRuntime->health * 100) / (int)definition->maximumHealth) {
+      ((int)modelRuntime->health * 100) / (int)definition->maximumHealth) {
     return;
   }
-  if (0 < armyRuntime->selectionMetric3) {
-    armyRuntime->selectionMetric3 = armyRuntime->selectionMetric3 - g_InGameSimulationStepTicks;
+  if (0 < modelRuntime->damageEffectCooldownTicks) {
+    modelRuntime->damageEffectCooldownTicks =
+         modelRuntime->damageEffectCooldownTicks - g_InGameSimulationStepTicks;
     return;
   }
   randomOffset = 0;
@@ -681,15 +689,15 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Arm
     randomOrPointX = g_RandomGeneratorState.next();
     randomOffset = randomOrPointX % definition->damageEffectRandomTicks;
   }
-  modelNodeRuntime = armyRuntime->modelNodeRuntime;
-  armyRuntime->selectionMetric3 = randomOffset + definition->damageEffectIntervalTicks;
+  modelNodeRuntime = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  modelRuntime->damageEffectCooldownTicks = randomOffset + definition->damageEffectIntervalTicks;
   lookupResult = ModelLookupTable_ContainsPackedKey
-                    (armyRuntime->selectionMetric4,ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER,
+                    (modelRuntime->damageEffectPointIndex,ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER,
                      (modelNodeRuntime->modelPayload).modelResource);
   localPointRecord = lookupResult.entry;
   if (lookupResult.notFound) {
     /* Wrap around to the first emitter point. */
-    armyRuntime->selectionMetric4 = -1;
+    modelRuntime->damageEffectPointIndex = -1;
     lookupResult = ModelLookupTable_ContainsPackedKey
                       (0,ARMY_MODEL_POINT_CLASS_DAMAGE_EMITTER,(modelNodeRuntime->modelPayload).modelResource);
     localPointRecord = lookupResult.entry;
@@ -705,14 +713,14 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Arm
     pointZQ12 = transformedPoint.zQ12;
     pointYQ12 = transformedPoint.yQ12;
     randomOrPointX = transformedPoint.xQ12;
-    armyRuntime->selectionMetric4++;
+    modelRuntime->damageEffectPointIndex++;
   }
   effectDefinition = definition->damageEffectDefinitionReference.definition;
   randomBits = g_RandomGeneratorState.next();
-  randomOffset = randomBits & 0xffff;
+  randomOffset = randomBits & FIXED_ANGLE16_MASK;
   randomValue = g_RandomGeneratorState.next();
   EffectRuntimePool_CreateInstanceFromDefinition
-            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),randomBits >> 0x10,
+            (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),randomBits >> 16,
              (randomValue & 0x1fff) + 0x1fff,randomOffset,pointZQ12,pointYQ12,randomOrPointX,effectDefinition,
              worldRuntime);
   return;

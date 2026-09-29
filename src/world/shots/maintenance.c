@@ -206,7 +206,8 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   InGameSimulationStepBatchTicks remainingStepTicks;
   int targetClassIndex;
   ArmyRuntimeSlot *ownerArmy;
-  ArmyRuntimeSlot *ownerOrHitArmy;
+  ArmyRuntimeSlot *shotOwnerArmy;
+  ModelRuntimeSlot *hitModelRuntime;
   GraphicsShadingRuntimeRecord *nodeShadingRecord;
   
   remainingStepTicks = g_InGameSimulationStepTicks;
@@ -214,7 +215,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
     shotRuntime = modelNode->shotRuntime;
     shotDefinition = shotRuntime->definitionOrSavedId.definition;
     shotRuntime->projectileAgeTicks = shotRuntime->projectileAgeTicks + 1;
-    frameAccumulatorOrDistance = shotRuntime->animationFrameAccumulatorQ4 + 0x10; /* 1.0 in Q4 */
+    frameAccumulatorOrDistance = shotRuntime->animationFrameAccumulatorQ4 + (1 << Q4_SHIFT);
     frameCountDistanceOrAge = shotDefinition->animationFrameCount;
     shotRuntime->animationFrameAccumulatorQ4 = frameAccumulatorOrDistance;
     frameAdvanceThreshold = shotDefinition->animationFrameAdvanceThresholdQ4;
@@ -244,20 +245,20 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                            (emitterLookup.entry,(ModelRuntimeNode *)modelNode);
         emitterWorldYQ12 = emitterWorldPoint.yQ12;
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                    emitterWorldPoint.zQ12,emitterWorldYQ12,emitterWorldPoint.xQ12,effectDefinition,effectWorldRuntime);
       }
     }
     if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_DIRECT_LINE) {
-      ownerOrHitArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
+      shotOwnerArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
       /* the beam reaches as far as the shot would fly in its lifetime */
       frameCountDistanceOrAge = shotDefinition->projectileLifetimeTicks * shotDefinition->launchSpeedQ12;
       rotationAngle = modelNode->modelPayload.worldRotationAngle1;
       modelNode->renderDepthBiasOrState = frameCountDistanceOrAge;
       ownerModelNode = NULL;
-      if (ownerOrHitArmy != NULL) {
-        ownerModelNode = ownerOrHitArmy->modelNodeRuntime;
+      if (shotOwnerArmy != NULL) {
+        ownerModelNode = shotOwnerArmy->modelNodeRuntime;
       }
       armyRaycast = ModelRuntime_RaycastCandidateListNearest
                          (rotationAngle - shotRuntime->elevationOffsetAngle16,
@@ -315,7 +316,7 @@ void ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,secondaryHitDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                        directionOffset.z + modelNode->worldTransform.translation.z,
                        directionOffset.y + modelNode->worldTransform.translation.y,
@@ -328,8 +329,8 @@ HandleNearestArmyHitAndContinueMotion:
           if (frameAccumulatorOrDistance <= frameCountDistanceOrAge) {
             modelNode->renderDepthBiasOrState = frameAccumulatorOrDistance;
             ShotRuntime_ApplyArmyHitRelationAndNotifications
-                      (nearestArmyHit.nearestModelNode->runtimePayload.armyRuntime,shotRuntime);
-            ownerOrHitArmy = nearestArmyHit.nearestModelNode->runtimePayload.armyRuntime;
+                      (nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime,shotRuntime);
+            hitModelRuntime = nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime;
             ownerArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
             ownerFactionIndex = 0;
             if (ownerArmy != NULL) {
@@ -348,16 +349,16 @@ HandleNearestArmyHitAndContinueMotion:
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
               EffectRuntimePool_CreateInstanceFromDefinition
-                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
                          -modelNode->modelPayload.worldRotationAngle1,
-                         modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & 0xffff,
+                         modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
                          directionOffset.z + modelNode->worldTransform.translation.z,
                          directionOffset.y + modelNode->worldTransform.translation.y,
                          directionOffset.x + modelNode->worldTransform.translation.x,effectDefinition,
                          effectWorldRuntime);
             }
             ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
-                      (rotationAngle,ownerFactionIndex,workingValue,ownerOrHitArmy);
+                      (rotationAngle,ownerFactionIndex,workingValue,hitModelRuntime);
           }
         }
       }
@@ -387,13 +388,13 @@ HandleNearestArmyHitAndContinueMotion:
       workingValue = shotRuntime->definitionOrSavedId.definition->modelSpinStepTurn16;
       modelNode->runtimeFlags = modelNode->runtimeFlags | 1;
       modelNode->modelPayload.worldRotationAngle2 += workingValue;
-      modelNode->modelPayload.worldRotationAngle2 &= 0xffff;
+      modelNode->modelPayload.worldRotationAngle2 &= FIXED_ANGLE16_MASK;
     }
     else {
-      ownerOrHitArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
+      shotOwnerArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
       ownerModelNode = NULL;
-      if (ownerOrHitArmy != NULL) {
-        ownerModelNode = ownerOrHitArmy->modelNodeRuntime;
+      if (shotOwnerArmy != NULL) {
+        ownerModelNode = shotOwnerArmy->modelNodeRuntime;
       }
       armyRaycast = ModelRuntime_RaycastCandidateListNearest
                          (modelNode->modelPayload.worldRotationAngle1 -
@@ -450,7 +451,7 @@ HandleNearestArmyHitAndContinueMotion:
                                (modelNode->modelPayload.worldRotationAngle1,
                                 modelNode->modelPayload.worldRotationAngle0,frameAccumulatorOrDistance);
             EffectRuntimePool_CreateInstanceFromDefinition
-                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
+                      (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
                    FIXED_ANGLE16_QUARTER_TURN,0,
                        directionOffset.z + modelNode->worldTransform.translation.z,
                        directionOffset.y + modelNode->worldTransform.translation.y,
@@ -465,10 +466,10 @@ HandleNearestArmyHitAndTerminateProjectile:
           shotDefinition = shotRuntime->definitionOrSavedId.definition;
           if (frameCountDistanceOrAge <= (uint32_t)shotRuntime->launchSpeedQ12) {
             ShotRuntime_ApplyArmyHitRelationAndNotifications
-                      (nearestArmyHit.nearestModelNode->runtimePayload.armyRuntime,shotRuntime);
+                      (nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime,shotRuntime);
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
-            ownerOrHitArmy = nearestArmyHit.nearestModelNode->runtimePayload.armyRuntime;
+            hitModelRuntime = nearestArmyHit.nearestModelNode->runtimePayload.modelRuntime;
             impactValue = shotDefinition->targetClassImpactDamageQ12[targetClassIndex];
             ownerArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
             ownerFactionIndex = 0;
@@ -482,9 +483,9 @@ HandleNearestArmyHitAndTerminateProjectile:
                                  (modelNode->modelPayload.worldRotationAngle1,
                                   modelNode->modelPayload.worldRotationAngle0,frameCountDistanceOrAge);
               EffectRuntimePool_CreateInstanceFromDefinition
-                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),0,
+                        (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),0,
                          -modelNode->modelPayload.worldRotationAngle1,
-                         modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & 0xffff,
+                         modelNode->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
                          directionOffset.z + modelNode->worldTransform.translation.z,
                          directionOffset.y + modelNode->worldTransform.translation.y,
                          directionOffset.x + modelNode->worldTransform.translation.x,effectDefinition,worldRuntime
@@ -492,7 +493,7 @@ HandleNearestArmyHitAndTerminateProjectile:
             }
             WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
             shotRuntime->modelNodeOrSavedOffset.modelNode = NULL;
-            ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(rotationAngle,ownerFactionIndex,impactValue,ownerOrHitArmy);
+            ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(rotationAngle,ownerFactionIndex,impactValue,hitModelRuntime);
             return;
           }
         }
@@ -583,13 +584,13 @@ HandleNearestArmyHitAndTerminateProjectile:
           modelNodeRuntime->modelPayload.worldRotationAngle1 += elevationTurnDeltaAngle16;
           modelNodeRuntime->modelPayload.worldRotationAngle0 =
                headingTurnDeltaAngle16 + modelNodeRuntime->modelPayload.worldRotationAngle0 &
-               0xffff;
+               FIXED_ANGLE16_MASK;
         }
       }
       workingValue = shotDefinition->modelSpinStepTurn16;
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
       modelNodeRuntime->modelPayload.worldRotationAngle2 += workingValue;
-      modelNodeRuntime->modelPayload.worldRotationAngle2 &= 0xffff;
+      modelNodeRuntime->modelPayload.worldRotationAngle2 &= FIXED_ANGLE16_MASK;
       if (shotDefinition->trajectoryMode != SHOT_TRAJECTORY_DIRECT_LINE) {
         if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_LEAD_ADJUSTED) {
           if (shotDefinition->trajectoryRampDurationTicks != 0) {

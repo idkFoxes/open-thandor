@@ -38,6 +38,22 @@
 /* Largest run of kept blocks the short and the medium skip token encode */
 #define MOVIE_SKIP_SHORT_MAX_BLOCKS 8
 #define MOVIE_SKIP_MEDIUM_MAX_BLOCKS 0x808
+/* Low 5 bits of a stream dword: the frame token (MOVIE_TOKEN_SKIP_*, or the base luma of a colour block) */
+#define MOVIE_TOKEN_MASK 0x1f
+/* Highest base luma of a colour block (tokens 0..24) */
+#define MOVIE_TOKEN_BASE_LUMA_MAX 24
+/* FLM colour: 5-bit luma in bits 0-4 below the 10-bit chroma code (hue in bits 5-9, saturation in 10-14);
+   a colour block stores the chroma code in bits 21-30 of its second dword */
+#define MOVIE_COLOR_LUMA_MASK 0x1f
+#define MOVIE_COLOR_HUE_MASK 0x3e0
+#define MOVIE_COLOR_SATURATION_MASK 0x7c00
+#define MOVIE_COLOR_CHROMA_MASK 0x7fe0
+/* Bit 31 of a colour block's second dword: every luma step counts twice (4-bit levels 0..15 halved) */
+#define MOVIE_BLOCK_DOUBLE_STEPS 0x80000000
+/* Largest luma level of a colour block with doubled steps */
+#define MOVIE_BLOCK_WIDE_LEVEL_MAX 15
+/* 0x8000 * sqrt(3): the blue-green axis of the chroma vector (MovieColor_ComputeChromaCodeFromRgb888) */
+#define MOVIE_CHROMA_SQRT3_Q15 0xddb4
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004A8040 */

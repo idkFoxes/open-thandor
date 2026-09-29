@@ -339,7 +339,7 @@ ArenaLargestAllocResult ArenaHeap_AllocLargestFreeBlock(void)
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
-        corruptHeapResult.blockSizeOrSentinel = 0xffffffff;
+        corruptHeapResult.blockSizeOrSentinel = UINT32_MAX;
         corruptHeapResult.allocationOrError = ARENA_HEAP_CORRUPT;
         corruptHeapResult.failed = true;
         return corruptHeapResult;

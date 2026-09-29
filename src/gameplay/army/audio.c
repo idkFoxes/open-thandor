@@ -76,14 +76,14 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
 
 /* Address: 0x00520740.
    Per-tick sound update of a turning/moving unit: while it turns, the turn sound (sound slot index at +0xD8
-   of the army's model record) and the movement sound (+0xD0) follow the unit's position; while it only
+   of the model's definition) and the movement sound (+0xD0) follow the unit's position; while it only
    moves, just the movement sound does. A sound is fed only when TerrainGrid_TestProjectedCellMaskBits01
    reports occupancy bit 0 or 1 of the active faction at the unit's cell (CF clear).
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[2] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   uint32_t soundSlotIndex;
@@ -92,10 +92,10 @@ void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
   ModelDefinition *definition;
   bool cellBitsClear;
 
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-  if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-    if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if ((modelRuntime->movementControl).turnVelocityAngle16 == 0) {
+    definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+    if ((modelRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
@@ -105,9 +105,9 @@ void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
        (worldRuntime->dwordArray != NULL)) {
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
       if (soundSlot != NULL) {
-        worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+        worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
         cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
-                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
+                          ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,worldPosition->x,
                            worldRuntime);
         if (!cellBitsClear) {
           SpatialSound_UpdateDesiredPositionedGains
@@ -122,9 +122,9 @@ void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
      (worldRuntime->dwordArray != NULL)) {
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (soundSlot != NULL) {
-      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
       cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
-                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
+                        ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,worldPosition->x,
                          worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
@@ -138,24 +138,22 @@ void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
 
 
 /* Address: 0x00520E60.
-   Picks the positioned-sound update by the placement contact kind at +0x278 of the army's model record:
+   Picks the positioned-sound update by the placement contact kind at +0x278 of the model's definition:
    kind 1 (water surface, see g_ArmyPlacementContactKindDispatchTable) uses
    ArmyRuntimeClass_UpdateWaterPositionedSounds, every other kind ArmyRuntimeClass_UpdateGroundPositionedSounds.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[18] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 
-void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  if (armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->placementContactKindIndex ==
+  if (modelRuntime->definitionOrSavedId.runtimeDefinition->placementContactKindIndex ==
       ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
-    ArmyRuntimeClass_UpdateWaterPositionedSounds
-              (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView *)armyRuntime);
+    ArmyRuntimeClass_UpdateWaterPositionedSounds(worldRuntime,modelRuntime);
   }
   else {
-    ArmyRuntimeClass_UpdateGroundPositionedSounds
-              (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView *)armyRuntime);
+    ArmyRuntimeClass_UpdateGroundPositionedSounds(worldRuntime,modelRuntime);
   }
   return;
 }
@@ -163,12 +161,12 @@ void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldR
 
 /* Address: 0x00523240.
    Byte-for-byte duplicate of ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds for another class:
-   turn sound (+0xD8) and movement sound (+0xD0) of the model record follow a turning or moving unit.
+   turn sound (+0xD8) and movement sound (+0xD0) of the definition follow a turning or moving unit.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[17] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
 void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   uint32_t soundSlotIndex;
@@ -177,10 +175,10 @@ void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
   ModelDefinition *definition;
   bool cellBitsClear;
 
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-  if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-    if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if ((modelRuntime->movementControl).turnVelocityAngle16 == 0) {
+    definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+    if ((modelRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
@@ -190,9 +188,9 @@ void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
        (worldRuntime->dwordArray != NULL)) {
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
       if (soundSlot != NULL) {
-        worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+        worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
         cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
-                          ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
+                          ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,worldPosition->x,
                            worldRuntime);
         if (!cellBitsClear) {
           SpatialSound_UpdateDesiredPositionedGains
@@ -207,9 +205,9 @@ void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
      (worldRuntime->dwordArray != NULL)) {
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (soundSlot != NULL) {
-      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
       cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
-                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
+                        ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,worldPosition->x,
                          worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
@@ -223,13 +221,13 @@ void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
 
 
 /* Address: 0x00523DD0.
-   Moves the unit's looping sound (sound slot index at +0xD8 of the model record) with the unit while any
-   movement state flag is set or it is turning, if its cell passes TerrainGrid_TestProjectedCellMaskBits01.
+   Turret sound: moves the turning sound (definition turningLoopSoundSlotIndex, +0xD8) with the turret while it
+   turns in pitch (+0x18) or yaw (+0x14), if its cell passes TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[5..8] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateTurretTurnSound
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelDefinition *definition;
@@ -238,16 +236,15 @@ void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
   GraphicsFixedVec3 *worldPosition;
   bool cellBitsClear;
   
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-  if ((((armyRuntime->movementStateFlags != 0) ||
-       ((armyRuntime->movementControl).turnVelocityAngle16 != 0)) &&
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if ((((modelRuntime->pitchTurnVelocityAngle16 != 0) || (modelRuntime->yawTurnVelocityAngle16 != 0)) &&
       (soundSlotIndex = definition->turningLoopSoundSlotIndex, soundSlotIndex != 0)) &&
      ((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)))) {
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (slot != NULL) {
-      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
       cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
-                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
+                        ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,
                          worldPosition->x,worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
@@ -261,13 +258,13 @@ void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
 
 
 /* Address: 0x00524410.
-   Moves the sound whose slot index is at +0x1AC of the model record with the unit, unless runtime flag
-   0x1 is set, and only while runtime flag 0x40 is set or the army dword at +0xB8 equals 1; the unit's cell
-   must pass TerrainGrid_TestProjectedCellMaskBits01.
+   Structure factory sound (class 11): moves the looping sound (definition +0x1AC) with the model unless it is
+   switched off (state flag 0x1), and only while it researches (flag 0x40) or builds (behaviorState
+   ARMY_FACTORY_STATE_BUILDING); the model's cell must pass TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[11] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdateConditionalProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateStructureFactorySound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelDefinition *definition;
@@ -276,17 +273,17 @@ void ArmyRuntimeAudio_UpdateConditionalProjectedSound(WorldRuntimeContext *world
   GraphicsFixedVec3 *worldPosition;
   bool cellBitsClear;
   
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-  if ((((armyRuntime->runtimeFlags & 1) == 0) &&
-      ((((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
-        ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if (((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
+      (((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
+        ((modelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING)) &&
        (soundSlotIndex = definition->loopingSoundSlotIndex, soundSlotIndex != 0)))) &&
      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
       (slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex], slot != NULL))
      )) {
-    worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+    worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
     cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
-                      ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
+                      ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,
                        worldPosition->x,worldRuntime);
     if (!cellBitsClear) {
       SpatialSound_UpdateDesiredPositionedGains
@@ -299,15 +296,15 @@ void ArmyRuntimeAudio_UpdateConditionalProjectedSound(WorldRuntimeContext *world
 
 
 /* Address: 0x00524DA0.
-   Two sounds that follow the unit: the primary one (slot index at +0x1AC of the model record) under the
-   same condition as ArmyRuntimeAudio_UpdateConditionalProjectedSound (flag 0x1 clear, flag 0x40 set or
-   army +0xB8 == 1), the secondary one (+0x274) while army +0xB8 is neither 0 nor 1. Each is fed only when
-   the unit's cell passes TerrainGrid_TestProjectedCellMaskBits01.
+   Unit factory sounds (class 13), two sounds that follow the model: the looping one (definition +0x1AC) under
+   the same condition as ArmyRuntimeAudio_UpdateStructureFactorySound (not switched off, researching or
+   building), the positioned one (+0x274) while the factory is neither idle nor building (door opening, waiting
+   for the exit, closing). Each is fed only when the model's cell passes TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[13] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateUnitFactorySounds
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   GraphicsFixedVec3 *worldPosition;
@@ -317,11 +314,11 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
   bool cellBitsClear;
   ModelRuntimeNode *modelNode;
   
-  modelNode = armyRuntime->modelNodeRuntime;
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-  if ((((armyRuntime->runtimeFlags & 1) == 0) &&
-      ((((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
-        ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
+  modelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if (((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
+      (((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
+        ((modelRuntime->classState).behaviorState == ARMY_FACTORY_STATE_BUILDING)) &&
        (soundSlotIndex = definition->loopingSoundSlotIndex, soundSlotIndex != 0)))) &&
      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
@@ -335,10 +332,10 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
                  soundSlot);
     }
   }
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
-  if ((((armyRuntime->articulatedContact).fallbackPosition0Q12 != 1) &&
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
+  if ((((modelRuntime->classState).behaviorState != ARMY_FACTORY_STATE_BUILDING) &&
       (soundSlotIndex = definition->positionedSoundSlotIndex,
-      (armyRuntime->articulatedContact).fallbackPosition0Q12 != 0)) &&
+      (modelRuntime->classState).behaviorState != ARMY_FACTORY_STATE_IDLE)) &&
      ((soundSlotIndex != 0 &&
       (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
        (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
@@ -357,12 +354,12 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
 
 
 /* Address: 0x00526490.
-   Unconditionally moves the sound whose slot index is at +0x1AC of the model record with the unit, when
+   Unconditionally moves the sound whose slot index is at +0x1AC of the definition with the unit, when
    the unit's cell passes TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[21] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelDefinition *definition;
@@ -371,15 +368,15 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntim
   GraphicsFixedVec3 *worldPosition;
   bool cellBitsClear;
   
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
+  definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
   soundSlotIndex = definition->loopingSoundSlotIndex;
   if (((worldRuntime->dwordArray != NULL) && (soundSlotIndex != 0)) &&
      (soundSlotIndex < worldRuntime->dwordArrayCount)) {
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (slot != NULL) {
-      worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
+      worldPosition = &(modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation;
       cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
-                        ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
+                        ((modelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y,
                          worldPosition->x,worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
@@ -393,15 +390,16 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntim
 
 
 /* Address: 0x00526EB0.
-   Two sounds that follow the unit: the primary one (slot index at +0x1AC of the model record) while flag
-   0x1 is clear and flag 0x40 is set or the contact mode (army +0xAC) is 1, the secondary one (+0x274) while
-   the army dword at +0xB0 is neither 0 nor 6. Each is fed only when the unit's cell passes
+   Sounds of the class-22 pad (ModelRuntimeLinkedChildSpawnAndBuildView), two sounds that follow the model:
+   the looping one (definition +0x1AC) while it is not switched off and researches (flag 0x40) or builds
+   (+0xAC secondaryArmyAssetBuildState == 1), the positioned one (+0x274) while its linked-child transition
+   state (+0xB0) is neither 0 nor 6. Each is fed only when the model's cell passes
    TerrainGrid_TestProjectedCellMaskBits01.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[22] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateLinkedChildPadSounds
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeNode *modelNode;
@@ -410,17 +408,16 @@ void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
   ModelDefinition *definition;
   bool cellBitsClear;
   
-  modelNode = armyRuntime->modelNodeRuntime;
-  if ((((armyRuntime->runtimeFlags & 1) == 0) &&
-      ((((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
-        ((armyRuntime->articulatedContact).terrainContactMode ==
-         ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE)) &&
-       (soundSlotIndex = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->loopingSoundSlotIndex,
+  modelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  if (((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) &&
+      (((((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
+        ((modelRuntime->classState).classStateAC == 1)) &&
+       (soundSlotIndex = modelRuntime->definitionOrSavedId.runtimeDefinition->loopingSoundSlotIndex,
         soundSlotIndex != 0)))) &&
      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
       soundSlot != NULL)))) {
-    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
+    definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
     cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
@@ -430,14 +427,14 @@ void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
                  &(modelNode->worldTransform).translation,soundSlot);
     }
   }
-  if ((((armyRuntime->articulatedContact).lateralOffsetQ12 != 6) &&
-      (soundSlotIndex = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->positionedSoundSlotIndex,
-      (armyRuntime->articulatedContact).lateralOffsetQ12 != 0)) &&
+  if ((((modelRuntime->classState).classStateB0 != 6) &&
+      (soundSlotIndex = modelRuntime->definitionOrSavedId.runtimeDefinition->positionedSoundSlotIndex,
+      (modelRuntime->classState).classStateB0 != 0)) &&
      ((soundSlotIndex != 0 &&
       (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
        (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
        soundSlot != NULL)))))) {
-    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
+    definition = modelRuntime->definitionOrSavedId.runtimeDefinition;
     cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
@@ -452,15 +449,15 @@ void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
 
 
 /* Address: 0x00527B20.
-   Runs the looping positioned-sound update only while army runtime flag 0x40 is set.
+   Runs the looping positioned-sound update only while the model researches (state flag 0x40).
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[4] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  if ((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
-    ArmyRuntime_UpdateLoopingPositionedSound(worldRuntime,armyRuntime);
+  if (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
+    ArmyRuntime_UpdateLoopingPositionedSound(worldRuntime,modelRuntime);
   }
   return;
 }

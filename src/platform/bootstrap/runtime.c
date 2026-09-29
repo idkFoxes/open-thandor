@@ -169,16 +169,16 @@ StatusResult GameData_ResetDefaults(void)
     *capabilityFlagsSlot = *capabilityFlagsSlot | 1;
     factionRecord->packedRelationStates = relationStatePattern;
     factionRecord->relationCapabilityState = 0;
-    factionRecord->primaryAnchorYQ12 = -0xc000;
+    factionRecord->primaryAnchorYQ12 = -12 * Q12_ONE;
     factionRecord->primaryAnchorXQ12 = 0;
-    factionRecord->secondaryAnchorYQ12 = -0xc000;
+    factionRecord->secondaryAnchorYQ12 = -12 * Q12_ONE;
     factionRecord->secondaryAnchorXQ12 = 0;
-    factionRecord->relationTransitionTick = 0x11;
-    factionRecord->energyGenerationCapacityQ4 = 0x280; /* 40.0 */
-    factionRecord->baselineEnergySupplyQ4 = 0x280; /* 40.0 */
+    factionRecord->relationTransitionTick = 17;
+    factionRecord->energyGenerationCapacityQ4 = 40 << Q4_SHIFT;
+    factionRecord->baselineEnergySupplyQ4 = 40 << Q4_SHIFT;
     factionRecord->xeniteStorageLimitQ4 = 4000; /* 250.0 */
     factionRecord->tritiumStorageLimitQ4 = 4000; /* 250.0 */
-    factionRecord->terrainContributionScaleQ8 = 0x100; /* 1.0 */
+    factionRecord->terrainContributionScaleQ8 = Q8_ONE;
     factionBit = factionBit * 2;
     relationStatePattern = relationStatePattern << 4 | relationStatePattern >> 28; /* rotate left by a nibble */
     factionRecord++;
@@ -196,7 +196,7 @@ StatusResult GameData_ResetDefaults(void)
       *statTableCursor = 0;
       statTableCursor++;
     }
-    statTableCursor[-1] = 0xffffffff; /* end marker */
+    statTableCursor[-1] = UINT32_MAX; /* end marker */
     g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
     allocResult.payloadOrError = 0;
     allocResult.failed = false;
@@ -296,7 +296,7 @@ DynApiResolveResult DynAPI_Resolve(void **destination,HINSTANCE module,char *pro
   DynApiResolveResult successResult;
   DynApiResolveResult failureResult;
 
-  Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)procedureName);
+  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != NULL) {
     *destination = resolvedProcedure;
@@ -310,7 +310,7 @@ DynApiResolveResult DynAPI_Resolve(void **destination,HINSTANCE module,char *pro
   for (; modulesRemaining != 0; modulesRemaining = modulesRemaining - 1) {
     if (module == moduleEntryCursor->module) {
       /* name the module in the error detail */
-      Text_CopyNarrowToUtf16(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)moduleEntryCursor->name);
+      Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,(uint8_t *)moduleEntryCursor->name);
       break;
     }
     moduleEntryCursor = moduleEntryCursor + 1;
@@ -335,7 +335,7 @@ DllLoadResult DynDLL_Load(char *moduleName)
   DllLoadResult failureResult;
   uint32_t moduleSlotIndex;
 
-  Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
+  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)moduleName);
   /* dynapi_9 is the string "LoadLibraryA": the slot still holds the name until DynAPI_Bootstrap binds it */
   if ((g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination != (void **)dynapi_9) &&
       (g_DynamicModuleCount < DYNAMIC_MODULE_CAPACITY))
@@ -386,7 +386,7 @@ uint32_t DynDLL_Unload(char *moduleName)
     moduleEntryCursor++;
   }
   /* module not loaded, or FreeLibrary failed */
-  Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
+  Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)moduleName);
   return FATAL_ERROR_LOADER_MODULE_MISSING;
 }
 
@@ -411,7 +411,7 @@ StatusResult BootstrapApi_ResolveBindingByDestination(void **destination)
   remainingCount = g_DynamicModuleCount;
   for (; remainingCount != 0; remainingCount--) {
     if (destination == bindingCursor->destination) {
-      Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)destination);
+      Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)destination);
       /* The original pushes ESI (the binding cursor) only to preserve it across the call: binding slot 0
          (LoadLibraryA) gets the destination argument as its single argument, and the result is stored
          into the matching binding (MOV [ESI],EDX after POP ESI). */
@@ -702,19 +702,19 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
        g_LooseMoviePathPrefix before the packages, which only hold still-image stand-ins for
        these movies; point the prefix at the game directory when that folder exists. */
     static const uint16_t flmLeaf[4] = {'f','l','m',0};
-    static uint16_t localFlmPath[0x100];
-    char narrow[0x100];
+    static uint16_t localFlmPath[256];
+    char narrow[256];
     int k;
     WidePath_CombineDirectoryAndLeaf
               (localFlmPath,(uint16_t *)flmLeaf,g_ExecutableDirectoryUtf16);
     if (Thandor_DirectoryExistsW(localFlmPath)) {
       uint16_t *directory = g_ExecutableDirectoryUtf16;
-      for (k = 0; (k < 0xff) && (directory[k] != 0); k++) {
+      for (k = 0; (k < 255) && (directory[k] != 0); k++) {
         g_LooseMoviePathPrefix.codeUnits[k] = directory[k];
       }
       g_LooseMoviePathPrefix.codeUnits[k] = 0;
     }
-    for (k = 0; (k < 0xff) && (g_LooseMoviePathPrefix.codeUnits[k] != 0); k++) {
+    for (k = 0; (k < 255) && (g_LooseMoviePathPrefix.codeUnits[k] != 0); k++) {
       narrow[k] = (char)g_LooseMoviePathPrefix.codeUnits[k];
     }
     narrow[k] = 0;
@@ -1101,7 +1101,7 @@ bindDebugOverlayTexts:
                       playerRecordCursor->playerRuntimeId = 0;
                       (playerRecordCursor->factionAssignment).roleStateFlags = 0;
                       playerRecordCursor->snapshotTransferFlags = 0;
-                      statusOrCount = 0x20;
+                      statusOrCount = 32;
                       do {
                         *playerRuntimePointerTableWriteCursor = playerRecordCursor;
                         playerRuntimePointerTableWriteCursor++;
@@ -1247,8 +1247,8 @@ static void DebugMovie_ClearScreen(void)
 /* Plays one movie; returns after the end, 10 seconds, or a key/click. */
 static void DebugMovie_PlayOne(const char *name, int index, int count, int stretch)
 {
-  uint16_t path[0x40];
-  char label[0x80];
+  uint16_t path[64];
+  char label[128];
   int pathLength = 0;
   int nameIndex;
   unsigned start;
@@ -1256,7 +1256,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   MovieFrameResult frame;
   /* UTF-16 path "flm\<name>.flm"; the name is cut so ".flm" and the terminator still fit */
   path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
-  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 0x38; nameIndex++) {
+  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 56; nameIndex++) {
     path[pathLength++] = (uint16_t)name[nameIndex];
   }
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
@@ -1317,7 +1317,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
         uint32_t height = g_FramebufferHeight;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,
-                   ((int)((height - (height >> 2)) - (int)(size >> 0x20)) >> 1) + (height >> 3),
+                   ((int)((height - (height >> 2)) - (int)(size >> 32)) >> 1) + (height >> 3),
                    (int)(g_FramebufferWidth - (int)size) >> 1,0,
                    (GraphicsTextureSourceAsset *)frame.movieOrError,g_FramebufferAccess);
       }
@@ -1341,8 +1341,8 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
    frames rate). The process exits afterwards. */
 static void DebugMovie_ExportOne(const char *name)
 {
-  uint16_t path[0x40];
-  char fileName[0x80];
+  uint16_t path[64];
+  char fileName[128];
   int pathLength = 0;
   int nameIndex;
   uint32_t frames = 0;
@@ -1354,7 +1354,7 @@ static void DebugMovie_ExportOne(const char *name)
   FILE *info;
   /* L"flm\<name>.flm", the name cut so that the extension and terminator still fit */
   path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
-  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 0x38; nameIndex++) {
+  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 56; nameIndex++) {
     path[pathLength++] = (uint16_t)name[nameIndex];
   }
   path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
@@ -1485,7 +1485,7 @@ bool Game_PlayIntroMovies(void)
     const char *exportMovies = getenv("OPEN_THANDOR_MOVIEEXPORT");
     const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
     if ((exportMovies != NULL) && (exportMovies[0] != 0)) {
-      char names[0x100];
+      char names[256];
       char *name;
       strncpy(names, exportMovies, sizeof names - 1);
       names[sizeof names - 1] = 0;
@@ -1607,7 +1607,7 @@ StatusResult DynAPI_Bootstrap(void)
     if (module == NULL) {
       /* dynapi_9 is the string "LoadLibraryA": without its module nothing can be loaded */
       if (bindingCursor->destination == (void **)dynapi_9) {
-        Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
+        Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         moduleUnavailableResult.failed = true;
         moduleUnavailableResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING;
         return moduleUnavailableResult;
@@ -1615,7 +1615,7 @@ StatusResult DynAPI_Bootstrap(void)
       module = ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (module == NULL) {
-        Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
+        Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         loadFailedResult.failed = true;
         loadFailedResult.valueOrError = FATAL_ERROR_DLL_LOAD_FAILED;
         return loadFailedResult;
@@ -1628,8 +1628,8 @@ StatusResult DynAPI_Bootstrap(void)
     }
     resolvedProcedure = (void **)GetProcAddress(module,(LPCSTR)procedureName);
     if (resolvedProcedure == NULL) {
-      Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
-      Text_CopyNarrowToUtf16(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
+      Text_CopyNarrowToUtf16(256,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
+      Text_CopyNarrowToUtf16(256,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
       procedureMissingResult.failed = true;
       procedureMissingResult.valueOrError = FATAL_ERROR_DLL_PROCEDURE_MISSING;
       return procedureMissingResult;

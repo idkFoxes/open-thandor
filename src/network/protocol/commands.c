@@ -163,7 +163,7 @@ bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 
     nextRecord = g_InGameCommandQueueRecords;
     while (record = nextRecord, record < g_InGameCommandQueueEnd) {
       nextRecord = record + 1;
-      if (((commandHandlerAddress - INGAME_COMMAND_CODE_BASE) * 0x100 | g_LocalPlayerRuntimeId) ==
+      if (((commandHandlerAddress - INGAME_COMMAND_CODE_BASE) * 256 | g_LocalPlayerRuntimeId) ==
             record->packedCommandAndPlayerId &&
           (payloadValue == record->payload3 || payloadValue == record->payload2 ||
            payloadValue == record->payload1)) {

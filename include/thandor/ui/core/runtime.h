@@ -20,6 +20,17 @@
 #define UI_RUNTIME_RECORD_RING_CAPACITY 0x100
 #define UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE 0x80
 
+/* ARGB8888 opaque black, the clear colour of full-screen fills */
+#define UI_ARGB_OPAQUE_BLACK 0xff000000u
+/* Buffers UiRuntime_Initialize allocates for the mailbox transfer (g_UiTransferEndpointBuffer,
+   g_UiTransferDataBuffer) */
+#define UI_TRANSFER_ENDPOINT_BUFFER_BYTES 0x1000
+#define UI_TRANSFER_DATA_BUFFER_BYTES 0x2000
+/* ModelRuntimeNode_GetStateTintArgb results */
+#define UI_MODEL_TINT_OPAQUE_WHITE 0xffffffffu /* colours unchanged */
+#define UI_MODEL_TINT_TRANSPARENT_WHITE 0x00ffffff
+#define UI_MODEL_TINT_OPAQUE_GREY 0xff878787u
+
 /* Action queue (g_UiActionQueueEntries, allocated by UiRuntime_Initialize): 16 entries of 8 bytes
    (actionId, source), filled by UiActionQueue_Enqueue and drained once per frame by
    UiActionQueue_DispatchPending. actionId -1 means "no action" and is never queued. */

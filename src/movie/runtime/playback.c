@@ -54,7 +54,7 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
   int lane;
   for (lane = 0; lane < 4; lane++) {
     average = (uint16_t)((uint16_t)(channelSums >> (lane * 16)) >> 6);
-    color = color | ((uint32_t)(average > 0xff ? 0xff : average) << (lane * 8));
+    color = color | ((uint32_t)(average > ARGB8888_CHANNEL_MAX ? ARGB8888_CHANNEL_MAX : average) << (lane * 8));
   }
   return color;
 }
@@ -96,27 +96,27 @@ StatusResult Movie_EncodeFlmBufferFromFrameProvider
     outputCursor++;
   }
   /* MovieFileHeader, addressed from the end of the cleared header (dword indices -0x80..-1) */
-  outputCursor[-0x80] = ASSET_MAGIC_FLM;
-  outputCursor[-0x7f] = MOVIE_FILE_HEADER_BYTES; /* allocation size; the final size is stored at the end */
-  outputCursor[-0x7e] = 1; /* format version */
-  outputCursor[-0x7d] = MOVIE_FLM_CONVERTER_VERSION;
+  outputCursor[-128] = ASSET_MAGIC_FLM;
+  outputCursor[-127] = MOVIE_FILE_HEADER_BYTES; /* allocation size; the final size is stored at the end */
+  outputCursor[-126] = 1; /* format version */
+  outputCursor[-125] = MOVIE_FLM_CONVERTER_VERSION;
   /* three build stamps at 0x10..0x27, each the time and then the date */
   packedTimeOrDate = g_LocaleGetPackedCurrentTime();
-  outputCursor[-0x7c] = packedTimeOrDate;
-  outputCursor[-0x7a] = packedTimeOrDate;
-  outputCursor[-0x78] = packedTimeOrDate;
+  outputCursor[-124] = packedTimeOrDate;
+  outputCursor[-122] = packedTimeOrDate;
+  outputCursor[-120] = packedTimeOrDate;
   packedTimeOrDate = g_LocaleGetPackedCurrentDate();
-  outputCursor[-0x7b] = packedTimeOrDate;
-  outputCursor[-0x79] = packedTimeOrDate;
-  outputCursor[-0x77] = packedTimeOrDate;
+  outputCursor[-123] = packedTimeOrDate;
+  outputCursor[-121] = packedTimeOrDate;
+  outputCursor[-119] = packedTimeOrDate;
   /* producer and source name at 0x30 and 0x70 */
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -0x74));
+  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -116));
   g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputCursor + -100));
-  *(uint8_t *)(outputCursor + -0x40) = 0; /* offset 0x100 */
-  outputCursor[-0x54] = frameWidthPixels;
-  outputCursor[-0x53] = frameHeightPixels;
-  outputCursor[-0x52] = 0; /* frame count */
-  outputCursor[-0x51] = 0; /* no audio tracks */
+  *(uint8_t *)(outputCursor + -64) = 0; /* offset 0x100 */
+  outputCursor[-84] = frameWidthPixels;
+  outputCursor[-83] = frameHeightPixels;
+  outputCursor[-82] = 0; /* frame count */
+  outputCursor[-81] = 0; /* no audio tracks */
   providerResult = frameProvider(NULL);
   frameOrStatus = providerResult.frameOrError;
   if (!providerResult.noFrame) {
@@ -640,13 +640,17 @@ void EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime)
    Keyboard handler of the end-movie UI: looks the key up in the end-movie command table, whose records also
    say which Ctrl/Alt combination they need, and runs the matching action: save a numbered PCX screenshot, or
    skip the end movie (marks the local player done with the results; in a network game as a queued command).
+   endMovieRuntime is the active UI root, i.e. the in-game runtime root (g_InGameRuntimeRoot) whose callbacks
+   Frontend_PlaySelectedEndMovie replaced. Skipping is ignored while its resultsContinueButton is suppressed
+   (a network host still waiting for its clients, or the local player already marked ready; see
+   FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton).
 */
 void EndMovieUiRuntime_DispatchCommandByFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime)
 
 {
   /* Rewritten from the assembly (0x00565810-0x00565A29). The decompiled version jumped to the
-     continuation labels inside the original machine code. EBX is the end-movie runtime. */
+     continuation labels inside the original machine code. EBX is the end-movie runtime (the in-game root). */
   UiCommandDispatchRecord *record = g_EndMovieCommandDispatchRecords;
   uint32_t target = 0;
 
@@ -704,7 +708,8 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     break;
   }
   case 0x565990: /* skip the end movie */
-    if (((*(uint32_t *)((uint8_t *)endMovieRuntime + 0x6ec) & 8) != 0) ||
+    /* +0x6EC bit 3: nodeFlags of the results continue button */
+    if (((INGAME_UI(endMovieRuntime,resultsContinueButton)->nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
         ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0)) {
       break;
     }
@@ -895,10 +900,10 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
       if ((int)minLumaOrBaseLuma < 0) {
         minLumaOrBaseLuma = 0;
       }
-      else if (0x18 < (int)minLumaOrBaseLuma) {
-        minLumaOrBaseLuma = 0x18;
+      else if (MOVIE_TOKEN_BASE_LUMA_MAX < (int)minLumaOrBaseLuma) {
+        minLumaOrBaseLuma = MOVIE_TOKEN_BASE_LUMA_MAX;
       }
-      if (maxLumaOrLevel - minLumaChromaOrLevel < 0xc) {
+      if (maxLumaOrLevel - minLumaChromaOrLevel < 12) {
         *outputCursor = minLumaOrBaseLuma;
         minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
         maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
@@ -959,7 +964,7 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
           maxLumaOrLevel = 7;
         }
         sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        outputCursor[1] = (minLumaChromaOrLevel & 0x7fe0) << 0x10 | level0 << 0x12 | level1 << 0xf | level2 << 0xc |
+        outputCursor[1] = (minLumaChromaOrLevel & MOVIE_COLOR_CHROMA_MASK) << 16 | level0 << 18 | level1 << 15 | level2 << 12 |
                      level3 << 9 | level4 << 6 | level5 << 3 | maxLumaOrLevel;
         level0 = sampleLumaOrLevel - minLumaOrBaseLuma;
         if (level0 < 0) {
@@ -1035,16 +1040,16 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
           level8 = 7;
         }
         *outputCursor = *outputCursor |
-                   level0 << 0x1d | level1 << 0x1a | level2 << 0x17 | level3 << 0x14 | level4 << 0x11
-                   | level5 << 0xe | level6 << 0xb | level7 << 8 | level8 << 5;
+                   level0 << 29 | level1 << 26 | level2 << 23 | level3 << 20 | level4 << 17
+                   | level5 << 14 | level6 << 11 | level7 << 8 | level8 << 5;
       }
       else {
         minLumaOrBaseLuma = minLumaOrBaseLuma - 4;
         if ((int)minLumaOrBaseLuma < 0) {
           minLumaOrBaseLuma = 0;
         }
-        else if (0x10 < (int)minLumaOrBaseLuma) {
-          minLumaOrBaseLuma = 0x10;
+        else if (16 < (int)minLumaOrBaseLuma) {
+          minLumaOrBaseLuma = 16;
         }
         *outputCursor = minLumaOrBaseLuma;
         minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
@@ -1053,32 +1058,32 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
         if ((int)maxLumaOrLevel < 0) {
           maxLumaOrLevel = 0;
         }
-        else if (0xf < (int)maxLumaOrLevel) {
-          maxLumaOrLevel = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)maxLumaOrLevel) {
+          maxLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
         sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
         if ((int)sampleLumaOrLevel < 0) {
           sampleLumaOrLevel = 0;
         }
-        else if (0xf < (int)sampleLumaOrLevel) {
-          sampleLumaOrLevel = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)sampleLumaOrLevel) {
+          sampleLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel0 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
         wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
         if ((int)wideLevel0 < 0) {
           wideLevel0 = 0;
         }
-        else if (0xf < (int)wideLevel0) {
-          wideLevel0 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel0) {
+          wideLevel0 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel1 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
         wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
         if ((int)wideLevel1 < 0) {
           wideLevel1 = 0;
         }
-        else if (0xf < (int)wideLevel1) {
-          wideLevel1 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel1) {
+          wideLevel1 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         blockRowPixels = blockRowPixels - frameWidthPixels;
         wideLevel2 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
@@ -1086,35 +1091,35 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
         if ((int)wideLevel2 < 0) {
           wideLevel2 = 0;
         }
-        else if (0xf < (int)wideLevel2) {
-          wideLevel2 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel2) {
+          wideLevel2 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
         wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
         if ((int)wideLevel3 < 0) {
           wideLevel3 = 0;
         }
-        else if (0xf < (int)wideLevel3) {
-          wideLevel3 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel3) {
+          wideLevel3 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel4 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
         wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
         if ((int)wideLevel4 < 0) {
           wideLevel4 = 0;
         }
-        else if (0xf < (int)wideLevel4) {
-          wideLevel4 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel4) {
+          wideLevel4 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel5 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-        outputCursor[1] = (minLumaChromaOrLevel & 0x7fe0) * 0x10000 + 0x80000000 | (maxLumaOrLevel >> 1) << 0x12 |
-                     (sampleLumaOrLevel >> 1) << 0xf | (wideLevel0 >> 1) << 0xc | (wideLevel1 >> 1) << 9 |
+        outputCursor[1] = (minLumaChromaOrLevel & MOVIE_COLOR_CHROMA_MASK) * (1 << 16) + MOVIE_BLOCK_DOUBLE_STEPS | (maxLumaOrLevel >> 1) << 18 |
+                     (sampleLumaOrLevel >> 1) << 15 | (wideLevel0 >> 1) << 12 | (wideLevel1 >> 1) << 9 |
                      (wideLevel2 >> 1) << 6 | (wideLevel3 >> 1) << 3 | wideLevel4 >> 1;
         wideLevel5 = wideLevel5 - minLumaOrBaseLuma;
         if ((int)wideLevel5 < 0) {
           wideLevel5 = 0;
         }
-        else if (0xf < (int)wideLevel5) {
-          wideLevel5 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel5) {
+          wideLevel5 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         blockRowPixels = blockRowPixels - frameWidthPixels;
         minLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
@@ -1122,32 +1127,32 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
         if ((int)minLumaChromaOrLevel < 0) {
           minLumaChromaOrLevel = 0;
         }
-        else if (0xf < (int)minLumaChromaOrLevel) {
-          minLumaChromaOrLevel = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)minLumaChromaOrLevel) {
+          minLumaChromaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
         maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
         if ((int)maxLumaOrLevel < 0) {
           maxLumaOrLevel = 0;
         }
-        else if (0xf < (int)maxLumaOrLevel) {
-          maxLumaOrLevel = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)maxLumaOrLevel) {
+          maxLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
         sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
         if ((int)sampleLumaOrLevel < 0) {
           sampleLumaOrLevel = 0;
         }
-        else if (0xf < (int)sampleLumaOrLevel) {
-          sampleLumaOrLevel = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)sampleLumaOrLevel) {
+          sampleLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel0 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
         wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
         if ((int)wideLevel0 < 0) {
           wideLevel0 = 0;
         }
-        else if (0xf < (int)wideLevel0) {
-          wideLevel0 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel0) {
+          wideLevel0 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         blockRowPixels = blockRowPixels - frameWidthPixels;
         wideLevel1 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
@@ -1155,37 +1160,37 @@ uint32_t Movie_EncodeFrame4x4Keyframe(MoviePixelDimension frameHeightPixels,Movi
         if ((int)wideLevel1 < 0) {
           wideLevel1 = 0;
         }
-        else if (0xf < (int)wideLevel1) {
-          wideLevel1 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel1) {
+          wideLevel1 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel2 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
         wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
         if ((int)wideLevel2 < 0) {
           wideLevel2 = 0;
         }
-        else if (0xf < (int)wideLevel2) {
-          wideLevel2 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel2) {
+          wideLevel2 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
         wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
         if ((int)wideLevel3 < 0) {
           wideLevel3 = 0;
         }
-        else if (0xf < (int)wideLevel3) {
-          wideLevel3 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel3) {
+          wideLevel3 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         wideLevel4 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
         wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
         if ((int)wideLevel4 < 0) {
           wideLevel4 = 0;
         }
-        else if (0xf < (int)wideLevel4) {
-          wideLevel4 = 0xf;
+        else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel4) {
+          wideLevel4 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
         }
         *outputCursor = *outputCursor |
-                   (wideLevel5 >> 1) << 0x1d | (minLumaChromaOrLevel >> 1) << 0x1a | (maxLumaOrLevel >> 1) << 0x17 |
-                   (sampleLumaOrLevel >> 1) << 0x14 | (wideLevel0 >> 1) << 0x11 | (wideLevel1 >> 1) << 0xe |
-                   (wideLevel2 >> 1) << 0xb | (wideLevel3 >> 1) << 8 | (wideLevel4 >> 1) << 5;
+                   (wideLevel5 >> 1) << 29 | (minLumaChromaOrLevel >> 1) << 26 | (maxLumaOrLevel >> 1) << 23 |
+                   (sampleLumaOrLevel >> 1) << 20 | (wideLevel0 >> 1) << 17 | (wideLevel1 >> 1) << 14 |
+                   (wideLevel2 >> 1) << 11 | (wideLevel3 >> 1) << 8 | (wideLevel4 >> 1) << 5;
       }
       sourcePixels = blockRowPixels + 4;
       outputCursor = outputCursor + 2;
@@ -1265,25 +1270,25 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
                 previousBlock[frameWidthPixels] |
                 currentBlockCursor[frameWidthPixels + 1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
                 previousBlock[frameWidthPixels + 1] |
-               *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc) &
+               *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 12) &
                g_MovieDeltaRgbHighNibbleMask2Pixels ^
-               *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc) |
-               *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc + 8) &
+               *(uint64_t *)((int)previousBlock + frameWidthPixels * 12) |
+               *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 12 + 8) &
                g_MovieDeltaRgbHighNibbleMask2Pixels ^
-               *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc + 8));
+               *(uint64_t *)((int)previousBlock + frameWidthPixels * 12 + 8));
       minLumaOrSkipCount = pendingSkipCount + 1; /* the skip run including this block, kept if it is unchanged */
-      if ((int)(changedBitsOrQword >> 0x20) != 0 || (int)changedBitsOrQword != 0) {
+      if ((int)(changedBitsOrQword >> 32) != 0 || (int)changedBitsOrQword != 0) {
         if (pendingSkipCount != 0) {
           if (pendingSkipCount < MOVIE_SKIP_SHORT_MAX_BLOCKS + 1) {
-            *(uint8_t *)outputCursor = ((char)pendingSkipCount - 1) * 0x20 | MOVIE_TOKEN_SKIP_SHORT;
+            *(uint8_t *)outputCursor = ((char)pendingSkipCount - 1) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_SHORT;
             outputCursor = (uint32_t *)((uint8_t *)outputCursor + 1);
           }
           else if (pendingSkipCount < MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1) {
-            *(uint16_t *)outputCursor = ((short)pendingSkipCount - (MOVIE_SKIP_SHORT_MAX_BLOCKS + 1)) * 0x20 | MOVIE_TOKEN_SKIP_MEDIUM;
+            *(uint16_t *)outputCursor = ((short)pendingSkipCount - (MOVIE_SKIP_SHORT_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_MEDIUM;
             outputCursor = (uint32_t *)((uint8_t *)outputCursor + 2);
           }
           else {
-            *outputCursor = (pendingSkipCount - (MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1)) * 0x20 | MOVIE_TOKEN_SKIP_LONG;
+            *outputCursor = (pendingSkipCount - (MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_LONG;
             outputCursor = outputCursor + 1;
           }
           pendingSkipCount = 0;
@@ -1298,12 +1303,12 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
         *(uint64_t *)((int)previousBlock + rowStrideBytes) = copiedQwordA;
         *(uint64_t *)((int)previousBlock + rowStrideBytes + 8) = copiedQwordB;
         changedBitsOrQword = currentBlockCursor[frameWidthPixels + 1];
-        copiedQwordA = *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc);
+        copiedQwordA = *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 12);
         copiedQwordB = *(uint64_t *)((int)currentBlockCursor + (frameWidthPixels * 3 + 2) * 4);
         previousBlock[frameWidthPixels] = currentBlockCursor[frameWidthPixels];
         previousBlock[frameWidthPixels + 1] = changedBitsOrQword;
-        *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc) = copiedQwordA;
-        *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc + 8) = copiedQwordB;
+        *(uint64_t *)((int)previousBlock + frameWidthPixels * 12) = copiedQwordA;
+        *(uint64_t *)((int)previousBlock + frameWidthPixels * 12 + 8) = copiedQwordB;
         blockRowPixels = (PackedRgb24 *)currentBlockCursor;
         channelSums = Movie_AddRowToChannelSums(0,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
                                                 blockRowPixels[3]);
@@ -1320,7 +1325,7 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
             (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
           maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
-        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
+        sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 12));
         minLumaOrSkipCount = sampleLumaOrLevel;
         if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) &&
             (minLumaOrSkipCount = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
@@ -1412,11 +1417,11 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
         if ((int)minLumaOrBaseLuma < 0) {
           minLumaOrBaseLuma = 0;
         }
-        else if (0x18 < minLumaOrBaseLuma) {
-          minLumaOrBaseLuma = 0x18;
+        else if (MOVIE_TOKEN_BASE_LUMA_MAX < minLumaOrBaseLuma) {
+          minLumaOrBaseLuma = MOVIE_TOKEN_BASE_LUMA_MAX;
         }
         minLumaOrSkipCount = pendingSkipCount;
-        if (maxLumaChromaOrLevel - sampleLumaOrLevel < 0xc) {
+        if (maxLumaChromaOrLevel - sampleLumaOrLevel < 12) {
           *outputCursor = minLumaOrBaseLuma;
           maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
           sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
@@ -1477,7 +1482,7 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
             sampleLumaOrLevel = 7;
           }
           wideLevel0 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-          outputCursor[1] = (maxLumaChromaOrLevel & 0x7fe0) << 0x10 | level0 << 0x12 | level1 << 0xf | level2 << 0xc |
+          outputCursor[1] = (maxLumaChromaOrLevel & MOVIE_COLOR_CHROMA_MASK) << 16 | level0 << 18 | level1 << 15 | level2 << 12 |
                        level3 << 9 | level4 << 6 | level5 << 3 | sampleLumaOrLevel;
           level0 = wideLevel0 - minLumaOrBaseLuma;
           if (level0 < 0) {
@@ -1520,7 +1525,7 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
             level4 = 7;
           }
           currentBlockCursor = (uint64_t *)(blockRowPixels - frameWidthPixels);
-          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
+          maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 12));
           level5 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
           if (level5 < 0) {
             level5 = 0;
@@ -1553,8 +1558,8 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
             level8 = 7;
           }
           *outputCursor = *outputCursor |
-                     level0 << 0x1d | level1 << 0x1a | level2 << 0x17 | level3 << 0x14 |
-                     level4 << 0x11 | level5 << 0xe | level6 << 0xb | level7 << 8 | level8 << 5;
+                     level0 << 29 | level1 << 26 | level2 << 23 | level3 << 20 |
+                     level4 << 17 | level5 << 14 | level6 << 11 | level7 << 8 | level8 << 5;
           outputCursor = outputCursor + 2;
         }
         else {
@@ -1562,8 +1567,8 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
           if ((int)minLumaOrBaseLuma < 0) {
             minLumaOrBaseLuma = 0;
           }
-          else if (0x10 < (int)minLumaOrBaseLuma) {
-            minLumaOrBaseLuma = 0x10;
+          else if (16 < (int)minLumaOrBaseLuma) {
+            minLumaOrBaseLuma = 16;
           }
           *outputCursor = minLumaOrBaseLuma;
           maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
@@ -1572,32 +1577,32 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
           if ((int)sampleLumaOrLevel < 0) {
             sampleLumaOrLevel = 0;
           }
-          else if (0xf < (int)sampleLumaOrLevel) {
-            sampleLumaOrLevel = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)sampleLumaOrLevel) {
+            sampleLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel0 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
           wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
           if ((int)wideLevel0 < 0) {
             wideLevel0 = 0;
           }
-          else if (0xf < (int)wideLevel0) {
-            wideLevel0 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel0) {
+            wideLevel0 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel1 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
           wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
           if ((int)wideLevel1 < 0) {
             wideLevel1 = 0;
           }
-          else if (0xf < (int)wideLevel1) {
-            wideLevel1 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel1) {
+            wideLevel1 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel2 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
           wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
           if ((int)wideLevel2 < 0) {
             wideLevel2 = 0;
           }
-          else if (0xf < (int)wideLevel2) {
-            wideLevel2 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel2) {
+            wideLevel2 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           blockRowPixels = blockRowPixels - frameWidthPixels;
           wideLevel3 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
@@ -1605,35 +1610,35 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
           if ((int)wideLevel3 < 0) {
             wideLevel3 = 0;
           }
-          else if (0xf < (int)wideLevel3) {
-            wideLevel3 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel3) {
+            wideLevel3 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel4 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
           wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
           if ((int)wideLevel4 < 0) {
             wideLevel4 = 0;
           }
-          else if (0xf < (int)wideLevel4) {
-            wideLevel4 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel4) {
+            wideLevel4 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel5 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
           wideLevel5 = wideLevel5 - minLumaOrBaseLuma;
           if ((int)wideLevel5 < 0) {
             wideLevel5 = 0;
           }
-          else if (0xf < (int)wideLevel5) {
-            wideLevel5 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel5) {
+            wideLevel5 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel6 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
-          outputCursor[1] = (maxLumaChromaOrLevel & 0x7fe0) * 0x10000 + 0x80000000 | (sampleLumaOrLevel >> 1) << 0x12 |
-                       (wideLevel0 >> 1) << 0xf | (wideLevel1 >> 1) << 0xc | (wideLevel2 >> 1) << 9 |
+          outputCursor[1] = (maxLumaChromaOrLevel & MOVIE_COLOR_CHROMA_MASK) * (1 << 16) + MOVIE_BLOCK_DOUBLE_STEPS | (sampleLumaOrLevel >> 1) << 18 |
+                       (wideLevel0 >> 1) << 15 | (wideLevel1 >> 1) << 12 | (wideLevel2 >> 1) << 9 |
                        (wideLevel3 >> 1) << 6 | (wideLevel4 >> 1) << 3 | wideLevel5 >> 1;
           wideLevel6 = wideLevel6 - minLumaOrBaseLuma;
           if ((int)wideLevel6 < 0) {
             wideLevel6 = 0;
           }
-          else if (0xf < (int)wideLevel6) {
-            wideLevel6 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel6) {
+            wideLevel6 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           blockRowPixels = blockRowPixels - frameWidthPixels;
           maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
@@ -1641,70 +1646,70 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
           if ((int)maxLumaChromaOrLevel < 0) {
             maxLumaChromaOrLevel = 0;
           }
-          else if (0xf < (int)maxLumaChromaOrLevel) {
-            maxLumaChromaOrLevel = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)maxLumaChromaOrLevel) {
+            maxLumaChromaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[2]);
           sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
           if ((int)sampleLumaOrLevel < 0) {
             sampleLumaOrLevel = 0;
           }
-          else if (0xf < (int)sampleLumaOrLevel) {
-            sampleLumaOrLevel = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)sampleLumaOrLevel) {
+            sampleLumaOrLevel = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel0 = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[1]);
           wideLevel0 = wideLevel0 - minLumaOrBaseLuma;
           if ((int)wideLevel0 < 0) {
             wideLevel0 = 0;
           }
-          else if (0xf < (int)wideLevel0) {
-            wideLevel0 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel0) {
+            wideLevel0 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel1 = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
           wideLevel1 = wideLevel1 - minLumaOrBaseLuma;
           if ((int)wideLevel1 < 0) {
             wideLevel1 = 0;
           }
-          else if (0xf < (int)wideLevel1) {
-            wideLevel1 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel1) {
+            wideLevel1 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           currentBlockCursor = (uint64_t *)(blockRowPixels - frameWidthPixels);
-          wideLevel2 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
+          wideLevel2 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 12));
           wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
           if ((int)wideLevel2 < 0) {
             wideLevel2 = 0;
           }
-          else if (0xf < (int)wideLevel2) {
-            wideLevel2 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel2) {
+            wideLevel2 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel3 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)currentBlockCursor[1]);
           wideLevel3 = wideLevel3 - minLumaOrBaseLuma;
           if ((int)wideLevel3 < 0) {
             wideLevel3 = 0;
           }
-          else if (0xf < (int)wideLevel3) {
-            wideLevel3 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel3) {
+            wideLevel3 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel4 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 4));
           wideLevel4 = wideLevel4 - minLumaOrBaseLuma;
           if ((int)wideLevel4 < 0) {
             wideLevel4 = 0;
           }
-          else if (0xf < (int)wideLevel4) {
-            wideLevel4 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel4) {
+            wideLevel4 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           wideLevel5 = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*currentBlockCursor);
           wideLevel5 = wideLevel5 - minLumaOrBaseLuma;
           if ((int)wideLevel5 < 0) {
             wideLevel5 = 0;
           }
-          else if (0xf < (int)wideLevel5) {
-            wideLevel5 = 0xf;
+          else if (MOVIE_BLOCK_WIDE_LEVEL_MAX < (int)wideLevel5) {
+            wideLevel5 = MOVIE_BLOCK_WIDE_LEVEL_MAX;
           }
           *outputCursor = *outputCursor |
-                     (wideLevel6 >> 1) << 0x1d | (maxLumaChromaOrLevel >> 1) << 0x1a | (sampleLumaOrLevel >> 1) << 0x17 |
-                     (wideLevel0 >> 1) << 0x14 | (wideLevel1 >> 1) << 0x11 | (wideLevel2 >> 1) << 0xe |
-                     (wideLevel3 >> 1) << 0xb | (wideLevel4 >> 1) << 8 | (wideLevel5 >> 1) << 5;
+                     (wideLevel6 >> 1) << 29 | (maxLumaChromaOrLevel >> 1) << 26 | (sampleLumaOrLevel >> 1) << 23 |
+                     (wideLevel0 >> 1) << 20 | (wideLevel1 >> 1) << 17 | (wideLevel2 >> 1) << 14 |
+                     (wideLevel3 >> 1) << 11 | (wideLevel4 >> 1) << 8 | (wideLevel5 >> 1) << 5;
           outputCursor = outputCursor + 2;
         }
       }
@@ -1712,25 +1717,25 @@ uint32_t Movie_EncodeFrame4x4Delta(MoviePixelDimension frameHeightPixels,MoviePi
       currentBlockCursor = currentBlockCursor + 2;
       blocksLeftInRow--;
     } while (blocksLeftInRow != 0);
-    currentBlockCursor = (uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc);
+    currentBlockCursor = (uint64_t *)((int)currentBlockCursor + frameWidthPixels * 12);
     blockRowsLeft--;
     blocksLeftInRow = frameWidthPixels >> 2;
   } while (blockRowsLeft != 0);
   if (pendingSkipCount != 0) {
     if (pendingSkipCount < MOVIE_SKIP_SHORT_MAX_BLOCKS + 1) {
-      *(uint8_t *)outputCursor = ((char)pendingSkipCount - 1) * 0x20 | MOVIE_TOKEN_SKIP_SHORT;
+      *(uint8_t *)outputCursor = ((char)pendingSkipCount - 1) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_SHORT;
       outputCursor = (uint32_t *)((uint8_t *)outputCursor + 1);
     }
     else if (pendingSkipCount < MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1) {
-      *(uint16_t *)outputCursor = ((short)pendingSkipCount - (MOVIE_SKIP_SHORT_MAX_BLOCKS + 1)) * 0x20 | MOVIE_TOKEN_SKIP_MEDIUM;
+      *(uint16_t *)outputCursor = ((short)pendingSkipCount - (MOVIE_SKIP_SHORT_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_MEDIUM;
       outputCursor = (uint32_t *)((uint8_t *)outputCursor + 2);
     }
     else {
-      *outputCursor = (pendingSkipCount - (MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1)) * 0x20 | MOVIE_TOKEN_SKIP_LONG;
+      *outputCursor = (pendingSkipCount - (MOVIE_SKIP_MEDIUM_MAX_BLOCKS + 1)) * (MOVIE_TOKEN_MASK + 1) | MOVIE_TOKEN_SKIP_LONG;
       outputCursor = outputCursor + 1;
     }
   }
-  return (int)outputCursor + (7 - (int)encodedOutput) & 0xfffffff8;
+  return (int)outputCursor + (7 - (int)encodedOutput) & ~7u;
 }
 
 
@@ -2013,27 +2018,27 @@ uint32_t Movie_DecodeFrame4x4Delta
     do {
       blockWord0 = *streamCursor;
       if (skipRemaining == 0) {
-        tokenOrTableIndex = blockWord0 & 0x1f;
+        tokenOrTableIndex = blockWord0 & MOVIE_TOKEN_MASK;
         blockWord1 = streamCursor[1];
         if (tokenOrTableIndex < MOVIE_TOKEN_SKIP_SHORT) {
           /* colour block: table row = chroma code (second dword bits 21-30) * 32 + base luma; the luma steps
              sit at bits 5-31 of the first and bits 0-20 of the second dword. With bit 31 of the second dword
              set every step counts twice (luma range 0..14 instead of 0..7). */
           if ((int)blockWord1 < 0) {
-            tokenOrTableIndex = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
+            tokenOrTableIndex = (blockWord1 & MOVIE_COLOR_CHROMA_MASK << 16) >> 16 | *streamCursor & MOVIE_TOKEN_MASK;
             blockWord0 = *streamCursor;
             pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 8 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xb & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xe & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 11 & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 14 & 7) * 2];
             *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 5 & 7) * 2];
             destinationArgb[1] = pixel1;
             destinationArgb[2] = pixel2;
             destinationArgb[3] = pixel3;
             destinationRow = destinationArgb + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x14 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x17 & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x1a & 7) * 2];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x11 & 7) * 2];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 20 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 23 & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 26 & 7) * 2];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 17 & 7) * 2];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
@@ -2044,14 +2049,14 @@ uint32_t Movie_DecodeFrame4x4Delta
             pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 6 & 7) * 2];
             /* step (blockWord0 >> 29) * 2, formed directly as a byte offset */
             *destinationRow = *(uint32_t *)((int)g_MovieChromaLumaToArgb[0] +
-                                (blockWord0 >> 0x1a & 0xfffffff8) + tokenOrTableIndex * 4);
+                                (blockWord0 >> 26 & ~7u) + tokenOrTableIndex * 4);
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationRow = destinationRow + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xc & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xf & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0x12 & 7) * 2];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 12 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 15 & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 18 & 7) * 2];
             streamCursor = streamCursor + 2;
             *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 9 & 7) * 2];
             destinationRow[1] = pixel1;
@@ -2060,20 +2065,20 @@ uint32_t Movie_DecodeFrame4x4Delta
             destinationArgb = destinationRow + widthPixels * -3;
           }
           else {
-            tokenOrTableIndex = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
+            tokenOrTableIndex = (blockWord1 & MOVIE_COLOR_CHROMA_MASK << 16) >> 16 | *streamCursor & MOVIE_TOKEN_MASK;
             blockWord0 = *streamCursor;
             pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 8 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xb & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xe & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 11 & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 14 & 7)];
             *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 5 & 7)];
             destinationArgb[1] = pixel1;
             destinationArgb[2] = pixel2;
             destinationArgb[3] = pixel3;
             destinationRow = destinationArgb + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x14 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x17 & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x1a & 7)];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x11 & 7)];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 20 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 23 & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 26 & 7)];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 17 & 7)];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
@@ -2082,14 +2087,14 @@ uint32_t Movie_DecodeFrame4x4Delta
             pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 & 7)];
             pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 3 & 7)];
             pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 6 & 7)];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x1d)];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 29)];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationRow = destinationRow + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xc & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xf & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0x12 & 7)];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 12 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 15 & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 18 & 7)];
             streamCursor = streamCursor + 2;
             *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 9 & 7)];
             destinationRow[1] = pixel1;
@@ -2123,7 +2128,7 @@ uint32_t Movie_DecodeFrame4x4Delta
     blockRowsLeft--;
     blocksLeftInRow = widthPixels >> 2;
   } while (blockRowsLeft != 0);
-  return (int)streamCursor + (7 - (int)encodedFrame) & 0xfffffff8;
+  return (int)streamCursor + (7 - (int)encodedFrame) & ~7u;
 }
 
 
@@ -2139,12 +2144,12 @@ uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
   uint32_t green;
   FixedLengthAngle angleAndLength;
   
-  green = rgb888 >> 8 & 0xff;
+  green = rgb888 >> 8 & ARGB8888_CHANNEL_MASK;
   /* 0xDDB4 = 0x8000 * sqrt(3) */
   angleAndLength = FixedMath_Vector2AngleAndLengthRegs
-                    (((rgb888 & 0xff) - green) * 0xddb4,
-                     (green + (rgb888 & 0xff) + (rgb888 >> 0x10 & 0xff) * -2) * 0x8000);
-  return angleAndLength.length >> 9 & 0x7c00 | angleAndLength.angle >> 6 & 0x3e0;
+                    (((rgb888 & ARGB8888_CHANNEL_MASK) - green) * MOVIE_CHROMA_SQRT3_Q15,
+                     (green + (rgb888 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 16 & ARGB8888_CHANNEL_MASK) * -2) * (1 << 15));
+  return angleAndLength.length >> 9 & MOVIE_COLOR_SATURATION_MASK | angleAndLength.angle >> 6 & MOVIE_COLOR_HUE_MASK;
 }
 
 
@@ -2157,7 +2162,7 @@ uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 uint32_t MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
 
 {
-  return (((rgb888 & 0xff) + (rgb888 >> 8 & 0xff) + (rgb888 >> 0x10 & 0xff)) * 0x5555 + 0x40000) >> 19;
+  return (((rgb888 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 8 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 16 & ARGB8888_CHANNEL_MASK)) * 0x5555 + (1 << 18)) >> 19;
 }
 
 
@@ -2260,7 +2265,7 @@ void Movie_BuildChromaLumaTable(void)
       uint32_t *row = g_MovieChromaLumaToArgb[saturation * 32 + hue];
       for (luma = 0; luma < 32; luma++) {
         int grey = luma * 8;
-        row[luma] = 0xff000000u | MovieColor_ClampChannel(grey - 2 * cosTerm) << 16 |
+        row[luma] = ARGB8888_ALPHA_MASK | MovieColor_ClampChannel(grey - 2 * cosTerm) << 16 |
                     MovieColor_ClampChannel(grey + cosTerm - sinTerm) << 8 |
                     MovieColor_ClampChannel(grey + cosTerm + sinTerm);
       }

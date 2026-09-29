@@ -173,7 +173,7 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
   widthCells = fieldGridAsset->gridWidth;
   remainingCount = widthCells * fieldGridAsset->gridHeight;
   fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
-  rowStrideBytes = widthCells * 0x80; /* 0x80-byte FieldGridCell records */
+  rowStrideBytes = widthCells * sizeof(FieldGridCell); /* 0x80-byte FieldGridCell records */
   fieldCell = fieldGridAsset->cells;
   do {
     heightDelta = *heightDeltaCursor;
@@ -434,7 +434,7 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
         columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
         ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial = ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
-        cellIndexOrColumn = cellIndexOrColumn + 0x80;
+        cellIndexOrColumn = cellIndexOrColumn + sizeof(FieldGridCell);
       }
       widthOrColumn = spanStartColumn;
       do {
@@ -503,7 +503,7 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
         columnOrMaterialDelta = cellMaterial - referenceMaterial;
         ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial = ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
-        cellIndexOrColumn = cellIndexOrColumn + 0x80;
+        cellIndexOrColumn = cellIndexOrColumn + sizeof(FieldGridCell);
       }
       widthOrColumn = spanStartColumn;
       do {

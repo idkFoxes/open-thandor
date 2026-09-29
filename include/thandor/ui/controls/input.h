@@ -24,7 +24,7 @@
    (UiImageControl_PointerMove). */
 #define UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE 0x40
 /* Further UiImageControl stateFlags bits (UiImageControl_* in ui/controls/misc.c): POINTER_SOUND plays
-   pointerActivationSoundId when the image opens/closes; RIGHT_BUTTON_LATCHED holds a right-button press until
+   pointerActivationSound when the image opens/closes; RIGHT_BUTTON_LATCHED holds a right-button press until
    its release (UiImageControl_TickHover); PRESSED_ON_IMAGE is set by a press and cleared when the pointer
    leaves the image's opaque pixels; OPEN keeps the image open after the release; PRESS_STARTED is set by a
    press and cleared by the right-button re-dispatch. A press sets / clears the PRESS_STATE_BITS (bits 0, 1,
@@ -59,6 +59,8 @@
 #define UI_LABEL_TEXT_NEEDS_RELOCATION 0x20 /* text is still a serialized offset */
 #define UI_LABEL_WHEEL_FORWARD_ACTIVE 0x400 /* re-entry guard of the pointer-wheel forwarding */
 #define UI_LABEL_SWALLOW_CHARACTERS 0x8000 /* typed characters with bit 0x10 or 0x20 are consumed, not forwarded */
+/* Character-code bits UI_LABEL_SWALLOW_CHARACTERS tests (0x10 | 0x20) */
+#define UI_LABEL_SWALLOWED_CHARACTER_BITS 0x30
 
 /* 0x004AF500 */
 void UiPointer_DispatchPendingEvents(void);

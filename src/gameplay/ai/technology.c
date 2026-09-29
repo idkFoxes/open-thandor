@@ -110,7 +110,7 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
   /* the first test reads the unlock bit in technologyMasks256Bits (faction record +0x6E0) */
   if ((((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
                                      factionRecordOffset))->technologyMasks256Bits[technologyIndex >> 5] &
-       1 << ((uint8_t)technologyIndex & 0x1f)) == 0 &&
+       1 << ((uint8_t)technologyIndex & 31)) == 0 &&
       (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
        ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
                                      factionRecordOffset))->technologyMasks256Bits[0]) ==
@@ -158,7 +158,7 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
 AiTechnologyPlanningLoopRegisterContinuityResult
 AiTechnologyPlanning_AddCandidateRecord
           (uint32_t technologyPanelIndex,uint32_t sourceArmyEntriesRemaining,uint32_t factionRecordOffset,
-          ArmyRuntimeSlot *sourceArmyRuntime,PckTechnologyIdCatalog technologyId)
+          ModelRuntimeSlot *sourceModelRuntime,PckTechnologyIdCatalog technologyId)
 
 {
   AiTechnologyPlanningCandidate *candidateBuffer;
@@ -170,13 +170,12 @@ AiTechnologyPlanning_AddCandidateRecord
   candidateBuffer = g_AiWorkspace12TechnologyCandidates;
   if ((g_AiWorkspace12Count < AI_WORKSPACE12_CAPACITY) && (technologyId != TEC_011_PIONEER_VEHICLE)) {
     g_AiWorkspace12TechnologyCandidates[g_AiWorkspace12Count].technologyId00 = technologyId;
-    candidateBuffer[candidateIndex].sourceArmyRuntime04 = sourceArmyRuntime;
+    candidateBuffer[candidateIndex].sourceModelRuntime04 = sourceModelRuntime;
     candidateBuffer[candidateIndex].scoreKind08 = AI_TECHNOLOGY_SCORE_DEFAULT_ZERO;
     g_AiWorkspace12Count++;
     /* each test passed raises the score kind by one; the first match stops the chain */
     sourceArmyModelDefinition =
-         (MdlDefinitionSemanticPrefix *)
-         (sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+         (MdlDefinitionSemanticPrefix *)sourceModelRuntime->definitionOrSavedId.runtimeDefinition;
     if ((((technologyId != TEC_216_WALL) &&
          (((technologyId != TEC_217_HIGH_WALL &&
            (candidateBuffer[candidateIndex].scoreKind08 =
@@ -239,13 +238,13 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue
          g_GameFactionRuntimeImage.records[factionIndex].suppliedEnergyDemandQ4 +
          g_GameFactionRuntimeImage.records[factionIndex].unpoweredEnergyDemandQ4;
     energyDemandPressureRatioQ8 =
-         (UQ8)(((uint64_t)(totalEnergyDemandQ4 >> 0x18) << 0x20 |
-               (uint64_t)totalEnergyDemandQ4 * 0x100 & 0xffffffff) /
+         (UQ8)(((uint64_t)(totalEnergyDemandQ4 >> 24) << 32 |
+               (uint64_t)totalEnergyDemandQ4 * Q8_ONE & UINT32_MAX) /
               (uint64_t)
-              (g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick * 0x10
+              (g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick * 16
               + g_GameFactionRuntimeImage.records[factionIndex].baselineEnergySupplyQ4));
     /* the original divides without a zero check: a faction with no energy supply at all faults here */
-    if (0xef < (int)energyDemandPressureRatioQ8) {
+    if (239 < (int)energyDemandPressureRatioQ8) {
       return energyDemandPressureRatioQ8 *
              g_TechnologyAsset->records[technologyId].baseCandidateScore >> 8;
     }
@@ -363,30 +362,28 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
               (ModelDefinitionRecordPrefix *candidateDefinition)
 
 {
-  /* The typed path reads the dword at +8 of the record at the unit's slot +0 (MOV EDX,[EDX]; MOV
-     EDX,[EDX+8]); the current struct view calls it ownerArmyRuntime, but it is compared as a definition id. */
-  ArmyRuntimeSlot *unitDefinitionId;
+  /* the definition id (+8) of the unit's definition (MOV EDX,[EDX]; MOV EDX,[EDX+8]) */
+  PckModelDefinitionIdCatalog unitDefinitionId;
   UQ8 averageScaleQ8;
   int remainingCount;
   int definitionIdDelta;
   uint32_t occupiedEntryCount;
   AiRuntimeWorkspaceEntry *runtimeWorkspaceEntry;
   
-  averageScaleQ8 = 0x100; /* 1.0 */
+  averageScaleQ8 = Q8_ONE;
   if (g_AiWorkspace01Count != 0) {
     occupiedEntryCount = 0;
     remainingCount = g_AiWorkspace01Count;
     runtimeWorkspaceEntry = g_AiWorkspace01Units;
     do {
-      if (runtimeWorkspaceEntry->armyRuntime != NULL) {
+      if (runtimeWorkspaceEntry->modelRuntime != NULL) {
         occupiedEntryCount++;
-        unitDefinitionId = (((runtimeWorkspaceEntry->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                 ownerArmyRuntimeOrSavedOffset).armyRuntime;
+        unitDefinitionId = runtimeWorkspaceEntry->modelRuntime->definitionOrSavedId.definition->definitionId;
         definitionIdDelta = (int)unitDefinitionId - (int)candidateDefinition->definitionId;
-        if ((((unitDefinitionId == (ArmyRuntimeSlot *)candidateDefinition->definitionId) ||
+        if ((((unitDefinitionId == candidateDefinition->definitionId) ||
               (definitionIdDelta == -1000)) || (definitionIdDelta == -2000)) ||
             ((definitionIdDelta == 1000 || (definitionIdDelta == 2000)))) {
-          averageScaleQ8 = averageScaleQ8 + 0x200; /* 2.0 */
+          averageScaleQ8 = averageScaleQ8 + 2 * Q8_ONE;
         }
       }
       runtimeWorkspaceEntry++;

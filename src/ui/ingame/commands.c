@@ -319,10 +319,10 @@ void UiCommandSpriteButtonControl_NonRightRelease
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = control->activationInputState | inputStateBits;
     if ((((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-       ((control->sprite).activationSoundId != 0)) {
+       ((control->sprite).activationSound != NULL)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (DirectSoundVoiceSet *)(control->sprite).activationSoundId);
+                 (control->sprite).activationSound);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
@@ -351,10 +351,10 @@ void UiCommandSpriteButtonControl_RightRelease
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     control->activationInputState = inputStateBits | UI_COMMAND_ACTIVATION_ALTERNATE_BUTTON;
     if ((((control->sprite).selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
-       ((control->sprite).activationSoundId != 0)) {
+       ((control->sprite).activationSound != NULL)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (DirectSoundVoiceSet *)(control->sprite).activationSoundId);
+                 (control->sprite).activationSound);
     }
     UiActionQueue_Enqueue((control->sprite).selectable.actionId,control);
     UiNode_InvalidateRoot((UiNodeBase *)control);
@@ -530,13 +530,13 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
         armySlot = *createdArmySlots;
         modelNodeRuntime->movementPosition0Q12 = 0;
         if (ownerFactionIndex == (runtimeRoot->worldRuntime).activeFactionRuntimeIndex) {
-          modelNodeRuntime->movementPosition0Q12 = 0x7fffffff;
+          modelNodeRuntime->movementPosition0Q12 = INT32_MAX;
         }
         relationCounter = &g_GameFactionRuntimeImage.records[ownerFactionIndex].relationCounterB;
         *relationCounter = *relationCounter + 1;
         slotModelRuntime = (armySlot->modelRuntimeOrSavedOffset).modelRuntime;
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
-        ArmyRuntime_DispatchClassCommand(createdArmySlots,worldRuntime);
+        ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdArmySlots,worldRuntime); /* the created army */
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
@@ -1527,7 +1527,7 @@ void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime)
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb | 0xff000000,
+            (((WorldRuntimeContext *)worldRuntime)->lighting.secondaryColorArgb | ARGB8888_ALPHA_MASK,
              ((WorldRuntimeContext *)worldRuntime)->lighting.baseColorArgb & 0xffffff,
              ((WorldRuntimeContext *)worldRuntime)->lighting.rampStepColorArgb & 0xffffff);
   FieldGrid_RecomputeInteriorDirectionalLighting

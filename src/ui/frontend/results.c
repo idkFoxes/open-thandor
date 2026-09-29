@@ -13,7 +13,9 @@
 /* Address: 0x00517020.
    drawClipped of g_UiNodeVtable_00516F60, the three results charts (resultsChart1..3) of the end-of-game
    results screen. Table mode (modeFlags bit 0 clear) draws the control's list of column types one after the
-   other, advancing by each type's width (types 0 and 1 are empty spacers). Graph mode first converts the colour of
+   other, advancing by each type's width (types 0 and 1 are empty spacers). The "columns" advance downwards
+   (drawYOrCount starts at base.top) and each one lays its header and its faction entries out from left to
+   right (drawX starts at base.left, the entries advance by rowAdvancePixels in x). Graph mode first converts the colour of
    each faction's colour text (TEXT_ID_FACTION_NAME_BASE + colour index at record +0x38) into a packed pixel
    for g_FrontendResultsFactionPackedPixelColors, then draws one pixel column per x through the control's
    factionWeightRaster, each showing the stat table sample at x / width of the game so far.
@@ -22,13 +24,13 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
           FrontendResultsColumnSequenceControl *control)
 
 {
-  UiPixelCoordinate drawY;
+  UiPixelCoordinate drawX;
   SoftwareFramebufferAccess *framebufferAccess;
   void *statTableImage;
   uint16_t *colourResource;
   uint32_t pixelColumn;
   uint32_t remainingColumns;
-  int drawXOrCount;
+  int drawYOrCount;
   uint32_t historySampleCount;
   GameFactionRuntimeRecord *factionRecord;
   uint32_t *columnTypeOrColorCursor;
@@ -36,8 +38,8 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
   TextResolveResult resolvedText;
   
   if ((control->modeFlags & FRONTEND_RESULTS_MODE_GRAPH) == 0) {
-    drawY = control->base.left;
-    drawXOrCount = control->base.top;
+    drawX = control->base.left;
+    drawYOrCount = control->base.top;
     remainingColumns = control->columnTypeCount;
     columnTypeOrColorCursor = &control->columnTypes0;
     accessFailed = g_GraphicsFramebufferBeginAccess();
@@ -45,117 +47,117 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
       do {
         switch(*columnTypeOrColorCursor) {
         case FRONTEND_RESULTS_COLUMN_SPACER0:
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvance00Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvance00Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_SPACER1:
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvance01Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvance01Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_COLOUR:
           FrontendResultsTable_DrawColourColumn
-                    (clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                    (clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceColourPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceColourPixels;
           break;
         case FRONTEND_RESULTS_COLUMN_ECONOMY:
           FrontendResultsTable_DrawEconomyColumn
-                    (clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                    (clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceEconomyPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceEconomyPixels;
           break;
         case FRONTEND_RESULTS_COLUMN_MILITARY:
           FrontendResultsTable_DrawMilitaryColumn
-                    (clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                    (clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceMilitaryPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceMilitaryPixels;
           break;
         case FRONTEND_RESULTS_COLUMN_POINTS:
           FrontendResultsTable_DrawPointsColumn
-                    (clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                    (clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvancePointsPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvancePointsPixels;
           break;
         case FRONTEND_RESULTS_COLUMN_PLAYER:
           FrontendResultsTable_DrawPlayerColumn
-                    (clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                    (clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvancePlayerPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvancePlayerPixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION:
           FrontendResultsTable_DrawFactionColumn
-                    (clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                    (clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionPixels;
           break;
         /* faction record fields +0x98..+0xBC (value template, header, field offset) */
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE1,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 0,
-                     offsetof(GameFactionRuntimeRecord,exploredTerrainPercent),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,exploredTerrainPercent),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionField98Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionField98Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 1:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 1,
-                     offsetof(GameFactionRuntimeRecord,unlockedTechnologyCountBeyondBaseline),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,unlockedTechnologyCountBeyondBaseline),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionField9CPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionField9CPixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 2:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE3,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 2,
-                     offsetof(GameFactionRuntimeRecord,primaryResourceComponent),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,primaryResourceComponent),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldA0Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldA0Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 3:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE3,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 3,
-                     offsetof(GameFactionRuntimeRecord,secondaryResourceComponent),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,secondaryResourceComponent),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldA4Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldA4Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 4:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 4,
-                     offsetof(GameFactionRuntimeRecord,relationCounterA),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,relationCounterA),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldA8Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldA8Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 5:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 5,
-                     offsetof(GameFactionRuntimeRecord,relationCounterB),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,relationCounterB),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldACPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldACPixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 6:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 6,
-                     offsetof(GameFactionRuntimeRecord,relationCounterC),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,relationCounterC),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldB0Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldB0Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 7:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 7,
-                     offsetof(GameFactionRuntimeRecord,relationCounterD),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,relationCounterD),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldB4Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldB4Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 8:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 8,
-                     offsetof(GameFactionRuntimeRecord,relationCounterE),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,relationCounterE),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldB8Pixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldB8Pixels;
           break;
         case FRONTEND_RESULTS_COLUMN_FACTION_FIELD + 9:
           FrontendResultsTable_DrawFormattedFactionFieldColumn
                     (TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2,TEXT_ID_RESULTS_FIELD_HEADER_BASE + 9,
-                     offsetof(GameFactionRuntimeRecord,relationCounterF),clipBottom,clipRight,clipTop,clipLeft,drawXOrCount,drawY,
+                     offsetof(GameFactionRuntimeRecord,relationCounterF),clipBottom,clipRight,clipTop,clipLeft,drawYOrCount,drawX,
                      (FrontendResultsRowMetrics *)control);
-          drawXOrCount = drawXOrCount + g_FrontendResultsColumnAdvanceFactionFieldBCPixels;
+          drawYOrCount = drawYOrCount + g_FrontendResultsColumnAdvanceFactionFieldBCPixels;
         }
         columnTypeOrColorCursor++;
         remainingColumns--;
@@ -165,11 +167,11 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
   }
   else {
     /* factions 1..7: the colour text's code units 1..8 hold the colour digits (low nibble each) */
-    drawXOrCount = 7;
+    drawYOrCount = 7;
     columnTypeOrColorCursor = g_FrontendResultsFactionPackedPixelColors;
     factionRecord = &g_GameFactionRuntimeImage.records[1];
     do {
-      resolvedText = TextResource_Resolve(factionRecord->factionClassOrMode + TEXT_ID_FACTION_NAME_BASE);
+      resolvedText = TextResource_Resolve(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
       colourResource = resolvedText.text;
       *columnTypeOrColorCursor = (((uint8_t)colourResource[8] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[7] << 0x1c) +
                 *(int *)((int)g_SoftwarePixelPackTables->red +
@@ -183,9 +185,9 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
       framebufferAccess = g_FramebufferAccess;
       factionRecord++;
       columnTypeOrColorCursor++;
-      drawXOrCount--;
-    } while (drawXOrCount != 0);
-    drawXOrCount = control->base.layoutWidth;
+      drawYOrCount--;
+    } while (drawYOrCount != 0);
+    drawYOrCount = control->base.layoutWidth;
     historySampleCount = g_GameFactionRuntimeImage.tail.simulationTick >> RESULTS_STAT_SAMPLE_TICK_SHIFT;
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
@@ -201,8 +203,8 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
                          (uint64_t)(uint32_t)(control->base).layoutWidth) * RESULTS_STAT_SAMPLE_BYTES +
                     (int)statTableImage));
         pixelColumn++;
-        drawXOrCount--;
-      } while (drawXOrCount != 0);
+        drawYOrCount--;
+      } while (drawYOrCount != 0);
       g_GraphicsFramebufferEndAccess();
     }
   }
@@ -405,31 +407,31 @@ void FrontendResultsGraph_DrawFactionWeightLane1Column
 */
 void FrontendResultsTable_DrawColourColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int offsetOrRowY;
+  int offsetOrPenX;
   uint32_t factionIndex;
   GameFactionRuntimeRecord *factionRecord;
-  int baselineY;
+  int headerPenX;
   TextResolveResult resolvedText;
   
   resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_COLOUR);
-  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + offsetOrRowY;
+  offsetOrPenX = rowMetrics->headerBaselineOffsetPixels + -4;
+  headerPenX = drawX + offsetOrPenX;
   RichTextCommandStream_DrawSingleLine
-            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawX + 6,baselineY);
+            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawY + 6,headerPenX);
   factionIndex = 1;
   factionRecord = &g_GameFactionRuntimeImage.records[1];
-  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
+  offsetOrPenX = (headerPenX - offsetOrPenX) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
-      resolvedText = TextResource_Resolve(factionRecord->factionClassOrMode + TEXT_ID_FACTION_NAME_BASE);
+      resolvedText = TextResource_Resolve(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawX + 6,offsetOrRowY);
-      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
+                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawY + 6,offsetOrPenX);
+      offsetOrPenX = offsetOrPenX + rowMetrics->rowAdvancePixels;
     }
     factionIndex++;
     factionRecord++;
@@ -444,29 +446,29 @@ void FrontendResultsTable_DrawColourColumn
 */
 void FrontendResultsTable_DrawFactionColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int offsetOrRowY;
+  int offsetOrPenX;
   uint32_t factionIndex;
-  int baselineY;
+  int headerPenX;
   TextResolveResult resolvedText;
   
   resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_FACTION);
-  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + offsetOrRowY;
+  offsetOrPenX = rowMetrics->headerBaselineOffsetPixels + -4;
+  headerPenX = drawX + offsetOrPenX;
   RichTextCommandStream_DrawSingleLine
-            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawX + 6,baselineY);
+            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawY + 6,headerPenX);
   factionIndex = 1;
-  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
+  offsetOrPenX = (headerPenX - offsetOrPenX) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       resolvedText = TextResource_Resolve(factionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawX + 6,offsetOrRowY);
-      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
+                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawY + 6,offsetOrPenX);
+      offsetOrPenX = offsetOrPenX + rowMetrics->rowAdvancePixels;
     }
     factionIndex++;
   } while (factionIndex < 8);
@@ -482,22 +484,22 @@ void FrontendResultsTable_DrawFormattedFactionFieldColumn
           (TextResourceId valueFormatResourceId,TextResourceId headerResourceId,
           FrontendResultsFactionFieldByteOffset factionFieldOffset,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,
-          UiPixelCoordinate drawX,UiPixelCoordinate drawY,FrontendResultsRowMetrics *rowMetrics)
+          UiPixelCoordinate drawY,UiPixelCoordinate drawX,FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int offsetOrRowY;
+  int offsetOrPenX;
   uint32_t factionIndex;
   uint8_t *factionFieldCursor;
-  int baselineY;
+  int headerPenX;
   TextResolveResult resolvedText;
   
   resolvedText = TextResource_Resolve(headerResourceId);
-  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + offsetOrRowY;
+  offsetOrPenX = rowMetrics->headerBaselineOffsetPixels + -4;
+  headerPenX = drawX + offsetOrPenX;
   RichTextCommandStream_DrawSingleLine
-            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawX + 6,baselineY);
+            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawY + 6,headerPenX);
   factionIndex = 1;
-  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
+  offsetOrPenX = (headerPenX - offsetOrPenX) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   /* the field at byte offset factionFieldOffset of faction record 1 */
   factionFieldCursor = (uint8_t *)&g_GameFactionRuntimeImage.records[1] + factionFieldOffset;
@@ -509,8 +511,8 @@ void FrontendResultsTable_DrawFormattedFactionFieldColumn
       resolvedText = TextResource_Resolve(valueFormatResourceId);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.text);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawX + 6,offsetOrRowY);
-      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
+                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawY + 6,offsetOrPenX);
+      offsetOrPenX = offsetOrPenX + rowMetrics->rowAdvancePixels;
     }
     factionIndex++;
     factionFieldCursor = factionFieldCursor + GAME_FACTION_RUNTIME_RECORD_BYTES;
@@ -525,24 +527,24 @@ void FrontendResultsTable_DrawFormattedFactionFieldColumn
 */
 void FrontendResultsTable_DrawPointsColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int offsetOrRowY;
+  int offsetOrPenX;
   uint32_t factionIndex;
   GameFactionRuntimeRecord *factionRecord;
-  int baselineY;
+  int headerPenX;
   TextResolveResult resolvedText;
   
   resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_POINTS);
-  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + offsetOrRowY;
+  offsetOrPenX = rowMetrics->headerBaselineOffsetPixels + -4;
+  headerPenX = drawX + offsetOrPenX;
   RichTextCommandStream_DrawSingleLine
-            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawX + 6,baselineY);
+            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawY + 6,headerPenX);
   factionIndex = 1;
   factionRecord = &g_GameFactionRuntimeImage.records[1];
-  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
+  offsetOrPenX = (headerPenX - offsetOrPenX) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
@@ -553,8 +555,8 @@ void FrontendResultsTable_DrawPointsColumn
       resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.text);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawX + 6,offsetOrRowY);
-      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
+                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawY + 6,offsetOrPenX);
+      offsetOrPenX = offsetOrPenX + rowMetrics->rowAdvancePixels;
     }
     factionIndex++;
     factionRecord++;
@@ -569,24 +571,24 @@ void FrontendResultsTable_DrawPointsColumn
 */
 void FrontendResultsTable_DrawEconomyColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int offsetOrRowY;
+  int offsetOrPenX;
   uint32_t factionIndex;
   GameFactionRuntimeRecord *factionRecord;
-  int baselineY;
+  int headerPenX;
   TextResolveResult resolvedText;
   
   resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_ECONOMY);
-  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + offsetOrRowY;
+  offsetOrPenX = rowMetrics->headerBaselineOffsetPixels + -4;
+  headerPenX = drawX + offsetOrPenX;
   RichTextCommandStream_DrawSingleLine
-            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawX + 6,baselineY);
+            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawY + 6,headerPenX);
   factionIndex = 1;
   factionRecord = &g_GameFactionRuntimeImage.records[1];
-  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
+  offsetOrPenX = (headerPenX - offsetOrPenX) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
@@ -596,8 +598,8 @@ void FrontendResultsTable_DrawEconomyColumn
       resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.text);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawX + 6,offsetOrRowY);
-      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
+                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawY + 6,offsetOrPenX);
+      offsetOrPenX = offsetOrPenX + rowMetrics->rowAdvancePixels;
     }
     factionIndex++;
     factionRecord++;
@@ -612,24 +614,24 @@ void FrontendResultsTable_DrawEconomyColumn
 */
 void FrontendResultsTable_DrawMilitaryColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int offsetOrRowY;
+  int offsetOrPenX;
   uint32_t factionIndex;
   GameFactionRuntimeRecord *factionRecord;
-  int baselineY;
+  int headerPenX;
   TextResolveResult resolvedText;
   
   resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_MILITARY);
-  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
-  baselineY = drawY + offsetOrRowY;
+  offsetOrPenX = rowMetrics->headerBaselineOffsetPixels + -4;
+  headerPenX = drawX + offsetOrPenX;
   RichTextCommandStream_DrawSingleLine
-            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawX + 6,baselineY);
+            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,drawY + 6,headerPenX);
   factionIndex = 1;
   factionRecord = &g_GameFactionRuntimeImage.records[1];
-  offsetOrRowY = (baselineY - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels +
+  offsetOrPenX = (headerPenX - offsetOrPenX) + rowMetrics->headerBaselineOffsetPixels +
           (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
@@ -639,8 +641,8 @@ void FrontendResultsTable_DrawMilitaryColumn
       resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_VALUE_TEMPLATE);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.text);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawX + 6,offsetOrRowY);
-      offsetOrRowY = offsetOrRowY + rowMetrics->rowAdvancePixels;
+                (clipBottom,clipRight,clipTop,clipLeft,2,resolvedText.text,drawY + 6,offsetOrPenX);
+      offsetOrPenX = offsetOrPenX + rowMetrics->rowAdvancePixels;
     }
     factionIndex++;
     factionRecord++;
@@ -651,70 +653,70 @@ void FrontendResultsTable_DrawMilitaryColumn
 
 /* Address: 0x00517CD0.
    Results table column type 6: header TEXT_ID_RESULTS_PLAYER, then for each active faction 1..7 the names of
-   up to three players assigned to it, 26 pixels apart. The second and fourth clip bounds of each name are
-   narrowed to the row (rowBottomY, rowTopY), so the names are clipped to their row.
+   up to three players assigned to it, 26 pixels apart downwards. The right and left clip bounds of each name
+   are narrowed to the faction's cell (cellRightX, cellLeftX), so the names are clipped to their cell.
 */
 void FrontendResultsTable_DrawPlayerColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics)
 
 {
-  int offsetOrRowY;
+  int offsetOrPenX;
   uint32_t factionIndex;
   FrontendPlayerNameUtf16 *playerNameCursor;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
-  int nameDrawX;
+  int nameTopY;
   int coordinateOrAdvance;
   TextResolveResult resolvedText;
   UiPixelCoordinate nameClipRight;
   UiPixelCoordinate nameClipLeft;
   uint32_t namesDrawn;
-  int rowBottomY;
-  int rowTopY;
+  int cellRightX;
+  int cellLeftX;
   
   resolvedText = TextResource_Resolve(TEXT_ID_RESULTS_PLAYER);
-  offsetOrRowY = rowMetrics->headerBaselineOffsetPixels + -4;
-  coordinateOrAdvance = drawY + offsetOrRowY;
-  nameDrawX = drawX + 6;
+  offsetOrPenX = rowMetrics->headerBaselineOffsetPixels + -4;
+  coordinateOrAdvance = drawX + offsetOrPenX;
+  nameTopY = drawY + 6;
   RichTextCommandStream_DrawSingleLine
-            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,nameDrawX,coordinateOrAdvance);
-  rowTopY = (coordinateOrAdvance - offsetOrRowY) + rowMetrics->headerBaselineOffsetPixels;
+            (clipBottom,clipRight,clipTop,clipLeft,1,resolvedText.text,nameTopY,coordinateOrAdvance);
+  cellLeftX = (coordinateOrAdvance - offsetOrPenX) + rowMetrics->headerBaselineOffsetPixels;
   factionIndex = 1;
-  rowBottomY = rowMetrics->rowAdvancePixels + rowTopY;
-  offsetOrRowY = rowTopY + (rowMetrics->rowAdvancePixels >> 1);
+  cellRightX = rowMetrics->rowAdvancePixels + cellLeftX;
+  offsetOrPenX = cellLeftX + (rowMetrics->rowAdvancePixels >> 1);
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       namesDrawn = 0;
       playerNameCursor = &g_FrontendPlayerRuntimeBlocks->playerName;
       remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
-      coordinateOrAdvance = nameDrawX;
+      coordinateOrAdvance = nameTopY;
       do {
         /* playerNameCursor walks the player records by their playerName */
         if (factionIndex == FRONTEND_PLAYER_RECORD_OF_NAME(playerNameCursor)->factionAssignment.factionAssignmentIndex &&
             namesDrawn < 3) {
           namesDrawn++;
           nameClipLeft = clipLeft;
-          if (clipLeft < rowTopY) {
-            nameClipLeft = rowTopY;
+          if (clipLeft < cellLeftX) {
+            nameClipLeft = cellLeftX;
           }
           nameClipRight = clipRight;
-          if (rowBottomY < clipRight) {
-            nameClipRight = rowBottomY;
+          if (cellRightX < clipRight) {
+            nameClipRight = cellRightX;
           }
           RichTextCommandStream_DrawSingleLine
                     (clipBottom,nameClipRight,clipTop,nameClipLeft,2,playerNameCursor->textUtf16,coordinateOrAdvance,
-                     offsetOrRowY);
-          coordinateOrAdvance = coordinateOrAdvance + 0x1a;
+                     offsetOrPenX);
+          coordinateOrAdvance = coordinateOrAdvance + 26;
         }
         /* next player block */
         playerNameCursor = playerNameCursor + sizeof(FrontendPlayerRuntimeRecord) / sizeof(FrontendPlayerNameUtf16);
         remainingBlocks--;
       } while (remainingBlocks != 0);
       coordinateOrAdvance = rowMetrics->rowAdvancePixels;
-      offsetOrRowY = offsetOrRowY + coordinateOrAdvance;
-      rowTopY = rowTopY + coordinateOrAdvance;
-      rowBottomY = rowBottomY + coordinateOrAdvance;
+      offsetOrPenX = offsetOrPenX + coordinateOrAdvance;
+      cellLeftX = cellLeftX + coordinateOrAdvance;
+      cellRightX = cellRightX + coordinateOrAdvance;
     }
     factionIndex++;
   } while (factionIndex < 8);

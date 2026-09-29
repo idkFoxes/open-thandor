@@ -2008,7 +2008,7 @@ typedef struct ImageData_0053795C {
     uint32_t at_g_AiActiveGridMaskClass1; /* 005379CC g_AiActiveGridMaskClass1 */
     uint32_t at_g_AiActiveGridMaskClass2; /* 005379D0 g_AiActiveGridMaskClass2 */
     uint32_t at_g_AiActiveGridMaskClass3; /* 005379D4 g_AiActiveGridMaskClass3 */
-    ArmyRuntimeSlot * at_g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
+    ModelRuntimeSlot * at_g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
     uint32_t at_g_AiWorkspaceOwnedAsset300Runtime_rest[1]; /* beyond the declared type */
 } ImageData_0053795C;
 extern ImageData_0053795C g_ImageData_0053795C;
@@ -2114,8 +2114,8 @@ typedef struct ImageData_0053DA68 {
     FrontendSessionDiscoveryRecord ** at_g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
     FrontendSessionDiscoveryRecord * at_g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
     FrontendUiImage at_g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
-    FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeRecordPointers32[31]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
-    FrontendTaskAssignmentControlOffsetTables at_g_FrontendTaskAssignmentControlOffsets; /* 0054345C g_FrontendTaskAssignmentControlOffsets */
+    FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeRecordPointers32[32]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
+    FrontendTaskAssignmentControlOffsetTables at_g_FrontendTaskAssignmentControlOffsets; /* 00543460 g_FrontendTaskAssignmentControlOffsets */
     uint32_t at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
     FrontendUiScratch at_g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
     uint32_t at_g_FrontendUiDisplayModeAndTaskAssignmentScratch_rest[1]; /* beyond the declared type */
@@ -4552,7 +4552,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00542230 ((uintptr_t)&g_ImageData_0053DA68 + 0x47C8)
 #define THANDOR_IMAGE_0x00542854 ((uintptr_t)&g_ImageData_0053DA68 + 0x4DEC)
 #define THANDOR_IMAGE_0x005433e0 ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendPlayerRuntimeRecordPointers32)
-#define THANDOR_IMAGE_0x0054345c ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendTaskAssignmentControlOffsets)
+#define THANDOR_IMAGE_0x00543460 ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendTaskAssignmentControlOffsets)
 #define THANDOR_IMAGE_0x005438ec ((uintptr_t)&g_ImageData_0053DA68.at_g_FrontendUiDisplayModeAndTaskAssignmentScratch)
 #define THANDOR_IMAGE_0x00543e40 ((uintptr_t)&g_ImageData_00543E34.at_g_FrontendCommandQueueRecords)
 #define THANDOR_IMAGE_0x00543f40 ((uintptr_t)&g_ImageData_00543E34.at_g_FrontendCommandQueueEnd)

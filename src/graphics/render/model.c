@@ -20,7 +20,7 @@ static void ModelLighting_UnpackBytes(uint32_t packed, int shift, short lanes[4]
 {
   int i;
   for (i = 0; i < 4; i++) {
-    lanes[i] = (short)((((packed >> (8 * i)) & 0xff) * 0x101) >> shift);
+    lanes[i] = (short)((((packed >> (8 * i)) & ARGB8888_CHANNEL_MASK) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
   }
 }
 
@@ -39,7 +39,7 @@ static void ModelLighting_AddSaturate(short lanes[4], const short addends[4])
   int i;
   for (i = 0; i < 4; i++) {
     int sum = (int)lanes[i] + (int)addends[i];
-    lanes[i] = (short)(sum > 0x7fff ? 0x7fff : sum < -0x8000 ? -0x8000 : sum);
+    lanes[i] = (short)(sum > 32767 ? 32767 : sum < -32768 ? -32768 : sum);
   }
 }
 
@@ -49,7 +49,7 @@ static PackedArgb32 ModelLighting_PackUnsigned(const short lanes[4])
   uint32_t packed = 0;
   int i;
   for (i = 0; i < 4; i++) {
-    int v = lanes[i] < 0 ? 0 : lanes[i] > 0xff ? 0xff : lanes[i];
+    int v = lanes[i] < 0 ? 0 : lanes[i] > ARGB8888_CHANNEL_MAX ? ARGB8888_CHANNEL_MAX : lanes[i];
     packed |= (uint32_t)v << (8 * i);
   }
   return packed;
@@ -63,7 +63,7 @@ static __inline uint64_t ModelLighting_UnpackBytesMmx(uint32_t packed, int shift
   ThandorMmx lanes;
   int i;
   for (i = 0; i < 4; i++) {
-    lanes.uw[i] = (uint16_t)((((packed >> (8 * i)) & 0xff) * 0x101) >> shift);
+    lanes.uw[i] = (uint16_t)((((packed >> (8 * i)) & ARGB8888_CHANNEL_MASK) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
   }
   return lanes.q;
 }
@@ -264,12 +264,11 @@ void ModelRender_PrepareProjectedVertex
     if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_APPLY_SCALE) != 0) {
       /* 64-bit product >> 12 (IMUL + SHRD) */
       scaledVertexCoordinateProduct = (int64_t)vertex->x * (int64_t)modelNode->modelScaleQ12;
-      vertex->x = (int)((uint64_t)scaledVertexCoordinateProduct >> 0x20) << 0x14 |
-                  (uint32_t)scaledVertexCoordinateProduct >> 0xc;
+      vertex->x = FIXED_PRODUCT_SHR(scaledVertexCoordinateProduct, Q12_SHIFT);
       scaledCoordinateProduct = (int64_t)vertex->y * (int64_t)modelNode->modelScaleQ12;
-      vertex->y = (int)((uint64_t)scaledCoordinateProduct >> 0x20) << 0x14 | (uint32_t)scaledCoordinateProduct >> 0xc;
+      vertex->y = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
       scaledCoordinateProduct = (int64_t)vertex->z * (int64_t)modelNode->modelScaleQ12;
-      vertex->z = (int)((uint64_t)scaledCoordinateProduct >> 0x20) << 0x14 | (uint32_t)scaledCoordinateProduct >> 0xc;
+      vertex->z = FIXED_PRODUCT_SHR(scaledCoordinateProduct, Q12_SHIFT);
     }
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
@@ -281,7 +280,7 @@ void ModelRender_PrepareProjectedVertex
     vertex->y = savedVertexYQ12;
     vertex->x = savedVertexXQ12;
     vertex[4].x = (int)projectedScreenCoordinatePair;
-    vertex[4].y = (int)(projectedScreenCoordinatePair >> 0x20);
+    vertex[4].y = (int)(projectedScreenCoordinatePair >> 32);
   }
   else if (((triangleRenderFlags & MODEL_TRIANGLE_VERTEX_CACHE_FLAGS) == vertex[4].z) &&
           ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) == 0)) {
@@ -376,7 +375,7 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
           if ((nodePaletteAsset == NULL) ||
              (paletteBankIndex = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_MASK,
               nodePaletteAsset->paletteBankCount <= paletteBankIndex)) {
-            GraphicsPrimitiveQueue_SetMaterial(0xffffffff,textureEntry,g_ActivePrimitiveQueue);
+            GraphicsPrimitiveQueue_SetMaterial(ARGB8888_OPAQUE_WHITE,textureEntry,g_ActivePrimitiveQueue);
             triangleSubresource = triangle->subresourceIndex;
             if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) != 0) {
               if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
@@ -521,7 +520,7 @@ bool ModelRender_PrepareProjectedVertexAlternatePath
     vertex[3].z = vertexColor;
     return false;
   }
-  vertex[3].z = materialPackedColor | 0xffffff;
+  vertex[3].z = materialPackedColor | ARGB8888_RGB_MASK;
   return false;
 }
 
@@ -579,7 +578,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
               subresourceOrPaletteBank = triangle->subresourceIndex;
               textureEntry = NULL;
               /* unlike ModelRender_SubmitTriangle there is no NULL check of the texture set */
-              if (subresourceOrPaletteBank != 0xffffffff &&
+              if (subresourceOrPaletteBank != UINT32_MAX &&
                   subresourceOrPaletteBank < nodeTextureSet->subresourceCount) {
                 textureEntry = nodeTextureSet->entries + subresourceOrPaletteBank +
                                modelNode->textureSubresourceBaseIndex;
@@ -698,7 +697,7 @@ ModelRender_ComputeVertexIntensityDefaultPath
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
   directionalLanes =
        pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
-              *(uint64_t *)(distanceAttenuationTable + (lightFacingDotQ12 >> 0x15) * 8));
+              *(uint64_t *)(distanceAttenuationTable + (lightFacingDotQ12 >> 21) * 8));
   shadingRecord = g_GraphicsShadingNearbyRecords;
   accumulatedLanes =
        pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
@@ -713,29 +712,29 @@ ModelRender_ComputeVertexIntensityDefaultPath
       remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
       /* high dword of r^2 */
       remainderHigh = (((int *)&shadingRecord->squaredRadiusQ24)[1] -
-               (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
+               (int)((uint64_t)axisDistanceSquared >> 32)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
       if (-1 < remainderHigh) {
         axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
         radiusOrSquareLow = (uint32_t)axisDistanceSquared;
         squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
-        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
                         (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
         if (-1 < remainderHigh) {
           axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
           radiusOrSquareLow = (uint32_t)axisDistanceSquared;
-          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
                           (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (SHRD) */
-            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << 0x14 |
-                     (uint32_t)shadingRecord->squaredRadiusQ24 >> 0xc;
+            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
+                     (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
             if (remainderLowOrDivisor != 0) {
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 |
+                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) |
                                                        (squareOrRemainderLow - radiusOrSquareLow) >> 5) /
                                                       remainderLowOrDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
@@ -798,29 +797,29 @@ ModelRender_ComputeVertexIntensityScaledPath
       remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
       /* high dword of r^2 */
       remainderHigh = (((int *)&shadingRecord->squaredRadiusQ24)[1] -
-               (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
+               (int)((uint64_t)axisDistanceSquared >> 32)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
       if (-1 < remainderHigh) {
         axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
         radiusOrSquareLow = (uint32_t)axisDistanceSquared;
         squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
-        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
                         (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
         if (-1 < remainderHigh) {
           axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
           radiusOrSquareLow = (uint32_t)axisDistanceSquared;
-          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 32)) -
                           (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (SHRD) */
-            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << 0x14 |
-                     (uint32_t)shadingRecord->squaredRadiusQ24 >> 0xc;
+            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << (32 - Q12_SHIFT) |
+                     (uint32_t)shadingRecord->squaredRadiusQ24 >> Q12_SHIFT;
             if (remainderLowOrDivisor != 0) {
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 |
+                          g_PackedLightingLookupTable[(remainderHigh * (1 << 27) |
                                                        (squareOrRemainderLow - radiusOrSquareLow) >> 5) /
                                                       remainderLowOrDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
@@ -857,7 +856,7 @@ ModelRender_ComputeNearbyLightPackedVertexColorAlternatePath
   short color[4];
   short lanes[4];
 
-  scenePackedColor0 = scenePackedColor0 | 0xff000000;
+  scenePackedColor0 = scenePackedColor0 | ARGB8888_ALPHA_MASK;
   FixedTransform_ApplyDirection
             (&g_ModelLightingTransformedSurfaceNormalScratch,surfaceNormalQ12,
              (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
@@ -932,8 +931,8 @@ void ModelProjectedBounds_ExpandWithCurrentScratchPoint(ModelProjectedBoundsPixe
              &g_GraphicsTransformScratchMatrix3x4);
   if ((int)g_ProjectionScaleFixed < g_GraphicsTransformOutputScratchVec3.z) {
     projectedPoint = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-    pixelX = projectedPoint.projectedX >> 0xc;
-    pixelY = projectedPoint.projectedY >> 0xc;
+    pixelX = projectedPoint.projectedX >> Q12_SHIFT;
+    pixelY = projectedPoint.projectedY >> Q12_SHIFT;
     if (pixelX < bounds->minX) {
       bounds->minX = pixelX;
     }

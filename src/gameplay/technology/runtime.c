@@ -30,7 +30,7 @@ void Technology_UnlockForFaction
   
   node = g_InGameRuntimeRoot;
   technologyAsset = g_TechnologyAsset;
-  technologyBitMask = 1 << ((uint8_t)technologyIndex & 0x1f);
+  technologyBitMask = 1 << ((uint8_t)technologyIndex & 31);
   /* the word of the faction's 256-bit technology mask that holds the bit */
   factionTechnologyMaskWord =
        &g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[technologyIndex >> 5];
@@ -82,7 +82,7 @@ bool Technology_IsUnlockedForFaction(PckTechnologyIdCatalog technologyIndex,Fact
   if ((*(uint32_t *)(factionIndex * (int)sizeof(GameFactionRuntimeRecord) +
                     THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,technologyMasks256Bits)) +
                     (technologyIndex >> 5) * 4) &
-      1 << ((uint8_t)technologyIndex & 0x1f)) != 0) {
+      1 << ((uint8_t)technologyIndex & 31)) != 0) {
     return false;
   }
   return true;
@@ -104,7 +104,7 @@ bool Technology_IsAvailableForFaction(PckTechnologyIdCatalog technologyIndex,Fac
   if ((*(uint32_t *)(factionIndex * (int)sizeof(GameFactionRuntimeRecord) +
                     THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,technologyMasks256Bits)) +
                     (technologyIndex >> 5) * 4) &
-       1 << ((uint8_t)technologyIndex & 0x1f)) == 0 &&
+       1 << ((uint8_t)technologyIndex & 31)) == 0 &&
       (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
        g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0]) ==
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &&
@@ -219,7 +219,7 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
       /* the root node's model definition id (+0x20) */
       modelLookup = ModelDefinitionRegistry_FindByIdWithError
                         (*(PckModelDefinitionIdCatalog *)
-                          (armyAssetRecord->rootNodeOffsetOrPointer + 0x20));
+                          (armyAssetRecord->rootNodeOffsetOrPointer + 32));
       definitionRecord = (ModelDefinition *)modelLookup.modelDefinition;
       if (!modelLookup.notFound) {
         /* per target class (+0x5C) the largest armour (+0x60); for mobile models (+0x18) the top speed (+0x0C) */
@@ -243,7 +243,7 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   }
   /* clear both category masks (2 x 8 dwords) */
   categoryMaskClearCursor = g_TechnologyCategoryMasks.category2;
-  for (remainingCount = 0x10; remainingCount != 0; remainingCount--) {
+  for (remainingCount = 16; remainingCount != 0; remainingCount--) {
     *categoryMaskClearCursor = 0;
     categoryMaskClearCursor++;
   }

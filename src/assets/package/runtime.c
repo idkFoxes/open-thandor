@@ -13,7 +13,7 @@
 
 /* One-entry output buffer (PCK_ENTRY_HEADER_BYTES) for Package_FindEntry, placed behind the string at
    0x00545E91; the found entry's path is its first field and is passed on as a UTF-16 path. */
-#define LEVEL_PACKAGE_FOUND_ENTRY (s_NAME__CLIENT__KARTE___00545e91 + 0x15)
+#define LEVEL_PACKAGE_FOUND_ENTRY (s_NAME__CLIENT__KARTE___00545e91 + 21)
 
 /* Address: 0x005460E0.
    Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
@@ -44,7 +44,7 @@ bool LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
       if (!loadResult.failed) {
         /* dword 0: asset magic, dword 3: converter version */
         if (*levelAsset == ASSET_MAGIC_LEV && levelAsset[3] == PCK_CONVERTER_LEV_00070001) {
-          levelTitleTextId = levelAsset[0x5c]; /* LEV +0x170 */
+          levelTitleTextId = levelAsset[92]; /* LEV +0x170 */
           Resource_Release(levelAsset);
           findResult = Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
                                     (uint16_t *)u_level___str_005460be,fileHandle);
@@ -846,7 +846,7 @@ void Package_SetLastErrorPath(uint16_t *path)
   uint16_t *scanEnd;
   uint16_t *wordCursor;
   
-  remainingCount = 0x100;
+  remainingCount = 256;
   wordCursor = path;
   do {
     scanEnd = wordCursor;
@@ -980,7 +980,7 @@ PackageEntryLookupResult Package_FindEntryAcrossMounts(uint16_t *path)
   do {
     compareRemaining = remainingOrLength;
     codeUnit = *pathCursor;
-    if (0x40 < codeUnit && codeUnit < 0x5b) { /* 'A'..'Z' */
+    if ('A' - 1 < codeUnit && codeUnit < 'Z' + 1) {
       codeUnit = codeUnit + ('a' - 'A');
     }
     *pathCursor = (uint16_t)codeUnit;

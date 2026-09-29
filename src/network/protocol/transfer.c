@@ -70,11 +70,11 @@ receiveNextRecord:
     nextIndexOrChunkSize = g_UiRuntimeRecordWriteIndex + 1;
     receiveResult = g_NetworkBackendSlot4
                        ((WinSockAddress *)
-                        (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),0x100,
+                        (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots),256,
                         (uint8_t *)ringRecord);
     if (!receiveResult.failed) {
       UiTransfer_DecryptPacketBlocks
-                ((uint32_t *)&g_UiTransferRoundKeys16,ringRecord,0x100,ringRecord);
+                ((uint32_t *)&g_UiTransferRoundKeys16,ringRecord,256,ringRecord);
       LOCK();
       checksumField = &ringRecord->packetHeader.xorChecksum;
       checksum = *checksumField;
@@ -296,7 +296,7 @@ void FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                         [packet->packet40008LobbyRosterSnapshot.selectedPlayerIndex];
       g_FrontendPlayerRuntimeCount = playerOrCommandCount;
       /* the whole 0x80-byte packet becomes the player's list row */
-      for (loopCount = 0x20; loopCount != 0; loopCount--) {
+      for (loopCount = 32; loopCount != 0; loopCount--) {
         *playerRowCursor = *packetCursor;
         packetCursor++;
         playerRowCursor++;
@@ -497,7 +497,7 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
     packetCursor = (uint32_t *)packet;
     recordDwordCursor = (uint32_t *)(g_FrontendPlayerRuntimeBlocks + commandCountOrPlayerIndex);
     /* the first 0x60 bytes of the packet become the head of the player's record */
-    for (copyCount = 0x18; copyCount != 0; copyCount--) {
+    for (copyCount = 24; copyCount != 0; copyCount--) {
       *recordDwordCursor = *packetCursor;
       packetCursor++;
       recordDwordCursor++;
@@ -519,9 +519,9 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
              (g_FrontendLocalPlayerPcxPreview + g_FrontendPacket8000ABuffer.snapshotChunkOffset);
     g_FrontendPacket8000ABuffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_8000A_SNAPSHOT_CHUNK;
     /* 0xE8-byte chunks; the last one at 0x1220 has 0xE0 bytes (the preview is 0x1300 bytes) */
-    copyCount = 0x3a;
+    copyCount = 58;
     if (g_FrontendPacket8000ABuffer.snapshotChunkOffset == 0x1220) {
-      copyCount = 0x38;
+      copyCount = 56;
     }
     for (; copyCount != 0; copyCount--) {
       *(uint32_t *)chunkDestinationCursor = *previewSourceCursor;
@@ -631,7 +631,7 @@ bool UiTransfer_SendPlayerDescriptor(void)
   bool callCarry;
   
   g_FrontendPacket20002Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_20002_PLAYER_DESCRIPTOR;
-  g_FrontendPacket20002Buffer.payloadByteCount = 0x40;
+  g_FrontendPacket20002Buffer.payloadByteCount = 64;
   nameSourceCursor = (void *)g_FrontendLocalPlayerNameUtf16;
   payloadCursor = g_FrontendPacket20002Buffer.playerDescriptorPayload;
   for (dwordCount = 10; dwordCount != 0; dwordCount--) {
@@ -697,7 +697,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     textResolveResult = TextResource_Resolve(TEXT_ID_SESSION_TITLE_TEMPLATE);
     RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),textResolveResult.text);
     RichTextCommandStream_CopyExpanded
-              (0x28,g_FrontendPacket50001Buffer.sessionTitleUtf16,textResolveResult.text);
+              (40,g_FrontendPacket50001Buffer.sessionTitleUtf16,textResolveResult.text);
     textResolveResult = TextResource_Resolve(TEXT_ID_SESSION_HOST_TEMPLATE);
     resolvedText = textResolveResult.text;
     /* the game name typed into gameNameEdit */
@@ -705,7 +705,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
               (0,((UiTextEditControl *)FRONTEND_UI(rootNodeOrCount,gameNameEdit))->textBuffer,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
     RichTextCommandStream_CopyExpanded
-              (0x58,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
+              (88,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
     textResolveResult = TextResource_Resolve(TEXT_ID_SESSION_PLAYER_COUNT_TEMPLATE);
     resolvedText = textResolveResult.text;
     RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
@@ -713,7 +713,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText);
     g_FrontendPacket50001Buffer.header.packedTypeAndUnitCount =
          FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT;
-    g_FrontendPacket50001Buffer.payloadByteCount = 0x20;
+    g_FrontendPacket50001Buffer.payloadByteCount = 32;
     UiTransfer_StagePacketAndSend(senderEndpoint,&g_FrontendPacket50001Buffer.header);
     return;
   }
@@ -833,7 +833,7 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
        (uint32_t *)((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowSlots[((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount];
   ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount = ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount + 1;
   /* the new row: the 0x40-byte descriptor packet followed by the sender's 0x10-byte endpoint */
-  for (rootNodeOrCount = 0x10; rootNodeOrCount != 0; rootNodeOrCount--) {
+  for (rootNodeOrCount = 16; rootNodeOrCount != 0; rootNodeOrCount--) {
     *joiningPlayerRecordDwordCursor = packet->packet10000Handshake.header.packedTypeAndUnitCount;
     packet = (FrontendTransferPacketUnion *)&packet->packet10000Handshake.header.sequenceToken;
     joiningPlayerRecordDwordCursor++;
@@ -857,25 +857,25 @@ void FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     countFlagsOrId++;
     rootNodeOrCount = g_FrontendPlayerRuntimeCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-  } while (countFlagsOrId < 0xff);
+  } while (countFlagsOrId < 255);
 freeIdFound:
-  descriptorStatusBits = *(uint16_t *)((int)joiningPlayerRecordDwordCursor + -0x12);
+  descriptorStatusBits = *(uint16_t *)((int)joiningPlayerRecordDwordCursor + -18);
   *joiningPlayerRecordDwordCursor = 1;
-  joiningPlayerRecordDwordCursor[-0xf] = countFlagsOrId;
+  joiningPlayerRecordDwordCursor[-15] = countFlagsOrId;
   joiningPlayerRecordDwordCursor[6] = descriptorStatusBits & 0xff;
   joiningPlayerRecordDwordCursor[9] = descriptorStatusBits & 0xff00;
-  joiningPlayerRecordDwordCursor[0x10] = 0;
-  joiningPlayerRecordDwordCursor[0x11] = 0;
+  joiningPlayerRecordDwordCursor[16] = 0;
+  joiningPlayerRecordDwordCursor[17] = 0;
   joiningPlayerRecordDwordCursor[7] = 0;
   joiningPlayerRecordDwordCursor[10] = 0;
-  joiningPlayerRecordDwordCursor[0xb] = 0;
-  joiningPlayerRecordDwordCursor[0xd] = 0;
-  joiningPlayerRecordDwordCursor[0xe] = 0;
-  joiningPlayerRecordDwordCursor[0xf] = 0;
+  joiningPlayerRecordDwordCursor[11] = 0;
+  joiningPlayerRecordDwordCursor[13] = 0;
+  joiningPlayerRecordDwordCursor[14] = 0;
+  joiningPlayerRecordDwordCursor[15] = 0;
   if ((descriptorStatusBits & FRONTEND_CAPABILITY_CD) != 0) {
     joiningPlayerRecordDwordCursor[10] = 0x440043; /* L"CD" */
   }
-  *(uint16_t *)((int)joiningPlayerRecordDwordCursor + -0x12) = 0;
+  *(uint16_t *)((int)joiningPlayerRecordDwordCursor + -18) = 0;
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)((UiPointerListControl *)FRONTEND_UI(frontendRuntime,hostLobbyPlayerList))->rowCount,
              (uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
@@ -1244,9 +1244,9 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
         ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,sessionList))->rowCount = ((UiPointerListControl *)FRONTEND_UI(frontendRuntime,sessionList))->rowCount + 1;
       }
       /* the payload byte count is overwritten with 0x20 before the packet is stored */
-      packet->packet50001SessionAdvertisement.payloadByteCount = 0x20;
+      packet->packet50001SessionAdvertisement.payloadByteCount = 32;
       /* the 0xA0-byte advertisement followed by the sender's 0x10-byte endpoint */
-      for (remainingCount = 0x28; remainingCount != 0; remainingCount--) {
+      for (remainingCount = 40; remainingCount != 0; remainingCount--) {
         (((FrontendSessionDiscoveryRecord *)sessionDiscoveryRecordDwordCursor)->advertisement).
         header.packedTypeAndUnitCount = packet->packet10000Handshake.header.packedTypeAndUnitCount
         ;
@@ -1277,7 +1277,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
     g_SessionTransferTimeoutTicks = FRONTEND_LOBBY_TIMEOUT_TICKS;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_CLIENT;
     playerRowCursor = (uint32_t *)g_FrontendPlayerListRows;
-    for (remainingCount = 0x100; remainingCount != 0; remainingCount--) {
+    for (remainingCount = 256; remainingCount != 0; remainingCount--) {
       *playerRowCursor = 0;
       playerRowCursor++;
     }
@@ -1497,22 +1497,22 @@ void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks
                           | *(uint32_t *)(&g_RandomPrimaryNibbleMixTable2 +
                                      ((roundInputHalf & 0xf00) >> 8) * 4 + ((*roundKeyNibble2 & 0xf00) >> 2))
                           ) << 4 | *(uint32_t *)(&g_RandomPrimaryNibbleMixTable3 +
-                                            ((roundInputHalf & 0xf000) >> 0xc) * 4 +
+                                            ((roundInputHalf & 0xf000) >> 12) * 4 +
                                             ((*roundKeyNibble3 & 0xf000) >> 6))) << 4 |
                         *(uint32_t *)(&g_RandomPrimaryNibbleMixTable4 +
-                                 ((roundInputHalf & 0xf0000) >> 0x10) * 4 +
+                                 ((roundInputHalf & 0xf0000) >> 16) * 4 +
                                  ((*roundKeyNibble4 & 0xf0000) >> 10))) << 4 |
                        *(uint32_t *)(&g_RandomPrimaryNibbleMixTable5 +
-                                ((roundInputHalf & 0xf00000) >> 0x14) * 4 +
-                                ((*roundKeyNibble5 & 0xf00000) >> 0xe))) << 4 |
+                                ((roundInputHalf & 0xf00000) >> 20) * 4 +
+                                ((*roundKeyNibble5 & 0xf00000) >> 14))) << 4 |
                       *(uint32_t *)(&g_RandomPrimaryNibbleMixTable6 +
-                               ((roundInputHalf & 0xf000000) >> 0x18) * 4 +
-                               ((*roundKeyNibble6 & 0xf000000) >> 0x12))) << 4 |
+                               ((roundInputHalf & 0xf000000) >> 24) * 4 +
+                               ((*roundKeyNibble6 & 0xf000000) >> 18))) << 4 |
                      *(uint32_t *)(&g_RandomPrimaryNibbleMixTable7 +
-                              (roundInputHalf >> 0x1c) * 4 + ((*roundKeyNibble7 & 0xf0000000) >> 0x16))) ^
+                              (roundInputHalf >> 28) * 4 + ((*roundKeyNibble7 & 0xf0000000) >> 22))) ^
                      leftState;
         roundInputHalf = leftState;
-      } while (roundIndex < 0x10);
+      } while (roundIndex < 16);
       *outputBlocks = leftState;
       outputBlocks[1] = rightState;
       inputBlocks = inputBlocks + 2;
@@ -1546,27 +1546,27 @@ void UiTransfer_DecryptPacketBlocks
     previousCipherHigh = 0;
     previousCipherLow = 0;
     do {
-      roundIndex = 0xf;
+      roundIndex = 15;
       leftHalf = *(uint32_t *)source;
       rightHalf = ((uint32_t *)source)[1];
       do {
         savedHalf = leftHalf;
         rightHalf = rightHalf ^ savedHalf;
-        leftHalf = ((((((*(int *)(((roundKeys16[roundIndex] & 0xf0000000) >> 0x16) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1c00) +
+        leftHalf = ((((((*(int *)(((roundKeys16[roundIndex] & 0xf0000000) >> 22) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1c00) +
                               (rightHalf & 0xf) * 4) << 4 |
-                     *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000000) >> 0x12) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1800) +
+                     *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000000) >> 18) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1800) +
                               ((rightHalf & 0xf0) >> 4) * 4)) << 4 |
-                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00000) >> 0xe) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1400) +
+                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00000) >> 14) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1400) +
                              ((rightHalf & 0xf00) >> 8) * 4)) << 4 |
                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1000) +
-                            ((rightHalf & 0xf000) >> 0xc) * 4)) << 4 |
+                            ((rightHalf & 0xf000) >> 12) * 4)) << 4 |
                   *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0xc00) +
-                           ((rightHalf & 0xf0000) >> 0x10) * 4)) << 4 |
+                           ((rightHalf & 0xf0000) >> 16) * 4)) << 4 |
                  *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x800) +
-                          ((rightHalf & 0xf00000) >> 0x14) * 4)) << 4 |
+                          ((rightHalf & 0xf00000) >> 20) * 4)) << 4 |
                 *(uint32_t *)((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x400) +
-                         ((rightHalf & 0xf000000) >> 0x18) * 4)) << 4 |
-                *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * 0x40 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0) + (rightHalf >> 0x1c) * 4);
+                         ((rightHalf & 0xf000000) >> 24) * 4)) << 4 |
+                *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * 0x40 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0) + (rightHalf >> 28) * 4);
         roundIndex--;
         rightHalf = savedHalf;
       } while (-1 < roundIndex);
@@ -1675,7 +1675,7 @@ bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTran
   nextUnitCursor = unitCount + g_UiTransferUnitCursor;
   endpointOffset = g_UiTransferUnitCursor << 4; /* 16 bytes per endpoint copy */
   g_UiTransferUnitCursor = nextUnitCursor;
-  if (0xff < nextUnitCursor) {
+  if (255 < nextUnitCursor) {
     /* the packet does not fit before the end of the ring: start over at unit 0 */
     dataOffsetOrDwordCount = 0;
     endpointOffset = 0;

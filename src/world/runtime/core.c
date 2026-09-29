@@ -156,47 +156,47 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
          (uint32_t)(uint16_t)levelConditions->levelImage.worldSettings.packedFieldRegionOriginYHigh16XLow16;
     alternateOriginOrBlendWeight = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
                            alternatePackedFieldRegionOriginYHigh16XLow16;
-    if (phaseByteOrAlternateSize < 0x80) {
+    if (phaseByteOrAlternateSize < 128) {
       if (alternateOriginOrBlendWeight < blendIndexOrPrimaryValue) {
         alternateOriginOrBlendWeight = alternateOriginOrBlendWeight + 0x10000;
       }
       alternateOriginXWeighted = alternateOriginOrBlendWeight * phaseByteOrAlternateSize;
-      primaryOriginXWeighted = blendIndexOrPrimaryValue * (0x80 - phaseByteOrAlternateSize);
+      primaryOriginXWeighted = blendIndexOrPrimaryValue * (128 - phaseByteOrAlternateSize);
     }
     else {
       if (blendIndexOrPrimaryValue < alternateOriginOrBlendWeight) {
         blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + 0x10000;
       }
-      primaryOriginXWeighted = blendIndexOrPrimaryValue * (phaseByteOrAlternateSize - 0x80);
-      alternateOriginXWeighted = alternateOriginOrBlendWeight * (0x80 - (phaseByteOrAlternateSize - 0x80));
+      primaryOriginXWeighted = blendIndexOrPrimaryValue * (phaseByteOrAlternateSize - 128);
+      alternateOriginXWeighted = alternateOriginOrBlendWeight * (128 - (phaseByteOrAlternateSize - 128));
     }
     alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
-    inverseBlendWeight = 0x100 - alternateOriginOrBlendWeight;
+    inverseBlendWeight = 256 - alternateOriginOrBlendWeight;
     blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
                            packedFieldRegionHeightHigh16WidthLow16;
     cycleDurationOrPhase = cycleDurationOrPhase >> 8;
     phaseByteOrAlternateSize = (uint32_t)(uint16_t)(levelConditions->levelImage).worldSettings.
                            alternatePackedFieldRegionHeightHigh16WidthLow16;
-    if (cycleDurationOrPhase < 0x80) {
+    if (cycleDurationOrPhase < 128) {
       if (phaseByteOrAlternateSize < blendIndexOrPrimaryValue) {
         phaseByteOrAlternateSize = phaseByteOrAlternateSize + 0x10000;
       }
       alternateWidthWeighted = phaseByteOrAlternateSize * cycleDurationOrPhase;
-      primaryWidthWeighted = blendIndexOrPrimaryValue * (0x80 - cycleDurationOrPhase);
+      primaryWidthWeighted = blendIndexOrPrimaryValue * (128 - cycleDurationOrPhase);
     }
     else {
       if (blendIndexOrPrimaryValue < phaseByteOrAlternateSize) {
         blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + 0x10000;
       }
-      primaryWidthWeighted = blendIndexOrPrimaryValue * (cycleDurationOrPhase - 0x80);
-      alternateWidthWeighted = phaseByteOrAlternateSize * (0x80 - (cycleDurationOrPhase - 0x80));
+      primaryWidthWeighted = blendIndexOrPrimaryValue * (cycleDurationOrPhase - 128);
+      alternateWidthWeighted = phaseByteOrAlternateSize * (128 - (cycleDurationOrPhase - 128));
     }
     /* ((uint16_t *)&pair)[1]: the high 16 bits of a packed pair */
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
               ((int)((uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
                                  alternatePackedFieldRegionHeightHigh16WidthLow16)[1] * inverseBlendWeight +
                      (uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
-                                 packedFieldRegionHeightHigh16WidthLow16)[1] * (0x100 - inverseBlendWeight)) >> 8,
+                                 packedFieldRegionHeightHigh16WidthLow16)[1] * (256 - inverseBlendWeight)) >> 8,
                (uint32_t)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
                (int)((uint32_t)((uint16_t *)&levelConditions->levelImage.worldSettings.
                                  alternatePackedFieldRegionOriginYHigh16XLow16)[1] * inverseBlendWeight +
@@ -261,7 +261,7 @@ void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
     pitchAngle = FIXED_ANGLE16_QUARTER_TURN;
   }
   runtime->motion.positionMagnitudeQ12 = magnitude;
-  runtime->motion.headingAngle = headingAngle & 0xffff;
+  runtime->motion.headingAngle = headingAngle & FIXED_ANGLE16_MASK;
   runtime->motion.pitchAngle = pitchAngle;
   runtime->motion.projectionShift = projectionShift;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
@@ -369,7 +369,7 @@ void WorldRuntime_TurnAuxiliaryAnglesClamped
   }
   WorldRuntime_RecomputeFieldRegionNormalsAndLighting
             (auxiliaryElevationAngle,
-             deltaAzimuthAngle + g_InGameRuntimeRoot->worldRuntime.fieldRegion.auxiliaryAzimuthAngle & 0xffff,
+             deltaAzimuthAngle + g_InGameRuntimeRoot->worldRuntime.fieldRegion.auxiliaryAzimuthAngle & FIXED_ANGLE16_MASK,
              g_InGameRuntimeRoot->lightElevationAngle,
              g_InGameRuntimeRoot->lightAzimuthAngle,
              &g_InGameRuntimeRoot->worldRuntime);
@@ -866,7 +866,7 @@ RuntimeHexSegment_GetFieldImageRegs(InGameFieldImageSaveContext58 *fieldImageCon
 
 {
   /* The pair is stored as {low: byte count (EDX), high: image (EAX)}, as the caller reads it. */
-  return (uint64_t)(uintptr_t)fieldImageContext->fieldGridAsset << 0x20 |
+  return (uint64_t)(uintptr_t)fieldImageContext->fieldGridAsset << 32 |
          (uint64_t)(uint32_t)(fieldImageContext->fieldGridAsset->common).allocationSizeBytes;
 }
 
@@ -945,13 +945,13 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
                        definitionIds[0]);
     definitionRecord = definitionLookup.modelDefinition;
     if (!definitionLookup.notFound) {
-      overlayExtent = 0xffffffff;
+      overlayExtent = UINT32_MAX;
       ownerNode = worldRuntime->ownerListHead;
       overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags;
       if (ownerNode != NULL) {
         if (((ModelDefinition *)definitionRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_14) {
           overlayExtent =
-               0x800 << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 0x1f);
+               FIELD_CELL_XENITE_SUPPORT << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 31);
         }
         overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
                  [((ModelDefinition *)definitionRecord)->placementContactKindIndex];
@@ -1050,7 +1050,7 @@ bool UnifiedRuntimeDefault_TwoArgSuccess
    15, 20 and 23), the slot where the other classes update their looping and positioned sounds: these classes
    have none, so this does nothing.
 */
-void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
+void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
   return;
@@ -1075,10 +1075,10 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-    /* the linked army (+0xF0) and, for an aircraft, the linked base model runtime (+0x60) */
+    /* the linked model runtime (+0xF0) and, for an aircraft, the linked base model runtime (+0x60) */
     modelRuntime = node->runtimePayload;
-    if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime) {
-      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = NULL;
+    if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime) {
+      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime = NULL;
     }
     if (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_21_AIRCRAFT &&
         detachedObject == modelRuntime->classLinkState.modelLinkOrState.modelRuntime) {
@@ -1173,7 +1173,7 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
                        (FixedMathScale32)
                        (((int64_t)(worldRuntime->motion).positionZQ12 *
                         (int64_t)g_FixedCosQ28[-currentPitchAngle]) / (int64_t)g_FixedSinQ28[-currentPitchAngle]));
-    rayLengthOrOffsetY = (int)(groundOffsetXY >> 0x20);
+    rayLengthOrOffsetY = (int)(groundOffsetXY >> 32);
     worldRuntime->motion.targetPositionXQ12 = (int)groundOffsetXY + worldRuntime->motion.positionXQ12;
     worldRuntime->motion.targetPositionYQ12 = rayLengthOrOffsetY + worldRuntime->motion.positionYQ12;
     worldRuntime->motion.targetPositionZQ12 = 0;

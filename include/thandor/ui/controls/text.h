@@ -39,7 +39,7 @@
 /* stateFlags bits (UiSelectableControl) that the text and framed buttons read. */
 #define UI_BUTTON_FRAME_INSET 0x04 /* framed buttons: inset frame, the hit area shrinks by g_UiWindowFrameInset */
 #define UI_BUTTON_ALTERNATE_STATE 0x40 /* text buttons: third checkbox state, alternate text style; cleared on toggle */
-#define UI_BUTTON_PLAY_ACTIVATION_SOUND 0x80 /* play activationSoundId on activation */
+#define UI_BUTTON_PLAY_ACTIVATION_SOUND 0x80 /* play activationSound on activation */
 #define UI_BUTTON_OWN_STYLE_FONT 0x100 /* the font byte of packedTextStyle replaces the state style's */
 #define UI_BUTTON_OWN_STYLE_PALETTE 0x200 /* the palette byte of packedTextStyle replaces the state style's */
 #define UI_BUTTON_HIDDEN_WHILE_SUPPRESSED 0x400

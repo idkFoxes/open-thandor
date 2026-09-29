@@ -86,7 +86,7 @@ FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
         }
         /* success: the module base with CF clear */
         return THANDOR_BITCAST(uint64_t, FncModuleLoadResult,
-                               THANDOR_BITCAST(ArenaReserveResult, uint64_t, reserveResult) & 0xffffffff);
+                               THANDOR_BITCAST(ArenaReserveResult, uint64_t, reserveResult) & UINT32_MAX);
       }
     }
   }

@@ -33,6 +33,7 @@
 #define GFX_ASSET_HEADER_SIZE 0x200
 #define GFX_PALETTE_BANK_SIZE 0x800
 #define GFX_SUBRESOURCE_RECORD_SIZE 0x20
+#define GRAPHICS_TEXTURE_SET_ENTRY_BYTES 0x20 /* GraphicsTextureSetEntry, after the 8-byte texture set header */
 #define GFX_SUBRESOURCE_LOGICAL_WIDTH 0x00  /* tile extent used by the tiled blits */
 #define GFX_SUBRESOURCE_LOGICAL_HEIGHT 0x04
 #define GFX_SUBRESOURCE_PALETTE_INDEX 0x08  /* -1: direct ARGB8888 pixels; else palette bank, 8-bit indices */

@@ -12,6 +12,11 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/backend/software. */
+
+/* g_SoftwareDepthEpoch drops by one step (the top byte) per frame (SoftwareRenderer_AdvanceDepthEpoch) */
+#define SOFTWARE_DEPTH_EPOCH_STEP 0x1000000
+/* SoftwareMaskBuffer: a revealed mask byte brightens by this much per tick, saturating at 0xFF */
+#define SOFTWARE_MASK_BRIGHTEN_STEP 0x1f
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00519320 */

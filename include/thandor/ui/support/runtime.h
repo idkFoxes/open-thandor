@@ -22,6 +22,13 @@
 /* Extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h): ".pcx",
    the 64x64 player preview pictures of PcxPreview_Load64x64PaletteAndPixels. */
 #define WIDE_PATH_EXTENSION_PCX 0x786370
+/* Image record returned by the PCX decoder module (g_PcxFunctionExport2): the offset of the image header at
+   +0xB8, the palette (8 bytes per colour) at +0x200; inside the image header the pixel offset, width, height */
+#define PCX_DECODED_IMAGE_HEADER_OFFSET 0xB8
+#define PCX_DECODED_PALETTE 0x200
+#define PCX_IMAGE_HEADER_PIXEL_OFFSET 0x0C
+#define PCX_IMAGE_HEADER_WIDTH 0x18
+#define PCX_IMAGE_HEADER_HEIGHT 0x1C
 
 /* 0x0050F220 */
 void RecentTextHistory_SortAndBuildPointerList

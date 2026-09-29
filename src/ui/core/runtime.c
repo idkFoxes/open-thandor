@@ -271,10 +271,10 @@ void UiRuntime_Initialize(void)
   allocResult = g_MemoryApi.alloc(UI_RUNTIME_RECORD_RING_CAPACITY * sizeof(UiRuntimeRecord));
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedResult.valueOrError;
-  allocResult = g_MemoryApi.alloc(0x1000);
+  allocResult = g_MemoryApi.alloc(UI_TRANSFER_ENDPOINT_BUFFER_BYTES);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedResult.valueOrError;
-  allocResult = g_MemoryApi.alloc(0x2000);
+  allocResult = g_MemoryApi.alloc(UI_TRANSFER_DATA_BUFFER_BYTES);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiTransferDataBuffer = (uint8_t *)checkedResult.valueOrError;
   g_UiRuntimeRecordWriteIndex = 0;
@@ -346,7 +346,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - sizeof(UiActionQueueEntry);
     actionHandler = (void (*)(void *))
                     g_UiActionHandlerPages[(uint32_t)queueHead->actionId >> 8]->handlers
-                    [(uint32_t)queueHead->actionId & 0xff];
+                    [(uint32_t)queueHead->actionId & (UI_ACTION_HANDLER_PAGE_COUNT - 1)];
     sourceEntry = queueHead + 1;
     destinationEntry = queueHead;
     /* move entries 1..15 (30 dwords) down by one */
@@ -587,11 +587,11 @@ PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node)
   ModelRuntimeFlags stateFlags;
 
   /* each test leaves the tint of its branch in tintArgb, as the original loads EAX before every TEST */
-  tintArgb = 0xffffffff;
+  tintArgb = UI_MODEL_TINT_OPAQUE_WHITE;
   stateFlags = node->runtimeFlags;
   if ((((stateFlags & 4) == 0) && (tintArgb = 0, (stateFlags & 8) != 0)) &&
-     (tintArgb = 0xffffff, (stateFlags & 0x10) == 0)) {
-    tintArgb = 0xff878787;
+     (tintArgb = UI_MODEL_TINT_TRANSPARENT_WHITE, (stateFlags & 0x10) == 0)) {
+    tintArgb = UI_MODEL_TINT_OPAQUE_GREY;
   }
   return tintArgb;
 }

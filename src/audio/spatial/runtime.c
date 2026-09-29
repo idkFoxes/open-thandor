@@ -51,7 +51,7 @@ void SpatialSound_RebuildListenerTransformFromPose
 
 {
   FixedTransform_BuildRotationBasis
-            (&g_SpatialSoundListenerRotation,FIXED_ANGLE16_QUARTER_TURN - viewAngle0 & 0xffff,viewAngle1,
+            (&g_SpatialSoundListenerRotation,FIXED_ANGLE16_QUARTER_TURN - viewAngle0 & FIXED_ANGLE16_MASK,viewAngle1,
              FIXED_ANGLE16_HALF_TURN + FIXED_ANGLE16_QUARTER_TURN);
   g_SpatialSoundListenerRotation.translation.x = 0;
   g_SpatialSoundListenerRotation.translation.y = 0;
@@ -109,15 +109,15 @@ void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDi
     if ((distanceOrPannedGainQ15 < maximumDistanceQ12) &&
        (scaledProduct = (int64_t)
                 g_FixedCosQ28
-                [(int)(((uint64_t)distanceOrPannedGainQ15 << 0xe) / (uint64_t)maximumDistanceQ12)] *
+                [(int)(((uint64_t)distanceOrPannedGainQ15 << 14) / (uint64_t)maximumDistanceQ12)] *
                 (int64_t)(int)volumeOrLeftGainQ15,
-       volumeOrLeftGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c,
+       volumeOrLeftGainQ15 = FIXED_PRODUCT_SHR(scaledProduct, 28),
        SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 < (int)volumeOrLeftGainQ15)) {
       /* pan: one channel keeps the full gain, the other gets gain * (1 + cos(2 * azimuth)) / 2 */
       if (azimuthOrRightGainQ15 < FIXED_ANGLE16_HALF_TURN) {
         distanceOrPannedGainQ15 = (uint32_t)((uint64_t)
                        ((int64_t)(g_FixedCosQ28[azimuthOrRightGainQ15 * 2] + Q28_ONE) *
-                       (int64_t)(int)(volumeOrLeftGainQ15 << 3)) >> 0x20);
+                       (int64_t)(int)(volumeOrLeftGainQ15 << 3)) >> 32);
         azimuthOrRightGainQ15 = volumeOrLeftGainQ15;
       }
       else {
@@ -126,7 +126,7 @@ void SpatialSound_PlayPositionedOneShot(SpatialSoundMaximumDistanceQ12 maximumDi
         scaledProduct = (int64_t)
                 (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrRightGainQ15 * 8) + Q28_ONE) *
                 (int64_t)(int)volumeOrLeftGainQ15;
-        azimuthOrRightGainQ15 = (uint32_t)scaledProduct >> 0x1d | (int)((uint64_t)scaledProduct >> 0x20) << 3;
+        azimuthOrRightGainQ15 = FIXED_PRODUCT_SHR(scaledProduct,29);
         distanceOrPannedGainQ15 = volumeOrLeftGainQ15;
       }
       volumeOrLeftGainQ15 = distanceOrPannedGainQ15;
@@ -179,15 +179,15 @@ void SpatialSound_UpdateDesiredPositionedGains
     if ((distanceOrPannedGainQ15 < maximumDistanceQ12) &&
        (scaledProduct = (int64_t)
                 g_FixedCosQ28
-                [(int)(((uint64_t)distanceOrPannedGainQ15 << 0xe) / (uint64_t)maximumDistanceQ12)] *
+                [(int)(((uint64_t)distanceOrPannedGainQ15 << 14) / (uint64_t)maximumDistanceQ12)] *
                 (int64_t)(int)volumeOrRightGainQ15,
-       volumeOrRightGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c,
+       volumeOrRightGainQ15 = FIXED_PRODUCT_SHR(scaledProduct, 28),
        SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 < (int)volumeOrRightGainQ15)) {
       /* pan: one channel keeps the full gain, the other gets gain * (1 + cos(2 * azimuth)) / 2 */
       if (azimuthOrLeftGainQ15 < FIXED_ANGLE16_HALF_TURN) {
         distanceOrPannedGainQ15 = (uint32_t)((uint64_t)
                        ((int64_t)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + Q28_ONE) *
-                       (int64_t)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
+                       (int64_t)(int)(volumeOrRightGainQ15 << 3)) >> 32);
         azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
       }
       else {
@@ -196,7 +196,7 @@ void SpatialSound_UpdateDesiredPositionedGains
         scaledProduct = (int64_t)
                 (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + Q28_ONE) *
                 (int64_t)(int)volumeOrRightGainQ15;
-        azimuthOrLeftGainQ15 = (uint32_t)scaledProduct >> 0x1d | (int)((uint64_t)scaledProduct >> 0x20) << 3;
+        azimuthOrLeftGainQ15 = FIXED_PRODUCT_SHR(scaledProduct,29);
         distanceOrPannedGainQ15 = volumeOrRightGainQ15;
       }
       volumeOrRightGainQ15 = distanceOrPannedGainQ15;

@@ -791,7 +791,7 @@ bool NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex)
     /* the instance descriptors are 0x100 bytes apart */
     selectedBackendDescriptor =
          (NetworkBackendInstanceDescriptorPrefix *)
-         ((uint8_t *)g_NetworkBackendInstanceTable + instanceIndex * 0x100);
+         ((uint8_t *)g_NetworkBackendInstanceTable + instanceIndex * 256);
     g_NetworkBackendActiveAddressFamily = selectedBackendDescriptor->addressFamily;
     g_NetworkBackendActiveSocketAddressLength = selectedBackendDescriptor->socketAddressLength;
     g_NetworkBackendActiveSocketType = selectedBackendDescriptor->socketType;

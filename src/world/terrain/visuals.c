@@ -84,7 +84,7 @@ StatusResult TerrainCompositeTexture_Create(void)
   fieldHeight = terrainFieldGrid->gridHeight;
   /* layout: 0x200-byte gfx header, three 0x20-byte source entries (pixels from 0x260), three planes of
      width * height * 4 bytes */
-  allocResult = g_MemoryApi.alloc(fieldWidth * 0xc * fieldHeight + 0x260);
+  allocResult = g_MemoryApi.alloc(fieldWidth * (3 * 4) * fieldHeight + TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET);
   compositeTexture = (TerrainCompositeTextureRuntime *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_TerrainCompositeTexture = compositeTexture;
@@ -98,7 +98,7 @@ StatusResult TerrainCompositeTexture_Create(void)
     compositeTexture->sourceEntries[0].paletteIndex = -1;
     compositeTexture->sourceEntries[0].logicalWidth = fieldWidth;
     compositeTexture->sourceEntries[0].logicalHeight = fieldHeight;
-    compositeTexture->sourceEntries[0].dataOffset = 0x260;
+    compositeTexture->sourceEntries[0].dataOffset = TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET;
     compositeTexture->sourceEntries[1].pixelWidth = fieldWidth;
     compositeTexture->sourceEntries[1].pixelHeight = fieldHeight;
     compositeTexture->sourceEntries[1].originX = 0;
@@ -106,12 +106,12 @@ StatusResult TerrainCompositeTexture_Create(void)
     compositeTexture->sourceEntries[1].paletteIndex = -1;
     compositeTexture->sourceEntries[1].logicalWidth = fieldWidth;
     compositeTexture->sourceEntries[1].logicalHeight = fieldHeight;
-    compositeTexture->sourceEntries[1].dataOffset = planeSizeBytes + 0x260U;
+    compositeTexture->sourceEntries[1].dataOffset = planeSizeBytes + (uint32_t)TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET;
     compositeTexture->sourceEntries[2].pixelWidth = fieldWidth;
     compositeTexture->sourceEntries[2].pixelHeight = fieldHeight;
     compositeTexture->sourceEntries[2].originX = 0;
     compositeTexture->sourceEntries[2].originY = 0;
-    plane2DataOffset = planeSizeBytes + 0x260U + planeSizeBytes;
+    plane2DataOffset = planeSizeBytes + (uint32_t)TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET + planeSizeBytes;
     compositeTexture->sourceEntries[2].paletteIndex = -1;
     compositeTexture->sourceEntries[2].logicalWidth = fieldWidth;
     compositeTexture->sourceEntries[2].logicalHeight = fieldHeight;
@@ -120,7 +120,7 @@ StatusResult TerrainCompositeTexture_Create(void)
     totalImageBytes = plane2DataOffset + planeSizeBytes;
     (compositeTexture->textureSource).tableDescriptor.subresourceCount = 3;
     (compositeTexture->textureSource).tableDescriptor.paletteBankCount = 0;
-    (compositeTexture->textureSource).tableDescriptor.subresourceTableOffset = 0x200;
+    (compositeTexture->textureSource).tableDescriptor.subresourceTableOffset = TERRAIN_COMPOSITE_TEXTURE_HEADER_BYTES;
     (compositeTexture->textureSource).reservedBC_FF[0] = 0;
     (compositeTexture->textureSource).reservedBC_FF[1] = 0;
     (compositeTexture->textureSource).reservedBC_FF[2] = 0;
@@ -185,7 +185,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
     lookupInputValue = 0;
     do {
       /* a byte is never above 0xFF: only the rising branch is reached */
-      if (lookupInputValue < 0x100) {
+      if (lookupInputValue < 256) {
         if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
           *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
         }
@@ -193,7 +193,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
           *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
         }
       }
-      else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 0x100) {
+      else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 256) {
         *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
       }
       else {
@@ -230,7 +230,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
   /* row 0x81: FULL */
   lookupInputValue = 0;
   do {
-    if (lookupInputValue < 0x100) {
+    if (lookupInputValue < 256) {
       if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
         *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
@@ -238,7 +238,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
         *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
       }
     }
-    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 0x100) {
+    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 256) {
       *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
     }
     else {
@@ -273,7 +273,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
   finalRowsRemaining = 0x7d;
   lookupInputValue = 0;
   do {
-    if (lookupInputValue < 0x100) {
+    if (lookupInputValue < 256) {
       if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
         *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
@@ -281,7 +281,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
         *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
       }
     }
-    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 0x100) {
+    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 256) {
       *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
     }
     else {
@@ -381,7 +381,7 @@ StatusResult TerrainVisualResources_LoadPrimary
       materialFlagBits = materialFlagBits >> 1;
       materialSlotsRemaining--;
     } while (materialSlotsRemaining != 0);
-    WidePath_SetExtensionCode(0x746164,primaryResourcePath); /* ".dat" */
+    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,primaryResourcePath); /* ".dat" */
     packageLoad = Package_LoadEntry(primaryResourcePath);
     loadedResourceOrError = packageLoad.bufferOrError;
     if (!packageLoad.failed) {
@@ -410,7 +410,7 @@ StatusResult TerrainVisualResources_LoadPrimary
             g_TerrainSecondaryPalette = loadedResourceOrError;
             pathSuffixEntry->lowercaseLetterUtf16 = 0;
             pathSuffixEntry->terminator = 0;
-            WidePath_SetExtensionCode(0x746164,secondaryResourcePath); /* ".dat" */
+            WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,secondaryResourcePath); /* ".dat" */
             packageLoad = Package_LoadEntry(secondaryResourcePath);
             loadedResourceOrError = packageLoad.bufferOrError;
             if (!packageLoad.failed) {
@@ -550,7 +550,7 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
       materialFlagBits = materialFlagBits >> 1;
       materialSlotsRemaining--;
     } while (materialSlotsRemaining != 0);
-    WidePath_SetExtensionCode(0x746164,primaryResourcePath); /* ".dat" */
+    WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,primaryResourcePath); /* ".dat" */
     packageLoad = Package_LoadEntry(primaryResourcePath);
     loadedResourceOrError = packageLoad.bufferOrError;
     if (!packageLoad.failed) {
@@ -579,7 +579,7 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
             g_TerrainSecondaryPalette = loadedResourceOrError;
             pathSuffixEntry->lowercaseLetterUtf16 = 0;
             pathSuffixEntry->terminator = 0;
-            WidePath_SetExtensionCode(0x746164,secondaryResourcePath); /* ".dat" */
+            WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_DAT,secondaryResourcePath); /* ".dat" */
             packageLoad = Package_LoadEntry(secondaryResourcePath);
             loadedResourceOrError = packageLoad.bufferOrError;
             if (!packageLoad.failed) {
@@ -700,9 +700,9 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
-    channelValue = ((rampStepColorArgb & 0xff) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff);
-    if (0xff < channelValue) {
-      channelValue = 0xff;
+    channelValue = ((rampStepColorArgb & ARGB8888_BLUE_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_BLUE_MASK);
+    if (ARGB8888_BLUE_MASK < channelValue) {
+      channelValue = ARGB8888_BLUE_MASK;
     }
     *rampEntryCursor = channelValue;
     rampEntryCursor++;
@@ -711,29 +711,29 @@ void TerrainLighting_BuildColorRampAndSetBaseColor
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
-    channelValue = ((rampStepColorArgb & 0xff00) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff00);
+    channelValue = ((rampStepColorArgb & ARGB8888_GREEN_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_GREEN_MASK);
     if (0xffff < channelValue) {
-      channelValue = 0xff00;
+      channelValue = ARGB8888_GREEN_MASK;
     }
-    *rampEntryCursor = *rampEntryCursor | channelValue & 0xff00;
+    *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_GREEN_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
-    channelValue = ((rampStepColorArgb & 0xff0000) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff0000);
+    channelValue = ((rampStepColorArgb & ARGB8888_RED_MASK) * rampStepsRemaining >> 8) + (baseColorArgb & ARGB8888_RED_MASK);
     if (0xffffff < channelValue) {
-      channelValue = 0xff0000;
+      channelValue = ARGB8888_RED_MASK;
     }
-    *rampEntryCursor = *rampEntryCursor | channelValue & 0xff0000;
+    *rampEntryCursor = *rampEntryCursor | channelValue & ARGB8888_RED_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
   rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
-    *rampEntryCursor = *rampEntryCursor | baseColorArgb & 0xff000000;
+    *rampEntryCursor = *rampEntryCursor | baseColorArgb & ARGB8888_ALPHA_MASK;
     rampEntryCursor++;
     rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
@@ -786,7 +786,7 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
   WorldRuntime_RecomputeFieldRegionNormalsAndLighting
             ((g_InGameRuntimeRoot->worldRuntime).fieldRegion.auxiliaryElevationAngle,
              (g_InGameRuntimeRoot->worldRuntime).fieldRegion.auxiliaryAzimuthAngle,lightElevationAngle,
-             deltaAzimuthAngle + g_InGameRuntimeRoot->lightAzimuthAngle & 0xffff,
+             deltaAzimuthAngle + g_InGameRuntimeRoot->lightAzimuthAngle & FIXED_ANGLE16_MASK,
              &g_InGameRuntimeRoot->worldRuntime);
   return;
 }
@@ -994,8 +994,8 @@ void TerrainCompositeTexture_FillPlane2(void)
    Builds the displayed minimap (plane 0): copies plane 1 (terrain) or, with bit 1 of
    minimapResourceButtonStateFlags, plane 2 (resources), hides cells the active faction has never seen
    (almost black) and darkens those it does not see now, then draws a pixel for each model runtime with an
-   alpha tint whose faction has a non-zero factionClassOrMode, in the panel colour of variant
-   factionClassOrMode when selected, variant 0 otherwise (blended 50/50 for a tint alpha below 0xFF).
+   alpha tint whose faction has a non-zero colorIndex, in the panel colour of variant
+   colorIndex when selected, variant 0 otherwise (blended 50/50 for a tint alpha below 0xFF).
 */
 void TerrainCompositeTexture_RebuildPlane0(void)
 
@@ -1047,7 +1047,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
     if ((visibilityFlags & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) == 0) {
       if ((visibilityFlags & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) {
         /* seen before: halve every channel */
-        pixelArgb = (*(uint32_t *)pixelCursor & 0xfefefefe) >> 1;
+        pixelArgb = (*(uint32_t *)pixelCursor & TERRAIN_ARGB_HALVE_MASK) >> 1;
       }
       *(uint32_t *)pixelCursor = pixelArgb;
     }
@@ -1061,13 +1061,13 @@ void TerrainCompositeTexture_RebuildPlane0(void)
       gridCoordinates = FieldGrid_WorldToGridQ12(ownerNode->worldYQ12,ownerNode->worldXQ12);
       panelTextureSource = g_InGamePanelTextureSource;
       cellsRemainingOrRowQ12 = gridCoordinates.rowQ12;
-      counterOrGridColumn = gridCoordinates.columnQ12 + 0x800 >> 12; /* round to the nearest cell */
-      if ((SCARRY4(cellsRemainingOrRowQ12,0x800) == counterOrGridColumn < 0) &&
-         (((gridRow = cellsRemainingOrRowQ12 + 0x800 >> 12, SCARRY4(cellsRemainingOrRowQ12,0x800) == gridRow < 0 &&
+      counterOrGridColumn = gridCoordinates.columnQ12 + FIELD_GRID_CELL_Q12 / 2 >> Q12_SHIFT; /* round to the nearest cell */
+      if ((SCARRY4(cellsRemainingOrRowQ12,FIELD_GRID_CELL_Q12 / 2) == counterOrGridColumn < 0) &&
+         (((gridRow = cellsRemainingOrRowQ12 + FIELD_GRID_CELL_Q12 / 2 >> Q12_SHIFT, SCARRY4(cellsRemainingOrRowQ12,FIELD_GRID_CELL_Q12 / 2) == gridRow < 0 &&
            (counterOrGridColumn < (int)textureWidth)) && (gridRow < (int)textureHeight)))) {
         ownerEntity = (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
         colorVariant = g_GameFactionRuntimeImage.records[(ownerEntity->common).ownership.ownerIndex].
-                 factionClassOrMode;
+                 colorIndex;
         assetOffset = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
         if (colorVariant != 0) {
           isSelected = SelectionInfo_FindEntry(ownerEntity);
@@ -1075,9 +1075,9 @@ void TerrainCompositeTexture_RebuildPlane0(void)
             colorVariant = 0;
           }
           pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[0x20 + ((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
-          if (ownerNode->modelTintArgb < 0xff000000) {
-            pixelArgb = (pixelArgb & 0xfefefefe) +
-                    (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & 0xfefefefe) >> 1;
+          if (ownerNode->modelTintArgb < ARGB8888_ALPHA_MASK) {
+            pixelArgb = (pixelArgb & TERRAIN_ARGB_HALVE_MASK) +
+                    (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & TERRAIN_ARGB_HALVE_MASK) >> 1;
           }
           *(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) = pixelArgb;
         }

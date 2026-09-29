@@ -46,7 +46,12 @@ typedef struct RomRecord {
     uint32_t rootNodeOffsetOrPointer;    /* +0x04 serialized sprite-node tree (RomSerializedNodeHeader) */
     RomRecordId recordId;                /* +0x08 */
     uint32_t unknown0C;
-    uint32_t visibleRecordMask[4];       /* +0x10 one bit per record id: records shown together with this one */
+    uint32_t visibleRecordMask[4];       /* +0x10 one bit per record id: records shown together with this one.
+                                            Covers ids 0..127 only; its users (FrontendRomTransition_ActivateRecordById,
+                                            RomRuntime_UpdateRecordVisibilityAndDescriptors) index it with id >> 5
+                                            unchecked, like the original (SHR ECX,5 / [ESI+ECX*4+0x10]), and nothing
+                                            limits the ids at registration: a record id >= 128 would test a bit of the
+                                            camera pose from +0x20 on. */
     Q12 cameraXQ12;                      /* +0x20 camera pose while the record is active (keyframe channels 0..5) */
     Q12 cameraYQ12;                      /* +0x24 */
     Q12 cameraZQ12;                      /* +0x28 */

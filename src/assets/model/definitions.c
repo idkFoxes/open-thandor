@@ -259,9 +259,9 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
   MeshRayTriangleResult hitResult;
   bool hitFound;
 
-  normalX = triangle->planeNormalX << 0x10;
-  normalY = triangle->planeNormalY << 0x10;
-  normalZ = triangle->planeNormalZ << 0x10;
+  normalX = triangle->planeNormalX << (Q28_SHIFT - Q12_SHIFT);
+  normalY = triangle->planeNormalY << (Q28_SHIFT - Q12_SHIFT);
+  normalZ = triangle->planeNormalZ << (Q28_SHIFT - Q12_SHIFT);
   vertexA = triangle->vertex0;
   vertexB = triangle->vertex1;
   vertexC = triangle->vertex2;
@@ -271,15 +271,15 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
           (int64_t)normalX +
           (int64_t)((vertexA->z * 2 + vertexB->z + vertexC->z >> 2) - g_ModelRaycastLocalOriginZ) *
           (int64_t)normalZ;
-  offsetHighOrCrossZ = (uint32_t)(planeOffsetDot >> 0x20);
+  offsetHighOrCrossZ = (uint32_t)(planeOffsetDot >> 32);
   productScratch = (int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)normalY +
           (int64_t)(int)g_ModelRaycastLocalDirectionXQ28 * (int64_t)normalX +
           (int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)normalZ;
-  directionDotOrCrossY = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
+  directionDotOrCrossY = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
   distanceOrCrossX = g_ModelRaycastMaximumDistance;
   if (directionDotOrCrossY != 0) {
     scaledHighOrEdge1X =
-         (int)((uint64_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY) >> 0x20);
+         FIXED_MUL_HIGH((int)g_ModelRaycastMaximumDistance,(int)directionDotOrCrossY);
     distanceOrCrossX =
          (uint32_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY);
     halfOffsetOrEdge1Y = (int)offsetHighOrCrossZ >> 1;
@@ -297,23 +297,11 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
          (int)((int64_t)planeOffsetDot / (int64_t)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
     vertexA = triangle->vertex0;
     negVertex0XOrEdge2X = -vertexA->x;
-    hitRelativeX = ((int)((uint64_t)
-                    ((int64_t)hitResult.distanceQ12 * (int64_t)(int)g_ModelRaycastLocalDirectionXQ28) >>
-                   0x20) << 4 |
-             (uint32_t)((int64_t)hitResult.distanceQ12 * (int64_t)(int)g_ModelRaycastLocalDirectionXQ28) >>
-             0x1c) + g_ModelRaycastLocalOriginX + negVertex0XOrEdge2X;
+    hitRelativeX = FIXED_MUL_SHR(hitResult.distanceQ12,(int)g_ModelRaycastLocalDirectionXQ28,Q28_SHIFT) + g_ModelRaycastLocalOriginX + negVertex0XOrEdge2X;
     negVertex0YOrEdge2Y = -vertexA->y;
-    hitRelativeY = ((int)((uint64_t)
-                    ((int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)hitResult.distanceQ12) >>
-                   0x20) << 4 |
-             (uint32_t)((int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)hitResult.distanceQ12) >>
-             0x1c) + g_ModelRaycastLocalOriginY + negVertex0YOrEdge2Y;
+    hitRelativeY = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionYQ28,hitResult.distanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginY + negVertex0YOrEdge2Y;
     negVertex0ZOrEdge2Z = -vertexA->z;
-    hitRelativeZ = ((int)((uint64_t)
-                    ((int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)hitResult.distanceQ12) >>
-                   0x20) << 4 |
-             (uint32_t)((int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)hitResult.distanceQ12) >>
-             0x1c) + g_ModelRaycastLocalOriginZ + negVertex0ZOrEdge2Z;
+    hitRelativeZ = FIXED_MUL_SHR((int)g_ModelRaycastLocalDirectionZQ28,hitResult.distanceQ12,Q28_SHIFT) + g_ModelRaycastLocalOriginZ + negVertex0ZOrEdge2Z;
     vertexA = triangle->vertex1;
     vertexB = triangle->vertex2;
     scaledHighOrEdge1X = negVertex0XOrEdge2X + vertexA->x;
@@ -323,41 +311,40 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
     negVertex0YOrEdge2Y = negVertex0YOrEdge2Y + vertexB->y;
     negVertex0ZOrEdge2Z = negVertex0ZOrEdge2Z + vertexB->z;
     productScratch = (int64_t)normalY * (int64_t)edge1Z - (int64_t)normalZ * (int64_t)halfOffsetOrEdge1Y;
-    distanceOrCrossX = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
+    distanceOrCrossX = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
     productScratch = (int64_t)normalZ * (int64_t)scaledHighOrEdge1X - (int64_t)normalX * (int64_t)edge1Z;
-    directionDotOrCrossY = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
+    directionDotOrCrossY = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
     productScratch =
          (int64_t)normalX * (int64_t)halfOffsetOrEdge1Y - (int64_t)normalY * (int64_t)scaledHighOrEdge1X;
-    offsetHighOrCrossZ = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
+    offsetHighOrCrossZ = FIXED_PRODUCT_SHR(productScratch,Q28_SHIFT);
     productScratch = (int64_t)hitRelativeY * (int64_t)(int)directionDotOrCrossY +
                      (int64_t)hitRelativeX * (int64_t)(int)distanceOrCrossX +
                      (int64_t)hitRelativeZ * (int64_t)(int)offsetHighOrCrossZ;
     edge2Dot = (int64_t)negVertex0YOrEdge2Y * (int64_t)(int)directionDotOrCrossY +
                (int64_t)(int)distanceOrCrossX * (int64_t)negVertex0XOrEdge2X +
                (int64_t)negVertex0ZOrEdge2Z * (int64_t)(int)offsetHighOrCrossZ;
-    scaledHighOrEdge1X = (int)((uint64_t)edge2Dot >> 0x20);
+    scaledHighOrEdge1X = (int)((uint64_t)edge2Dot >> 32);
     hitCrossXOrEdge2HitDot = (int64_t)normalY * (int64_t)hitRelativeZ - (int64_t)normalZ * (int64_t)hitRelativeY;
     hitCrossY = (int64_t)normalZ * (int64_t)hitRelativeX - (int64_t)normalX * (int64_t)hitRelativeZ;
     hitCrossZ = (int64_t)normalX * (int64_t)hitRelativeY - (int64_t)normalY * (int64_t)hitRelativeX;
     hitCrossXOrEdge2HitDot = (int64_t)negVertex0YOrEdge2Y *
-             (int64_t)(int)((int)((uint64_t)hitCrossY >> 0x20) << 4 | (uint32_t)hitCrossY >> 0x1c) +
+             (int64_t)(int)FIXED_PRODUCT_SHR(hitCrossY,Q28_SHIFT) +
              (int64_t)negVertex0XOrEdge2X *
-             (int64_t)(int)((int)((uint64_t)hitCrossXOrEdge2HitDot >> 0x20) << 4 |
-                            (uint32_t)hitCrossXOrEdge2HitDot >> 0x1c) +
+             (int64_t)(int)FIXED_PRODUCT_SHR(hitCrossXOrEdge2HitDot,Q28_SHIFT) +
              (int64_t)negVertex0ZOrEdge2Z *
-             (int64_t)(int)((int)((uint64_t)hitCrossZ >> 0x20) << 4 | (uint32_t)hitCrossZ >> 0x1c);
+             (int64_t)(int)FIXED_PRODUCT_SHR(hitCrossZ,Q28_SHIFT);
     distanceOrCrossX = (uint32_t)hitCrossXOrEdge2HitDot;
     /* Inside test: both barycentric dots and their sum's difference to edge2Dot carry edge2Dot's sign. */
     if (edge2Dot < 0) {
       hitFound = ((hitCrossXOrEdge2HitDot < 0) && (productScratch < 0)) &&
          (distanceOrCrossX = (uint32_t)(hitCrossXOrEdge2HitDot + productScratch),
-         (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) -
+         (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 32)) -
                (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)) < 0);
     }
     else {
       hitFound = ((-1 < hitCrossXOrEdge2HitDot) && (-1 < productScratch)) &&
             (distanceOrCrossX = (uint32_t)(hitCrossXOrEdge2HitDot + productScratch),
-            -1 < (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) -
+            -1 < (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 32)) -
                       (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)));
     }
     if (hitFound) {
@@ -733,7 +720,7 @@ bool ModelDefinition_IsFactionTechnologyLocked
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if ((!lookupResult.notFound) &&
      (technologyBitIndex = ((ModelDefinition *)lookupResult.modelDefinition)->requiredTechnologyBit,
-     (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 0x1f)) != 0)) {
+     (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 31)) != 0)) {
     return false;
   }
   return true;

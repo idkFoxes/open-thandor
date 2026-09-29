@@ -29,6 +29,15 @@
 #define TERRAIN_RUNTIME_BYTE_LEVEL_NONE 0x00
 #define TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT 0x87 /* only the persistent occupancy bit 7 */
 #define TERRAIN_RUNTIME_BYTE_LEVEL_FULL 0xff
+/* TerrainCompositeTexture_Create: the minimap texture is a 0x200-byte gfx header, three 0x20-byte source entries
+   and then three ARGB planes of gridWidth * gridHeight * 4 bytes each. */
+#define TERRAIN_COMPOSITE_TEXTURE_HEADER_BYTES 0x200 /* subresource table offset */
+#define TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET 0x260 /* dataOffset of plane 0 */
+/* ".dat" extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h) */
+#define WIDE_PATH_EXTENSION_DAT 0x746164
+/* (argb & mask) >> 1 halves all four 8-bit channels at once (each channel's low bit cleared first); two
+   halved pixels added give their average (TerrainCompositeTexture_RebuildPlane0) */
+#define TERRAIN_ARGB_HALVE_MASK 0xfefefefe
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

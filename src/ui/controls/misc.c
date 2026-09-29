@@ -146,16 +146,16 @@ void UiDisplayModeAction_RevertAndReopenSettings(UiNodeBase *sourceNode)
   do {
     scaledAnchor = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).rightAnchorQ31;
     (root->base).right =
-         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).rightOffset;
+         (FIXED_PRODUCT_SHR(scaledAnchor, 31)) + (root->base).rightOffset;
     scaledAnchor = (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).bottomAnchorQ31;
     (root->base).bottom =
-         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).bottomOffset;
+         (FIXED_PRODUCT_SHR(scaledAnchor, 31)) + (root->base).bottomOffset;
     scaledAnchor = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).leftAnchorQ31;
     (root->base).left =
-         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).leftOffset;
+         (FIXED_PRODUCT_SHR(scaledAnchor, 31)) + (root->base).leftOffset;
     scaledAnchor = (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).topAnchorQ31;
     (root->base).top =
-         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).topOffset;
+         (FIXED_PRODUCT_SHR(scaledAnchor, 31)) + (root->base).topOffset;
     (*((root->base).vtable)->layout)(&root->base);
     root = root->previousRoot;
   } while (root != (UiRootNode *)UI_NODE_NONE);
@@ -660,10 +660,10 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
   }
   if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 &&
       ((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
-      control->pointerActivationSoundId != 0) {
+      control->pointerActivationSound != NULL) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
-               (DirectSoundVoiceSet *)control->pointerActivationSoundId);
+               control->pointerActivationSound);
   }
   opaqueHit = false;
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
@@ -730,10 +730,10 @@ void UiImageControl_NonRightRelease
         stateFlagsField = &(control->selectable).stateFlags;
         *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
         if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
-            control->pointerActivationSoundId != 0) {
+            control->pointerActivationSound != NULL) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     (DirectSoundVoiceSet *)control->pointerActivationSoundId);
+                     control->pointerActivationSound);
         }
       }
     }
@@ -906,10 +906,10 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
                              (UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
     UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
     /* distinct bit depths, ascending (the XCHG swaps of the original appear as LOCK/UNLOCK) */
-    g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch3 = 0xffffffff;
+    g_UiDisplayModeDistinctValueScratch0 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch1 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch2 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch3 = UI_DISPLAY_MODE_NONE;
     remainingModes = g_GraphicsDisplayModeCount;
     displayMode = g_GraphicsDisplayModes;
     do {
@@ -954,19 +954,19 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
     UI_DISPLAY_MODE_OPTION_PREFIX(root,colorDepthOption2).modeValue = g_UiDisplayModeDistinctValueScratch1;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,colorDepthOption3).modeValue = g_UiDisplayModeDistinctValueScratch2;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,colorDepthOption4).modeValue = g_UiDisplayModeDistinctValueScratch3;
-    g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch3 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch4 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch5 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch6 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch7 = 0xffffffff;
+    g_UiDisplayModeDistinctValueScratch0 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch1 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch2 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch3 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch4 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch5 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch6 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch7 = UI_DISPLAY_MODE_NONE;
     remainingModes = g_GraphicsDisplayModeCount;
     displayMode = g_GraphicsDisplayModes;
     /* distinct resolutions, keyed width << 16 | height so that they sort by width, then height */
     do {
-      insertValueA = displayMode->width * 0x10000 + displayMode->height;
+      insertValueA = displayMode->width * UI_DISPLAY_MODE_WIDTH_SCALE + displayMode->height;
       if ((((insertValueA != g_UiDisplayModeDistinctValueScratch0) &&
            (insertValueA != g_UiDisplayModeDistinctValueScratch1)) &&
           ((insertValueA != g_UiDisplayModeDistinctValueScratch2 &&
@@ -1036,33 +1036,33 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
     /* Resolution buttons: width at -8, height at -0xC. */
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption1).modeValue = g_UiDisplayModeDistinctValueScratch0 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,
-                                  resolutionOption1).resolutionHeight = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
+                                  resolutionOption1).resolutionHeight = g_UiDisplayModeDistinctValueScratch0 & UI_DISPLAY_MODE_HEIGHT_MASK;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption2).modeValue = g_UiDisplayModeDistinctValueScratch1 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,
-                                  resolutionOption2).resolutionHeight = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
+                                  resolutionOption2).resolutionHeight = g_UiDisplayModeDistinctValueScratch1 & UI_DISPLAY_MODE_HEIGHT_MASK;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption3).modeValue = g_UiDisplayModeDistinctValueScratch2 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,
-                                  resolutionOption3).resolutionHeight = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
+                                  resolutionOption3).resolutionHeight = g_UiDisplayModeDistinctValueScratch2 & UI_DISPLAY_MODE_HEIGHT_MASK;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption4).modeValue = g_UiDisplayModeDistinctValueScratch3 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,
-                                  resolutionOption4).resolutionHeight = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
+                                  resolutionOption4).resolutionHeight = g_UiDisplayModeDistinctValueScratch3 & UI_DISPLAY_MODE_HEIGHT_MASK;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption5).modeValue = g_UiDisplayModeDistinctValueScratch4 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,
-                                  resolutionOption5).resolutionHeight = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
-    insertValueA = g_UiDisplayModeDistinctValueScratch5 & 0xffff;
+                                  resolutionOption5).resolutionHeight = g_UiDisplayModeDistinctValueScratch4 & UI_DISPLAY_MODE_HEIGHT_MASK;
+    insertValueA = g_UiDisplayModeDistinctValueScratch5 & UI_DISPLAY_MODE_HEIGHT_MASK;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption6).modeValue = g_UiDisplayModeDistinctValueScratch5 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption6).resolutionHeight = insertValueA;
-    lowWordValue = g_UiDisplayModeDistinctValueScratch6 & 0xffff;
+    lowWordValue = g_UiDisplayModeDistinctValueScratch6 & UI_DISPLAY_MODE_HEIGHT_MASK;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption7).modeValue = g_UiDisplayModeDistinctValueScratch6 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption7).resolutionHeight = lowWordValue;
-    lowWordValue = g_UiDisplayModeDistinctValueScratch7 & 0xffff;
+    lowWordValue = g_UiDisplayModeDistinctValueScratch7 & UI_DISPLAY_MODE_HEIGHT_MASK;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption8).modeValue = g_UiDisplayModeDistinctValueScratch7 >> 16;
     UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption8).resolutionHeight = lowWordValue;
-    g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch3 = 0xffffffff;
-    g_UiDisplayModeDistinctValueScratch4 = 0xffffffff;
+    g_UiDisplayModeDistinctValueScratch0 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch1 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch2 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch3 = UI_DISPLAY_MODE_NONE;
+    g_UiDisplayModeDistinctValueScratch4 = UI_DISPLAY_MODE_NONE;
     remainingModes = g_GraphicsDisplayModeCount;
     displayMode = g_GraphicsDisplayModes;
     /* distinct adapters */

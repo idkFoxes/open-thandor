@@ -494,7 +494,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     }
     /* window title with the unit name patched in */
     resolvedText = TextResource_Resolve(TEXT_ID_TECHNOLOGY_WINDOW_TITLE);
-    resolvedName = TextResource_Resolve(((ModelDefinitionRecordPrefix *)definition)->flags + TEXT_ID_MODEL_NAME_BASE);
+    resolvedName = TextResource_Resolve(((ModelDefinitionRecordPrefix *)definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
     RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.text,resolvedText.text);
     armyRecord = ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
@@ -538,9 +538,9 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                    (int)g_TechnologyAsset->records[definition->researchTechnologyIds[slotIndex]].xeniteCostQ4 >> 4,
-                   labelTemplate + 0xc0);
-        RichTextCommandStream_PatchPayloadBySelector(1,labelTemplate + 0xc0,labelTemplate);
-        RichTextCommandStream_CopyExpanded(0x180,labelText,labelTemplate);
+                   labelTemplate + 192);
+        RichTextCommandStream_PatchPayloadBySelector(1,labelTemplate + 192,labelTemplate);
+        RichTextCommandStream_CopyExpanded(384,labelText,labelTemplate);
         UiNodeList_UnsuppressActionId(actionId,&inGameRoot->base);
       }
       areaIndex--;
@@ -567,7 +567,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
            TEXT_ID_TECHNOLOGY_BUTTON_NO_AREA;
       INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = 6;
       INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = 6;
-      if ((playerBlock->heldResearchUnpaidFlag & 0x80) == 0) {
+      if ((playerBlock->heldResearchUnpaidFlag & ARMY_MODEL_STATE_RESEARCH_UNPAID) == 0) {
         UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
       }
       scrollableControl = (UiScrollableControl *)INGAME_UI(inGameRoot,technologyDescriptionScroll);
@@ -598,15 +598,15 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
            RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,energyCost,g_InGameTechnologyEnergyCostTextUtf16);
-      packedEnergyColor = energyCost << 0x10 | costColor >> 0x10;
+      packedEnergyColor = energyCost << 16 | costColor >> 16;
       g_InGameTechnologyCostColorWords8[1] = (uint16_t)costColor;
-      g_InGameTechnologyCostColorWords8[5] = (uint16_t)(costColor >> 0x10);
+      g_InGameTechnologyCostColorWords8[5] = (uint16_t)(costColor >> 16);
       g_InGameTechnologyCostColorWords8[0] = (uint16_t)(costColor >> 4);
       g_InGameTechnologyCostColorWords8[4] = (uint16_t)(packedEnergyColor >> 4);
       g_InGameTechnologyCostColorWords8[3] = (uint16_t)(costColor >> 8);
       g_InGameTechnologyCostColorWords8[7] = (uint16_t)(packedEnergyColor >> 8);
-      g_InGameTechnologyCostColorWords8[2] = (uint16_t)(costColor >> 0xc);
-      g_InGameTechnologyCostColorWords8[6] = (uint16_t)(packedEnergyColor >> 0xc);
+      g_InGameTechnologyCostColorWords8[2] = (uint16_t)(costColor >> 12);
+      g_InGameTechnologyCostColorWords8[6] = (uint16_t)(packedEnergyColor >> 12);
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                  (int)technologyAsset->records[selectedTechnologyId].researchDurationQ5 >> 5,

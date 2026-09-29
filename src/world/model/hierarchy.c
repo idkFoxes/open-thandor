@@ -40,7 +40,7 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
       colorIntensity = 255;
       alphaIntensity = 0;
       if ((flagsOrPreviousTint & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
-        colorIntensity = 0x87;
+        colorIntensity = 135;
         alphaIntensity = 255;
       }
     }
@@ -52,13 +52,13 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   /* The clamp table is 64-KiB aligned: the original puts the target intensity in AL/BL and the previous
      tint byte in AH/BH, i.e. indexes it with (previous << 8) | target. */
   clampTable = (uint8_t *)g_GraphicsIntensityClampTableBase;
-  clampedColorByte = clampTable[((flagsOrPreviousTint >> 0x10) & 0xff) << 8 | (uint32_t)colorIntensity];
-  clampedAlphaByte = clampTable[(flagsOrPreviousTint >> 0x18) << 8 | (uint32_t)alphaIntensity];
-  tintArgb = (uint32_t)clampedAlphaByte << 0x18 | (uint32_t)clampedColorByte << 0x10 | (uint32_t)clampedColorByte << 8 |
+  clampedColorByte = clampTable[((flagsOrPreviousTint >> 16) & 0xff) << 8 | (uint32_t)colorIntensity];
+  clampedAlphaByte = clampTable[(flagsOrPreviousTint >> 24) << 8 | (uint32_t)alphaIntensity];
+  tintArgb = (uint32_t)clampedAlphaByte << 24 | (uint32_t)clampedColorByte << 16 | (uint32_t)clampedColorByte << 8 |
              (uint32_t)clampedColorByte;
   /* The original compares with the previous tint shifted right by 16 (CMP EDX,ECX at 0x004BD27F), so the new
      tint is applied on practically every call, not only when it changed. */
-  if (tintArgb != flagsOrPreviousTint >> 0x10) {
+  if (tintArgb != flagsOrPreviousTint >> 16) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNodeRuntime);
   }
   return;
@@ -134,11 +134,11 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
   
   resourceView = modelNode->modelPayload.modelResource;
   if (resourceView->meshGroupCount != 0) {
-    geometryRecord = (uint8_t *)(resourceView + 1) + 0x10;
+    geometryRecord = (uint8_t *)(resourceView + 1) + 16;
     /* geometry record: +0x00 byte size of the record, +0x08 vertex count, +0x20 vertices (0x40 bytes each) */
     for (geometryRecordsRemaining = resourceView->packedGeometryRecordCount; geometryRecordsRemaining != 0;
         geometryRecordsRemaining--) {
-      point = (GraphicsFixedVec3 *)(geometryRecord + 0x20);
+      point = (GraphicsFixedVec3 *)(geometryRecord + 32);
       for (vertexCountOrChildIndex = *(int *)(geometryRecord + 8); vertexCountOrChildIndex != 0;
           vertexCountOrChildIndex--) {
         FixedTransform_ApplyPoint
@@ -162,7 +162,7 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
         else if (g_ModelBoundsMaximumZ < g_ModelBoundsTransformedPointZ) {
           g_ModelBoundsMaximumZ = g_ModelBoundsTransformedPointZ;
         }
-        point = (GraphicsFixedVec3 *)((uint8_t *)point + 0x40); /* the next vertex */
+        point = (GraphicsFixedVec3 *)((uint8_t *)point + 64); /* the next vertex */
       }
       geometryRecord = geometryRecord + *(int *)geometryRecord;
     }
@@ -197,7 +197,7 @@ void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime
                      modelNodeRuntime->modelPayload.worldRotationAngle0 - FIXED_ANGLE16_HALF_TURN);
   viewFacingAngle16 = FixedMath_Atan2Angle16(viewRelativeVector.yQ12,viewRelativeVector.xQ12);
   FixedTransform_BuildRotationBasis
-            (&modelNodeRuntime->worldTransform,viewFacingAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff,
+            (&modelNodeRuntime->worldTransform,viewFacingAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK,
              modelNodeRuntime->modelPayload.worldRotationAngle1,
              modelNodeRuntime->modelPayload.worldRotationAngle0);
   return;
@@ -219,7 +219,7 @@ void ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
                     (modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z,
                      modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y,
                      modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x);
-  angle0 = viewAngles.azimuthAngle + FIXED_ANGLE16_HALF_TURN & 0xffff;
+  angle0 = viewAngles.azimuthAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
   FixedTransform_BuildRotationBasis(&modelNodeRuntime->worldTransform,angle0,-viewAngles.elevationAngle,angle0);
   return;
 }
@@ -327,14 +327,14 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
 
   negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
   rotatedDirection = FixedTransform_RotateDirectionScaledRegs
-                    (Q12_ONE,elevationAngle,azimuthAngle,negatedAngle2 & 0xffff,
+                    (Q12_ONE,elevationAngle,azimuthAngle,negatedAngle2 & FIXED_ANGLE16_MASK,
                      modelNodeRuntime->modelPayload.worldRotationAngle1,
                      modelNodeRuntime->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
-                     negatedAngle2 & 0xffff)
+                     negatedAngle2 & FIXED_ANGLE16_MASK)
   ;
   directionAngles = FixedMath_VectorToAngles3Regs(rotatedDirection.zQ12,rotatedDirection.yQ12,rotatedDirection.xQ12);
   relativeAngles.relativeYawAngle =
-       directionAngles.azimuthAngle + modelNodeRuntime->modelPayload.localRotationAngle2 & 0xffff;
+       directionAngles.azimuthAngle + modelNodeRuntime->modelPayload.localRotationAngle2 & FIXED_ANGLE16_MASK;
   relativeAngles.relativePitchAngle = directionAngles.elevationAngle;
   return relativeAngles;
 }
@@ -383,8 +383,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     cornerVisibleOrHit = (int)g_ProjectionScaleFixed <= g_GraphicsTransformOutputScratchVec3.z;
     if (cornerVisibleOrHit) {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[0].x = projectedCorner.projectedX >> 0xc;
-      g_ModelProjectedBoundsCornerScratch8[0].y = projectedCorner.projectedY >> 0xc;
+      g_ModelProjectedBoundsCornerScratch8[0].x = projectedCorner.projectedX >> Q12_SHIFT;
+      g_ModelProjectedBoundsCornerScratch8[0].y = projectedCorner.projectedY >> Q12_SHIFT;
     }
     clippedCornerMask = !cornerVisibleOrHit;
     g_GraphicsTransformInputScratchVec3.x = boundsX1;
@@ -396,8 +396,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[1].x = projectedCorner.projectedX >> 0xc;
-      g_ModelProjectedBoundsCornerScratch8[1].y = projectedCorner.projectedY >> 0xc;
+      g_ModelProjectedBoundsCornerScratch8[1].x = projectedCorner.projectedX >> Q12_SHIFT;
+      g_ModelProjectedBoundsCornerScratch8[1].y = projectedCorner.projectedY >> Q12_SHIFT;
     }
     g_GraphicsTransformInputScratchVec3.x = resourceView->localBoundsX0Q12;
     g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY1Q12;
@@ -409,8 +409,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[2].x = projectedCorner.projectedX >> 0xc;
-      g_ModelProjectedBoundsCornerScratch8[2].y = projectedCorner.projectedY >> 0xc;
+      g_ModelProjectedBoundsCornerScratch8[2].x = projectedCorner.projectedX >> Q12_SHIFT;
+      g_ModelProjectedBoundsCornerScratch8[2].y = projectedCorner.projectedY >> Q12_SHIFT;
     }
     g_GraphicsTransformInputScratchVec3.x = boundsX1;
     FixedTransform_ApplyPoint
@@ -421,8 +421,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[3].x = projectedCorner.projectedX >> 0xc;
-      g_ModelProjectedBoundsCornerScratch8[3].y = projectedCorner.projectedY >> 0xc;
+      g_ModelProjectedBoundsCornerScratch8[3].x = projectedCorner.projectedX >> Q12_SHIFT;
+      g_ModelProjectedBoundsCornerScratch8[3].y = projectedCorner.projectedY >> Q12_SHIFT;
     }
     g_GraphicsTransformInputScratchVec3.x = resourceView->localBoundsX0Q12;
     g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY0Q12;
@@ -435,8 +435,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[4].x = projectedCorner.projectedX >> 0xc;
-      g_ModelProjectedBoundsCornerScratch8[4].y = projectedCorner.projectedY >> 0xc;
+      g_ModelProjectedBoundsCornerScratch8[4].x = projectedCorner.projectedX >> Q12_SHIFT;
+      g_ModelProjectedBoundsCornerScratch8[4].y = projectedCorner.projectedY >> Q12_SHIFT;
     }
     g_GraphicsTransformInputScratchVec3.x = boundsX1;
     FixedTransform_ApplyPoint
@@ -447,8 +447,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      g_ModelProjectedBoundsCornerScratch8[5].x = projectedCorner.projectedX >> 0xc;
-      g_ModelProjectedBoundsCornerScratch8[5].y = projectedCorner.projectedY >> 0xc;
+      g_ModelProjectedBoundsCornerScratch8[5].x = projectedCorner.projectedX >> Q12_SHIFT;
+      g_ModelProjectedBoundsCornerScratch8[5].y = projectedCorner.projectedY >> Q12_SHIFT;
     }
     transformA = (GraphicsFixedMatrix3x4 *)resourceView->localBoundsX0Q12;
     g_GraphicsTransformInputScratchVec3.y = resourceView->localBoundsY1Q12;
@@ -461,8 +461,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      transformA = (GraphicsFixedMatrix3x4 *)(projectedCorner.projectedX >> 0xc);
-      g_ModelProjectedBoundsCornerScratch8[6].y = projectedCorner.projectedY >> 0xc;
+      transformA = (GraphicsFixedMatrix3x4 *)(projectedCorner.projectedX >> Q12_SHIFT);
+      g_ModelProjectedBoundsCornerScratch8[6].y = projectedCorner.projectedY >> Q12_SHIFT;
       g_ModelProjectedBoundsCornerScratch8[6].x = (GraphicsProjectedCoordinate)transformA;
     }
     g_GraphicsTransformInputScratchVec3.x = boundsX1;
@@ -474,8 +474,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
-      transformA = (GraphicsFixedMatrix3x4 *)(projectedCorner.projectedX >> 0xc);
-      g_ModelProjectedBoundsCornerScratch8[7].y = projectedCorner.projectedY >> 0xc;
+      transformA = (GraphicsFixedMatrix3x4 *)(projectedCorner.projectedX >> Q12_SHIFT);
+      g_ModelProjectedBoundsCornerScratch8[7].y = projectedCorner.projectedY >> Q12_SHIFT;
       g_ModelProjectedBoundsCornerScratch8[7].x = (GraphicsProjectedCoordinate)transformA;
     }
     if (((((((clippedCornerMask & 7) == 0) &&
@@ -626,29 +626,29 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
           (int64_t)deltaXOrNodeY * (int64_t)(int)g_ModelRaycastWorldDirectionXQ28 +
           (int64_t)deltaZ * (int64_t)(int)g_ModelRaycastWorldDirectionZQ28;
   edxCarrier.scratchSigned =
-       (int)((uint64_t)projectionOrDiscriminant >> 0x20) << 4 | (uint32_t)projectionOrDiscriminant >> 0x1c;
+       FIXED_PRODUCT_SHR(projectionOrDiscriminant,Q28_SHIFT);
   if ((-radiusNodeXOrNearest <= edxCarrier.scratchSigned) &&
      (edxCarrier.scratchSigned < g_ModelRaycastMaximumDistance + radiusNodeXOrNearest)) {
     projectionOrDiscriminant = (int64_t)edxCarrier.scratchSigned;
     projectedDistanceWide = (int64_t)edxCarrier.scratchSigned;
-    edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaXOrNodeY * (int64_t)deltaXOrNodeY) >> 0x20);
+    edxCarrier.scratchSigned = FIXED_MUL_HIGH(deltaXOrNodeY,deltaXOrNodeY);
     projectionOrDiscriminant =
          ((int64_t)radiusNodeXOrNearest * (int64_t)radiusNodeXOrNearest +
           projectionOrDiscriminant * projectedDistanceWide) -
             (int64_t)deltaXOrNodeY * (int64_t)deltaXOrNodeY;
     if (-1 < projectionOrDiscriminant) {
-      edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaYOrNodeZ * (int64_t)deltaYOrNodeZ) >> 0x20);
+      edxCarrier.scratchSigned = FIXED_MUL_HIGH(deltaYOrNodeZ,deltaYOrNodeZ);
       projectionOrDiscriminant = projectionOrDiscriminant - (int64_t)deltaYOrNodeZ * (int64_t)deltaYOrNodeZ;
       if ((-1 < projectionOrDiscriminant) &&
-         (edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaZ * (int64_t)deltaZ) >> 0x20)
-         , -1 < (int)(((int)((uint64_t)projectionOrDiscriminant >> 0x20) - edxCarrier.scratchSigned) -
+         (edxCarrier.scratchSigned = FIXED_MUL_HIGH(deltaZ,deltaZ)
+         , -1 < (int)(((int)((uint64_t)projectionOrDiscriminant >> 32) - edxCarrier.scratchSigned) -
                      (uint32_t)((uint32_t)projectionOrDiscriminant < (uint32_t)((int64_t)deltaZ * (int64_t)deltaZ))))) {
         negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
         FixedTransform_BuildRotationBasis
-                  (&g_GraphicsTransformScratchMatrix3x4,negatedAngle2 & 0xffff,
+                  (&g_GraphicsTransformScratchMatrix3x4,negatedAngle2 & FIXED_ANGLE16_MASK,
                    modelNodeRuntime->modelPayload.worldRotationAngle1,
                    modelNodeRuntime->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
-                   negatedAngle2 & 0xffff);
+                   negatedAngle2 & FIXED_ANGLE16_MASK);
         resourceView = modelNodeRuntime->modelPayload.modelResource;
         g_GraphicsTransformScratchMatrix3x4.translation.x = 0;
         g_GraphicsTransformScratchMatrix3x4.translation.y = 0;
@@ -686,7 +686,7 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
           triangle = (ModelRaycastTriangleDescriptor *)
                      (triangle[*(int *)(triangle->reservedVertex0Metadata04_0B + 4)].
                       reservedVertex2Metadata1C_23 + 4);
-          for (trianglesRemaining = *triangleCountField; trianglesRemaining != (GraphicsFixedVec3 *)0x0;
+          for (trianglesRemaining = *triangleCountField; trianglesRemaining != NULL;
               trianglesRemaining = (GraphicsFixedVec3 *)((int)&trianglesRemaining[-1].z + 3)) {
             triangleHit = ModelMesh_IntersectTriangleRayDistance(triangle);
             if ((triangleHit.hit) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
@@ -748,7 +748,7 @@ bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
     childSlotIndex = 0;
     do {
       linkedDefinitionList =
-           *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc + childSlotIndex * 4);
+           *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 12 + childSlotIndex * 4);
       childDefinitionId =
            ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,linkedDefinitionList);
       childCreateResult = ModelRuntimePool_RepairDeferredChild
@@ -828,16 +828,16 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
 
 
 /* Address: 0x0051C100.
-   Marks every not yet destroyed node of the model hierarchy rooted at *modelRuntime as destroyed, dismantling
+   Marks every not yet destroyed node of the army's model hierarchy (root model runtime at +0x00) as destroyed, dismantling
    and non-regenerating: sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on each node that does not have flag
    0x08 yet. The world context is not used.
 */
-void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,int *modelRuntime)
+void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,ArmyRuntimeSlot *armyRuntime)
 
 {
   /* Rewritten from the assembly (0x0051C100-0x0051C162). */
   (void)contextArg;
-  ModelRuntimeHierarchy_MarkDestroyedFrom((ModelRuntimeSlot *)(uintptr_t)*modelRuntime);
+  ModelRuntimeHierarchy_MarkDestroyedFrom(armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
 }
 
 
@@ -867,7 +867,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
 {
   int childCount;
   int childIndex;
-  if ((node->classState.stateFlags & 8) == 0) {
+  if ((node->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
     node->classState.stateFlags = node->classState.stateFlags | 0x418;
   }
   childCount = node->attachmentCount;
@@ -1004,7 +1004,7 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   newNode->modelPayload.localRotationAngle0 = definitionNode->localRotationAngle0;
   newNode->modelPayload.localRotationAngle1 = rotationAngleA;
   newNode->modelPayload.localRotationAngle2 = rotationAngleB;
-  newNode->modelPayload.meshGroupMask = 0xffffffff;
+  newNode->modelPayload.meshGroupMask = UINT32_MAX;
   ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   newNode->runtimePayload.modelRuntime = modelRuntime;
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
@@ -1282,7 +1282,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
       modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
     }
   }
-  return (uint64_t)totalMetric << 0x20 | (uint64_t)activeMetricTotal; /* EDX = total, EAX = active */
+  return (uint64_t)totalMetric << 32 | (uint64_t)activeMetricTotal; /* EDX = total, EAX = active */
 }
 
 /* Address: 0x0052AAC0.
@@ -1311,7 +1311,7 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
   
   yawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
   aimDefinition = smoothingState->modelDefinition;
-  yawDelta = targetYawAngle16 - yawAngle & 0xffff;
+  yawDelta = targetYawAngle16 - yawAngle & FIXED_ANGLE16_MASK;
   yawStep = smoothingState->yawTurnVelocityAngle16 * g_InGameSimulationStepTicks;
   snapToTarget = false;
   if (yawDelta < FIXED_ANGLE16_HALF_TURN + 1) {
@@ -1361,8 +1361,8 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
   }
   else {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-    modelNodeRuntime->modelPayload.localRotationAngle2 = yawAngle & 0xffff;
-    smoothResult.value = (yawAngle & 0xffff) - targetYawAngle16 & 0xffff;
+    modelNodeRuntime->modelPayload.localRotationAngle2 = yawAngle & FIXED_ANGLE16_MASK;
+    smoothResult.value = (yawAngle & 0xffff) - targetYawAngle16 & FIXED_ANGLE16_MASK;
     if (MODEL_AIM_TOLERANCE_ANGLE16 < smoothResult.value &&
         smoothResult.value < FIXED_ANGLE16_FULL_TURN - MODEL_AIM_TOLERANCE_ANGLE16) {
       smoothResult.outsideTolerance = true; /* still outside the aim tolerance */
@@ -1443,7 +1443,7 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
   if (!snapToTarget) {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
     modelNodeRuntime->modelPayload.localRotationAngle1 = pitchAngle;
-    clampedTargetResult.value = pitchAngle - clampedTargetResult.value & 0xffff;
+    clampedTargetResult.value = pitchAngle - clampedTargetResult.value & FIXED_ANGLE16_MASK;
     if (MODEL_AIM_TOLERANCE_ANGLE16 < clampedTargetResult.value &&
         clampedTargetResult.value < FIXED_ANGLE16_FULL_TURN - MODEL_AIM_TOLERANCE_ANGLE16) {
       clampedTargetResult.outsideTolerance = true; /* still outside the aim tolerance */

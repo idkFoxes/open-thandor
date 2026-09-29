@@ -556,7 +556,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       /* REPE CMPSD over the 32 UTF-16 units of the cheat phrase */
-      countOrTabOffset = 0x10; /* dwords */
+      countOrTabOffset = 16; /* dwords */
       isMatch = true;
       dwordCursor = (int *)THANDOR_ADDR(g_DeveloperChatPhraseUtf16,0);
       textCursor = commandTextEdit->textBuffer;
@@ -569,7 +569,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
       } while (isMatch);
       if (isMatch) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED;
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x80000; /* no reader of this bit found */
+        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED;
         InGameRecentTextHistory_InsertAndRebuild8((uint16_t *)u_Hmmm__na_gut________0056321e);
       }
     }
@@ -589,7 +589,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
           (int)offsetof(InGameUiImage,messageRecipientPlayersTab) - (int)offsetof(InGameUiImage,chatInputTextEdit)) {
         slotIndex = 0;
         recipientMask = 0;
-        slotBit = 0x100;
+        slotBit = INGAME_CHAT_RECIPIENT_FACTION_BITS_BASE;
         do {
           dwordCursor = g_UiSevenSlotSelectionControlOffsets + slotIndex;
           slotBit = slotBit * 2;
@@ -605,7 +605,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
                (int)offsetof(InGameUiImage,messageRecipientGroupsTab) - (int)offsetof(InGameUiImage,chatInputTextEdit)) {
         slotIndex = 0;
         recipientMask = 0;
-        slotBit = 0x8000;
+        slotBit = INGAME_CHAT_RECIPIENT_PLAYER_BITS_BASE;
         do {
           dwordCursor = g_UiSevenSlotSelectionControlOffsets + slotIndex;
           slotBit = slotBit * 2;
@@ -618,7 +618,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
         } while (slotIndex < 7);
       }
       else {
-        recipientMask = 0xffffff00;
+        recipientMask = INGAME_CHAT_RECIPIENT_EVERYONE;
       }
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -690,7 +690,7 @@ void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEd
       commandTextEdit->selectionStart = 0;
       commandTextEdit->selectionEnd = 0;
       textCursor = commandTextEdit->textBuffer;
-      for (countOrTabOffset = 0x18; countOrTabOffset != 0; countOrTabOffset--) { /* 48 code units */
+      for (countOrTabOffset = 24; countOrTabOffset != 0; countOrTabOffset--) { /* 48 code units */
         textCursor[0] = 0;
         textCursor[1] = 0;
         textCursor += 2;
@@ -758,7 +758,7 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
     if (upsertStatus.failed) goto failed;
   }
   pointerImage = ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs();
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 0x20),
+  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
                               (uint32_t *)pointerImage,(uint16_t *)u_army_hex_0050dfb4,(EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ArmyRuntimePool_RebaseAfterLoad();
@@ -775,34 +775,34 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   if ((upsertFailed & 1) != 0) goto failed;
   domainImagePair = InGameSaveGame_PrepareShotSlots();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_shot_hex_0050dfdc,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_shot_hex_0050dfdc,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ShotRuntime_RebaseSlotsAfterLoad();
   if ((upsertFailed & 1) != 0) goto failed;
   domainImagePair = InGameSaveGame_PrepareEffectSlots();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_effect_hex_0050dfc6,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_effect_hex_0050dfc6,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   EffectRuntime_RebaseSlotsAfterLoad();
   if ((upsertFailed & 1) != 0) goto failed;
   domainImagePair = InGameSaveGame_PrepareRegistrationRecords(worldView);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_widget_hex_0050e02a,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_widget_hex_0050e02a,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ResourceRegistrationRuntime_RebaseLoadedRecords(worldView);
   if ((upsertFailed & 1) != 0) goto failed;
   pointerImage = RuntimeHexSegment_GetLightImageAndToggleFlagRegs();
-  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 0x20),
+  upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 32),
                               (uint32_t *)pointerImage,(uint16_t *)u_light_hex_0050e016,(EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   RuntimeHexSegment_ToggleLightImageFlag();
   if ((upsertFailed & 1) != 0) goto failed;
   domainImagePair = RuntimeHexSegment_GetFieldImageRegs(worldView);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_field_hex_0050e002,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_field_hex_0050e002,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   RuntimeHexSegment_AfterFieldImageNoOp(worldView);
@@ -816,7 +816,7 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   if (upsertStatus.failed) goto failed;
   domainImagePair = InGameSaveGame_PrepareFactionImage();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_daten_hex_0050e054,
+                              (uint32_t *)(domainImagePair >> 32),(uint16_t *)u_daten_hex_0050e054,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   GameFactionRuntime_RebaseLoadedArmyReferences();
@@ -891,7 +891,7 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
     g_LocaleFormatCurrentTimeUtf16(timeTextDestination);
     localeValue = g_InGameLevelCampaignAssociationIndex;
     if (g_FrontendLoadedCampaignAsset == 0) {
-      localeValue = 0xffffffff;
+      localeValue = INGAME_SAVE_NO_CAMPAIGN;
     }
     ((InGameSavePackageHeader *)headerDwords)->levelTitleTextId = g_InGameLevelTitleTextResourceIndex;
     ((InGameSavePackageHeader *)headerDwords)->campaignIndex = localeValue;
@@ -912,7 +912,8 @@ failed:
 /* Address: 0x0053D9F0.
    UI action 0x1000 (g_InGameUiActionHandlersPage10[0]): a click on the minimap (InGameUiImage.minimapView,
    root+0x9A1C). Latches the clicked grid
-   cell (+0x68/+0x6C into +0x50/+0x54), converts it to world coordinates and moves both camera points of the
+   cell (selectedSourceX/YQ12 = grid column/row into sourceOriginX/YQ12), converts it to world coordinates and
+   moves both camera points of the
    world runtime (which lies 0x8FEC bytes before the map control) by the distance to the new centre, then clears
    the field grid dirty flag.
 */
@@ -923,17 +924,18 @@ void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress
   int xDelta;
   int yComponent;
   
-  yComponent = ((UiSelectionGeometryControl *)mapControl)->selectedSourceXQ12;
-  ((UiSelectionGeometryControl *)mapControl)->sourceOriginYQ12 = ((UiSelectionGeometryControl *)mapControl)->selectedSourceYQ12;
-  ((UiSelectionGeometryControl *)mapControl)->sourceOriginXQ12 = yComponent;
-  /* isometric grid to world: x = (2*gx + gy) * 0x901 / 2^13, y = gy * -1999 / 2^12 (64-bit products) */
-  scaledProduct = (int64_t)(yComponent + ((UiSelectionGeometryControl *)mapControl)->selectedSourceYQ12 * 2) * 0x901;
+  yComponent = ((UiSelectionGeometryControl *)mapControl)->selectedSourceYQ12;
+  ((UiSelectionGeometryControl *)mapControl)->sourceOriginXQ12 = ((UiSelectionGeometryControl *)mapControl)->selectedSourceXQ12;
+  ((UiSelectionGeometryControl *)mapControl)->sourceOriginYQ12 = yComponent;
+  /* isometric grid to world: x = (2*gx + gy) * FIELD_GRID_WORLD_COLUMN_STEP_X / 2^13,
+     y = gy * FIELD_GRID_WORLD_ROW_STEP_Y / 2^12 (64-bit products) */
+  scaledProduct = (int64_t)(yComponent + ((UiSelectionGeometryControl *)mapControl)->selectedSourceXQ12 * 2) * FIELD_GRID_WORLD_COLUMN_STEP_X;
 /* the world runtime is the worldView node of the same in-game UI copy */
 #define MAP_WORLD ((WorldRuntimeContext *)THANDOR_UI_SIBLING(mapControl,InGameUiImage,minimapView,worldView))
-  xDelta = ((int)((uint64_t)scaledProduct >> 0x20) << 0x13 | (uint32_t)scaledProduct >> 0xd) -
+  xDelta = (FIXED_PRODUCT_SHR(scaledProduct, Q12_SHIFT + 1)) -
           MAP_WORLD->motion.targetPositionXQ12;
-  yComponent = ((int)((uint64_t)((int64_t)yComponent * -1999) >> 0x20) << 0x14 |
-          (uint32_t)((int64_t)yComponent * -1999) >> 0xc) - MAP_WORLD->motion.targetPositionYQ12;
+  yComponent = FIXED_PRODUCT_SHR((int64_t)yComponent * FIELD_GRID_WORLD_ROW_STEP_Y, Q12_SHIFT) -
+          MAP_WORLD->motion.targetPositionYQ12;
   MAP_WORLD->motion.targetPositionXQ12 = MAP_WORLD->motion.targetPositionXQ12 + xDelta;
   MAP_WORLD->motion.targetPositionYQ12 = MAP_WORLD->motion.targetPositionYQ12 + yComponent;
   MAP_WORLD->motion.positionXQ12 = MAP_WORLD->motion.positionXQ12 + xDelta;
@@ -997,64 +999,64 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
   /* the graphics variant digit in "gfx\panel\panel0.gfx" / "gfx\panel\diagram0.gfx" and the resource gauge
      geometry follow the display size */
   if ((g_FramebufferWidth < 800) || (g_FramebufferHeight < 600)) {
-    u_gfx_panel_panel0_gfx_005630d0[0xf] = L'0';
-    u_gfx_panel_diagram0_gfx_00563120[0x11] = L'0';
-    INGAME_UI(inGameRoot,xeniteGauge)->leftOffset = 0x24;
-    INGAME_UI(inGameRoot,xeniteGauge)->topOffset = 0x6;
-    INGAME_UI(inGameRoot,xeniteGauge)->rightOffset = 0x5e;
-    INGAME_UI(inGameRoot,xeniteGauge)->bottomOffset = 0xd;
-    INGAME_UI(inGameRoot,tritiumGauge)->leftOffset = 0x24;
-    INGAME_UI(inGameRoot,tritiumGauge)->topOffset = 0x11;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,rightOffset),uint32_t) = 0x5e;
-    INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 0x18;
-    INGAME_UI(inGameRoot,energyGauge)->leftOffset = 0x24;
-    INGAME_UI(inGameRoot,energyGauge)->topOffset = 0x1c;
-    INGAME_UI(inGameRoot,energyGauge)->rightOffset = 0x5e;
-    INGAME_UI(inGameRoot,energyGauge)->bottomOffset = 0x23;
+    u_gfx_panel_panel0_gfx_005630d0[INGAME_PANEL_GFX_PATH_VARIANT_DIGIT] = L'0';
+    u_gfx_panel_diagram0_gfx_00563120[INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT] = L'0';
+    INGAME_UI(inGameRoot,xeniteGauge)->leftOffset = 36;
+    INGAME_UI(inGameRoot,xeniteGauge)->topOffset = 6;
+    INGAME_UI(inGameRoot,xeniteGauge)->rightOffset = 94;
+    INGAME_UI(inGameRoot,xeniteGauge)->bottomOffset = 13;
+    INGAME_UI(inGameRoot,tritiumGauge)->leftOffset = 36;
+    INGAME_UI(inGameRoot,tritiumGauge)->topOffset = 17;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,rightOffset),uint32_t) = 94;
+    INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 24;
+    INGAME_UI(inGameRoot,energyGauge)->leftOffset = 36;
+    INGAME_UI(inGameRoot,energyGauge)->topOffset = 28;
+    INGAME_UI(inGameRoot,energyGauge)->rightOffset = 94;
+    INGAME_UI(inGameRoot,energyGauge)->bottomOffset = 35;
     INGAME_UI(inGameRoot,xeniteAmountText)->leftOffset = 4;
     INGAME_UI(inGameRoot,xeniteAmountText)->topOffset = 5;
-    INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 0x1f;
-    INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 0xd;
+    INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 31;
+    INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 13;
   }
   else if ((g_FramebufferWidth < 1024) || (g_FramebufferHeight < 768)) {
-    u_gfx_panel_panel0_gfx_005630d0[0xf] = L'1';
-    u_gfx_panel_diagram0_gfx_00563120[0x11] = L'1';
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,leftOffset),enum UiRootFlags) = 0x2c;
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,topOffset),struct UiRootCallbacks *) = (UiRootCallbacks *)0x9;
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,rightOffset),struct UiRootNode *) = (UiRootNode *)0x6e;
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,bottomOffset),struct UiNodeBase *) = (UiNodeBase *)0x10;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,leftOffset),uint32_t) = 0x2c;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,topOffset),uint32_t) = 0x17;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,rightOffset),uint32_t) = 0x6e;
-    INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 0x1e;
-    INGAME_UI(inGameRoot,energyGauge)->leftOffset = 0x2c;
-    INGAME_UI(inGameRoot,energyGauge)->topOffset = 0x25;
-    INGAME_UI(inGameRoot,energyGauge)->rightOffset = 0x6e;
-    INGAME_UI(inGameRoot,energyGauge)->bottomOffset = 0x2c;
+    u_gfx_panel_panel0_gfx_005630d0[INGAME_PANEL_GFX_PATH_VARIANT_DIGIT] = L'1';
+    u_gfx_panel_diagram0_gfx_00563120[INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT] = L'1';
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,leftOffset),enum UiRootFlags) = 44;
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,topOffset),struct UiRootCallbacks *) = (UiRootCallbacks *)9;
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,rightOffset),struct UiRootNode *) = (UiRootNode *)110;
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,bottomOffset),struct UiNodeBase *) = (UiNodeBase *)16;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,leftOffset),uint32_t) = 44;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,topOffset),uint32_t) = 23;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,rightOffset),uint32_t) = 110;
+    INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 30;
+    INGAME_UI(inGameRoot,energyGauge)->leftOffset = 44;
+    INGAME_UI(inGameRoot,energyGauge)->topOffset = 37;
+    INGAME_UI(inGameRoot,energyGauge)->rightOffset = 110;
+    INGAME_UI(inGameRoot,energyGauge)->bottomOffset = 44;
     INGAME_UI(inGameRoot,xeniteAmountText)->leftOffset = 4;
     INGAME_UI(inGameRoot,xeniteAmountText)->topOffset = 7;
-    INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 0x27;
-    INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 0xf;
+    INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 39;
+    INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 15;
   }
   else {
-    u_gfx_panel_panel0_gfx_005630d0[0xf] = L'2';
-    u_gfx_panel_diagram0_gfx_00563120[0x11] = L'2';
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,leftOffset),enum UiRootFlags) = 0x2c;
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,topOffset),struct UiRootCallbacks *) = (UiRootCallbacks *)0x9;
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,rightOffset),struct UiRootNode *) = (UiRootNode *)0x6e;
-    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,bottomOffset),struct UiNodeBase *) = (UiNodeBase *)0x10;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,leftOffset),uint32_t) = 0x2c;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,topOffset),uint32_t) = 0x17;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,rightOffset),uint32_t) = 0x6e;
-    INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 0x1e;
-    INGAME_UI(inGameRoot,energyGauge)->leftOffset = 0x2c;
-    INGAME_UI(inGameRoot,energyGauge)->topOffset = 0x25;
-    INGAME_UI(inGameRoot,energyGauge)->rightOffset = 0x6e;
-    INGAME_UI(inGameRoot,energyGauge)->bottomOffset = 0x2c;
+    u_gfx_panel_panel0_gfx_005630d0[INGAME_PANEL_GFX_PATH_VARIANT_DIGIT] = L'2';
+    u_gfx_panel_diagram0_gfx_00563120[INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT] = L'2';
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,leftOffset),enum UiRootFlags) = 44;
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,topOffset),struct UiRootCallbacks *) = (UiRootCallbacks *)9;
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,rightOffset),struct UiRootNode *) = (UiRootNode *)110;
+    INGAME_UI_FIELD(inGameRoot,xeniteGauge,offsetof(UiNodeBase,bottomOffset),struct UiNodeBase *) = (UiNodeBase *)16;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,leftOffset),uint32_t) = 44;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,topOffset),uint32_t) = 23;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,offsetof(UiNodeBase,rightOffset),uint32_t) = 110;
+    INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 30;
+    INGAME_UI(inGameRoot,energyGauge)->leftOffset = 44;
+    INGAME_UI(inGameRoot,energyGauge)->topOffset = 37;
+    INGAME_UI(inGameRoot,energyGauge)->rightOffset = 110;
+    INGAME_UI(inGameRoot,energyGauge)->bottomOffset = 44;
     INGAME_UI(inGameRoot,xeniteAmountText)->leftOffset = 4;
     INGAME_UI(inGameRoot,xeniteAmountText)->topOffset = 7;
-    INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 0x27;
-    INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 0xf;
+    INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 39;
+    INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 15;
   }
   /* each graphics package replaces the previous one (the empty LOCK/UNLOCK pair is Ghidra's rendering of the
      XCHG of the texture pointer), then the old package is released */
@@ -1161,8 +1163,8 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,editorTabStripA))->textureSource = textureSourceValue;
     INGAME_UI(inGameRoot,gamePanelsArea)->leftOffset = 0;
     INGAME_UI(inGameRoot,gamePanelsArea)->topOffset = 0;
-    INGAME_UI(inGameRoot,gamePanelsArea)->rightOffset = 0x0;
-    INGAME_UI(inGameRoot,gamePanelsArea)->bottomOffset = 0x0;
+    INGAME_UI(inGameRoot,gamePanelsArea)->rightOffset = 0;
+    INGAME_UI(inGameRoot,gamePanelsArea)->bottomOffset = 0;
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,gamePanelsArea))->textureSource = textureSourceValue;
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,editorTabStripB))->textureSource = textureSourceValue;
     ((UiNineSlicePanelControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle8Popup))->textureSource = textureSourceValue;
@@ -1220,10 +1222,10 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     INGAME_UI(inGameRoot,minimapView)->topOffset = 0;
     INGAME_UI(inGameRoot,minimapView)->rightOffset = 0;
     INGAME_UI(inGameRoot,minimapView)->bottomOffset = 0;
-    INGAME_UI(inGameRoot,modePreviewPageStack)->leftOffset = 0x0;
-    INGAME_UI(inGameRoot,modePreviewPageStack)->topOffset = 0x0;
-    INGAME_UI(inGameRoot,modePreviewPageStack)->rightOffset = 0x0;
-    INGAME_UI(inGameRoot,modePreviewPageStack)->bottomOffset = 0x0;
+    INGAME_UI(inGameRoot,modePreviewPageStack)->leftOffset = 0;
+    INGAME_UI(inGameRoot,modePreviewPageStack)->topOffset = 0;
+    INGAME_UI(inGameRoot,modePreviewPageStack)->rightOffset = 0;
+    INGAME_UI(inGameRoot,modePreviewPageStack)->bottomOffset = 0;
     ((UiImageActionControl *)INGAME_UI(inGameRoot,notificationTargetButton))->textureSource = textureSourceValue;
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,heightToolPreview))->textureSource = textureSourceValue;
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,smoothingToolPreview))->textureSource = textureSourceValue;
@@ -1567,35 +1569,35 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     nodeFlagsField = (enum UiNodeFlags *)&INGAME_UI(inGameRoot,selectionGroupButton1)->leftOffset;
     *nodeFlagsField = *nodeFlagsField + (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_HAS_KEYBOARD_FOCUS);
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton2)->leftOffset;
-    *sdwordField = *sdwordField + 0x42;
+    *sdwordField = *sdwordField + 66;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton3)->leftOffset;
-    *sdwordField = *sdwordField + 0x61;
+    *sdwordField = *sdwordField + 97;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton4)->leftOffset;
     *sdwordField = *sdwordField + 5;
     anchorField = (uint32_t *)&INGAME_UI(inGameRoot,selectionGroupButton5)->leftOffset;
-    *anchorField = *anchorField + 0x24;
+    *anchorField = *anchorField + 36;
     nodePointerField = (struct UiNodeBase * *)&INGAME_UI(inGameRoot,selectionGroupButton6)->leftOffset;
-    *nodePointerField = (UiNodeBase *)((int)*nodePointerField + 0x42);
+    *nodePointerField = (UiNodeBase *)((int)*nodePointerField + 66);
     anchorField = (uint32_t *)&INGAME_UI(inGameRoot,selectionGroupButton7)->leftOffset;
-    *anchorField = *anchorField + 0x61;
+    *anchorField = *anchorField + 97;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton0)->topOffset;
-    *sdwordField = *sdwordField + 0x11;
-    INGAME_UI(inGameRoot,selectionGroupButton1)->topOffset = INGAME_UI(inGameRoot,selectionGroupButton1)->topOffset + 0x11;
+    *sdwordField = *sdwordField + 17;
+    INGAME_UI(inGameRoot,selectionGroupButton1)->topOffset = INGAME_UI(inGameRoot,selectionGroupButton1)->topOffset + 17;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton2)->topOffset;
-    *sdwordField = *sdwordField + 0x11;
+    *sdwordField = *sdwordField + 17;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton3)->topOffset;
-    *sdwordField = *sdwordField + 0x11;
+    *sdwordField = *sdwordField + 17;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton4)->topOffset;
-    *sdwordField = *sdwordField + 0x28;
+    *sdwordField = *sdwordField + 40;
     anchorField = (uint32_t *)&INGAME_UI(inGameRoot,selectionGroupButton5)->topOffset;
-    *anchorField = *anchorField + 0x28;
+    *anchorField = *anchorField + 40;
     vtablePointerField = (struct UiNodeVtable * *)&INGAME_UI(inGameRoot,selectionGroupButton6)->topOffset;
     *vtablePointerField = (UiNodeVtable *)&(*vtablePointerField)->pointerMove;
     anchorField = (uint32_t *)&INGAME_UI(inGameRoot,selectionGroupButton7)->topOffset;
-    *anchorField = *anchorField + 0x28;
+    *anchorField = *anchorField + 40;
     sharedLayoutValue = (UiNodeVtable *)INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
-    INGAME_UI(inGameRoot,worldViewArea)->leftOffset = 0x0;
-    INGAME_UI(inGameRoot,worldViewArea)->topOffset = 0x0;
+    INGAME_UI(inGameRoot,worldViewArea)->leftOffset = 0;
+    INGAME_UI(inGameRoot,worldViewArea)->topOffset = 0;
     INGAME_UI(inGameRoot,worldViewArea)->rightOffset = (int32_t)sharedLayoutValue;
     INGAME_UI(inGameRoot,worldViewArea)->bottomOffset = 0;
     INGAME_UI(inGameRoot,sidePanelStack)->leftOffset = (int32_t)sharedLayoutValue;
@@ -2303,24 +2305,24 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     paddedIconHeight = (UiNodeBase *)(g_InGamePanelTextureSubresource34Height + 2);
     INGAME_UI(inGameRoot,singleSelectionMetrics)->rightOffset = (int32_t)offsetValue;
     INGAME_UI(inGameRoot,singleSelectionMetrics)->bottomOffset = (int32_t)paddedIconHeight;
-    INGAME_UI(inGameRoot,singleSelectionMetrics)->leftOffset = 0x2;
-    INGAME_UI(inGameRoot,singleSelectionMetrics)->topOffset = 0x2;
+    INGAME_UI(inGameRoot,singleSelectionMetrics)->leftOffset = 2;
+    INGAME_UI(inGameRoot,singleSelectionMetrics)->topOffset = 2;
     INGAME_UI(inGameRoot,hoverItemIcon)->rightOffset = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI(inGameRoot,hoverItemIcon)->bottomOffset = (UiAnchorFractionQ31)paddedIconHeight;
     INGAME_UI(inGameRoot,hoverItemIcon)->leftOffset = 2;
     INGAME_UI(inGameRoot,hoverItemIcon)->topOffset = 2;
     offsetValue = (UiNodeBase *)(g_InGamePanelTextureSubresource02Width - 4);
-    INGAME_UI(inGameRoot,singleSelectionStatsText)->leftOffset = 0x2;
+    INGAME_UI(inGameRoot,singleSelectionStatsText)->leftOffset = 2;
     INGAME_UI(inGameRoot,singleSelectionStatsText)->topOffset = subresourceWidth + 4;
-    INGAME_UI(inGameRoot,singleSelectionStatsText)->rightOffset = 0xfffffffe;
+    INGAME_UI(inGameRoot,singleSelectionStatsText)->rightOffset = -2;
     ((UiWrappedTextControl *)INGAME_UI(inGameRoot,singleSelectionStatsText))->wrapWidth = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI(inGameRoot,hoverItemStatsText)->leftOffset = 2;
     INGAME_UI(inGameRoot,hoverItemStatsText)->topOffset = (UiAnchorFractionQ31)(subresourceWidth + 4);
-    INGAME_UI(inGameRoot,hoverItemStatsText)->rightOffset = 0xfffffffe;
+    INGAME_UI(inGameRoot,hoverItemStatsText)->rightOffset = -2;
     ((UiWrappedTextControl *)INGAME_UI(inGameRoot,hoverItemStatsText))->wrapWidth = (UiPixelExtent)offsetValue;
-    INGAME_UI(inGameRoot,unitPlacementStatsText)->leftOffset = 0x2;
-    INGAME_UI(inGameRoot,unitPlacementStatsText)->topOffset = 0x2;
-    INGAME_UI(inGameRoot,unitPlacementStatsText)->rightOffset = 0xfffffffe;
+    INGAME_UI(inGameRoot,unitPlacementStatsText)->leftOffset = 2;
+    INGAME_UI(inGameRoot,unitPlacementStatsText)->topOffset = 2;
+    INGAME_UI(inGameRoot,unitPlacementStatsText)->rightOffset = -2;
     ((UiWrappedTextControl *)INGAME_UI(inGameRoot,unitPlacementStatsText))->wrapWidth = (UiPixelExtent)offsetValue;
     /* point the placeholders 0..9 of the selection detail text templates at the shared value buffers */
     resourceId = TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE;
@@ -2438,245 +2440,245 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
           sdwordField = &INGAME_UI(inGameRoot,technologyWindow)->bottomOffset;
           *sdwordField = *sdwordField + (techTextureHeight >> 1);
           ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->wrapWidth =
-               (INGAME_UI(inGameRoot,technologyWindow)->rightOffset - INGAME_UI(inGameRoot,technologyWindow)->leftOffset) + -0x18 +
+               (INGAME_UI(inGameRoot,technologyWindow)->rightOffset - INGAME_UI(inGameRoot,technologyWindow)->leftOffset) + -24 +
                (INGAME_UI(inGameRoot,technologyDescriptionScroll)->rightOffset - INGAME_UI(inGameRoot,technologyDescriptionScroll)->leftOffset);
           /* click sounds: voice sets 0..6 of g_UiButtonSoundVoiceSets7, stored at the control class's sound
              field (+0x5C, +0x64, +0x68 or +0x70) */
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[0];
-          ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle8))->pointerActivationSoundId = (int32_t)g_UiButtonSoundVoiceSets7[0];
-          ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle9))->pointerActivationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,resourcePanelIconButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiImageControl *)INGAME_UI(inGameRoot,diplomacyPanel))->pointerActivationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiImageControl *)INGAME_UI(inGameRoot,buildCatalogPanel))->pointerActivationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiImageControl *)INGAME_UI(inGameRoot,specialBuildCatalogPanel))->pointerActivationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiImageControl *)INGAME_UI(inGameRoot,armyStockPanel))->pointerActivationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainHeight))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainMaterial))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainSmoothing))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabRegion))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabUnitPlacement))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabObjectPlacement))->activationSoundId = (uint32_t)buttonVoiceSet;
+          ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle8))->pointerActivationSound = g_UiButtonSoundVoiceSets7[0];
+          ((UiImageControl *)INGAME_UI(inGameRoot,resourcePanelImageToggle9))->pointerActivationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,resourcePanelIconButton))->activationSound = buttonVoiceSet;
+          ((UiImageControl *)INGAME_UI(inGameRoot,diplomacyPanel))->pointerActivationSound = buttonVoiceSet;
+          ((UiImageControl *)INGAME_UI(inGameRoot,buildCatalogPanel))->pointerActivationSound = buttonVoiceSet;
+          ((UiImageControl *)INGAME_UI(inGameRoot,specialBuildCatalogPanel))->pointerActivationSound = buttonVoiceSet;
+          ((UiImageControl *)INGAME_UI(inGameRoot,armyStockPanel))->pointerActivationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainHeight))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainMaterial))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabTerrainSmoothing))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabRegion))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabUnitPlacement))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,editorModeTabObjectPlacement))->activationSound = buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[1];
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,inGameMenuButton))->activationSoundId = (int32_t)g_UiButtonSoundVoiceSets7[1];
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,missionObjectivesButton))->activationSoundId = (uint32_t)buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,inGameMenuButton))->activationSound = g_UiButtonSoundVoiceSets7[1];
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,missionObjectivesButton))->activationSound = buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[2];
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton0))->activationSoundId = (int32_t)g_UiButtonSoundVoiceSets7[2];
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton2))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton3))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton4))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton5))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton6))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton7))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption0))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption2))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption3))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption0))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption2))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption3))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption0))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption2))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingRelaxLandButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption0))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption2))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption0))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption2))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption0))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,singleSelectionUpgradeButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow1RelationButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow2RelationButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow3RelationButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow4RelationButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow5RelationButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow6RelationButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow7RelationButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry00))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry01))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry02))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry03))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry04))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry05))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry06))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry07))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry08))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry09))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry10))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry11))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry12))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry13))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry14))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry15))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry16))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry17))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry18))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry19))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry20))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry21))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry22))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry23))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry24))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry25))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry26))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry27))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry28))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry29))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry30))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry31))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry32))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry33))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry34))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry35))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry36))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry37))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry38))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry39))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry40))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry41))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry42))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry43))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry44))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry45))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry46))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry47))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry00))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry01))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry02))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry03))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry04))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry05))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry06))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry07))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry08))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry09))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry10))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry11))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry12))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry13))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry14))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry15))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry16))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry17))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry18))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry19))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry20))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry21))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry22))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry23))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry24))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry25))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry26))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry27))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry28))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry29))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry30))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry31))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry32))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry33))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry34))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry35))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry36))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry37))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry38))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry39))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry40))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry41))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot00))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot01))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot02))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot03))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot04))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot05))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot06))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot07))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot08))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot09))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot10))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot11))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot12))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot13))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot14))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot15))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot16))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot17))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot18))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot19))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot20))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot21))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot22))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot23))->activationSoundId = (uint32_t)buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton0))->activationSound = g_UiButtonSoundVoiceSets7[2];
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton1))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton2))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton3))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton4))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton5))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton6))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,selectionGroupButton7))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption0))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption1))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption2))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,heightToolOption3))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption0))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption1))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption2))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,materialToolOption3))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption0))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption1))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingToolOption2))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,smoothingRelaxLandButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption0))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption2))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,unitPlacementOption1))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption0))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption2))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,objectPlacementOption1))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption0))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,regionToolOption1))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,singleSelectionUpgradeButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow1RelationButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow2RelationButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow3RelationButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow4RelationButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow5RelationButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow6RelationButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,diplomacyRow7RelationButton))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry00))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry01))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry02))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry03))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry04))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry05))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry06))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry07))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry08))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry09))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry10))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry11))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry12))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry13))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry14))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry15))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry16))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry17))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry18))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry19))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry20))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry21))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry22))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry23))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry24))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry25))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry26))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry27))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry28))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry29))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry30))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry31))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry32))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry33))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry34))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry35))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry36))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry37))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry38))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry39))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry40))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry41))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry42))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry43))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry44))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry45))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry46))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,buildCatalogEntry47))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry00))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry01))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry02))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry03))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry04))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry05))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry06))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry07))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry08))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry09))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry10))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry11))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry12))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry13))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry14))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry15))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry16))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry17))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry18))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry19))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry20))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry21))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry22))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry23))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry24))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry25))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry26))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry27))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry28))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry29))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry30))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry31))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry32))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry33))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry34))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry35))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry36))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry37))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry38))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry39))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry40))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,specialBuildCatalogEntry41))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot00))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot01))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot02))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot03))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot04))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot05))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot06))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot07))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot08))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot09))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot10))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot11))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot12))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot13))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot14))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot15))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot16))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot17))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot18))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot19))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot20))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot21))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot22))->activationSound = buttonVoiceSet;
+          ((UiSpriteButtonControl *)INGAME_UI(inGameRoot,armyStockSlot23))->activationSound = buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[3];
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabMilitary))->activationSoundId = (uint32_t)g_UiButtonSoundVoiceSets7[3];
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabEconomy))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabThird))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsContinueButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsSecondaryExitButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsChartModeButtonA))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsChartModeButtonB))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuSaveButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuGraphicsButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuQuitButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuAudioButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuCloseButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameBackButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameSaveButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameDeleteButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuBackButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuAbortMissionButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuSurrenderButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuRestartMissionButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,graphicsOptionsBackButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,soundOptionsBackButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageSendButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageSendAndCloseButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageCancelButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyCloseButton))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpCloseButton))->activationSoundId = (uint32_t)buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabMilitary))->activationSound = g_UiButtonSoundVoiceSets7[3];
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabEconomy))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsTabThird))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsContinueButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsSecondaryExitButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsChartModeButtonA))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,resultsChartModeButtonB))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuSaveButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuGraphicsButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuQuitButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuAudioButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,gameMenuCloseButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameBackButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameSaveButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,saveGameDeleteButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuBackButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuAbortMissionButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuSurrenderButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,quitMenuRestartMissionButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,graphicsOptionsBackButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,soundOptionsBackButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageSendButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageSendAndCloseButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,messageCancelButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyCloseButton))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpCloseButton))->activationSound = buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[4];
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,autoZoomOffCheckbox))->activationSoundId = (int32_t)g_UiButtonSoundVoiceSets7[4];
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,autoRotationOffCheckbox))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,linkRotationZoomCheckbox))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,linkRotationTiltCheckbox))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,hidePanelCheckbox))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,shadingEnabledCheckbox))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityLowButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityMediumButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityHighButton))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,musicEnabledCheckbox))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,effectsEnabledCheckbox))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,reverseStereoCheckbox))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x32Button))->base.activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x64Button))->base.activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x128Button))->base.activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel64x64Button))->base.activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel64x128Button))->base.activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel128x128Button))->base.activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientPlayersTab))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientAllTab))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientGroupsTab))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox2))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox3))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox4))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox5))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox6))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox7))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab1))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab2))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab3))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab4))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab5))->activationSoundId = (UiAnchorFractionQ31)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab6))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab7))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpBriefingTab))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpKeyboardTab))->activationSoundId = (uint32_t)buttonVoiceSet;
-          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpMouseTab))->activationSoundId = (uint32_t)buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,autoZoomOffCheckbox))->activationSound = g_UiButtonSoundVoiceSets7[4];
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,autoRotationOffCheckbox))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,linkRotationZoomCheckbox))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,linkRotationTiltCheckbox))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,hidePanelCheckbox))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,shadingEnabledCheckbox))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityLowButton))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityMediumButton))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,textureQualityHighButton))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,musicEnabledCheckbox))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,effectsEnabledCheckbox))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,reverseStereoCheckbox))->activationSound = buttonVoiceSet;
+          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x32Button))->base.activationSound = buttonVoiceSet;
+          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x64Button))->base.activationSound = buttonVoiceSet;
+          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel32x128Button))->base.activationSound = buttonVoiceSet;
+          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel64x64Button))->base.activationSound = buttonVoiceSet;
+          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel64x128Button))->base.activationSound = buttonVoiceSet;
+          ((UiNumericPairTextButton *)INGAME_UI(inGameRoot,shadingLevel128x128Button))->base.activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientPlayersTab))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientAllTab))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientGroupsTab))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox1))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox2))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox3))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox4))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox5))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox6))->activationSound = buttonVoiceSet;
+          ((UiTextButtonControl *)INGAME_UI(inGameRoot,messageRecipientCheckbox7))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab1))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab2))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab3))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab4))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab5))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab6))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab7))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpBriefingTab))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpKeyboardTab))->activationSound = buttonVoiceSet;
+          ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,missionHelpMouseTab))->activationSound = buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[5];
           ((UiRangeSliderControl *)INGAME_UI(inGameRoot,modelDetailSlider))->clickSound = g_UiButtonSoundVoiceSets7[5];
           ((UiRangeSliderControl *)INGAME_UI(inGameRoot,effectsVolumeSlider))->clickSound = buttonVoiceSet;
@@ -2801,7 +2803,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraOrientation.pitchAngle,g_FrontendDebugOverlayTextSlot09Utf16);
   /* selection point, or "-" while pointerSurfaceHitDepth holds the 0x7FFFFFFF "none" marker */
-  if ((runtimeRoot->worldRuntime).selection.pointerSurfaceHitDepth == 0x7fffffff) {
+  if ((runtimeRoot->worldRuntime).selection.pointerSurfaceHitDepth == INT32_MAX) {
     g_FrontendDebugOverlayTextSlot10Utf16[0] = L'-';
     g_FrontendDebugOverlayTextSlot10Utf16[1] = 0;
     g_FrontendDebugOverlayTextSlot11Utf16[0] = L'-';
@@ -2825,9 +2827,9 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
   elapsedMinutes = (uint64_t)(g_GameFactionRuntimeImage.tail.simulationTick + 1199) / 1200;
   g_LocaleFormatTimeFieldsUtf16
             ((uint32_t)(elapsedMinutes / 60),(uint32_t)(elapsedMinutes % 60),g_FrontendDebugOverlayTextSlot13Utf16);
-  /* faction records are 0x740 bytes; faction 0 is skipped */
+  /* faction 0 is skipped */
   frameOrFactionIndex = 1;
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,sizeof(GameFactionRuntimeRecord));
   destination = g_InGameFactionStatusTextScratchUtf16;
   do {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[frameOrFactionIndex] != 0) &&
@@ -2851,7 +2853,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
             }
             rosterCount++;
             copiedText = RichTextCommandStream_CopyExpanded
-                               (0x28,rosterCursor,(playerBlock->playerName).textUtf16);
+                               (40,rosterCursor,(playerBlock->playerName).textUtf16);
             if (!copiedText.overflowed) {
               rosterCursor = (uint16_t *)((int)rosterCursor + copiedText.bytesWritten);
               selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
@@ -2868,17 +2870,17 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
                 /* "  x<n>": the characters 'x' and '0' + stepTicks as one dword store */
                 rosterCursor[0] = L' ';
                 rosterCursor[1] = L' ';
-                *(uint32_t *)(rosterCursor + 2) = stepTicks * 0x10000 + 0x300078;
+                *(uint32_t *)(rosterCursor + 2) = stepTicks * 65536 + (L'0' << 16 | L'x');
                 rosterCursor += 4;
               }
               if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_SLOW_RENDERING) != 0) {
-                /* "  W" wrapped in rich-text style commands 0x8004/0x8003 ... 0x8005 */
+                /* "  W" in rich-text save colour / palette colour 3 ... restore colour */
                 rosterCursor[0] = L' ';
                 rosterCursor[1] = L' ';
-                rosterCursor[2] = 0x8004;
-                rosterCursor[3] = 0x8003;
+                rosterCursor[2] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_SAVE_COLOR;
+                rosterCursor[3] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_3;
                 rosterCursor[4] = L'W';
-                rosterCursor[5] = 0x8005;
+                rosterCursor[5] = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_RESTORE_COLOR;
                 rosterCursor += 6;
               }
             }
@@ -2899,14 +2901,14 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
         RichTextCommandStream_PatchPayloadBySelector(0,g_InGamePlayerListTextScratchUtf16,rosterCursor);
       }
       /* faction name, roster, and economyProgressScore + relationScore */
-      resolvedText = TextResource_Resolve(((GameFactionRuntimeRecord *)factionRecordAddress)->factionClassOrMode +
+      resolvedText = TextResource_Resolve(((GameFactionRuntimeRecord *)factionRecordAddress)->colorIndex +
                                           TEXT_ID_FACTION_NAME_BASE);
       statusTemplate = TextResource_Resolve(TEXT_ID_FACTION_STATUS_TEMPLATE);
       stream = statusTemplate.text;
       RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,stream);
       RichTextCommandStream_PatchPayloadBySelector(1,rosterCursor,stream);
       RichTextCommandStream_PatchPayloadBySelector(2,(void *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0),stream);
-      copiedText = RichTextCommandStream_CopyExpanded(0x400,destination,stream);
+      copiedText = RichTextCommandStream_CopyExpanded(1024,destination,stream);
       if (!copiedText.overflowed) {
         destination = (uint16_t *)((int)destination + copiedText.bytesWritten);
       }
@@ -2968,7 +2970,7 @@ void InGamePanel_RebuildPlayerStatusRows(void *inGameRoot)
       }
       resolvedText = TextResource_Resolve(resourceId);
       RichTextCommandStream_PatchPayloadBySelector(0,playerName,resolvedText.text);
-      RichTextCommandStream_CopyExpanded(0x80,destination->text,resolvedText.text);
+      RichTextCommandStream_CopyExpanded(128,destination->text,resolvedText.text);
       destination++;
       playerName = (FrontendPlayerNameUtf16 *)((uint8_t *)playerName + sizeof(FrontendPlayerRuntimeRecord));
       remainingPlayers--;
@@ -3093,7 +3095,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
                 (g_LocalPlayerRuntimeId,world->activeFactionRuntimeIndex,transferMode,groupIndex);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0xbe0,world->activeFactionRuntimeIndex,transferMode,groupIndex);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_GROUP,world->activeFactionRuntimeIndex,transferMode,groupIndex);
     }
     break;
   }
@@ -3159,7 +3161,8 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
   case INGAME_KEY_SELECTION_RESET_ANCHORS:
   case INGAME_KEY_SELECTION_INTERRUPT_TARGETS:
   case INGAME_KEY_SELECTION_APPLY_FLAGS418: {
-    static const uint32_t queuedCommandCodes[4] = {0xe10,0xe30,0xe50,0xe70};
+    static const uint32_t queuedCommandCodes[4] = {INGAME_COMMAND_SELECTION_STOP,INGAME_COMMAND_SELECTION_RESET_ANCHORS,
+                                                   INGAME_COMMAND_SELECTION_INTERRUPT_TARGETS,INGAME_COMMAND_SELECTION_APPLY_FLAGS418};
     int commandIndex = (target == INGAME_KEY_SELECTION_STOP) ? 0 :
                        (target == INGAME_KEY_SELECTION_RESET_ANCHORS) ? 1 :
                        (target == INGAME_KEY_SELECTION_INTERRUPT_TARGETS) ? 2 : 3;
@@ -3195,9 +3198,8 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
         .pageIndex != 1) {
       break;
     }
-    /* stateFlags 0x200: the button plays its activation sound */
-    if ((((upgradeButton->selectable).stateFlags & 0x200) != 0) && (upgradeButton->activationSoundId != 0)) {
-      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)upgradeButton->activationSoundId);
+        if ((((upgradeButton->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (upgradeButton->activationSound != NULL)) {
+      g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,upgradeButton->activationSound);
     }
     InGameTechnologyPanel_ToggleForSelection((UiNodeBase *)world);
     break;
@@ -3210,12 +3212,12 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
       InGameSelection_SelectAllOwnAircraftPads(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x8f0,0,0,0);
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_OWN_AIRCRAFT_PADS,0,0,0);
     }
     break;
   case INGAME_KEY_FREE_CAMERA_TOGGLE:
-    /* runtimeFlags 0x40000 disables the pitch and distance clamps of the world motion code */
-    world->runtimeFlags = world->runtimeFlags ^ 0x40000;
+    /* no pitch and distance clamps in the world motion code */
+    world->runtimeFlags = world->runtimeFlags ^ WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA;
     break;
   case INGAME_KEY_WRAPPED_STATUS_TEXT_TOGGLE:
     THANDOR_UI_SIBLING(world,InGameUiImage,worldView,worldViewWrappedStatusText)->nodeFlags =
@@ -3255,7 +3257,7 @@ void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
 
   notificationButton = (UiImageActionControl *)
        THANDOR_UI_SIBLING(worldView,InGameUiImage,worldView,notificationTargetButton);
-  if (notificationButton->cursorFrame == 0x1b) {
+  if (notificationButton->cursorFrame == INGAME_NOTIFICATION_CURSOR_CANCEL) {
     notificationButton->cursorFrame = 0;
   }
   return;
@@ -3277,7 +3279,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
   if ((((g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) == 0) &&
       (((world->interaction).nodeFlags & 8) == 0)) &&
      ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0)) {
-    if ((world->runtimeFlags & 0x10) == 0) {
+    if ((world->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
         hasActiveOwnerType16 = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(world->activeFactionRuntimeIndex);
         if (hasActiveOwnerType16) {
@@ -3286,7 +3288,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
             FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
           }
           else {
-            InGameCommandQueue_AppendLocalPlayerCommand(0xba0,0,0,0);
+            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
           }
           return;
         }
@@ -3295,7 +3297,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
           FrontendPlayerSelection_ClearAndRefreshLocalPanels(g_LocalPlayerRuntimeId,0,0,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0xba0,0,0,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECTION_CLEAR,0,0,0);
         }
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -3304,11 +3306,11 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
                   (g_LocalPlayerRuntimeId,0,0,world->activeFactionRuntimeIndex);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x14f0,0,0,world->activeFactionRuntimeIndex);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_CONSUME_PENDING_ARMY,0,0,world->activeFactionRuntimeIndex);
       }
     }
     else {
-      world->runtimeFlags = world->runtimeFlags & ~0x10;
+      world->runtimeFlags = world->runtimeFlags & ~WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO;
       WorldRuntime_RestoreMotionStateFromSnapshot(world);
     }
   }
@@ -3460,7 +3462,7 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   slotIndex = 0;
   if (otherActiveCount != 0) {
     candidateFactionIndex = 1;
-    factionIndexOrRecord = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740); /* records[1] */
+    factionIndexOrRecord = THANDOR_ADDR(g_GameFactionRuntimeImage,sizeof(GameFactionRuntimeRecord)); /* records[1] */
     do {
       nextRemainingCount = otherActiveCount + 1;
       if ((candidateFactionIndex != ((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex) &&
@@ -3470,9 +3472,9 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
         UiPageStack_SetActiveIndex
                   (0,(UiPageStackControl *)
                      THANDOR_UI_AT(node,g_UiAction1012SlotPageOffsets[slotIndex]));
-        /* the text fields hold text resource ids; record +0x38 is factionClassOrMode */
+        /* the text fields hold text resource ids; the colour name of the faction's colorIndex */
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
-             (uint16_t *)(((GameFactionRuntimeRecord *)factionIndexOrRecord)->factionClassOrMode + TEXT_ID_FACTION_NAME_BASE);
+             (uint16_t *)(((GameFactionRuntimeRecord *)factionIndexOrRecord)->colorIndex + TEXT_ID_FACTION_NAME_BASE);
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
              (uint16_t *)(candidateFactionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
         relationState = g_GameFactionRuntimeImage.records
@@ -3587,18 +3589,18 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
         }
       }
     }
-    /* weights are Q8 (0x100 = 1) */
+    /* weights are Q8 (256 = 1) */
     if (trackClassId < 20) {
-      suitabilityScore = flag10BonusSum * 0x80 + class74Sum * 0x100 + weightedClass78Sum * 0x280 + class70Sum * 0x100;
+      suitabilityScore = flag10BonusSum * 128 + class74Sum * 256 + weightedClass78Sum * 640 + class70Sum * 256;
     }
     else if (trackClassId < 50) {
-      suitabilityScore = flag10BonusSum * -0x100 + class74Sum * 0x40 + 0x32000 + weightedClass78Sum * 0x10 + class70Sum * 0x80;
+      suitabilityScore = flag10BonusSum * -256 + class74Sum * 64 + 204800 + weightedClass78Sum * 16 + class70Sum * 128;
     }
     else if (trackClassId < 70) {
-      suitabilityScore = flag10BonusSum * 0x80 + class74Sum * 0x100 + weightedClass78Sum * 0x20 + class70Sum * 0x300;
+      suitabilityScore = flag10BonusSum * 128 + class74Sum * 256 + weightedClass78Sum * 32 + class70Sum * 768;
     }
     else {
-      suitabilityScore = flag10BonusSum * 0x100 + class74Sum * 0x200 + weightedClass78Sum * 0x180 + class70Sum * 0x10;
+      suitabilityScore = flag10BonusSum * 256 + class74Sum * 512 + weightedClass78Sum * 384 + class70Sum * 16;
     }
   }
   return suitabilityScore;
@@ -3628,7 +3630,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   isSelected = (bool)UiSelectableControl_IsSelected((UiSelectableControl *)source);
   if (!isSelected) {
     UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,&uiRoot->gameWindowPageStack);
-    /* interaction flag 8: a window blocks the world input */
+    /* interaction flag 8: a window blocks the world input (0xfffffff7 = ~8) */
     interactionFlagsField = &(uiRoot->worldRuntime).interaction.nodeFlags;
     *interactionFlagsField = *interactionFlagsField & 0xfffffff7;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -3749,10 +3751,10 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       }
     }
     rowFactionIndex = g_UiAction1012TargetPlayerIndices[slotIndex];
-    /* rootControl[0x15].sprite.primaryTextureSource is root+0xA80, the activeFactionRuntimeIndex of the
+    /* rootControl[21].sprite.primaryTextureSource is root+0xA80, the activeFactionRuntimeIndex of the
        world runtime at root+0xA30: the local faction */
     if ((control->activationInputState & UI_COMMAND_ACTIVATION_RELATION_RESET_REQUEST_MASK) == 0) {
-      rootFactionValue = rootControl[0x15].sprite.primaryTextureSource;
+      rootFactionValue = rootControl[21].sprite.primaryTextureSource;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         GameFactionRuntime_AdvancePairwiseRelationState
@@ -3764,7 +3766,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
       }
     }
     else {
-      rootFactionValue = rootControl[0x15].sprite.primaryTextureSource;
+      rootFactionValue = rootControl[21].sprite.primaryTextureSource;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         GameFactionRuntime_ResetPairwiseRelationState
@@ -3863,13 +3865,13 @@ void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   resourceId = TEXT_ID_MESSAGE_RECIPIENT_LABEL_BASE;
   filledSlotCount = 0;
   factionIndexCursor = 1;
-  /* factionClassOrMode of the faction record is the faction's name index */
-  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
+  /* a faction is named after its colour: colorIndex of the faction record selects the name text */
+  factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,sizeof(GameFactionRuntimeRecord));
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexCursor] != 0) {
       resolvedText = TextResource_Resolve(resourceId);
       stream = resolvedText.text;
-      factionNameIndex = ((GameFactionRuntimeRecord *)factionRecordAddress)->factionClassOrMode;
+      factionNameIndex = ((GameFactionRuntimeRecord *)factionRecordAddress)->colorIndex;
       resourceId++;
       /* nodeFlags of the check box: g_UiSevenSlotSelectionControlOffsets is relative to the root */
       controlFlags = (uint32_t *)&THANDOR_UI_AT(uiRootNode,g_UiSevenSlotSelectionControlOffsets[filledSlotCount])->nodeFlags;
@@ -3996,7 +3998,7 @@ void InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
 */
 uint32_t InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,
-                uint32_t reservedArg3,ArmyRuntimeSlot *armyRuntimeUnderPointer,
+                uint32_t reservedArg3,WorldOwnerListNode *ownerNodeUnderPointer,
                 WorldRuntimeContext *worldRuntime)
 
 {
@@ -4005,43 +4007,43 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
   bool callbackAccepted;
   ArmyRuntimeCreateResult previewArmyRuntime;
 
-  /* armyRuntimeUnderPointer is really the world owner-list node under the pointer (only model nodes count) */
-  if ((armyRuntimeUnderPointer != NULL) &&
-     (((WorldOwnerListNode *)armyRuntimeUnderPointer)->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) {
-    armyRuntimeUnderPointer = NULL;
+  /* the world owner-list node under the pointer; only model nodes count */
+  if ((ownerNodeUnderPointer != NULL) &&
+     (ownerNodeUnderPointer->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) {
+    ownerNodeUnderPointer = NULL;
   }
-  /* The values are cursor frames of the editor tools (0x15..0x24). */
+  /* The values are cursor frames of the editor tools (EDITOR_CURSOR_*, WORLD_CURSOR_*). */
   switch(g_UiCommandModeG) {
   case EDITOR_MODE_TERRAIN_HEIGHT:
     if (g_UiCommandModeC == 0) {
-      return 0x1c;
+      return EDITOR_CURSOR_HEIGHT_RAISE;
     }
     if (g_UiCommandModeC == 1) {
-      return 0x1e;
+      return EDITOR_CURSOR_HEIGHT_LOWER;
     }
     if (g_UiCommandModeC == 2) {
-      return 0x20;
+      return EDITOR_CURSOR_REBUILD_INFLUENCE;
     }
     break;
   case EDITOR_MODE_TERRAIN_MATERIAL:
     if (g_UiCommandModeD != 3) {
       if (g_UiCommandModeD == 1) {
-        return 0x24;
+        return EDITOR_CURSOR_MATERIAL_MODE1;
       }
       if (g_UiCommandModeD == 2) {
-        return 0x23;
+        return EDITOR_CURSOR_MATERIAL_MODE2;
       }
-      return 0x22;
+      return EDITOR_CURSOR_PAINT;
     }
     break;
   case EDITOR_MODE_TERRAIN_SMOOTHING:
     if (g_UiCommandModeE == 0) {
-      return 0x1d;
+      return EDITOR_CURSOR_SMOOTH;
     }
     if (g_UiCommandModeE == 1) {
-      return 0x1f;
+      return EDITOR_CURSOR_RECEIVER_MASK;
     }
-    return 0x22;
+    return EDITOR_CURSOR_PAINT;
   case EDITOR_MODE_UNIT_PLACEMENT:
   case EDITOR_MODE_OBJECT_PLACEMENT:
     /* Mode 3 uses sub-mode A, mode 4 sub-mode B; the rest is shared. The preview instance below is
@@ -4055,10 +4057,10 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
     }
     if (cursorCodeOrSubMode == 0) {
       if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
-        return 0x18;
+        return WORLD_CURSOR_NO_TARGET;
       }
       localSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
-      cursorCodeOrSubMode = 0x17;
+      cursorCodeOrSubMode = WORLD_CURSOR_MOVE;
       if (localSelectionBlock->placedArmyToken == 0) {
         previewArmyRuntime = ArmyRuntime_CreateInstanceFromAsset
                           (1,0,pointerWorldXQ12,pointerWorldYQ12,g_UiCommandModeGOwnerFactionIndex,
@@ -4066,28 +4068,28 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
         if (!previewArmyRuntime.failed) {
           callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback((ArmyRuntimeSlot **)previewArmyRuntime.armyRuntimeOrError,worldRuntime);
           if (callbackAccepted) {
-            cursorCodeOrSubMode = 0x18;
+            cursorCodeOrSubMode = WORLD_CURSOR_NO_TARGET;
           }
           ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)previewArmyRuntime.armyRuntimeOrError);
           return cursorCodeOrSubMode;
         }
-        return 0x17;
+        return WORLD_CURSOR_MOVE;
       }
     }
     else {
       if (cursorCodeOrSubMode == 1) {
-        if (armyRuntimeUnderPointer != NULL) {
-          return 0x19;
+        if (ownerNodeUnderPointer != NULL) {
+          return EDITOR_CURSOR_DELETE_TARGET;
         }
-        return 0x1a;
+        return EDITOR_CURSOR_DELETE_NONE;
       }
       localSelectionBlock = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
-      cursorCodeOrSubMode = 0x15;
+      cursorCodeOrSubMode = WORLD_CURSOR_OWN_ARMY;
       if (localSelectionBlock->placedArmyToken == 0) {
-        if (armyRuntimeUnderPointer != NULL) {
-          return 0x15;
+        if (ownerNodeUnderPointer != NULL) {
+          return WORLD_CURSOR_OWN_ARMY;
         }
-        return 0x16;
+        return WORLD_CURSOR_FOREIGN_ARMY;
       }
     }
     callbackAccepted = ArmyRuntimeNode_DispatchTypedCallback
@@ -4099,7 +4101,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
     }
     return cursorCodeOrSubMode;
   case EDITOR_MODE_REGION:
-    return 0x21;
+    return EDITOR_CURSOR_REGION;
   }
   return 0;
 }
@@ -4114,7 +4116,7 @@ uint32_t InGameUiCommand_ResolveCursorCodeByMode
 */
 void InGameUiCommand_BeginInteractionByMode
           (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,uint32_t reservedArg3,
-          ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView *mapControl
+          WorldOwnerListNode *ownerNodeUnderPointer,WorldRuntimeExtendedMapControlView *mapControl
           )
 
 {
@@ -4130,9 +4132,9 @@ void InGameUiCommand_BeginInteractionByMode
   int cellY;
   TerrainPointResult nearestTerrainPoint;
   
-  if ((armyRuntimeUnderPointer != NULL) &&
-     (((WorldOwnerListNode *)armyRuntimeUnderPointer)->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) {
-    armyRuntimeUnderPointer = NULL;
+  if ((ownerNodeUnderPointer != NULL) &&
+     (ownerNodeUnderPointer->ownerClassId != WORLD_OWNER_RUNTIME_MODEL)) {
+    ownerNodeUnderPointer = NULL;
   }
   switch(g_UiCommandModeG) {
   case EDITOR_MODE_TERRAIN_HEIGHT:
@@ -4147,13 +4149,11 @@ void InGameUiCommand_BeginInteractionByMode
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
       /* World point to grid point (Q12), used throughout the editor callbacks: t = y * -0x20C8CC / 2^21,
          gx = x * 0x1C6E9C / 2^20 - t, gy = 2t (64-bit products); + 0x3FF & ~0xFFF snaps to the grid. */
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-      worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-      g_UiCommandDragAnchorWorldXQ12 =
-           (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
-           0xfffff000;
-      g_UiCommandDragAnchorWorldYQ12 = worldCoordinateTerm * 2 + 0x3ff & 0xfffff000;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+      g_UiCommandDragAnchorWorldXQ12 = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - worldCoordinateTerm);
+      g_UiCommandDragAnchorWorldYQ12 = INGAME_SNAP_GRID_Q12(worldCoordinateTerm * 2);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
@@ -4171,13 +4171,11 @@ void InGameUiCommand_BeginInteractionByMode
       g_UiCommandDragStartScreenX = mapControl->pointerPressX;
       g_UiCommandDragStartScreenY = mapControl->pointerPressY;
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-      worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-      g_UiCommandDragAnchorWorldXQ12 =
-           (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
-           0xfffff000;
-      g_UiCommandDragAnchorWorldYQ12 = worldCoordinateTerm * 2 + 0x3ff & 0xfffff000;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+      g_UiCommandDragAnchorWorldXQ12 = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - worldCoordinateTerm);
+      g_UiCommandDragAnchorWorldYQ12 = INGAME_SNAP_GRID_Q12(worldCoordinateTerm * 2);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FieldGrid_ClearPlayerScratchPlane(g_LocalPlayerRuntimeId,0,0,0);
@@ -4203,12 +4201,11 @@ void InGameUiCommand_BeginInteractionByMode
           return;
         }
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-        snappedWorldY = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-        worldCoordinateTerm = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
-                0xfffff000;
-        snappedWorldY = snappedWorldY * 2 + 0x3ff & 0xfffff000;
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+        snappedWorldY = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+        worldCoordinateTerm = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - snappedWorldY);
+        snappedWorldY = INGAME_SNAP_GRID_Q12(snappedWorldY * 2);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           TerrainMaterialEdit_SeedMatchingRegionReplacement
@@ -4230,12 +4227,11 @@ void InGameUiCommand_BeginInteractionByMode
       }
       if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-        snappedWorldY = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-        worldCoordinateTerm = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
-                0xfffff000;
-        snappedWorldY = snappedWorldY * 2 + 0x3ff & 0xfffff000;
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+        snappedWorldY = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+        worldCoordinateTerm = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - snappedWorldY);
+        snappedWorldY = INGAME_SNAP_GRID_Q12(snappedWorldY * 2);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           TerrainMaterialEdit_SeedNonTargetRegionReplacement
@@ -4255,13 +4251,11 @@ void InGameUiCommand_BeginInteractionByMode
         g_UiCommandDragStartScreenX = mapControl->pointerPressX;
         g_UiCommandDragStartScreenY = mapControl->pointerPressY;
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-        worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-        g_UiCommandDragAnchorWorldXQ12 =
-             (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
-             0xfffff000;
-        g_UiCommandDragAnchorWorldYQ12 = worldCoordinateTerm * 2 + 0x3ff & 0xfffff000;
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+        worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+        g_UiCommandDragAnchorWorldXQ12 = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - worldCoordinateTerm);
+        g_UiCommandDragAnchorWorldYQ12 = INGAME_SNAP_GRID_Q12(worldCoordinateTerm * 2);
         return;
       }
       g_UiCommandDragStartScreenX = WORLD_POINTER_NO_HIT;
@@ -4274,17 +4268,16 @@ void InGameUiCommand_BeginInteractionByMode
       /* The drag sets the flag when the pressed cell lacks it and clears it otherwise; outside the
          field it sets it. */
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-      worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
       mapFieldGrid = mapControl->fieldGrid;
-      cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff
-                   ) >> 0xc;
+      cellX = (int)(((FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm) + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
       if (cellX < 0) {
         g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
         return;
       }
-      cellY = (int)(worldCoordinateTerm * 2 + 0x3ff) >> 0xc;
+      cellY = (int)(worldCoordinateTerm * 2 + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
       if (cellY < 0) {
         g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_RECEIVER_EXCLUDED;
         return;
@@ -4306,17 +4299,16 @@ void InGameUiCommand_BeginInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-    worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     mapFieldGrid = mapControl->fieldGrid;
-    cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
-            >> 0xc;
+    cellX = (int)(((FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm) + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
     if (cellX < 0) {
       g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_SOURCE_EXCLUDED;
       return;
     }
-    cellY = (int)(worldCoordinateTerm * 2 + 0x3ff) >> 0xc;
+    cellY = (int)(worldCoordinateTerm * 2 + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
     if (cellY < 0) {
       g_UiCommandTerrainMaskToggleValue = FIELD_CELL_FLUID_SOURCE_EXCLUDED;
       return;
@@ -4375,8 +4367,8 @@ void InGameUiCommand_BeginInteractionByMode
       if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
-      if (armyRuntimeUnderPointer != NULL) {
-        commandPayload = (int)((ModelRuntimeSlot *)((WorldOwnerListNode *)armyRuntimeUnderPointer)->runtimePayload)->
+      if (ownerNodeUnderPointer != NULL) {
+        commandPayload = (int)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
                          ownerArmyRuntimeOrSavedOffset.armyRuntime -
                 (int)g_ArmyRuntimeRebaseBaseMinusOne;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4392,10 +4384,10 @@ void InGameUiCommand_BeginInteractionByMode
       if (pointerRegionCode == WORLD_POINTER_NO_HIT) {
         return;
       }
-      if (armyRuntimeUnderPointer != NULL) {
+      if (ownerNodeUnderPointer != NULL) {
         g_UiCommandDragStartScreenX = mapControl->pointerPressX;
         g_UiCommandDragStartScreenY = mapControl->pointerPressY;
-        commandPayload = (int)((ModelRuntimeSlot *)((WorldOwnerListNode *)armyRuntimeUnderPointer)->runtimePayload)->
+        commandPayload = (int)((ModelRuntimeSlot *)ownerNodeUnderPointer->runtimePayload)->
                          ownerArmyRuntimeOrSavedOffset.armyRuntime -
                 (int)g_ArmyRuntimeRebaseBaseMinusOne;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4424,17 +4416,16 @@ void InGameUiCommand_BeginInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-    worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     mapFieldGrid = mapControl->fieldGrid;
-    cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
-            >> 0xc;
+    cellX = (int)(((FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm) + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
     if (cellX < 0) {
       g_UiCommandCallerMaskHighBit = 0;
       return;
     }
-    cellY = (int)(worldCoordinateTerm * 2 + 0x3ff) >> 0xc;
+    cellY = (int)(worldCoordinateTerm * 2 + INGAME_GRID_SNAP_BIAS_Q12) >> Q12_SHIFT;
     if (cellY < 0) {
       g_UiCommandCallerMaskHighBit = 0;
       return;
@@ -4444,10 +4435,10 @@ void InGameUiCommand_BeginInteractionByMode
         g_UiCommandCallerMaskHighBit = 0;
         return;
       }
-      /* region g_UiCommandModeF owns cell flag 0x800 << region; bit 31 makes the drag remove it again */
+      /* region g_UiCommandModeF owns cell flag FIELD_CELL_XENITE_SUPPORT << region; bit 31 makes the drag remove it again */
       if ((mapFieldGrid->cells[cellY * mapFieldGrid->gridWidth + cellX].flagsAndMaterial &
-          0x800 << ((uint8_t)g_UiCommandModeF & 0x1f)) != 0) {
-        g_UiCommandCallerMaskHighBit = 0x80000000;
+          FIELD_CELL_XENITE_SUPPORT << ((uint8_t)g_UiCommandModeF & 0x1f)) != 0) {
+        g_UiCommandCallerMaskHighBit = INGAME_REGION_MASK_REMOVE;
         return;
       }
       g_UiCommandCallerMaskHighBit = 0;
@@ -4469,11 +4460,11 @@ void InGameUiCommand_BeginInteractionByMode
       }
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-    worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    worldCoordinateTerm = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
     g_UiCommandSelectionAnchorWorldXQ12 =
-         ((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm;
+         (FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - worldCoordinateTerm;
     g_UiCommandSelectionAnchorWorldYQ12 = worldCoordinateTerm * 2;
     g_UiCommandSelectionCurrentWorldXQ12 = g_UiCommandSelectionAnchorWorldXQ12;
     g_UiCommandSelectionCurrentWorldYQ12 = g_UiCommandSelectionAnchorWorldYQ12;
@@ -4516,9 +4507,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
   GameEntityRuntime *entry;
   
   if ((mapControl->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) != 0) {
-    /* clears both triplet buffers with their counts (0x1A dwords) */
+    /* clears both triplet buffers with their counts (26 dwords) */
     tripletClearCursor = (uint32_t *)&g_InGameSelectionInsertTripletDwords;
-    for (workValue = 0x1a; workValue != 0; workValue--) {
+    for (workValue = 26; workValue != 0; workValue--) {
       *tripletClearCursor = 0;
       tripletClearCursor++;
     }
@@ -4541,7 +4532,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
               (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,
                                    INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_INSERT), !conditionResult))
              && (*(InGameCommandPayloadTripletValue32 *)
-                  (&g_InGameSelectionInsertTripletDwords + encodedValue * 4) = payloadValue, encodedValue < 0xb))
+                  (&g_InGameSelectionInsertTripletDwords + encodedValue * 4) = payloadValue, encodedValue < 11))
           {
             g_InGameSelectionInsertTripletDwordCount++;
           }
@@ -4553,7 +4544,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
               (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,
                                    INGAME_COMMAND_CODE_BASE + INGAME_COMMAND_SELECTION_REMOVE), !conditionResult))
              && (*(InGameCommandPayloadTripletValue32 *)
-                  (&g_InGameSelectionRemoveTripletDwords + encodedValue * 4) = payloadValue, encodedValue < 0xb))
+                  (&g_InGameSelectionRemoveTripletDwords + encodedValue * 4) = payloadValue, encodedValue < 11))
           {
             g_InGameSelectionRemoveTripletDwordCount++;
           }
@@ -4602,12 +4593,12 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       if (g_UiCommandDragStartScreenX == WORLD_POINTER_NO_HIT) {
         return;
       }
-      encodedValue = 0xffff;
+      encodedValue = INGAME_DRAG_DELTA_X_MASK;
       if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
         encodedValue = 0;
       }
       encodedValue = mapControl->pointerX - g_UiCommandDragStartScreenX & encodedValue |
-              (mapControl->pointerY - g_UiCommandDragStartScreenY) * 0x10000;
+              (mapControl->pointerY - g_UiCommandDragStartScreenY) * INGAME_DRAG_DELTA_Y_SCALE;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
@@ -4623,12 +4614,12 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       if (g_UiCommandDragStartScreenX == WORLD_POINTER_NO_HIT) {
         return;
       }
-      encodedValue = 0xffff;
+      encodedValue = INGAME_DRAG_DELTA_X_MASK;
       if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
         encodedValue = 0;
       }
       encodedValue = mapControl->pointerX - g_UiCommandDragStartScreenX & encodedValue |
-              (mapControl->pointerY - g_UiCommandDragStartScreenY) * 0x10000;
+              (mapControl->pointerY - g_UiCommandDragStartScreenY) * INGAME_DRAG_DELTA_Y_SCALE;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
@@ -4645,12 +4636,11 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-      columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-      encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
-              0xfffff000;
-      columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+      encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
+      columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_EDITOR_REBUILD_INFLUENCE,0,columnValue,encodedValue);
@@ -4676,12 +4666,11 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-      columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-      encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
-              0xfffff000;
-      columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+      encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
+      columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
@@ -4698,7 +4687,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       if (g_UiCommandDragStartScreenX == WORLD_POINTER_NO_HIT) {
         return;
       }
-      encodedValue = 0xffff;
+      encodedValue = INGAME_DRAG_DELTA_X_MASK;
       if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_CTRL)) != 0) {
         encodedValue = 0;
       }
@@ -4706,7 +4695,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       workValue = mapControl->pointerY - g_UiCommandDragStartScreenY;
       g_UiCommandDragStartScreenX = g_UiCommandDragStartScreenX + columnValue;
       g_UiCommandDragStartScreenY = g_UiCommandDragStartScreenY + workValue;
-      encodedValue = columnValue & encodedValue | workValue * 0x10000;
+      encodedValue = columnValue & encodedValue | workValue * INGAME_DRAG_DELTA_Y_SCALE;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
@@ -4723,12 +4712,11 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-      columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-      encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
-              0xfffff000;
-      columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+      columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+      encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
+      columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
         InGameCommandQueue_AppendLocalPlayerCommand
@@ -4743,12 +4731,11 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-    columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-    encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
-            0xfffff000;
-    columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+    encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
+    columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameCommandQueue_AppendLocalPlayerCommand
@@ -4804,12 +4791,11 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-    columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-    encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
-            0xfffff000;
-    columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    columnValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+    encodedValue = INGAME_SNAP_GRID_Q12(FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT) - columnValue);
+    columnValue = INGAME_SNAP_GRID_Q12(columnValue * 2);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameCommandQueue_AppendLocalPlayerCommand
@@ -4822,10 +4808,10 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
   }
   if ((pointerRegionCode != WORLD_POINTER_NO_HIT) && (g_UiCommandSelectionAnchorWorldXQ12 != WORLD_POINTER_NO_HIT)) {
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
-    encodedValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
-    boundWorldY = ((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - encodedValue;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    encodedValue = FIXED_PRODUCT_SHR(scaledGridY, Q20_SHIFT + 1);
+    boundWorldY = (FIXED_PRODUCT_SHR(scaledGridX, Q20_SHIFT)) - encodedValue;
     workValue = encodedValue * 2;
     /* boundWorldY/workValue hold the new corner here. The original exchanges it (XCHG) with
        g_UiCommandSelectionCurrentWorld*; the rectangle anchor..old corner is deselected row by row, then
@@ -4845,13 +4831,13 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       upperWorldY = g_UiCommandSelectionAnchorWorldYQ12;
       lowerWorldY = g_UiCommandSelectionCurrentWorldYQ12;
     }
-    encodedValue = boundWorldX + 0x3ffU & 0xfffff000;
-    rowOrDeltaValue = lowerWorldY + 0x3ffU & 0xfffff000;
-    columnValue = g_UiCommandSelectionCurrentWorldXQ12 + 0x3ffU & 0xfffff000;
+    encodedValue = INGAME_SNAP_GRID_Q12(boundWorldX);
+    rowOrDeltaValue = INGAME_SNAP_GRID_Q12(lowerWorldY);
+    columnValue = INGAME_SNAP_GRID_Q12(g_UiCommandSelectionCurrentWorldXQ12);
     g_UiCommandSelectionCurrentWorldXQ12 = boundWorldY;
     g_UiCommandSelectionCurrentWorldYQ12 = workValue;
     if ((int)encodedValue <= (int)columnValue) {
-      for (; (int)rowOrDeltaValue <= (int)(upperWorldY + 0x3ffU & 0xfffff000); rowOrDeltaValue = rowOrDeltaValue + 0x1000) {
+      for (; (int)rowOrDeltaValue <= (int)INGAME_SNAP_GRID_Q12(upperWorldY); rowOrDeltaValue = rowOrDeltaValue + Q12_ONE) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           PlayerPairList_RemoveRange(g_LocalPlayerRuntimeId,columnValue,rowOrDeltaValue,encodedValue);
@@ -4873,11 +4859,11 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       boundWorldY = g_UiCommandSelectionAnchorWorldYQ12;
       upperWorldY = g_UiCommandSelectionCurrentWorldYQ12;
     }
-    encodedValue = workValue + 0x3ffU & 0xfffff000;
-    rowOrDeltaValue = upperWorldY + 0x3ffU & 0xfffff000;
-    columnValue = boundWorldX + 0x3ffU & 0xfffff000;
+    encodedValue = INGAME_SNAP_GRID_Q12(workValue);
+    rowOrDeltaValue = INGAME_SNAP_GRID_Q12(upperWorldY);
+    columnValue = INGAME_SNAP_GRID_Q12(boundWorldX);
     if ((int)encodedValue <= (int)columnValue) {
-      for (; (int)rowOrDeltaValue <= (int)(boundWorldY + 0x3ffU & 0xfffff000); rowOrDeltaValue = rowOrDeltaValue + 0x1000) {
+      for (; (int)rowOrDeltaValue <= (int)INGAME_SNAP_GRID_Q12(boundWorldY); rowOrDeltaValue = rowOrDeltaValue + Q12_ONE) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
           PlayerPairList_InsertRange(g_LocalPlayerRuntimeId,columnValue,rowOrDeltaValue,encodedValue);
@@ -5040,7 +5026,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
            g_UiCommandRuntimeFlags |
            (UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
       runtimeFlagsField = &(g_InGameRuntimeRoot->worldRuntime).runtimeFlags;
-      *runtimeFlagsField = *runtimeFlagsField | 0x400000; /* editor world flag, cleared on leaving */
+      *runtimeFlagsField = *runtimeFlagsField | INGAME_WORLD_FLAG_EDITOR; /* cleared on leaving */
       UiPageStack_SetActiveIndex
                 (g_UiCommandModeGPrimaryPageIndices[modeOrValue],(UiPageStackControl *)pageStackBlock);
       UiPageStack_SetActiveIndex
@@ -5078,9 +5064,9 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       (*(void (*)(UiSelectableControl *))g_UiCommandModeGHandlers[modeOrValue])
                 ((UiSelectableControl *)
                  THANDOR_UI_AT(root,g_UiCommandModeGControlOffsets[modeOrValue]));
-      /* zeroes the first 0x20 dwords of the notification queue (the cursor steps 4 bytes, not a record) */
+      /* zeroes the first 32 dwords of the notification queue (the cursor steps 4 bytes, not a record) */
       queueSlotCursor = root->notificationQueue;
-      for (remainingCount = 0x20; remainingCount != 0; remainingCount--) {
+      for (remainingCount = 32; remainingCount != 0; remainingCount--) {
         queueSlotCursor->movieId = 0;
         queueSlotCursor = (InGameNotificationQueueRecord *)&queueSlotCursor->priority;
       }
@@ -5097,7 +5083,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       if (materialTextureSet != NULL) {
         textureSourceValue = materialTextureSet->entries[0].sourceAsset;
       }
-      root->notificationButtonSubresource = 0x25;
+      root->notificationButtonSubresource = INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE;
       ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource = textureSourceValue;
       UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,(UiNodeBase *)root);
       normalizedModeGArmy = ArmyAssetRegistry_NormalizeIdToPlaceableUnit(g_UiCommandModeGArmyAssetId);
@@ -5118,7 +5104,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       FieldGrid_ClassifyCellFlagsToRuntimeByte
                 ((root->worldRuntime).activeFactionRuntimeIndex,
                  (root->worldRuntime).fieldGrid);
-      remainingCount = 0x100;
+      remainingCount = 256;
       directionRecord = g_TerrainDirectionRecordTable256;
       do {
         directionRecord->angleAComponent0ScaledQ28 = 0;
@@ -5173,9 +5159,9 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     runtimeFlagsField = &(root->worldRuntime).runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS;
     g_UiRootCallbacks_0054FBC0.keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
-    /* free the cached preview textures of all 0x300 army asset records */
+    /* free the cached preview textures of all army asset records */
     registrySlot = g_ArmyAssetRecordRegistry;
-    remainingCount = 0x300;
+    remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT;
     do {
       armyAsset = *registrySlot;
       if (armyAsset != NULL) {
@@ -5205,7 +5191,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     UiCommandModeG_HideGridVertexMarkers(node);
     UiCommandModeG_HideRegionMarkers(node);
     runtimeFlagsField = &(root->worldRuntime).runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField & 0xffbfffff; /* ~0x400000, set on entering */
+    *runtimeFlagsField = *runtimeFlagsField & ~INGAME_WORLD_FLAG_EDITOR; /* set on entering */
     TerrainDirectionTable_AdvanceAndRebuildVectors();
     g_UiHoverSelectionRecord = NULL;
     InGameSelectionDetailPanel_Rebuild();
@@ -5302,16 +5288,17 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
      (messageRecipientPlayersTab), +0x24C the session player tab (messageRecipientGroupsTab) */
   formBase = (int32_t *)INGAME_UI(source,messageTextEdit);
   RichTextCommandStream_CopyToNarrow
-            (0x30,g_UiSevenSlotCommandPayloadText.textBytes,((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textBuffer);
+            (sizeof(g_UiSevenSlotCommandPayloadText.textBytes),g_UiSevenSlotCommandPayloadText.textBytes,((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textBuffer);
   visibleSelection = UiSelectableGroup_NoneVisibleSelected(3,
       INGAME_UI(source,messageRecipientAllTab),
       INGAME_UI(source,messageRecipientGroupsTab),
       INGAME_UI(source,messageRecipientPlayersTab));
   offsetOrCount = (int)visibleSelection.node - (int)formBase;
-  if (offsetOrCount == 0x1ec) {
+  if (offsetOrCount ==
+      (int)offsetof(InGameUiImage,messageRecipientPlayersTab) - (int)offsetof(InGameUiImage,messageTextEdit)) {
     slotIndex = 0;
     recipientMask = 0;
-    slotBit = 0x100;
+    slotBit = INGAME_CHAT_RECIPIENT_FACTION_BITS_BASE;
     do {
       controlOffsetEntry = g_UiSevenSlotSelectionControlOffsets + slotIndex;
       slotBit = slotBit * 2;
@@ -5323,10 +5310,11 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
       }
     } while (slotIndex < 7);
   }
-  else if (offsetOrCount == 0x24c) {
+  else if (offsetOrCount ==
+           (int)offsetof(InGameUiImage,messageRecipientGroupsTab) - (int)offsetof(InGameUiImage,messageTextEdit)) {
     slotIndex = 0;
     recipientMask = 0;
-    slotBit = 0x8000;
+    slotBit = INGAME_CHAT_RECIPIENT_PLAYER_BITS_BASE;
     do {
       controlOffsetEntry = g_UiSevenSlotSelectionControlOffsets + slotIndex;
       slotBit = slotBit * 2;
@@ -5339,7 +5327,7 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
     } while (slotIndex < 7);
   }
   else {
-    recipientMask = 0xffffff00;
+    recipientMask = INGAME_CHAT_RECIPIENT_EVERYONE;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
@@ -5411,7 +5399,7 @@ void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
   ((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->selectionStart = 0;
   ((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->selectionEnd = 0;
   textCursor = (UiAnchorFractionQ31 *)((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textBuffer;
-  for (offsetOrCount = 0x18; offsetOrCount != 0; offsetOrCount--) {
+  for (offsetOrCount = 24; offsetOrCount != 0; offsetOrCount--) {
     *textCursor = 0;
     textCursor++;
   }
@@ -5487,9 +5475,9 @@ void InGameSelectionDetailPanel_Rebuild(void)
                             (g_InGameRuntimeRoot->worldRuntime).selection.activePlayerRuntimeId)
         ;
         if (!conditionResult) {
-          /* The technology button stays available when any of the 0x1C technology slots is available. */
+          /* The technology button stays available when any of the 28 technology slots is available. */
           UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
-          selectedCountOrCounter = 0x1c;
+          selectedCountOrCounter = 28;
           do {
             conditionResult = Technology_IsAvailableForFaction
                                ((PckTechnologyIdCatalog)((ModelDefinition *)workValue)->researchTechnologyIds[selectedCountOrCounter],
@@ -5523,10 +5511,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
                                   TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE);
         resolvedText = TextResource_Resolve
                            (((ModelDefinition *)*(int *)(lastSelectedEntity->common).ownership.
-                                             definitionOrClassRecord)->flags + TEXT_ID_MODEL_NAME_BASE);
+                                             definitionOrClassRecord)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
         sourceText = resolvedText.text;
         destinationText = g_InGameSelectionDetailNameTextUtf16;
-        for (workValue = 0x40; workValue != 0; workValue--) {
+        for (workValue = 64; workValue != 0; workValue--) {
           *destinationText = *sourceText;
           sourceText++;
           destinationText++;
@@ -5535,11 +5523,11 @@ void InGameSelectionDetailPanel_Rebuild(void)
         resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
         sourceText = resolvedText.text;
         RichTextCommandStream_CopyExpanded
-                  (0x80,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
+                  (128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
         RichTextCommandStream_CopyExpanded
-                  (0x80,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
+                  (128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
         RichTextCommandStream_CopyExpanded
-                  (0x80,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
+                  (128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
         g_InGameSelectionDetailTextSlot05Utf16[0] = L'-';
         g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
         g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
@@ -5554,16 +5542,16 @@ void InGameSelectionDetailPanel_Rebuild(void)
                               TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE);
           resolvedText = TextResource_Resolve(workValue * 2 + TECHNOLOGY_TEXT_ID_BASE);
           RichTextCommandStream_CopyExpanded
-                    (0x80,g_InGameSelectionDetailTextSlot09Utf16,resolvedText.text);
+                    (128,g_InGameSelectionDetailTextSlot09Utf16,resolvedText.text);
         }
         if (selectedModelRuntime->attachmentCount != 0) {
           attachedModelRuntime = selectedModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
           if (attachedModelRuntime != NULL) {
             resolvedText = TextResource_Resolve
-                               (((attachedModelRuntime->definitionOrSavedId).definition)->flags + TEXT_ID_MODEL_NAME_BASE);
+                               (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
             sourceText = resolvedText.text;
             destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
-            for (workValue = 0x40; workValue != 0; workValue--) {
+            for (workValue = 64; workValue != 0; workValue--) {
               *destinationText = *sourceText;
               sourceText++;
               destinationText++;
@@ -5574,10 +5562,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
             attachedModelRuntime = selectedModelRuntimeTail->attachments[1].childModelRuntimeOrSavedOffset;
             if (attachedModelRuntime != NULL) {
               resolvedText = TextResource_Resolve
-                                 (((attachedModelRuntime->definitionOrSavedId).definition)->flags + TEXT_ID_MODEL_NAME_BASE);
+                                 (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
               sourceText = resolvedText.text;
               destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
-              for (workValue = 0x40; workValue != 0; workValue--) {
+              for (workValue = 64; workValue != 0; workValue--) {
                 *destinationText = *sourceText;
                 sourceText++;
                 destinationText++;
@@ -5588,10 +5576,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
                (attachedModelRuntime = selectedModelRuntimeTail2->attachments[2].
                          childModelRuntimeOrSavedOffset, attachedModelRuntime != NULL)) {
               resolvedText = TextResource_Resolve
-                                 (((attachedModelRuntime->definitionOrSavedId).definition)->flags + TEXT_ID_MODEL_NAME_BASE);
+                                 (((attachedModelRuntime->definitionOrSavedId).definition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
               sourceText = resolvedText.text;
               destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
-              for (workValue = 0x40; workValue != 0; workValue--) {
+              for (workValue = 64; workValue != 0; workValue--) {
                 *destinationText = *sourceText;
                 sourceText++;
                 destinationText++;
@@ -5601,34 +5589,34 @@ void InGameSelectionDetailPanel_Rebuild(void)
         }
         recordCursor = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
         workValue = ((ModelDefinition *)*recordCursor)->runtimeClassId;
-        if (workValue == 0x16) {
-          if (recordCursor[0x2b] != 1) {
+        if (workValue == MODEL_RUNTIME_CLASS_22) {
+          if (recordCursor[43] != 1) {
             return;
           }
-          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[0x18]);
+          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[24]);
           linkedArmyAsset = foundArmyAsset.recordOrError;
         }
-        else if (workValue == 0xb) {
-          if (recordCursor[0x2e] != 1) {
+        else if (workValue == MODEL_RUNTIME_CLASS_11) {
+          if (recordCursor[46] != 1) {
             return;
           }
-          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[0x18]);
+          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[24]);
           linkedArmyAsset = foundArmyAsset.recordOrError;
         }
         else {
-          if (workValue != 0xd) {
-            if (workValue != 0xe) {
+          if (workValue != MODEL_RUNTIME_CLASS_13) {
+            if (workValue != MODEL_RUNTIME_CLASS_14) {
               return;
             }
             g_WideNumberFormatUtf16
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordCursor[0x18],
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordCursor[24],
                        g_InGameSelectionDetailWeaponName0TextUtf16);
             return;
           }
-          if (recordCursor[0x2e] != 1) {
+          if (recordCursor[46] != 1) {
             return;
           }
-          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[0x18]);
+          foundArmyAsset = ArmyAssetRegistry_FindById(recordCursor[24]);
           linkedArmyAsset = foundArmyAsset.recordOrError;
         }
         linkedDefinitionListView =
@@ -5641,7 +5629,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
         unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                            ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                             (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
-        resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + TEXT_ID_MODEL_NAME_BASE);
+        resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
         sourceText = resolvedText.text;
         destinationText = g_InGameSelectionDetailTextSlot05Utf16;
         goto copyDefinitionNames;
@@ -5714,28 +5702,28 @@ void InGameSelectionDetailPanel_Rebuild(void)
     unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                         (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);
-    resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + TEXT_ID_MODEL_NAME_BASE);
+    resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
     sourceText = resolvedText.text;
     destinationText = g_InGameSelectionDetailNameTextUtf16;
 copyDefinitionNames:
-    for (workValue = 0x40; workValue != 0; workValue--) {
+    for (workValue = 64; workValue != 0; workValue--) {
       *destinationText = *sourceText;
       sourceText++;
       destinationText++;
     }
     resolvedText = TextResource_Resolve(TEXT_ID_SELECTION_DETAIL_NO_WEAPON);
     sourceText = resolvedText.text;
-    RichTextCommandStream_CopyExpanded(0x80,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
-    RichTextCommandStream_CopyExpanded(0x80,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
-    RichTextCommandStream_CopyExpanded(0x80,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
+    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName0TextUtf16,sourceText);
+    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
+    RichTextCommandStream_CopyExpanded(128,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
     if (linkedDefinitionListView->childListCount != 0) {
       unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                          ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                           linkedDefinitionListView->childList0Address);
-      resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + TEXT_ID_MODEL_NAME_BASE);
+      resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
       sourceText = resolvedText.text;
       destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
-      for (workValue = 0x40; workValue != 0; workValue--) {
+      for (workValue = 64; workValue != 0; workValue--) {
         *destinationText = *sourceText;
         sourceText++;
         destinationText++;
@@ -5744,10 +5732,10 @@ copyDefinitionNames:
         unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                            ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                             linkedDefinitionListView->childList1Address);
-        resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + TEXT_ID_MODEL_NAME_BASE);
+        resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
         sourceText = resolvedText.text;
         destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
-        for (workValue = 0x40; workValue != 0; workValue--) {
+        for (workValue = 64; workValue != 0; workValue--) {
           *destinationText = *sourceText;
           sourceText++;
           destinationText++;
@@ -5756,10 +5744,10 @@ copyDefinitionNames:
           unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                              ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                               linkedDefinitionListView->childList2Address);
-          resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + TEXT_ID_MODEL_NAME_BASE);
+          resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->nameTextIndex + TEXT_ID_MODEL_NAME_BASE);
           sourceText = resolvedText.text;
           destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
-          for (workValue = 0x40; workValue != 0; workValue--) {
+          for (workValue = 64; workValue != 0; workValue--) {
             *destinationText = *sourceText;
             sourceText++;
             destinationText++;

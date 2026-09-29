@@ -10,6 +10,11 @@
 
 /* Implementation ownership: gameplay/ai/workspaces. */
 
+/* Byte offsets of the site scan in AiPlanning_RebuildFactionWorkspaces, which walks the field grid through a
+   byte cursor at the faction's occupancy byte: one cell, and the cell's occupancy mask */
+#define AI_SCAN_CELL_BYTES ((int)sizeof(FieldGridCell))
+#define AI_SCAN_OCCUPANCY_OFFSET ((int)offsetof(FieldGridCell, occupancyMask))
+
 /* Address: 0x0053A1E0.
    Proposes armyAssetId at the first workspace 08 site of that asset where it can be placed (placement mode 4),
    unless one of it is still unassigned. Weight: 3 * baseWeight / (existing count + 3); for assets other than
@@ -84,7 +89,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   ArmyAssetRecordPrefix *definitionNode;
   GraphicsWorldCoordinateQ12 translationX;
   GraphicsWorldCoordinateQ12 translationY;
-  ModelRuntimeSlot *slotModelRuntime;
+  ModelDefinition *slotDefinition;
   AiStructureWorkspaceEntry *primaryBuffer;
   uint32_t countSnapshotOrRemaining;
   AiRuntimeWorkspaceEntry *workspace03Buffer;
@@ -108,7 +113,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   AiTargetWorkspaceEntry *targetEntry;
   bool testResult;
   AiTechnologyPlanningLoopRegisterContinuityResult registerContinuity;
-  ArmyRuntimeSlot *armySlot;
+  ModelRuntimeSlot *slotModelRuntime;
   ModelRuntimeNode *modelNode;
   AiRuntimeWorkspaceEntry *runtimeEntryCursor;
   
@@ -134,31 +139,32 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
       countOrMask = g_AiWorkspace00Count;
       primaryEntryCursor = g_AiWorkspace00Structures;
       if (worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        armySlot = worldNode->runtimePayload;
-        entityRuntime = armySlot->linkedEntityRuntime;
+        /* the node's model runtime; entityRuntime is its owning army */
+        slotModelRuntime = worldNode->runtimePayload;
+        entityRuntime = slotModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
         if (factionIndex == entityRuntime->common.ownership.ownerIndex) {
           assetId = entityRuntime->common.runtimeIdentityOrArmyAssetId;
           if (assetId < ARM_0300_BUILDING_MDL0301) {
             if (g_AiWorkspace01Count < AI_WORKSPACE01_CAPACITY) {
-              g_AiWorkspace01Units[g_AiWorkspace01Count].armyRuntime = armySlot;
+              g_AiWorkspace01Units[g_AiWorkspace01Count].modelRuntime = slotModelRuntime;
               runtimeEntryCursor[widthOrCount].armyAssetId = assetId;
               g_AiWorkspace01Count++;
             }
           }
           else if (g_AiWorkspace00Count < AI_WORKSPACE00_CAPACITY) {
             g_AiWorkspace00Structures[g_AiWorkspace00Count].runtimeSlotAddressOrZero =
-                 (AiWorkspaceRuntimeSlotAddress32)armySlot;
+                 (AiWorkspaceRuntimeSlotAddress32)slotModelRuntime;
             primaryEntryCursor[countOrMask].armyAssetId = assetId;
             g_AiWorkspace00Count++;
             if (assetId == ARM_0300_BUILDING_MDL0301) {
-              g_AiWorkspaceOwnedAsset300Runtime = armySlot;
+              g_AiWorkspaceOwnedAsset300Runtime = slotModelRuntime;
             }
           }
         }
         else {
           /* two bits per faction: how this faction sees the foreign entity */
           countOrMask = (entityRuntime->common).damageState.factionVisibilityBits1C >>
-                   ((char)factionIndex * 2 & 0x1fU);
+                   ((char)factionIndex * 2 & 31U);
           if (((entityRuntime->common).ownership.ownerIndex != 0) &&
              (testResult = GameFactionRuntime_TestCapabilityBitClear
                                  ((entityRuntime->common).ownership.ownerIndex,factionIndex),
@@ -173,7 +179,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
                  ArmyRuntime_ClassCommandHandlerGroupA)))) {
               assetId = (entityRuntime->common).runtimeIdentityOrArmyAssetId;
               if (g_AiWorkspace03Count < AI_WORKSPACE03_CAPACITY) {
-                g_AiWorkspace03UnseenHostiles[g_AiWorkspace03Count].armyRuntime = armySlot;
+                g_AiWorkspace03UnseenHostiles[g_AiWorkspace03Count].modelRuntime = slotModelRuntime;
                 workspace03Buffer[countSnapshotOrRemaining].armyAssetId = assetId;
                 g_AiWorkspace03Count++;
               }
@@ -181,7 +187,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
             else {
               assetId = (entityRuntime->common).runtimeIdentityOrArmyAssetId;
               if (g_AiWorkspace02Count < AI_WORKSPACE02_CAPACITY) {
-                g_AiWorkspace02VisibleHostiles[g_AiWorkspace02Count].armyRuntime = armySlot;
+                g_AiWorkspace02VisibleHostiles[g_AiWorkspace02Count].modelRuntime = slotModelRuntime;
                 runtimeEntryCursor[widthOrCount].armyAssetId = assetId;
                 g_AiWorkspace02Count++;
               }
@@ -209,7 +215,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
       countOrMask = g_AiWorkspace04Count;
       runtimeEntryCursor = g_AiWorkspace04RequestedAssets;
       if (g_AiWorkspace04Count < AI_WORKSPACE04_CAPACITY) {
-        g_AiWorkspace04RequestedAssets[g_AiWorkspace04Count].armyRuntime = NULL;
+        g_AiWorkspace04RequestedAssets[g_AiWorkspace04Count].modelRuntime = NULL;
         runtimeEntryCursor[countOrMask].armyAssetId = assetId;
         g_AiWorkspace04Count++;
       }
@@ -230,7 +236,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
       g_AiWorkspace01Count = widthOrCount;
       if (assetId < ARM_0300_BUILDING_MDL0301) {
         if (widthOrCount < AI_WORKSPACE01_CAPACITY) {
-          runtimeEntryCursor[widthOrCount].armyRuntime = NULL;
+          runtimeEntryCursor[widthOrCount].modelRuntime = NULL;
           runtimeEntryCursor[widthOrCount].armyAssetId = assetId;
           g_AiWorkspace01Count++;
         }
@@ -249,31 +255,31 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
     for (; g_AiWorkspace00Structures = primaryBuffer, g_AiWorkspace00Count = countOrMask,
         g_AiWorkspace01Units = runtimeEntryCursor, g_AiWorkspace01Count = widthOrCount,
         countSnapshotOrRemaining != 0; countSnapshotOrRemaining--) {
-      /* own structures of class 0x0B / 0x16 / 0x0D: the asset in production (slot word 0x18) counts as an
-         unassigned entry while their state word (0x2E resp. 0x2B) is 1 */
+      /* own structures of class 11 / 22 / 13: the asset in production (slot word 24) counts as an
+         unassigned entry while their state word (46 resp. 43) is 1 */
       primarySlotWords = (int *)primaryEntryCursor->runtimeSlotAddressOrZero;
       if (primarySlotWords != NULL) {
         remainingOrClassRecord = *primarySlotWords;
-        if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == 0xb) {
-          assetId = primarySlotWords[0x18];
-          if ((primarySlotWords[0x2e] == 1) && (countOrMask < AI_WORKSPACE00_CAPACITY)) {
+        if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_11) {
+          assetId = primarySlotWords[24];
+          if ((primarySlotWords[46] == 1) && (countOrMask < AI_WORKSPACE00_CAPACITY)) {
             primaryBuffer[countOrMask].runtimeSlotAddressOrZero = 0;
             primaryBuffer[countOrMask].armyAssetId = assetId;
             g_AiWorkspace00Count++;
           }
         }
-        else if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == 0x16) {
-          assetId = primarySlotWords[0x18];
-          if ((primarySlotWords[0x2b] == 1) && (widthOrCount < AI_WORKSPACE01_CAPACITY)) {
-            runtimeEntryCursor[widthOrCount].armyRuntime = NULL;
+        else if (((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_22) {
+          assetId = primarySlotWords[24];
+          if ((primarySlotWords[43] == 1) && (widthOrCount < AI_WORKSPACE01_CAPACITY)) {
+            runtimeEntryCursor[widthOrCount].modelRuntime = NULL;
             runtimeEntryCursor[widthOrCount].armyAssetId = assetId;
             g_AiWorkspace01Count++;
           }
         }
-        else if (((((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == 0xd) &&
-                 (assetId = primarySlotWords[0x18], primarySlotWords[0x2e] == 1)) &&
+        else if (((((ModelDefinition *)remainingOrClassRecord)->runtimeClassId == MODEL_RUNTIME_CLASS_13) &&
+                 (assetId = primarySlotWords[24], primarySlotWords[46] == 1)) &&
                 (widthOrCount < AI_WORKSPACE01_CAPACITY)) {
-          runtimeEntryCursor[widthOrCount].armyRuntime = NULL;
+          runtimeEntryCursor[widthOrCount].modelRuntime = NULL;
           runtimeEntryCursor[widthOrCount].armyAssetId = assetId;
           g_AiWorkspace01Count++;
         }
@@ -291,21 +297,21 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
   remainingOrClassRecord = terrainGrid->gridHeight - 2;
   cellByteCursor = (uint8_t *)terrainGrid->cells + factionIndex;
   scratchCell = g_GridScratchPrimary + g_GridScratchWidth * 2 + 2;
-  spacingOrPanelIndex = g_GridScratchWidth * 0x18;
+  spacingOrPanelIndex = g_GridScratchWidth * 24;
   AiPlanning_CollectActiveGridMaskClasses();
-  /* Site scan over the field grid (0x80-byte cells; cellByteCursor points at the faction's byte of the cell's
+  /* Site scan over the field grid (AI_SCAN_CELL_BYTES-byte cells; cellByteCursor points at the faction's byte of the cell's
      runtime area, one row behind) in step with the 4-dword-per-cell scratch grid. */
-  rowStrideOrClassId = widthOrCount * 0x80;
+  rowStrideOrClassId = widthOrCount * sizeof(FieldGridCell);
   countOrMask = widthOrCount;
   do {
     do {
-      if ((((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & 0x80000000) == 0) &&
-          ((cellByteCursor[rowStrideOrClassId + 0x70] & 0xf9) != 0)) &&
-         (((((*(ResourceExtractionDescriptor32 *)(cellByteCursor + 0x70) & 0xf9) == 0 ||
-            (((cellByteCursor[0xf0] & 0xf9) == 0 || ((cellByteCursor[rowStrideOrClassId + -0x10] & 0xf9) == 0)))) ||
-           (((cellByteCursor[rowStrideOrClassId + 0xf0] & 0xf9) == 0 ||
-            (((cellByteCursor[widthOrCount * 0x100 + -0x10] & 0xf9) == 0 ||
-             ((cellByteCursor[widthOrCount * 0x100 + 0x70] & 0xf9) == 0)))))) &&
+      if ((((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & GRID_SCRATCH_BLOCKED) == 0) &&
+          ((cellByteCursor[rowStrideOrClassId + AI_SCAN_OCCUPANCY_OFFSET] & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0)) &&
+         (((((*(ResourceExtractionDescriptor32 *)(cellByteCursor + AI_SCAN_OCCUPANCY_OFFSET) & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
+            (((cellByteCursor[AI_SCAN_CELL_BYTES + AI_SCAN_OCCUPANCY_OFFSET] & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 || ((cellByteCursor[rowStrideOrClassId + (AI_SCAN_OCCUPANCY_OFFSET - AI_SCAN_CELL_BYTES)] & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0)))) ||
+           (((cellByteCursor[rowStrideOrClassId + (AI_SCAN_CELL_BYTES + AI_SCAN_OCCUPANCY_OFFSET)] & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
+            (((cellByteCursor[widthOrCount * (2 * sizeof(FieldGridCell)) + (AI_SCAN_OCCUPANCY_OFFSET - AI_SCAN_CELL_BYTES)] & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0 ||
+             ((cellByteCursor[widthOrCount * (2 * sizeof(FieldGridCell)) + AI_SCAN_OCCUPANCY_OFFSET] & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) == 0)))))) &&
           ((neighborhoodMask = scratchCell->stateMask | scratchCell[3].stateMask |
             scratchCell[scratchWidthOrFactionOffset * 3 + -3].stateMask
                      | scratchCell[scratchWidthOrFactionOffset * 3 + 3].stateMask |
@@ -321,37 +327,37 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
                                                                           factionIndex)))[-widthOrCount] +
                   factionIndex;
       }
-      if ((((cellByteCursor[rowStrideOrClassId + 0x70] & 0x10) != 0) &&
-          ((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & 0x80000100) == 0)) &&
+      if ((((cellByteCursor[rowStrideOrClassId + AI_SCAN_OCCUPANCY_OFFSET] & 0x10) != 0) &&
+          ((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_LOW_BAND0)) == 0)) &&
          ((neighborhoodMask = scratchCell[scratchWidthOrFactionOffset * 3].stateMask | scratchCell->stateMask |
            scratchCell[4].stateMask |
                     scratchCell[scratchWidthOrFactionOffset * 3 + -4].stateMask |
                          scratchCell[scratchWidthOrFactionOffset * 3 + 4].stateMask |
                     scratchCell[scratchWidthOrFactionOffset * 6 + -4].stateMask |
                          scratchCell[scratchWidthOrFactionOffset * 6].stateMask,
-          (neighborhoodMask & 0x81000000) == 0 ||
-          (((neighborhoodMask & 0x82000000) == 0 || ((neighborhoodMask & 0x90000000) == 0)))))) {
+          (neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT24)) == 0 ||
+          (((neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT25)) == 0 || ((neighborhoodMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT28)) == 0)))))) {
         fieldCell = (FieldGridCell *)(cellByteCursor + (rowStrideOrClassId - factionIndex));
         if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) == 0) {
           AiSiteCandidate_AddFlaggedCellIfSeparated(fieldCell);
         }
         cellByteCursor = (uint8_t *)&fieldCell[-widthOrCount] + factionIndex;
       }
-      if (((cellByteCursor[rowStrideOrClassId + 0x70] & 0xf9) != 0) &&
-         ((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & 0xf0003f00) == 0)) {
-        if (((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & 0xf000ff00) == 0) &&
+      if (((cellByteCursor[rowStrideOrClassId + AI_SCAN_OCCUPANCY_OFFSET] & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) &&
+         ((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & (AI_SITE_SCRATCH_OBSTACLE_BITS | AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5)) == 0)) {
+        if (((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & (AI_SITE_SCRATCH_OBSTACLE_BITS | GRID_SCRATCH_LOW_DISTANCE_BANDS)) == 0) &&
            (((scratchCell->stateMask | scratchCell[4].stateMask | scratchCell[scratchWidthOrFactionOffset * 3 +
                                                                               -4].stateMask |
               scratchCell[scratchWidthOrFactionOffset * 3 + 4].stateMask | scratchCell[scratchWidthOrFactionOffset * 6 +
                                                                                        -4].stateMask |
-             scratchCell[scratchWidthOrFactionOffset * 6].stateMask) & 0xf0000000) == 0)) {
+             scratchCell[scratchWidthOrFactionOffset * 6].stateMask) & AI_SITE_SCRATCH_OBSTACLE_BITS) == 0)) {
           scratchCellOrigin = scratchCell + scratchWidthOrFactionOffset * -3;
           scratchCell = scratchCellOrigin + scratchWidthOrFactionOffset * 3;
           if (((scratchCellOrigin->stateMask | scratchCellOrigin[8].stateMask |
                 scratchCellOrigin[scratchWidthOrFactionOffset * 6 + -8].stateMask |
                 scratchCellOrigin[scratchWidthOrFactionOffset * 6 + 8].stateMask |
-                     scratchCellOrigin[scratchWidthOrFactionOffset * 0xc + -8].stateMask |
-               scratchCellOrigin[scratchWidthOrFactionOffset * 0xc].stateMask) & 0xf0000000) == 0) {
+                     scratchCellOrigin[scratchWidthOrFactionOffset * 12 + -8].stateMask |
+               scratchCellOrigin[scratchWidthOrFactionOffset * 12].stateMask) & AI_SITE_SCRATCH_OBSTACLE_BITS) == 0) {
             fieldCell = (FieldGridCell *)(cellByteCursor + (rowStrideOrClassId - factionIndex));
             if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0) {
               AiSiteCandidate_AddTerrainFeatureCellIfSeparated(fieldCell,spacingOrPanelIndex);
@@ -363,7 +369,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
                                                                               -4].stateMask |
               scratchCell[scratchWidthOrFactionOffset * 3 + 4].stateMask | scratchCell[scratchWidthOrFactionOffset * 6 +
                                                                                        -4].stateMask |
-             scratchCell[scratchWidthOrFactionOffset * 6].stateMask) & 0xf0000000) == 0) {
+             scratchCell[scratchWidthOrFactionOffset * 6].stateMask) & AI_SITE_SCRATCH_OBSTACLE_BITS) == 0) {
           fieldCell = (FieldGridCell *)(cellByteCursor + -factionIndex);
           if (((((((fieldCell[widthOrCount].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ==
                    0) && ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ==
@@ -381,19 +387,19 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
           }
           cellByteCursor = (uint8_t *)fieldCell + factionIndex;
         }
-        if (((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & 0xf000ff00) == 0) &&
+        if (((scratchCell[scratchWidthOrFactionOffset * 3].stateMask & (AI_SITE_SCRATCH_OBSTACLE_BITS | GRID_SCRATCH_LOW_DISTANCE_BANDS)) == 0) &&
            (((scratchCell->stateMask | scratchCell[4].stateMask | scratchCell[scratchWidthOrFactionOffset * 3 +
                                                                               -4].stateMask |
               scratchCell[scratchWidthOrFactionOffset * 3 + 4].stateMask | scratchCell[scratchWidthOrFactionOffset * 6 +
                                                                                        -4].stateMask |
-             scratchCell[scratchWidthOrFactionOffset * 6].stateMask) & 0xf0000000) == 0)) {
+             scratchCell[scratchWidthOrFactionOffset * 6].stateMask) & AI_SITE_SCRATCH_OBSTACLE_BITS) == 0)) {
           scratchCellOrigin = scratchCell + scratchWidthOrFactionOffset * -3;
           scratchCell = scratchCellOrigin + scratchWidthOrFactionOffset * 3;
           if (((scratchCellOrigin->stateMask | scratchCellOrigin[8].stateMask |
                 scratchCellOrigin[scratchWidthOrFactionOffset * 6 + -8].stateMask |
                 scratchCellOrigin[scratchWidthOrFactionOffset * 6 + 8].stateMask |
-                     scratchCellOrigin[scratchWidthOrFactionOffset * 0xc + -8].stateMask |
-               scratchCellOrigin[scratchWidthOrFactionOffset * 0xc].stateMask) &
+                     scratchCellOrigin[scratchWidthOrFactionOffset * 12 + -8].stateMask |
+               scratchCellOrigin[scratchWidthOrFactionOffset * 12].stateMask) &
               (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
               GRID_SCRATCH_TERRAIN_CLASS_BIT28)) == 0) {
             fieldCell = (FieldGridCell *)(cellByteCursor + -factionIndex);
@@ -414,30 +420,30 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
           }
         }
       }
-      cellByteCursor = cellByteCursor + 0x80;
+      cellByteCursor = cellByteCursor + sizeof(FieldGridCell);
       scratchCell = scratchCell + 4;
       countOrMask--;
     } while (countOrMask != 0);
     scratchCell = scratchCell + g_GridScratchWidth * 3;
-    countOrMask = widthOrCount & 0x1ffffff;
+    countOrMask = widthOrCount & FIELD_GRID_ROW_STRIDE_WIDTH_MASK;
     remainingOrClassRecord--;
   } while (remainingOrClassRecord != 0);
-  /* production mask of the own structures: class 0x0D contributes its mask at +0xC4, class 0x16 bit 3,
-     class 0x0B bit 4 */
+  /* production mask of the own structures: class 13 contributes its classParameterC4 mask, class 22 bit 3,
+     class 11 bit 4 */
   countOrMask = 0;
   primaryEntryCursor = g_AiWorkspace00Structures;
   for (widthOrCount = g_AiWorkspace00Count; widthOrCount != 0; widthOrCount--) {
     if ((int *)primaryEntryCursor->runtimeSlotAddressOrZero != NULL) {
       remainingOrClassRecord = *(int *)primaryEntryCursor->runtimeSlotAddressOrZero;
       rowStrideOrClassId = ((ModelDefinition *)remainingOrClassRecord)->runtimeClassId;
-      if (rowStrideOrClassId == 0xd) {
+      if (rowStrideOrClassId == MODEL_RUNTIME_CLASS_13) {
         countOrMask = countOrMask | ((ModelDefinition *)remainingOrClassRecord)->classParameterC4;
       }
-      else if (rowStrideOrClassId == 0x16) {
-        countOrMask = countOrMask | 8;
+      else if (rowStrideOrClassId == MODEL_RUNTIME_CLASS_22) {
+        countOrMask = countOrMask | ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD;
       }
-      else if (rowStrideOrClassId == 0xb) {
-        countOrMask = countOrMask | 0x10;
+      else if (rowStrideOrClassId == MODEL_RUNTIME_CLASS_11) {
+        countOrMask = countOrMask | ARMY_ASSET_FLAG_BUILT_BY_CLASS11;
       }
     }
     primaryEntryCursor++;
@@ -467,13 +473,13 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
     targetEntry = g_AiWorkspace07Targets;
   } while (remainingOrClassRecord != 0);
   while ((widthOrCount != 0 &&
-         (armySlot = runtimeEntryCursor->armyRuntime, g_AiWorkspace07Count < AI_WORKSPACE07_CAPACITY))) {
-    if (armySlot != NULL) {
-      targetEntry->armyRuntime = armySlot;
-      modelNode = armySlot->modelNodeRuntime;
+         (slotModelRuntime = runtimeEntryCursor->modelRuntime, g_AiWorkspace07Count < AI_WORKSPACE07_CAPACITY))) {
+    if (slotModelRuntime != NULL) {
+      targetEntry->modelRuntime = slotModelRuntime;
+      modelNode = slotModelRuntime->rootModelNodeOrSavedOffset.modelNode;
       translationX = modelNode->worldTransform.translation.x;
       translationY = modelNode->worldTransform.translation.y;
-      targetEntry->modelRuntime = modelNode;
+      targetEntry->modelNode = modelNode;
       targetEntry->worldXQ12 = translationX;
       targetEntry->worldYQ12 = translationY;
       g_AiWorkspace07Count++;
@@ -482,25 +488,22 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
     runtimeEntryCursor++;
     widthOrCount--;
   }
-  /* technology candidates: dwords 28 down to 1 of the technology table that the typed view reaches as
-     attachments[4].sourceTransform in each own structure's model */
+  /* technology candidates: researchTechnologyIds[28] down to [1] of each own structure's definition */
   scratchWidthOrFactionOffset = factionIndex * (int)sizeof(GameFactionRuntimeRecord); /* byte offset of the faction's runtime record */
   primaryEntryCursor = g_AiWorkspace00Structures;
   for (countOrMask = g_AiWorkspace00Count; countOrMask != 0; countOrMask--) {
-    armySlot = (ArmyRuntimeSlot *)primaryEntryCursor->runtimeSlotAddressOrZero;
-    if (armySlot != NULL) {
-      slotModelRuntime = armySlot->modelRuntimeOrSavedOffset.modelRuntime;
+    slotModelRuntime = (ModelRuntimeSlot *)primaryEntryCursor->runtimeSlotAddressOrZero;
+    if (slotModelRuntime != NULL) {
+      slotDefinition = slotModelRuntime->definitionOrSavedId.runtimeDefinition;
       spacingOrPanelIndex = 28;
       do {
         testResult = AiTechnologyCandidate_IsCurrentlyAvailable
-                           ((PckTechnologyIdCatalog)
-                            (&slotModelRuntime->attachments[4].sourceTransform)[spacingOrPanelIndex],
+                           ((PckTechnologyIdCatalog)slotDefinition->researchTechnologyIds[spacingOrPanelIndex],
                                  scratchWidthOrFactionOffset);
         if (!testResult) {
           registerContinuity = AiTechnologyPlanning_AddCandidateRecord
-                             (spacingOrPanelIndex,countOrMask,scratchWidthOrFactionOffset,armySlot,
-                              (PckTechnologyIdCatalog)
-                              (&slotModelRuntime->attachments[4].sourceTransform)[spacingOrPanelIndex]);
+                             (spacingOrPanelIndex,countOrMask,scratchWidthOrFactionOffset,slotModelRuntime,
+                              (PckTechnologyIdCatalog)slotDefinition->researchTechnologyIds[spacingOrPanelIndex]);
           scratchWidthOrFactionOffset = registerContinuity.preservedEdxFactionRecordOffset;
           countOrMask = registerContinuity.preservedEcxSourceArmyEntriesRemaining;
           spacingOrPanelIndex = registerContinuity.preservedEaxTechnologyPanelIndex;
@@ -723,7 +726,7 @@ int AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
   }
   else {
     registryLookup = ArmyAssetRegistry_FindById(registryId);
-    xeniteCostQ4 = 0x7fffffff;
+    xeniteCostQ4 = INT32_MAX;
     if (!registryLookup.notFound) {
       /* +0x28 of the army asset record, reached through the 16-byte prefix type */
       xeniteCostQ4 = registryLookup.recordOrError[2].registryId;
@@ -749,7 +752,7 @@ bool AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
   workspaceEntryCursor = g_AiWorkspace01Units;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--) {
     if ((entryId == workspaceEntryCursor->armyAssetId) &&
-       (workspaceEntryCursor->armyRuntime == NULL)) {
+       (workspaceEntryCursor->modelRuntime == NULL)) {
       return true;
     }
     workspaceEntryCursor++;
@@ -796,7 +799,7 @@ int AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog e
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if ((workspaceEntryCursor->armyRuntime != NULL) &&
+    if ((workspaceEntryCursor->modelRuntime != NULL) &&
        (entryId == workspaceEntryCursor->armyAssetId)) {
       matchingAssignedEntryCount++;
     }
@@ -821,12 +824,12 @@ int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 world
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   GameEntityRuntime *entityRuntime;
   
-  minimumManhattanDistanceQ12 = 0x7fffffff;
+  minimumManhattanDistanceQ12 = INT32_MAX;
   workspaceEntryCursor = g_AiWorkspace01Units;
   for (workspaceEntriesRemaining = g_AiWorkspace01Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->armyRuntime != NULL) {
-      entityRuntime = workspaceEntryCursor->armyRuntime->linkedEntityRuntime;
+    if (workspaceEntryCursor->modelRuntime != NULL) {
+      entityRuntime = workspaceEntryCursor->modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
       deltaXAbsQ12 = worldX - (entityRuntime->common).pathCoordinate0Q12;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
@@ -858,20 +861,20 @@ int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 w
   int deltaYAbsQ12;
   Q12 deltaXAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  ArmyRuntimeSlot *armySlot;
+  ModelRuntimeSlot *slotModelRuntime;
   
-  minimumActiveManhattanDistanceQ12 = 0x7fffffff;
+  minimumActiveManhattanDistanceQ12 = INT32_MAX;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    armySlot = workspaceEntryCursor->armyRuntime;
-    if ((armySlot != NULL) &&
-       ((armySlot->linkedEntityRuntime->common).commandState != 0)) {
-      deltaXAbsQ12 = worldX - (armySlot->modelNodeRuntime->worldTransform).translation.x;
+    slotModelRuntime = workspaceEntryCursor->modelRuntime;
+    if ((slotModelRuntime != NULL) &&
+       ((slotModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandState != 0)) {
+      deltaXAbsQ12 = worldX - (slotModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      deltaYAbsQ12 = worldY - (armySlot->modelNodeRuntime->worldTransform).translation.y;
+      deltaYAbsQ12 = worldY - (slotModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform).translation.y;
       if (deltaYAbsQ12 < 0) {
         deltaYAbsQ12 = -deltaYAbsQ12;
       }
@@ -899,12 +902,12 @@ int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX)
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeNode *modelNode;
   
-  minimumManhattanDistanceQ12 = 0x7fffffff;
+  minimumManhattanDistanceQ12 = INT32_MAX;
   workspaceEntryCursor = g_AiWorkspace02VisibleHostiles;
   for (workspaceEntriesRemaining = g_AiWorkspace02Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->armyRuntime != NULL) {
-      modelNode = workspaceEntryCursor->armyRuntime->modelNodeRuntime;
+    if (workspaceEntryCursor->modelRuntime != NULL) {
+      modelNode = workspaceEntryCursor->modelRuntime->rootModelNodeOrSavedOffset.modelNode;
       deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
@@ -937,12 +940,12 @@ int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX)
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeNode *modelNode;
   
-  minimumManhattanDistanceQ12 = 0x7fffffff;
+  minimumManhattanDistanceQ12 = INT32_MAX;
   workspaceEntryCursor = g_AiWorkspace03UnseenHostiles;
   for (workspaceEntriesRemaining = g_AiWorkspace03Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->armyRuntime != NULL) {
-      modelNode = workspaceEntryCursor->armyRuntime->modelNodeRuntime;
+    if (workspaceEntryCursor->modelRuntime != NULL) {
+      modelNode = workspaceEntryCursor->modelRuntime->rootModelNodeOrSavedOffset.modelNode;
       deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
@@ -975,12 +978,12 @@ int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeNode *modelNode;
   
-  minimumManhattanDistanceQ12 = 0x7fffffff;
+  minimumManhattanDistanceQ12 = INT32_MAX;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if (workspaceEntryCursor->armyRuntime != NULL) {
-      modelNode = workspaceEntryCursor->armyRuntime->modelNodeRuntime;
+    if (workspaceEntryCursor->modelRuntime != NULL) {
+      modelNode = workspaceEntryCursor->modelRuntime->rootModelNodeOrSavedOffset.modelNode;
       deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
@@ -1043,9 +1046,9 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
         modelNodeRuntime->movementPosition0Q12 = 0;
         createdModelRuntime = (primarySlot->modelRuntimeOrSavedOffset).modelRuntime;
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
-        ArmyRuntime_DispatchClassCommand(createdSlotPair,worldRuntime);
+        ArmyRuntime_DispatchClassCommand((ArmyRuntimeSlot *)createdSlotPair,worldRuntime); /* the created army */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle2,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle1,
                    ((ModelRuntimeNode *)modelNodeRuntime)->modelPayload.worldRotationAngle0,
@@ -1093,52 +1096,52 @@ StatusResult AiRuntime_InitWorkspace(void)
   PackageLoadResult loadResult;
   StatusResult initStatus;
   
-  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
+  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE00_CAPACITY * sizeof(AiStructureWorkspaceEntry)));
   workspaceAllocation = loadResult.bufferOrError;
   if (!loadResult.failed) {
     g_AiWorkspace00Structures = (AiStructureWorkspaceEntry *)workspaceAllocation;
-    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
+    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE01_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
     if (!loadResult.failed) {
       g_AiWorkspace01Units = loadResult.bufferOrError;
-      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
+      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE02_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
       if (!loadResult.failed) {
         g_AiWorkspace02VisibleHostiles = loadResult.bufferOrError;
-        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x1000));
+        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE03_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
         if (!loadResult.failed) {
           g_AiWorkspace03UnseenHostiles = loadResult.bufferOrError;
-          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x40));
+          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE04_CAPACITY * sizeof(AiRuntimeWorkspaceEntry)));
           if (!loadResult.failed) {
             g_AiWorkspace04RequestedAssets = loadResult.bufferOrError;
-            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
+            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE05_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry)));
             if (!loadResult.failed) {
               g_AiWorkspace05GeneralSites = loadResult.bufferOrError;
-              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
+              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE06_CAPACITY * sizeof(AiScoredSiteWorkspaceEntry)));
               if (!loadResult.failed) {
                 g_AiWorkspace06FlaggedSites = loadResult.bufferOrError;
-                loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
+                loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE07_CAPACITY * sizeof(AiTargetWorkspaceEntry)));
                 if (!loadResult.failed) {
                   g_AiWorkspace07Targets = loadResult.bufferOrError;
-                  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
+                  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE08_CAPACITY * sizeof(AiTerrainFeatureWorkspaceEntry)));
                   if (!loadResult.failed) {
                     g_AiWorkspace08TerrainFeatureSites = loadResult.bufferOrError;
-                    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x1000));
+                    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE09_CAPACITY * sizeof(FieldGridCell *)));
                     if (!loadResult.failed) {
                       g_AiWorkspace09Cells = loadResult.bufferOrError;
-                      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
+                      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE10_CAPACITY * sizeof(FieldGridCell *)));
                       if (!loadResult.failed) {
                         g_AiWorkspace10Cells = loadResult.bufferOrError;
-                        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x1000));
+                        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE11_CAPACITY * sizeof(ArmyAssetRecordPrefix *)));
                         if (!loadResult.failed) {
                           g_AiWorkspace11ProducibleAssets = loadResult.bufferOrError;
-                          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x200));
+                          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_WORKSPACE12_CAPACITY * sizeof(AiTechnologyPlanningCandidate)));
                           technologyCandidateWorkspaceAllocation = loadResult.bufferOrError;
                           if (!loadResult.failed) {
                             g_AiWorkspace12TechnologyCandidates = technologyCandidateWorkspaceAllocation;
-                            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(0x400));
+                            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, g_MemoryApi.alloc(AI_CANDIDATE_WORKSPACE_CAPACITY * sizeof(AiCandidateWorkspaceEntry)));
                             if (!loadResult.failed) {
                               g_AiWorkspace13Candidates = loadResult.bufferOrError;
                               loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult,
-                                                           g_MemoryApi.alloc(0x100));
+                                                           g_MemoryApi.alloc(AI_WORKSPACE14_CAPACITY * sizeof(ArmyRuntimeSlot *)));
                               if (!loadResult.failed) {
                                 g_AiWorkspace14CollectedArmies = loadResult.bufferOrError;
                                 loadResult = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4);
@@ -1146,8 +1149,8 @@ StatusResult AiRuntime_InitWorkspace(void)
                                 if (!loadResult.failed) {
                                   /* success: EAX (the image pointer) stays the result value, CF clear */
                                   loadResult = THANDOR_BITCAST(uint64_t, PackageLoadResult,
-                                       ((THANDOR_BITCAST(PackageLoadResult, uint64_t,
-                                                         loadResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+                                       (THANDOR_BITCAST(PackageLoadResult, uint64_t,
+                                                         loadResult) & UINT32_MAX));
                                   g_AiKnowledgeData = knowledgeDataImage;
                                 }
                               }
@@ -1236,7 +1239,7 @@ bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--) {
     if ((entryId == workspaceEntryCursor->armyAssetId) &&
-       (workspaceEntryCursor->armyRuntime == NULL)) {
+       (workspaceEntryCursor->modelRuntime == NULL)) {
       return true;
     }
     workspaceEntryCursor++;
@@ -1281,7 +1284,7 @@ int AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
       workspaceEntriesRemaining--) {
-    if ((workspaceEntryCursor->armyRuntime != NULL) &&
+    if ((workspaceEntryCursor->modelRuntime != NULL) &&
        (entryId == workspaceEntryCursor->armyAssetId)) {
       matchingAssignedEntryCount++;
     }
@@ -1322,8 +1325,8 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
              g_AiWorkspace13Candidates[entriesRemaining - 1].entityIdAndMultiplicity +
              AI_CANDIDATE_MULTIPLICITY_ONE;
         candidateEntry = candidateEntry + (entriesRemaining - 1);
-        /* * 0x10: the score sits above the 4 kind bits */
-        candidateEntry->weightedScoreAndKind = candidateEntry->weightedScoreAndKind + weightedScore * 0x10;
+        /* the score sits above the 4 kind bits */
+        candidateEntry->weightedScoreAndKind = candidateEntry->weightedScoreAndKind + weightedScore * AI_CANDIDATE_SCORE_ONE;
         return;
       }
     }
@@ -1331,7 +1334,7 @@ void AiCandidateWorkspace_AddOrAccumulateWeightedEntry
       g_AiWorkspace13Candidates[g_AiCandidateWorkspaceEntryCount].entityIdAndMultiplicity =
            entityId + AI_CANDIDATE_MULTIPLICITY_ONE;
       g_AiCandidateWorkspaceEntryCount++;
-      candidateEntry[newEntryIndex].weightedScoreAndKind = weightedScore * 0x10 | entryKind;
+      candidateEntry[newEntryIndex].weightedScoreAndKind = weightedScore * AI_CANDIDATE_SCORE_ONE | entryKind;
     }
   }
   return;
@@ -1351,24 +1354,23 @@ bool AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
   int workspaceEntriesRemaining;
   Q12 deltaYAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  int *workspaceEntryEntityRecord;
+  ModelRuntimeSlot *entryModelRuntime;
   
   workspaceEntriesRemaining = g_AiWorkspace00Count;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspace00Structures;
   while (workspaceEntriesRemaining != 0) {
-    /* raw view of the runtime slot: [0] is its definition, [1] its model node */
-    workspaceEntryEntityRecord = (int *)workspaceEntryCursor->armyRuntime;
-    if (workspaceEntryEntityRecord != NULL) {
-      deltaXAbsQ12 = worldX - ((ModelRuntimeNode *)workspaceEntryEntityRecord[1])->worldTransform.translation.x;
+    entryModelRuntime = workspaceEntryCursor->modelRuntime;
+    if (entryModelRuntime != NULL) {
+      deltaXAbsQ12 = worldX - entryModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform.translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      deltaYAbsQ12 = worldY - ((ModelRuntimeNode *)workspaceEntryEntityRecord[1])->worldTransform.translation.y;
+      deltaYAbsQ12 = worldY - entryModelRuntime->rootModelNodeOrSavedOffset.modelNode->worldTransform.translation.y;
       if (deltaYAbsQ12 < 0) {
         deltaYAbsQ12 = -deltaYAbsQ12;
       }
-      if ((deltaXAbsQ12 < ((ModelDefinition *)*workspaceEntryEntityRecord)->supportRadius) &&
-         (deltaYAbsQ12 < ((ModelDefinition *)*workspaceEntryEntityRecord)->supportRadius)) {
+      if ((deltaXAbsQ12 < entryModelRuntime->definitionOrSavedId.runtimeDefinition->supportRadius) &&
+         (deltaYAbsQ12 < entryModelRuntime->definitionOrSavedId.runtimeDefinition->supportRadius)) {
         return false;
       }
     }

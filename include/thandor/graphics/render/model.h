@@ -36,6 +36,8 @@
 #define MODEL_VERTEX_NEAR_CLIPPED 0x7fffffff
 /* Stride of the vertex and triangle records of a mesh (both 0x40 bytes; GraphicsTriangleInput uses 0x38) */
 #define MODEL_MESH_RECORD_SIZE 0x40
+/* Offset of the shadow pass's projected XY (a GraphicsFixedVec2) in a mesh vertex record (graphics/render/shading.c) */
+#define MODEL_MESH_VERTEX_SHADOW_XY_OFFSET 0x20
 /* ModelMeshGroupHeader.groupFlags bits */
 #define MODEL_MESH_GROUP_FACE_VIEWER 1 /* ModelNodeRuntime_BuildViewFacingRotation before the draw */
 #define MODEL_MESH_GROUP_BILLBOARD 2   /* ModelNodeRuntime_BuildBillboardRotation before the draw */

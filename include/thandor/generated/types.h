@@ -1063,7 +1063,7 @@ struct ArmySegmentMeter {
 };
 
 struct ArmyCollisionResult {
-    uint32_t blockingArmy; // Physical ABI component EAX
+    uint32_t blockingModelRuntime; // Physical ABI component EAX: the ModelRuntimeSlot in the way
     bool blocked; // Physical ABI component CF
 };
 
@@ -2991,9 +2991,9 @@ struct IDirect3DTexture2_Vtbl {
 };
 
 struct ModelDefinitionRecordPrefix {
-    AssetRecordByteCount byteSize; 
-    uint32_t flags; 
-    enum PckModelDefinitionIdCatalog definitionId; 
+    AssetRecordByteCount byteSize;
+    uint32_t nameTextIndex; // Model name text: TEXT_ID_MODEL_NAME_BASE (0x18004F) + nameTextIndex.
+    enum PckModelDefinitionIdCatalog definitionId;
 };
 
 struct GameEntityTechnologyPayload {
@@ -3286,10 +3286,12 @@ struct WorldObjectRecord {
 };
 
 struct GameEntityImpactOwnerLinksPayloadFC {
-    uint8_t reserved00_3B[60]; 
-    struct ArmyRuntimeSlot *primaryImpactArmyRuntime; 
-    uint8_t reserved40_5B[28]; 
-    struct ArmyRuntimeSlot *secondaryImpactArmyRuntime; 
+    uint8_t reserved00_3B[60];
+    /* +0x140 / +0x160 of the model runtime this GameEntityRuntime view is laid over: the child model runtimes of
+       its attachment descriptors 0 and 1 (ModelRuntimeSlot.attachments[i].childModelRuntimeOrSavedOffset) */
+    struct ModelRuntimeSlot *attachment0ChildModelRuntime;
+    uint8_t reserved40_5B[28];
+    struct ModelRuntimeSlot *attachment1ChildModelRuntime;
     uint8_t reserved60_FB[156]; 
 };
 
@@ -3365,9 +3367,14 @@ struct GameEntityRuntime {
 };
 
 union ArmyRuntimeReferenceOrSavedOffset {
-    struct ArmyRuntimeSlot *armyRuntime; 
-    uint32_t savedIdOrOffset; 
-    uint32_t raw; 
+    struct ArmyRuntimeSlot *armyRuntime;
+    uint32_t savedIdOrOffset;
+    uint32_t raw;
+    struct GameEntityRuntime *entityRuntime; /* the same army under its GameEntityRuntime view (command target, owner) */
+    /* ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset (+0xF0) holds a model runtime, not an army: the
+       factory model a new unit leaves (ArmyRuntimeClass_UpdateUnitFactory), the class-23 platform and the unit
+       docked on it (ArmyRuntime_HandleCollisionPartner) */
+    struct ModelRuntimeSlot *modelRuntime;
 };
 
 struct AssetProducerSourceNames {
@@ -3744,8 +3751,6 @@ union ModelRuntimeSlotReferenceOrSavedOffset {
     struct ModelRuntimeSlot *modelRuntime;
     uint32_t savedIdOrOffset;
     uint32_t raw;
-    /* the class callbacks get a model runtime typed as ArmyRuntimeSlot: its first dword is the definition */
-    struct ModelDefinition *modelDefinition;
 };
 
 struct ArmyRuntimeSlot {
@@ -3763,10 +3768,7 @@ struct ArmyRuntimeSlot {
     ArmyCommandGeneration commandGeneration; // Committed V218d army runtime field.
     Q12 actionVector0Q12; // Committed V218d army runtime field.
     Q12 actionVector1Q12; // Committed V218d army runtime field.
-    union {
-        Q12 actionVector2Q12; // Committed V218d army runtime field.
-        Q12 health; /* +0x3C in a model runtime passed as ArmyRuntimeSlot: ModelRuntimeSlot.health */
-    };
+    Q12 actionVector2Q12; // Committed V218d army runtime field.
     uint32_t runtimeState40; // Committed V218d army runtime field.
     uint32_t visibilityRadius; // +0x44 largest ModelDefinition.visibilityRadius of the army's models; radius of its terrain occlusion (visibility) mask
     uint32_t visibilityHeightOffset; // +0x48 largest model height + ModelDefinition.visibilityHeightOffset above the root node (visibility reference height)
@@ -3775,9 +3777,9 @@ struct ArmyRuntimeSlot {
     FieldGridRegionMask terrainOccupancyMask1; // Second mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     Q12 movementPosition0Q12; // Committed V218d army runtime field.
     Q12 movementPosition1Q12; // Committed V218d army runtime field.
-    uint32_t classState60; // +0x60..+0x68: only accessed on model runtimes passed as ArmyRuntimeSlot (ModelRuntimeSlot.classLinkState), e.g. factory build asset id / elapsed / required ticks (UiCatalogEntryControl_DrawClipped)
-    uint32_t classState64; // model-runtime overlay, see classState60 (vertical deployment: collision retry countdown, ArmyRuntime_HandleCollisionPartner)
-    uint32_t classState68; // model-runtime overlay, see classState60
+    uint32_t classState60; // +0x60..+0x68: no army code reads these (the former users were model runtimes typed as ArmyRuntimeSlot)
+    uint32_t classState64;
+    uint32_t classState68;
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Committed V218d army runtime field.
@@ -3802,9 +3804,7 @@ struct ArmyRuntimeSlot {
     ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
-    /* +0xF8 in a model runtime passed as ArmyRuntimeSlot: ModelRuntimeSlotClassState.healthRegenerationDelayTicks */
-    uint32_t healthRegenerationDelayTicks;
-    uint8_t reservedFC_FF[4]; // Committed V218d army runtime field.
+    uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
     union {
         struct {
             int stateOrTechnologyId; // Committed V218d army runtime field.
@@ -3832,8 +3832,17 @@ struct ModelRuntimeSlot {
             uint32_t effectModelFlags; /* +0x30 bit 1 (value 2): an effect model drawn with the army graphics of binding 0 */
             uint8_t reserved34_37[4];
         };
+        struct { /* moving classes 1, 2, 17, 18, 19 (ground, tracked, banking, water movement;
+                    ModelRuntimeGroundMovementSteeringView / ModelRuntimeGroundMovementTrackView) */
+            struct ArmyRuntimeMovementControlState movementControl; /* +0x10 advance per tick (Q12), +0x14 signed turn velocity */
+        };
+        struct { /* turret classes 5..8 (ModelRuntimeWeaponAimStateView) */
+            uint8_t turretReserved10_13[4];
+            ArmyTurnVelocityAngle16 yawTurnVelocityAngle16; /* +0x14 signed yaw turn velocity */
+            ArmyTurnVelocityAngle16 pitchTurnVelocityAngle16; /* +0x18 signed pitch turn velocity */
+        };
     };
-    union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset; 
+    union ModelRuntimeSlotReferenceOrSavedOffset linkedModelRuntimeOrSavedOffset;
     uint32_t health; /* +0x3C current health; starts at the definition's maximum (+0x60) */
     /* +0x40 destruction effect channels: once health is gone, channel i spawns the definition's effect
        (+0x80 + 8 * i) at the model points with key i << 4 | 3 when its timer (from +0x84 + 8 * i) is 0
@@ -3846,11 +3855,11 @@ struct ModelRuntimeSlot {
     int researchElapsedTicks; /* +0x108 */
     int researchEnergyLoadQ4; /* +0x10C Energy held while researching */
     int researchXeniteCostQ4; /* +0x110 Xenite still to pay before research starts */
-    uint8_t reserved114_117[4];
-    uint32_t classState118; 
-    uint32_t classState11C; 
-    uint8_t reserved120_13F[32]; 
-    struct ModelRuntimeAttachmentDescriptor attachments[6]; 
+    int damageEffectCooldownTicks; /* +0x114 ticks to the next damage smoke/fire effect (ArmyRuntime_EmitDamageThresholdEffect) */
+    int damageEffectPointIndex; /* +0x118 next damage emitter point of the model; -1 wraps to the first; constructor-cleared */
+    uint32_t classState11C;
+    uint8_t reserved120_13F[32];
+    struct ModelRuntimeAttachmentDescriptor attachments[6];
 };
 
 union WorldRuntimeNodePayload {
@@ -5216,8 +5225,8 @@ struct UiSelectableControl {
 };
 
 /* How UiSelectableControl_KeyboardEvent sees its controls: the third dword after the selectable part is
-   the activation sound, played when stateFlags bit 0x80 is set (activationSoundId of UiTextButtonControl and
-   UiFramedTextButtonControl, keyboardActivationSoundId of UiImageControl). The two dwords before it differ
+   the activation sound, played when stateFlags bit 0x80 is set (activationSound of UiTextButtonControl and
+   UiFramedTextButtonControl, keyboardActivationSound of UiImageControl). The two dwords before it differ
    per subclass. */
 typedef struct UiSoundSelectableControl UiSoundSelectableControl;
 struct UiSoundSelectableControl {
@@ -5973,7 +5982,7 @@ typedef uint32_t MusicTrackClassId;
 typedef uint32_t GraphicsSubresourceOffset;
 
 typedef uint32_t ArmyRuntimeSavedOffset;
-typedef uint32_t AiWorkspaceRuntimeSlotAddress32; /* opaque 32-bit ArmyRuntimeSlot address (x86 target) */
+typedef uint32_t AiWorkspaceRuntimeSlotAddress32; /* opaque 32-bit ModelRuntimeSlot address (x86 target) */
 
 struct GraphicsProjectedPointPair { /* defined here because FieldGridCell embeds it */
     GraphicsPrimitiveBackendCoordinate projectedX; // EAX: first projected component.
@@ -7563,7 +7572,7 @@ struct RuntimeMaintenanceObjectCallbacks {
 };
 
 struct RuntimeMaintenanceAudioRefreshCallbacks {
-    void (*army)(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *); 
+    void (*army)(struct WorldRuntimeContext *, struct WorldOwnerListNode *); // the owner-list node of a model (ArmyRuntimeMaintenance_DispatchClassMethodDRecursive)
     void (*shot)(struct WorldRuntimeContext *, struct ModelRuntimeNode *); 
     void (*effect)(struct WorldRuntimeContext *, void *); 
 };
@@ -7814,15 +7823,17 @@ struct AiTerrainFeatureWorkspaceEntry {
 };
 
 struct AiRuntimeWorkspaceEntry {
-    struct ArmyRuntimeSlot *armyRuntime; 
+    /* the model runtime (runtimePayload) of a MODEL node of the world owner list, NULL for a pending asset;
+       its owning army is modelRuntime->ownerArmyRuntimeOrSavedOffset (AiPlanning_RebuildFactionWorkspaces) */
+    struct ModelRuntimeSlot *modelRuntime; 
     enum PckArmyAssetIdCatalog armyAssetId; 
 };
 
 struct AiTargetWorkspaceEntry {
     Q12 worldXQ12; 
     Q12 worldYQ12; 
-    struct ArmyRuntimeSlot *armyRuntime; 
-    struct ModelRuntimeNode *modelRuntime; 
+    struct ModelRuntimeSlot *modelRuntime; /* copied from a workspace-02 entry */
+    struct ModelRuntimeNode *modelNode; /* its root model node */
 };
 
 struct AiLinkedDefinitionListView {
@@ -7858,7 +7869,7 @@ typedef enum AiTechnologyCandidateScoreKind {
 
 struct AiTechnologyPlanningCandidate {
     enum PckTechnologyIdCatalog technologyId00; 
-    struct ArmyRuntimeSlot *sourceArmyRuntime04; 
+    struct ModelRuntimeSlot *sourceModelRuntime04; /* the own structure's model runtime (workspace 00 entry) */
     enum AiTechnologyCandidateScoreKind scoreKind08; 
     uint32_t reserved0C; 
 };
@@ -8037,7 +8048,7 @@ struct ArmyAssetRecord {
 
 struct ModelDefinition {
     AssetRecordByteCount byteSize;
-    uint32_t flags;
+    uint32_t nameTextIndex; /* +0x04 model name text: TEXT_ID_MODEL_NAME_BASE (0x18004F) + nameTextIndex */
     enum PckModelDefinitionIdCatalog definitionId;
     int movementSpeed; /* +0x0C movement speed; door/animation step per tick */
     int animatedChild0RotationStep; /* +0x10 per-tick rotation of animated child node 0 */
@@ -9454,7 +9465,7 @@ struct GameFactionRuntimeRecord {
     EnergyDemandQ4 unpoweredEnergyDemandQ4; 
     FactionArmyAssetCount primaryArmyAssetCount; 
     FactionArmyAssetCount secondaryArmyAssetCount; 
-    uint32_t factionClassOrMode; 
+    uint32_t colorIndex; // Faction colour: colour name text TEXT_ID_FACTION_NAME_BASE + colorIndex, graphics suffix of the faction's palette/sprites, minimap panel colour variant. Set per level as slot colour offset + faction index.
     FactionCapabilityFlags capabilityFlags; 
     FactionPackedRelationStates packedRelationStates; 
     FactionRelationCapabilityState relationCapabilityState; 
@@ -9538,7 +9549,7 @@ struct UiTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    uint32_t activationSoundId;
+    struct DirectSoundVoiceSet *activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 /* Text button that formats two numbers into rich-text payload selectors 0 and 1 of its text before drawing
@@ -9587,8 +9598,8 @@ struct UiSpriteButtonControl {
     GraphicsSubresourceEndIndex normalSubresourceEndExclusive; 
     GraphicsSubresourceEndIndex selectedSubresourceEndExclusive; 
     GraphicsSubresourceOffset animationFrameOffset; 
-    uint32_t activationSoundId; 
-    struct GraphicsTextureSourceAsset *alternateTextureSource; 
+    struct DirectSoundVoiceSet *activationSound; // Click sound played on activation; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
+    struct GraphicsTextureSourceAsset *alternateTextureSource;
 };
 
 struct UiCommandSpriteButtonControl {
@@ -9614,10 +9625,10 @@ struct UiImageControl {
     struct UiSelectableControl selectable; 
     struct GraphicsTextureSourceAsset *textureSource; 
     GraphicsSubresourceIndex normalSubresource; 
-    uint32_t keyboardActivationSoundId; 
-    GraphicsSubresourceIndex alternateSubresource; 
+    struct DirectSoundVoiceSet *keyboardActivationSound; // Sound of a keyboard activation (read through UiSoundSelectableControl.activationSound).
+    GraphicsSubresourceIndex alternateSubresource;
     struct UiNodeBase *activeChild;
-    uint32_t pointerActivationSoundId;
+    struct DirectSoundVoiceSet *pointerActivationSound; // Sound played when the image opens/closes on a click; set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 /* Image/movie surface that queues one action on left and one on right click (g_UiImageActionControlVtable).
@@ -9651,7 +9662,7 @@ struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    uint32_t activationSoundId;
+    struct DirectSoundVoiceSet *activationSound; // Click sound played on activation (UI_BUTTON_PLAY_ACTIVATION_SOUND); set by the UI initialisers from g_UiButtonSoundVoiceSets7.
 };
 
 typedef struct UiWindowControl UiWindowControl;
@@ -9830,16 +9841,19 @@ struct InGameUiCommandModeActionHandlerPage11 {
 };
 
 struct FrontendTaskAssignmentControlOffsetRow {
-    uint32_t offsets[7]; 
+    uint32_t offsets[7]; // Node offsets (from the frontend root) of the controls of faction rows 1..7: offsets[row - 1].
 };
 
+/* At 0x00543460, right after the 32 entries of g_FrontendPlayerRuntimeRecordPointers32. The original code
+   indexes each row table with the row number (1..7) from a base 4 bytes lower (0x0054345C), which once made
+   these tables look like they started there with an unused entry 0. */
 struct FrontendTaskAssignmentControlOffsetTables {
-    struct FrontendTaskAssignmentControlOffsetRow assignmentControls; 
-    struct FrontendTaskAssignmentControlOffsetRow playerControls; 
-    struct FrontendTaskAssignmentControlOffsetRow factionControls; 
-    struct FrontendTaskAssignmentControlOffsetRow selectionRows; 
-    struct FrontendTaskAssignmentControlOffsetRow statusRows; 
-    struct FrontendTaskAssignmentControlOffsetRow primaryAndPadding; 
+    struct FrontendTaskAssignmentControlOffsetRow assignmentControls;
+    struct FrontendTaskAssignmentControlOffsetRow playerControls;
+    struct FrontendTaskAssignmentControlOffsetRow factionControls;
+    struct FrontendTaskAssignmentControlOffsetRow selectionRows;
+    struct FrontendTaskAssignmentControlOffsetRow statusRows;
+    uint32_t networkBackendNameRows[6]; // 0x005434EC: row pointer table of the frontend network backend list (display names), filled when the list is built.
 };
 
 struct UiCommandDispatchRecord {
@@ -11070,16 +11084,23 @@ struct PlacementDispatchResult {
     bool failed; // CF status
 };
 
+/* runtimeUpdate, classMethodD (sound update) and classCommand of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
+   are called with a model runtime (ModelRuntimeSlot, first dword = its ModelDefinition), never with an army:
+   ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, ArmyRuntimeHierarchy_DispatchClassMethodDRecursive
+   and ArmyRuntime_DispatchClassCommand pick the slot by the definition's runtimeClassId. The implementations take
+   the ModelRuntimeSlot or the ModelRuntime*View of their class (same object, class-specific field names). */
+typedef void ModelRuntimeClassCallback(struct WorldRuntimeContext *worldRuntime, struct ModelRuntimeSlot *modelRuntime);
+
 struct ArmyRuntimeOrderHandlerMatrix11x24 {
-    void (*runtimeUpdate[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *);
-    void (*classMethodD[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *);
+    ModelRuntimeClassCallback *runtimeUpdate[24];
+    ModelRuntimeClassCallback *classMethodD[24];
     void (*modelUnrebase[24])(struct ModelRuntimeSlot *);
     void (*modelRebaseOrLoadRepair[24])(struct ModelRuntimeSlot *);
     void (*modelClassInitialize[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     void (*modelReleaseOrCommit[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     bool (*placementValidation[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView *); // 24 placement validators; CF is the boolean result. Split from generic world/army callbacks.
     PlacementDispatchResult (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *);
-    void (*classCommand[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *);
+    ModelRuntimeClassCallback *classCommand[24];
     void (*gridInfluenceAdd[24])(struct GameEntityRuntime *);
     void (*gridInfluenceRemove[24])(struct GameEntityRuntime *);
 };
@@ -11348,14 +11369,14 @@ struct SelectableGroupNodeResult {
 struct UiSelectionGeometryControl {
     struct UiNodeBase base; // Common UI-node prefix.
     uint32_t reserved4C; // Serialized/runtime slot not required by the two recovered methods; intentionally unresolved.
-    Q12 sourceOriginYQ12; // Y origin used by the affine texture-sampling transform and pointer conversion.
-    Q12 sourceOriginXQ12; // X origin used by the affine texture-sampling transform and pointer conversion.
+    Q12 sourceOriginXQ12; // Source-space X (texture column, Q12) shown at the control's centre; the sampling transform steps its column from it. The minimap stores the clicked grid column here on recentre.
+    Q12 sourceOriginYQ12; // Source-space Y (texture row, Q12) shown at the control's centre; the minimap stores the clicked grid row here on recentre.
     Q12 sampleScaleQ12; // Scale multiplied by the fixed sine/cosine tables before the sampling transform.
     AngleTurn32 rotationAngle; // Fixed-turn angle indexing the global Q28 sine/cosine tables.
     struct GraphicsTextureSourceAsset *textureSource; // Texture-source asset. DrawClipped resolves its GraphicsTextureSourceEntry table and samples direct-color pixels.
     UiActionId actionId; // Action enqueued by ConvertPointerAndEnqueueAction after writing the transformed source coordinates.
-    Q12 selectedSourceYQ12; // Pointer position transformed into source-space Y before action dispatch.
-    Q12 selectedSourceXQ12; // Pointer position transformed into source-space X before action dispatch.
+    Q12 selectedSourceXQ12; // Pointer position transformed into source-space X (texture column; the minimap's grid column) before action dispatch.
+    Q12 selectedSourceYQ12; // Pointer position transformed into source-space Y (texture row; the minimap's grid row) before action dispatch.
 };
 
 struct DirectoryHierarchyResult {
@@ -12047,7 +12068,7 @@ struct FieldGridCellSaveImageView { // Function-local physical serialization vie
 };
 
 struct AiStructureWorkspaceEntry {
-    AiWorkspaceRuntimeSlotAddress32 runtimeSlotAddressOrZero; // Nullable live ArmyRuntimeSlot address kept opaque here because exact ArmyRuntimeSlot propagation is not stable in all consumers.
+    AiWorkspaceRuntimeSlotAddress32 runtimeSlotAddressOrZero; // Nullable ModelRuntimeSlot address (runtimePayload of a MODEL owner-list node, as AiRuntimeWorkspaceEntry.modelRuntime), kept as an integer like the original's consumers use it.
     enum PckArmyAssetIdCatalog armyAssetId; // ARM registry identity.
 };
 
@@ -12314,7 +12335,7 @@ struct RuntimeCollisionQueryView {
     struct ModelDefinition *modelDefinition; // Common collision-query physical layout: [runtime+0] is dereferenced directly for ModelDefinition +0xDC.
     struct ModelRuntimeNode *modelNodeRuntime; // Common collision-query physical layout: [runtime+4] supplies model-node depth bins.
     uint8_t reserved0008_00EF[232];
-    void *linkedRuntime; // +0xF0: the army this unit is linked to, excluded from the collision test; pointee class left polymorphic.
+    void *linkedRuntime; // +0xF0: the model runtime this unit is linked to (ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset), excluded from the collision test.
 };
 
 struct EntityPathingRouteEntityRuntimeView {
@@ -14446,7 +14467,7 @@ struct ModelRuntimeArticulatedMovementDefinitionView {
     struct ArmyRuntimeLinkedChildPendingCounts linkedChildPendingCounts; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Three independently decremented pending child counters.
     uint8_t reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    struct ArmyRuntimeSlot *linkedArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    struct ModelRuntimeSlot *linkedModelRuntime; // +0xF0 ModelRuntimeSlotClassState.linkedArmyRuntimeOrSavedOffset: the linked model runtime (e.g. a class-23 platform the walker docked on).
     ArmyRuntimeTimer runtimeTimer; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     uint8_t reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     int stateOrTechnologyId; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.

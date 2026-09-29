@@ -39,6 +39,11 @@
 #define GRAPHICS_PRIMITIVE_BLEND_ADDITIVE 0x2000
 #define GRAPHICS_PRIMITIVE_BLEND_MODE_4 0x4000 /* kept by GraphicsPrimitiveQueue_SetVertexColors like opaque */
 #define GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE 0x6000 /* blend mode 6: alpha-blended with depth writes */
+/* GraphicsPrimitiveQueue_Sort keys: an opaque packet's key is its texture entry | 0xB0000000 minus render flag
+   bits 28..29 (0x80000000 and above), a blended packet's the sum of its vertex depths below 0x80000000 */
+#define GRAPHICS_PRIMITIVE_SORT_KEY_OPAQUE_BASE 0xb0000000
+#define GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS 0x30000000
+#define GRAPHICS_PRIMITIVE_SORT_KEY_DEPTH_MASK 0x7fffffff
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00486080 */

@@ -316,8 +316,8 @@ bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 /* Address: 0x0051B770.
    Checks the 16 army-asset ids linked from an army record (dwords at +0x30) and returns true (CF set) as soon as
-   one names a registered, enabled asset whose technology is fully unlocked for the faction, that has a model
-   tree (+0x1C) and whose flags (+0x14) share a bit with requiredDefinitionFlags.
+   one names a registered, enabled asset whose technology is fully unlocked for the faction (every definition of
+   its model tree, rootNodeOffsetOrPointer +0x0C), whose selectionDetailValue (+0x1C) is non-zero and whose flags (+0x14) share a bit with requiredDefinitionFlags.
 */
 bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,

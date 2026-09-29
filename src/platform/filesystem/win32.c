@@ -435,7 +435,7 @@ FileLoadResult FileSystem_LoadWholeFile(uint16_t *pathUtf16)
       if (!readResult.failed) {
         g_FileSystemClose(handle);
         /* success: the buffer with CF clear */
-        return THANDOR_BITCAST(uint64_t, FileLoadResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FileLoadResult, (THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX));
       }
       g_MemoryApi.free((void *)allocResult.payloadOrError);
     }
@@ -493,7 +493,7 @@ FileLoadResult FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16)
       if (!readResult.failed) {
         g_FileSystemClose(handle);
         /* success: the buffer with CF clear */
-        return THANDOR_BITCAST(uint64_t, FileLoadResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FileLoadResult, (THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX));
       }
       g_MemoryApi.free((void *)allocResult.payloadOrError);
     }
@@ -1022,7 +1022,7 @@ DirectoryEnumerationResult Win32FileSystem_EnumerateDirectoryOrVolumeEntries
     }
     recordCount = 0;
     /* the check allows 0x100 bytes, but the copy may write a whole 0x200-byte record */
-    if (0xff < outputCapacityBytes) {
+    if (255 < outputCapacityBytes) {
       Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,(uint16_t *)outputRecords,g_Win32PathScratchA);
       volumeResult.entryCount = 1;
       volumeResult.recordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
@@ -1180,7 +1180,7 @@ StatusResult Win32File_GetCurrentDirectory(uint16_t *destination)
   if (narrowPathLength != 0) {
     copyResult = Text_CopyNarrowToUtf16(WIDE_PATH_MAX_CODE_UNITS * sizeof(uint16_t),destination,g_Win32PathScratchA);
     /* the copy's EAX with CF cleared */
-    return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(StatusResult, uint64_t, copyResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+    return THANDOR_BITCAST(uint64_t, StatusResult, (THANDOR_BITCAST(StatusResult, uint64_t, copyResult) & UINT32_MAX));
   }
   destination[0] = 0;
   destination[1] = 0;

@@ -232,19 +232,19 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
           do {
             /* The original loads the pixel into AX; the stale high word of EAX is masked away by the 16-bit
                channel masks. */
-            allocationSizeOrPixel = ((uint32_t)restoreResultOrPixelOffset & 0xffff0000) | (uint32_t)*sourcePixel;
-            ((uint8_t *)destinationPixel)[3] = 0xff;
+            allocationSizeOrPixel = ((uint32_t)restoreResultOrPixelOffset & ~0xffffu) | (uint32_t)*sourcePixel;
+            ((uint8_t *)destinationPixel)[3] = ARGB8888_CHANNEL_MAX;
             ((char *)destinationPixel)[2] =
                  (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.redMask) >>
-                        ((uint8_t)g_SoftwarePixelFormatConfig.redShift & 0x1f)) <<
-                       (8U - (char)g_SoftwarePixelFormatConfig.redBitCount & 0x1f));
+                        ((uint8_t)g_SoftwarePixelFormatConfig.redShift & SHIFT_COUNT_MASK)) <<
+                       (8U - (char)g_SoftwarePixelFormatConfig.redBitCount & SHIFT_COUNT_MASK));
             ((char *)destinationPixel)[1] =
                  (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.greenMask) >>
-                        ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & 0x1f)) <<
-                       (8U - (char)g_SoftwarePixelFormatConfig.greenBitCount & 0x1f));
+                        ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & SHIFT_COUNT_MASK)) <<
+                       (8U - (char)g_SoftwarePixelFormatConfig.greenBitCount & SHIFT_COUNT_MASK));
             restoreResultOrPixelOffset = ((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.blueMask) >>
-                    ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & 0x1f)) <<
-                    (8U - (char)g_SoftwarePixelFormatConfig.blueBitCount & 0x1f);
+                    ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & SHIFT_COUNT_MASK)) <<
+                    (8U - (char)g_SoftwarePixelFormatConfig.blueBitCount & SHIFT_COUNT_MASK);
             *(char *)destinationPixel = (char)restoreResultOrPixelOffset;
             sourcePixel = sourcePixel + 1;
             destinationPixel = destinationPixel + 1;
@@ -257,7 +257,7 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
         } while (captureHeight != 0);
         g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
         return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult,
-                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xffffffff);
+                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX);
       }
     }
     g_MemoryApi.free(capturedAsset);
@@ -355,15 +355,15 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
             destinationPair = destinationPixel;
             allocationSizeOrPixel = sourcePixel[1];
             remainingColumns = remainingColumns - 2;
-            *destinationPair = *sourcePixel | 0xff000000;
-            destinationPair[1] = allocationSizeOrPixel | 0xff000000;
+            *destinationPair = *sourcePixel | ARGB8888_ALPHA_MASK;
+            destinationPair[1] = allocationSizeOrPixel | ARGB8888_ALPHA_MASK;
             sourcePixel = sourcePixel + 2;
             destinationPixel = destinationPair + 2;
           } while (1 < remainingColumns);
           /* odd width: one pixel left. A width of 1 would not stop: the unsigned count wraps below 0 and the
              pair loop runs on (as in the original, SUB EBX,2; CMP EBX,1; JA) */
           if (remainingColumns == 1) {
-            *destinationPixel = *sourcePixel | 0xff000000;
+            *destinationPixel = *sourcePixel | ARGB8888_ALPHA_MASK;
             destinationPixel = destinationPair + 3;
           }
           sourcePixel = (uint32_t *)((uint8_t *)sourceRowStart + g_SurfaceDesc.lPitch);
@@ -373,7 +373,7 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
         } while (captureHeight != 0);
         g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
         return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult,
-                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xffffffff);
+                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX);
       }
     }
     g_MemoryApi.free(capturedAsset);

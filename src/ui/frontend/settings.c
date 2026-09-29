@@ -51,27 +51,27 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   /* Rows 1..assignable count: factions a player may take; mode button active, caption "Computer". */
   rowOrAssignmentIndex = 0;
   do {
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex + 1];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
     rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowOrAssignmentIndex + 1];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowOrAssignmentIndex];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowOrAssignmentIndex + 1];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowOrAssignmentIndex];
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->selectable.stateFlags &=
          ~(FRONTEND_CONTROL_INACTIVE | UI_SELECTABLE_SELECTED_OR_CHECKED);
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowOrAssignmentIndex + 1];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowOrAssignmentIndex];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
-    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowOrAssignmentIndex + 1];
+    rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowOrAssignmentIndex];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->base.nodeFlags &= ~UI_NODE_SUPPRESSED;
     rowCursor = rowOrAssignmentIndex + 1;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,rowControlOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
@@ -83,30 +83,30 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   } while (assignableCountOrOffset != 0);
   /* Further active factions (computer only): mode button active, the rest of the row hidden and inactive. */
   for (; activeCountOffsetOrLocalRow != 0; activeCountOffsetOrLocalRow--) {
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags &=
          ~UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
     rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_COMPUTER;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
          ~FRONTEND_CONTROL_INACTIVE;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->labelFlags &= ~UI_LABEL_HIDE_WHILE_SUPPRESSED;
@@ -116,30 +116,30 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   }
   /* Unused rows up to 7: everything hidden and inactive, caption "No-one", faction slot cleared. */
   for (; rowCursor < 7; rowCursor++) {
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
     rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->textResourceId;
     *rowTextId = TEXT_ID_FACTION_MODE_NOBODY;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor];
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags &=
          ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->selectable.stateFlags |=
          FRONTEND_CONTROL_INACTIVE;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor];
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->base.nodeFlags |=
          UI_NODE_SUPPRESSED;
     ((UiSingleLineTextControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->labelFlags |= UI_LABEL_HIDE_WHILE_SUPPRESSED;
@@ -147,7 +147,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   }
   /* Colour buttons of rows 7..1 show the faction name of the level's player slot; none is selected. */
   do {
-    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
+    activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor - 1];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,activeCountOffsetOrLocalRow))->textResourceId =
          ((LevelPlayerSlotRecord *)((uint8_t *)loadedLevel->playerSlots +
                                     g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]))->aiClassOrMode +
@@ -164,7 +164,7 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   remainingPlayerRecords = g_FrontendPlayerRuntimeBlockCount;
   do {
-    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex];
+    assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex - 1];
     playerRecord->factionAssignment.factionAssignmentIndex = rowOrAssignmentIndex;
     rowTextId = &((UiFramedTextButtonControl *)THANDOR_UI_AT(frontendRootPage,assignableCountOrOffset))->textResourceId;
     playerRecord->factionAssignment.readyOrWaitState = 0;
@@ -182,10 +182,10 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   } while (remainingPlayerRecords != 0);
   /* tick and show the local player's play checkbox */
   ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
-       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]))
+       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow]))
        ->selectable.stateFlags |= UI_SELECTABLE_SELECTED_OR_CHECKED;
   ((UiTextButtonControl *)THANDOR_UI_AT(frontendRootPage,
-       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]))
+       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow]))
        ->selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
   rootVtable = frontendRootPage->rootNode.vtable;
@@ -193,8 +193,8 @@ void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *f
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     /* local game: roster left/right offsets 96 (no participant column); Back and Next, no Finish */
-    FRONTEND_UI(frontendRootPage,factionRosterTable)->leftOffset = 0x60;
-    FRONTEND_UI(frontendRootPage,factionRosterTable)->rightOffset = 0x60;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->leftOffset = 96;
+    FRONTEND_UI(frontendRootPage,factionRosterTable)->rightOffset = 96;
     FRONTEND_UI(frontendRootPage,factionSetupFinishButton)->nodeFlags |= UI_NODE_SUPPRESSED;
     FRONTEND_UI(frontendRootPage,factionSetupNextButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
     FRONTEND_UI(frontendRootPage,factionSetupBackButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
@@ -312,7 +312,7 @@ void FrontendDisplaySettings_ApplyMode(void *control)
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.width);
   if (selectedModeResult.failed) {
-    restoredModeResult = g_GraphicsSetDisplayMode(previousAdapterIndex,colorBitsCounterOrParentLink + 0xfU & 0xfffffff0,previousHeight,previousWidth);
+    restoredModeResult = g_GraphicsSetDisplayMode(previousAdapterIndex,colorBitsCounterOrParentLink + 15U & ~15U,previousHeight,previousWidth);
     FatalError_ExitIfFailed(restoredModeResult.valueOrError,restoredModeResult.failed);
     g_CursorVisibilityToken++;
     FatalError_ReportIfFailed(selectedModeResult.valueOrError,true);
@@ -639,7 +639,7 @@ void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *f
   UiSelectableControl_SetSelected(persistedValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,
                                   (UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox));
   /* bit 4 of this word (hide panel, action 0x2051) is not loaded into its checkbox here */
-  persistedValue = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+  persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
   ((UiRangeSliderControl *)FRONTEND_UI(frontendRoot,scrollSpeedSlider))->value = persistedValue;
 }
 
@@ -728,7 +728,7 @@ void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettings
       FRONTEND_UI(frontendUi,textureQualityHigh),
       FRONTEND_UI(frontendUi,textureQualityMedium),
       FRONTEND_UI(frontendUi,textureQualityLow));
-  persistedValue = PersistentSettings_Read(0x10000,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
+  persistedValue = PersistentSettings_Read(PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
   return;
 }
@@ -757,11 +757,11 @@ void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSour
   UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsEnabledControl);
   UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->musicEnabledControl);
   UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->reverseStereoControl);
-  gainValue = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN); /* Q15 1.0 */
+  gainValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN); /* Q15 1.0 */
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->soundEffectsGainControl).currentValue = gainValue;
-  gainValue = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
+  gainValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->movieDefaultAudioGainControl).currentValue = gainValue;
-  gainValue = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MUSIC_GAIN);
+  gainValue = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage, sourceNode)->musicGainControl).currentValue = gainValue;
   parentCursor = settingsSourceNode->parent;
   /* climb to the root of the control's UI tree */
@@ -980,18 +980,18 @@ void FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   }
   effectsGain = 0;
   if (isSelected) {
-    effectsGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN);
+    effectsGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
   }
   movieDefaultGain = 0;
   g_UiSoundGainQ15 = effectsGain;
   g_SoundEffectsGainQ15 = effectsGain;
   if (isSelected) {
-    movieDefaultGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
+    movieDefaultGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   }
   movieAlternateGain = 0;
   g_MovieDefaultAudioGainQ15 = movieDefaultGain;
   if (isSelected) {
-    movieAlternateGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
+    movieAlternateGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   }
   g_MovieAlternateAudioGainQ15 = movieAlternateGain;
   return;
@@ -1037,7 +1037,7 @@ void FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
       else {
         g_FrontendMusicVoiceSet = musicVoiceSet;
         Resource_Release(musicSample);
-        gainOrAudioFlags = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MUSIC_GAIN);
+        gainOrAudioFlags = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
         playResult = g_SoundPlayLooping(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
         activeMusicBuffer = playResult.soundBuffer;
         if (playResult.failed) {
@@ -1336,18 +1336,18 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   rowIndexOrCount = 7;
   ((UiWrappedTextControl *)FRONTEND_UI(taskAssignmentRoot,taskDescriptionText))->text =
        (uint16_t *)
-       (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * 0x10);
+       (localFactionIndex + TEXT_ID_LEVEL_DESCRIPTION_BASE + g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   /* Offsets from the control tables are control offsets in the page: + nodeFlags (+0x48) gives the control's
      nodeFlags (UI_NODE_SUPPRESSED), + rootFlags (+0x4C) its stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED,
-     FRONTEND_CONTROL_INACTIVE), + previousRoot (+0x54) its caption text id. Rows 7..1; entry 0 is unused. */
+     FRONTEND_CONTROL_INACTIVE), + previousRoot (+0x54) its caption text id. Rows 7..1 (entry row - 1). */
   do {
-    if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount]))->stateFlags &
+    if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1]))->stateFlags &
          UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)
     goto enableFactionControl;
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL)
-         && (controlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount],
+         && (controlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount - 1],
             (*(uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset) & UI_NODE_SUPPRESSED) != 0)) {
         if ((((UiSingleLineTextControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->labelFlags &
              UI_LABEL_HIDE_WHILE_SUPPRESSED) != 0)
@@ -1355,7 +1355,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
                SESSION_NETWORK_ROLE_LOCAL) {
-        controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
+        controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount - 1];
         controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
         *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
         controlFlags = (uint32_t *)&((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags;
@@ -1363,7 +1363,7 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
         goto hidePlayerControl;
       }
 enableFactionControl:
-      controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount - 1];
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
       *controlFlags = *controlFlags | controlSetMask;
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
@@ -1373,7 +1373,7 @@ enableFactionControl:
     }
     else {
 disableFactionControl:
-      controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount - 1];
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
       *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       controlFlags = (uint32_t *)&((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags;
@@ -1381,22 +1381,22 @@ disableFactionControl:
     }
 hidePlayerControl:
     controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags +
-                     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount]);
+                     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount - 1]);
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
     rowIndexOrCount--;
   } while (rowIndexOrCount != 0);
   /* mode captions: nobody, computer for active factions, player where a player record has the faction */
   rowIndexOrCount = 7;
   do {
-    controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
+    controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount - 1];
     ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->textResourceId = TEXT_ID_FACTION_MODE_NOBODY;
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
        (((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->textResourceId = TEXT_ID_FACTION_MODE_COMPUTER,
        (*(uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags +
-                 g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) &
+                 g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount - 1]) &
         UI_NODE_SUPPRESSED) == 0)) {
-      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
       *controlFlags = *controlFlags | controlSetMask;
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
@@ -1405,7 +1405,7 @@ hidePlayerControl:
       *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
     }
     else {
-      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+      controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
       *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       controlFlags = (uint32_t *)&((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags;
@@ -1418,7 +1418,7 @@ hidePlayerControl:
   } while (rowIndexOrCount != 0);
   do {
     factionIndexOrSetMask = playerRecord->factionAssignment.factionAssignmentIndex;
-    ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[factionIndexOrSetMask]))->textResourceId = TEXT_ID_FACTION_MODE_PLAYER;
+    ((UiFramedTextButtonControl *)THANDOR_UI_AT(taskAssignmentRoot,g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[factionIndexOrSetMask - 1]))->textResourceId = TEXT_ID_FACTION_MODE_PLAYER;
     remainingPlayers--;
     playerRecord++;
   } while (remainingPlayers != 0);
@@ -1429,9 +1429,9 @@ hidePlayerControl:
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     do {
       if ((((UiSingleLineTextControl *)THANDOR_UI_AT(taskAssignmentRoot,
-               g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]))->labelFlags &
+               g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount - 1]))->labelFlags &
            UI_LABEL_HIDE_WHILE_SUPPRESSED) == 0) {
-        controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
+        controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount - 1];
         controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
         *controlFlags = *controlFlags | factionIndexOrSetMask;
         controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
@@ -1444,7 +1444,7 @@ hidePlayerControl:
     do {
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags +
                        g_FrontendTaskAssignmentControlOffsets.playerControls.offsets
-                       [playerRecord->factionAssignment.factionAssignmentIndex]);
+                       [playerRecord->factionAssignment.factionAssignmentIndex - 1]);
       *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       remainingPlayers--;
       playerRecord++;
@@ -1452,7 +1452,7 @@ hidePlayerControl:
   }
   /* clear the roster texts (0x8C dwords = seven 0x50-byte rows) */
   textRowCursor = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows + 1;
-  for (rowIndexOrCount = 0x8c; rowIndexOrCount != 0; rowIndexOrCount--) {
+  for (rowIndexOrCount = 140; rowIndexOrCount != 0; rowIndexOrCount--) {
     textRowCursor->textUtf16[0] = 0;
     textRowCursor->textUtf16[1] = 0;
     textRowCursor = (FrontendTaskAssignmentFactionTextRow *)(textRowCursor->textUtf16 + 2); /* one dword */
@@ -1525,7 +1525,7 @@ hidePlayerControl:
       if ((((UiSelectableControl *)FRONTEND_UI(taskAssignmentRoot,factionSetupFinishButton))->stateFlags &
            UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
         do {
-          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
           if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
             controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
             *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
@@ -1537,7 +1537,7 @@ hidePlayerControl:
       }
       else {
         do {
-          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
+          controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount - 1];
           if ((((UiSelectableControl *)THANDOR_UI_AT(taskAssignmentRoot,controlOffset))->stateFlags & FRONTEND_CONTROL_INACTIVE) == 0) {
             controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags + controlOffset);
             *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
@@ -1562,7 +1562,7 @@ hidePlayerControl:
             }
           }
           controlFlags = (uint32_t *)((int)&taskAssignmentRoot->base.nodeFlags +
-                           g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount]);
+                           g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount - 1]);
           *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
           return;
         }

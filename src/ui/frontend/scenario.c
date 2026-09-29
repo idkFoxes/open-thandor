@@ -195,7 +195,7 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   /* briefingText's text resource id: the faction's briefing entry of the level's text page */
   ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text =
        (uint16_t *)(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
-       g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * 0x10);
+       g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE);
   briefingText = TextResource_Resolve(titleTextId + TEXT_ID_LEVEL_TITLE_BASE);
   *briefingText.text = FRONTEND_TEXT_STYLE_NORMAL;
   templateText = TextResource_Resolve(TEXT_ID_MISSION_BRIEFING_TEMPLATE);
@@ -203,8 +203,8 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              (uint16_t *)&g_FrontendMissionBriefingLevelDigitsUtf16);
-  WidePath_SetExtensionCode(0x6d6c66 /* "flm" */,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
-  movieOpen = Movie_Open(0x80000000,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
+  movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
   if (movieOpen.failed) {
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = NULL;
   }

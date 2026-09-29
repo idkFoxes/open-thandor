@@ -562,20 +562,19 @@ void UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   /* each edge = (framebuffer extent * anchorQ31) >> 31 + offset, i.e. a fraction of the screen plus pixels */
   anchorPixelProductQ31 = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).rightAnchorQ31;
   (root->base).right =
-       ((int)((uint64_t)anchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)anchorPixelProductQ31 >> 0x1f)
+       (FIXED_PRODUCT_SHR(anchorPixelProductQ31, 31))
        + (root->base).rightOffset;
   currentAnchorPixelProductQ31 =
        (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).bottomAnchorQ31;
   (root->base).bottom =
-       ((int)((uint64_t)currentAnchorPixelProductQ31 >> 0x20) << 1 |
-       (uint32_t)currentAnchorPixelProductQ31 >> 0x1f) + (root->base).bottomOffset;
+       (FIXED_PRODUCT_SHR(currentAnchorPixelProductQ31, 31)) + (root->base).bottomOffset;
   edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).leftAnchorQ31;
   (root->base).left =
-       ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) +
+       (FIXED_PRODUCT_SHR(edgeAnchorPixelProductQ31, 31)) +
        (root->base).leftOffset;
   edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).topAnchorQ31;
   (root->base).top =
-       ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) +
+       (FIXED_PRODUCT_SHR(edgeAnchorPixelProductQ31, 31)) +
        (root->base).topOffset;
   root->callbacks = callbacks;
   (root->base).nextSibling = UI_NODE_NONE;
@@ -1317,20 +1316,19 @@ void UiRootStack_Relayout(void)
     anchorPixelProductQ31 =
          (uint64_t)g_FramebufferWidth * (uint64_t)(rootNode->base).rightAnchorQ31;
     (rootNode->base).right =
-         ((int)((uint64_t)anchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)anchorPixelProductQ31 >> 0x1f) +
+         (FIXED_PRODUCT_SHR(anchorPixelProductQ31, 31)) +
          (rootNode->base).rightOffset;
     currentAnchorPixelProductQ31 =
          (uint64_t)g_FramebufferHeight * (uint64_t)(rootNode->base).bottomAnchorQ31;
     (rootNode->base).bottom =
-         ((int)((uint64_t)currentAnchorPixelProductQ31 >> 0x20) << 1 |
-         (uint32_t)currentAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).bottomOffset;
+         (FIXED_PRODUCT_SHR(currentAnchorPixelProductQ31, 31)) + (rootNode->base).bottomOffset;
     edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferWidth * (uint64_t)(rootNode->base).leftAnchorQ31;
     (rootNode->base).left =
-         ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) +
+         (FIXED_PRODUCT_SHR(edgeAnchorPixelProductQ31, 31)) +
          (rootNode->base).leftOffset;
     edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferHeight * (uint64_t)(rootNode->base).topAnchorQ31;
     (rootNode->base).top =
-         ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) +
+         (FIXED_PRODUCT_SHR(edgeAnchorPixelProductQ31, 31)) +
          (rootNode->base).topOffset;
     (*((rootNode->base).vtable)->layout)(&rootNode->base);
     rootNode = rootNode->previousRoot;
@@ -1445,9 +1443,9 @@ void UiResizableWindowControl_BeginMoveResizeOrWindowAction
             resizeFlags = UI_ROOT_RESIZE_RIGHT | UI_ROOT_RESIZING;
           }
         }
-        /* clears the UI_ROOT_RESIZE_EDGES byte; kept as a signed constant because the unsigned
-           ~UI_ROOT_RESIZE_EDGES changes the generated code of this build */
-        control->root.rootFlags = control->root.rootFlags & 0xffffff;
+        /* clears the UI_ROOT_RESIZE_EDGES byte; signed, because the unsigned ~UI_ROOT_RESIZE_EDGES changes the
+           generated code of this build */
+        control->root.rootFlags = control->root.rootFlags & (int)~UI_ROOT_RESIZE_EDGES;
         control->root.rootFlags = control->root.rootFlags | resizeFlags;
         return;
       }
@@ -1953,24 +1951,23 @@ void UiContainer_LayoutChildren(UiNodeBase *control)
     rightAnchorProduct =
          (uint64_t)(uint32_t)control->layoutWidth * (uint64_t)childNode->rightAnchorQ31;
     rightEdge =
-         ((int)((uint64_t)rightAnchorProduct >> 0x20) << 1 | (uint32_t)rightAnchorProduct >> 0x1f
+         (FIXED_PRODUCT_SHR(rightAnchorProduct, 31)
          ) + childNode->rightOffset + control->left;
     childNode->right = rightEdge;
     childNode->layoutWidth = rightEdge; /* minus the left edge below */
     bottomAnchorProduct =
          (uint64_t)(uint32_t)control->layoutHeight * (uint64_t)childNode->bottomAnchorQ31;
     bottomEdge =
-         ((int)((uint64_t)bottomAnchorProduct >> 0x20) << 1 |
-         (uint32_t)bottomAnchorProduct >> 0x1f) + childNode->bottomOffset + control->top;
+         (FIXED_PRODUCT_SHR(bottomAnchorProduct, 31)) + childNode->bottomOffset + control->top;
     childNode->bottom = bottomEdge;
     childNode->layoutHeight = bottomEdge;
     leftOrTopAnchorProduct = (uint64_t)(uint32_t)control->layoutWidth * (uint64_t)childNode->leftAnchorQ31;
-    leftOrTopEdge = ((int)((uint64_t)leftOrTopAnchorProduct >> 0x20) << 1 | (uint32_t)leftOrTopAnchorProduct >> 0x1f) +
+    leftOrTopEdge = (FIXED_PRODUCT_SHR(leftOrTopAnchorProduct, 31)) +
                     childNode->leftOffset + control->left;
     childNode->left = leftOrTopEdge;
     childNode->layoutWidth = childNode->layoutWidth - leftOrTopEdge;
     leftOrTopAnchorProduct = (uint64_t)(uint32_t)control->layoutHeight * (uint64_t)childNode->topAnchorQ31;
-    leftOrTopEdge = ((int)((uint64_t)leftOrTopAnchorProduct >> 0x20) << 1 | (uint32_t)leftOrTopAnchorProduct >> 0x1f) +
+    leftOrTopEdge = (FIXED_PRODUCT_SHR(leftOrTopAnchorProduct, 31)) +
                     childNode->topOffset + control->top;
     childNode->top = leftOrTopEdge;
     childNode->layoutHeight = childNode->layoutHeight - leftOrTopEdge;

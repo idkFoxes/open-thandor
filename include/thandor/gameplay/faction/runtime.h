@@ -52,7 +52,7 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void);
 
 /* 0x00514510 */
 void GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
-          (ArmyRuntimeSlot *targetArmyRuntime,WorldRuntimeContext *worldRuntime);
+          (ModelRuntimeSlot *hitModelRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x00514730 */
 void GameFactionRuntime_RecomputeProgressAndScoreMetrics

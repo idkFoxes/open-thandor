@@ -55,6 +55,8 @@ for m in re.finditer(r'^(struct|union) (\w+) \{\n(.*?)^\};', text, re.M | re.S):
     if keyword == 'union':
         unions.add(name)
     fields = []
+    # comments first: a multi-line comment may contain a ';' that would read as a field
+    body = re.sub(r'/\*.*?\*/', ' ', body, flags=re.S)
     for line in body.split('\n'):
         line = re.sub(r'/\*.*?\*/', '', line.split('//')[0]).strip()
         if not line:

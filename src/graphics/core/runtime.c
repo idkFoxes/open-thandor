@@ -214,11 +214,11 @@ GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoin
     projectedYProduct = (int64_t)viewPoint->y * (int64_t)perspectiveScaleQ12;
     /* SHLD EDX,EAX,20: bits 12..43 of the 64-bit product, i.e. the Q12 product shifted back by 12 */
     projectedPoint.projectedY =
-         ((int)((uint64_t)projectedYProduct >> 0x20) << 0x14 | (uint32_t)projectedYProduct >> 0xc) +
+         (FIXED_PRODUCT_SHR(projectedYProduct, 12)) +
          g_ProjectionCenterFixed.component1;
     projectedPoint.projectedX =
          g_ProjectionCenterFixed.component0 +
-         ((int)((uint64_t)projectedXProduct >> 0x20) << 0x14 | (uint32_t)projectedXProduct >> 0xc);
+         (FIXED_PRODUCT_SHR(projectedXProduct, 12));
     return projectedPoint;
   }
   offscreenPoint.projectedX = 0;
@@ -237,10 +237,10 @@ void Graphics_SetProjectionClipRect
           ,GraphicsScreenCoordinate minX)
 
 {
-  g_ProjectionClipRect.minX = minX << 0xc;
-  g_ProjectionClipRect.minY = minY << 0xc;
-  g_ProjectionClipRect.maxX = maxX << 0xc;
-  g_ProjectionClipRect.maxY = maxY << 0xc;
+  g_ProjectionClipRect.minX = minX << Q12_SHIFT;
+  g_ProjectionClipRect.minY = minY << Q12_SHIFT;
+  g_ProjectionClipRect.maxX = maxX << Q12_SHIFT;
+  g_ProjectionClipRect.maxY = maxY << Q12_SHIFT;
 }
 
 
@@ -268,7 +268,7 @@ void Graphics_SetViewProjectionParameters
   g_ViewAngle0 = viewAzimuthAngle;
   g_ViewAngle1 = viewElevationAngle;
   FixedTransform_BuildRotationBasis
-            (&g_ViewRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - viewAzimuthAngle & 0xffff,viewElevationAngle,
+            (&g_ViewRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - viewAzimuthAngle & FIXED_ANGLE16_MASK,viewElevationAngle,
              FIXED_ANGLE16_THREE_QUARTER_TURN);
   g_ViewRotationMatrixFixed.translation.x = 0;
   g_ViewRotationMatrixFixed.translation.y = 0;
@@ -289,13 +289,13 @@ void Graphics_SetViewProjectionParameters
             (&g_ViewProjectionMatrixFixed,&g_CameraTransformMatrixFixed,&g_ViewRotationMatrixFixed);
   g_ProjectionShift = projectionShift;
   halfViewAngle16 =
-       FixedMath_Atan2Angle16(1 << (0xcU - (char)projectionShift & 0x1f),projectionScale);
+       FixedMath_Atan2Angle16(1 << (12U - (char)projectionShift & SHIFT_COUNT_MASK),projectionScale);
   g_ProjectionAngleFactors[0] =
        THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed,
-                       FixedMath_SinCosQ28(halfViewAngle16 + viewAzimuthAngle & 0xffff));
+                       FixedMath_SinCosQ28(halfViewAngle16 + viewAzimuthAngle & FIXED_ANGLE16_MASK));
   g_ProjectionAngleFactors[1] =
        THANDOR_BITCAST(FixedSinCosEdxEax8, GraphicsWideFixed,
-                       FixedMath_SinCosQ28(viewAzimuthAngle - halfViewAngle16 & 0xffff));
+                       FixedMath_SinCosQ28(viewAzimuthAngle - halfViewAngle16 & FIXED_ANGLE16_MASK));
 }
 
 
@@ -314,25 +314,25 @@ void Graphics_SetProjectionViewport(GraphicsScreenCoordinate bottom,GraphicsScre
   uint8_t rightShiftAmount;
 
   /* (a + b) * 0x800 = the midpoint (a + b) / 2 in Q12 */
-  g_ProjectionCenterFixed.component0 = (left + right) * 0x800;
-  g_ProjectionCenterFixed.component1 = (top + bottom) * 0x800;
+  g_ProjectionCenterFixed.component0 = (left + right) * (Q12_ONE / 2);
+  g_ProjectionCenterFixed.component1 = (top + bottom) * (Q12_ONE / 2);
   projectionShiftDelta = g_ProjectionShift - 1;
   projectionScaleProduct = (int64_t)(right - left) * (int64_t)(int)g_ProjectionScaleFixed;
   g_ProjectionScaleProduct = (uint32_t)projectionScaleProduct;
   if (projectionShiftDelta != 0) {
     if (projectionShiftDelta < 0) {
-      rightShiftAmount = -(uint8_t)projectionShiftDelta & 0x1f;
+      rightShiftAmount = -(uint8_t)projectionShiftDelta & SHIFT_COUNT_MASK;
       g_ProjectionScaleProduct =
            g_ProjectionScaleProduct >> rightShiftAmount |
-           (int)((uint64_t)projectionScaleProduct >> 0x20) << (0x20 - rightShiftAmount);
+           (int)((uint64_t)projectionScaleProduct >> 32) << (32 - rightShiftAmount);
     }
     else {
-      g_ProjectionScaleProduct = g_ProjectionScaleProduct << ((uint8_t)projectionShiftDelta & 0x1f);
+      g_ProjectionScaleProduct = g_ProjectionScaleProduct << ((uint8_t)projectionShiftDelta & SHIFT_COUNT_MASK);
     }
   }
   /* 64-bit numerator = sign-extended product << 12 */
-  g_ProjectionNumerator.low = g_ProjectionScaleProduct << 0xc;
-  g_ProjectionNumerator.high = (int)g_ProjectionScaleProduct >> 0x14;
+  g_ProjectionNumerator.low = g_ProjectionScaleProduct << Q12_SHIFT;
+  g_ProjectionNumerator.high = (int)g_ProjectionScaleProduct >> (32 - Q12_SHIFT);
 }
 
 
@@ -349,7 +349,7 @@ void Graphics_SetAuxiliaryOrientation(AngleTurn32 elevationAngle,AngleTurn32 azi
   g_AuxiliaryOrientation.component1 = elevationAngle;
   FixedMath_WriteDirectionQ28(&g_AuxiliaryForwardDirectionFixed,elevationAngle,azimuthAngle);
   FixedTransform_BuildRotationBasis
-            (&g_AuxiliaryRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - azimuthAngle & 0xffff,elevationAngle,
+            (&g_AuxiliaryRotationMatrixFixed,FIXED_ANGLE16_QUARTER_TURN - azimuthAngle & FIXED_ANGLE16_MASK,elevationAngle,
              FIXED_ANGLE16_THREE_QUARTER_TURN);
   g_AuxiliaryRotationMatrixFixed.translation.x = 0;
   g_AuxiliaryRotationMatrixFixed.translation.y = 0;
@@ -412,15 +412,15 @@ void Graphics_RebuildFrustumPlanes(void)
   
   viewElevationAngle16 = g_ViewAngle1;
   viewAzimuthAngle16 = g_ViewAngle0;
-  scale = 1 << (0xcU - (char)g_ProjectionShift & 0x1f);
+  scale = 1 << (12U - (char)g_ProjectionShift & SHIFT_COUNT_MASK);
   viewDirection = FixedMath_DirectionFromAnglesScaledRegs(g_ViewAngle1,g_ViewAngle0,g_ProjectionScaleFixed);
   forwardZ = viewDirection.z;
   forwardY = viewDirection.y;
   forwardX = viewDirection.x;
   /* rays 0 and 1: horizontal vectors of length scale, a quarter turn to either side */
-  sideAzimuthAngle16 = viewAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff;
+  sideAzimuthAngle16 = viewAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0,0,sideAzimuthAngle16,scale);
-  edgeAzimuthAngle16 = sideAzimuthAngle16 - FIXED_ANGLE16_HALF_TURN & 0xffff;
+  edgeAzimuthAngle16 = sideAzimuthAngle16 - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
   FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 1,0,edgeAzimuthAngle16,scale);
   g_FrustumCornerRayFixed_0[0].x = g_FrustumCornerRayFixed_0[0].x + forwardX;
   g_FrustumCornerRayFixed_0[0].y = g_FrustumCornerRayFixed_0[0].y + forwardY;
@@ -429,11 +429,11 @@ void Graphics_RebuildFrustumPlanes(void)
   g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y + forwardY;
   g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z + forwardZ;
   /* rays 2 and 3: up and down (elevation + / - a quarter turn) at the view azimuth again */
-  edgeAzimuthAngle16 = edgeAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff;
-  upElevationAngle16 = viewElevationAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff;
+  edgeAzimuthAngle16 = edgeAzimuthAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
+  upElevationAngle16 = viewElevationAngle16 + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK;
   FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 2,upElevationAngle16,edgeAzimuthAngle16,scale);
   FixedMath_WriteDirectionScaled
-            (g_FrustumCornerRayFixed_0 + 3,upElevationAngle16 - FIXED_ANGLE16_HALF_TURN & 0xffff,edgeAzimuthAngle16,
+            (g_FrustumCornerRayFixed_0 + 3,upElevationAngle16 - FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,edgeAzimuthAngle16,
              scale);
   FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0,g_FrustumCornerRayFixed_0,
                      g_FrustumCornerRayFixed_0 + 2);
@@ -522,7 +522,7 @@ void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
 
   object = (GraphicsObject *)graphicsObjectAddress;
   object->translationDistance = distance;
-  object->translationAnglesPacked = azimuthAngle16 | elevationAngle16 << 0x10;
+  object->translationAnglesPacked = azimuthAngle16 | elevationAngle16 << 16;
 }
 
 
@@ -540,7 +540,7 @@ void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleT
 
   object = (GraphicsObject *)graphicsObjectAddress;
   object->rotationAzimuth = azimuthAngle;
-  object->rotationAnglesPacked = elevationAngle16 | rollAngle16 << 0x10;
+  object->rotationAnglesPacked = elevationAngle16 | rollAngle16 << 16;
 }
 
 
@@ -570,10 +570,10 @@ void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 g
     output = &object->worldTransform;
   }
   FixedTransform_BuildRotationBasis
-            (output,(int)object->rotationAnglesPacked >> 0x10,object->rotationAnglesPacked & 0xffff,
+            (output,(int)object->rotationAnglesPacked >> 16,object->rotationAnglesPacked & FIXED_ANGLE16_MASK,
              object->rotationAzimuth);
   translationDirection = FixedMath_DirectionFromAnglesScaledRegs
-                    ((int)object->translationAnglesPacked >> 0x10,object->translationAnglesPacked & 0xffff,
+                    ((int)object->translationAnglesPacked >> 16,object->translationAnglesPacked & FIXED_ANGLE16_MASK,
                      object->translationDistance);
   (output->translation).x = translationDirection.x;
   (output->translation).y = translationDirection.y;

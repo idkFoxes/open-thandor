@@ -63,6 +63,33 @@ typedef struct GraphicsObject {
 /* Entries of the g_CursorInputEvents ring (read by GraphicsCursor_ConsumeNextInputEvent). */
 #define GRAPHICS_CURSOR_INPUT_EVENT_CAPACITY 256
 
+/* Pixel formats shared by the graphics backends, textures and movies. ARGB8888 is the engine's 32-bit colour
+   (gfx assets, palette entries, vertex colours): alpha in the top byte, blue in the low byte. */
+#define ARGB8888_ALPHA_MASK 0xff000000
+#define ARGB8888_RED_MASK 0xff0000
+#define ARGB8888_GREEN_MASK 0xff00
+#define ARGB8888_BLUE_MASK 0xff
+#define ARGB8888_RGB_MASK 0xffffff
+#define ARGB8888_OPAQUE_WHITE 0xffffffff
+#define ARGB8888_CHANNEL_MASK 0xff /* one channel shifted down to bit 0 */
+#define ARGB8888_CHANNEL_MAX 0xff /* one 8-bit channel at full intensity */
+#define ARGB8888_CHANNEL_ONES 0x1010101 /* 1 in each of the four byte channels */
+#define ARGB8888_ALPHA_ONE 0x1000000 /* alpha 1, the lowest alpha step */
+/* c * 0x101 = c | c << 8: an 8-bit channel widened to a 16-bit lane (PUNPCKLBW of a value with itself) */
+#define COLOR_CHANNEL_TO_WORD_LANE 0x101
+/* 16-bit RGB565 (the Glide and most DirectDraw 16-bit modes) */
+#define RGB565_RED_MASK 0xf800
+#define RGB565_GREEN_MASK 0x7e0
+#define RGB565_BLUE_MASK 0x1f
+/* 16-bit ARGB4444 (Glide textures with alpha) */
+#define ARGB4444_ALPHA_MASK 0xf000
+#define ARGB4444_RGB_MASK 0xfff
+/* x86 shifts use only the low 5 bits of the count. The original masks some counts explicitly; the C keeps the
+   mask where dropping it changes the generated code. */
+#ifndef SHIFT_COUNT_MASK
+#define SHIFT_COUNT_MASK 0x1f
+#endif
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00576C30 */

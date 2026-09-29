@@ -44,7 +44,7 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
     cellColumn = gridCoordinates.columnQ12 >> 12;
     g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7; /* 0x80-byte cells */
     cellRow = gridCoordinates.rowQ12 >> 12;
-    if ((((-1 < (int)cellColumn) && (gridColumnCount = fieldGrid->gridWidth & 0x1ffffff, -1 < (int)cellRow)) &&
+    if ((((-1 < (int)cellColumn) && (gridColumnCount = fieldGrid->gridWidth & FIELD_GRID_ROW_STRIDE_WIDTH_MASK, -1 < (int)cellRow)) &&
         (cellRow < fieldGrid->gridHeight)) &&
        ((cellColumn < gridColumnCount &&
         (cellIndex = cellRow * gridColumnCount + cellColumn,
@@ -116,15 +116,15 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 
   if (fieldGrid != NULL) {
     /* cells per ray, rounded; the original divides by 0x901, not by the cell size 0x900 */
-    radiusStepsOrGridWidth = (neighborhoodRadiusQ12 + 0x7ffU) / 0x901;
+    radiusStepsOrGridWidth = (neighborhoodRadiusQ12 + 0x7ffU) / FIELD_GRID_WORLD_COLUMN_STEP_X;
     if (radiusStepsOrGridWidth == 0) {
       runStepCount = 2;
     }
-    else if (radiusStepsOrGridWidth < 0x100) {
+    else if (radiusStepsOrGridWidth < 256) {
       runStepCount = radiusStepsOrGridWidth + 1;
     }
     else {
-      runStepCount = 0x100;
+      runStepCount = 256;
     }
     gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
     radiusStepsOrGridWidth = fieldGrid->gridWidth;
@@ -230,7 +230,7 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
   /* every faction present now (odd bit) sets both of its bits in the history */
   resolvedMasks.secondaryOccupancyMask =
        secondaryOccupancyMask | ((primaryOccupancyMask & TERRAIN_OCCUPANCY_CLASS_PRESENT_BITS) >> 1) * 3;
-  factionSeenBit = 1 << (activeFactionIndex * 2 & 0x1fU);
+  factionSeenBit = 1 << (activeFactionIndex * 2 & 31U);
   combinedOccupancyMask = primaryOccupancyMask & resolvedMasks.secondaryOccupancyMask;
   resolvedClassFlags = 0;
   if ((baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {

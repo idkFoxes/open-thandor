@@ -210,7 +210,7 @@ FixedTriangleJointAngles FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLeng
   /* 64-bit (EBX:ECX) -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order; with p = (s0^2 - s1^2) / s2
      this is (2 * height)^2, so the square root is halved below like the two base projections */
   projectionOrHeightSquared = (((0 - projectionOrHeightSquared) - side2Squared) + side1Squared * 2) + side0Squared * 2;
-  if (projectionOrHeightSquared > -1 && sideLength2Q12 > 0x10) {
+  if (projectionOrHeightSquared > -1 && sideLength2Q12 > 16) {
     triangleHeight = FIXED_UINT64_SQRT(projectionOrHeightSquared);
     firstAngle16 = FixedMath_Atan2Angle16((int)triangleHeight >> 1,
                                           (int)(cosineNumerator0 / (int64_t)sideLength2Q12) >> 1);
@@ -1247,7 +1247,7 @@ uint32_t FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
   else {
     initialRootShift = (uint8_t)(highestSetBitIndex + 33U >> 1);
   }
-  rootEstimate = 1 << (initialRootShift & 0x1f);
+  rootEstimate = 1 << (initialRootShift & 31);
   /* unsigned DIV of EDX:EAX = high:low */
   refinedRootEstimate = (rootEstimate + (int)(((uint64_t)high << 32 | (uint64_t)low) / (uint64_t)rootEstimate)) >> 1;
   secondRootEstimate =

@@ -3833,15 +3833,15 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /*  2 */ (void *)ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds,
             /*  3 */ (void *)ArmyRuntimeClass_NoOpUpdate,
             /*  4 */ (void *)ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled,
-            /*  5 */ (void *)ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound,
-            /*  6 */ (void *)ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound,
-            /*  7 */ (void *)ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound,
-            /*  8 */ (void *)ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound,
+            /*  5 */ (void *)ArmyRuntimeAudio_UpdateTurretTurnSound,
+            /*  6 */ (void *)ArmyRuntimeAudio_UpdateTurretTurnSound,
+            /*  7 */ (void *)ArmyRuntimeAudio_UpdateTurretTurnSound,
+            /*  8 */ (void *)ArmyRuntimeAudio_UpdateTurretTurnSound,
             /*  9 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD,
             /* 10 */ (void *)ArmyRuntime_UpdateLoopingPositionedSound,
-            /* 11 */ (void *)ArmyRuntimeAudio_UpdateConditionalProjectedSound,
+            /* 11 */ (void *)ArmyRuntimeAudio_UpdateStructureFactorySound,
             /* 12 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD,
-            /* 13 */ (void *)ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds,
+            /* 13 */ (void *)ArmyRuntimeAudio_UpdateUnitFactorySounds,
             /* 14 */ (void *)ArmyRuntime_UpdateLoopingPositionedSound,
             /* 15 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD,
             /* 16 */ (void *)ArmyRuntime_UpdateLoopingPositionedSound,
@@ -3850,7 +3850,7 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /* 19 */ (void *)ArmyRuntimeClass_UpdateWaterPositionedSounds,
             /* 20 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD,
             /* 21 */ (void *)ArmyRuntimeAudio_UpdateAssetProjectedSound,
-            /* 22 */ (void *)ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds,
+            /* 22 */ (void *)ArmyRuntimeAudio_UpdateLinkedChildPadSounds,
             /* 23 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD
         },
         .modelUnrebase = {
@@ -6516,14 +6516,13 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
             0x00000008, 0x00000000, 0x00002117},
     },
     {0}, /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
-    /* 0054345C g_FrontendTaskAssignmentControlOffsets */
+    /* 00543460 g_FrontendTaskAssignmentControlOffsets */
     {
-        .assignmentControls = {.offsets = {0, 0xCC0, 0xD1C, 0xD78, 0xDD4, 0xE30, 0xE8C}},
-        .playerControls = {.offsets = {0xEE8, 0x11E4, 0x1244, 0x12A4, 0x1304, 0x1364, 0x13C4}},
-        .factionControls = {.offsets = {0x1424, 0xF44, 0xFA4, 0x1004, 0x1064, 0x10C4, 0x1124}},
-        .selectionRows = {.offsets = {0x1184, 0x1484, 0x14E4, 0x1544, 0x15A4, 0x1604, 0x1664}},
-        .statusRows = {.offsets = {0x16C4, 0x1724, 0x1780, 0x17DC, 0x1838, 0x1894, 0x18F0}},
-        .primaryAndPadding = {.offsets = {0x194C}}},
+        .assignmentControls = {.offsets = {0xCC0, 0xD1C, 0xD78, 0xDD4, 0xE30, 0xE8C, 0xEE8}},
+        .playerControls = {.offsets = {0x11E4, 0x1244, 0x12A4, 0x1304, 0x1364, 0x13C4, 0x1424}},
+        .factionControls = {.offsets = {0xF44, 0xFA4, 0x1004, 0x1064, 0x10C4, 0x1124, 0x1184}},
+        .selectionRows = {.offsets = {0x1484, 0x14E4, 0x1544, 0x15A4, 0x1604, 0x1664, 0x16C4}},
+        .statusRows = {.offsets = {0x1724, 0x1780, 0x17DC, 0x1838, 0x1894, 0x18F0, 0x194C}}},
     {0},
     {0}, /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
     {

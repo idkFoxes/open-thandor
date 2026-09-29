@@ -24,6 +24,11 @@
 #define UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER 0x20F /* 5 adapter buttons */
 /* g_UiActionHandlerPages page of these action ids (0x200 >> 8), installed by the dialog when it opens. */
 #define UI_DISPLAY_MODE_ACTION_HANDLER_PAGE 2
+/* Display settings pages: distinct display modes are sorted as width * UI_DISPLAY_MODE_WIDTH_SCALE + height
+   (the height is the low word); unused candidate slots hold UI_DISPLAY_MODE_NONE */
+#define UI_DISPLAY_MODE_WIDTH_SCALE 0x10000
+#define UI_DISPLAY_MODE_HEIGHT_MASK 0xffff
+#define UI_DISPLAY_MODE_NONE 0xffffffffu
 /* The display settings dialog's applyButton (a framed text button, g_UiNodeVtable_004B1D80) with extra fields in
    its tail: the selected mode tuple and colour bias/scale, then the same six values as they were when the
    dialog opened. 0x8C bytes. */

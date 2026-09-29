@@ -58,13 +58,13 @@ UiNodeBase * FrontendResultsTable_HitTestAlwaysNone
 /* 0x005177F0 */
 void FrontendResultsTable_DrawColourColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
 /* 0x005178B0 */
 void FrontendResultsTable_DrawFactionColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
 /* 0x00517960 */
@@ -72,30 +72,30 @@ void FrontendResultsTable_DrawFormattedFactionFieldColumn
           (TextResourceId valueFormatResourceId,TextResourceId headerResourceId,
           FrontendResultsFactionFieldByteOffset factionFieldOffset,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,
-          UiPixelCoordinate drawX,UiPixelCoordinate drawY,FrontendResultsRowMetrics *rowMetrics);
+          UiPixelCoordinate drawY,UiPixelCoordinate drawX,FrontendResultsRowMetrics *rowMetrics);
 
 /* 0x00517A30 */
 void FrontendResultsTable_DrawPointsColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
 /* 0x00517B10 */
 void FrontendResultsTable_DrawEconomyColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
 /* 0x00517BF0 */
 void FrontendResultsTable_DrawMilitaryColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
 /* 0x00517CD0 */
 void FrontendResultsTable_DrawPlayerColumn
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
-          UiPixelCoordinate clipLeft,UiPixelCoordinate drawX,UiPixelCoordinate drawY,
+          UiPixelCoordinate clipLeft,UiPixelCoordinate drawY,UiPixelCoordinate drawX,
           FrontendResultsRowMetrics *rowMetrics);
 
 

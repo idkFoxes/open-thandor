@@ -52,7 +52,7 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
       /* shift 2 (a quarter of the time) when the target's class counter for this army's class is zero,
          see AiCombatTarget_EvaluateCandidateScore */
       armyRuntime->commandGeneration =
-           candidateCommandGenerationBase >> ((uint8_t)selectedCommandGenerationRightShiftBits & 0x1f);
+           candidateCommandGenerationBase >> ((uint8_t)selectedCommandGenerationRightShiftBits & 31);
     }
   }
 }
@@ -77,7 +77,7 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
   AiTargetWorkspaceEntry *targetCandidateRecordCursor;
   ArmyRuntimeSlot **collectedArmyCursor;
   ModelRuntimeScaleRatioRegisterPairQ12 collectedHierarchyScaleRatioPairQ12;
-  ArmyRuntimeSlot *candidateTargetArmy;
+  ModelRuntimeSlot *candidateTargetModelRuntime;
 
   if (1 < g_AiCollectedEntityCount) {
     accumulatedScaleRatio = 0;
@@ -92,7 +92,7 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
                      ((RuntimeModelFactionPrefix *)(targetArmy->modelRuntimeOrSavedOffset).modelRuntime);
       assignedCommandGeneration = g_AiCommandGenerationCandidateBase;
       THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4) =
-           (uint32_t)(collectedHierarchyScaleRatioPairQ12 >> 0x20);
+           (uint32_t)(collectedHierarchyScaleRatioPairQ12 >> 32);
       if ((THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4) != 0) &&
          (accumulatedScaleRatio = accumulatedScaleRatio + (uint32_t)((int)collectedHierarchyScaleRatioPairQ12 << 8) /
                           THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4),
@@ -107,13 +107,14 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
           return;
         }
         do {
-          candidateTargetArmy = targetCandidateRecordCursor->armyRuntime;
+          candidateTargetModelRuntime = targetCandidateRecordCursor->modelRuntime;
           /* ties go to the later candidate */
-          if ((candidateTargetArmy != NULL) &&
-             (targetClassIndex = candidateTargetArmy->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId,
+          if ((candidateTargetModelRuntime != NULL) &&
+             (targetClassIndex = candidateTargetModelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId,
               remainingOrBestScore <= g_AiCombatTargetClassBaseScores[targetClassIndex])) {
             remainingOrBestScore = g_AiCombatTargetClassBaseScores[targetClassIndex];
-            targetArmy = candidateTargetArmy;
+            /* the chosen target model runtime shares the variable (ESI) with the collected-army cursor */
+            targetArmy = (ArmyRuntimeSlot *)candidateTargetModelRuntime;
           }
           targetCandidateRecordCursor++;
           targetCandidateRecordsRemaining--;
@@ -121,7 +122,8 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
         if (remainingOrBestScore == 0) {
           return;
         }
-        targetRuntime = targetArmy->linkedEntityRuntime;
+        /* the target model's owning army */
+        targetRuntime = ((ModelRuntimeSlot *)targetArmy)->ownerArmyRuntimeOrSavedOffset.entityRuntime;
         remainingOrBestScore = g_AiCollectedEntityCount;
         collectedArmyCursor = g_AiWorkspace14CollectedArmies;
         do {
@@ -199,7 +201,7 @@ AiCombatTarget_SelectBestCandidate
   returnedSourceClassCount = (AiSourceClassCount)(uintptr_t)worldRuntime;
   if (sourceClassCount != 0) {
     sourceModelNode = sourceArmyRuntime->modelNodeRuntime;
-    searchRadiusQ12 = sourceArmyRuntime->weaponRangeQ12 + 0x4000;
+    searchRadiusQ12 = sourceArmyRuntime->weaponRangeQ12 + 4 * Q12_ONE;
     sourceDepthMask1 =
          DepthInterval_BuildBinMask(searchRadiusQ12,(sourceModelNode->worldTransform).translation.x)
     ;
@@ -214,8 +216,8 @@ AiCombatTarget_SelectBestCandidate
         candidateEntityRuntime = ownerNodeCursor->runtimePayload;
         candidateArmyRuntime = (candidateEntityRuntime->common).ownership.runtimeLink;
         if ((((-1 < sourceClassCount) ||
-             (((candidateEntityRuntime->common).runtimeFlags & 0x400) == 0)) &&
-            (((candidateEntityRuntime->common).runtimeFlags & 8) == 0)) &&
+             (((candidateEntityRuntime->common).runtimeFlags & ARMY_MODEL_STATE_NO_REGENERATION) == 0)) &&
+            (((candidateEntityRuntime->common).runtimeFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0)) &&
            (classIndexOrFaction = candidateArmyRuntime->factionIndex, classIndexOrFaction != 0)) {
           /* Non-positive class counts look for other armies of the own faction, positive ones for armies
              of other factions. */
@@ -225,7 +227,7 @@ AiCombatTarget_SelectBestCandidate
               (classIndexOrFaction != sourceArmyRuntime->factionIndex)) {
             /* bit 1 of the source faction's 2-bit field in the candidate's +0x50 */
             if (((candidateArmyRuntime->terrainOccupancyMask0 &
-                 2 << ((char)sourceFactionIndex * 2 & 0x1fU)) != 0) &&
+                 2 << ((char)sourceFactionIndex * 2 & 31U)) != 0) &&
                (candidateScore =
                      AiCombatTarget_EvaluateCandidateScore
                                (currentBestScore,sourceClassCount,sourceDepthMask0,sourceDepthMask1,
@@ -299,7 +301,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
       }
     }
     /* clearance^2 = (radius + 2.0)^2 - dx^2 - dy^2 in 64 bits; negative rejects */
-    reachDeltaOrSourceCounter = sourceArmyRuntime->weaponRangeQ12 + 0x2000;
+    reachDeltaOrSourceCounter = sourceArmyRuntime->weaponRangeQ12 + 2 * Q12_ONE;
     deltaXOrCandidateCounter = (sourceArmyRuntime->modelNodeRuntime->worldTransform).translation.x -
             (candidateModelNode->worldTransform).translation.x;
     clearanceSquaredOrWeight = (int64_t)reachDeltaOrSourceCounter * (int64_t)reachDeltaOrSourceCounter -
@@ -383,7 +385,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                                    (candidateAimModelNode->worldTransform).translation.y,
                                    (candidateAimModelNode->worldTransform).translation.x,
                                    &g_InGameRuntimeRoot->worldRuntime,
-                                   (ArmyRuntimeSlot *)sourceWeaponModelRuntime);
+                                   sourceWeaponModelRuntime);
                 if ((testPassed) &&
                    (candidateScore = candidateScore >> 2,
                    (((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->

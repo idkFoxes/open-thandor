@@ -529,21 +529,21 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                  g_SoftwarePixelFormatConfig.blueShift++) {
             }
           }
-          stageOrLoopCounter = 0x1f;
+          stageOrLoopCounter = 31; /* from the top bit of the channel mask */
           if (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) {
             for (; g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter--) {
             }
           }
           g_SoftwarePixelFormatConfig.redBitCount =
                (stageOrLoopCounter + 1) - g_SoftwarePixelFormatConfig.redShift;
-          stageOrLoopCounter = 0x1f;
+          stageOrLoopCounter = 31; /* from the top bit of the channel mask */
           if (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) {
             for (; g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter--) {
             }
           }
           g_SoftwarePixelFormatConfig.greenBitCount =
                (stageOrLoopCounter + 1) - g_SoftwarePixelFormatConfig.greenShift;
-          stageOrLoopCounter = 0x1f;
+          stageOrLoopCounter = 31; /* from the top bit of the channel mask */
           if (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0) {
             for (; g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter--) {
             }

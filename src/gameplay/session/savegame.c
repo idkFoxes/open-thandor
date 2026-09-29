@@ -122,7 +122,7 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
                              (0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(deleteResult.valueOrError,deleteResult.failed);
     /* deleteButton - 0x760 = gameMenuSaveButton, the node RebuildCatalog expects */
-    InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(deleteButton - 0x760));
+    InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(deleteButton - 1888));
   }
 }
 
@@ -166,7 +166,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                     (FILESYSTEM_ENUMERATE_FILES,0xffffffff,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
+                     (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
   remainingCount = enumResult.entryCount;
   if (enumResult.failed) {
@@ -175,7 +175,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
   g_MemoryApi.free(g_ScenarioCatalog);
   g_ScenarioCatalog = NULL;
   /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
-  allocResult = g_MemoryApi.alloc((remainingCount + 1) * 0x104);
+  allocResult = g_MemoryApi.alloc((remainingCount + 1) * 260);
   rowPointerCursor = (ScenarioCatalogHeader *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     destination = &rowPointerCursor->campaignRecordsOffset + remainingCount; /* behind count + 1 pointers */
@@ -197,8 +197,8 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       /* the catalog record is the second 0x100 bytes of the .sve; a save that cannot be opened stays empty */
       if (!openResult.failed) {
         closeHandle = handle;
-        g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0x100,handle);
-        g_FileSystemReadExact(0x100,destination,handle);
+        g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,256,handle);
+        g_FileSystemReadExact(256,destination,handle);
         g_FileSystemClose(closeHandle);
         /* level index -> level title text, campaign index -> campaign title text */
         ((ScenarioCatalogSaveRecord *)destination)->levelTitleTextId =
@@ -207,23 +207,23 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
              ((ScenarioCatalogSaveRecord *)destination)->campaignTitleTextId + TEXT_ID_CAMPAIGN_TITLE_BASE;
       }
       rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
-      destination = destination + 0x40;
+      destination = destination + 64;
       leaf = (uint16_t *)((int)leaf + enumResult.recordSizeBytes); /* next enumerated file name */
     }
     rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
     clearCursor = destination;
-    for (clearCount = 0x40; clearCount != 0; clearCount--) {
+    for (clearCount = 64; clearCount != 0; clearCount--) {
       *clearCursor = 0;
       clearCursor++;
     }
     resolvedText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
-    RichTextCommandStream_CopyExpanded(0x100,(uint16_t *)destination,resolvedText.text);
+    RichTextCommandStream_CopyExpanded(256,(uint16_t *)destination,resolvedText.text);
     /* The action source is the game menu's Save button (in-game template +0x2550). */
     inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
     saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
     descriptionText = (UiWrappedTextControl *)INGAME_UI(inGameUi, saveGameDescriptionText);
     UiPointerList_InitializeColumnLayout(rowCount,(void **)g_ScenarioCatalog,saveList);
-    UiPointerList_SortByDwordPairFieldDescending(0xf0,saveList);
+    UiPointerList_SortByDwordPairFieldDescending(240,saveList);
     UiPointerList_InitializeColumnLayout(rowCount + 1,(void **)g_ScenarioCatalog,saveList);
     UiPointerList_SelectColumnListIndex(rowCount,saveList);
     UiPageStack_SetActiveIndex(5,(UiPageStackControl *)INGAME_UI(inGameUi, gameWindowPageStack));
@@ -231,7 +231,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     parentCursor = saveMenuButton->parent;
     firstNode = saveMenuButton;
     /* up to the root node (its parent is -1) */
-    while (parentCursor != (UiNodeBase *)0xffffffff) {
+    while (parentCursor != UI_NODE_NONE) {
       firstNode = firstNode->parent;
       parentCursor = firstNode->parent;
     }
@@ -338,7 +338,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   /* up to the root node (its parent is -1) */
   parentWalk = nameControl->parent;
   firstNode = nameControl;
-  while (parentWalk != (UiNodeBase *)0xffffffff) {
+  while (parentWalk != UI_NODE_NONE) {
     firstNode = firstNode->parent;
     parentWalk = firstNode->parent;
   }

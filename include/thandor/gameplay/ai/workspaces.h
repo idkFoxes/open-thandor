@@ -34,6 +34,13 @@
 #define AI_CANDIDATE_KIND_TECHNOLOGY 2 /* the id is a technology id; the other kinds carry an army asset id */
 #define AI_CANDIDATE_ID_MASK 0xFFFF
 #define AI_CANDIDATE_MULTIPLICITY_ONE 0x10000
+#define AI_CANDIDATE_SCORE_ONE 16 /* weightedScoreAndKind: one score unit above the 4 kind bits */
+/* AiPlanning_RebuildFactionWorkspaces site scan: scratch-grid state bits (world/pathing/grid.h) that rule a
+   site out - map edge and terrain classes 28..30 - and the low distance bands of grid classes 0..5 */
+#define AI_SITE_SCRATCH_OBSTACLE_BITS \
+  (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT30 | GRID_SCRATCH_TERRAIN_CLASS_BIT29 | \
+   GRID_SCRATCH_TERRAIN_CLASS_BIT28) /* 0xf0000000 */
+#define AI_SITE_SCRATCH_BANDS_CLASSES_0_TO_5 (0x3f * GRID_SCRATCH_LOW_BAND0) /* 0x3f00 */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053A1E0 */

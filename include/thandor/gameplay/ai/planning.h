@@ -12,6 +12,9 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/ai/planning. */
+
+/* g_AiActiveGridMaskClass0..3 (AiPlanning_CollectActiveGridMaskClasses): an unused slot */
+#define AI_GRID_MASK_CLASS_FREE 0xffffffff
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00514350 */
@@ -24,7 +27,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeAverageCompatibleAssetScore (AiArmySco
 void AiPlanning_CollectActiveGridMaskClasses(void);
 
 /* 0x0053C810 */
-void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,WorldRuntimeContext *inGameRuntime);
+void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,InGameRuntimeRoot *inGameRoot);
 
 /* 0x00539070 */
 bool AiConstructionPlanner_ProcessPendingAssetRequests

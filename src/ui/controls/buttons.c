@@ -196,10 +196,10 @@ void UiSpriteButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
-          control->activationSoundId != 0) {
+          control->activationSound != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)control->activationSoundId);
+                   control->activationSound);
       }
       selectionStateFlagsField = &(control->selectable).stateFlags;
       *selectionStateFlagsField = *selectionStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -223,10 +223,10 @@ void UiSpriteButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
-          control->activationSoundId != 0) {
+          control->activationSound != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)control->activationSoundId);
+                   control->activationSound);
       }
       pressStateFlagsField = &(control->selectable).stateFlags;
       *pressStateFlagsField = *pressStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -273,10 +273,10 @@ void UiSpriteButtonControl_NonRightRelease
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
-          control->activationSoundId != 0) {
+          control->activationSound != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)control->activationSoundId);
+                   control->activationSound);
       }
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;

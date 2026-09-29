@@ -35,6 +35,13 @@
 #define INGAME_CONDITION_TOKEN_NOT 0xFD
 #define INGAME_CONDITION_TOKEN_AND 0xFE
 #define INGAME_CONDITION_TOKEN_OR 0xFF
+/* World object pool of a session (InGameRuntime_InitializeNewSession, InGameRuntime_InitializeLoadedSession): records of
+   sizeof(WorldObjectRecord) bytes, handed to WorldRuntime_AttachObjectArray */
+#define INGAME_WORLD_OBJECT_RECORD_COUNT 0x4000
+#define INGAME_WORLD_DWORD_ARRAY_COUNT 256 /* g_InGameWorldRuntimeDwordArray256 */
+/* Keyboard camera (InGameUiRoot_UpdateFrame): pitch and heading step per frame (angle16) and zoom step */
+#define INGAME_CAMERA_KEY_ANGLE_STEP 0x400
+#define INGAME_CAMERA_KEY_DISTANCE_STEP_Q12 0x800
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00564F70 */

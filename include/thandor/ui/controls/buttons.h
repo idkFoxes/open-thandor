@@ -25,7 +25,7 @@
    _NonRightPress/_Release/_Drag, _Relocate): RECT_HIT_TEST hit-tests the node rectangle instead of opaque
    sprite pixels; NORMAL_UNDER_SELECTED draws the normal frame below the selected one; SERIALIZED_DESCRIPTOR
    means normalSubresourceStartOrDescriptor still points at the 8-int layout/frame descriptor that
-   _Relocate expands; ACTIVATION_SOUND plays activationSoundId on activation; SELECTED_ONLY draws the button
+   _Relocate expands; ACTIVATION_SOUND plays activationSound on activation; SELECTED_ONLY draws the button
    only while selected and hit-tests its selected frame. Without ANIMATED, the ACTION_AFTER_ANIMATION bit
    (0x800) instead selects alternateTextureSource for the selected frame. */
 #define UI_SPRITE_BUTTON_RECT_HIT_TEST 0x20

@@ -132,6 +132,26 @@
    (FrontendPlayerRuntime_RecordReadyAndUpdateWaitState), which ends Frontend_Init's wait loop. */
 #define FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS 0x10
 
+/* Frontend_Init: rate of FrontendRuntime_TimerCountdownTick and of FrontendRomTransition_AdvanceElapsedTicks */
+#define FRONTEND_PERIODIC_TIMER_HZ 80
+#define FRONTEND_ROM_TRANSITION_TIMER_HZ 256
+/* World object records of the 3D menu room (g_FrontendWorldObjectRecords, WorldRuntime_AttachObjectArray) */
+#define FRONTEND_WORLD_OBJECT_RECORD_COUNT 256
+/* Positions of the two number digits in "sound\menue01.sam" (menu sounds 01..99) */
+#define FRONTEND_MENU_SOUND_PATH_TENS_DIGIT 11
+#define FRONTEND_MENU_SOUND_PATH_ONES_DIGIT 12
+/* Record id looked up when the pointer is over no ROM record (matches none), and the transition target id
+   "no record to activate when the flight ends" */
+#define FRONTEND_ROM_RECORD_ID_NONE 0xf0000000u
+#define FRONTEND_ROM_TRANSITION_NO_TARGET 0xffffffffu
+/* Low four bits of WorldRuntimeContext.runtimeFlags: the camera motion a right drag or the wheel is doing
+   (FrontendModelPointerContext_DispatchWorldCameraPointerInput / _PointerWheel) */
+#define FRONTEND_CAMERA_MOTION_MOVE 1
+#define FRONTEND_CAMERA_MOTION_HEADING 2
+#define FRONTEND_CAMERA_MOTION_DISTANCE 4
+#define FRONTEND_CAMERA_MOTION_PITCH 8
+#define FRONTEND_CAMERA_MOTION_MASK 15
+
 /* 0x00546BD0 */
 FrontendMainLoopResult Frontend_MainLoop(RomRecordId frontendEntryRecordId);
 

@@ -363,7 +363,7 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
   recordIndex = 0;
   while( true ) {
     if (recordsRemaining == 0) {
-      return 0xffffffff;
+      return UINT32_MAX;
     }
     if (recordId == ((FrontendRomActionEntry *)((RomRecord *)table + 1))->linkedRecordId) break;
     recordIndex++;
@@ -426,7 +426,7 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
           (nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | ROM_NODE_FLAG_HIDDEN,
            activeRecordResult.valueOrError == recordCursor ||
            (((RomRecord *)activeRecordResult.valueOrError)->visibleRecordMask[recordCursor->recordId >> 5] &
-            1 << ((uint8_t)recordCursor->recordId & 0x1f)) != 0)) {
+            1 << ((uint8_t)recordCursor->recordId & 31)) != 0)) {
         nodeFlags = &rootNode->runtimeFlags;
         *nodeFlags = *nodeFlags & ~ROM_NODE_FLAG_HIDDEN;
         entryIndex = 0;
@@ -507,7 +507,7 @@ bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue 
           (nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | ROM_NODE_FLAG_HIDDEN,
            record == recordLookup.recordOrError || record == g_FrontendActiveRomRecord ||
            (maskWordIndex = record->recordId >> 5,
-            (1 << ((uint8_t)record->recordId & 0x1f) &
+            (1 << ((uint8_t)record->recordId & 31) &
              (((RomRecord *)recordLookup.recordOrError)->visibleRecordMask[maskWordIndex] |
               ((RomRecord *)g_FrontendActiveRomRecord)->visibleRecordMask[maskWordIndex])) != 0))) {
         nodeFlags = &rootNode->runtimeFlags;
@@ -678,7 +678,7 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
   newNode->modelPayload.worldRotationAngle0 = rotationAngle0;
   newNode->modelPayload.worldRotationAngle1 = rotationAngle1;
   newNode->modelPayload.worldRotationAngle2 = rotationAngle2;
-  newNode->modelPayload.meshGroupMask = 0xffffffff;
+  newNode->modelPayload.meshGroupMask = UINT32_MAX;
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
   /* four byte stores in this form: indexing the bytes changes the store order in the build */
   *(uint8_t *)&newNode->textureSubresourceBaseIndex = 0;

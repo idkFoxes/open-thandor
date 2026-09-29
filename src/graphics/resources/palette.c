@@ -44,7 +44,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
     /* mark every entry unused; fully transparent colours become plain black */
     entryCursor = (uint32_t *)(textureSourceBase + GRAPHICS_PALETTE_BANKS_OFFSET);
     do {
-      if ((*entryCursor & 0xff000000) == 0) {
+      if ((*entryCursor & ARGB8888_ALPHA_MASK) == 0) {
         indexOrColor = GRAPHICS_PALETTE_ENTRY_UNUSED_MARK;
       }
       else {
@@ -142,7 +142,7 @@ bool GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textur
             } while (secondIndex < GRAPHICS_PALETTE_BANK_ENTRIES);
           }
           indexOrColor++;
-        } while (indexOrColor < 0xff);
+        } while (indexOrColor < 255);
         cursorOrBankIndex++;
         entryCursor = bankCursor + GRAPHICS_PALETTE_BANK_BYTES / 4; /* next bank */
         remainingCount--;
@@ -496,7 +496,7 @@ PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOf
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
   return THANDOR_BITCAST(uint64_t, PaletteTextureSourceResult,
-                         THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xffffffff);
+                         THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & UINT32_MAX);
 }
 
 

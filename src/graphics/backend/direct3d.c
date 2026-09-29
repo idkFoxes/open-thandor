@@ -19,7 +19,7 @@ static __inline uint64_t Direct3D_MmxUnpackColorWords(PackedArgb32 color)
   int lane;
 
   for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)((((color >> (lane * 8)) & 0xff) * 0x101) >> 4);
+    lanes.uw[lane] = (uint16_t)((((color >> (lane * 8)) & ARGB8888_CHANNEL_MASK) * COLOR_CHANNEL_TO_WORD_LANE) >> 4);
   }
   return lanes.q;
 }
@@ -38,7 +38,7 @@ static __inline PackedArgb32 Direct3D_MmxPackColorWords(uint64_t words)
   color = 0;
   for (lane = 0; lane < 4; lane++) {
     value = lanes.sw[lane];
-    color = color | ((PackedArgb32)(value < 0 ? 0 : (value > 0xff ? 0xff : value)) << (lane * 8));
+    color = color | ((PackedArgb32)(value < 0 ? 0 : (value > ARGB8888_CHANNEL_MAX ? ARGB8888_CHANNEL_MAX : value)) << (lane * 8));
   }
   return color;
 }
@@ -1036,18 +1036,18 @@ void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   }
   coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
   textureCoordinate = &packet->vertices[0].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
   textureCoordinate = &packet->vertices[0].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -1235,18 +1235,18 @@ void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   }
   coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
   textureCoordinate = &packet->vertices[0].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
   textureCoordinate = &packet->vertices[0].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -1434,18 +1434,18 @@ void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
   textureCoordinate = &packet->vertices[0].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
   textureCoordinate = &packet->vertices[0].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -1633,18 +1633,18 @@ void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
   textureCoordinate = &packet->vertices[0].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
   textureCoordinate = &packet->vertices[0].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;
@@ -1832,18 +1832,18 @@ void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   coordinateShift = (char)largerDimensionLog2 - (char)textureWidthLog2;
   textureCoordinate = &packet->vertices[0].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureU;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   coordinateShift = (char)largerDimensionLog2 - (char)textureHeightLog2;
   textureCoordinate = &packet->vertices[0].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[1].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   textureCoordinate = &packet->vertices[2].textureV;
-  *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+  *textureCoordinate = *textureCoordinate >> (coordinateShift & SHIFT_COUNT_MASK);
   g_ImmediateTLVertices[0].tu = (float)packet->vertices[0].textureU;
   g_ImmediateTLVertices[0].tv = (float)packet->vertices[0].textureV;
   g_ImmediateTLVertices[1].tu = (float)packet->vertices[1].textureU;

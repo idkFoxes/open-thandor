@@ -349,7 +349,7 @@ bool NetworkFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpointDes
   StatusResult copyStatus;
 
   copyStatus = RichTextCommandStream_CopyToNarrow
-                    (0xff,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText);
+                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText);
   if (copyStatus.failed) {
     return true;
   }
@@ -396,7 +396,7 @@ void NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAd
 
   dottedAddress = g_WinSock_inet_ntoa(socketAddress->ipv4AddressNetworkOrder);
   if (dottedAddress != NULL) {
-    Text_CopyNarrowToUtf16(0x200,(uint16_t *)outputText,dottedAddress);
+    Text_CopyNarrowToUtf16(512,(uint16_t *)outputText,dottedAddress);
     return;
   }
   /* outputText is really UTF-16: the four zero bytes are an empty string (a single dword store) */
@@ -454,8 +454,8 @@ StatusResult NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
          THANDOR_BITCAST(uint32_t, NetworkEndpointAddressHeader4, g_NetworkBackendActiveAddressFamily);
     /* bind with the instance's address length, at least 16 bytes */
     socketOrAddressLength = g_NetworkBackendActiveSocketAddressLength;
-    if (g_NetworkBackendActiveSocketAddressLength < 0x10) {
-      socketOrAddressLength = 0x10;
+    if (g_NetworkBackendActiveSocketAddressLength < 16) {
+      socketOrAddressLength = 16;
     }
     if (g_NetworkBackendActiveAddressFamily == AF_INET) {
       THANDOR_PART(uint16_t, g_NetworkBackendBindAddress, 2) = networkPort;
@@ -619,7 +619,7 @@ bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut
   int addressLength; /* never initialised, in the original as well */
 
   copyStatus = RichTextCommandStream_CopyToNarrow
-                    (0xff,(uint8_t *)&g_NetworkEndpointTextScratchA,addressText);
+                    (255,(uint8_t *)&g_NetworkEndpointTextScratchA,addressText);
   if (copyStatus.failed) {
     return true;
   }
@@ -673,12 +673,12 @@ bool NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *ad
   StatusResult copyStatus;
   uint32_t textBufferLength; /* in: the scratch buffer size, out: the text length */
 
-  textBufferLength = 0xff;
+  textBufferLength = 255;
   conversionResult = g_Ws2_32_WSAAddressToStringA
                     (address,g_NetworkBackendActiveSocketAddressLength,NULL,
                      &g_NetworkEndpointTextScratchA,&textBufferLength);
   if (conversionResult == 0) {
-    copyStatus = Text_CopyNarrowToUtf16(0x200,outputUtf16,&g_NetworkEndpointTextScratchA);
+    copyStatus = Text_CopyNarrowToUtf16(512,outputUtf16,&g_NetworkEndpointTextScratchA);
     return copyStatus.failed;
   }
   outputUtf16[0] = 0;

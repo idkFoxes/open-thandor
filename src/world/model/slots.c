@@ -74,7 +74,7 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   modelRuntimeSlot->classState.classStateA8 = 0;
   modelRuntimeSlot->classState.classStateAC = 0;
   modelRuntimeSlot->classState.behaviorState = 0;
-  modelRuntimeSlot->classLinkState.classState78 = 0x7fffffff;
+  modelRuntimeSlot->classLinkState.classState78 = INT32_MAX;
   rootChild0Node = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode->childNodes[0];
   grandchildLocalYQ12 = rootChild0Node->childNodes[0]->modelPayload.localTranslationYQ12;
   modelRuntimeSlot->classState.classStateB0 = rootChild0Node->modelPayload.localTranslationYQ12;
@@ -89,7 +89,7 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
              (int64_t)(int)(definitionValue0C << 2));
   *(int *)modelRuntimeSlot->classPrefixState = initialTimingValue; /* +0x10 */
   modelRuntimeSlot->classState.classStateD0 = initialTimingValue;
-  modelRuntimeSlot->classState.effectEmitterTimerTicks = 0x7fffffff;
+  modelRuntimeSlot->classState.effectEmitterTimerTicks = INT32_MAX;
   return;
 }
 
@@ -107,11 +107,11 @@ void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
   Q12 rootWorldYQ12;
 
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
-  modelRuntimeSlot->classLinkState.modelLinkOrState.classState = 0x4000;
+  modelRuntimeSlot->classLinkState.modelLinkOrState.classState = FIXED_ANGLE16_QUARTER_TURN;
   modelRuntimeSlot->classLinkState.classState64 =
        rootModelNode->modelPayload.worldRotationAngle2;
   modelRuntimeSlot->classState.behaviorState = 0;
-  modelRuntimeSlot->classLinkState.classState70 = 0x18;
+  modelRuntimeSlot->classLinkState.classState70 = 24;
   if (2 < rootModelNode->childCount) {
     modelRuntimeSlot->classState.behaviorState |= 6;
   }
@@ -294,12 +294,12 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
   factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
   if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
-    storageLimitOffset = factionRecordOffset + 0x14; /* tritiumStorageLimitQ4 */
+    storageLimitOffset = factionRecordOffset + 20; /* tritiumStorageLimitQ4 */
   }
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
   storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
   *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
-  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != 0x6000000) &&
+  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
       (3 < rootModelNode->childCount)) && (rootModelNode->childNodes[3] != NULL)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[3]);
     rootModelNode->childNodes[3] = NULL;
@@ -328,12 +328,12 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
   factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
   if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
-    storageLimitOffset = factionRecordOffset + 0x14; /* tritiumStorageLimitQ4 */
+    storageLimitOffset = factionRecordOffset + 20; /* tritiumStorageLimitQ4 */
   }
   rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
   storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
   *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
-  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != 0x6000000) &&
+  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != ARMY_PREVIEW_WORLD_POSITION_Q12) &&
       (1 < rootModelNode->childCount)) && (rootModelNode->childNodes[1] != NULL)) {
     WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[1]);
     rootModelNode->childNodes[1] = NULL;

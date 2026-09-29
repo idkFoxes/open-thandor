@@ -267,7 +267,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
         effectModelNode->worldTransform.translation.z = worldZQ12;
         if ((effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION) != 0) {
           randomOrRuntimeValue = g_RandomGeneratorState.next();
-          orientationAngle0 = randomOrRuntimeValue & 0xffff;
+          orientationAngle0 = randomOrRuntimeValue & FIXED_ANGLE16_MASK;
         }
         effectModelNode->modelPayload.worldRotationAngle0 = orientationAngle2;
         effectModelNode->modelPayload.worldRotationAngle1 = orientationAngle1;
@@ -288,7 +288,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
         frameCount = effectDefinition->animationFrameCount;
         effectLinkPresent = effectDefinition->linkedEffectPresent;
         shotLinkPresent = effectDefinition->linkedShotPresent;
-        effectModelNode->modelPayload.meshGroupMask = 0xffffffff; /* all mesh groups */
+        effectModelNode->modelPayload.meshGroupMask = UINT32_MAX; /* all mesh groups */
         effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | (MODEL_RUNTIME_FLAG_APPLY_SCALE | 0x1);
         effectModelNode->textureSubresourceBaseIndex = 0;
         effectModelNode->modelRuntimeLinkOrSavedOffset = NULL;
@@ -344,9 +344,9 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
                             effectModelNode->worldTransform.translation.x,worldRuntime->fieldGrid)
         ;
         occupancyMasks =
-             TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,randomOrRuntimeValue,runtimeClassIndex);
+             TerrainOccupancyMask_ResolveRuntimeClassFlags(TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,randomOrRuntimeValue,runtimeClassIndex);
         effectRuntimeCursor->terrainRuntimeClassState = occupancyMasks.primaryOccupancyMask;
-        effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | occupancyMasks.runtimeFlags | 0x10;
+        effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | occupancyMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
         effectModelNode->tintArgb = 0xffffff;
         if (soundTableIndex != 0 && soundTableIndex < worldRuntime->dwordArrayCount &&
             worldRuntime->dwordArray != NULL &&

@@ -45,8 +45,8 @@ digraph thandor {
   "ArmyRuntime_TestArmyNearFactoryExit" [label="0x005246B0\nArmyRuntime_TestClass13ProximityCandidateCf"];
   "ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint" [label="0x00526510\nArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint"];
   "ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric" [label="0x005271A0\nArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric"];
-  "ArmyRuntime_PlayDefinitionOneShotSound" [label="0x00527230\nArmyRuntimeSpawner_PlayCreationSound"];
-  "ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint" [label="0x005272B0\nArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint"];
+  "ModelRuntime_PlayDefinitionSecondaryOneShotSound" [label="0x00527230\nArmyRuntimeSpawner_PlayCreationSound"];
+  "ModelRuntime_PlayDefinitionPrimaryOneShotSound" [label="0x005272B0\nArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint"];
   "ArmyRuntime_TestPositionDistanceWithinCombinedRadius" [label="0x005273D0\nArmyRuntime_TestPositionDistanceWithinCombinedRadiusCf"];
   "ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate" [label="0x005297D0\nArmyRuntime_SpawnIndexedModelPointEffectNearCandidate"];
   "ArmyRuntime_ProcessReadyAttachmentChannels" [label="0x00529980\nArmyRuntime_ProcessReadyAttachmentChannels"];
@@ -57,11 +57,11 @@ digraph thandor {
   "ArmyRuntime_InitializeTerrainOccupancyFlags" [label="0x0051D0B0\nArmyRuntime_InitializeTerrainOccupancyFlags"];
   "ArmyRuntime_UpdateAnimatedModelSubnodes" [label="0x00527E70\nArmyRuntime_UpdateAnimatedModelSubnodes"];
   "ArmyRuntime_UpdateTimedShotAndEffectEmitters" [label="0x00527C00\nArmyRuntime_UpdateTimedShotAndEffectEmitters"];
-  "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_PlayDefinitionOneShotSound";
+  "ArmyRuntimeClass_UpdateAircraft" -> "ModelRuntime_PlayDefinitionSecondaryOneShotSound";
   "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_TestWorldPointAllowedDefault";
   "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint";
   "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate";
-  "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint";
+  "ArmyRuntimeClass_UpdateAircraft" -> "ModelRuntime_PlayDefinitionPrimaryOneShotSound";
   "ArmyRuntimeClass_UpdateAircraft" -> "ArmyRuntime_UpdateTimedShotAndEffectEmitters";
   "ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode" -> "ArmyRuntime_UpdateTimedShotAndEffectEmitters";
   "ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode" -> "ArmyRuntime_UpdateAnimatedModelSubnodes";

@@ -17,6 +17,8 @@
    Glide3_Cursor_ComposeBeforePresent, which draws the cursor only for it (the generic DirectDraw callers pass
    real surface pointers and are ignored). */
 #define GLIDE_CURSOR_PRESENT_SENTINEL ((IDirectDrawSurface3 *)0x1)
+/* Bit pattern of the float 1.0f (guGammaCorrectionRGB takes floats) */
+#define GLIDE_FLOAT_BITS_ONE 0x3f800000
 
 /* glide.h GrResolution: one 16-byte entry of the list grQueryResolutions writes (Glide3_InitAndEnumerate,
    GraphicsGlide3_ApplyDisplayModeAndInitializeResources). */

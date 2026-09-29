@@ -99,7 +99,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
     textEditControl->selectionEnd = 0;
     /* clear the 48 UTF-16 units of the text, two per step */
     textCursor = textEditControl->textBuffer;
-    for (remainingPairs = 0x18; remainingPairs != 0; remainingPairs--) {
+    for (remainingPairs = 24; remainingPairs != 0; remainingPairs--) {
       textCursor[0] = 0;
       textCursor[1] = 0;
       textCursor = textCursor + 2;
@@ -628,7 +628,7 @@ void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve(g_SessionNetworkTickInterval + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
-            (0x40,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText.text);
+            (64,(uint16_t *)&g_FrontendNetworkSpeedLabelUtf16,labelText.text);
   g_SessionNetworkTickInterval = g_SessionNetworkTickInterval << 1;
   return;
 }
@@ -935,9 +935,11 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   WorldPositionResult averagePosition;
   
   /* &g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32[selectionGroupIndex * 32]
-     (faction records of 0x740 bytes, the groups at +0x2E0, 0x80 bytes each) */
+     (32 army pointers per group) */
   groupOrScanCursor = (SelectionPlayerRuntimeBlock *)
-           (selectionGroupIndex * 0x80 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x2e0) + factionIndex * 0x740);
+           (selectionGroupIndex * (32 * sizeof(ArmyRuntimeSlot *)) +
+            THANDOR_ADDR(g_GameFactionRuntimeImage,offsetof(GameFactionRuntimeRecord,runtimeGroupMembers8x32)) +
+            factionIndex * sizeof(GameFactionRuntimeRecord));
   sourceCursor = groupOrScanCursor;
   destCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   if ((transferModeFlags & SELECTION_TRANSFER_TO_GROUP) != 0) {
@@ -1099,7 +1101,7 @@ void FrontendPlayerTextCommand_AppendTripleClamped(FrontendPlayerIndex playerInd
   *(FrontendTextCommandValue0 *)(playerBlock->chatStagingText + writeOffset) = value0;
   *(FrontendTextCommandValue1 *)(playerBlock->chatStagingText + writeOffset + 4) = value1;
   nextOffset = writeOffset + PLAYER_CHAT_PIECE_BYTES;
-  playerBlock->chatRecipientMaskAndWriteOffset = playerBlock->chatRecipientMaskAndWriteOffset & 0xffffff00;
+  playerBlock->chatRecipientMaskAndWriteOffset = playerBlock->chatRecipientMaskAndWriteOffset & INGAME_CHAT_RECIPIENT_EVERYONE;
   if (PLAYER_CHAT_LAST_PIECE_OFFSET < nextOffset) {
     nextOffset = PLAYER_CHAT_LAST_PIECE_OFFSET;
   }
@@ -1128,13 +1130,13 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
         1 << ((char)(g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex + 8U & 0x1f))
         != 0) ||
       ((playerBlock->chatRecipientMaskAndWriteOffset &
-       1 << ((char)(g_InGameRuntimeRoot->worldRuntime).selection.activePlayerRuntimeId + 0x10U &
+       1 << ((char)(g_InGameRuntimeRoot->worldRuntime).selection.activePlayerRuntimeId + 16U &
             0x1f)) != 0)) &&
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
     /* +0x80C0: the 0x30 staged bytes, widened into a 0x60-byte buffer */
     Text_CopyNarrowToUtf16
-              (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText);
+              (96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->chatStagingText);
     messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
     stream = messageText.text;
     RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->playerNameUtf16,stream);
@@ -1165,7 +1167,7 @@ void FrontendPlayerSelection_ApplyEntryOrAll
   selectionCursor = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   targetEntity = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
-  remainingEntries = 0x20;
+  remainingEntries = 32;
   /* SelectionPointerArray_Contains sets CF (true) when the army is NOT in the selection */
   notInSelection = SelectionPointerArray_Contains(targetEntity,&selectionCursor->selection);
   if (notInSelection) {
@@ -1415,7 +1417,7 @@ void FrontendPlayerMessageBuffer_PublishTextById
     messageBuffer = messageBuffer + FRONTEND_PLAYER_MESSAGE_RECORD_BYTES;
   }
   /* the 0x30 text bytes, widened into a 0x60-byte buffer */
-  Text_CopyNarrowToUtf16(0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,
+  Text_CopyNarrowToUtf16(96,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,
                          (uint8_t *)(messageBuffer + FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET));
   messageText = TextResource_Resolve(TEXT_ID_CHAT_MESSAGE);
   stream = messageText.text;
@@ -1553,8 +1555,8 @@ void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
       army->rootModelNodeOrSavedOffset.modelNode != NULL)) {
     armyFlags = army->classState.stateFlags;
     playerBlock->technologyPageBuilding = (uint32_t)army;
-    playerBlock->heldResearchUnpaidFlag = armyFlags & 0x80;
-    army->classState.stateFlags = army->classState.stateFlags & ~0x80;
+    playerBlock->heldResearchUnpaidFlag = armyFlags & ARMY_MODEL_STATE_RESEARCH_UNPAID;
+    army->classState.stateFlags = army->classState.stateFlags & ~ARMY_MODEL_STATE_RESEARCH_UNPAID;
   }
   return;
 }

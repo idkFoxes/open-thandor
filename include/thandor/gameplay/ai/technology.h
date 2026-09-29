@@ -32,7 +32,7 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
 AiTechnologyPlanningLoopRegisterContinuityResult
 AiTechnologyPlanning_AddCandidateRecord
           (uint32_t technologyPanelIndex,uint32_t sourceArmyEntriesRemaining,uint32_t factionRecordOffset,
-          ArmyRuntimeSlot *sourceArmyRuntime,PckTechnologyIdCatalog technologyId);
+          ModelRuntimeSlot *sourceModelRuntime,PckTechnologyIdCatalog technologyId);
 
 /* 0x0053BCC0 */
 AiTechnologyCandidateScore AiTechnologyScore_ComputeFactionScaledCandidateValue

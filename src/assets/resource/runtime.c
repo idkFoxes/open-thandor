@@ -48,11 +48,11 @@ StatusResult InGameSaveGame_CreatePackage(void *packagePath)
   header[8] = 1;
   header[9] = 0;
   header[10] = 0;
-  header[0xb] = 0;
-  header[0xc] = 0;
-  header[0xd] = 0;
-  header[0xe] = 1;
-  header[0xf] = 0;
+  header[11] = 0;
+  header[12] = 0;
+  header[13] = 0;
+  header[14] = 1;
+  header[15] = 0;
   /* three time/date pairs all set to now */
   packedTimeOrDate = g_LocaleGetPackedCurrentTime();
   ((PckArchiveHeader *)header)->timeValue0 = packedTimeOrDate;
@@ -64,12 +64,12 @@ StatusResult InGameSaveGame_CreatePackage(void *packagePath)
   ((PckArchiveHeader *)header)->dateValue2 = packedTimeOrDate;
   g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->producerName);
   g_LocaleCopyDefaultComputerLabelUtf16(((PckArchiveHeader *)header)->sourceName);
-  header[0x100] = 0; /* unusedText: empty */
+  header[256] = 0; /* unusedText: empty */
   /* +0xB0 entryCount = 0 */
-  header[0xb0] = 0;
-  header[0xb1] = 0;
-  header[0xb2] = 0;
-  header[0xb3] = 0;
+  header[176] = 0;
+  header[177] = 0;
+  header[178] = 0;
+  header[179] = 0;
   FileSystem_WriteBufferToPath(PCK_ENTRY_HEADER_BYTES,header,packagePath);
   mountResult = Package_Mount(packagePath);
   return mountResult;
@@ -222,7 +222,7 @@ InGameSaveGame_PrepareRegistrationRecords
         }
         recordsRemainingOrCount = runtimeImage->recordCount;
         /* the saved tail-record offset goes into the last dword of the image (record array + size - 4) */
-        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[0xc] = (uint32_t)tailRecord;
+        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[12] = (uint32_t)tailRecord;
         return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) |
                (uint32_t)(recordsRemainingOrCount * sizeof(ResourceRegistrationRecordSavedView));
       }
@@ -293,7 +293,7 @@ InGameSaveGame_PrepareRegistrationRecords
     tailRecord = (ResourceRegistrationRecord *)((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
   }
   recordsRemainingOrCount = runtimeImage->recordCount;
-  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[0xc] = (uint32_t)tailRecord;
+  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[12] = (uint32_t)tailRecord;
   return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) |
                (uint32_t)(recordsRemainingOrCount * sizeof(ResourceRegistrationRecordSavedView));
 }
@@ -335,7 +335,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
       primaryArmyAssetPointerCursor = primaryArmyAssetPointerCursor + 1;
     }
     runtimeMemberCursor = factionRecordCursor->runtimeGroupMembers8x32;
-    runtimeMembersRemaining = 0x100;
+    runtimeMembersRemaining = 256;
     do {
       runtimeMember = *runtimeMemberCursor;
       if (runtimeMember != NULL) {
@@ -380,7 +380,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
            runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
       if (runtimeSlotCursor->modelNodeOrSavedOffset.modelNode != NULL) break;
       /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
-      for (clearDwordsRemaining = 0x10; effectRuntimeSlotsBase = g_EffectRuntimeSlots,
+      for (clearDwordsRemaining = 16; effectRuntimeSlotsBase = g_EffectRuntimeSlots,
           clearDwordsRemaining != 0; clearDwordsRemaining--) {
         runtimeSlotCursor->definitionOrSavedId.definition = NULL;
         runtimeSlotCursor = (EffectRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
@@ -449,7 +449,7 @@ ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
       ownerArmyRuntime = runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime;
       if (runtimeSlotCursor->modelNodeOrSavedOffset.modelNode != NULL) break;
       /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
-      for (clearDwordsRemaining = 0x10; shotRuntimeSlotsBase = g_ShotRuntimeSlots,
+      for (clearDwordsRemaining = 16; shotRuntimeSlotsBase = g_ShotRuntimeSlots,
           clearDwordsRemaining != 0; clearDwordsRemaining--) {
         runtimeSlotCursor->definitionOrSavedId.definition = NULL;
         runtimeSlotCursor = (ShotRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
@@ -511,7 +511,7 @@ void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *r
                                          playerSlotByteOffset);
   playerSlot->startCameraMagnitudeQ12 = cameraOrientation.magnitudeQ12;
   playerSlot->packedHeadingLow16PitchHigh16 =
-       cameraOrientation.headingAngle & 0xffff | cameraOrientation.pitchAngle << 16;
+       cameraOrientation.headingAngle & FIXED_ANGLE16_MASK | cameraOrientation.pitchAngle << 16;
   cameraPosition = WorldRuntime_GetCameraPositionRegs((WorldRuntimeContext *)runtimeImage);
   playerSlot->startCameraXQ12 = cameraPosition.xQ12;
   playerSlot->startCameraYQ12 = cameraPosition.yQ12;

@@ -26,6 +26,9 @@
 #define FACTION_RELATION_FREEZE_ALLIED 0x1   /* states 8 and up stay */
 #define FACTION_RELATION_FREEZE_FRIENDLY 0x2 /* states 4 and up stay */
 #define FACTION_RELATION_FREEZE_ALL 0x4
+/* GameFactionRuntimeRecord.packedRelationStates: one relation-state nibble per faction; the nibble bits of
+   state (e.g. FACTION_RELATION_STATE_ALLIED) at the given faction */
+#define FACTION_RELATION_PACKED(state,factionIndex) ((uint32_t)(state) << ((factionIndex) * 4))
 
 /* 0x0053C010 */
 void GameFactionRelations_UpdateAllPairsForFaction

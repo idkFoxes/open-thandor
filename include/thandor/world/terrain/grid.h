@@ -60,6 +60,23 @@
 #define FIELD_GRID_RAYCAST_MISS_DISTANCE 0x7fffffff
 /* One grid cell in Q12 grid coordinates; masking with ~(FIELD_GRID_CELL_Q12 - 1) keeps the cell origin. */
 #define FIELD_GRID_CELL_Q12 0x1000
+/* Lattice cell of a Q12 grid position (the samplers after FieldGrid_WorldToGridQ12): with the Q12 fractions f
+   (column) and g (row), f + 2g and 2f + g compared with one and two cells (FIELD_GRID_CELL_Q12,
+   FIELD_GRID_TWO_CELLS_Q12) pick the cell of the triangle the point lies in. */
+#define FIELD_GRID_TWO_CELLS_Q12 0x2000
+/* Both Q12 fractions of a FieldGridCoordinates read as one 64-bit value (columnQ12 low dword, rowQ12 high) */
+#define FIELD_GRID_COORDINATES_FRACTION_MASK 0xfff00000fff
+/* gridWidth as the original recovers it from the row stride (gridWidth * sizeof(FieldGridCell), SHL 7 then
+   SHR 7): the 25 width bits that survive the stride multiply */
+#define FIELD_GRID_ROW_STRIDE_WIDTH_MASK 0x1ffffff
+/* sqrt(3) in Q12 (7094): FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface scales the radius by it for the X
+   half-extent of the box around the circle */
+#define FIELD_GRID_SQRT3_Q12 0x1bb6
+/* Editor drag brushes (FieldGrid_ApplyEncodedUpdateCore, FieldGrid_ProcessHorizontalSpan/VerticalSpan): one drag
+   unit moves a height or water level by 64 (Q12) and widens a brush radius by 64 world units; the radius is
+   clamped to FIELD_GRID_EDIT_BRUSH_RADIUS_MAX. */
+#define FIELD_GRID_EDIT_DRAG_UNIT_Q12 0x40
+#define FIELD_GRID_EDIT_BRUSH_RADIUS_MAX 0x5000
 /* occupancy bits 0 and 1 of a faction byte: positioned sounds only play in cells where one of them is set
    (TerrainGrid_TestProjectedCellMaskBits01) */
 #define FIELD_CELL_OCCUPANCY_BITS01 0x03

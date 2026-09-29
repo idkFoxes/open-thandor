@@ -25,33 +25,33 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   MdlDefinitionSemanticPrefix *modelDefinition;
   int *behaviorCooldownCounter;
-  ArmyRuntimeSlot *armySlot;
+  ModelRuntimeSlot *unitModelRuntime;
   GameEntityRuntime *slotEntityRuntime;
 
   g_AiCollectedEntityCount = 0;
   workspaceEntriesRemaining = g_AiWorkspace01Count;
   workspaceEntryCursor = g_AiWorkspace01Units;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--, workspaceEntryCursor++) {
-    armySlot = workspaceEntryCursor->armyRuntime;
-    if (armySlot == NULL) continue;
-    slotEntityRuntime = armySlot->linkedEntityRuntime;
+    unitModelRuntime = workspaceEntryCursor->modelRuntime;
+    if (unitModelRuntime == NULL) continue;
+    slotEntityRuntime = unitModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
     if ((slotEntityRuntime->common.commandFlags & 0x13) != 0) {
       if ((slotEntityRuntime->common.commandFlags & 2) != 0) continue;
       /* Busy entities only get a behavior update when their cooldown runs out (or was already negative,
          which the increment below undoes). */
-      behaviorCooldownCounter = (int *)(slotEntityRuntime->common.reserved80_9F + 0xc);
+      behaviorCooldownCounter = (int *)(slotEntityRuntime->common.reserved80_9F + 12);
       *behaviorCooldownCounter = *behaviorCooldownCounter + -1;
       if (*behaviorCooldownCounter != 0) {
         if (-1 < *behaviorCooldownCounter) continue;
-        cooldownCounterBytes = slotEntityRuntime->common.reserved80_9F + 0xc;
+        cooldownCounterBytes = slotEntityRuntime->common.reserved80_9F + 12;
         *(int *)cooldownCounterBytes = *(int *)cooldownCounterBytes + 1;
       }
     }
     modelDefinition =
-         (MdlDefinitionSemanticPrefix *)armySlot->modelRuntimeOrSavedOffset.modelRuntime;
+         (MdlDefinitionSemanticPrefix *)unitModelRuntime->definitionOrSavedId.runtimeDefinition;
     if (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
       AiUnitBehavior_UpdatePioneerVehicle
-                (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
+                (modelDefinition,unitModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime,factionIndex,
                  worldRuntime);
     }
     else if ((((modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_01_GROUND) ||
@@ -60,7 +60,7 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
             ((modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_19_WATER_SURFACE ||
              (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_17_DEPLOYING_GLIDER)))) {
       AiUnitBehavior_SelectBestAnchorAction
-                (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
+                (modelDefinition,unitModelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime,factionIndex,
                  worldRuntime);
     }
   }
@@ -162,7 +162,7 @@ AiGeneralSiteDistanceSelection AiUnitBehavior_ComputeGeneralSiteDistanceScore
       negDeltaXOrScore = 0;
     }
     negDeltaXOrScore = (negDeltaXOrScore * (g_AiKnowledgeData->parameters).workspace05DistanceScaleQ12 +
-             workspaceRecordCursor->score >> 0xc) * armyRuntimeSlot->aiSiteScoreWeight;
+             workspaceRecordCursor->score >> Q12_SHIFT) * armyRuntimeSlot->aiSiteScoreWeight;
     if (negDeltaXOrScore - currentBestScore != 0 && currentBestScore <= negDeltaXOrScore) {
       bestEntry = workspaceRecordCursor;
       currentBestScore = negDeltaXOrScore;
@@ -210,7 +210,7 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
     if (negDeltaOrScore < 0) {
       negDeltaOrScore = 0;
     }
-    negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
+    negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> Q12_SHIFT) *
             armyRuntimeSlot->aiFactionAnchorScoreWeight;
     if (negDeltaOrScore - currentBestScore != 0 && currentBestScore <= negDeltaOrScore) {
       currentBestScore = negDeltaOrScore;
@@ -232,7 +232,7 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
     if (negDeltaOrScore < 0) {
       negDeltaOrScore = 0;
     }
-    negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
+    negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> Q12_SHIFT) *
             armyRuntimeSlot->aiFactionAnchorScoreWeight;
     if (negDeltaOrScore - currentBestScore != 0 && currentBestScore <= negDeltaOrScore) {
       currentBestScore = negDeltaOrScore;
@@ -285,7 +285,7 @@ AiSecondaryWorkspaceDistanceSelection AiUnitBehavior_ComputeSecondaryWorkspaceDi
     if (negDeltaXOrScore < 0) {
       negDeltaXOrScore = 0;
     }
-    negDeltaXOrScore = (negDeltaXOrScore * (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceScaleQ12 >> 0xc) *
+    negDeltaXOrScore = (negDeltaXOrScore * (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceScaleQ12 >> Q12_SHIFT) *
             armyRuntimeSlot->aiSecondaryWorkspaceScoreWeight;
     if (g_AiWorkspace07Count == 0) {
       negDeltaXOrScore = negDeltaXOrScore * 3 >> 2;
@@ -401,21 +401,21 @@ void AiUnitBehavior_UpdatePioneerVehicle
   
   siteScoreOrY = g_AiWorkspace04Count;
   sitesRemainingOrX = g_AiWorkspace00Count;
-  if (((armyRuntime->movementStateFlags & 0x100) == 0) &&
+  if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) == 0) &&
      (movementUpdate = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)armyRuntime), movementUpdate.arrived)) {
     if (sitesRemainingOrX == siteScoreOrY) {
       modelNode = armyRuntime->modelNodeRuntime;
-      headingOffset = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,0x2d05);
+      headingOffset = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,5 * FIELD_GRID_WORLD_COLUMN_STEP_X);
       sitesRemainingOrX = (modelNode->worldTransform).translation.x;
       siteScoreOrY = (modelNode->worldTransform).translation.y;
       armyRuntime->aiUnitState = 8;
       ArmyRuntime_StartRoutedMoveCommand
-                ((int)(headingOffset >> 0x20) + siteScoreOrY,(int)headingOffset + sitesRemainingOrX,
+                ((int)(headingOffset >> 32) + siteScoreOrY,(int)headingOffset + sitesRemainingOrX,
                  (ArmyMovementRuntime *)armyRuntime)
       ;
     }
-    else if (((armyRuntime->movementStateFlags & 0x100) == 0) && (g_AiWorkspace08Count != 0)) {
+    else if (((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) == 0) && (g_AiWorkspace08Count != 0)) {
       bestScore = 0;
       sitesRemainingOrX = g_AiWorkspace08Count;
       terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
@@ -513,8 +513,8 @@ void AiUnitBehavior_UpdatePioneerVehicle
     if (siteScoreOrY < 0) {
       siteScoreOrY = -siteScoreOrY;
     }
-    armyRuntime->movementStateFlags = armyRuntime->movementStateFlags | 0x100;
-    if ((sitesRemainingOrX < 0x1b03) && (siteScoreOrY < 0x1b03)) {
+    armyRuntime->movementStateFlags = armyRuntime->movementStateFlags | ARMY_MOVEMENT_SPECIAL_BEHAVIOR;
+    if ((sitesRemainingOrX < 3 * FIELD_GRID_WORLD_COLUMN_STEP_X) && (siteScoreOrY < 3 * FIELD_GRID_WORLD_COLUMN_STEP_X)) {
       ArmyRuntime_ResetMovementStateFromModel(armyRuntime);
     }
   }

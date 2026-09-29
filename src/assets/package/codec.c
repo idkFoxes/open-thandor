@@ -120,7 +120,7 @@ PckCodecResult PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapaci
                        source + PCK_FIELD_GRID_PREFIX_BYTES);
     if (!decodeResult.failed) {
       /* header dwords 0x2E/0x2F are gridWidth/gridHeight */
-      cellCountOrWorldX = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
+      cellCountOrWorldX = compactFieldImageBase[46] * compactFieldImageBase[47];
       compactReadCursor = compactFieldImageBase;
       expandedHeaderCursor = (AssetMagic *)destinationGrid;
       for (countOrRowStartX = FIELD_GRID_HEADER_DWORDS; countOrRowStartX != 0; countOrRowStartX--) {
@@ -300,14 +300,14 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
   } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
   /* Scale the counts down until the largest fits the 8-bit table; rounding up keeps rare symbols nonzero. */
   countOrShiftOrCodeLength = 0;
-  for (; 0xff < maxCountOrWeightOrSize; maxCountOrWeightOrSize = (maxCountOrWeightOrSize + 1) >> 1) {
+  for (; 255 < maxCountOrWeightOrSize; maxCountOrWeightOrSize = (maxCountOrWeightOrSize + 1) >> 1) {
     countOrShiftOrCodeLength++;
   }
   if (countOrShiftOrCodeLength != 0) {
     symbolState = g_PckHuffmanSymbolWorkspace256;
     do {
-      symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((uint8_t)countOrShiftOrCodeLength & 0x1f)) - 1;
-      symbolState->frequencyCount = symbolState->frequencyCount >> ((uint8_t)countOrShiftOrCodeLength & 0x1f);
+      symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((uint8_t)countOrShiftOrCodeLength & 31)) - 1;
+      symbolState->frequencyCount = symbolState->frequencyCount >> ((uint8_t)countOrShiftOrCodeLength & 31);
       symbolState++;
     } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
   }
@@ -323,9 +323,9 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
   nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
   for (;;) {
     scanNode = g_PckHuffmanLeafNodeWorkspace256;
-    maxCountOrWeightOrSize = 0xffffffff;
+    maxCountOrWeightOrSize = UINT32_MAX;
     countOrShiftOrCodeLength = PCK_HUFFMAN_NODE_COUNT;
-    secondWeightOrCode = 0xffffffff;
+    secondWeightOrCode = UINT32_MAX;
     do {
       if (scanNode->weight != 0) {
         if (scanNode->weight < maxCountOrWeightOrSize) {
@@ -405,7 +405,7 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
     if (4 < maxCountOrWeightOrSize) {
       outputBitOffset = 0;
       /* table + 0x1F, so the final AND with ~0xF rounds up and adds at least 16 bytes of slack */
-      maxCountOrWeightOrSize = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 0x1f;
+      maxCountOrWeightOrSize = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 31;
       do {
         for (;;) {
           currentSymbolByte = *source;
@@ -415,15 +415,15 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
              then the byte's code. */
           secondWeightOrCode = 0;
           do {
-            if (currentSymbolByte != *source || 0x11 < secondWeightOrCode) break;
+            if (currentSymbolByte != *source || 17 < secondWeightOrCode) break;
             secondWeightOrCode++;
             source++;
             sourceSizeBytes--;
           } while (sourceSizeBytes != 0);
-          *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode * 2 - 5) << (outputBitOffset & 0x1f);
+          *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode * 2 - 5) << (outputBitOffset & 31);
           secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
-          *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 5 & 0x1f);
-          for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
+          *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 5 & 31);
+          for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> 24); 7 < outputBitOffset;
               outputBitOffset = outputBitOffset - 8) {
             /* advance the dword write window by one byte */
             outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
@@ -435,8 +435,8 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
         }
         /* Literal token: flag bit 0, then the byte's code. */
         secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
-        *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 1 & 0x1f);
-        for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
+        *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 1 & 31);
+        for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> 24); 7 < outputBitOffset;
             outputBitOffset = outputBitOffset - 8) {
           outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
           maxCountOrWeightOrSize++;
@@ -504,7 +504,7 @@ PckCodecResult PckCodec_DecodeHuffmanRle
     symbolStateCursor++;
   } while (symbolStateCursor < g_PckHuffmanLeafNodeWorkspace256);
   /* 0x800 dwords: the leaf and internal node workspaces behind the symbol table */
-  for (remainingCount = 0x800; remainingCount != 0; remainingCount--) {
+  for (remainingCount = 2048; remainingCount != 0; remainingCount--) {
     symbolStateCursor->frequencyCount = 0;
     symbolStateCursor++;
   }
@@ -519,9 +519,9 @@ PckCodecResult PckCodec_DecodeHuffmanRle
   nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
   for (;;) {
     scanNode = g_PckHuffmanLeafNodeWorkspace256;
-    lowWeightOrBitWindow = 0xffffffff;
+    lowWeightOrBitWindow = UINT32_MAX;
     remainingCount = PCK_HUFFMAN_NODE_COUNT;
-    secondWeightOrCodeBits = 0xffffffff;
+    secondWeightOrCodeBits = UINT32_MAX;
     do {
       if (scanNode->weight != 0) {
         if (scanNode->weight < lowWeightOrBitWindow) {
@@ -563,7 +563,7 @@ PckCodecResult PckCodec_DecodeHuffmanRle
   inputBitOffset = 0;
   inputCursor = (uint32_t *)(source + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
   do {
-    lowWeightOrBitWindow = *inputCursor >> (inputBitOffset & 0x1f);
+    lowWeightOrBitWindow = *inputCursor >> (inputBitOffset & 31);
     nextBitOffset = inputBitOffset + 1;
     if ((lowWeightOrBitWindow & 1) == 0) {
       /* literal token */

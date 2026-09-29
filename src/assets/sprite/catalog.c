@@ -25,7 +25,7 @@ bool SpriteAsset_ValidateGroupCount(SpriteAssetHeader *spriteAsset)
     return true;
   }
   groupCount = spriteAsset->registryHeader.groupCount;
-  return (groupCount == 0) || (0xfff < (uint32_t)groupCount);
+  return (groupCount == 0) || (4095 < (uint32_t)groupCount);
 }
 
 /* Address: 0x004BE480.
@@ -160,12 +160,12 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
       recordsRemaining = blockCursor->fixedRecordCount;
       recordCursor = (int *)(blockCursor + 1);
       do {
-        recordCursor[0xc] = 0;
-        recordCursor[0xd] = 0;
+        recordCursor[12] = 0;
+        recordCursor[13] = 0;
         recordCursor[8] = 0;
         recordCursor[9] = 0;
         recordCursor[10] = 0;
-        recordCursor = recordCursor + 0x10;
+        recordCursor = recordCursor + 16;
         recordsRemaining--;
       } while (recordsRemaining != 0);
       recordsRemaining = blockCursor->pointerRelocationCount;
@@ -174,7 +174,7 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
         *recordCursor = *recordCursor - (int)relocatedSourceImage;
         recordCursor[3] = recordCursor[3] - (int)relocatedSourceImage;
         recordCursor[6] = recordCursor[6] - (int)relocatedSourceImage;
-        recordCursor = recordCursor + 0x10;
+        recordCursor = recordCursor + 16;
         recordsRemaining--;
       } while (recordsRemaining != 0);
       blockCursor = (SprRelocationBlockHeader *)((uint8_t *)blockCursor + blockCursor->blockByteSize);

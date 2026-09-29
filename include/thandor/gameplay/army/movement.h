@@ -53,6 +53,27 @@
 #define ARMY_ARTICULATED_STEP_OBSTRUCTED 0x80   /* the foot target was blocked; a second block cancels the step */
 /* step progress runs from 0 to 1.0 (Q12); the step ends once it exceeds 0xFFF */
 #define ARMY_ARTICULATED_STEP_PROGRESS_END_Q12 0x1000
+/* Articulated walker step choice (ArmyRuntimeClass_UpdateArticulatedWalker), angles relative to the heading
+   in angle16 units: a new step walks on while the route point lies within the eighth turn ahead (within
+   ARMY_ARTICULATED_WALK_ON_ANGLE16 once walking), otherwise the walker turns on the spot when it is more than
+   ARMY_ARTICULATED_TURN_ANGLE16 off. Standing, the feet are closed when their line is more than
+   ARMY_ARTICULATED_FEET_SQUARE_ANGLE16 off square to the heading. */
+#define ARMY_ARTICULATED_WALK_ON_ANGLE16 0x200
+#define ARMY_ARTICULATED_TURN_ANGLE16 0x800
+#define ARMY_ARTICULATED_FEET_SQUARE_ANGLE16 0x1000
+/* Ground normals of the articulated walker as packed elevation << 16 | azimuth: straight up */
+#define ARMY_ARTICULATED_NORMAL_UP (FIXED_ANGLE16_QUARTER_TURN << 16)
+/* Tracked vehicles: the track texture U offsets are kept within +-one texture width (Q20) */
+#define ARMY_TRACK_TEXTURE_U_WRAP 0x100000
+/* Glider banking (runtime class 17, classLinkState +0x60): the bank elevation is level at the quarter turn,
+   drops by ARMY_GLIDER_BANK_STEP_ANGLE16 per tick while turning down to ARMY_GLIDER_BANK_MAX_ANGLE16
+   and recovers by ARMY_GLIDER_BANK_RECOVER_ANGLE16; the bank heading turns at most
+   ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16 per tick */
+#define ARMY_GLIDER_BANK_LEVEL_ANGLE16 FIXED_ANGLE16_QUARTER_TURN
+#define ARMY_GLIDER_BANK_MAX_ANGLE16 0x3800
+#define ARMY_GLIDER_BANK_STEP_ANGLE16 0x100
+#define ARMY_GLIDER_BANK_RECOVER_ANGLE16 0x40
+#define ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16 0x400
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00520F60 */
@@ -95,7 +116,7 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
           (ModelRuntimeNode *modelNodeRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x00527BC0 */
-void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x0051C8E0 */
 void ArmyRuntime_StartRoutedMoveCommand
@@ -127,7 +148,7 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
 
 /* 0x00521580 */
 void ArmyArticulatedRuntime_UpdateContactChildAndEffects(ModelRuntimeNode *legNode,WorldRuntimeContext *worldRuntime,
-          ArmyRuntimeSlot *armyRuntime);
+          ModelRuntimeSlot *modelRuntime);
 
 /* 0x005217A0 */
 void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
@@ -150,7 +171,7 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
 
 /* 0x00523340 */
 bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
-          WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+          WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x0051CA60 */
 void ArmyRuntime_AppendWaypointOrStartMove

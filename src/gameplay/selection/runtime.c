@@ -65,7 +65,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
-                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                              (UiNumericValue32)(activeTotalMetrics >> 32),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
@@ -87,7 +87,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
@@ -110,7 +110,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           workingValue = ((ModelRuntimeWeaponAimStateView *)childModelRuntime)->attachmentReloadCountdownTicks;
           capacityOrMetric = ((ModelRuntimeWeaponAimStateView *)childModelRuntime)->modelDefinition->attachmentReloadTicks;
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          activeMetricMaximum = (int)(activeTotalMetrics >> 0x20);
+          activeMetricMaximum = (int)(activeTotalMetrics >> 32);
           if (activeMetricMaximum == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
@@ -140,7 +140,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           SelectionPanel_DrawSolidCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
@@ -155,7 +155,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
         childModelRuntime = armyRuntime->attachments[0].childModelRuntimeOrSavedOffset;
         if ((armyRuntime->attachmentCount != 0) && (childModelRuntime != NULL)) {
           armyRuntime = (ModelRuntimeSlot *)(childModelRuntime->definitionOrSavedId).savedIdOrOffset;
-          runtimeKindOrValue = 0xffffffff;
+          runtimeKindOrValue = UINT32_MAX;
           workingValue = 7;
           /* armyRuntime holds the child's definition from here on */
           if (((ModelDefinition *)armyRuntime)->runtimeClassId == MODEL_RUNTIME_CLASS_09) {
@@ -177,7 +177,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
               workingValue = -runtimeKindOrValue;
             }
             activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-            capacityOrMetric = (int)(activeTotalMetrics >> 0x20);
+            capacityOrMetric = (int)(activeTotalMetrics >> 32);
             if (capacityOrMetric == 0) {
               topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                  (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
@@ -207,7 +207,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
             scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
             SelectionPanel_DrawProportionalCappedBar
                       (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                       bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                       bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
                        SELECTION_PANEL_CELL_BOTTOM_BAR);
             SelectionPanel_DrawSolidCappedBar
                       (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,
@@ -226,7 +226,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,
-                              (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
+                              (UiNumericValue32)(activeTotalMetrics >> 32),(UiNumericValue32)activeTotalMetrics,SELECTION_PANEL_CELL_HIERARCHY_METER);
           groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
@@ -248,7 +248,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
@@ -262,7 +262,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
         }
         else if (((armyRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          workingValue = (int)(activeTotalMetrics >> 0x20);
+          workingValue = (int)(activeTotalMetrics >> 32);
           if (workingValue == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
@@ -292,7 +292,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
@@ -306,7 +306,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
         }
         else {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-          workingValue = (int)(activeTotalMetrics >> 0x20);
+          workingValue = (int)(activeTotalMetrics >> 32);
           if (workingValue == 0) {
             topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
@@ -337,7 +337,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
           SelectionPanel_DrawProportionalCappedBar
                     (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,
-                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
+                     bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
           armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
@@ -354,7 +354,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
     }
     if (((armyRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
       activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-      workingValue = (int)(activeTotalMetrics >> 0x20);
+      workingValue = (int)(activeTotalMetrics >> 32);
       if (workingValue == 0) {
         topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
@@ -384,7 +384,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
       scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
-                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
+                 ,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
                  SELECTION_PANEL_CELL_LEFT_BAR);
@@ -394,7 +394,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
     }
     else {
       activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
-      workingValue = (int)(activeTotalMetrics >> 0x20);
+      workingValue = (int)(activeTotalMetrics >> 32);
       if (workingValue == 0) {
         topLeftAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipBottom,clipRight,clipTop,clipLeft,panelTop,panelLeft,SELECTION_PANEL_CELL_CORNER_TOP_LEFT);
@@ -425,7 +425,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
       scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
       SelectionPanel_DrawProportionalCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX
-                 ,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
+                 ,(UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
       SelectionPanel_DrawSolidCappedBar
                 (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,
                  SELECTION_PANEL_CELL_LEFT_BAR);
@@ -448,7 +448,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
     scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs(runtimeEntry);
     SelectionPanel_DrawProportionalCappedBar
               (clipBottom,clipRight,clipTop,clipLeft,panelBottom,bottomRightAdvance.nextX,bottomLeftAdvance.nextX,
-               (UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
+               (UiNumericValue32)(scaleRatio >> 32),(UiNumericValue32)scaleRatio,SELECTION_PANEL_CELL_BOTTOM_BAR);
     SelectionPanel_DrawSolidCappedBar
               (clipBottom,clipRight,clipTop,clipLeft,bottomLeftAdvance.nextY,topLeftAdvance.nextY,panelLeft,SELECTION_PANEL_CELL_LEFT_BAR);
     SelectionPanel_DrawSolidCappedBar
@@ -483,7 +483,7 @@ void InGameSelection_SelectAllOwnAircraftPads
       entityRuntime =
            (GameEntityRuntime *)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
       if ((((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->runtimeClassId ==
-           0x16) &&
+           MODEL_RUNTIME_CLASS_22) &&
          ((entityRuntime->common).ownership.ownerIndex ==
           g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->factionIndex))
       {
@@ -733,7 +733,7 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
     placementContactKind = ((ModelDefinition *)definitionAddress)->placementContactKindIndex;
     (modelNode->worldTransform).translation.y = newWorldYQ12;
     if (placementContactKind == ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION) {
-      ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = 0x7fffffff;
+      ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = INT32_MAX;
     }
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (((ModelDefinition *)definitionAddress)->placementHeightOffsetQ12,newWorldYQ12,newWorldXQ12,modelNode,
@@ -766,7 +766,7 @@ void SelectionPlayerRuntime_RotatePrimarySelectionBy
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     modelNodeRuntime = (target->common).ownership.modelNode;
     (modelNodeRuntime->modelPayload).worldRotationAngle2 =
-         angleDelta + (modelNodeRuntime->modelPayload).worldRotationAngle2 & 0xffff;
+         angleDelta + (modelNodeRuntime->modelPayload).worldRotationAngle2 & FIXED_ANGLE16_MASK;
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
   }
   return;
@@ -814,8 +814,8 @@ StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySl
           playerBlockCursor = g_SelectionPlayerBlocks;
           g_InfoPanelData = loadedResource;
           do {
-            /* clear the 32 selection entries; the cursor then skips the rest of the 0x8118-byte block */
-            for (entriesRemaining = 0x20; loadedResource = g_SelectionPanelTextureSource, entriesRemaining != 0;
+            /* clear the 32 selection entries; the cursor then skips the rest of the block */
+            for (entriesRemaining = SELECTION_ENTRY_CAPACITY; loadedResource = g_SelectionPanelTextureSource, entriesRemaining != 0;
                 entriesRemaining--) {
               (playerBlockCursor->selection).entries[0] = NULL;
               playerBlockCursor = (SelectionPlayerRuntimeBlock *)((playerBlockCursor->selection).entries + 1);
@@ -825,14 +825,14 @@ StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySl
           } while (blockCountOrRecordOffset != 0);
           g_SelectionInfoEntitySlots = entitySlots;
           tableOffset = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
-          /* select.gfx: swap the data offsets of subresources 0x2E and 0x2D (XCHG in the original) */
+          /* select.gfx: swap the data offsets of subresources 46 and 45 (XCHG in the original) */
           LOCK();
           swappedSelectionDataOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[0x2e].dataOffset;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[0x2e].dataOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[0x2d].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[46].dataOffset;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[46].dataOffset =
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_SelectionPanelTextureSource + tableOffset))[45].dataOffset;
           UNLOCK();
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].dataOffset =
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].dataOffset =
                swappedSelectionDataOffset;
           /* info.gfx: rewrite records of several sequences (the records at the dataOffset of subresources
              0x2C..0x33; their layout is not typed); referencePayloadValue is the first dword of the record of
@@ -841,203 +841,203 @@ StatusResult SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySl
           tableOffset = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
           referencePayloadValue =
                *(uint32_t *)((uint8_t *)g_InfoPanelTextureSource +
-                            ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[0x2c].
+                            ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[44].
                             dataOffset);
           blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[0x2f].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)g_InfoPanelTextureSource + tableOffset))[47].dataOffset;
           patchBytes = (uint8_t *)g_InfoPanelTextureSource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
                referencePayloadValue;
           blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x30].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[48].dataOffset;
           patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
                referencePayloadValue;
           blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x31].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[49].dataOffset;
           patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
                referencePayloadValue;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x32].pixelHeight = 4;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x32].logicalHeight = 4;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x33].pixelHeight = 4;
-          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x33].logicalHeight = 4;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[50].pixelHeight = 4;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[50].logicalHeight = 4;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[51].pixelHeight = 4;
+          ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[51].logicalHeight = 4;
           patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].pixelHeight;
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].pixelHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
           patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].logicalHeight;
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].logicalHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
           patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2e].pixelHeight;
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[46].pixelHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
           patchBytes =
-               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2e].logicalHeight;
+               (uint8_t *)&((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[46].logicalHeight;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
           blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x32].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[50].dataOffset;
           patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
                referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 24;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 28) =
                referencePayloadValue;
           blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x33].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[51].dataOffset;
           patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 4) =
                referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 24;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 28) =
                referencePayloadValue;
           blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2d].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[45].dataOffset;
           *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset) =
                referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 4;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 24) =
                referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 28;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
           blockCountOrRecordOffset =
-               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[0x2e].dataOffset;
+               ((GraphicsTextureSourceEntry *)((uint8_t *)loadedResource + tableOffset))[46].dataOffset;
           *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset) =
                referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x4;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 4;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
           patchBytes[3] = 0;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x8;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 8;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0xc;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 12;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x10;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 16;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x14;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 20;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0xff;
           patchBytes[3] = 0xff;
-          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 0x18) =
+          *(uint32_t *)((uint8_t *)loadedResource + blockCountOrRecordOffset + 24) =
                referencePayloadValue;
-          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 0x1c;
+          patchBytes = (uint8_t *)loadedResource + blockCountOrRecordOffset + 28;
           patchBytes[0] = 0;
           patchBytes[1] = 0;
           patchBytes[2] = 0;
@@ -1996,7 +1996,7 @@ SelectionPanelAdvanceEaxEdx8 SelectionPanel_DrawNumberCellAndAdvanceRegs
   TextureSizeResult spriteSize;
 
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,0xf,1,value,
+            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,15,1,value,
              (uint16_t *)&g_SelectionPanelNumberScratchUtf16);
   textExtent = RichTextCommandStream_MeasureRegs
                     (g_SelectionPanelNumberTextStyle,(uint16_t *)&g_SelectionPanelNumberScratchUtf16);
@@ -2627,7 +2627,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
         runtimeState->assignedTargetArmyRuntime = (uint32_t)targetArmyRuntime;
         runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
-        runtimeState->movementStateFlags = runtimeState->movementStateFlags & 0xfffffdff;
+        runtimeState->movementStateFlags = runtimeState->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
@@ -2658,7 +2658,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
       if (!stateIsZero) {
         ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
         runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
-        runtimeState->movementStateFlags = runtimeState->movementStateFlags & 0xfffffdff;
+        runtimeState->movementStateFlags = runtimeState->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
         runtimeState->commandGeneration = runtimeState->commandGeneration << 2;
       }
     }
@@ -2737,7 +2737,7 @@ void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries)
     modelRuntime = *selectionEntries;
     if ((modelRuntime != NULL) &&
        (((modelRuntime->common).commandFlags & 2) == 0)) {
-      ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,(int *)modelRuntime);
+      ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,(ArmyRuntimeSlot *)modelRuntime);
     }
     selectionEntries = selectionEntries + 1;
     entriesRemaining--;
@@ -2891,8 +2891,8 @@ bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sele
     selection = (SelectionPointerArray32 *)((int)selection + 4);
     entriesRemaining--;
   } while (entriesRemaining != 0);
-  if (((maxOffsetX - minOffsetX < 0x5000 + 1) && (maxOffsetY - firstEntryOrMinOffsetY < 0x5000 + 1)) &&
-     ((maxOffsetX - minOffsetX) + (maxOffsetY - firstEntryOrMinOffsetY) < 0x7000 + 1)) {
+  if (((maxOffsetX - minOffsetX < 5 * Q12_ONE + 1) && (maxOffsetY - firstEntryOrMinOffsetY < 5 * Q12_ONE + 1)) &&
+     ((maxOffsetX - minOffsetX) + (maxOffsetY - firstEntryOrMinOffsetY) < 7 * Q12_ONE + 1)) {
     return false;
   }
   return true;
@@ -2925,7 +2925,7 @@ void SelectionPointerArray_SetAircraftPadTargets
     if ((*(int **)selection != NULL) &&
        (padRuntime = (ModelRuntimeLinkedChildSpawnAndBuildView *)**(int **)selection,
        padRuntime->modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_22)) {
-      markerSlotIndex = 0xc;
+      markerSlotIndex = 12;
       /* one match counter per byte: lane 1 in bits 0-7, lane 2 in bits 8-15, lane 4 in bits 16-23 */
       packedMarkerMatches = 0;
       do {

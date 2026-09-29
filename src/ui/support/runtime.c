@@ -78,7 +78,7 @@ void RecentTextHistory_Insert(uint16_t *text)
   uint32_t *serialCursor;
 
   serialCursor = g_RecentTextEntrySerials;
-  oldestSerial = 0xffffffff;
+  oldestSerial = UINT32_MAX;
   slotsRemaining = RECENT_TEXT_HISTORY_SLOT_COUNT;
   currentIndex = 0;
   oldestIndex = -1;
@@ -114,7 +114,7 @@ void RecentTextHistory_RemoveOldest(void)
   uint32_t *serialCursor;
 
   serialCursor = g_RecentTextEntrySerials;
-  oldestSerial = 0xffffffff;
+  oldestSerial = UINT32_MAX;
   currentIndex = 0;
   oldestIndex = -1;
   for (entriesRemaining = RECENT_TEXT_HISTORY_SLOT_COUNT; entriesRemaining != 0; entriesRemaining--) {
@@ -230,12 +230,12 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
       /* the decoder's image record: +0xB8 offset of the image header, which holds +0x08 (must be 0),
          +0x0C the offset of the pixels, +0x18 width and +0x1C height; the palette is at +0x200 with
          one 8-byte entry per colour */
-      headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + 0xb8);
+      headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + PCX_DECODED_IMAGE_HEADER_OFFSET);
       if (*(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 8) == 0 &&
-          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 0x18) == 64 &&
-          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 0x1c) == 64) {
-        paletteEntryCursor = (uint32_t *)((uint8_t *)decodedImage + 0x200);
-        headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 0xc);
+          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + PCX_IMAGE_HEADER_WIDTH) == 64 &&
+          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + PCX_IMAGE_HEADER_HEIGHT) == 64) {
+        paletteEntryCursor = (uint32_t *)((uint8_t *)decodedImage + PCX_DECODED_PALETTE);
+        headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + PCX_IMAGE_HEADER_PIXEL_OFFSET);
         /* each colour is stored as a whole dword and the output advances by 3 bytes: the fourth byte is
            overwritten by the next colour (the last one by the first pixel dword) */
         outputCursor = (uint8_t *)outputPreview->palette;

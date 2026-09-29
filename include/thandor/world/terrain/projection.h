@@ -49,6 +49,13 @@
    sets it after a frame that covered the whole view, every camera change clears it. While it is set (and the field
    grid is unchanged) the row spans and point-A projections of the previous frame are reused. */
 #define TERRAIN_RENDER_REUSE_PROJECTION 0x800
+/* Soil packet table (g_TerrainSoilPacketTablePayload) of TerrainProjectedTriangle_ClipInterpolateAndQueueTextured: one block per
+   material (projectionFlags bits 0..7), inside it one row per variant (projectionFlags bits 8..10, already the byte
+   offset), inside that 0x20-byte packets: +0 the plain triangle, +0x20..+0xA0 the blend packets towards the
+   other materials. The secondary surface table uses the same packet size. */
+#define TERRAIN_SOIL_PACKET_MATERIAL_BYTES 0x800
+#define TERRAIN_VERTEX_VARIANT_OFFSET_MASK 0x700 /* projectionFlags bits 8..10: variant row offset (0x100 each) */
+#define TERRAIN_SURFACE_PACKET_BYTES 0x20
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00506CD0 */

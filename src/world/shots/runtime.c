@@ -49,7 +49,7 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
    unless the shooter's active command targets another faction or the pair's last relation change is too
    recent (the ticks elapsed in both directions add up to less than 100).
 */
-void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArmyRuntime,ShotRuntimeSlot *shotRuntime)
+void ShotRuntime_ApplyArmyHitRelationAndNotifications(ModelRuntimeSlot *targetModelRuntime,ShotRuntimeSlot *shotRuntime)
 
 {
   ArmyRuntimeSlot *shooterArmy;
@@ -67,13 +67,13 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArm
   GameEntityRuntime *targetEntity;
   
   shooterArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
-  targetEntity = targetArmyRuntime->linkedEntityRuntime;
+  targetEntity = targetModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime; /* the hit model's army */
   if (shooterArmy != NULL) {
     if (shotRuntime->definitionOrSavedId.definition->targetClassImpactDamageQ12[0] < 0) {
       /* EAX = condition ratio, EDX = 0x1000: equal means the target is fully repaired */
       conditionRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs
                         ((RuntimeModelFactionPrefix *)targetEntity);
-      if ((int)conditionRatio == (int)(conditionRatio >> 0x20) &&
+      if ((int)conditionRatio == (int)(conditionRatio >> 32) &&
           (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
           targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
@@ -86,7 +86,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArm
       targetFactionIndex = targetEntity->common.ownership.ownerIndex;
       g_GameDataAuxState.pairPressureMatrix8x8[targetEntity->common.ownership.ownerIndex * 8 + shooterFactionIndex] =
            g_GameDataAuxState.pairPressureMatrix8x8
-           [targetEntity->common.ownership.ownerIndex * 8 + shooterFactionIndex] + 0x100;
+           [targetEntity->common.ownership.ownerIndex * 8 + shooterFactionIndex] + 256;
       if (shooterFactionIndex != 0 && targetFactionIndex != 0 && shooterFactionIndex != targetFactionIndex) {
         alreadyHostile = GameFactionRuntime_TestCapabilityBitClear(targetFactionIndex,shooterFactionIndex);
         inGameRoot = g_InGameRuntimeRoot;
@@ -98,7 +98,7 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArm
           g_GameFactionRuntimeImage.records[targetFactionIndex].relationStateTicks[shooterFactionIndex] =
                currentTick;
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
-                    (targetArmyRuntime,&inGameRoot->worldRuntime);
+                    (targetModelRuntime,&inGameRoot->worldRuntime);
           ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime);
         }
         else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
@@ -112,12 +112,12 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArm
           stateSecondTowardFirst = 0;
           stateFirstTowardSecond = 0;
           /* notification text code 11, or 12 when the relation was at state 8 or above */
-          activeFactionCodeForSecond = 0xb;
-          activeFactionCodeForFirst = 0xb;
+          activeFactionCodeForSecond = 11;
+          activeFactionCodeForFirst = 11;
           relationState = GameFactionRuntime_GetPackedStateNibble(targetFactionIndex,shooterFactionIndex);
           if (7 < relationState) {
-            activeFactionCodeForFirst = 0xc;
-            activeFactionCodeForSecond = 0xc;
+            activeFactionCodeForFirst = 12;
+            activeFactionCodeForSecond = 12;
           }
           GameFactionRuntime_ApplyPairwiseRelationTransition
                     (activeFactionCodeForFirst,activeFactionCodeForSecond,stateFirstTowardSecond,
@@ -422,7 +422,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotRuntimeCursor->animationFrameAccumulatorQ4 = frameThresholdQ4;
   shotRuntimeCursor->runtimeStateOrSavedOffset.runtimeState = targetModelReference;
   shotRuntimeCursor->elevationOffsetAngle16 = elevationOffsetAngle;
-  shotModelNode->modelPayload.meshGroupMask = 0xffffffff;
+  shotModelNode->modelPayload.meshGroupMask = UINT32_MAX;
   secondaryEffectInterval = shotDefinition->secondaryEffectIntervalTicks;
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | 1;
   shotRuntimeCursor->ownerAndTrajectory.secondaryEffectCountdownTicks = secondaryEffectInterval;
@@ -449,9 +449,9 @@ void ShotRuntimePool_CreateProjectileFromDefinition
                      (Q12_ONE,shotModelNode->worldTransform.translation.y,
                       shotModelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
   resolvedMasks =
-       TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,directionZOrNeighborhoodMask,runtimeClassIndex);
+       TerrainOccupancyMask_ResolveRuntimeClassFlags(TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED,0,directionZOrNeighborhoodMask,runtimeClassIndex);
   shotRuntimeCursor->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | 0x10;
+  shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   nodeTintArgb = ModelRuntimeNode_GetStateTintArgb(shotModelNode);
   definitionTintArgb = shotDefinition->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
@@ -465,7 +465,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
-              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0x0),
+              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),
                shotModelNode->modelPayload.worldRotationAngle2,
                shotModelNode->modelPayload.worldRotationAngle1,
                shotModelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,

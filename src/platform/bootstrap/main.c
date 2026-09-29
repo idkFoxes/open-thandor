@@ -21,7 +21,7 @@ maps the original data image (see image.h) and enters ProcessEntry from WinMain.
    encoder/decoder tables, checks guard bytes behind the output and logs the result. */
 static void Thandor_SelfTestCodec(void)
 {
-    static const unsigned sizes[3] = {0x400000, 0x48000, 0x40000};
+    static const unsigned sizes[3] = {MODEL_RUNTIME_POOL_BYTES, ARMY_RUNTIME_SLOT_COUNT * sizeof(ArmyRuntimeSlot), EFFECT_RUNTIME_POOL_BYTES};
     unsigned t;
     for (t = 0; t < 3 * 2; t++) {
         unsigned size = sizes[t % 3];
@@ -263,7 +263,7 @@ static void Thandor_SelfTestScanAddresses(void)
                                      "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
     unsigned p;
     FILE *out = fopen("scanaddr.txt", "w");
-    uint8_t *packed = (uint8_t *)malloc(0x800000);
+    uint8_t *packed = (uint8_t *)malloc(PACKAGE_SCRATCH_BUFFER_BYTES);
     unsigned totalEntries = 0;
     unsigned totalHits = 0;
     if (out == NULL || packed == NULL) {
@@ -292,7 +292,7 @@ static void Thandor_SelfTestScanAddresses(void)
     }
     for (p = 0; p < listCount; p++) {
         FILE *pck;
-        long position = 0x200;
+        long position = PCK_ENTRY_HEADER_BYTES;
         pck = fopen(list[p], "rb");
         if (pck == NULL) {
             continue;
@@ -307,7 +307,7 @@ static void Thandor_SelfTestScanAddresses(void)
             if (fseek(pck, position, SEEK_SET) != 0 || fread(&header, sizeof header, 1, pck) != 1) {
                 break;
             }
-            if (header.packedSize == 0 || header.packedSize > 0x800000 || header.unpackedSize > 0x4000000 ||
+            if (header.packedSize == 0 || header.packedSize > PACKAGE_SCRATCH_BUFFER_BYTES || header.unpackedSize > 0x4000000 ||
                 (uint32_t)header.compressionMethod > 3) {
                 break;
             }
@@ -325,7 +325,7 @@ static void Thandor_SelfTestScanAddresses(void)
             if (g_PckDecoderTable[header.compressionMethod] == NULL) {
                 fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (uint32_t)header.compressionMethod);
                 free(unpacked);
-                position += 0x200 + (long)header.packedSize;
+                position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
                 continue;
             }
             decoded = g_PckDecoderTable[header.compressionMethod]
@@ -364,7 +364,7 @@ static void Thandor_SelfTestScanAddresses(void)
                 }
             }
             free(unpacked);
-            position += 0x200 + (long)header.packedSize;
+            position += PCK_ENTRY_HEADER_BYTES + (long)header.packedSize;
         }
         fclose(pck);
     }

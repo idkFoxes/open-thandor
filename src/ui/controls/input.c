@@ -339,7 +339,7 @@ bool UiSingleLineTextControl_ForwardKeyboardEventToChild
   childControl = control->focusChild;
   /* key codes without a high word are typed characters (Keyboard_OnChar) and KEYBOARD_KEY_CODE_SPACE */
   if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
-    if (((control->labelFlags & UI_LABEL_SWALLOW_CHARACTERS) != 0) && ((keyCode & 0x30) != 0)) {
+    if (((control->labelFlags & UI_LABEL_SWALLOW_CHARACTERS) != 0) && ((keyCode & UI_LABEL_SWALLOWED_CHARACTER_BITS) != 0)) {
       return false;
     }
   }
@@ -979,48 +979,50 @@ void UiSelectionGeometryControl_DrawClipped
       (clipHeightOrColumnTerm = clipBottom - clipTop, clipHeightOrColumnTerm != 0 && clipTop <= clipBottom)) &&
      (control->textureSource != NULL)) {
     rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
-    cosTermOrRowStepV = -((int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c);
+    cosTermOrRowStepV = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
     rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
-    sinTermOrSourceU = (int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c;
-    rotationProductA = (int64_t)(int)sinTermOrSourceU * 0x1c6e9c;
-    rotationProductB = (int64_t)cosTermOrRowStepV * -0x20c8cc;
-    stepTermOrRowStartU = (int)((uint64_t)rotationProductB >> 0x20) << 0xb | (uint32_t)rotationProductB >> 0x15;
-    rotationProductB = (int64_t)cosTermOrRowStepV * 0x1c6e9c;
-    rotationProductC = (int64_t)(int)-sinTermOrSourceU * -0x20c8cc;
-    stepTermOrRowStartV = (int)((uint64_t)rotationProductC >> 0x20) << 0xb | (uint32_t)rotationProductC >> 0x15;
+    sinTermOrSourceU = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
+    /* scale*(sin, cos) mapped through the field-grid lattice factors: products by the column factor are taken
+       >> Q20_SHIFT, those by the row factor >> (Q20_SHIFT + 1) (half a row, the lattice skew) */
+    rotationProductA = (int64_t)(int)sinTermOrSourceU * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    rotationProductB = (int64_t)cosTermOrRowStepV * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    stepTermOrRowStartU = FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT + 1);
+    rotationProductB = (int64_t)cosTermOrRowStepV * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+    rotationProductC = (int64_t)(int)-sinTermOrSourceU * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+    stepTermOrRowStartV = FIXED_PRODUCT_SHR(rotationProductC, Q20_SHIFT + 1);
     sinTermOrSourceU =
-         ((int)((uint64_t)rotationProductB >> 0x20) << 0xc | (uint32_t)rotationProductB >> 0x14) - stepTermOrRowStartV;
+         (FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT)) - stepTermOrRowStartV;
     cosTermOrRowStepV = stepTermOrRowStartV * 2;
     rowStepU = (uint64_t)sinTermOrSourceU;
     sourceStartU = (uint64_t)
-             (control->sourceOriginYQ12 -
+             (control->sourceOriginXQ12 -
              (sinTermOrSourceU * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
-             (((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) -
+             ((FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) -
               stepTermOrRowStartU) *
              (((control->base).left + (control->base).right >> 1) - clipLeft)));
     /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
     pixelStepU =
-         ((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermOrRowStartU;
+         (FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) - stepTermOrRowStartU;
     pixelStepV = stepTermOrRowStartU * 2;
-    texelIndexOrFraction = control->sourceOriginXQ12 -
+    texelIndexOrFraction = control->sourceOriginYQ12 -
              (cosTermOrRowStepV * (((control->base).top + (control->base).bottom >> 1) - clipTop) +
              stepTermOrRowStartU * 2 * (((control->base).left + (control->base).right >> 1) - clipLeft));
     sourceTexture = control->textureSource;
     subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
     /* the subresource entry fields (paletteIndex, dataOffset, pixelWidth, pixelHeight) are read relative to
        the asset's address anchor */
-    if (*(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0x20)) < 0) {
+    if (*(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET))) < 0) {
       sourceWidth =
-           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0x10));
+           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET)));
       sourceHeight =
-           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0xc));
+           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET)));
       pixelDataOffset =
-           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable - 0x1c));
+           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET)));
       framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
-        rowStepUHigh = (int)(rowStepU >> 0x20);
+        rowStepUHigh = (int)(rowStepU >> 32);
         sinTermOrSourceU = (uint32_t)sourceStartU;
-        sourceColumn = (int)(sourceStartU >> 0x20);
+        sourceColumn = (int)(sourceStartU >> 32);
         clipBottom = clipHeightOrColumnTerm;
         remainingColumns = clipWidth;
         if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
@@ -1036,8 +1038,8 @@ void UiSelectionGeometryControl_DrawClipped
               sourcePixelSample1 = 0;
               sourcePixelSample2 = 0;
               sourcePixelSample3 = 0;
-              sourceRow = (int)sourceV >> 0xc;
-              sourceColumn = (int)sinTermOrSourceU >> 0xc;
+              sourceRow = (int)sourceV >> Q12_SHIFT;
+              sourceColumn = (int)sinTermOrSourceU >> Q12_SHIFT;
               texelIndexOrFraction = sourceWidth * sourceRow + sourceColumn;
               clipHeightOrColumnTerm = sourceColumn + 1;
               if (sourceRow < sourceHeight) {
@@ -1046,13 +1048,13 @@ void UiSelectionGeometryControl_DrawClipped
                     sourcePixelSample0 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset + -0x28);
+                          texelIndexOrFraction * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample1 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset + -0x24);
+                          texelIndexOrFraction * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
                   }
                 }
                 if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
@@ -1060,27 +1062,27 @@ void UiSelectionGeometryControl_DrawClipped
                     sourcePixelSample2 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x28);
+                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample3 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x24);
+                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
                   }
                 }
               }
               blendedPixel = UiScaler_BlendBilinear
                                        (sourcePixelSample0,sourcePixelSample1,sourcePixelSample2,
-                                        sourcePixelSample3,(int)(sinTermOrSourceU & 0xfff) >> 4,
-                                        (int)(sourceV & 0xfff) >> 4);
+                                        sourcePixelSample3,(int)(sinTermOrSourceU & Q12_FRACTION_MASK) >> 4,
+                                        (int)(sourceV & Q12_FRACTION_MASK) >> 4);
               /* 32-bit colour to 16-bit: PUNPCKLBW/PSRLW 4, PAND quantize masks, PMADDWD pack weights,
                  then (q >> 40) + (q >> 8) with PADDW; the low word is the pixel. */
               packedLanes = pmaddwd(UiScaler_UnpackBytesToWordLanes(blendedPixel,4) &
                                     THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t,
                                                     g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                     g_SoftwarePixelMmxConstants.packWeights);
-              *(short *)destPixel = (short)(packedLanes >> 0x28) + (short)(packedLanes >> 8);
+              *(short *)destPixel = (short)(packedLanes >> 40) + (short)(packedLanes >> 8);
               sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
               sourceV = sourceV + pixelStepV;
               destPixel = destPixel + 2;
@@ -1109,8 +1111,8 @@ void UiSelectionGeometryControl_DrawClipped
               sourcePixelSample1 = 0;
               sourcePixelSample2 = 0;
               sourcePixelSample3 = 0;
-              sourceRow = (int)sourceV >> 0xc;
-              sourceColumn = (int)sinTermOrSourceU >> 0xc;
+              sourceRow = (int)sourceV >> Q12_SHIFT;
+              sourceColumn = (int)sinTermOrSourceU >> Q12_SHIFT;
               texelIndexOrFraction = sourceWidth * sourceRow + sourceColumn;
               clipHeightOrColumnTerm = sourceColumn + 1;
               if (sourceRow < sourceHeight) {
@@ -1119,13 +1121,13 @@ void UiSelectionGeometryControl_DrawClipped
                     sourcePixelSample0 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset + -0x28);
+                          texelIndexOrFraction * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample1 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset + -0x24);
+                          texelIndexOrFraction * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
                   }
                 }
                 if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
@@ -1133,20 +1135,20 @@ void UiSelectionGeometryControl_DrawClipped
                     sourcePixelSample2 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x28);
+                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample3 =
                          *(PackedArgb32 *)
                           ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + -0x24);
+                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
                   }
                 }
               }
               *(PackedArgb32 *)destPixel =
                    UiScaler_BlendBilinear
                              (sourcePixelSample0,sourcePixelSample1,sourcePixelSample2,sourcePixelSample3,
-                              (int)(sinTermOrSourceU & 0xfff) >> 4,(int)(sourceV & 0xfff) >> 4);
+                              (int)(sinTermOrSourceU & Q12_FRACTION_MASK) >> 4,(int)(sourceV & Q12_FRACTION_MASK) >> 4);
               sinTermOrSourceU = sinTermOrSourceU + (int)pixelStepU;
               sourceV = sourceV + pixelStepV;
               destPixel = destPixel + 4;
@@ -1173,7 +1175,7 @@ void UiSelectionGeometryControl_DrawClipped
 /* Address: 0x005161A0.
    nonRightPress slot of g_UiSelectionGeometryControlVtable. Maps the clicked screen point back into
    texture space with the same rotation/scale as UiSelectionGeometryControl_DrawClipped, stores it in
-   selectedSourceYQ12/XQ12 and queues actionId so the handler can read the picked source position.
+   selectedSourceXQ12/YQ12 and queues actionId so the handler can read the picked source position.
 */
 void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -1191,27 +1193,29 @@ void UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
   uint32_t stepTermX;
   
   rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
-  cosTermOrBoundsLeft = -((int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c);
+  cosTermOrBoundsLeft = -(FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT));
   rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
-  sinTermOrStepY = (int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c;
-  rotationProductA = (int64_t)(int)sinTermOrStepY * 0x1c6e9c;
-  rotationProductB = (int64_t)cosTermOrBoundsLeft * -0x20c8cc;
-  stepTermX = (int)((uint64_t)rotationProductB >> 0x20) << 0xb | (uint32_t)rotationProductB >> 0x15;
-  rotationProductB = (int64_t)cosTermOrBoundsLeft * 0x1c6e9c;
-  rotationProductC = (int64_t)(int)-sinTermOrStepY * -0x20c8cc;
-  sinTermOrStepY = (int)((uint64_t)rotationProductC >> 0x20) << 0xb | (uint32_t)rotationProductC >> 0x15;
+  sinTermOrStepY = FIXED_PRODUCT_SHR(rotationProductA, Q28_SHIFT);
+  /* scale*(sin, cos) mapped through the field-grid lattice factors: products by the column factor are taken
+     >> Q20_SHIFT, those by the row factor >> (Q20_SHIFT + 1) (half a row, the lattice skew) */
+  rotationProductA = (int64_t)(int)sinTermOrStepY * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rotationProductB = (int64_t)cosTermOrBoundsLeft * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  stepTermX = FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT + 1);
+  rotationProductB = (int64_t)cosTermOrBoundsLeft * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rotationProductC = (int64_t)(int)-sinTermOrStepY * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  sinTermOrStepY = FIXED_PRODUCT_SHR(rotationProductC, Q20_SHIFT + 1);
   cosTermOrBoundsLeft = (control->base).left;
   boundsRight = (control->base).right;
   boundsTop = (control->base).top;
   boundsBottom = (control->base).bottom;
-  control->selectedSourceYQ12 =
-       control->sourceOriginYQ12 -
-       ((((int)((uint64_t)rotationProductB >> 0x20) << 0xc | (uint32_t)rotationProductB >> 0x14) - sinTermOrStepY) *
-        (((control->base).top + (control->base).bottom >> 1) - pointerY) +
-       (((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermX) *
-       (((control->base).left + (control->base).right >> 1) - pointerX));
   control->selectedSourceXQ12 =
-       (control->sourceOriginXQ12 - stepTermX * 2 * ((cosTermOrBoundsLeft + boundsRight >> 1) - pointerX)) -
+       control->sourceOriginXQ12 -
+       (((FIXED_PRODUCT_SHR(rotationProductB, Q20_SHIFT)) - sinTermOrStepY) *
+        (((control->base).top + (control->base).bottom >> 1) - pointerY) +
+       ((FIXED_PRODUCT_SHR(rotationProductA, Q20_SHIFT)) - stepTermX) *
+       (((control->base).left + (control->base).right >> 1) - pointerX));
+  control->selectedSourceYQ12 =
+       (control->sourceOriginYQ12 - stepTermX * 2 * ((cosTermOrBoundsLeft + boundsRight >> 1) - pointerX)) -
        sinTermOrStepY * 2 * ((boundsTop + boundsBottom >> 1) - pointerY);
   UiActionQueue_Enqueue(control->actionId,control);
   return;

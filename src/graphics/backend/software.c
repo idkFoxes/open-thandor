@@ -106,7 +106,7 @@ void SoftwareRenderer_ClearViewport(GraphicsScreenCoordinate clipMaxY,GraphicsSc
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     g_GraphicsFramebufferFillRectArgb
-              (clipMaxY,clipMaxX,clipMinY,clipMinX,clipMaxY,clipMaxX,clipMinY,clipMinX,0xff000000 /* opaque black */,
+              (clipMaxY,clipMaxX,clipMinY,clipMinX,clipMaxY,clipMaxX,clipMinY,clipMinX,ARGB8888_ALPHA_MASK /* opaque black */,
                g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
@@ -277,7 +277,7 @@ DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
   greenBits = (uint8_t)g_SoftwarePixelFormatConfig.greenBitCount;
   blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
   /* unpack scale 1 << (16 - shift - bits) moves a channel to the top of a 16-bit lane */
-  blueUnpackScale = 1 << (((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits) & 0x1f);
+  blueUnpackScale = 1 << (((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits) & SHIFT_COUNT_MASK);
   hookResult.failed = false;
   hookResult.valueOrError = blueUnpackScale;
   g_SoftwarePixelMmxConstants.packedPixelMasks.red =
@@ -288,28 +288,28 @@ DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
        (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.blueMask;
   g_SoftwarePixelMmxConstants.unpackScales.red =
        (SoftwareColorLaneFixed16)
-       (1 << (((16 - (char)g_SoftwarePixelFormatConfig.redShift) - redBits) & 0x1f));
+       (1 << (((16 - (char)g_SoftwarePixelFormatConfig.redShift) - redBits) & SHIFT_COUNT_MASK));
   g_SoftwarePixelMmxConstants.unpackScales.green =
        (SoftwareColorLaneFixed16)
-       (1 << (((16 - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits) & 0x1f));
+       (1 << (((16 - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits) & SHIFT_COUNT_MASK));
   g_SoftwarePixelMmxConstants.unpackScales.blue = (SoftwareColorLaneFixed16)blueUnpackScale;
   /* quantize mask: the channel's top `bits` bits of a Q12 lane */
   g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
-       (SoftwareColorLaneFixed16)(((1 << (redBits & 0x1f)) - 1) << ((12 - redBits) & 0x1f));
+       (SoftwareColorLaneFixed16)(((1 << (redBits & SHIFT_COUNT_MASK)) - 1) << ((12 - redBits) & SHIFT_COUNT_MASK));
   g_SoftwarePixelMmxConstants.quantizeMasksQ12.green =
-       (SoftwareColorLaneFixed16)(((1 << (greenBits & 0x1f)) - 1) << ((12 - greenBits) & 0x1f));
+       (SoftwareColorLaneFixed16)(((1 << (greenBits & SHIFT_COUNT_MASK)) - 1) << ((12 - greenBits) & SHIFT_COUNT_MASK));
   g_SoftwarePixelMmxConstants.quantizeMasksQ12.blue =
-       (SoftwareColorLaneFixed16)(((1 << (blueBits & 0x1f)) - 1) << ((12 - blueBits) & 0x1f));
+       (SoftwareColorLaneFixed16)(((1 << (blueBits & SHIFT_COUNT_MASK)) - 1) << ((12 - blueBits) & SHIFT_COUNT_MASK));
   /* PMADDWD weight 1 << (bits + shift - 4) moves the quantized lane to its place in the pixel */
   g_SoftwarePixelMmxConstants.packWeights.red =
        (SoftwareColorLaneFixed16)
-       (1 << ((redBits + (char)g_SoftwarePixelFormatConfig.redShift) - 4 & 0x1f));
+       (1 << ((redBits + (char)g_SoftwarePixelFormatConfig.redShift) - 4 & SHIFT_COUNT_MASK));
   g_SoftwarePixelMmxConstants.packWeights.green =
        (SoftwareColorLaneFixed16)
-       (1 << ((greenBits + (char)g_SoftwarePixelFormatConfig.greenShift) - 4 & 0x1f));
+       (1 << ((greenBits + (char)g_SoftwarePixelFormatConfig.greenShift) - 4 & SHIFT_COUNT_MASK));
   g_SoftwarePixelMmxConstants.packWeights.blue =
        (SoftwareColorLaneFixed16)
-       (1 << ((blueBits + (char)g_SoftwarePixelFormatConfig.blueShift) - 4 & 0x1f));
+       (1 << ((blueBits + (char)g_SoftwarePixelFormatConfig.blueShift) - 4 & SHIFT_COUNT_MASK));
   return hookResult;
 }
 
@@ -346,7 +346,7 @@ SoftwareFramebufferResult SoftwareFramebuffer_Create
       *cursor = 0;
       cursor++;
     }
-    frameAllocation = THANDOR_BITCAST(uint64_t, ArenaAllocResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, frameAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
+    frameAllocation = THANDOR_BITCAST(uint64_t, ArenaAllocResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, frameAllocation) & 0xFFFFFFFFFFull) & UINT32_MAX));
   }
   createResult.framebuffer = (SoftwareFramebufferAccess *)frameAllocation.payloadOrError;
   createResult.failed = frameAllocation.failed;
@@ -385,27 +385,27 @@ void SoftwarePixelFormat_BuildChannelPackTables
   packTableCursor = g_SoftwarePixelPackTables;
   do {
     /* 0x400000 = 64.0 in Q16, the pivot of the scale */
-    transformedChannelValueQ16 = (channelIndex - 64) * colorScaleQ16 + 0x400000 + colorBiasQ16;
+    transformedChannelValueQ16 = (channelIndex - 64) * colorScaleQ16 + (64 << 16) + colorBiasQ16;
     if ((int)transformedChannelValueQ16 < 0) {
       transformedChannelValueQ16 = 0;
     }
-    else if (0xffffff < transformedChannelValueQ16) {
+    else if ((256 << 16) - 1 < transformedChannelValueQ16) {
       /* 255.0; the original clamps to 0xFF0000, not 0xFFFFFF */
-      transformedChannelValueQ16 = 0xff0000;
+      transformedChannelValueQ16 = 255 << 16;
     }
     /* keep the channel's top `bits` bits of the Q16 value (a byte in bits 16..23) and shift them into place */
     packTableCursor->blue[0] =
          (transformedChannelValueQ16 >>
-         ((24U - (char)g_SoftwarePixelFormatConfig.blueBitCount) & 0x1f)) <<
-         ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & 0x1f);
+         ((24U - (char)g_SoftwarePixelFormatConfig.blueBitCount) & SHIFT_COUNT_MASK)) <<
+         ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & SHIFT_COUNT_MASK);
     packTableCursor->green[0] =
          (transformedChannelValueQ16 >>
-         ((24U - (char)g_SoftwarePixelFormatConfig.greenBitCount) & 0x1f)) <<
-         ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & 0x1f);
+         ((24U - (char)g_SoftwarePixelFormatConfig.greenBitCount) & SHIFT_COUNT_MASK)) <<
+         ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & SHIFT_COUNT_MASK);
     packTableCursor->red[0] =
          (transformedChannelValueQ16 >>
-         ((24U - (char)g_SoftwarePixelFormatConfig.redBitCount) & 0x1f)) <<
-         ((uint8_t)g_SoftwarePixelFormatConfig.redShift & 0x1f);
+         ((24U - (char)g_SoftwarePixelFormatConfig.redBitCount) & SHIFT_COUNT_MASK)) <<
+         ((uint8_t)g_SoftwarePixelFormatConfig.redShift & SHIFT_COUNT_MASK);
     channelIndex++;
     /* next entry of all three tables */
     packTableCursor = (SoftwarePixelPackTables *)(packTableCursor->blue + 1);
@@ -634,8 +634,8 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
   sourceWidth = entry->pixelWidth;
   sourceHeight = entry->pixelHeight;
   /* 8.8 fixed-point source steps */
-  stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
-  stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
+  stepX = ((sourceWidth - 1) * 256) / (destinationWidth - 1);
+  stepY = ((sourceHeight - 1) * 256) / (destinationHeight - 1);
   sourceBase = asset + entry->dataOffset;
   sourceRow = sourceBase;
   fy = 0;
@@ -655,18 +655,18 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
         int lane;
         unsigned long long madd;
         for (lane = 0; lane < 4; lane++) {
-          int a = ((p00[lane] * 0x101) >> 2);
-          int b = ((p00[lane + 4] * 0x101) >> 2);
-          int c = ((p10[lane] * 0x101) >> 2);
-          int d = ((p10[lane + 4] * 0x101) >> 2);
+          int a = ((p00[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int b = ((p00[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int c = ((p10[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int d = ((p10[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           short top = (short)(((a * firstWeights[wx * 4 + lane]) >> 16) + ((b * secondWeights[wx * 4 + lane]) >> 16));
           short bottom = (short)(((c * firstWeights[wx * 4 + lane]) >> 16) + ((d * secondWeights[wx * 4 + lane]) >> 16));
           short mixed = (short)(((top * firstWeights[wy * 4 + lane]) >> 16) +
                                 ((bottom * secondWeights[wy * 4 + lane]) >> 16));
           int value = (unsigned short)mixed >> 2;
-          if (value > 0xff) value = 0xff;
+          if (value > ARGB8888_CHANNEL_MAX) value = ARGB8888_CHANNEL_MAX;
           /* PUNPCKLBW x,x; PSLLW 4; PAND quantize mask */
-          lanes[lane] = (uint16_t)(((value * 0x101) << 4) & quantizeMask[lane]);
+          lanes[lane] = (uint16_t)(((value * COLOR_CHANNEL_TO_WORD_LANE) << 4) & quantizeMask[lane]);
         }
         /* PMADDWD: two signed dword sums, then the two shifted copies are added per word. */
         madd = (unsigned long long)(uint32_t)((short)lanes[0] * packWeights[0] + (short)lanes[1] * packWeights[1]) |
@@ -739,8 +739,8 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   sourceWidth = entry->pixelWidth;
   sourceHeight = entry->pixelHeight;
   /* 8.8 fixed-point source steps */
-  stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
-  stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
+  stepX = ((sourceWidth - 1) * 256) / (destinationWidth - 1);
+  stepY = ((sourceHeight - 1) * 256) / (destinationHeight - 1);
   sourceBase = asset + entry->dataOffset;
   sourceRow = sourceBase;
   fy = 0;
@@ -759,16 +759,16 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
         uint32_t pixel = 0;
         int lane;
         for (lane = 0; lane < 4; lane++) {
-          int a = ((p00[lane] * 0x101) >> 2);
-          int b = ((p00[lane + 4] * 0x101) >> 2);
-          int c = ((p10[lane] * 0x101) >> 2);
-          int d = ((p10[lane + 4] * 0x101) >> 2);
+          int a = ((p00[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int b = ((p00[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int c = ((p10[lane] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+          int d = ((p10[lane + 4] * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
           short top = (short)(((a * firstWeights[wx * 4 + lane]) >> 16) + ((b * secondWeights[wx * 4 + lane]) >> 16));
           short bottom = (short)(((c * firstWeights[wx * 4 + lane]) >> 16) + ((d * secondWeights[wx * 4 + lane]) >> 16));
           short mixed = (short)(((top * firstWeights[wy * 4 + lane]) >> 16) +
                                 ((bottom * secondWeights[wy * 4 + lane]) >> 16));
           int value = (unsigned short)mixed >> 2;
-          if (value > 0xff) value = 0xff;
+          if (value > ARGB8888_CHANNEL_MAX) value = ARGB8888_CHANNEL_MAX;
           pixel |= (uint32_t)value << (lane * 8);
         }
         pixels[half] = pixel;
@@ -1049,7 +1049,7 @@ bool SoftwareTextureSource_BlitSaturatedAddRgb16(GraphicsScreenCoordinate clipMa
     uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
       uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
-      if ((argb & 0xffffff) != 0) {
+      if ((argb & ARGB8888_RGB_MASK) != 0) {
         *pixel = Blit_AddArgb16(argb, *pixel, 0);
       }
     }
@@ -1085,7 +1085,7 @@ bool SoftwareTextureSource_BlitSaturatedAddRgb32(GraphicsScreenCoordinate clipMa
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
       uint32_t argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
-      if ((argb & 0xffffff) != 0) {
+      if ((argb & ARGB8888_RGB_MASK) != 0) {
         *pixel = Blit_AddArgb32(argb, *pixel, 0);
       }
     }
@@ -1120,7 +1120,7 @@ bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
     uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
       uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
-      if ((argb & 0xffffff) != 0) {
+      if ((argb & ARGB8888_RGB_MASK) != 0) {
         *pixel = Blit_AddArgb16(argb, *pixel, 1);
       }
     }
@@ -1155,7 +1155,7 @@ bool SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
     uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
       uint32_t argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
-      if ((argb & 0xffffff) != 0) {
+      if ((argb & ARGB8888_RGB_MASK) != 0) {
         *pixel = Blit_AddArgb32(argb, *pixel, 1);
       }
     }
@@ -2049,7 +2049,7 @@ static void Raster32_SpanTexturedAlphaTested(RasterSpan *span)
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
             *(uint32_t *)span->pixel = Raster_Pack32(channel);
-            if ((uint16_t)source.lane[RASTER_LANE_ALPHA] >= 0x800) {
+            if ((uint16_t)source.lane[RASTER_LANE_ALPHA] >= (128 << 4)) {
                 *span->depth = span->depthValue;
             }
         }
@@ -2514,7 +2514,7 @@ static void RasterAux_SpanTexturedPrestepDepth(RasterSpan *span)
 {
     const RasterAuxTexture *texture = (const RasterAuxTexture *)span->texture;
     uint32_t uPrestep = (uint32_t)span->u - (uint32_t)texture->edges->longU;
-    int writeDepth = uPrestep >= 0x800;
+    int writeDepth = uPrestep >= Q12_ONE / 2;
 
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
@@ -2901,23 +2901,23 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
       /* quantize mask: the top <bits> bits of a Q12 colour channel */
       redBits = (uint8_t)g_SoftwarePixelFormatConfig.redBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
-           (SoftwareColorLaneFixed16)(((1 << (redBits & 0x1f)) - 1) << ((12 - redBits) & 0x1f));
+           (SoftwareColorLaneFixed16)(((1 << (redBits & SHIFT_COUNT_MASK)) - 1) << ((12 - redBits) & SHIFT_COUNT_MASK));
       greenBits = (uint8_t)g_SoftwarePixelFormatConfig.greenBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.green =
-           (SoftwareColorLaneFixed16)(((1 << (greenBits & 0x1f)) - 1) << ((12 - greenBits) & 0x1f));
+           (SoftwareColorLaneFixed16)(((1 << (greenBits & SHIFT_COUNT_MASK)) - 1) << ((12 - greenBits) & SHIFT_COUNT_MASK));
       blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.blue =
-           (SoftwareColorLaneFixed16)(((1 << (blueBits & 0x1f)) - 1) << ((12 - blueBits) & 0x1f));
+           (SoftwareColorLaneFixed16)(((1 << (blueBits & SHIFT_COUNT_MASK)) - 1) << ((12 - blueBits) & SHIFT_COUNT_MASK));
       /* pack weight: moves a quantized Q12 channel to its bit position in the native pixel */
       g_SoftwarePixelMmxConstants.packWeights.red =
            (SoftwareColorLaneFixed16)
-           (1 << (((redBits + (char)g_SoftwarePixelFormatConfig.redShift) - 4) & 0x1f));
+           (1 << (((redBits + (char)g_SoftwarePixelFormatConfig.redShift) - 4) & SHIFT_COUNT_MASK));
       g_SoftwarePixelMmxConstants.packWeights.green =
            (SoftwareColorLaneFixed16)
-           (1 << (((greenBits + (char)g_SoftwarePixelFormatConfig.greenShift) - 4) & 0x1f));
+           (1 << (((greenBits + (char)g_SoftwarePixelFormatConfig.greenShift) - 4) & SHIFT_COUNT_MASK));
       g_SoftwarePixelMmxConstants.packWeights.blue =
            (SoftwareColorLaneFixed16)
-           (1 << (((blueBits + (char)g_SoftwarePixelFormatConfig.blueShift) - 4) & 0x1f));
+           (1 << (((blueBits + (char)g_SoftwarePixelFormatConfig.blueShift) - 4) & SHIFT_COUNT_MASK));
       g_SoftwarePixelMmxConstants.packedPixelMasks.red =
            (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.redMask;
       g_SoftwarePixelMmxConstants.packedPixelMasks.green =
@@ -2927,11 +2927,11 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
       /* unpack scale: moves a native channel to the top of a 16-bit word lane */
       g_SoftwarePixelMmxConstants.unpackScales.red =
            (SoftwareColorLaneFixed16)
-           (1 << ((16 - (char)g_SoftwarePixelFormatConfig.redShift) - redBits & 0x1f));
+           (1 << ((16 - (char)g_SoftwarePixelFormatConfig.redShift) - redBits & SHIFT_COUNT_MASK));
       g_SoftwarePixelMmxConstants.unpackScales.green =
            (SoftwareColorLaneFixed16)
-           (1 << ((16 - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits & 0x1f));
-      blueUnpackScale = 1 << ((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits & 0x1f);
+           (1 << ((16 - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits & SHIFT_COUNT_MASK));
+      blueUnpackScale = 1 << ((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits & SHIFT_COUNT_MASK);
       g_SoftwarePixelMmxConstants.unpackScales.blue = (SoftwareColorLaneFixed16)blueUnpackScale;
       /* success leaves the last computed value (the blue unpack scale) in EAX */
       hookResult.failed = false;
@@ -2980,12 +2980,12 @@ StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
    (b * (unity - f) + a * f) >> 16 per product (PMULHW), >> 4 (PSRLW) and saturated (PACKUSWB). */
 static uint8_t SoftwareTexture_CrossFadeByte(uint8_t a, uint8_t b, uint8_t factor, short unity)
 {
-    short wideA = (short)((a * 0x101) >> 2);
-    short wideB = (short)((b * 0x101) >> 2);
-    short wideFactor = (short)((factor * 0x101) >> 2);
+    short wideA = (short)((a * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+    short wideB = (short)((b * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
+    short wideFactor = (short)((factor * COLOR_CHANNEL_TO_WORD_LANE) >> 2);
     uint16_t sum = (uint16_t)(Raster_MulHigh(wideB, (short)(unity - wideFactor)) + Raster_MulHigh(wideA, wideFactor));
     sum = (uint16_t)(sum >> 4);
-    return (uint8_t)(sum > 0xff ? 0xff : sum);
+    return (uint8_t)(sum > ARGB8888_CHANNEL_MAX ? ARGB8888_CHANNEL_MAX : sum);
 }
 
 /* Fills g_SoftwarePixelIntensityToNativeColorLut256 with native grey pixels of the current
@@ -3013,12 +3013,12 @@ static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sou
     const short *weights = (const short *)(&g_SoftwareBilinearPackedInterpolationWeights256 + (xFixed & 0xff) * 8);
     const uint8_t *upper = row + (xFixed >> 8);
     const uint8_t *lower = upper + sourceWidth;
-    uint32_t upperSum = (uint32_t)(((upper[0] * 0x101) >> 2) * weights[0] + ((upper[1] * 0x101) >> 2) * weights[1]);
-    uint32_t lowerSum = (uint32_t)(((lower[0] * 0x101) >> 2) * weights[0] + ((lower[1] * 0x101) >> 2) * weights[1]);
+    uint32_t upperSum = (uint32_t)(((upper[0] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[0] + ((upper[1] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[1]);
+    uint32_t lowerSum = (uint32_t)(((lower[0] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[0] + ((lower[1] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[1]);
     uint16_t sum = (uint16_t)(Raster_MulHigh((short)(upperSum >> 16), upperWeight) +
                       Raster_MulHigh((short)(lowerSum >> 16), lowerWeight));
     uint32_t intensity = (uint32_t)(sum >> 2);
-    return intensity > 0xff ? 0xff : intensity;
+    return intensity > ARGB8888_CHANNEL_MAX ? ARGB8888_CHANNEL_MAX : intensity;
 }
 
 /* Address: 0x00518CE0.
@@ -3144,8 +3144,8 @@ void SoftwareRenderer_AdvanceDepthEpoch(void)
   int32_t *depthValueCursor;
   bool depthEpochWrapped;
 
-  depthEpochWrapped = (uint32_t)g_SoftwareDepthEpoch < 0x1000000;
-  g_SoftwareDepthEpoch = g_SoftwareDepthEpoch - 0x1000000;
+  depthEpochWrapped = (uint32_t)g_SoftwareDepthEpoch < SOFTWARE_DEPTH_EPOCH_STEP;
+  g_SoftwareDepthEpoch = g_SoftwareDepthEpoch - SOFTWARE_DEPTH_EPOCH_STEP;
   if (depthEpochWrapped || g_SoftwareDepthEpoch == 0) {
     depthValueCursor = g_SoftwareDepthBuffer;
     for (pixelsRemaining = g_FramebufferWidth * g_FramebufferHeight; pixelsRemaining != 0;
@@ -3153,7 +3153,7 @@ void SoftwareRenderer_AdvanceDepthEpoch(void)
       *depthValueCursor = -1;
       depthValueCursor++;
     }
-    g_SoftwareDepthEpoch = -0x1000000;
+    g_SoftwareDepthEpoch = -SOFTWARE_DEPTH_EPOCH_STEP;
   }
   return;
 }
@@ -3217,7 +3217,7 @@ void SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView
   do {
     for (i = 0; i < 32; i++) {
       if (mask[i] != 0) {
-        mask[i] = (uint8_t)(mask[i] < 0xff - 0x1f ? mask[i] + 0x1f : 0xff);
+        mask[i] = (uint8_t)(mask[i] < ARGB8888_CHANNEL_MAX - SOFTWARE_MASK_BRIGHTEN_STEP ? mask[i] + SOFTWARE_MASK_BRIGHTEN_STEP : ARGB8888_CHANNEL_MAX);
       }
     }
     mask += 32;
@@ -3371,10 +3371,10 @@ void SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
   maskWordCursor = (uint32_t *)maskControl->maskPixels;
   maskBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 4;
   do {
-    *maskWordCursor = *maskWordCursor | 0x1010101;
-    maskWordCursor[1] = maskWordCursor[1] | 0x1010101;
-    maskWordCursor[2] = maskWordCursor[2] | 0x1010101;
-    maskWordCursor[3] = maskWordCursor[3] | 0x1010101;
+    *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
+    maskWordCursor[1] = maskWordCursor[1] | ARGB8888_CHANNEL_ONES;
+    maskWordCursor[2] = maskWordCursor[2] | ARGB8888_CHANNEL_ONES;
+    maskWordCursor[3] = maskWordCursor[3] | ARGB8888_CHANNEL_ONES;
     maskWordCursor = maskWordCursor + 4;
     maskBlocksRemaining--;
   } while (maskBlocksRemaining != 0);
@@ -3412,10 +3412,10 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
     maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + bandRow * bandBytesOrBlocksLeft);
     bandBytesOrBlocksLeft = bandBytesOrBlocksLeft >> 4;
     do {
-      *maskWordCursor = *maskWordCursor | 0x1010101;
-      maskWordCursor[1] = maskWordCursor[1] | 0x1010101;
-      maskWordCursor[2] = maskWordCursor[2] | 0x1010101;
-      maskWordCursor[3] = maskWordCursor[3] | 0x1010101;
+      *maskWordCursor = *maskWordCursor | ARGB8888_CHANNEL_ONES;
+      maskWordCursor[1] = maskWordCursor[1] | ARGB8888_CHANNEL_ONES;
+      maskWordCursor[2] = maskWordCursor[2] | ARGB8888_CHANNEL_ONES;
+      maskWordCursor[3] = maskWordCursor[3] | ARGB8888_CHANNEL_ONES;
       maskWordCursor = maskWordCursor + 4;
       bandBytesOrBlocksLeft--;
     } while (bandBytesOrBlocksLeft != 0);
@@ -3569,19 +3569,19 @@ quantize:
   savedColorOrSecondColor = packet->vertices[1].diffuseColor;
   thirdColor = packet->vertices[2].diffuseColor;
   /* 0xfffff000 drops the Q12 fraction: whole pixels */
-  packet->vertices[0].screenX = packet->vertices[0].screenX & 0xfffff000;
+  packet->vertices[0].screenX = packet->vertices[0].screenX & ~(uint32_t)Q12_FRACTION_MASK;
   screenYField = &packet->vertices[0].screenY;
-  *screenYField = *screenYField & 0xfffff000;
+  *screenYField = *screenYField & ~(uint32_t)Q12_FRACTION_MASK;
   depthField = &packet->vertices[0].depth;
   *depthField = *depthField + depthEpoch;
-  packet->vertices[1].screenX = packet->vertices[1].screenX & 0xfffff000;
+  packet->vertices[1].screenX = packet->vertices[1].screenX & ~(uint32_t)Q12_FRACTION_MASK;
   screenYField = &packet->vertices[1].screenY;
-  *screenYField = *screenYField & 0xfffff000;
+  *screenYField = *screenYField & ~(uint32_t)Q12_FRACTION_MASK;
   depthField = &packet->vertices[1].depth;
   *depthField = *depthField + depthEpoch;
-  packet->vertices[2].screenX = packet->vertices[2].screenX & 0xfffff000;
+  packet->vertices[2].screenX = packet->vertices[2].screenX & ~(uint32_t)Q12_FRACTION_MASK;
   screenYField = &packet->vertices[2].screenY;
-  *screenYField = *screenYField & 0xfffff000;
+  *screenYField = *screenYField & ~(uint32_t)Q12_FRACTION_MASK;
   depthField = &packet->vertices[2].depth;
   *depthField = *depthField + depthEpoch;
   packet->renderFlags = packet->renderFlags & ~GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED;
@@ -3592,18 +3592,18 @@ quantize:
     textureEntryRef = packet->textureEntry;
     texelShift = 8 - (char)textureEntryRef->widthLog2;
     textureCoordField = &packet->vertices[0].textureU;
-    *textureCoordField = *textureCoordField >> (texelShift & 0x1f);
+    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
     textureCoordField = &packet->vertices[1].textureU;
-    *textureCoordField = *textureCoordField >> (texelShift & 0x1f);
+    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
     textureCoordField = &packet->vertices[2].textureU;
-    *textureCoordField = *textureCoordField >> (texelShift & 0x1f);
+    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
     texelShift = 8 - (char)textureEntryRef->heightLog2;
     textureCoordField = &packet->vertices[0].textureV;
-    *textureCoordField = *textureCoordField >> (texelShift & 0x1f);
+    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
     textureCoordField = &packet->vertices[1].textureV;
-    *textureCoordField = *textureCoordField >> (texelShift & 0x1f);
+    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
     textureCoordField = &packet->vertices[2].textureV;
-    *textureCoordField = *textureCoordField >> (texelShift & 0x1f);
+    *textureCoordField = *textureCoordField >> (texelShift & SHIFT_COUNT_MASK);
   }
   return;
 }

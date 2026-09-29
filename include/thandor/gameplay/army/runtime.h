@@ -81,6 +81,11 @@
 /* impact damage of a model crushed by a structure placed over it or run over by a vehicle
    (ArmyRuntime_ClassCommandHandlerGroupA, ArmyRuntime_HandleCollisionPartner) */
 #define ARMY_CRUSH_IMPACT_DAMAGE 0x100000
+/* ArmyRuntime_RenderPreviewTexture: the temporary preview army is created far off the field at this world
+   position (both axes, Q12), and the preview texture allocation is its pixels behind a 0x200-byte gfx header
+   and one 0x20-byte subresource record */
+#define ARMY_PREVIEW_WORLD_POSITION_Q12 0x6000000
+#define ARMY_PREVIEW_TEXTURE_HEADER_BYTES 0x220
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */
@@ -102,7 +107,7 @@ void ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
           (WorldRuntimeContext *worldRuntime,ModelRuntimeClass14UpdateView *modelRuntime);
 
 /* 0x005274D0 */
-void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x0051D140 */
 void ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint
@@ -157,7 +162,7 @@ bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime);
 bool ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051D4D0 */
-void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
+void ArmyRuntime_DispatchClassCommand(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051D8C0 */
 void ArmyRuntime_ShutdownPoolAndGraphics(void);
@@ -169,10 +174,10 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
 void ArmyRuntimePool_RebaseAfterLoad(void);
 
 /* 0x00520CF0 */
-void ArmyRuntimeClass_UpdateGroundPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView *armyRuntime);
+void ArmyRuntimeClass_UpdateGroundPositionedSounds(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00522B70 */
-void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00523E70 */
 void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProjectileView *modelRuntime, WorldOwnerListNode *candidateNode);
@@ -181,16 +186,16 @@ void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProject
 void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedTargetProjectileView *modelRuntime);
 
 /* 0x00525960 */
-void ArmyRuntimeClass_UpdateWaterPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView *armyRuntime);
+void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00526FE0 */
-ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeterRegs(ArmyRuntimeSlot *armyRuntime);
+ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeterRegs(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime);
 
 /* 0x00527150 */
-int ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRuntime);
+int ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ModelRuntimeLinkedChildSpawnAndBuildView *linkedChildRuntime);
 
 /* 0x00527FE0 */
-void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntime_UpdateLoopingPositionedSound(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x005283D0 */
 void ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState (WorldRuntimeContext *worldRuntime,ModelRuntimeVerticalDeploymentView *modelRuntime);
@@ -204,11 +209,11 @@ bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
 
 /* 0x00529B50 */
 void ArmyRuntime_UpdateActivationMetricAndPlayStartSound
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+          (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x0052A040 */
-void ArmyRuntime_HandleCollisionPartner(ArmyRuntimeSlot *currentArmyRuntime,Q12 currentWorldYQ12,Q12 currentWorldXQ12,
-          ArmyRuntimeSlot *collisionPartnerArmyRuntime,WorldRuntimeContext *worldRuntime);
+void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q12 currentWorldYQ12,Q12 currentWorldXQ12,
+          ModelRuntimeSlot *collisionPartnerModelRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051BC00 */
 ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
@@ -227,14 +232,14 @@ bool ArmyRuntimeSpawner_CreateLinkedChildInstance
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
 /* 0x00527430 */
-bool ArmyRuntime_TestModelAttachmentProximity(ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime);
+bool ArmyRuntime_TestModelAttachmentProximity(ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
 
 /* 0x0051C040 */
 void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,GameEntityRuntime *entityRuntime);
 
 /* 0x005246B0 */
 bool ArmyRuntime_TestArmyNearFactoryExit
-          (ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime);
+          (ModelRuntimeSlot *candidateModelRuntime,ModelRuntimeSlot *sourceModelRuntime);
 
 /* 0x00526510 */
 void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex factionIndex,Q12 worldYQ12,Q12 worldXQ12,
@@ -244,10 +249,10 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
 uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
 /* 0x00527230 */
-void ArmyRuntime_PlayDefinitionOneShotSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime);
+void ModelRuntime_PlayDefinitionSecondaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x005272B0 */
-void ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldContext);
+void ModelRuntime_PlayDefinitionPrimaryOneShotSound(ModelRuntimeSlot *modelRuntime,WorldRuntimeContext *worldContext);
 
 /* 0x005273D0 */
 bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
@@ -264,7 +269,7 @@ void ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
 void ArmyRuntime_ProcessReadyAttachmentChannels(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x0052A760 */
-void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+void ArmyRuntimeHierarchy_DispatchClassMethodDRecursive(WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime);
 
 /* 0x0051C350 */
 void ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime);

@@ -9,6 +9,9 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
+/* Dword index of a field (GFX_SUBRESOURCE_*) of the first subresource record of a gfx asset */
+#define GFX_SUBRESOURCE_DWORD(field) ((GFX_ASSET_HEADER_SIZE + GFX_SUBRESOURCE_##field) / 4)
+
 
 /* Implementation ownership: graphics/render/projection. */
 
@@ -86,22 +89,22 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
     assetOrDepthBuffer[5] = packedTimeOrDate;
     assetOrDepthBuffer[7] = packedTimeOrDate;
     assetOrDepthBuffer[9] = packedTimeOrDate;
-    g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetOrDepthBuffer + 0xc));
-    g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetOrDepthBuffer + 0x1c));
-    *(uint8_t *)(assetOrDepthBuffer + 0x40) = 0; /* +0x100 unusedText: empty */
+    g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetOrDepthBuffer + 12));
+    g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(assetOrDepthBuffer + 28));
+    *(uint8_t *)(assetOrDepthBuffer + offsetof(GraphicsTextureSourceAsset, unusedText) / 4) = 0; /* +0x100 unusedText: empty */
     /* table descriptor at +0xB0: one subresource, no palette banks, entry table at +0x200 */
-    assetOrDepthBuffer[0x2c] = 1;
-    assetOrDepthBuffer[0x2d] = 0;
-    assetOrDepthBuffer[0x2e] = GFX_ASSET_HEADER_SIZE;
+    assetOrDepthBuffer[offsetof(GraphicsTextureSourceAsset, tableDescriptor.subresourceCount) / 4] = 1;
+    assetOrDepthBuffer[offsetof(GraphicsTextureSourceAsset, tableDescriptor.paletteBankCount) / 4] = 0;
+    assetOrDepthBuffer[offsetof(GraphicsTextureSourceAsset, tableDescriptor.subresourceTableOffset) / 4] = GFX_ASSET_HEADER_SIZE;
     /* the entry: logical and pixel size, origin 0/0, paletteIndex -1 (ARGB texels), data at +0x220 */
-    assetOrDepthBuffer[0x80] = outputWidth;
-    assetOrDepthBuffer[0x81] = outputHeight;
-    assetOrDepthBuffer[0x86] = outputWidth;
-    assetOrDepthBuffer[0x87] = outputHeight;
-    assetOrDepthBuffer[0x84] = 0;
-    assetOrDepthBuffer[0x85] = 0;
-    assetOrDepthBuffer[0x82] = -1;
-    assetOrDepthBuffer[0x83] = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(LOGICAL_WIDTH)] = outputWidth;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(LOGICAL_HEIGHT)] = outputHeight;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(PIXEL_WIDTH)] = outputWidth;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(PIXEL_HEIGHT)] = outputHeight;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(ORIGIN_X)] = 0;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(ORIGIN_Y)] = 0;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(PALETTE_INDEX)] = -1;
+    assetOrDepthBuffer[GFX_SUBRESOURCE_DWORD(PIXEL_OFFSET)] = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
     depthAllocation = g_MemoryApi.alloc(outputHeight * outputWidth * 4);
     zeroCursorOrDepthBuffer = (int32_t *)depthAllocation.payloadOrError;
     if (!depthAllocation.failed) {
@@ -154,7 +157,7 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
       g_MemoryApi.free(assetOrDepthBuffer);
       /* success: the asset pointer with CF clear */
       return THANDOR_BITCAST(uint64_t, OffscreenRenderResult,
-                             THANDOR_BITCAST(ArenaAllocResult, uint64_t, textureAllocation) & 0xffffffff);
+                             THANDOR_BITCAST(ArenaAllocResult, uint64_t, textureAllocation) & UINT32_MAX);
     }
     g_MemoryApi.free(assetOrDepthBuffer);
     assetOrDepthBuffer = zeroCursorOrDepthBuffer;
@@ -185,7 +188,7 @@ bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsP
           (int64_t)(vertex2->y - vertex0->y) * (int64_t)vertex1->x;
   crossPartB = (int64_t)(vertex1->y - vertex2->y) * (int64_t)vertex0->x;
   orderedVertex2 = vertex2;
-  if (-1 < (int)((int)((uint64_t)crossPartB >> 0x20) + (int)((uint64_t)crossPartA >> 0x20) +
+  if (-1 < (int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
                 (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA))) {
     orderedVertex2 = vertex1;
     vertex1 = vertex2;
@@ -193,17 +196,17 @@ bool GraphicsProjectedPoint_IsInsideTriangle(int pointerY,int pointerX,GraphicsP
   crossPartA = (int64_t)(pointerY - vertex1->y) * (int64_t)orderedVertex2->x +
           (int64_t)(orderedVertex2->y - pointerY) * (int64_t)vertex1->x;
   crossPartB = (int64_t)(vertex1->y - orderedVertex2->y) * (int64_t)pointerX;
-  if ((int)((int)((uint64_t)crossPartB >> 0x20) + (int)((uint64_t)crossPartA >> 0x20) +
+  if ((int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
            (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA)) < 0) {
     crossPartA = (int64_t)(vertex0->y - pointerY) * (int64_t)orderedVertex2->x +
             (int64_t)(orderedVertex2->y - vertex0->y) * (int64_t)pointerX;
     crossPartB = (int64_t)(pointerY - orderedVertex2->y) * (int64_t)vertex0->x;
-    if ((int)((int)((uint64_t)crossPartB >> 0x20) + (int)((uint64_t)crossPartA >> 0x20) +
+    if ((int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
              (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA)) < 0) {
       crossPartA = (int64_t)(vertex0->y - vertex1->y) * (int64_t)pointerX +
               (int64_t)(pointerY - vertex0->y) * (int64_t)vertex1->x;
       crossPartB = (int64_t)(vertex1->y - pointerY) * (int64_t)vertex0->x;
-      if ((int)((int)((uint64_t)crossPartB >> 0x20) + (int)((uint64_t)crossPartA >> 0x20) +
+      if ((int)((int)((uint64_t)crossPartB >> 32) + (int)((uint64_t)crossPartA >> 32) +
                (uint32_t)CARRY4((uint32_t)crossPartB,(uint32_t)crossPartA)) < 0) {
         return true;
       }

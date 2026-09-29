@@ -19,6 +19,12 @@
 #ifndef Q28_ONE
 #define Q28_ONE 0x10000000 /* 1.0 in Q28 fixed point (g_FixedSinQ28/g_FixedCosQ28 values) */
 #endif
+#ifndef Q8_ONE
+#define Q8_ONE 0x100 /* 1.0 in Q8 fixed point (game speed, AI scales and ratios) */
+#endif
+#ifndef Q4_SHIFT
+#define Q4_SHIFT 4 /* fraction bits of the Q4 resource and Energy rates */
+#endif
 
 /* Engine angles are 16-bit fractions of a full turn (0x10000 = 360 degrees), as used by the
    g_FixedSinQ28/g_FixedCosQ28 lookups and returned by FixedMath_Atan2Angle16. */
@@ -35,6 +41,15 @@
    factor, 12 for Q12). Written as the two halves so the compiler emits the same SHLD form. */
 #define FIXED_PRODUCT_SHR(product, shift) \
   ((int)((uint64_t)(product) >> 32) << (32 - (shift)) | (uint32_t)(product) >> (shift))
+/* (a * b) >> shift in 64 bits, low 32 bits: the product and the shift in one step (IMUL + SHRD). Use it
+   where the product is not needed otherwise; check the code stays the same (a named temporary for the product
+   can change the register allocation). */
+#define FIXED_MUL_SHR(a, b, shift) FIXED_PRODUCT_SHR((int64_t)(a) * (int64_t)(b), shift)
+/* Fixed-point fraction bits (shift counts) */
+#define Q12_SHIFT 12
+#define Q20_SHIFT 20
+#define Q28_SHIFT 28
+#define Q12_FRACTION_MASK 0xfff /* fraction part of a Q12 value */
 /* CosineDerivedLookupTables_Init: two 256x256 tables of shorts (the .sam codec's cosine transform) */
 #define COSINE_DERIVED_TABLE_ORDER 256
 #define COSINE_DERIVED_TABLE_ANGLE_STEP 0x40 /* pi/512 in angle16 units */

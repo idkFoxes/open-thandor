@@ -48,6 +48,8 @@
 #define UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED 0x40000 /* toggled by typing the cheat code into the chat line
                                                           (InGameChatInput_SendLineOrCheckCheatPhrase) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD 0x100000 /* cheat hotkey: build and research times / 16 */
+#define UI_COMMAND_RUNTIME_FLAG_CHEAT_PHRASE_ENTERED 0x80000 /* set with every cheat toggle by the chat phrase;
+                                                                no reader found */
 /* SelectionPlayerRuntimeBlock.sessionFlags bit: the player asks for a pause (shown as "P" in the player roster;
    toggled by InGameCommand_TogglePauseRequest) */
 #define PLAYER_SESSION_FLAG_PAUSE_REQUESTED 0x01
@@ -72,6 +74,8 @@
    a network host only shows it once every client has pressed its own
    (FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton). */
 #define INGAME_ACTION_RESULTS_CONTINUE 0x101B
+/* Action id of resultsSecondaryExitButton (suppressed in local games) */
+#define INGAME_ACTION_RESULTS_SECONDARY_EXIT 0x1025
 #define UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED 0x80 /* a command-mode click captured the pointer
                                                                  (InGameWorldInput_BeginPointerCapture); the
                                                                  release then issues the mode command */

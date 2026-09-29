@@ -17,7 +17,7 @@
 #define GLIDE_DUP_BYTE(value) ((uint32_t)(((uint32_t)(uint8_t)(value) << 8) | (uint32_t)(uint8_t)(value)))
 
 /* PACKUSWB of one word lane as Ghidra modelled it: values above 0xff saturate to 0xff. */
-#define GLIDE_SATURATE_WORD_TO_BYTE(value) ((uint8_t)((value) > 0xff ? 0xff : (value)))
+#define GLIDE_SATURATE_WORD_TO_BYTE(value) ((uint8_t)((value) > ARGB8888_CHANNEL_MAX ? ARGB8888_CHANNEL_MAX : (value)))
 
 /* Average of one ARGB8888 channel (selected by bitShift) over four samples, done as in the MMX original:
    byte-duplicated word lanes, PSRLW 4, PADDW, PSRLW 6. */
@@ -34,17 +34,17 @@ static __inline uint64_t Glide_PackWordLanes(uint32_t lane3,uint32_t lane2,uint3
 
 /* PADDW of two lane sets (each lane truncated to 16 bits), packed back into one qword. */
 #define GLIDE_ADD_WORD_LANES(lanesA,lanesB) \
-  Glide_PackWordLanes((short)((lanesA) >> 0x30) + (short)((lanesB) >> 0x30), \
-                      (short)((lanesA) >> 0x20) + (short)((lanesB) >> 0x20), \
-                      (short)((lanesA) >> 0x10) + (short)((lanesB) >> 0x10), \
+  Glide_PackWordLanes((short)((lanesA) >> 48) + (short)((lanesB) >> 48), \
+                      (short)((lanesA) >> 32) + (short)((lanesB) >> 32), \
+                      (short)((lanesA) >> 16) + (short)((lanesB) >> 16), \
                       (short)(lanesA) + (short)(lanesB))
 
 /* PMULLW of a native pixel broadcast into all lanes (and masked with GLIDE_PACKED_PIXEL_MASKS) by the channel
    unpack scales, then PSRLW 2: the destination colour as word lanes (lane3 zero, lane0 blue). */
 #define GLIDE_UNPACK_NATIVE_LANES(lanes) \
-  Glide_PackWordLanes((uint16_t)((short)((lanes) >> 0x30) * g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2, \
-                      (uint16_t)((short)((lanes) >> 0x20) * g_SoftwarePixelMmxConstants.unpackScales.red) >> 2, \
-                      (uint16_t)((short)((lanes) >> 0x10) * g_SoftwarePixelMmxConstants.unpackScales.green) >> 2, \
+  Glide_PackWordLanes((uint16_t)((short)((lanes) >> 48) * g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2, \
+                      (uint16_t)((short)((lanes) >> 32) * g_SoftwarePixelMmxConstants.unpackScales.red) >> 2, \
+                      (uint16_t)((short)((lanes) >> 16) * g_SoftwarePixelMmxConstants.unpackScales.green) >> 2, \
                       (uint16_t)((short)(lanes) * g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2)
 
 /* The MMX mask constants as qwords. */
@@ -57,7 +57,7 @@ static __inline uint64_t Glide_PackWordLanes(uint32_t lane3,uint32_t lane2,uint3
    (lane3 = alpha, lane0 = blue). */
 static __inline uint64_t Glide_UnpackArgbToWordLanes(uint32_t argb,int shift)
 {
-  return Glide_PackWordLanes(GLIDE_DUP_BYTE(argb >> 0x18) >> shift,GLIDE_DUP_BYTE(argb >> 0x10) >> shift,
+  return Glide_PackWordLanes(GLIDE_DUP_BYTE(argb >> 24) >> shift,GLIDE_DUP_BYTE(argb >> 16) >> shift,
                              GLIDE_DUP_BYTE(argb >> 8) >> shift,GLIDE_DUP_BYTE(argb) >> shift);
 }
 
@@ -245,7 +245,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
       g_GrSstSelect(sstIndexOrSizeOrCount);
       g_GlideSelectedResolutionQuery = resolutionQueryCode;
       sstIndexOrSizeOrCount = g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,NULL);
-      if (0xf < (int)sstIndexOrSizeOrCount) {
+      if (15 < (int)sstIndexOrSizeOrCount) {
         resolutionAlloc = g_MemoryApi.alloc(sstIndexOrSizeOrCount);
         resolutionList = (GrResolution *)resolutionAlloc.payloadOrError;
         if (!resolutionAlloc.failed) {
@@ -288,9 +288,9 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
             g_DisplayFramebufferAccess.pixels = NULL;
             g_FramebufferAccess = &g_DisplayFramebufferAccess;
             /* the Glide framebuffer is locked as RGB565 (GR_LFBWRITEMODE_565) */
-            g_SoftwarePixelFormatConfig.redMask = 0xf800;
-            g_SoftwarePixelFormatConfig.greenMask = 0x7e0;
-            g_SoftwarePixelFormatConfig.blueMask = 0x1f;
+            g_SoftwarePixelFormatConfig.redMask = RGB565_RED_MASK;
+            g_SoftwarePixelFormatConfig.greenMask = RGB565_GREEN_MASK;
+            g_SoftwarePixelFormatConfig.blueMask = RGB565_BLUE_MASK;
             g_SoftwarePixelFormatConfig.redShift = 11;
             g_SoftwarePixelFormatConfig.greenShift = 5;
             g_SoftwarePixelFormatConfig.blueShift = 0;
@@ -317,14 +317,14 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
                  Glide3_TextureSource_StretchDirectColorBilinear;
             g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
                  Glide3_TextureSource_BlitHalfRgbSaturatedAdd;
-            g_GuGammaCorrectionRGB(0x3f800000,0x3f800000,0x3f800000); /* 1.0f for red, green and blue */
+            g_GuGammaCorrectionRGB(GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE,GLIDE_FLOAT_BITS_ONE); /* 1.0f for red, green and blue */
             g_GrCoordinateSpace(GR_WINDOW_COORDS);
             /* the layout of the g_GlideVertex* records handed to grDrawTriangle */
             g_GrVertexLayout(GR_PARAM_XY,0,GR_PARAM_ENABLE);
             g_GrVertexLayout(GR_PARAM_Z,8,GR_PARAM_ENABLE);
-            g_GrVertexLayout(GR_PARAM_Q,0xc,GR_PARAM_ENABLE);
-            g_GrVertexLayout(GR_PARAM_ST0,0x14,GR_PARAM_ENABLE);
-            g_GrVertexLayout(GR_PARAM_PARGB,0x1c,GR_PARAM_ENABLE);
+            g_GrVertexLayout(GR_PARAM_Q,12,GR_PARAM_ENABLE);
+            g_GrVertexLayout(GR_PARAM_ST0,20,GR_PARAM_ENABLE);
+            g_GrVertexLayout(GR_PARAM_PARGB,28,GR_PARAM_ENABLE);
             g_GrCullMode(GR_CULL_DISABLE);
             g_GrDepthBufferMode(GR_DEPTHBUFFER_ZBUFFER);
             g_GrDepthBufferFunction(GR_CMP_GEQUAL); /* the vertices carry a scaled 1/depth as Z */
@@ -524,13 +524,13 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
           maxDimensionLog2 = textureHeightLog2;
         }
         coordinateShift = (char)maxDimensionLog2 - (char)widthLog2OrFlags;
-        currentPacket->vertices[0].textureU = currentPacket->vertices[0].textureU >> (coordinateShift & 0x1f);
-        currentPacket->vertices[1].textureU = currentPacket->vertices[1].textureU >> (coordinateShift & 0x1f);
-        currentPacket->vertices[2].textureU = currentPacket->vertices[2].textureU >> (coordinateShift & 0x1f);
+        currentPacket->vertices[0].textureU = currentPacket->vertices[0].textureU >> (coordinateShift & SHIFT_COUNT_MASK);
+        currentPacket->vertices[1].textureU = currentPacket->vertices[1].textureU >> (coordinateShift & SHIFT_COUNT_MASK);
+        currentPacket->vertices[2].textureU = currentPacket->vertices[2].textureU >> (coordinateShift & SHIFT_COUNT_MASK);
         coordinateShift = (char)maxDimensionLog2 - (char)textureHeightLog2;
-        currentPacket->vertices[0].textureV = currentPacket->vertices[0].textureV >> (coordinateShift & 0x1f);
-        currentPacket->vertices[1].textureV = currentPacket->vertices[1].textureV >> (coordinateShift & 0x1f);
-        currentPacket->vertices[2].textureV = currentPacket->vertices[2].textureV >> (coordinateShift & 0x1f);
+        currentPacket->vertices[0].textureV = currentPacket->vertices[0].textureV >> (coordinateShift & SHIFT_COUNT_MASK);
+        currentPacket->vertices[1].textureV = currentPacket->vertices[1].textureV >> (coordinateShift & SHIFT_COUNT_MASK);
+        currentPacket->vertices[2].textureV = currentPacket->vertices[2].textureV >> (coordinateShift & SHIFT_COUNT_MASK);
       }
       g_GlideVertex0ReciprocalDepth = Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[0].depth));
       g_GlideVertex1ReciprocalDepth = Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[1].depth));
@@ -994,7 +994,7 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
     strideOrTimestamp = captureWidth * 2;
     /* dword clear of the header (0x88 dwords = GRAPHICS_CAPTURE_PIXELS_OFFSET) and of the pixel dwords */
     clearCursor = (uint32_t *)capturedAsset;
-    for (pixelCountOrRemaining = pixelCountOrRemaining + 0x88; pixelCountOrRemaining != 0; pixelCountOrRemaining--) {
+    for (pixelCountOrRemaining = pixelCountOrRemaining + GRAPHICS_CAPTURE_PIXELS_OFFSET / 4; pixelCountOrRemaining != 0; pixelCountOrRemaining--) {
       *clearCursor = 0;
       clearCursor++;
     }
@@ -1038,13 +1038,13 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
       /* RGB565 -> ARGB8888 with alpha 0xff; each channel's top bits are repeated into its low bits (the
          original's SHLD chain) */
       rgb565Pixel = *sourcePixelCursor;
-      *argbCursor = (((((rgb565Pixel >> 0xb | 0x1fe0) << 3 | (uint32_t)(rgb565Pixel >> 0xd)) << 6 | (rgb565Pixel & 0x7ff) >> 5
-                  ) << 2 | (rgb565Pixel & 0x7ff) >> 9) << 5 | rgb565Pixel & 0x1f) << 3 | (rgb565Pixel & 0x1f) >> 2;
+      *argbCursor = (((((rgb565Pixel >> 11 | 0x1fe0) << 3 | (uint32_t)(rgb565Pixel >> 13)) << 6 | (rgb565Pixel & 0x7ff) >> 5
+                  ) << 2 | (rgb565Pixel & 0x7ff) >> 9) << 5 | rgb565Pixel & RGB565_BLUE_MASK) << 3 | (rgb565Pixel & RGB565_BLUE_MASK) >> 2;
       sourcePixelCursor++;
       argbCursor++;
       pixelCountOrRemaining--;
     } while (pixelCountOrRemaining != 0);
-    captureResult = THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(FramebufferCaptureResult, uint64_t, captureResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+    captureResult = THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(FramebufferCaptureResult, uint64_t, captureResult) & 0xFFFFFFFFFFull) & UINT32_MAX));
   }
   return captureResult;
 }
@@ -1096,9 +1096,9 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
         do {
           sourceArgb = *(uint32_t *)sourceCursor;
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3 & 0x1f) << 0x15) >> 0x10) |
-                            (uint16_t)(((sourceArgb >> 10) << 0x1a) >> 0x10)) >> 5 |
-                    (uint16_t)(((sourceArgb >> 0x13) << 0x1b) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3 & 0x1f) << 21) >> 16) |
+                            (uint16_t)(((sourceArgb >> 10) << 26) >> 16)) >> 5 |
+                    (uint16_t)(((sourceArgb >> 19) << 27) >> 16);
           sourceCursor = sourceCursor + 4;
           destinationCursor++;
           remainingColumns--;
@@ -1112,10 +1112,10 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
         do {
           sourceArgb = *(uint32_t *)sourceCursor;
           /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((sourceArgb >> 4 & 0xf) << 0x18) >> 0x10) |
-                                     (uint16_t)(((sourceArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
-                            (uint16_t)(((sourceArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
-                    (uint16_t)(sourceArgb >> 0x10) & 0xf000;
+          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((sourceArgb >> 4 & 0xf) << 24) >> 16) |
+                                     (uint16_t)(((sourceArgb >> 12) << 28) >> 16)) >> 4 |
+                            (uint16_t)(((sourceArgb >> 20) << 28) >> 16)) >> 4 |
+                    (uint16_t)(sourceArgb >> 16) & ARGB4444_ALPHA_MASK;
           sourceCursor = sourceCursor + 4;
           destinationCursor++;
           remainingColumns--;
@@ -1134,9 +1134,9 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
         do {
           sourceArgb = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)*sourceCursor);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3) << 0x1b) >> 0x16) |
-                            (uint16_t)(((sourceArgb >> 10) << 0x1a) >> 0x10)) >> 5 |
-                    (uint16_t)(((sourceArgb >> 0x13) << 0x1b) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3) << 27) >> 22) |
+                            (uint16_t)(((sourceArgb >> 10) << 26) >> 16)) >> 5 |
+                    (uint16_t)(((sourceArgb >> 19) << 27) >> 16);
           sourceCursor++;
           destinationCursor++;
           remainingColumns--;
@@ -1150,10 +1150,10 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
         do {
           sourceArgb = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)*sourceCursor);
           /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((sourceArgb >> 4) << 0x1c) >> 0x14) |
-                                     (uint16_t)(((sourceArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
-                            (uint16_t)(((sourceArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
-                    (uint16_t)(sourceArgb >> 0x10) & 0xf000;
+          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((sourceArgb >> 4) << 28) >> 20) |
+                                     (uint16_t)(((sourceArgb >> 12) << 28) >> 16)) >> 4 |
+                            (uint16_t)(((sourceArgb >> 20) << 28) >> 16)) >> 4 |
+                    (uint16_t)(sourceArgb >> 16) & ARGB4444_ALPHA_MASK;
           sourceCursor++;
           destinationCursor++;
           remainingColumns--;
@@ -1221,14 +1221,14 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
-          averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+          averagedRgb = (uint32_t)clampedRedOrAlpha << 16 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 0x15) >> 0x10) |
-                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 21) >> 16) |
+                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 26) >> 16)) >> 5 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 27) >> 16);
           sourceCursor = (AssetProducerSourceNames *)((int)sourceCursor->producerName + 8);
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
@@ -1251,19 +1251,19 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                            lowerRightSample,0x18);
-          averagedRgb = (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+                                                            lowerRightSample,24);
+          averagedRgb = (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 16 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
-          averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | averagedRgb;
+          averagedArgb = (uint32_t)clampedRedOrAlpha << 24 | averagedRgb;
           /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)((((averagedRgb & 0xf0) >> 4) << 0x18) >> 0x10) |
-                                      (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
-                             (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)((((averagedRgb & 0xf0) >> 4) << 24) >> 16) |
+                                      (uint16_t)(((averagedArgb >> 12) << 28) >> 16)) >> 4 |
+                             (uint16_t)(((averagedArgb >> 20) << 28) >> 16)) >> 4 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 28) >> 16);
           sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + 4);
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
@@ -1292,14 +1292,14 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
-          averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+          averagedRgb = (uint32_t)clampedRedOrAlpha << 16 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((uint32_t)(averagedRgb >> 3) << 0x1b) >> 0x16) |
-                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)(((uint32_t)(averagedRgb >> 3) << 27) >> 22) |
+                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 26) >> 16)) >> 5 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 27) >> 16);
           sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + 1);
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
@@ -1325,18 +1325,18 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                            lowerRightSample,0x18);
+                                                            lowerRightSample,24);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
-          averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+          averagedArgb = (uint32_t)clampedRedOrAlpha << 24 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 16 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((averagedArgb >> 4) << 0x1c) >> 0x14) |
-                                      (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
-                             (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((averagedArgb >> 4) << 28) >> 20) |
+                                      (uint16_t)(((averagedArgb >> 12) << 28) >> 16)) >> 4 |
+                             (uint16_t)(((averagedArgb >> 20) << 28) >> 16)) >> 4 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 28) >> 16);
           sourceCursor = (AssetProducerSourceNames *)(sourceCursor->producerName + 1);
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
@@ -1398,26 +1398,26 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
         do {
           upperLeftSample = *(uint32_t *)sourceCursor;
           upperRightSample = *(uint32_t *)(sourceCursor + 4);
-          lowerLeftSample = *(uint32_t *)(sourceCursor + destinationWidth * 0x10);
-          lowerRightSample = *(uint32_t *)(sourceCursor + destinationWidth * 0x10 + 4);
+          lowerLeftSample = *(uint32_t *)(sourceCursor + destinationWidth * 16);
+          lowerRightSample = *(uint32_t *)(sourceCursor + destinationWidth * 16 + 4);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
-          averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+          averagedRgb = (uint32_t)clampedRedOrAlpha << 16 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 0x15) >> 0x10) |
-                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 21) >> 16) |
+                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 26) >> 16)) >> 5 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 27) >> 16);
           sourceCursor = sourceCursor + 8;
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
-        sourceCursor = sourceCursor + destinationWidth * 0x18; /* skip the other three source rows of the block */
+        sourceCursor = sourceCursor + destinationWidth * 24; /* skip the other three source rows of the block */
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
       } while (remainingRows != 0);
@@ -1427,31 +1427,31 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
         do {
           upperLeftSample = *(uint32_t *)sourceCursor;
           upperRightSample = *(uint32_t *)(sourceCursor + 4);
-          lowerLeftSample = *(uint32_t *)(sourceCursor + destinationWidth * 0x10);
-          lowerRightSample = *(uint32_t *)(sourceCursor + destinationWidth * 0x10 + 4);
+          lowerLeftSample = *(uint32_t *)(sourceCursor + destinationWidth * 16);
+          lowerRightSample = *(uint32_t *)(sourceCursor + destinationWidth * 16 + 4);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                            lowerRightSample,0x18);
-          averagedRgb = (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+                                                            lowerRightSample,24);
+          averagedRgb = (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 16 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
-          averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | averagedRgb;
+          averagedArgb = (uint32_t)clampedRedOrAlpha << 24 | averagedRgb;
           /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)((((averagedRgb & 0xf0) >> 4) << 0x18) >> 0x10) |
-                                      (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
-                             (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)((((averagedRgb & 0xf0) >> 4) << 24) >> 16) |
+                                      (uint16_t)(((averagedArgb >> 12) << 28) >> 16)) >> 4 |
+                             (uint16_t)(((averagedArgb >> 20) << 28) >> 16)) >> 4 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 28) >> 16);
           sourceCursor = sourceCursor + 8;
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
         } while (remainingColumns != 0);
-        sourceCursor = sourceCursor + destinationWidth * 0x18; /* skip the other three source rows of the block */
+        sourceCursor = sourceCursor + destinationWidth * 24; /* skip the other three source rows of the block */
         remainingRows = remainingRows - 1;
         remainingColumns = destinationWidth;
       } while (remainingRows != 0);
@@ -1472,14 +1472,14 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
-          averagedRgb = (uint32_t)clampedRedOrAlpha << 0x10 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+          averagedRgb = (uint32_t)clampedRedOrAlpha << 16 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((uint32_t)(averagedRgb >> 3) << 0x1b) >> 0x16) |
-                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)(((uint32_t)(averagedRgb >> 3) << 27) >> 22) |
+                             (uint16_t)(((uint32_t)(averagedRgb >> 10) << 26) >> 16)) >> 5 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 27) >> 16);
           sourceCursor = sourceCursor + 2;
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
@@ -1502,18 +1502,18 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                             lowerRightSample,8);
           redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                          lowerRightSample,0x10);
+                                                          lowerRightSample,16);
           alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
-                                                            lowerRightSample,0x18);
+                                                            lowerRightSample,24);
           clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
-          averagedArgb = (uint32_t)clampedRedOrAlpha << 0x18 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+          averagedArgb = (uint32_t)clampedRedOrAlpha << 24 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 16 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                          (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((averagedArgb >> 4) << 0x1c) >> 0x14) |
-                                      (uint16_t)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
-                             (uint16_t)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
-                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 0x1c) >> 0x10);
+          *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((averagedArgb >> 4) << 28) >> 20) |
+                                      (uint16_t)(((averagedArgb >> 12) << 28) >> 16)) >> 4 |
+                             (uint16_t)(((averagedArgb >> 20) << 28) >> 16)) >> 4 |
+                     (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 4) << 28) >> 16);
           sourceCursor = sourceCursor + 2;
           destinationCursor++;
           remainingColumns = remainingColumns - 1;
@@ -1553,7 +1553,7 @@ void GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture
   do {
     do {
       nextGlideDataCursor = glideDataCursor + 1;
-      *glideDataCursor = 0xfff; /* ARGB4444: alpha 0, white */
+      *glideDataCursor = ARGB4444_RGB_MASK; /* ARGB4444: alpha 0, white */
       remainingColumns--;
       glideDataCursor = nextGlideDataCursor;
     } while (remainingColumns != 0);
@@ -1601,7 +1601,7 @@ void GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *tex
            (uint16_t)((uint32_t)(uint8_t)((uint8_t)(*sourcePairCursor >> 10) + firstAlphaQuarter +
                                  (uint8_t)(sourcePairCursor[downsampledWidth] >> 10) +
                                  ((uint8_t)sourcePairCursor[downsampledWidth] >> 2)) << 8 |
-                    (uint32_t)firstAlphaQuarter | 0xfff);
+                    (uint32_t)firstAlphaQuarter | ARGB4444_RGB_MASK);
       sourcePairCursor = sourcePairCursor + 1;
       glideDataCursor = glideDataCursor + 1;
       remainingColumns = remainingColumns - 1;
@@ -1648,12 +1648,12 @@ void GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextu
            (uint16_t)((uint32_t)(uint8_t)((*sourceByteCursor >> 2) + (sourceByteCursor[2] >> 2) +
                                  (sourceByteCursor[downsampledWidth * 8] >> 2) +
                                  (sourceByteCursor[downsampledWidth * 8 + 2] >> 2)) << 8 |
-                    (uint32_t)(uint8_t)(sourceByteCursor[2] >> 2) | 0xfff);
+                    (uint32_t)(uint8_t)(sourceByteCursor[2] >> 2) | ARGB4444_RGB_MASK);
       sourceByteCursor = sourceByteCursor + 4;
       glideDataCursor = glideDataCursor + 1;
       remainingColumns = remainingColumns - 1;
     } while (remainingColumns != 0);
-    sourceByteCursor = sourceByteCursor + downsampledWidth * 0xc;
+    sourceByteCursor = sourceByteCursor + downsampledWidth * 12;
     remainingRows = remainingRows - 1;
     remainingColumns = downsampledWidth;
   } while (remainingRows != 0);
@@ -1751,33 +1751,33 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
           do {
             do {
               sourceArgb = *sourceArgbCursor;
-              if (0xffffff < sourceArgb) {
-                if (sourceArgb < 0xff000000) {
+              if (ARGB8888_RGB_MASK < sourceArgb) {
+                if (sourceArgb < ARGB8888_ALPHA_MASK) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
                            GLIDE_PACKED_PIXEL_MASKS;
                   weightedSourceDirect =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
-                              g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
+                              g_SoftwareBlendAlphaFactors[sourceArgb >> 24]);
                   weightedDestinationDirect =
                        pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                              g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
+                              g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 24]);
                   packedPairDirect =
                        pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
                                GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairDirect >> 8) +
-                       (short)(packedPairDirect >> 0x28);
+                       (short)(packedPairDirect >> 40);
                 }
                 else {
                   *(short *)destinationCursor =
-                       (short)g_SoftwarePixelPackTables->blue[sourceArgb & 0xff] +
+                       (short)g_SoftwarePixelPackTables->blue[sourceArgb & ARGB8888_BLUE_MASK] +
                        (short)*(uint32_t *)
-                               ((uint8_t *)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
+                               ((uint8_t *)g_SoftwarePixelPackTables->green + ((sourceArgb & ARGB8888_GREEN_MASK) >> 6)) +
                        (short)*(uint32_t *)
-                               ((uint8_t *)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
+                               ((uint8_t *)g_SoftwarePixelPackTables->red + ((sourceArgb & ARGB8888_RED_MASK) >> 14));
                 }
               }
               sourceArgbCursor++;
@@ -1838,8 +1838,8 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
           do {
             do {
               sourceArgb = GLIDE_PALETTE_NATIVE(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
-              if (0xffffff < sourceArgb) {
-                if (sourceArgb < 0xff000000) {
+              if (ARGB8888_RGB_MASK < sourceArgb) {
+                if (sourceArgb < ARGB8888_ALPHA_MASK) {
                   sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
@@ -1847,17 +1847,17 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
                            GLIDE_PACKED_PIXEL_MASKS;
                   weightedSourcePalette =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
-                              g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
+                              g_SoftwareBlendAlphaFactors[sourceArgb >> 24]);
                   weightedDestinationPalette =
                        pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                              g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
+                              g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 24]);
                   packedPairPalette =
                        pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
                                GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairPalette >> 8) +
-                       (short)(packedPairPalette >> 0x28);
+                       (short)(packedPairPalette >> 40);
                 }
                 else {
                   *(short *)destinationCursor = (short)sourceArgb;
@@ -1968,24 +1968,24 @@ bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,Gr
           do {
             do {
               sourceArgb = *sourceArgbCursor;
-              if (0xffffff < sourceArgb) {
+              if (ARGB8888_RGB_MASK < sourceArgb) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          GLIDE_PACKED_PIXEL_MASKS;
                 weightedSourceDirect =
                      pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
-                            g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
+                            g_SoftwareBlendAlphaFactors[sourceArgb >> 24]);
                 weightedDestinationDirect =
                      pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                            g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
+                            g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 24]);
                 packedPairDirect =
                      pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
                              GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairDirect >> 8) +
-                     (short)(packedPairDirect >> 0x28);
+                     (short)(packedPairDirect >> 40);
               }
               sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
@@ -2045,24 +2045,24 @@ bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,Gr
           do {
             do {
               sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
-              if (0xffffff < sourceArgb) {
+              if (ARGB8888_RGB_MASK < sourceArgb) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          GLIDE_PACKED_PIXEL_MASKS;
                 weightedSourcePalette =
                      pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
-                            g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
+                            g_SoftwareBlendAlphaFactors[sourceArgb >> 24]);
                 weightedDestinationPalette =
                      pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                            g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
+                            g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 24]);
                 packedPairPalette =
                      pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
                              GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)((uint64_t)packedPairPalette >> 8) +
-                     (short)((uint64_t)packedPairPalette >> 0x28);
+                     (short)((uint64_t)packedPairPalette >> 40);
               }
               sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
@@ -2168,7 +2168,7 @@ void Glide3_TextureSource_StretchDirectColorBilinear
                 (destinationY * g_DisplayFramebufferAccess.width + destinationX) * 2;
       widthMinusOneOrRemainingPairs = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrSourceStride,PIXEL_WIDTH) - 1;
       /* MUL (unsigned 64-bit product) then DIV. */
-      sourceStepX = (int)((uint64_t)widthMinusOneOrRemainingPairs * 0x100 / (uint64_t)(destinationWidth - 1));
+      sourceStepX = (int)((uint64_t)widthMinusOneOrRemainingPairs * 256 / (uint64_t)(destinationWidth - 1));
       sourceHeightMinusOne = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrSourceStride,PIXEL_HEIGHT) - 1;
       destinationHeightMinusOne = destinationHeight - 1;
       /* asset + dataOffset */
@@ -2234,13 +2234,13 @@ void Glide3_TextureSource_StretchDirectColorBilinear
                pmulhw(GLIDE_ADD_WORD_LANES(secondLowerLeftWeighted,secondLowerRightWeighted),
                       g_SoftwareBilinearForwardFactors[fractionY]);
           firstLane0 = (uint16_t)((short)firstUpperRowWeighted + (short)firstLowerRowWeighted) >> 2;
-          firstLane1 = (uint16_t)((short)(firstUpperRowWeighted >> 0x10) + (short)(firstLowerRowWeighted >> 0x10)) >> 2;
-          firstLane2 = (uint16_t)((short)(firstUpperRowWeighted >> 0x20) + (short)(firstLowerRowWeighted >> 0x20)) >> 2;
-          firstLane3 = (uint16_t)((short)(firstUpperRowWeighted >> 0x30) + (short)(firstLowerRowWeighted >> 0x30)) >> 2;
+          firstLane1 = (uint16_t)((short)(firstUpperRowWeighted >> 16) + (short)(firstLowerRowWeighted >> 16)) >> 2;
+          firstLane2 = (uint16_t)((short)(firstUpperRowWeighted >> 32) + (short)(firstLowerRowWeighted >> 32)) >> 2;
+          firstLane3 = (uint16_t)((short)(firstUpperRowWeighted >> 48) + (short)(firstLowerRowWeighted >> 48)) >> 2;
           secondLane0 = (uint16_t)((short)secondUpperRowWeighted + (short)secondLowerRowWeighted) >> 2;
-          secondLane1 = (uint16_t)((short)(secondUpperRowWeighted >> 0x10) + (short)(secondLowerRowWeighted >> 0x10)) >> 2;
-          secondLane2 = (uint16_t)((short)(secondUpperRowWeighted >> 0x20) + (short)(secondLowerRowWeighted >> 0x20)) >> 2;
-          secondLane3 = (uint16_t)((short)(secondUpperRowWeighted >> 0x30) + (short)(secondLowerRowWeighted >> 0x30)) >> 2;
+          secondLane1 = (uint16_t)((short)(secondUpperRowWeighted >> 16) + (short)(secondLowerRowWeighted >> 16)) >> 2;
+          secondLane2 = (uint16_t)((short)(secondUpperRowWeighted >> 32) + (short)(secondLowerRowWeighted >> 32)) >> 2;
+          secondLane3 = (uint16_t)((short)(secondUpperRowWeighted >> 48) + (short)(secondLowerRowWeighted >> 48)) >> 2;
           firstClampedLane0 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane0);
           firstClampedLane1 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane1);
           firstClampedLane2 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane2);
@@ -2265,13 +2265,13 @@ void Glide3_TextureSource_StretchDirectColorBilinear
                        g_SoftwarePixelMmxConstants.packWeights);
           /* Two RGB565 pixels at once: the second one in the high word. */
           *(uint32_t *)destinationCursor =
-               (uint32_t)(uint16_t)((short)(secondPackedPair >> 8) + (short)(secondPackedPair >> 0x28)) << 0x10 |
-               (uint32_t)(uint16_t)((short)(firstPackedPair >> 8) + (short)(firstPackedPair >> 0x28));
+               (uint32_t)(uint16_t)((short)(secondPackedPair >> 8) + (short)(secondPackedPair >> 40)) << 16 |
+               (uint32_t)(uint16_t)((short)(firstPackedPair >> 8) + (short)(firstPackedPair >> 40));
           sourceXFixed = sourceXFixed + sourceStepX * 2;
           destinationCursor = destinationCursor + 4;
           widthMinusOneOrRemainingPairs--;
         } while (widthMinusOneOrRemainingPairs != 0);
-        sourceYFixed = sourceYFixed + (int)((uint64_t)sourceHeightMinusOne * 0x100 /
+        sourceYFixed = sourceYFixed + (int)((uint64_t)sourceHeightMinusOne * 256 /
                                             (uint64_t)destinationHeightMinusOne);
         destinationCursor = destinationRowStart + framebufferWidth * 2;
         sourceRowCursor = sourcePixels + (sourceYFixed >> 8) * recordOffsetOrSourceStride;
@@ -2367,11 +2367,11 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
               do {
                 remainingColumnRepeats = integerScale;
                 paletteIndexOrSourceArgb = *(uint32_t *)sourceCursor;
-                if (paletteIndexOrSourceArgb < 0x1000000) {
+                if (paletteIndexOrSourceArgb < ARGB8888_ALPHA_ONE) {
                   destinationX = destinationX + integerScale;
                   destinationCursor = destinationCursor + integerScale * 2;
                 }
-                else if (paletteIndexOrSourceArgb < 0xff000000) {
+                else if (paletteIndexOrSourceArgb < ARGB8888_ALPHA_MASK) {
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
                       framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
@@ -2380,17 +2380,17 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                                GLIDE_PACKED_PIXEL_MASKS;
                       weightedSourceDirect =
                            pmulhw(Glide_UnpackArgbToWordLanes(paletteIndexOrSourceArgb,2),
-                                  g_SoftwareBlendAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
+                                  g_SoftwareBlendAlphaFactors[paletteIndexOrSourceArgb >> 24]);
                       weightedDestinationDirect =
                            pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                                  g_SoftwareBlendInverseAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
+                                  g_SoftwareBlendInverseAlphaFactors[paletteIndexOrSourceArgb >> 24]);
                       packedPairDirect =
                            pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
                                    GLIDE_QUANTIZE_MASKS,
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
                            (short)(packedPairDirect >> 8) +
-                           (short)(packedPairDirect >> 0x28);
+                           (short)(packedPairDirect >> 40);
                     }
                     destinationX++;
                     destinationCursor = destinationCursor + 2;
@@ -2398,11 +2398,11 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                   } while (remainingColumnRepeats != 0);
                 }
                 else {
-                  packedBlue = g_SoftwarePixelPackTables->blue[paletteIndexOrSourceArgb & 0xff];
+                  packedBlue = g_SoftwarePixelPackTables->blue[paletteIndexOrSourceArgb & ARGB8888_BLUE_MASK];
                   packedGreen = *(uint32_t *)
-                           ((uint8_t *)g_SoftwarePixelPackTables->green + ((paletteIndexOrSourceArgb & 0xff00) >> 6));
+                           ((uint8_t *)g_SoftwarePixelPackTables->green + ((paletteIndexOrSourceArgb & ARGB8888_GREEN_MASK) >> 6));
                   packedRed = *(uint32_t *)
-                           ((uint8_t *)g_SoftwarePixelPackTables->red + ((paletteIndexOrSourceArgb & 0xff0000) >> 0xe));
+                           ((uint8_t *)g_SoftwarePixelPackTables->red + ((paletteIndexOrSourceArgb & ARGB8888_RED_MASK) >> 14));
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
                       *(short *)destinationCursor = (short)packedBlue + (short)packedGreen + (short)packedRed;
@@ -2443,11 +2443,11 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
               do {
                 remainingColumnRepeats = integerScale;
                 paletteArgb = GLIDE_PALETTE_NATIVE(sourceAsset,paletteIndexOrSourceArgb,(uint32_t)*sourceCursor);
-                if (paletteArgb < 0x1000000) {
+                if (paletteArgb < ARGB8888_ALPHA_ONE) {
                   destinationX = destinationX + integerScale;
                   destinationCursor = destinationCursor + integerScale * 2;
                 }
-                else if (paletteArgb < 0xff000000) {
+                else if (paletteArgb < ARGB8888_ALPHA_MASK) {
                   paletteArgb = GLIDE_PALETTE_ARGB(sourceAsset,paletteIndexOrSourceArgb,(uint32_t)*sourceCursor);
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
@@ -2457,17 +2457,17 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                                GLIDE_PACKED_PIXEL_MASKS;
                       weightedSourcePalette =
                            pmulhw(Glide_UnpackArgbToWordLanes(paletteArgb,2),
-                                  g_SoftwareBlendAlphaFactors[paletteArgb >> 0x18]);
+                                  g_SoftwareBlendAlphaFactors[paletteArgb >> 24]);
                       weightedDestinationPalette =
                            pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                                  g_SoftwareBlendInverseAlphaFactors[paletteArgb >> 0x18]);
+                                  g_SoftwareBlendInverseAlphaFactors[paletteArgb >> 24]);
                       packedPairPalette =
                            pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
                                    GLIDE_QUANTIZE_MASKS,
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
                            (short)(packedPairPalette >> 8) +
-                           (short)(packedPairPalette >> 0x28);
+                           (short)(packedPairPalette >> 40);
                     }
                     destinationX++;
                     destinationCursor = destinationCursor + 2;
@@ -2593,33 +2593,33 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
           do {
             do {
               sourceArgb = *sourceArgbCursor;
-              if (0xffffff < sourceArgb) {
-                if (sourceArgb < 0xff000000) {
+              if (ARGB8888_RGB_MASK < sourceArgb) {
+                if (sourceArgb < ARGB8888_ALPHA_MASK) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
                            GLIDE_PACKED_PIXEL_MASKS;
                   weightedSourceDirect =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
-                              g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
+                              g_SoftwareBlendAlphaFactors[sourceArgb >> 24]);
                   weightedDestinationDirect =
                        pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                              g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
+                              g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 24]);
                   packedPairDirect =
                        pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
                                GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairDirect >> 8) +
-                       (short)(packedPairDirect >> 0x28);
+                       (short)(packedPairDirect >> 40);
                 }
                 else {
                   *(short *)destinationCursor =
-                       (short)g_SoftwarePixelPackTables->blue[sourceArgb & 0xff] +
+                       (short)g_SoftwarePixelPackTables->blue[sourceArgb & ARGB8888_BLUE_MASK] +
                        (short)*(uint32_t *)
-                               ((uint8_t *)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
+                               ((uint8_t *)g_SoftwarePixelPackTables->green + ((sourceArgb & ARGB8888_GREEN_MASK) >> 6)) +
                        (short)*(uint32_t *)
-                               ((uint8_t *)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
+                               ((uint8_t *)g_SoftwarePixelPackTables->red + ((sourceArgb & ARGB8888_RED_MASK) >> 14));
                 }
               }
               sourceArgbCursor++;
@@ -2680,8 +2680,8 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
             do {
               do {
                 sourceArgb = GLIDE_PALETTE_NATIVE(sourceAsset,paletteBankIndex,(uint32_t)*sourceIndexCursor);
-                if (0xffffff < sourceArgb) {
-                  if (sourceArgb < 0xff000000) {
+                if (ARGB8888_RGB_MASK < sourceArgb) {
+                  if (sourceArgb < ARGB8888_ALPHA_MASK) {
                     sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,paletteBankIndex,(uint32_t)*sourceIndexCursor);
                     framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                     destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
@@ -2689,17 +2689,17 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
                              GLIDE_PACKED_PIXEL_MASKS;
                     weightedSourcePalette =
                          pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
-                                g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
+                                g_SoftwareBlendAlphaFactors[sourceArgb >> 24]);
                     weightedDestinationPalette =
                          pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                                g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
+                                g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 24]);
                     packedPairPalette =
                          pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
                                  GLIDE_QUANTIZE_MASKS,
                                  g_SoftwarePixelMmxConstants.packWeights);
                     *(short *)destinationCursor =
                          (short)(packedPairPalette >> 8) +
-                         (short)(packedPairPalette >> 0x28);
+                         (short)(packedPairPalette >> 40);
                   }
                   else {
                     *(short *)destinationCursor = (short)sourceArgb;
@@ -2808,31 +2808,31 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
           do {
             do {
               sourceArgb = *sourceArgbCursor;
-              if ((sourceArgb & 0xffffff) != 0) {
+              if ((sourceArgb & ARGB8888_RGB_MASK) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumDirect =
-                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 48) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                                 (short)(destinationLanes >> 0x20) *
+                                                 (short)(destinationLanes >> 32) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.red,
-                                                 (short)(destinationLanes >> 0x10) *
+                                                 (short)(destinationLanes >> 16) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.green,
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,0));
                 packedPairDirect =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumDirect >> 0x34),
-                                                 (uint16_t)(saturatedSumDirect >> 0x20) >> 4,
-                                                 (uint16_t)(saturatedSumDirect >> 0x10) >> 4,
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumDirect >> 52),
+                                                 (uint16_t)(saturatedSumDirect >> 32) >> 4,
+                                                 (uint16_t)(saturatedSumDirect >> 16) >> 4,
                                                  (uint16_t)saturatedSumDirect >> 4) &
                              GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairDirect >> 8) +
-                     (short)(packedPairDirect >> 0x28);
+                     (short)(packedPairDirect >> 40);
               }
               sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
@@ -2892,31 +2892,31 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
           do {
             do {
               sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
-              if ((sourceArgb & 0xffffff) != 0) {
+              if ((sourceArgb & ARGB8888_RGB_MASK) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumPalette =
-                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 48) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                                 (short)(destinationLanes >> 0x20) *
+                                                 (short)(destinationLanes >> 32) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.red,
-                                                 (short)(destinationLanes >> 0x10) *
+                                                 (short)(destinationLanes >> 16) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.green,
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,0));
                 packedPairPalette =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumPalette >> 0x34),
-                                                 (uint16_t)(saturatedSumPalette >> 0x20) >> 4,
-                                                 (uint16_t)(saturatedSumPalette >> 0x10) >> 4,
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumPalette >> 52),
+                                                 (uint16_t)(saturatedSumPalette >> 32) >> 4,
+                                                 (uint16_t)(saturatedSumPalette >> 16) >> 4,
                                                  (uint16_t)saturatedSumPalette >> 4) &
                              GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairPalette >> 8) +
-                     (short)(packedPairPalette >> 0x28);
+                     (short)(packedPairPalette >> 40);
               }
               sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
@@ -3019,31 +3019,31 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
           do {
             do {
               sourceArgb = *sourceArgbCursor;
-              if ((sourceArgb & 0xffffff) != 0) {
+              if ((sourceArgb & ARGB8888_RGB_MASK) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumDirect =
-                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 48) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                                 (short)(destinationLanes >> 0x20) *
+                                                 (short)(destinationLanes >> 32) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.red,
-                                                 (short)(destinationLanes >> 0x10) *
+                                                 (short)(destinationLanes >> 16) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.green,
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,1));
                 packedPairDirect =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumDirect >> 0x34),
-                                                 (uint16_t)(saturatedSumDirect >> 0x20) >> 4,
-                                                 (uint16_t)(saturatedSumDirect >> 0x10) >> 4,
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumDirect >> 52),
+                                                 (uint16_t)(saturatedSumDirect >> 32) >> 4,
+                                                 (uint16_t)(saturatedSumDirect >> 16) >> 4,
                                                  (uint16_t)saturatedSumDirect >> 4) &
                              GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairDirect >> 8) +
-                     (short)(packedPairDirect >> 0x28);
+                     (short)(packedPairDirect >> 40);
               }
               sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
@@ -3103,31 +3103,31 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
           do {
             do {
               sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
-              if ((sourceArgb & 0xffffff) != 0) {
+              if ((sourceArgb & ARGB8888_RGB_MASK) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumPalette =
-                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 48) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                                 (short)(destinationLanes >> 0x20) *
+                                                 (short)(destinationLanes >> 32) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.red,
-                                                 (short)(destinationLanes >> 0x10) *
+                                                 (short)(destinationLanes >> 16) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.green,
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,1));
                 packedPairPalette =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumPalette >> 0x34),
-                                                 (uint16_t)(saturatedSumPalette >> 0x20) >> 4,
-                                                 (uint16_t)(saturatedSumPalette >> 0x10) >> 4,
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumPalette >> 52),
+                                                 (uint16_t)(saturatedSumPalette >> 32) >> 4,
+                                                 (uint16_t)(saturatedSumPalette >> 16) >> 4,
                                                  (uint16_t)saturatedSumPalette >> 4) &
                              GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairPalette >> 8) +
-                     (short)(packedPairPalette >> 0x28);
+                     (short)(packedPairPalette >> 40);
               }
               sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
@@ -3195,8 +3195,8 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
   uint64_t weightedSourceDirect;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
-    modulationGreen = (modulationArgb8888 & 0xff00) >> 8;
-    modulationRed = (modulationArgb8888 & 0xff0000) >> 0x10;
+    modulationGreen = (modulationArgb8888 & ARGB8888_GREEN_MASK) >> 8;
+    modulationRed = (modulationArgb8888 & ARGB8888_RED_MASK) >> 16;
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
       recordOffsetOrRowSkip = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
@@ -3246,15 +3246,15 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
           do {
             do {
               sourceArgbOrBlue = *sourceArgbCursor;
-              blueProduct = (sourceArgbOrBlue & 0xff) * (modulationArgb8888 & 0xff);
-              alphaProductOrAlpha = (sourceArgbOrBlue >> 0x18) * (modulationArgb8888 >> 0x18);
-              greenProduct = ((sourceArgbOrBlue & 0xff00) >> 8) * modulationGreen & 0xff00;
-              redProduct = ((sourceArgbOrBlue & 0xff0000) >> 0x10) * modulationRed & 0xff00;
+              blueProduct = (sourceArgbOrBlue & ARGB8888_BLUE_MASK) * (modulationArgb8888 & ARGB8888_BLUE_MASK);
+              alphaProductOrAlpha = (sourceArgbOrBlue >> 24) * (modulationArgb8888 >> 24);
+              greenProduct = ((sourceArgbOrBlue & ARGB8888_GREEN_MASK) >> 8) * modulationGreen & 0xff00;
+              redProduct = ((sourceArgbOrBlue & ARGB8888_RED_MASK) >> 16) * modulationRed & 0xff00;
               alphaProductHigh = alphaProductOrAlpha & 0xff00;
               sourceArgbOrBlue = blueProduct >> 8;
-              modulatedArgb = sourceArgbOrBlue | greenProduct | redProduct << 8 | alphaProductHigh << 0x10;
-              if (0xffffff < modulatedArgb) {
-                if (modulatedArgb < 0xff000000) {
+              modulatedArgb = sourceArgbOrBlue | greenProduct | redProduct << 8 | alphaProductHigh << 16;
+              if (ARGB8888_RGB_MASK < modulatedArgb) {
+                if (modulatedArgb < ARGB8888_ALPHA_MASK) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
@@ -3274,7 +3274,7 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairDirect >> 8) +
-                       (short)(packedPairDirect >> 0x28);
+                       (short)(packedPairDirect >> 40);
                 }
                 else {
                   *(short *)destinationCursor =
@@ -3342,15 +3342,15 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
           do {
             do {
               sourceArgbOrBlue = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
-              blueProduct = (sourceArgbOrBlue & 0xff) * (modulationArgb8888 & 0xff);
-              alphaProductOrAlpha = (sourceArgbOrBlue >> 0x18) * (modulationArgb8888 >> 0x18);
-              greenProduct = ((sourceArgbOrBlue & 0xff00) >> 8) * modulationGreen & 0xff00;
-              redProduct = ((sourceArgbOrBlue & 0xff0000) >> 0x10) * modulationRed & 0xff00;
+              blueProduct = (sourceArgbOrBlue & ARGB8888_BLUE_MASK) * (modulationArgb8888 & ARGB8888_BLUE_MASK);
+              alphaProductOrAlpha = (sourceArgbOrBlue >> 24) * (modulationArgb8888 >> 24);
+              greenProduct = ((sourceArgbOrBlue & ARGB8888_GREEN_MASK) >> 8) * modulationGreen & 0xff00;
+              redProduct = ((sourceArgbOrBlue & ARGB8888_RED_MASK) >> 16) * modulationRed & 0xff00;
               alphaProductHigh = alphaProductOrAlpha & 0xff00;
               sourceArgbOrBlue = blueProduct >> 8;
-              modulatedArgb = sourceArgbOrBlue | greenProduct | redProduct << 8 | alphaProductHigh << 0x10;
-              if (0xffffff < modulatedArgb) {
-                if (modulatedArgb < 0xff000000) {
+              modulatedArgb = sourceArgbOrBlue | greenProduct | redProduct << 8 | alphaProductHigh << 16;
+              if (ARGB8888_RGB_MASK < modulatedArgb) {
+                if (modulatedArgb < ARGB8888_ALPHA_MASK) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
@@ -3368,7 +3368,7 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairPalette >> 8) +
-                       (short)(packedPairPalette >> 0x28);
+                       (short)(packedPairPalette >> 40);
                 }
                 else {
                   *(short *)destinationCursor =
@@ -3461,12 +3461,12 @@ void Glide3_Framebuffer_FillRectArgb(GraphicsScreenCoordinate clipMaxY,GraphicsS
                (rectMinY * g_DisplayFramebufferAccess.width + rectMinX) * 2;
       /* native 16-bit pixel in the low word, source alpha in the top byte; the green/red lookups are
          byte offsets (channel * 4) into the pack tables */
-      fillColor = g_SoftwarePixelPackTables->blue[argb8888 & 0xff] + (argb8888 & 0xff000000) +
-              *(int *)((uint8_t *)g_SoftwarePixelPackTables->green + ((argb8888 & 0xff00) >> 6)) +
-              *(int *)((uint8_t *)g_SoftwarePixelPackTables->red + ((argb8888 & 0xff0000) >> 0xe));
-      if (0xffffff < fillColor) { /* alpha != 0 */
+      fillColor = g_SoftwarePixelPackTables->blue[argb8888 & ARGB8888_BLUE_MASK] + (argb8888 & ARGB8888_ALPHA_MASK) +
+              *(int *)((uint8_t *)g_SoftwarePixelPackTables->green + ((argb8888 & ARGB8888_GREEN_MASK) >> 6)) +
+              *(int *)((uint8_t *)g_SoftwarePixelPackTables->red + ((argb8888 & ARGB8888_RED_MASK) >> 14));
+      if (ARGB8888_RGB_MASK < fillColor) { /* alpha != 0 */
         remainingColumns = clippedWidth;
-        if (fillColor < 0xff000000) { /* alpha 1..254: blend */
+        if (fillColor < ARGB8888_ALPHA_MASK) { /* alpha 1..254: blend */
           do {
             do {
               destinationCursor = destinationCursor + g_GlideSecondBufferOffset;
@@ -3479,17 +3479,17 @@ void Glide3_Framebuffer_FillRectArgb(GraphicsScreenCoordinate clipMaxY,GraphicsS
                  native pixel in fillColor, not the argb8888 channels */
               weightedSource =
                    pmulhw(Glide_UnpackArgbToWordLanes(fillColor,2),
-                          g_SoftwareBlendAlphaFactors[fillColor >> 0x18]);
+                          g_SoftwareBlendAlphaFactors[fillColor >> 24]);
               weightedDestination =
                    pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
-                          g_SoftwareBlendInverseAlphaFactors[fillColor >> 0x18]);
+                          g_SoftwareBlendInverseAlphaFactors[fillColor >> 24]);
               packedChannelPairs =
                    pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestination,weightedSource) &
                            GLIDE_QUANTIZE_MASKS,
                            g_SoftwarePixelMmxConstants.packWeights);
               *(short *)(destinationCursor + secondBufferBackOffset) =
                    (short)(packedChannelPairs >> 8) +
-                   (short)(packedChannelPairs >> 0x28);
+                   (short)(packedChannelPairs >> 40);
               destinationCursor = destinationCursor + secondBufferBackOffset + 2;
               remainingColumns--;
             } while (remainingColumns != 0);
@@ -3659,7 +3659,7 @@ void Glide3_Framebuffer_EndAccess(void)
 /* TMU bytes of a texture: pixelWidth * pixelHeight * 2 bytes, divided by 4 per downsample step. */
 #define GLIDE_TMU_BYTES(asset,recordOffset,downsampleShift) \
   ((uint32_t)(GLIDE_RECORD_INT(asset,recordOffset,PIXEL_WIDTH) * GLIDE_RECORD_INT(asset,recordOffset,PIXEL_HEIGHT) * \
-              2) >> ((char)(downsampleShift) * 2 & 0x1fU))
+              2) >> ((char)(downsampleShift) * 2 & (uint32_t)SHIFT_COUNT_MASK))
 
 /* Address: 0x0057FF50.
    Makes a texture resident in TMU memory before it is drawn. The resident textures form a list ordered by TMU
@@ -3824,8 +3824,8 @@ void Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   texture->residentAddress = 0;
   /* two bytes per texel of the downsampled image */
   uploadAlloc = g_MemoryApi.alloc
-                    ((logicalSize.logicalHeightPixels >> ((uint8_t)shift & 0x1f)) *
-                     (logicalSize.logicalWidthPixels >> ((uint8_t)shift & 0x1f)) * 2);
+                    ((logicalSize.logicalHeightPixels >> ((uint8_t)shift & SHIFT_COUNT_MASK)) *
+                     (logicalSize.logicalWidthPixels >> ((uint8_t)shift & SHIFT_COUNT_MASK)) * 2);
   if (!uploadAlloc.failed) {
     (texture->glideInfo).data = (void *)uploadAlloc.payloadOrError;
     g_GlideTextureColorUpload[shift](texture);

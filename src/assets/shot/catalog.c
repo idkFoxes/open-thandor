@@ -159,7 +159,7 @@ ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
   heightDelta = targetZ - launchZ;
   if (definition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
     planarLengthAngle = FixedMath_Vector2AngleAndLengthRegs(targetY - launchY,targetX - launchX);
-    computedHeading = planarLengthAngle.angle & 0xffff;
+    computedHeading = planarLengthAngle.angle & FIXED_ANGLE16_MASK;
     /* tan(elevation) = (v^2 +- sqrt(v^4 - 2*g*h*v^2 - (g*r)^2)) / (g*r) */
     launchSpeedSquared = definition->launchSpeedQ12 * definition->launchSpeedQ12;
     rangeTimesDivisor = planarLengthAngle.length * definition->ballisticDivisorQ12;
@@ -171,8 +171,8 @@ ShotLaunchAngles ShotDefinition_ComputeLaunchAnglesRegs
       discriminant = 0; /* target out of reach */
     }
     computedElevation =
-         FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)discriminant >> 0x20),(UInt64Half32)discriminant);
-    if ((-0x1000 < heightDelta) && (heightDelta < 0x1000)) {
+         FIXED_UINT64_SQRT(discriminant);
+    if ((-Q12_ONE < heightDelta) && (heightDelta < Q12_ONE)) {
       computedElevation = -computedElevation;
     }
     computedElevation = FixedMath_Atan2Angle16(launchSpeedSquared + computedElevation,rangeTimesDivisor);
@@ -219,7 +219,7 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
   else {
     /* -0xAAA / 0x1000 = -2/3 in Q12: lifetime - 2/3 of the ramp duration */
     selectionRangeQ12 =
-         (((int)(definition->trajectoryRampDurationTicks * -0xaaa) >> 0xc) +
+         (((int)(definition->trajectoryRampDurationTicks * -0xaaa) >> Q12_SHIFT) +
          definition->projectileLifetimeTicks) * definition->launchSpeedQ12;
   }
   return selectionRangeQ12;
@@ -261,7 +261,7 @@ uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition)
   leadAdjustmentQ12 = 0;
   if ((definition->trajectoryMode == SHOT_TRAJECTORY_LEAD_ADJUSTED) &&
      (definition->guidanceTurnLimitAngle16 == 0)) {
-    leadAdjustmentQ12 = definition->trajectoryRampDurationTicks * 0xab >> 8;
+    leadAdjustmentQ12 = definition->trajectoryRampDurationTicks * 171 >> 8;
   }
   return leadAdjustmentQ12;
 }

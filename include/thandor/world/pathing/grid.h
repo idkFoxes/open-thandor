@@ -52,6 +52,10 @@
 #define GRID_PATH_PROPAGATION_PASSES 6             /* passes of GridPathCost_PropagateWeightedHexNeighbors */
 #define GRID_PATH_COST_QUEUE_PASS_ENTRIES 0x10000  /* queue entries per propagation pass */
 #define GRID_PATH_NEAREST_SEARCH_RADIUS 16         /* GridPathCost_FindNearestUnblockedCell scans +-16 cells */
+/* bytes of the cost queue buffer (g_GridPathCostQueueBegin..End): one pass worth of cell pointers per
+   propagation pass (0x180000) */
+#define GRID_PATH_COST_QUEUE_BYTES \
+  (GRID_PATH_PROPAGATION_PASSES * GRID_PATH_COST_QUEUE_PASS_ENTRIES * sizeof(GridScratchCell *))
 /* GridReachability_MarkOpenRegionRecursive stops at blocked cells, terrain classes 28..30, low bands 0..6 and
    visited cells */
 #define GRID_REACHABILITY_OPEN_STOP_MASK 0xf0007f01

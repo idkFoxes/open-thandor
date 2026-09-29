@@ -82,7 +82,7 @@ typedef void GraphicsBeginScenePreserveAllProc(void); /* Ghidra FunctionDefiniti
 typedef CursorEventResult GraphicsCursorConsumeEventProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsDrawPrimitiveQueueProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsEndSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef OffscreenRenderResult GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, uint32_t auxiliaryOrientationAngles, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputHeight, GraphicsPixelDimension outputWidth, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef OffscreenRenderResult GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, AngleTurn32 * auxiliaryOrientationAngles, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputHeight, GraphicsPixelDimension outputWidth, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef PaletteAssetResult GraphicsPaletteAssetLoadPackageProc(uint16_t * pathUtf16); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef PaletteAssetResult GraphicsPaletteAssetValidateProc(GraphicsPaletteAsset * paletteAsset); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void GraphicsPrimitiveQueueRadixSortProc(GraphicsBooleanState halveVertexRgb, GraphicsPrimitiveQueue * queue); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
@@ -980,7 +980,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_AiWorkspace11Count (*(uint32_t *)THANDOR_IMAGE(0x005379bc))
 #define g_AiWorkspace02VisibleHostiles (*(AiRuntimeWorkspaceEntry * *)THANDOR_IMAGE(0x00537970))
 #define g_AiWorkspace03UnseenHostiles (*(AiRuntimeWorkspaceEntry * *)THANDOR_IMAGE(0x00537978))
-#define g_AiWorkspaceOwnedAsset300Runtime (*(ArmyRuntimeSlot * *)THANDOR_IMAGE(0x005379d8))
+#define g_AiWorkspaceOwnedAsset300Runtime (*(ModelRuntimeSlot * *)THANDOR_IMAGE(0x005379d8))
 #define g_AiWorkspace04RequestedAssets (*(AiRuntimeWorkspaceEntry * *)THANDOR_IMAGE(0x00537980))
 #define g_AiWorkspace07Targets (*(AiTargetWorkspaceEntry * *)THANDOR_IMAGE(0x00537998))
 #define g_AiWorkspace11ProducibleAssets (*(ArmyAssetRecordPrefix ** *)THANDOR_IMAGE(0x005379b8))
@@ -1015,7 +1015,7 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define u_gfx_panel_menue_gfx_00545b78 (*(uint16_t (*)[20])THANDOR_IMAGE(0x00545b78))
 #define g_UiButtonSoundVoiceSets7 (*(DirectSoundVoiceSet * (*)[7])THANDOR_IMAGE(0x00572ad8))
 #define g_FrontendMenuTextureSource (*(GraphicsTextureSourceAsset * *)THANDOR_IMAGE(0x0054570c))
-#define g_FrontendTaskAssignmentControlOffsets (*(FrontendTaskAssignmentControlOffsetTables *)THANDOR_IMAGE(0x0054345c))
+#define g_FrontendTaskAssignmentControlOffsets (*(FrontendTaskAssignmentControlOffsetTables *)THANDOR_IMAGE(0x00543460))
 #define g_FrontendCommandQueueEnd (*(UiCommandQueueRecord * *)THANDOR_IMAGE(0x00543f40))
 #define g_LocalPlayerRuntimeId (*(uint32_t *)THANDOR_IMAGE(0x0050f0ac))
 #define g_FrontendCommandQueueRecords (*(UiCommandQueueRecord (*)[16])THANDOR_IMAGE(0x00543e40))
@@ -1126,9 +1126,9 @@ typedef void WorldRuntimeNodeTraversalCallback(void * callbackContext, WorldOwne
 #define g_FrontendSelectedPlayerToken (*(uint32_t *)THANDOR_IMAGE(0x0050f0cc))
 #define g_NetworkBackendSlot7 (*(NetworkBackendFormatAddressCallback * *)THANDOR_IMAGE(0x0041a568))
 #define g_FrontendPendingSessionPlayerCount (*(uint32_t *)THANDOR_IMAGE(0x0054dda0))
-/* 31 slots before g_FrontendTaskAssignmentControlOffsets; Game_LoadCoreAssets fills 32, the last one
-   landing in that table's unused slot 0 (original behaviour) */
-#define g_FrontendPlayerRuntimeRecordPointers32 (*(FrontendPlayerRuntimeRecord * (*)[31])THANDOR_IMAGE(0x005433e0))
+/* 32 entries (Game_LoadCoreAssets fills all of them), directly followed by g_FrontendTaskAssignmentControlOffsets
+   at 0x00543460 */
+#define g_FrontendPlayerRuntimeRecordPointers32 (*(FrontendPlayerRuntimeRecord * (*)[32])THANDOR_IMAGE(0x005433e0))
 #define g_FrontendSessionListRows (*(FrontendSessionDiscoveryRecord ** *)THANDOR_IMAGE(0x0053da84))
 #define g_FrontendNetworkRuntimeCountTextUtf16 (*(uint8_t *)THANDOR_IMAGE(0x0054dde0))
 #define g_NetworkLocalEndpoint (*(UiTransferEndpointDescriptor *)THANDOR_IMAGE(0x0041a56c))

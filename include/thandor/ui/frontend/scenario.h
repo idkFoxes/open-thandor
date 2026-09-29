@@ -20,6 +20,10 @@
 #define FRONTEND_TEXT_STYLE_HIGHLIGHTED 0x8001
 /* Mission briefing text of faction f (1..7) of a level: this + f + level title id * 0x10 (level text page). */
 #define TEXT_ID_LEVEL_BRIEFING_BASE 0x230017
+/* Extension code ".flm" (movie) for WidePath_SetExtensionCode, as the WIDE_PATH_EXTENSION_* in core/text/path.h */
+#ifndef WIDE_PATH_EXTENSION_FLM
+#define WIDE_PATH_EXTENSION_FLM 0x6D6C66
+#endif
 
 /* 0x00547D60 */
 void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbackContext);

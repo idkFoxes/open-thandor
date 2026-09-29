@@ -1410,7 +1410,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
       if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
         borderWidthOrCaretFrame = UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE;
       }
-      styleVerticalOffset = (int)(packedStyle << 0x10) >> 0x18;
+      styleVerticalOffset = (int)(packedStyle << 16) >> 24; /* signed byte 1 of the packed style */
       bottomOrCaretY = topOrTextOffsetY - 1 + (control->base).top + styleVerticalOffset;
       if ((control->editStateFlags & UI_TEXT_EDIT_OVERWRITE_MODE) != 0) {
         bottomOrCaretY++;
@@ -2134,10 +2134,10 @@ void UiFramedTextButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSoundId != 0)) {
+          (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)control->activationSoundId);
+                   control->activationSound);
       }
       toggleStateFlagsField = &(control->selectable).stateFlags;
       *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2147,10 +2147,10 @@ void UiFramedTextButtonControl_NonRightPress
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSoundId != 0)) {
+          (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)control->activationSoundId);
+                   control->activationSound);
       }
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2178,9 +2178,9 @@ void UiFramedTextButtonControl_NonRightRelease
       (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
     if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-        (control->activationSoundId != 0)) {
+        (control->activationSound != NULL)) {
       g_SoundPlayOneShot
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control->activationSoundId);
+                (g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
     stateFlagsField = &(control->selectable).stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2394,7 +2394,7 @@ void UiWindowControl_DrawFramedTextAndChrome
   else {
     bottomCornerYOrTextX = bottomCornerYOrTextX + (control->selectable).base.left;
     rightCornerXOrTextY = rightCornerXOrTextY + (control->selectable).base.top;
-    styleOffsetOrIconY = (int)(textStyle << 0x10) >> 0x18;
+    styleOffsetOrIconY = (int)(textStyle << 16) >> 24; /* signed byte 1 of the packed style */
     focusCoordOrIconX = styleOffsetOrIconY - 3 + bottomCornerYOrTextX;
     styleOffsetOrIconY = styleOffsetOrIconY - 1 + rightCornerXOrTextY;
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
@@ -2524,10 +2524,10 @@ void UiTextButtonControl_NonRightPress
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_PUSH_BUTTON,g_UiWindowTextureSource);
       if (pixelHit) {
         if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-            (control->activationSoundId != 0)) {
+            (control->activationSound != NULL)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     (DirectSoundVoiceSet *)control->activationSoundId);
+                     control->activationSound);
         }
         if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
           stateFlagsField = &(control->selectable).stateFlags;
@@ -2544,10 +2544,10 @@ void UiTextButtonControl_NonRightPress
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_CHECKBOX,g_UiWindowTextureSource);
       if (pixelHit) {
         if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-            (control->activationSoundId != 0)) {
+            (control->activationSound != NULL)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                     (DirectSoundVoiceSet *)control->activationSoundId);
+                     control->activationSound);
         }
         toggleStateFlagsField = &(control->selectable).stateFlags;
         *toggleStateFlagsField = *toggleStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2584,10 +2584,10 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
      (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSoundId != 0)) {
+          (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)control->activationSoundId);
+                   control->activationSound);
       }
       stateFlagsField = &(control->selectable).stateFlags;
       *stateFlagsField = *stateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2599,10 +2599,10 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
-          (control->activationSoundId != 0)) {
+          (control->activationSound != NULL)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)control->activationSoundId);
+                   control->activationSound);
       }
       selectedStateFlagsField = &(control->selectable).stateFlags;
       *selectedStateFlagsField = *selectedStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
@@ -2984,7 +2984,7 @@ void UiSingleLineTextControl_DrawClipped
     }
     textExtent = RichTextCommandStream_MeasureRegs((textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
                                                    (uint16_t *)streamOrCapWidthOrChild);
-    lineWidth = (int)(g_UiTextStyleNormal << 0x10) >> 0x18;
+    lineWidth = (int)(g_UiTextStyleNormal << 16) >> 24; /* signed byte 1 of the packed style */
     if (lineWidth < 0) {
       lineWidth = -lineWidth;
     }
@@ -3295,7 +3295,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
     contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
     rowIndexOrTopOrPulse = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) -
-            ((int)((contentSize >> 0x20) / (uint64_t)control->rowHeight) - 1);
+            ((int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1);
     if (rowIndexOrTopOrPulse < 0) {
       rowIndexOrTopOrPulse = 0;
     }
@@ -3304,7 +3304,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
     contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
     pageDownRow = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) +
-            (int)((contentSize >> 0x20) / (uint64_t)control->rowHeight) - 1;
+            (int)((contentSize >> 32) / (uint64_t)control->rowHeight) - 1;
     if (control->rowCount <= pageDownRow) {
       pageDownRow = control->rowCount - 1;
     }
@@ -4035,7 +4035,7 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,remainingValue,outputCursor);
   }
   else {
-    highBitOrDigitsLeft = 0x1f;
+    highBitOrDigitsLeft = 31;
     if (remainingValue != 0) {
       for (; remainingValue >> highBitOrDigitsLeft == 0; highBitOrDigitsLeft--) {
       }
@@ -4046,9 +4046,9 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
          (runaway write). */
       rotateShift = (int8_t)(highBitOrDigitsLeft & 0x1c);
       highBitOrDigitsLeft = (highBitOrDigitsLeft & 0x1c) >> 2;
-      remainingValue = remainingValue >> rotateShift | remainingValue << 0x20 - rotateShift;
+      remainingValue = remainingValue >> rotateShift | remainingValue << 32 - rotateShift;
       do {
-        digitCodeUnit = (remainingValue >> 0x1c) + '0';
+        digitCodeUnit = (remainingValue >> 28) + '0';
         if ('9' < digitCodeUnit) {
           digitCodeUnit = digitCodeUnit + ('A' - '9' - 1);
         }
@@ -4107,8 +4107,8 @@ void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
         if ((codeUnit < '0') ||
            ((9 < digitValue &&
             ((digitValue = codeUnit - ('A' - 10), digitValue < 10 ||
-             ((0xf < digitValue && ((digitValue = codeUnit - ('a' - 10), digitValue < 10 ||
-                                     (0xf < digitValue)))))))))) {
+             ((15 < digitValue && ((digitValue = codeUnit - ('a' - 10), digitValue < 10 ||
+                                     (15 < digitValue)))))))))) {
           control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
           return;
         }

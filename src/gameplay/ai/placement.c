@@ -67,8 +67,8 @@ void AiCandidatePlanning_AddSpecialSiteCandidate(FactionRuntimeIndex factionInde
     if (hasEntry) {
       hasEntry = ArmyAssetRegistry_FindEnabledById(ARM_0050_UNIT_MDL0103);
       if (!hasEntry) {
-        /* 0x800 is bit 11 of the technology mask, i.e. technology 11 proposed below */
-        if ((g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0] & 0x800) == 0
+        /* bit 11 of the technology mask: technology 11, proposed below */
+        if ((g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0] & 1 << 11) == 0
            ) {
           weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
           if (!weightResult.noSite) {
@@ -236,7 +236,7 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
     }
     if ((deltaXOrCapTerm < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12) &&
        (deltaYOrDistanceOrWeight < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) break;
-    siteEntryBytes = siteEntryBytes + 0x10;
+    siteEntryBytes = siteEntryBytes + sizeof(AiScoredSiteWorkspaceEntry);
     remainingCount--;
   }
   return;
@@ -272,7 +272,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
   
   remainingFeatureCount = g_AiWorkspace08Count;
   featureAssetId = ARM_0330_BUILDING_MDL0303;
-  duplicateSeparation = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 0x55 >> 8; /* ~1/3 */
+  duplicateSeparation = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 85 >> 8; /* ~1/3 */
   countOrDeltaX = g_AiWorkspace00Count;
   workspace00Entry = g_AiWorkspace00Structures;
   if ((terrainFeatureCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
@@ -292,7 +292,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
         markerPoint = ModelNodeRuntime_TransformLocalPointRegs(markerLookup.entry,modelNodeRuntime);
         markerDistance = FixedMath_Length2(markerPoint.yQ12 - terrainFeatureCell->worldY,
                                   markerPoint.xQ12 - terrainFeatureCell->worldX);
-        if ((int)markerDistance < 0x2001) { /* within 2.0 (Q12) */
+        if ((int)markerDistance < 2 * Q12_ONE + 1) { /* within 2.0 */
           return;
         }
       }
@@ -304,7 +304,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
       if (g_AiWorkspace08Count < AI_WORKSPACE08_CAPACITY) {
         terrainFeatureEntry->cell = terrainFeatureCell;
         terrainFeatureEntry->armyAssetId = featureAssetId;
-        nearestDistanceOrPriority = 0x7fffffff;
+        nearestDistanceOrPriority = INT32_MAX;
         workspace00Entry = g_AiWorkspace00Structures;
         for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
           if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
@@ -352,7 +352,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
         entityOrDeltaY = -entityOrDeltaY;
       }
       if ((countOrDeltaX < (int)duplicateSeparation) && (entityOrDeltaY < (int)duplicateSeparation)) {
-        nearestDistanceOrPriority = 0x7fffffff;
+        nearestDistanceOrPriority = INT32_MAX;
         workspace00Entry = g_AiWorkspace00Structures;
         countOrDeltaX = g_AiWorkspace00Count;
         do {
@@ -617,7 +617,7 @@ AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
      caller's EDX for an empty workspace); no caller reads them when CF is set. */
   candidateDistance = 0;
   if (g_AiWorkspace09Count != 0) {
-    bestDistance = 0x7fffffff;
+    bestDistance = INT32_MAX;
     remainingCount = g_AiWorkspace09Count;
     gridCellCursor = g_AiWorkspace09Cells;
     do {
@@ -643,7 +643,7 @@ AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
       gridCellCursor++;
       remainingCount--;
     } while (remainingCount != 0);
-    if ((int)bestDistance < 0x7fffffff) {
+    if ((int)bestDistance < INT32_MAX) {
       anchorResult.worldXQ12 = bestCell->worldX;
       anchorResult.worldYQ12 = bestCell->worldY;
       anchorResult.notFound = false;

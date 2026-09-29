@@ -23,7 +23,7 @@ uint32_t WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worl
   uint32_t rightStepOrDeltaDown;
   uint32_t screenDeltaRight;
 
-  edgeScrollStep = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+  edgeScrollStep = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
   rightStepOrDeltaDown = 0;
   if (g_CursorOverflowRight != 0) {
     rightStepOrDeltaDown = edgeScrollStep;
@@ -90,7 +90,7 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
   FixedDirection translationDelta;
 
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
-                    (elevationAngle,worldRuntime->motion.headingAngle + FIXED_ANGLE16_THREE_QUARTER_TURN & 0xffff,
+                    (elevationAngle,worldRuntime->motion.headingAngle + FIXED_ANGLE16_THREE_QUARTER_TURN & FIXED_ANGLE16_MASK,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
   worldRuntime->motion.positionXQ12 += translationDelta.x;
   worldRuntime->motion.positionYQ12 += translationDelta.y;
@@ -120,7 +120,7 @@ void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,Wor
   elevationAngle = worldRuntime->motion.pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
   if ((int)elevationAngle < -FIXED_ANGLE16_QUARTER_TURN) {
     elevationAngle = -worldRuntime->motion.pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
-    azimuthAngle = azimuthAngle + FIXED_ANGLE16_HALF_TURN & 0xffff;
+    azimuthAngle = azimuthAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
   }
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
                     (elevationAngle,azimuthAngle,screenDelta * _k_CameraScreenDeltaDistanceScaleQ16)
@@ -149,7 +149,7 @@ void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
 
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
                     (-worldRuntime->motion.pitchAngle,
-                     worldRuntime->motion.headingAngle + FIXED_ANGLE16_HALF_TURN & 0xffff,
+                     worldRuntime->motion.headingAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
   worldRuntime->motion.positionXQ12 += translationDelta.x;
   worldRuntime->motion.positionYQ12 += translationDelta.y;
@@ -174,7 +174,7 @@ void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRu
   FixedDirection cameraOffset;
   
   azimuthAngle = worldRuntime->motion.headingAngle +
-                 headingDeltaInput * g_WorldMotionHeadingInputScale & 0xffff;
+                 headingDeltaInput * g_WorldMotionHeadingInputScale & FIXED_ANGLE16_MASK;
   worldRuntime->motion.headingAngle = azimuthAngle;
   cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
                     (worldRuntime->motion.pitchAngle,azimuthAngle,
@@ -197,7 +197,7 @@ void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,World
 {
   worldRuntime->motion.headingAngle =
        worldRuntime->motion.headingAngle - headingDeltaInput * g_WorldMotionHeadingInputScale &
-       0xffff;
+       FIXED_ANGLE16_MASK;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -397,10 +397,10 @@ void WorldRuntime_TranslateCameraByScreenDelta
   Q12 *motionCoordinateField;
 
   distanceScaleOrSideDeltaY =
-       (int)(_k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 0x10;
+       (int)(_k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 16;
   angle = worldRuntime->motion.headingAngle;
   movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaDown * distanceScaleOrSideDeltaY);
-  THANDOR_PART(uint32_t, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 0x20);
+  THANDOR_PART(uint32_t, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 32);
   worldRuntime->motion.positionXQ12 =
        worldRuntime->motion.positionXQ12 - (int)movementDeltaXYQ12;
   motionCoordinateField = &worldRuntime->motion.positionYQ12;
@@ -409,9 +409,9 @@ void WorldRuntime_TranslateCameraByScreenDelta
   *coordinateField = *coordinateField - (int)movementDeltaXYQ12;
   coordinateField = &worldRuntime->motion.targetPositionYQ12;
   *coordinateField = *coordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
-  sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + FIXED_ANGLE16_QUARTER_TURN & 0xffff,
+  sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + FIXED_ANGLE16_QUARTER_TURN & FIXED_ANGLE16_MASK,
                                                   screenDeltaRight * distanceScaleOrSideDeltaY);
-  distanceScaleOrSideDeltaY = (int)(sideMovementDeltaXYQ12 >> 0x20);
+  distanceScaleOrSideDeltaY = (int)(sideMovementDeltaXYQ12 >> 32);
   worldRuntime->motion.positionXQ12 -= (int)sideMovementDeltaXYQ12;
   worldRuntime->motion.positionYQ12 -= distanceScaleOrSideDeltaY;
   worldRuntime->motion.targetPositionXQ12 -= (int)sideMovementDeltaXYQ12;

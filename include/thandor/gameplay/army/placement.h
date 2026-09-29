@@ -149,10 +149,10 @@ ArmyPlacementCollision_TestCandidateAndClearance
 
 /* 0x00524650 */
 bool ArmyPlacementCandidate_TestModelAnchorDistance
-          (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ArmyRuntimeSlot *armyRuntime);
+          (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00529C40 */
 bool ArmyCollision_TestPointWithinExpandedRuntimeRadius
-          (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ArmyRuntimeSlot *armyRuntime);
+          (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ModelRuntimeSlot *modelRuntime);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_PLACEMENT_H */

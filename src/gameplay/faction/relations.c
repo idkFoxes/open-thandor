@@ -201,19 +201,19 @@ bool GameFactionRelations_EvaluateTransitionRules
            conditionCursor->conditions[0].statusAndKind.kind & ~INGAME_SCHEDULED_CONDITION_SATISFIED;
       switch(kindOrStackValue & INGAME_SCHEDULED_CONDITION_KIND_MASK) {
       case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
           conditionCursor->conditions[0].statusAndKind.kind =
                conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
           conditionCursor->conditions[0].statusAndKind.kind =
                conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY_OF_ASSET:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
           conditionCursor->conditions[0].statusAndKind.kind =
                conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
@@ -223,7 +223,7 @@ bool GameFactionRelations_EvaluateTransitionRules
                conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         break;
       case INGAME_SCHEDULED_CONDITION_ARMY_OF_ASSET_COUNT_AT_LEAST:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) != 0) {
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) != 0) {
           conditionCursor->conditions[0].statusAndKind.kind =
                conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
@@ -243,7 +243,7 @@ bool GameFactionRelations_EvaluateTransitionRules
                conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         break;
       case INGAME_SCHEDULED_CONDITION_NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 31)) == 0) {
           conditionCursor->conditions[0].statusAndKind.kind =
                conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
@@ -263,7 +263,7 @@ bool GameFactionRelations_EvaluateTransitionRules
                 kindOrStackValue = kindOrStackValue >> 1 | kindOrStackValue & 1;
               }
               if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_AND) break;
-              kindOrStackValue = kindOrStackValue >> 1 & (kindOrStackValue | 0xfffffffe);
+              kindOrStackValue = kindOrStackValue >> 1 & (kindOrStackValue | ~1u);
             }
             if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_NOT) break;
             kindOrStackValue = kindOrStackValue ^ 1;
@@ -290,7 +290,7 @@ bool GameFactionRelations_EvaluateTransitionRules
             FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
           movieVariant = triggerCursor->movieVariantSelector;
           if ((focalFactionIndex != (uint32_t)tokenOrFactionIndex) &&
-              ((activeFactionMask & 1 << (tokenOrFactionIndex & 0x1f)) == 0)) {
+              ((activeFactionMask & 1 << (tokenOrFactionIndex & 31)) == 0)) {
             movieVariant = movieVariant ^ 1;
           }
           if (movieVariant == 0) {
@@ -346,7 +346,7 @@ void GameFactionRelations_MaybeAdvancePairStateRare
     maskedRandom = randomValue & 0x17f;
   }
   else {
-    if (0x1f < pairPressure) {
+    if (31 < pairPressure) {
       return;
     }
     maskedRandom = randomValue & 0x3ff;
@@ -354,9 +354,9 @@ void GameFactionRelations_MaybeAdvancePairStateRare
       return;
     }
   }
-  if (maskedRandom == 0x55) {
+  if (maskedRandom == 85) {
     GameFactionRuntime_AdvancePairwiseRelationState
-              (0xffffffff,0,sourceFactionIndex,targetFactionIndex);
+              (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
   return;
 }
@@ -381,7 +381,7 @@ void GameFactionRelations_MaybeAdvancePairStateCommon
     maskedRandom = randomValue & 0x7f;
   }
   else {
-    if (0x1f < pairPressure) {
+    if (31 < pairPressure) {
       return;
     }
     maskedRandom = randomValue & 0x1ff;
@@ -389,9 +389,9 @@ void GameFactionRelations_MaybeAdvancePairStateCommon
       return;
     }
   }
-  if (maskedRandom == 0x55) {
+  if (maskedRandom == 85) {
     GameFactionRuntime_AdvancePairwiseRelationState
-              (0xffffffff,0,sourceFactionIndex,targetFactionIndex);
+              (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
   return;
 }
@@ -409,7 +409,7 @@ void GameFactionRelations_MaybeResetPairState
   randomValue = g_RandomGeneratorState.next();
   if ((randomValue & 0x180) == 0x80) {
     GameFactionRuntime_ResetPairwiseRelationState
-              (0xffffffff,0,sourceFactionIndex,targetFactionIndex);
+              (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
   return;
 }

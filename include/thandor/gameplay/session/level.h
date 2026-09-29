@@ -16,6 +16,11 @@
 /* g_InGameLoadedResourcePointers: the level loaders allocate room for 512 loaded EFF/SHT/MDL/ARM file pointers and
    fail with FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES beyond that. */
 #define INGAME_LOADED_RESOURCE_CAPACITY 0x200
+/* The path and table offsets of a LEV header count from the image start; the loaders add them to the header
+   field at this offset (common.buildMetadata.reserved28_2F), so they subtract it first */
+#define LEVEL_ASSET_OFFSET_BASE 0x28
+/* WidePath records of the EFF/SHT/MDL/ARM path tables: 32 UTF-16 code units each */
+#define LEVEL_ASSET_PATH_RECORD_UNITS 32
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00531080 */

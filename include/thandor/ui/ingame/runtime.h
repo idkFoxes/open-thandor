@@ -60,6 +60,53 @@
 /* Slots of the in-game notification queue (notificationQueue, InGameNotificationQueue_InsertPriorityRecord) */
 #define INGAME_NOTIFICATION_QUEUE_SLOTS 4
 
+/* Editor tools of the in-game map callbacks: a Q12 grid coordinate (world point through
+   FIELD_GRID_WORLD_*_Q20) is rounded to a whole cell by adding the bias and dropping the fraction
+   (INGAME_SNAP_GRID_Q12, or + bias >> Q12_SHIFT for the cell index). */
+#define INGAME_GRID_SNAP_BIAS_Q12 0x3ffU
+#define INGAME_SNAP_GRID_Q12(value) ((value) + INGAME_GRID_SNAP_BIAS_Q12 & ~(uint32_t)Q12_FRACTION_MASK)
+/* Cursor frames the editor tools show (InGameUiCommand_ResolveCursorCodeByMode); placement and moving use
+   WORLD_CURSOR_MOVE / _NO_TARGET / _OWN_ARMY / _FOREIGN_ARMY */
+#define EDITOR_CURSOR_DELETE_TARGET 0x19   /* delete tool over a model */
+#define EDITOR_CURSOR_DELETE_NONE 0x1A     /* delete tool, nothing under the pointer */
+#define EDITOR_CURSOR_HEIGHT_RAISE 0x1C
+#define EDITOR_CURSOR_SMOOTH 0x1D
+#define EDITOR_CURSOR_HEIGHT_LOWER 0x1E
+#define EDITOR_CURSOR_RECEIVER_MASK 0x1F   /* smoothing tab, fluid receiver exclusion */
+#define EDITOR_CURSOR_REBUILD_INFLUENCE 0x20
+#define EDITOR_CURSOR_REGION 0x21
+#define EDITOR_CURSOR_PAINT 0x22           /* material paint, and the fluid source exclusion */
+#define EDITOR_CURSOR_MATERIAL_MODE2 0x23
+#define EDITOR_CURSOR_MATERIAL_MODE1 0x24
+/* Region tool: bit 31 of the region argument makes the drag remove the region flag again */
+#define INGAME_REGION_MASK_REMOVE 0x80000000u
+/* Editor drag deltas: screen dx in the low word (masked unless Shift/Ctrl), dy times this in the high word */
+#define INGAME_DRAG_DELTA_X_MASK 0xffff
+#define INGAME_DRAG_DELTA_Y_SCALE 0x10000
+/* WorldRuntimeContext.runtimeFlags bit set while the map editor is active
+   (InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState) */
+#define INGAME_WORLD_FLAG_EDITOR 0x400000u
+/* Chat recipient mask (INGAME_COMMAND_CHAT_SET_RECIPIENTS): bit 9 + n for faction box n, bit 16 + n for session
+   player box n (the loops start at the base and double before the first box), everyone = all bits from 8 up */
+#define INGAME_CHAT_RECIPIENT_FACTION_BITS_BASE 0x100
+#define INGAME_CHAT_RECIPIENT_PLAYER_BITS_BASE 0x8000
+#define INGAME_CHAT_RECIPIENT_EVERYONE 0xffffff00u
+/* InGameSavePackageHeader.campaignIndex without a campaign */
+#define INGAME_SAVE_NO_CAMPAIGN 0xffffffffu
+/* Index of the display-size digit in "gfx\panel\panel0.gfx" and "gfx\panel\diagram0.gfx" */
+#define INGAME_PANEL_GFX_PATH_VARIANT_DIGIT 15
+#define INGAME_DIAGRAM_GFX_PATH_VARIANT_DIGIT 17
+/* Notification target button: cursor frame after a jump (the next click cancels), and the panel subresource shown
+   when no notification movie plays */
+#define INGAME_NOTIFICATION_CURSOR_CANCEL 0x1B
+#define INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE 0x25
+/* Queued player command codes of the selection hotkeys (network games; see the key table in ui/ingame/runtime.c) */
+#define INGAME_COMMAND_SELECT_OWN_AIRCRAFT_PADS 0x8F0 /* InGameSelection_SelectAllOwnAircraftPads */
+#define INGAME_COMMAND_SELECTION_STOP 0xE10
+#define INGAME_COMMAND_SELECTION_RESET_ANCHORS 0xE30
+#define INGAME_COMMAND_SELECTION_INTERRUPT_TARGETS 0xE50
+#define INGAME_COMMAND_SELECTION_APPLY_FLAGS418 0xE70
+
 /* The 0x200-byte header at the start of a save-game package, patched by InGameSaveGame_WritePackage
    after the entries are written (the save path's directory is split off behind the header, at +0x200). */
 typedef struct InGameSavePackageHeader {
@@ -151,13 +198,13 @@ void InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView);
 /* 0x0056F7F0 */
 uint32_t InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,
-                uint32_t reservedArg3,ArmyRuntimeSlot *armyRuntimeUnderPointer,
+                uint32_t reservedArg3,WorldOwnerListNode *ownerNodeUnderPointer,
                 WorldRuntimeContext *worldRuntime);
 
 /* 0x0056FA70 */
 void InGameUiCommand_BeginInteractionByMode
           (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,uint32_t reservedArg3,
-          ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView *mapControl
+          WorldOwnerListNode *ownerNodeUnderPointer,WorldRuntimeExtendedMapControlView *mapControl
           );
 
 /* 0x005703D0 */

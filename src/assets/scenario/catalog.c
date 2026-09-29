@@ -19,7 +19,7 @@ static const char *ScenarioCatalog_TestAidRowName(const uint16_t *text, char *ou
 {
   unsigned length = 0;
   while (text[length] != 0 && length + 1 < capacity) {
-    out[length] = (text[length] < 0x80) ? (char)text[length] : '?';
+    out[length] = (text[length] < 128) ? (char)text[length] : '?';
     length++;
   }
   if (length != 0 && out[length - 1] == '.') { /* the list rows keep the extension dot of the file name */
@@ -239,7 +239,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     activeTabIndex = SCENARIO_SELECTION_TAB_SINGLE_GAMES;
   }
   /* option name "KARTE=\"" (7 characters) */
-  mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
+  mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14);
   if (!mapOption.notFound) {
     UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
@@ -269,18 +269,18 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
     return;
   }
-  mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
+  mapOption = g_CommandLineFindOption(7,s_NAME__CLIENT__KARTE___00545e91 + 14);
   textCursor = mapOption.option;
   if (!mapOption.notFound) {
     /* The level name runs from after KARTE=" to the closing quote, which must end the command line. */
-    remainingCount = 0x3fffff;
+    remainingCount = PACKAGE_SCRATCH_BUFFER_BYTES / 2 - 1;
     for (scanCursor = textCursor + 7; *scanCursor != '"'; scanCursor++) {
       if ((*scanCursor < ' ') || (remainingCount--, remainingCount == 0))
         goto updateButtonAvailability;
     }
     *scanCursor = 0;
     if (scanCursor[1] == 0) {
-      Text_CopyNarrowToUtf16(0x800000,(uint16_t *)g_PackageScratchBuffer,textCursor + 7);
+      Text_CopyNarrowToUtf16(PACKAGE_SCRATCH_BUFFER_BYTES,(uint16_t *)g_PackageScratchBuffer,textCursor + 7);
       WidePath_SetExtensionCode(0,(uint16_t *)g_PackageScratchBuffer);
       *scanCursor = '"';
       /* "KARTE" -> "kARTE": the option is used only once, returning to this page later finds no match. */
@@ -617,7 +617,7 @@ void ScenarioCatalog_Rebuild(void)
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   saveEnumeration = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                     (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
+                     (FILESYSTEM_ENUMERATE_FILES,UINT32_MAX,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
   catalog = g_ScenarioCatalog;
   saveFilesRemaining = saveEnumeration.entryCount;
@@ -844,7 +844,7 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
         levelPathOrCurrentLevelField = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
                  reserved28_2F +
                  ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
-                 0x28);
+                 LEVEL_ASSET_OFFSET_BASE);
         WidePath_SetExtensionCode(ASSET_MAGIC_FLD,(uint16_t *)levelPathOrCurrentLevelField);
         WidePath_CombineDirectoryAndLeaf
                   ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrCurrentLevelField,
@@ -906,7 +906,7 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
         PckCodec_DecodeHuffmanRle(*receivedDwords,(uint8_t *)levelAsset,receivedDwords[2],(uint8_t *)(receivedDwords + 4));
         payloadSizeBytes = receivedDwords[2];
         levelPathOrCurrentLevelField = (levelAsset->header).common.buildMetadata.reserved28_2F +
-                 ((levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid - 0x28);
+                 ((levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid - LEVEL_ASSET_OFFSET_BASE);
         WidePath_SetExtensionCode(ASSET_MAGIC_FLD,(uint16_t *)levelPathOrCurrentLevelField);
         WidePath_CombineDirectoryAndLeaf
                   ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrCurrentLevelField,
@@ -983,7 +983,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
       *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
       /* the level's own path (an offset into the asset) with the extension changed to .fld; the loaded grid
          later replaces that offset */
-      pathOrEncodeBuffer = (levelAsset->header).common.buildMetadata.reserved28_2F + (levelPathOffset - 0x28);
+      pathOrEncodeBuffer = (levelAsset->header).common.buildMetadata.reserved28_2F + (levelPathOffset - LEVEL_ASSET_OFFSET_BASE);
       WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)pathOrEncodeBuffer);
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)pathOrEncodeBuffer,
@@ -1050,7 +1050,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
     if ((playerScanBase->factionAssignment.roleStateFlags & FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY) != 0) {
       roleFlags = &playerScanBase->factionAssignment.roleStateFlags;
       *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
-      playerScanBase->transferProgressBytes = 0x7fffffff;
+      playerScanBase->transferProgressBytes = INT32_MAX;
     }
   }
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,1);
@@ -1136,7 +1136,7 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedResult.valueOrError;
     cursorOrSize = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.reserved28_2F
              + ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
-               0x28);
+               LEVEL_ASSET_OFFSET_BASE);
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)cursorOrSize);
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)cursorOrSize,
@@ -1158,20 +1158,20 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
       ((ScenarioCampaignBundleHeader *)transferBundleBytes)->campaignDecodedBytes = campaignDecodedSizeBytes;
       recordOrEncodeCursor = transferBundleBytes + sizeof(ScenarioCampaignBundleHeader);
       encodeResult = PckCodec_EncodeHuffmanRle
-                         (PACKAGE_SCRATCH_BUFFER_BYTES - 0x18,recordOrEncodeCursor,(source->header).common.allocationSizeBytes,(uint8_t *)source
+                         (PACKAGE_SCRATCH_BUFFER_BYTES - 24,recordOrEncodeCursor,(source->header).common.allocationSizeBytes,(uint8_t *)source
                          );
       checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       encodedLevelBytes = checkedResult.valueOrError;
       ((ScenarioCampaignBundleHeader *)transferBundleBytes)->levelEncodedBytes = encodedLevelBytes;
       recordOrEncodeCursor = recordOrEncodeCursor + encodedLevelBytes;
       encodeResult = PckCodec_EncodeHuffmanRle
-                         (PACKAGE_SCRATCH_BUFFER_BYTES - 0x18 - encodedLevelBytes,recordOrEncodeCursor,
+                         (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes,recordOrEncodeCursor,
                           ((CampaignAsset *)cursorOrSize)->decodedSizeBytes,cursorOrSize);
       checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       encodedCampaignBytes = checkedResult.valueOrError;
       ((ScenarioCampaignBundleHeader *)transferBundleBytes)->campaignEncodedBytes = encodedCampaignBytes;
       encodeResult = PckCodec_EncodeFieldGrid
-                         ((PACKAGE_SCRATCH_BUFFER_BYTES - 0x18 - encodedLevelBytes) - encodedCampaignBytes,recordOrEncodeCursor + encodedCampaignBytes,
+                         ((PACKAGE_SCRATCH_BUFFER_BYTES - 24 - encodedLevelBytes) - encodedCampaignBytes,recordOrEncodeCursor + encodedCampaignBytes,
                           (sourceGrid->common).allocationSizeBytes,sourceGrid);
       checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       ((ScenarioCampaignBundleHeader *)transferBundleBytes)->fieldGridEncodedBytes = checkedResult.valueOrError;
@@ -1244,7 +1244,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
     control = (int32_t *)FRONTEND_UI(firstNode,savedGamesList);
     if (rowCount != 0) {
       UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
-      UiPointerList_SortByDwordPairFieldDescending(0xf0,(UiPointerListControl *)control);
+      UiPointerList_SortByDwordPairFieldDescending(240,(UiPointerListControl *)control);
       UiPointerList_SelectColumnListIndex(0,(UiPointerListControl *)control);
       UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
       return;
@@ -1570,7 +1570,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
       do {
         if (g_LocalPlayerRuntimeId == playerCursor[1].playerRuntimeId) {
           if (((&playerCursor[1].scenarioAvailabilityMask0)[maskWordIndex] &
-              1 << ((uint8_t)(byteCountOrOffset >> 8) & 0x1f)) != 0) {
+              1 << ((uint8_t)(byteCountOrOffset >> 8) & 31)) != 0) {
             loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
             levelAsset = loadedEntry.bufferOrError;
             levelLoadedLocally = !loadedEntry.failed;
@@ -1598,11 +1598,11 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
     /* every other player (block 1..) */
     while (playerRecord = playerCursor, playersRemaining = playersRemaining - 1, playersRemaining != 0) {
       playerCursor = playerRecord + 1;
-      if (((&playerRecord[1].scenarioAvailabilityMask0)[maskWordIndex] & 1 << ((uint8_t)(byteCountOrOffset >> 8) & 0x1f))
+      if (((&playerRecord[1].scenarioAvailabilityMask0)[maskWordIndex] & 1 << ((uint8_t)(byteCountOrOffset >> 8) & 31))
           != 0) {
         roleFlags = &playerRecord[1].factionAssignment.roleStateFlags;
         *roleFlags = *roleFlags | (FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY | FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT);
-        playerRecord[1].transferProgressBytes = 0x7fffffff; /* transfer progress: complete */
+        playerRecord[1].transferProgressBytes = INT32_MAX; /* transfer progress: complete */
       }
     }
   }
