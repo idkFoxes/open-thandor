@@ -17,23 +17,42 @@
 #define UI_TEMPLATE_LINK(offset) ((UiNodeBase *)(offset))
 #define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)
 
+/* The dwords in front of a display settings option button (DisplaySettingsUiImage <button>_prefix):
+   its mode value(s), then (as in front of every template node) the tooltip text id. Read back by the
+   option actions (UiDisplayModeAction_Update*Selection). */
+typedef struct UiDisplayModeOptionPrefix {
+    int32_t resolutionHeight; /* -0xC: resolution buttons only */
+    int32_t modeValue; /* -0x8: bits per pixel, resolution width or adapter index */
+    uint32_t tooltipTextResourceId; /* -0x4 */
+} UiDisplayModeOptionPrefix;
+/* The dwords in front of a technology area tab (InGameUiImage technologyAreaTabN_prefix): the name text
+   id of the tab's technology and the tab's tooltip text (the expanded label), both set at runtime. */
+typedef struct UiTechnologyAreaTabPrefix {
+    int32_t nameTextResourceId; /* -8: TECHNOLOGY_TEXT_ID_BASE + 2 * technology id */
+    uint16_t *tooltipText; /* -4 */
+} UiTechnologyAreaTabPrefix;
+/* The <node>_prefix of the given type in front of a node the code only has as a pointer (the
+   node of an action callback, a node chosen at runtime); with the node's name known,
+   <TEMPLATE>_UI(root, <node>_prefix) names it directly. */
+#define UI_TEMPLATE_NODE_PREFIX(type, node) (((type *)(uintptr_t)(node))[-1])
+
 #pragma pack(push, 1)
 
-/* g_FatalErrorUiRootTemplateImage: 3 UI nodes. FATAL_ERROR_UI(root, node) is the node in a copy of it, FATAL_ERROR_UI_FIELD(root, node, offset,
-   type) a class field behind the UiNodeBase of the node. */
+/* g_FatalErrorUiRootTemplateImage: 3 UI nodes. FATAL_ERROR_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+   FATAL_ERROR_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FatalErrorUiImage {
     UiNodeBase fatalErrorPanel; /* +0000 g_UiPanelControlVtable: Panel root of the fatal error dialog; g_FatalErrorRichTextLeft/Right lie in its rect/offset fields. */
     uint32_t fatalErrorPanel_fields[3];
     UiNodeBase errorMessageText; /* +0058 g_UiListOffsetControlVtable: Rich text area showing the error; g_FatalErrorRichTextTop/Bottom and g_FatalErrorRichTextStream lie inside this node. */
     uint32_t errorMessageText_fields[4];
     UiNodeBase okButton; /* +00B4 g_UiNodeVtable_004B1D80: Bottom-right button, action 1, text 0x100 (OK), closes the dialog. */
-    uint32_t okButton_fields[5];
+    uint32_t okButton_fields[4];
 } FatalErrorUiImage;
 #define FATAL_ERROR_UI(root, node) (&((FatalErrorUiImage *)(uintptr_t)(root))->node)
 #define FATAL_ERROR_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FATAL_ERROR_UI(root, node) + (offset)))
 
-/* g_UiDisplaySettingsRootTemplate: 29 UI nodes. DISPLAY_SETTINGS_UI(root, node) is the node in a copy of it, DISPLAY_SETTINGS_UI_FIELD(root, node, offset,
-   type) a class field behind the UiNodeBase of the node. */
+/* g_UiDisplaySettingsRootTemplate: 29 UI nodes. DISPLAY_SETTINGS_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+   DISPLAY_SETTINGS_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct DisplaySettingsUiImage {
     UiNodeBase displaySettingsWindow; /* +0000 g_UiResizableWindowControlVtable: Centered resizable window root of the display settings dialog; parent of all other nodes. */
     uint32_t displaySettingsWindow_fields[11];
@@ -45,40 +64,57 @@ typedef struct DisplaySettingsUiImage {
     uint32_t resolutionHeading_fields[4];
     UiNodeBase colorDepthHeading; /* +01BC g_UiFocusProxyControlVtable: Label text 0x10D above the color depth button column. */
     uint32_t colorDepthHeading_fields[4];
-    UiNodeBase adapterHeading; /* +0218 g_UiFocusProxyControlVtable: Label text 0x10F above the graphics adapter button column; its tail dword holds the first depth option's value. */
-    uint32_t adapterHeading_fields[7];
+    UiNodeBase adapterHeading; /* +0218 g_UiFocusProxyControlVtable: Label text 0x10F above the graphics adapter button column. */
+    uint32_t adapterHeading_fields[4];
+    UiDisplayModeOptionPrefix colorDepthOption1_prefix; /* +0274 */
     UiNodeBase colorDepthOption1; /* +0280 g_UiGraphicsAdapterTextButtonVtable: First color depth option button (action 0x201, group 0x480). */
-    uint32_t colorDepthOption1_fields[7];
+    uint32_t colorDepthOption1_fields[4];
+    UiDisplayModeOptionPrefix colorDepthOption2_prefix; /* +02DC */
     UiNodeBase colorDepthOption2; /* +02E8 g_UiGraphicsAdapterTextButtonVtable: Second color depth option button (action 0x202). */
-    uint32_t colorDepthOption2_fields[7];
+    uint32_t colorDepthOption2_fields[4];
+    UiDisplayModeOptionPrefix colorDepthOption3_prefix; /* +0344 */
     UiNodeBase colorDepthOption3; /* +0350 g_UiGraphicsAdapterTextButtonVtable: Third color depth option button (action 0x203). */
-    uint32_t colorDepthOption3_fields[7];
+    uint32_t colorDepthOption3_fields[4];
+    UiDisplayModeOptionPrefix colorDepthOption4_prefix; /* +03AC */
     UiNodeBase colorDepthOption4; /* +03B8 g_UiGraphicsAdapterTextButtonVtable: Fourth color depth option button (action 0x204). */
-    uint32_t colorDepthOption4_fields[7];
+    uint32_t colorDepthOption4_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption1_prefix; /* +0414 */
     UiNodeBase resolutionOption1; /* +0420 g_UiGraphicsAdapterTextButtonVtable: First resolution option button (action 0x205, group 0x400). */
-    uint32_t resolutionOption1_fields[7];
+    uint32_t resolutionOption1_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption2_prefix; /* +047C */
     UiNodeBase resolutionOption2; /* +0488 g_UiGraphicsAdapterTextButtonVtable: Second resolution option button (action 0x206). */
-    uint32_t resolutionOption2_fields[7];
+    uint32_t resolutionOption2_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption3_prefix; /* +04E4 */
     UiNodeBase resolutionOption3; /* +04F0 g_UiGraphicsAdapterTextButtonVtable: Third resolution option button (action 0x207). */
-    uint32_t resolutionOption3_fields[7];
+    uint32_t resolutionOption3_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption4_prefix; /* +054C */
     UiNodeBase resolutionOption4; /* +0558 g_UiGraphicsAdapterTextButtonVtable: Fourth resolution option button (action 0x208). */
-    uint32_t resolutionOption4_fields[7];
+    uint32_t resolutionOption4_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption5_prefix; /* +05B4 */
     UiNodeBase resolutionOption5; /* +05C0 g_UiGraphicsAdapterTextButtonVtable: Fifth resolution option button (action 0x209). */
-    uint32_t resolutionOption5_fields[7];
+    uint32_t resolutionOption5_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption6_prefix; /* +061C */
     UiNodeBase resolutionOption6; /* +0628 g_UiGraphicsAdapterTextButtonVtable: Sixth resolution option button (action 0x20A). */
-    uint32_t resolutionOption6_fields[7];
+    uint32_t resolutionOption6_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption7_prefix; /* +0684 */
     UiNodeBase resolutionOption7; /* +0690 g_UiGraphicsAdapterTextButtonVtable: Seventh resolution option button (action 0x20B). */
-    uint32_t resolutionOption7_fields[7];
+    uint32_t resolutionOption7_fields[4];
+    UiDisplayModeOptionPrefix resolutionOption8_prefix; /* +06EC */
     UiNodeBase resolutionOption8; /* +06F8 g_UiGraphicsAdapterTextButtonVtable: Eighth resolution option button (action 0x20C). */
-    uint32_t resolutionOption8_fields[7];
+    uint32_t resolutionOption8_fields[4];
+    UiDisplayModeOptionPrefix adapterOption1_prefix; /* +0754 */
     UiNodeBase adapterOption1; /* +0760 g_UiGraphicsAdapterTextButtonVtable: First graphics adapter option button (action 0x20F, group 0xC00). */
-    uint32_t adapterOption1_fields[7];
+    uint32_t adapterOption1_fields[4];
+    UiDisplayModeOptionPrefix adapterOption2_prefix; /* +07BC */
     UiNodeBase adapterOption2; /* +07C8 g_UiGraphicsAdapterTextButtonVtable: Second graphics adapter option button (action 0x210). */
-    uint32_t adapterOption2_fields[7];
+    uint32_t adapterOption2_fields[4];
+    UiDisplayModeOptionPrefix adapterOption3_prefix; /* +0824 */
     UiNodeBase adapterOption3; /* +0830 g_UiGraphicsAdapterTextButtonVtable: Third graphics adapter option button (action 0x211). */
-    uint32_t adapterOption3_fields[7];
+    uint32_t adapterOption3_fields[4];
+    UiDisplayModeOptionPrefix adapterOption4_prefix; /* +088C */
     UiNodeBase adapterOption4; /* +0898 g_UiGraphicsAdapterTextButtonVtable: Fourth graphics adapter option button (action 0x212). */
-    uint32_t adapterOption4_fields[7];
+    uint32_t adapterOption4_fields[4];
+    UiDisplayModeOptionPrefix adapterOption5_prefix; /* +08F4 */
     UiNodeBase adapterOption5; /* +0900 g_UiGraphicsAdapterTextButtonVtable: Fifth graphics adapter option button (action 0x213). */
     uint32_t adapterOption5_fields[4];
     UiNodeBase colorScaleSliderFrame; /* +095C g_UiFocusProxyControlVtable: Framed column (text 0x10A) holding the color scale slider, likely contrast. */
@@ -97,8 +133,8 @@ typedef struct DisplaySettingsUiImage {
 #define DISPLAY_SETTINGS_UI(root, node) (&((DisplaySettingsUiImage *)(uintptr_t)(root))->node)
 #define DISPLAY_SETTINGS_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)DISPLAY_SETTINGS_UI(root, node) + (offset)))
 
-/* g_UiFourValueDialogTemplateImage: 4 UI nodes. FOUR_VALUE_DIALOG_UI(root, node) is the node in a copy of it, FOUR_VALUE_DIALOG_UI_FIELD(root, node, offset,
-   type) a class field behind the UiNodeBase of the node. */
+/* g_UiFourValueDialogTemplateImage: 4 UI nodes. FOUR_VALUE_DIALOG_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+   FOUR_VALUE_DIALOG_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FourValueDialogUiImage {
     UiNodeBase confirmModeDialogPanel; /* +0000 g_UiPanelControlVtable: Centered panel root of the confirm-new-display-mode dialog. */
     uint32_t confirmModeDialogPanel_fields[3];
@@ -107,13 +143,13 @@ typedef struct FourValueDialogUiImage {
     UiNodeBase keepModeButton; /* +00B4 g_UiNodeVtable_004B1D80: Bottom-right button, text 0x100 (OK), keeps the new display mode. */
     uint32_t keepModeButton_fields[4];
     UiNodeBase countdownMessageText; /* +0110 g_UiListOffsetControlVtable: Rich text 0x109 with the countdown seconds (+0x5C), tick counter (+0x60), previous mode tuple (+0x64..+0x70) and number buffer (+0x74). */
-    uint32_t countdownMessageText_fields[19];
+    uint32_t countdownMessageText_fields[18];
 } FourValueDialogUiImage;
 #define FOUR_VALUE_DIALOG_UI(root, node) (&((FourValueDialogUiImage *)(uintptr_t)(root))->node)
 #define FOUR_VALUE_DIALOG_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FOUR_VALUE_DIALOG_UI(root, node) + (offset)))
 
-/* g_FrontendRootInitializationTemplate: 226 UI nodes. FRONTEND_UI(root, node) is the node in a copy of it, FRONTEND_UI_FIELD(root, node, offset,
-   type) a class field behind the UiNodeBase of the node. */
+/* g_FrontendRootInitializationTemplate: 226 UI nodes. FRONTEND_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+   FRONTEND_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct FrontendUiImage {
     UiNodeBase frontendRoot; /* +0000 g_UiPanelControlVtable: Root panel of the frontend template. */
     uint32_t frontendRoot_fields[3];
@@ -571,8 +607,8 @@ typedef struct FrontendUiImage {
 #define FRONTEND_UI(root, node) (&((FrontendUiImage *)(uintptr_t)(root))->node)
 #define FRONTEND_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)FRONTEND_UI(root, node) + (offset)))
 
-/* g_InGameRuntimeDefaultImageTemplate: 452 UI nodes. INGAME_UI(root, node) is the node in a copy of it, INGAME_UI_FIELD(root, node, offset,
-   type) a class field behind the UiNodeBase of the node. */
+/* g_InGameRuntimeDefaultImageTemplate: 452 UI nodes. INGAME_UI(root, node) is the node in a copy of it (or a node's <node>_prefix),
+   INGAME_UI_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */
 typedef struct InGameUiImage {
     UiNodeBase inGameRootPanel; /* +0000 g_UiPanelControlVtable: Root panel of the in-game UI; its only child is the primary page stack. */
     uint32_t inGameRootPanel_fields[3];
@@ -673,19 +709,26 @@ typedef struct InGameUiImage {
     UiNodeBase technologyCloseButton; /* +147C g_UiNodeVtable_004B1D80: Close button (action 0x1011): clears the selected army token and closes the window. */
     uint32_t technologyCloseButton_fields[5];
     UiNodeBase technologyResearchButton; /* +14DC g_UiNodeVtable_004B1D80: Starts research of the selected technology (action 0x1013). */
-    uint32_t technologyResearchButton_fields[7];
+    uint32_t technologyResearchButton_fields[5];
+    UiTechnologyAreaTabPrefix technologyAreaTab1_prefix; /* +153C */
     UiNodeBase technologyAreaTab1; /* +1544 g_UiNodeVtable_004B1D80: Technology area tab 1 (action 0x1014) with an icon from tech.gfx. */
-    uint32_t technologyAreaTab1_fields[7];
+    uint32_t technologyAreaTab1_fields[5];
+    UiTechnologyAreaTabPrefix technologyAreaTab2_prefix; /* +15A4 */
     UiNodeBase technologyAreaTab2; /* +15AC g_UiNodeVtable_004B1D80: Technology area tab 2 (action 0x1015). */
-    uint32_t technologyAreaTab2_fields[7];
+    uint32_t technologyAreaTab2_fields[5];
+    UiTechnologyAreaTabPrefix technologyAreaTab3_prefix; /* +160C */
     UiNodeBase technologyAreaTab3; /* +1614 g_UiNodeVtable_004B1D80: Technology area tab 3 (action 0x1016). */
-    uint32_t technologyAreaTab3_fields[7];
+    uint32_t technologyAreaTab3_fields[5];
+    UiTechnologyAreaTabPrefix technologyAreaTab4_prefix; /* +1674 */
     UiNodeBase technologyAreaTab4; /* +167C g_UiNodeVtable_004B1D80: Technology area tab 4 (action 0x1017). */
-    uint32_t technologyAreaTab4_fields[7];
+    uint32_t technologyAreaTab4_fields[5];
+    UiTechnologyAreaTabPrefix technologyAreaTab5_prefix; /* +16DC */
     UiNodeBase technologyAreaTab5; /* +16E4 g_UiNodeVtable_004B1D80: Technology area tab 5 (action 0x1018). */
-    uint32_t technologyAreaTab5_fields[7];
+    uint32_t technologyAreaTab5_fields[5];
+    UiTechnologyAreaTabPrefix technologyAreaTab6_prefix; /* +1744 */
     UiNodeBase technologyAreaTab6; /* +174C g_UiNodeVtable_004B1D80: Technology area tab 6 (action 0x1019). */
-    uint32_t technologyAreaTab6_fields[7];
+    uint32_t technologyAreaTab6_fields[5];
+    UiTechnologyAreaTabPrefix technologyAreaTab7_prefix; /* +17AC */
     UiNodeBase technologyAreaTab7; /* +17B4 g_UiNodeVtable_004B1D80: Technology area tab 7 (action 0x101A). */
     uint32_t technologyAreaTab7_fields[5];
     UiNodeBase technologyAreaTab1Icon; /* +1814 g_UiImagePanelControlVtable: Icon image (tech.gfx) of technology area tab 1. */
@@ -1477,7 +1520,7 @@ typedef struct InGameUiImage {
     UiNodeBase regionToolOption0; /* +BEF8 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111C) selecting mode F=0; exact option label unresolved. */
     uint32_t regionToolOption0_fields[11];
     UiNodeBase regionToolOption1; /* +BF70 g_UiSpriteButtonControlVtable: Exclusive tool sub-mode button (action 0x111D) selecting mode F=1; exact option label unresolved. */
-    uint32_t regionToolOption1_fields[269];
+    uint32_t regionToolOption1_fields[266];
 } InGameUiImage;
 #define INGAME_UI(root, node) (&((InGameUiImage *)(uintptr_t)(root))->node)
 #define INGAME_UI_FIELD(root, node, offset, type) (*(type *)((uint8_t *)INGAME_UI(root, node) + (offset)))

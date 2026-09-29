@@ -22,75 +22,92 @@
   },
   "0x0218": {
    "name": "AdapterHeading",
-   "note": "Label text 0x10F above the graphics adapter button column; its tail dword holds the first depth option's value."
+   "note": "Label text 0x10F above the graphics adapter button column."
   },
   "0x0280": {
    "name": "ColorDepthOption1",
-   "note": "First color depth option button (action 0x201, group 0x480)."
+   "note": "First color depth option button (action 0x201, group 0x480).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x02E8": {
    "name": "ColorDepthOption2",
-   "note": "Second color depth option button (action 0x202)."
+   "note": "Second color depth option button (action 0x202).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0350": {
    "name": "ColorDepthOption3",
-   "note": "Third color depth option button (action 0x203)."
+   "note": "Third color depth option button (action 0x203).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x03B8": {
    "name": "ColorDepthOption4",
-   "note": "Fourth color depth option button (action 0x204)."
+   "note": "Fourth color depth option button (action 0x204).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0420": {
    "name": "ResolutionOption1",
-   "note": "First resolution option button (action 0x205, group 0x400)."
+   "note": "First resolution option button (action 0x205, group 0x400).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0488": {
    "name": "ResolutionOption2",
-   "note": "Second resolution option button (action 0x206)."
+   "note": "Second resolution option button (action 0x206).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x04F0": {
    "name": "ResolutionOption3",
-   "note": "Third resolution option button (action 0x207)."
+   "note": "Third resolution option button (action 0x207).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0558": {
    "name": "ResolutionOption4",
-   "note": "Fourth resolution option button (action 0x208)."
+   "note": "Fourth resolution option button (action 0x208).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x05C0": {
    "name": "ResolutionOption5",
-   "note": "Fifth resolution option button (action 0x209)."
+   "note": "Fifth resolution option button (action 0x209).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0628": {
    "name": "ResolutionOption6",
-   "note": "Sixth resolution option button (action 0x20A)."
+   "note": "Sixth resolution option button (action 0x20A).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0690": {
    "name": "ResolutionOption7",
-   "note": "Seventh resolution option button (action 0x20B)."
+   "note": "Seventh resolution option button (action 0x20B).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x06F8": {
    "name": "ResolutionOption8",
-   "note": "Eighth resolution option button (action 0x20C)."
+   "note": "Eighth resolution option button (action 0x20C).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0760": {
    "name": "AdapterOption1",
-   "note": "First graphics adapter option button (action 0x20F, group 0xC00)."
+   "note": "First graphics adapter option button (action 0x20F, group 0xC00).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x07C8": {
    "name": "AdapterOption2",
-   "note": "Second graphics adapter option button (action 0x210)."
+   "note": "Second graphics adapter option button (action 0x210).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0830": {
    "name": "AdapterOption3",
-   "note": "Third graphics adapter option button (action 0x211)."
+   "note": "Third graphics adapter option button (action 0x211).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0898": {
    "name": "AdapterOption4",
-   "note": "Fourth graphics adapter option button (action 0x212)."
+   "note": "Fourth graphics adapter option button (action 0x212).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x0900": {
    "name": "AdapterOption5",
-   "note": "Fifth graphics adapter option button (action 0x213)."
+   "note": "Fifth graphics adapter option button (action 0x213).",
+   "prefix": "UiDisplayModeOptionPrefix"
   },
   "0x095C": {
    "name": "ColorScaleSliderFrame",
@@ -1258,31 +1275,38 @@
   },
   "0x1544": {
    "name": "TechnologyAreaTab1",
-   "note": "Technology area tab 1 (action 0x1014) with an icon from tech.gfx."
+   "note": "Technology area tab 1 (action 0x1014) with an icon from tech.gfx.",
+   "prefix": "UiTechnologyAreaTabPrefix"
   },
   "0x15AC": {
    "name": "TechnologyAreaTab2",
-   "note": "Technology area tab 2 (action 0x1015)."
+   "note": "Technology area tab 2 (action 0x1015).",
+   "prefix": "UiTechnologyAreaTabPrefix"
   },
   "0x1614": {
    "name": "TechnologyAreaTab3",
-   "note": "Technology area tab 3 (action 0x1016)."
+   "note": "Technology area tab 3 (action 0x1016).",
+   "prefix": "UiTechnologyAreaTabPrefix"
   },
   "0x167C": {
    "name": "TechnologyAreaTab4",
-   "note": "Technology area tab 4 (action 0x1017)."
+   "note": "Technology area tab 4 (action 0x1017).",
+   "prefix": "UiTechnologyAreaTabPrefix"
   },
   "0x16E4": {
    "name": "TechnologyAreaTab5",
-   "note": "Technology area tab 5 (action 0x1018)."
+   "note": "Technology area tab 5 (action 0x1018).",
+   "prefix": "UiTechnologyAreaTabPrefix"
   },
   "0x174C": {
    "name": "TechnologyAreaTab6",
-   "note": "Technology area tab 6 (action 0x1019)."
+   "note": "Technology area tab 6 (action 0x1019).",
+   "prefix": "UiTechnologyAreaTabPrefix"
   },
   "0x17B4": {
    "name": "TechnologyAreaTab7",
-   "note": "Technology area tab 7 (action 0x101A)."
+   "note": "Technology area tab 7 (action 0x101A).",
+   "prefix": "UiTechnologyAreaTabPrefix"
   },
   "0x1814": {
    "name": "TechnologyAreaTab1Icon",

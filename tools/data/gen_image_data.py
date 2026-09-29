@@ -86,9 +86,11 @@ def block_name(k):
 
 # ---- objects (layout.tsv) and the names a pointer target may carry
 objects = []
+declared_sizes = {}  # start -> size of the declared type (the extent may run on into alignment padding)
 for line in open(os.path.join(args.work, 'layout.tsv'), encoding='utf-8'):
     a, size, declared, name, kind, nonzero = line.rstrip('\n').split('\t')
     objects.append((int(a, 16), int(size), name))
+    declared_sizes[int(a, 16)] = int(declared)
 object_starts = [o[0] for o in objects]
 
 def containing_object(addr):
@@ -592,7 +594,8 @@ UI_TEMPLATES = {'g_InGameRuntimeDefaultImageTemplate': ('InGameUiImage', 'INGAME
                 'g_UiDisplaySettingsRootTemplate': ('DisplaySettingsUiImage', 'DISPLAY_SETTINGS_UI'),
                 'g_UiFourValueDialogTemplateImage': ('FourValueDialogUiImage', 'FOUR_VALUE_DIALOG_UI'),
                 'g_FatalErrorUiRootTemplateImage': ('FatalErrorUiImage', 'FATAL_ERROR_UI')}
-# node names: tools/data/ui_node_names.json, {image type: {"0xOFFSET": {"name": ..., "note": ...}}}
+# node names: tools/data/ui_node_names.json, {image type: {"0xOFFSET": {"name": ..., "note": ...,
+# optional "prefix": a UI_NODE_PREFIX_TYPES type}}}
 _names_path = os.path.join(common.REPO, 'tools', 'data', 'ui_node_names.json')
 UI_NODE_NAMES = json.load(open(_names_path, encoding='utf-8')) if os.path.exists(_names_path) else {}
 ui_template_types = []   # typedefs for include/thandor/generated/ui_templates.h
@@ -603,6 +606,46 @@ def node_member(type_name, offset):
         return 'node%04X' % offset, ''
     name = entry['name']
     return name[0].lower() + name[1:], entry.get('note', '')
+
+# Values some nodes keep in the dwords in front of them (read back through the node pointer, e.g. an
+# option button's mode value): a node with "prefix": type in ui_node_names.json gets a member
+# <node>_prefix of that type directly before it, instead of the tail of the previous node's _fields.
+# type -> (comment, [(C type, field, comment)]); all fields are dwords.
+UI_NODE_PREFIX_TYPES = {
+    'UiDisplayModeOptionPrefix': (
+        'The dwords in front of a display settings option button (DisplaySettingsUiImage <button>_prefix):\n'
+        '   its mode value(s), then (as in front of every template node) the tooltip text id. Read back by the\n'
+        '   option actions (UiDisplayModeAction_Update*Selection).',
+        [('int32_t', 'resolutionHeight', '-0xC: resolution buttons only'),
+         ('int32_t', 'modeValue', '-0x8: bits per pixel, resolution width or adapter index'),
+         ('uint32_t', 'tooltipTextResourceId', '-0x4')]),
+    'UiTechnologyAreaTabPrefix': (
+        'The dwords in front of a technology area tab (InGameUiImage technologyAreaTabN_prefix): the name text\n'
+        '   id of the tab\'s technology and the tab\'s tooltip text (the expanded label), both set at runtime.',
+        [('int32_t', 'nameTextResourceId', '-8: TECHNOLOGY_TEXT_ID_BASE + 2 * technology id'),
+         ('uint16_t *', 'tooltipText', '-4')]),
+}
+
+def node_prefix(type_name, offset):
+    entry = UI_NODE_NAMES.get(type_name, {}).get('0x%04X' % offset)
+    prefix_type = entry.get('prefix') if entry else None
+    if prefix_type is None:
+        return None, 0
+    return prefix_type, 4 * len(UI_NODE_PREFIX_TYPES[prefix_type][1])
+
+def prefix_init(prefix_type, addr, typed_pointers):
+    parts = []
+    for i, (ctype, field, _) in enumerate(UI_NODE_PREFIX_TYPES[prefix_type][1]):
+        value = dword_at(addr + 4 * i)
+        if '*' in ctype:
+            text = scalar_init(ctype, addr + 4 * i, typed_pointers)
+        elif ctype == 'int32_t':
+            text = signed_literal(value)
+        else:
+            text = '0x%X' % value if value else '0'
+        if text != '0':
+            parts.append('.%s = %s' % (field, text))
+    return '{%s}' % ', '.join(parts) if parts else '{0}'
 ui_vtables = set(a for a, s, n in objects if 'vtable' in n.lower() and not is_jump_table(n, a, a + s))
 NODE_BASE = type_layouts.get('UiNodeBase')
 NODE_LINKS = ('nextSibling', 'firstChild', 'parent')
@@ -670,12 +713,19 @@ def template_member(k, start, end, name, member):
             target = containing_object(dword_at(addr + 12))
             vtable_name = target[2] if target else ''
             node_name, note = node_member(type_name, piece_start)
+            prefix_type, prefix_size = node_prefix(type_name, piece_start)
+            if prefix_type:
+                fields.append('    %s %s_prefix; /* +%04X */' % (prefix_type, node_name, piece_start - prefix_size))
+                inits.append('        %s,' % prefix_init(prefix_type, addr - prefix_size, typed_pointers))
             fields.append('    UiNodeBase %s; /* +%04X %s%s */' % (node_name, piece_start, vtable_name,
                                                                ': ' + note if note else ''))
             inits.append('        %s,' % node_base_init(addr, typed_pointers, '+%04X %s %s' % (
                 piece_start, node_name, vtable_name)))
             rest_start = piece_start + NODE_BASE['size']
-        count = (piece_end - rest_start) // 4
+        # the prefix dwords of the next node are its own member
+        next_prefix_size = node_prefix(type_name, piece_end)[1] if piece_end < size else 0
+        count = (piece_end - next_prefix_size - rest_start) // 4
+        assert count >= 0, (name, piece_end)
         if count:
             label = node_member(type_name, piece_start)[0] + '_fields' if is_node else 'header'
             fields.append('    uint32_t %s[%d];' % (label, count))
@@ -686,8 +736,8 @@ def template_member(k, start, end, name, member):
             del pointers[before:]
     prefix = UI_TEMPLATES[name][1]
     ui_template_types.append(
-        '/* %s: %d UI nodes. %s(root, node) is the node in a copy of it, %s_FIELD(root, node, offset,\n'
-        '   type) a class field behind the UiNodeBase of the node. */\n'
+        '/* %s: %d UI nodes. %s(root, node) is the node in a copy of it (or a node\'s <node>_prefix),\n'
+        '   %s_FIELD(root, node, offset, type) a class field behind the UiNodeBase of the node. */\n'
         'typedef struct %s {\n%s\n} %s;\n'
         '#define %s(root, node) (&((%s *)(uintptr_t)(root))->node)\n'
         '#define %s_FIELD(root, node, offset, type) (*(type *)((uint8_t *)%s(root, node) + (offset)))\n' % (
@@ -722,12 +772,21 @@ for k, (a, b) in enumerate(blocks):
             decls.append('    uint32_t %s[%d]; %s' % (member, count, comment))
             inits.append('    {0}, /* %08X %s: filled at startup by %s */' % (start, name, COMPUTED[name]))
             continue
-        template = template_member(k, start, end, name, member) if name else None
+        # a template ends at its declared size; the object's extent runs on to the next code or
+        # object, which after the last node is only the 0x90 alignment padding of the next function
+        template_end = end
+        if name in UI_TEMPLATES and 0 < declared_sizes.get(start, 0) < end - start:
+            template_end = start + declared_sizes[start]
+        template = template_member(k, start, template_end, name, member) if name else None
         if template is not None:
             decl, init, typed_pointers = template
             pointers.extend(typed_pointers)
             decls.append('%s %s' % (decl, comment))
             inits.append('    %s, %s' % (init, comment))
+            if template_end < end:
+                decls.append('    uint8_t %s_padding[%d]; /* alignment padding after the template */' % (
+                    member, end - template_end))
+                inits.append('    %s,' % byte_list(template_end, end))
             continue
         typed = typed_member(start, end, name, member) if name else None
         if typed is not None:
@@ -805,7 +864,16 @@ open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'ui_templates.
     '/* UI template node links: offsets from the template start, made into pointers when the\n'
     '   template is copied and linked. */\n'
     '#define UI_TEMPLATE_LINK(offset) ((UiNodeBase *)(offset))\n'
-    '#define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)\n\n'
+    '#define UI_TEMPLATE_NO_LINK ((UiNodeBase *)-1)\n\n' +
+    ''.join('/* %s */\ntypedef struct %s {\n%s\n} %s;\n' % (
+        comment, prefix_type,
+        '\n'.join('    %s%s%s; /* %s */' % (ctype, '' if ctype.endswith('*') else ' ', field, note)
+                  for ctype, field, note in fields),
+        prefix_type) for prefix_type, (comment, fields) in UI_NODE_PREFIX_TYPES.items()) +
+    '/* The <node>_prefix of the given type in front of a node the code only has as a pointer (the\n'
+    '   node of an action callback, a node chosen at runtime); with the node\'s name known,\n'
+    '   <TEMPLATE>_UI(root, <node>_prefix) names it directly. */\n'
+    '#define UI_TEMPLATE_NODE_PREFIX(type, node) (((type *)(uintptr_t)(node))[-1])\n\n'
     '#pragma pack(push, 1)\n\n' + '\n'.join(ui_template_types) + '\n#pragma pack(pop)\n\n#endif\n')
 
 # ---- source

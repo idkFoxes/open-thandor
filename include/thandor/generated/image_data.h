@@ -115,6 +115,7 @@ typedef struct ImageData_00407510 {
     uint32_t at_g_FatalErrorDialogDismissed; /* 00407E24 g_FatalErrorDialogDismissed */
     UiRootCallbacks at_g_UiRootCallbacks_00407E28; /* 00407E28 g_UiRootCallbacks_00407E28 */
     FatalErrorUiImage at_g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
+    uint8_t at_g_FatalErrorUiRootTemplateImage_padding[4]; /* alignment padding after the template */
 } ImageData_00407510;
 extern ImageData_00407510 g_ImageData_00407510;
 
@@ -561,6 +562,7 @@ extern ImageData_00422978 g_ImageData_00422978;
 typedef struct ImageData_00424324 {
     UiRootCallbacks at_g_UiFourValueDialogRootCallbacks; /* 00424324 g_UiFourValueDialogRootCallbacks */
     FourValueDialogUiImage at_g_UiFourValueDialogTemplateImage; /* 00424338 g_UiFourValueDialogTemplateImage */
+    uint8_t at_g_UiFourValueDialogTemplateImage_padding[4]; /* alignment padding after the template */
 } ImageData_00424324;
 extern ImageData_00424324 g_ImageData_00424324;
 
@@ -2324,6 +2326,7 @@ typedef struct ImageData_0054FBB0 {
     uint8_t at_g_EmptyFrontendPlayerNameUtf16_rest_tail[1];
     uint16_t at_g_InGameCountdownTextUtf16[8]; /* 00550590 g_InGameCountdownTextUtf16 */
     InGameUiImage at_g_InGameRuntimeDefaultImageTemplate; /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
+    uint8_t at_g_InGameRuntimeDefaultImageTemplate_padding[12]; /* alignment padding after the template */
 } ImageData_0054FBB0;
 extern ImageData_0054FBB0 g_ImageData_0054FBB0;
 

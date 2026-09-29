@@ -555,8 +555,9 @@ ImageData_00407510 g_ImageData_00407510 = {
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x2},
         {
-            0x0000000C, 0x00000001, 0x00000100, 0x00000000, 0x90909090},
+            0x0000000C, 0x00000001, 0x00000100},
     },
+    {0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_004080B4 g_ImageData_004080B4 = {
@@ -1186,6 +1187,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x0000010F},
+        {0},
         { /* +0280 colorDepthOption1 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x2E8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1193,6 +1195,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000480, 0x00000201, 0x00000106},
+        {0},
         { /* +02E8 colorDepthOption2 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x350), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1200,6 +1203,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000480, 0x00000202, 0x00000106},
+        {0},
         { /* +0350 colorDepthOption3 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x3B8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1207,6 +1211,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000480, 0x00000203, 0x00000106},
+        {0},
         { /* +03B8 colorDepthOption4 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x420), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1214,6 +1219,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000480, 0x00000204, 0x00000106},
+        {0},
         { /* +0420 resolutionOption1 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x488), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1221,6 +1227,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x00000205, 0x00000107},
+        {0},
         { /* +0488 resolutionOption2 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x4F0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1228,6 +1235,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x00000206, 0x00000107},
+        {0},
         { /* +04F0 resolutionOption3 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x558), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1235,6 +1243,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x00000207, 0x00000107},
+        {0},
         { /* +0558 resolutionOption4 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x5C0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1242,6 +1251,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x00000208, 0x00000107},
+        {0},
         { /* +05C0 resolutionOption5 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x628), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1249,6 +1259,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x00000209, 0x00000107},
+        {0},
         { /* +0628 resolutionOption6 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x690), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1256,6 +1267,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x0000020A, 0x00000107},
+        {0},
         { /* +0690 resolutionOption7 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x6F8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1263,6 +1275,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x0000020B, 0x00000107},
+        {0},
         { /* +06F8 resolutionOption8 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x760), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1270,6 +1283,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000400, 0x0000020C, 0x00000107},
+        {0},
         { /* +0760 adapterOption1 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x7C8), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1277,6 +1291,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000C00, 0x0000020F, 0x00000110},
+        {0},
         { /* +07C8 adapterOption2 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x830), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1284,6 +1299,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000C00, 0x00000210, 0x00000110},
+        {0},
         { /* +0830 adapterOption3 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x898), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1291,6 +1307,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000C00, 0x00000211, 0x00000110},
+        {0},
         { /* +0898 adapterOption4 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x900), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1298,6 +1315,7 @@ ImageData_00422978 g_ImageData_00422978 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x28},
         {
             0x00000C00, 0x00000212, 0x00000110},
+        {0},
         { /* +0900 adapterOption5 g_UiGraphicsAdapterTextButtonVtable */
             .nextSibling = UI_TEMPLATE_LINK(0x95C), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x0),
             .vtable = (void *)&g_UiGraphicsAdapterTextButtonVtable,
@@ -1426,10 +1444,9 @@ ImageData_00424324 g_ImageData_00424324 = {
             .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1},
         {
-            0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x90909090},
+            0x00000004, 0x00000000, 0x00000109, 0x00000000, 0x0000000F, 0x00000014},
     },
+    {0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_00424684 g_ImageData_00424684 = {
@@ -7272,7 +7289,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .leftAnchorQ31 = 0x80000000, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
-            0x00000084, 0x00001013, 0x0000217E, 0x00000000, 0x00000000, 0x00000000, 0x00300000},
+            0x00000084, 0x00001013, 0x0000217E},
+        {.tooltipText = (void *)0x00300000},
         { /* +1544 technologyAreaTab1 g_UiNodeVtable_004B1D80 */
             .nextSibling = UI_TEMPLATE_LINK(0x15AC), .firstChild = UI_TEMPLATE_LINK(0x1814), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = (void *)&g_UiNodeVtable_004B1D80,
@@ -7281,7 +7299,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x12492492, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
-            0x00001491, 0x00001014, 0x0000217F, 0x00000000, 0x00000000, 0x00000000, 0x00300000},
+            0x00001491, 0x00001014, 0x0000217F},
+        {.tooltipText = (void *)0x00300000},
         { /* +15AC technologyAreaTab2 g_UiNodeVtable_004B1D80 */
             .nextSibling = UI_TEMPLATE_LINK(0x1614), .firstChild = UI_TEMPLATE_LINK(0x1870), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = (void *)&g_UiNodeVtable_004B1D80,
@@ -7290,7 +7309,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .leftAnchorQ31 = 0x12492492, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x24924925, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
-            0x00001491, 0x00001015, 0x0000217F, 0x00000000, 0x00000000, 0x00000000, 0x00300000},
+            0x00001491, 0x00001015, 0x0000217F},
+        {.tooltipText = (void *)0x00300000},
         { /* +1614 technologyAreaTab3 g_UiNodeVtable_004B1D80 */
             .nextSibling = UI_TEMPLATE_LINK(0x167C), .firstChild = UI_TEMPLATE_LINK(0x18CC), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = (void *)&g_UiNodeVtable_004B1D80,
@@ -7299,7 +7319,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .leftAnchorQ31 = 0x24924925, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x36D36D37, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
-            0x00001491, 0x00001016, 0x0000217F, 0x00000000, 0x00000000, 0x00000000, 0x00300000},
+            0x00001491, 0x00001016, 0x0000217F},
+        {.tooltipText = (void *)0x00300000},
         { /* +167C technologyAreaTab4 g_UiNodeVtable_004B1D80 */
             .nextSibling = UI_TEMPLATE_LINK(0x16E4), .firstChild = UI_TEMPLATE_LINK(0x1928), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = (void *)&g_UiNodeVtable_004B1D80,
@@ -7308,7 +7329,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .leftAnchorQ31 = 0x36D36D37, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x49249249, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
-            0x00001491, 0x00001017, 0x0000217F, 0x00000000, 0x00000000, 0x00000000, 0x00300000},
+            0x00001491, 0x00001017, 0x0000217F},
+        {.tooltipText = (void *)0x00300000},
         { /* +16E4 technologyAreaTab5 g_UiNodeVtable_004B1D80 */
             .nextSibling = UI_TEMPLATE_LINK(0x174C), .firstChild = UI_TEMPLATE_LINK(0x1984), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = (void *)&g_UiNodeVtable_004B1D80,
@@ -7317,7 +7339,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .leftAnchorQ31 = 0x49249249, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x5B6DB6DB, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
-            0x00001491, 0x00001018, 0x0000217F, 0x00000000, 0x00000000, 0x00000000, 0x00300000},
+            0x00001491, 0x00001018, 0x0000217F},
+        {.tooltipText = (void *)0x00300000},
         { /* +174C technologyAreaTab6 g_UiNodeVtable_004B1D80 */
             .nextSibling = UI_TEMPLATE_LINK(0x17B4), .firstChild = UI_TEMPLATE_LINK(0x19E0), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = (void *)&g_UiNodeVtable_004B1D80,
@@ -7326,7 +7349,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .leftAnchorQ31 = 0x5B6DB6DB, .topAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x6DB6DB6E, .bottomAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x320},
         {
-            0x00001491, 0x00001019, 0x0000217F, 0x00000000, 0x00000000, 0x00000000, 0x00300000},
+            0x00001491, 0x00001019, 0x0000217F},
+        {.tooltipText = (void *)0x00300000},
         { /* +17B4 technologyAreaTab7 g_UiNodeVtable_004B1D80 */
             .nextSibling = UI_TEMPLATE_LINK(0x1A98), .firstChild = UI_TEMPLATE_LINK(0x1A3C), .parent = UI_TEMPLATE_LINK(0xE6C),
             .vtable = (void *)&g_UiNodeVtable_004B1D80,
@@ -10635,41 +10659,9 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .leftAnchorQ31 = 0x80000000, .rightAnchorQ31 = 0x80000000,
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x120},
         {
-            0x00000201, 0x0000111D, 0x00000000, 0x0000008C, 0x00000000, 0x0000008D, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-            0x00000000, 0x00000000, 0x90909090, 0x90909090, 0x90909090},
+            0x00000201, 0x0000111D, 0x00000000, 0x0000008C, 0x00000000, 0x0000008D},
     },
+    {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
 };
 
 ImageData_0055EFB0 g_ImageData_0055EFB0 = {

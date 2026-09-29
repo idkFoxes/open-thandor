@@ -56,15 +56,10 @@ typedef struct UiDisplaySettingsValueReadout {
     uint16_t colorScaleTextUtf16[16]; /* +0x5C, shown by colorScaleValueText */
     uint16_t colorBiasTextUtf16[16];  /* +0x7C */
 } UiDisplaySettingsValueReadout;
-/* The dwords in front of a display settings option button, ((UiDisplayModeOptionPrefix *)button)[-1]: its mode
-   value(s), then (as in front of every template node) the tooltip text id. Read back by the option actions. */
-typedef struct UiDisplayModeOptionPrefix {
-    int32_t resolutionHeight; /* -0xC: resolution buttons only */
-    int32_t modeValue;        /* -0x8: bits per pixel, resolution width or adapter index */
-    uint32_t tooltipTextResourceId; /* -0x4 */
-} UiDisplayModeOptionPrefix;
-/* The UiDisplayModeOptionPrefix of option button node in a copy of g_UiDisplaySettingsRootTemplate at root. */
-#define UI_DISPLAY_MODE_OPTION_PREFIX(root, node) (((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,node))[-1])
+/* UiDisplayModeOptionPrefix (the mode values in front of each display settings option button,
+   DISPLAY_SETTINGS_UI(root, <button>_prefix)) is generated with the template: thandor/generated/ui_templates.h. */
+/* The UiDisplayModeOptionPrefix in front of an option button the code has only as a node pointer. */
+#define DISPLAY_MODE_OPTION_PREFIX(button) UI_TEMPLATE_NODE_PREFIX(UiDisplayModeOptionPrefix,button)
 /* The "keep the new display mode?" dialog's countdownMessageText (a wrapped text, g_UiListOffsetControlVtable)
    with extra fields in its tail, see UiRuntime_OpenFourValueDialog. 0x98 bytes. */
 typedef struct UiFourValueDialogCountdownText {

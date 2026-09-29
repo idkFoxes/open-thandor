@@ -424,9 +424,9 @@ void InGameTechnologyResearch_StartSelected(void *source)
       INGAME_UI(source,technologyAreaTab2),
       INGAME_UI(source,technologyAreaTab1));
     if (!selectedArea.noneSelected) {
-      /* the dword 8 bytes before the selected area tab holds its name text id, TECHNOLOGY_TEXT_ID_BASE +
+      /* the selected area tab's technologyAreaTabN_prefix holds its name text id, TECHNOLOGY_TEXT_ID_BASE +
          2 * technology id (see InGameTechnologyPanel_Rebuild) */
-      doubledTechnologyId = ((UiTechnologyAreaTabPrefix *)selectedArea.node)[-1].nameTextResourceId - TECHNOLOGY_TEXT_ID_BASE;
+      doubledTechnologyId = TECHNOLOGY_AREA_TAB_PREFIX(selectedArea.node).nameTextResourceId - TECHNOLOGY_TEXT_ID_BASE;
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -520,10 +520,10 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
          THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowValueOffsets[areaIndex]))->
         subresource = technologyId;
         rowFlagOffset = g_TechnologyPanelRowFlagOffsets[areaIndex];
-        /* rowFlagOffset is the area tab technologyAreaTabN; the dwords 8 and 4 bytes before it (the +0x60/+0x64
-           slots of the preceding 0x68-byte text button) hold the area's text id and a text pointer */
+        /* rowFlagOffset is the area tab technologyAreaTabN; its technologyAreaTabN_prefix (the dwords 8 and 4
+           bytes before it) holds the area's text id and a text pointer */
         actionId = ((UiSelectableControl *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))->actionId;
-        ((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].nameTextResourceId =
+        TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).nameTextResourceId =
              technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
         /* tab label: the technology name (payload 0) and Xenite cost (payload 1), the number formatted into the
            label text buffer at word 0xC0; the expanded label becomes the tab's tooltip text */
@@ -531,10 +531,10 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         labelText = resolvedText.text;
         labelTemplate = labelText;
         resolvedText = TextResource_Resolve
-                                 (((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].
+                                 (TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).
                                   nameTextResourceId);
         RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,labelText);
-        labelText = ((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].tooltipText;
+        labelText = TECHNOLOGY_AREA_TAB_PREFIX(THANDOR_UI_AT(inGameRoot,rowFlagOffset)).tooltipText;
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                    (int)g_TechnologyAsset->records[definition->researchTechnologyIds[slotIndex]].xeniteCostQ4 >> 4,
@@ -579,7 +579,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
            TEXT_ID_TECHNOLOGY_BUTTON_AREA_SELECTED;
       technologyAsset = g_TechnologyAsset;
       /* the selected tab's name text id; the description is the next text */
-      nameTextId = ((UiTechnologyAreaTabPrefix *)selectedArea.node)[-1].nameTextResourceId;
+      nameTextId = TECHNOLOGY_AREA_TAB_PREFIX(selectedArea.node).nameTextResourceId;
       descriptionTextId = nameTextId + 1;
       selectedTechnologyId = (nameTextId - (uint32_t)TECHNOLOGY_TEXT_ID_BASE) >> 1;
       xeniteCost = g_TechnologyAsset->records[selectedTechnologyId].xeniteCostQ4;
