@@ -78,6 +78,11 @@ restart at 0. Results go to `<game dir>/chain/`.
 | `include/thandor/data/recovered.h` | hand-written | Named data the code used to reach through raw addresses. |
 | `ghidra/export/*.jsonl` | `tools/ghidra/ExportBuildData.java` (headless, see below) | Function-signature types, string values and data symbols that Ghidra's C export omits. Committed, so regenerating does not need Ghidra. |
 | `include/thandor/core/ghidra.h` | hand-written | `CONCATxy`, `SUBxy`, `CARRYx`, partial access, `THANDOR_BITCAST`, `THANDOR_CONTAINER_OF`. |
+| `src/generated/function_map.c` | `python tools/gen_function_map.py` | Original entry address -> C function, read from the `/* Address: 0x... */` comment directly above every function in `src/` (duplicates and misplaced comments are errors; `--check` only compares). Used by the multiplayer command codes, the mapped build, the self-tests and the data tools. |
+
+After renaming or adding functions, regenerate in this order: `tools/gen_function_map.py`, then the data tools
+below (`globalmap.py`, `layout.py`, `typelayout.py`, `gen_image_data.py`), then build and run the `imagecmp`
+self-test. Never edit `function_map.c`, `image_data.c`, `image_data.h` or `ui_templates.h` by hand.
 
 One-shot rewriters used on `src/` (safe to re-run on a fresh decompiler export):
 
@@ -108,6 +113,7 @@ These analyse which parts of the original image the C code still depends on. All
 | `scanaddr_analyze.py <scanaddr.txt>` | files (packages, saves) that store original addresses, from the `scanaddr` self-test |
 | `param_ret_scan.py` | check: functions reached through pointers that take more parameters than the original pops |
 | `symbolize.py <crash_raw.log> <thandor.map>` | names for the raw crash dump |
+| `image_data_report.py` | inventory of `image_data.c` from `image_objects.tsv` (written by `gen_image_data.py`): every object with its kind of representation (typed, UI template, string, raw dwords, zero storage), the share of bytes shown typed, and the largest untyped objects with how often the code uses them |
 
 ## Refreshing the Ghidra export
 

@@ -1789,11 +1789,6 @@ void UiFrame_Draw(void)
 }
 
 
-/* Address: 0x004B0800.
-   Finds the UI node under the pointer: every non-suppressed child that contains the pointer (or may be hit
-   outside its bounds) is asked via its hitTest method, the last sibling (drawn on top) first. Returns the
-   first hit, or the container itself when no child claims the pointer.
-*/
 /* Eligible siblings from `child` on, hit-tested last first. The recursion first checks every remaining
    sibling for eligibility and only then calls hitTest on the way back, like the original, which pushes
    all eligible children before popping them. Returns UI_NODE_NONE when none claims the pointer. */
@@ -1816,6 +1811,11 @@ static UiNodeBase *UiContainer_HitTestEligibleSiblings
   return UI_NODE_NONE;
 }
 
+/* Address: 0x004B0800.
+   Finds the UI node under the pointer: every non-suppressed child that contains the pointer (or may be hit
+   outside its bounds) is asked via its hitTest method, the last sibling (drawn on top) first. Returns the
+   first hit, or the container itself when no child claims the pointer.
+*/
 UiNodeBase * UiContainer_HitTestChildren(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {

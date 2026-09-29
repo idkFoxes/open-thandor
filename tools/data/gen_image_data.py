@@ -748,6 +748,10 @@ def template_member(k, start, end, name, member):
 layout_lines = []   # struct member declarations per block
 init_lines = []     # initializer per block
 typed_count = 0
+inventory = []      # (start, end, name, kind) of every member, for tools/data/image_data_report.py
+
+def note(start, end, name, kind):
+    inventory.append((start, end, name or '', kind))
 for k, (a, b) in enumerate(blocks):
     decls = []
     inits = []
@@ -757,20 +761,25 @@ for k, (a, b) in enumerate(blocks):
             comment = '/* %08X %s: jump table of the original code, not used by the C code */' % (start, name)
         owner = containing_object(start)
         numeric = owner is not None and bool(NUMERIC.match(types.get(owner[2], 'struct').strip()))
+        if name and ('_SwitchTable_' in name or name.startswith('switchdata') or is_jump_table(name, start, end)):
+            note(start, end, name, 'jump-table')
         s = string_member(start, end) if name else None
         if s is not None:
             ctype, count, literal, used = s
             decls.append('    %s %s[%d]; %s' % (ctype, member, count, comment))
             inits.append('    %s, %s' % (literal, comment))
+            note(start, start + used, name, 'string')
             if start + used < end:
                 decls.append('    uint8_t %s_padding[%d];' % (member, end - start - used))
                 inits.append('    %s,' % byte_list(start + used, end))
+                note(start + used, end, name, 'padding')
             continue
         if name in COMPUTED:
             count, tail = divmod(end - start, 4)
             assert not tail
             decls.append('    uint32_t %s[%d]; %s' % (member, count, comment))
             inits.append('    {0}, /* %08X %s: filled at startup by %s */' % (start, name, COMPUTED[name]))
+            note(start, end, name, 'computed')
             continue
         # a template ends at its declared size; the object's extent runs on to the next code or
         # object, which after the last node is only the 0x90 alignment padding of the next function
@@ -783,10 +792,12 @@ for k, (a, b) in enumerate(blocks):
             pointers.extend(typed_pointers)
             decls.append('%s %s' % (decl, comment))
             inits.append('    %s, %s' % (init, comment))
+            note(start, template_end, name, 'ui-template')
             if template_end < end:
                 decls.append('    uint8_t %s_padding[%d]; /* alignment padding after the template */' % (
                     member, end - template_end))
                 inits.append('    %s,' % byte_list(template_end, end))
+                note(template_end, end, name, 'padding')
             continue
         typed = typed_member(start, end, name, member) if name else None
         if typed is not None:
@@ -795,8 +806,13 @@ for k, (a, b) in enumerate(blocks):
             typed_count += 1
             decls.append('%s %s' % (decl, comment))
             inits.append('    %s, %s' % (init, comment))
+            element_type = macros.get(name, label_types.get(name, ('',)))[0].strip()
+            note(start, typed_end, name,
+                 'typed-generic' if re.match(r'^(?:uint32_t|dword|uint|undefined\d?)\s*[\*(]',
+                                             element_type) else 'typed')
             if typed_end < end:
                 rest_count, rest_tail = divmod(end - typed_end, 4)
+                note(typed_end, end, name, 'rest')
                 if rest_count:
                     decls.append('    uint32_t %s_rest[%d]; /* beyond the declared type */' % (member, rest_count))
                     inits.append('    %s,' % dword_list(typed_end, rest_count, numeric))
@@ -808,9 +824,13 @@ for k, (a, b) in enumerate(blocks):
         if name is None or count == 0:
             decls.append('    uint8_t %s[%d]; %s' % (member, end - start, comment))
             inits.append('    %s, %s' % (byte_list(start, end), comment))
+            if not (inventory and inventory[-1][0] == start and inventory[-1][3] == 'jump-table'):
+                note(start, end, name, 'gap' if name is None else 'raw')
             continue
         decls.append('    uint32_t %s[%d]; %s' % (member, count, comment))
         inits.append('    %s, %s' % (dword_list(start, count, numeric), comment))
+        if not (inventory and inventory[-1][0] == start and inventory[-1][3] == 'jump-table'):
+            note(start, end, name, 'raw')
         if tail:
             decls.append('    uint8_t %s_tail[%d];' % (member, tail))
             inits.append('    %s,' % byte_list(start + 4 * count, end))
@@ -900,6 +920,14 @@ open(os.path.join(common.REPO, 'src', 'generated', 'image_data.c'), 'w', encodin
 with open(os.path.join(args.work, 'image_pointers.tsv'), 'w', encoding='utf-8') as f:
     for p in pointers:
         f.write('%08x\t%08x\t%s\t%s\n' % p)
+with open(os.path.join(args.work, 'image_objects.tsv'), 'w', encoding='utf-8') as f:
+    # start, end, name, kind, nonzero bytes, pointers inside, declared type
+    pointer_locations = sorted(p[0] for p in pointers)
+    for start, end, name, kind in inventory:
+        nonzero = sum(1 for x in range(start, end) if byte_at(x))
+        inside = bisect.bisect_left(pointer_locations, end) - bisect.bisect_left(pointer_locations, start)
+        declared = macros.get(name, label_types.get(name, ('',)))[0].strip() if name else ''
+        f.write('%08x\t%08x\t%s\t%s\t%d\t%d\t%s\n' % (start, end, name, kind, nonzero, inside, declared))
 string_count = sum(1 for lines in layout_lines for l in lines if ' = ' not in l and ('uint16_t ' in l or 'char ' in l)
                    and not l.strip().startswith('uint32_t'))
 print('%d blocks, %d bytes, %d members (%d typed), %d function pointers, %d data pointers' % (

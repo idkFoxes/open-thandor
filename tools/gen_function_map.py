@@ -1,67 +1,112 @@
 """Generate src/generated/function_map.c: original entry address -> recovered C function.
 
-The original data image (mapped by platform/bootstrap/image.c) stores code addresses in
-callback tables, vtables and handler arrays. Every such dword that equals the entry of a
-function the tree implements is redirected to the C function, so tables dispatch into the
-recompiled code. Addresses of functions the tree does not implement stay untouched and are
-reported by the loader when they are reached.
+Source: the header comment `/* Address: 0x<address>.` directly above every recovered function in src/ (only
+blank lines and preprocessor lines may stand between the comment and the definition); the function name comes
+from the definition itself. Duplicate addresses, duplicate names and comments without a definition are errors.
 
-Usage: python tools/gen_function_map.py
+Who uses the map: the multiplayer command codes (a code is "handler address minus base", see
+network/protocol/commands.c and gameplay/input/world.c), the mapped build (platform/bootstrap/image.c redirects
+code pointers of the original image), the self-tests and the data tools (tools/data/common.py and
+gen_image_data.py name function pointers through it).
+
+Run it after renaming or adding functions, before tools/data (regen_data): the map is never edited by hand.
+
+Usage: python tools/gen_function_map.py [--check]
+  --check  only compare with the current file (exit status 1 when it would change)
 """
-import json
 import pathlib
 import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+OUTPUT = ROOT / "src/generated/function_map.c"
+
+# Functions of the original image the tree does not implement (unreferenced no-op stubs).
+UNIMPLEMENTED = ["Unreferenced_NoOpStdcallArg1_00583D00", "Unreferenced_NoOpStdcallArg1_00583D20"]
+
+ADDRESS = re.compile(r"/\*\s*Address: 0x([0-9A-Fa-f]{8})\b")
+DEFINITION = re.compile(r"(?<![\w.>])([A-Za-z_]\w*)\s*\(")
 
 
-def defined_functions(names):
-    """Names from `names` that have a definition (name, parameter list, body) somewhere in src/."""
-    text = "\n".join(re.sub(r"/\*.*?\*/", " ", p.read_text(encoding="utf-8"), flags=re.S)
-                     for p in (ROOT / "src").rglob("*.c") if p.parent.name != "generated")
-    found = set(re.findall(r"(?<!\w)([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{", text))
-    return {n for n in names if n in found}
-
-
-# V537 program-database name -> older name still used by the split tree (matched by body).
-ALIASES = {
-    "ArmyRuntimeClass_UpdateResourceExtractionGridAndEffects": "ArmyRuntimeClass_UpdateGridBoundEffectsAndModels",
-    "ArmyRuntimeClass_UpdateResourceStorageFillAndDamageEffect": "ArmyRuntimeClass_UpdateTransformAndDamageEffect",
-    "ModelRuntimeSlotClassInit_AddFactionResourceStorageCapacityAndDetachRootChild1":
-        "ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1",
-    "ModelRuntimeSlotClassInit_AddFactionResourceStorageCapacityAndDetachRootChild3":
-        "ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3",
-    "ModelRuntimeSlotClassRelease_SubtractFactionResourceStorageCapacity": "ArmyPlacement_ReleaseFactionCapacity",
-    "ModelRuntimeSlotClassRelease_SubtractFactionResourceStorageCapacityAndClearExtractionGridCell":
-        "ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation",
-}
+def entries_of(path, errors):
+    text = path.read_text(encoding="utf-8", errors="replace")
+    found = []
+    for m in ADDRESS.finditer(text):
+        end = text.find("*/", m.end())
+        if end < 0:
+            errors.append("%s: unterminated Address comment" % path)
+            continue
+        rest = text[end + 2:]
+        # skip blank and preprocessor lines, then the definition starts
+        lines = rest.split("\n")
+        k = 1 if lines and not lines[0].strip() else 0
+        while k < len(lines) and (not lines[k].strip() or lines[k].lstrip().startswith("#")):
+            k += 1
+            # a multi-line #define continues with a backslash
+            while k < len(lines) and lines[k - 1].rstrip().endswith("\\"):
+                k += 1
+        head = "\n".join(lines[k:k + 12])
+        body = head.find("{")
+        semicolon = head.find(";")
+        name = None
+        if body >= 0 and (semicolon < 0 or semicolon > body):
+            names = [n for n in DEFINITION.findall(head[:body])
+                     if n not in ("__declspec", "__cdecl", "__stdcall", "__fastcall", "__thiscall")]
+            if names:
+                name = names[0]
+        if name is None:
+            line = text.count("\n", 0, m.start()) + 1
+            errors.append("%s:%d: Address 0x%s is not directly above a function definition" %
+                          (path.relative_to(ROOT).as_posix(), line, m.group(1)))
+            continue
+        found.append((int(m.group(1), 16), name, path.relative_to(ROOT).as_posix()))
+    return found
 
 
 def main():
-    functions = [json.loads(l) for l in (ROOT / "ghidra/export/functions.jsonl").read_text(encoding="utf-8").splitlines()]
-    for f in functions:
-        f["name"] = ALIASES.get(f["name"], f["name"])
-    have = defined_functions({f["name"] for f in functions})
-    entries = sorted({(int(f["address"], 16), f["name"]) for f in functions if f["name"] in have and not f["thunk"]})
-    missing = sorted(f["name"] for f in functions if f["name"] not in have and not f["thunk"])
+    errors = []
+    entries = []
+    for path in sorted((ROOT / "src").rglob("*.c")):
+        if "generated" in path.parts:
+            continue
+        entries += entries_of(path, errors)
+    by_address, by_name = {}, {}
+    for address, name, where in entries:
+        if address in by_address:
+            errors.append("address 0x%08X twice: %s (%s) and %s" % (address, name, where, by_address[address]))
+        if name in by_name:
+            errors.append("function %s has two addresses: 0x%08X and 0x%08X" % (name, address, by_name[name]))
+        by_address[address] = "%s (%s)" % (name, where)
+        by_name[name] = address
+    if errors:
+        print("\n".join(errors))
+        sys.exit(1)
+    entries.sort()
     c = ["/*",
          " * Open Thandor",
          " * Project: https://github.com/idkFoxes/open-thandor/tree/main",
-         " * Generated by tools/gen_function_map.py from ghidra/export/functions.jsonl. Do not edit by hand.",
+         " * Generated by tools/gen_function_map.py from the \"Address:\" header comments of the functions in src/.",
+         " * Do not edit by hand: run the tool after renaming or adding functions.",
          " */",
          "",
          "#include <thandor/thandor.h>",
          "#include <thandor/platform/bootstrap/image.h>",
          "",
          "const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {"]
-    c += [f"    {{0x{a:08X}u, (void *)&{n}}}," for a, n in entries]
+    c += ["    {0x%08Xu, (void *)&%s}," % (a, n) for a, n, _ in entries]
     c += ["};", "",
-          f"const unsigned g_ThandorFunctionMapCount = {len(entries)}u;", ""]
+          "const unsigned g_ThandorFunctionMapCount = %du;" % len(entries), ""]
     c += ["/* Functions of the original image without a recovered implementation: */"]
-    c += [f"/*   {n} */" for n in missing]
+    c += ["/*   %s */" % n for n in UNIMPLEMENTED]
     c += [""]
-    (ROOT / "src/generated/function_map.c").write_text("\n".join(c), encoding="utf-8", newline="\n")
-    print(f"{len(entries)} mapped functions, {len(missing)} without implementation: {missing}")
+    text = "\n".join(c)
+    old = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
+    if "--check" in sys.argv:
+        same = old.replace("\r\n", "\n") == text
+        print("%d functions, function_map.c %s" % (len(entries), "up to date" if same else "WOULD CHANGE"))
+        sys.exit(0 if same else 1)
+    OUTPUT.write_text(text, encoding="utf-8", newline="\n")
+    print("%d functions written to %s" % (len(entries), OUTPUT.relative_to(ROOT).as_posix()))
 
 
 if __name__ == "__main__":

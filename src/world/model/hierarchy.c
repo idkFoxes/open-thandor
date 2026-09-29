@@ -841,10 +841,6 @@ void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextAr
 }
 
 
-/* Address: 0x0051C1F0.
-   Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
-   armour points (runtime +0x3C) of every node, walked depth-first.
-*/
 /* Model runtime nodes keep their child count at +0x0C and child pointers at +0x140 + 32*i (null
    slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
 static int ModelRuntimeHierarchy_SumArmourFrom(ModelRuntimeSlot *node)
@@ -879,6 +875,10 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
   }
 }
 
+/* Address: 0x0051C1F0.
+   Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
+   armour points (runtime +0x3C) of every node, walked depth-first.
+*/
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 
 {

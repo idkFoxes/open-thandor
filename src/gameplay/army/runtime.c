@@ -2742,12 +2742,6 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
 }
 
 
-/* Address: 0x0051BC00.
-   Renders the picture of an army type for the in-game panels: spawns a temporary army of armyAssetId for
-   factionIndex, turns it to a fixed three-quarter view, frames its bounds and renders it off screen at twice the
-   requested size, then destroys the army and downsamples the image 2x2 -> 1 with alpha weighting (MMX) into a
-   previewWidth x previewHeight texture. Returns the texture, or CF set with the creation/render error.
-*/
 /* One 16-bit MMX lane per pixel byte: PUNPCKLBW mm,mm duplicates each byte into a word, PSRLW 4 scales it. */
 #define ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, byteIndex) \
   ((uint64_t)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * ARMY_PREVIEW_BYTE_TO_WORD_REPEAT >> 4) << ((byteIndex) * 16))
@@ -2755,6 +2749,12 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
   (ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) | \
    ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0))
 
+/* Address: 0x0051BC00.
+   Renders the picture of an army type for the in-game panels: spawns a temporary army of armyAssetId for
+   factionIndex, turns it to a fixed three-quarter view, frames its bounds and renders it off screen at twice the
+   requested size, then destroys the army and downsamples the image 2x2 -> 1 with alpha weighting (MMX) into a
+   previewWidth x previewHeight texture. Returns the texture, or CF set with the creation/render error.
+*/
 ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,
           FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,

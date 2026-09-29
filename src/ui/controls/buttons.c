@@ -10,10 +10,6 @@
 
 /* Implementation ownership: ui/controls/buttons. */
 
-/* Address: 0x004B1D20.
-   Advances the frame animation of every sprite button below root (depth first), so animated buttons
-   keep cycling their frames. Only nodes whose vtable is exactly g_UiSpriteButtonControlVtable count.
-*/
 /* Rewritten from the assembly (0x004B1D20): a depth-first walk that pushes each node's next
    sibling on the machine stack before descending; the decompiler kept only one level. */
 static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {
@@ -26,6 +22,10 @@ static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {
   }
 }
 
+/* Address: 0x004B1D20.
+   Advances the frame animation of every sprite button below root (depth first), so animated buttons
+   keep cycling their frames. Only nodes whose vtable is exactly g_UiSpriteButtonControlVtable count.
+*/
 void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root)
 
 {
