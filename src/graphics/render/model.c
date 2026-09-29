@@ -118,10 +118,10 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   int32_t savedBasis22;
   GraphicsWorldCoordinateQ12 savedTranslationZ;
   int remainingMeshCount;
-  int *meshRecord;
+  ModelMeshHeader *meshRecord;
 
-  /* the meshes follow the ModelMeshGroupHeader (mesh [0] = byte size, [1] = group mask) */
-  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags0C;
+  /* the ModelMeshHeader records follow the ModelMeshGroupHeader, each byteSize long */
+  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
   remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
   savedRotationAngle0 = (modelNode->modelPayload).worldRotationAngle0;
   savedRotationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
@@ -138,20 +138,20 @@ void ModelRender_DrawMeshGroupsWithTemporaryTransform
   savedBasis21 = (modelNode->worldTransform).basisRow2[1];
   savedBasis22 = (modelNode->worldTransform).basisRow2[2];
   savedTranslationZ = (modelNode->worldTransform).translation.z;
-  if ((groupFlagsOrMask & 1) != 0) {
+  if ((groupFlagsOrMask & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
-  if ((groupFlagsOrMask & 2) != 0) {
+  if ((groupFlagsOrMask & MODEL_MESH_GROUP_BILLBOARD) != 0) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
-  meshRecord = (int *)((ModelMeshGroupHeader *)meshGroup + 1);
+  meshRecord = (ModelMeshHeader *)((ModelMeshGroupHeader *)meshGroup + 1);
   groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
-    if ((meshRecord[1] & groupFlagsOrMask) != 0) {
+    if ((meshRecord->groupMask & groupFlagsOrMask) != 0) {
       ModelRender_SubmitMeshTriangles
                 (facingThresholdQ12,(ModelMeshGroupAddress32)meshRecord,modelNode);
     }
-    meshRecord = (int *)((int)meshRecord + *meshRecord);
+    meshRecord = (ModelMeshHeader *)((uint8_t *)meshRecord + meshRecord->byteSize);
   }
   (modelNode->worldTransform).translation.z = savedTranslationZ;
   (modelNode->worldTransform).basisRow2[2] = savedBasis22;
@@ -182,23 +182,23 @@ void ModelRender_DrawMeshGroupsAlternatePath(ModelMeshGroupAddress32 meshGroup,M
 {
   uint32_t groupFlagsOrMask;
   int remainingMeshCount;
-  int *meshRecord;
+  ModelMeshHeader *meshRecord;
 
-  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags0C;
+  groupFlagsOrMask = ((ModelMeshGroupHeader *)meshGroup)->groupFlags;
   remainingMeshCount = ((ModelMeshGroupHeader *)meshGroup)->meshCount;
-  if ((groupFlagsOrMask & 1) != 0) {
+  if ((groupFlagsOrMask & MODEL_MESH_GROUP_FACE_VIEWER) != 0) {
     ModelNodeRuntime_BuildViewFacingRotation(modelNode);
   }
-  if ((groupFlagsOrMask & 2) != 0) {
+  if ((groupFlagsOrMask & MODEL_MESH_GROUP_BILLBOARD) != 0) {
     ModelNodeRuntime_BuildBillboardRotation(modelNode);
   }
-  meshRecord = (int *)((ModelMeshGroupHeader *)meshGroup + 1);
+  meshRecord = (ModelMeshHeader *)((ModelMeshGroupHeader *)meshGroup + 1);
   groupFlagsOrMask = (modelNode->modelPayload).meshGroupMask;
   for (; remainingMeshCount != 0; remainingMeshCount--) {
-    if ((meshRecord[1] & groupFlagsOrMask) != 0) {
+    if ((meshRecord->groupMask & groupFlagsOrMask) != 0) {
       ModelRender_SubmitMeshTrianglesAlternatePath((ModelMeshGroupAddress32)meshRecord,modelNode);
     }
-    meshRecord = (int *)((int)meshRecord + *meshRecord);
+    meshRecord = (ModelMeshHeader *)((uint8_t *)meshRecord + meshRecord->byteSize);
   }
 }
 
@@ -275,7 +275,8 @@ void ModelRender_PrepareProjectedVertex
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
     projectedScreenCoordinatePair =
-         THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8, Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z));
+         THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8,
+                         Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z));
     vertex->z = savedVertexZQ12;
     vertex->y = savedVertexYQ12;
     vertex->x = savedVertexXQ12;
@@ -295,7 +296,8 @@ void ModelRender_PrepareProjectedVertex
   }
   if ((triangleRenderFlags & MODEL_TRIANGLE_LIGHTING_SCALED) == 0) {
     if ((triangleRenderFlags & MODEL_TRIANGLE_FLAT_SHADED) != 0) {
-      surfaceNormalQ12 = (GraphicsFixedVec3 *)&((GraphicsTriangleInput *)triangle)->planeNormalXQ12; /* the triangle's plane normal */
+      /* the triangle's plane normal */
+      surfaceNormalQ12 = (GraphicsFixedVec3 *)&((GraphicsTriangleInput *)triangle)->planeNormalXQ12;
     }
     vertexColor = ModelRender_ComputeVertexIntensityDefaultPath
                       (vertex[2].y,&vertex[2].z,THANDOR_ADDR(g_ModelDistanceAttenuationMmx,0),g_SceneBoundsFixed.bound5,
@@ -338,7 +340,7 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
   GraphicsTextureSetEntry *textureEntry;
 
   facingDotQ12 = ModelRender_ComputeFacingDotQ12(triangle);
-  if (((triangle->renderFlags & MODEL_TRIANGLE_DOUBLE_SIDED) != 0) || (facingDotQ12 < facingThresholdQ12)) {
+  if ((triangle->renderFlags & MODEL_TRIANGLE_DOUBLE_SIDED) != 0 || facingDotQ12 < facingThresholdQ12) {
     firstVertex = triangle->vertex0;
     secondVertex = triangle->vertex1;
     thirdVertex = triangle->vertex2;
@@ -348,18 +350,14 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
               (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)secondVertex);
     ModelRender_PrepareProjectedVertex
               (modelNode,(ModelMeshGroupAddress32)triangle,(GraphicsFixedVec3 *)thirdVertex);
-    if (((g_ProjectionClipRect.minX <= firstVertex->screenX) ||
-        ((g_ProjectionClipRect.minX <= secondVertex->screenX ||
-         (g_ProjectionClipRect.minX <= thirdVertex->screenX)))) &&
-       ((firstVertex->screenX < g_ProjectionClipRect.maxX ||
-        ((secondVertex->screenX < g_ProjectionClipRect.maxX ||
-         (thirdVertex->screenX < g_ProjectionClipRect.maxX)))))) {
-      if (((g_ProjectionClipRect.minY <= firstVertex->screenY) ||
-          ((g_ProjectionClipRect.minY <= secondVertex->screenY ||
-           (g_ProjectionClipRect.minY <= thirdVertex->screenY)))) &&
-         ((firstVertex->screenY < g_ProjectionClipRect.maxY ||
-          ((secondVertex->screenY < g_ProjectionClipRect.maxY ||
-           (thirdVertex->screenY < g_ProjectionClipRect.maxY)))))) {
+    if ((g_ProjectionClipRect.minX <= firstVertex->screenX || g_ProjectionClipRect.minX <= secondVertex->screenX ||
+         g_ProjectionClipRect.minX <= thirdVertex->screenX) &&
+        (firstVertex->screenX < g_ProjectionClipRect.maxX || secondVertex->screenX < g_ProjectionClipRect.maxX ||
+         thirdVertex->screenX < g_ProjectionClipRect.maxX)) {
+      if ((g_ProjectionClipRect.minY <= firstVertex->screenY || g_ProjectionClipRect.minY <= secondVertex->screenY ||
+           g_ProjectionClipRect.minY <= thirdVertex->screenY) &&
+          (firstVertex->screenY < g_ProjectionClipRect.maxY || secondVertex->screenY < g_ProjectionClipRect.maxY ||
+           thirdVertex->screenY < g_ProjectionClipRect.maxY)) {
         appendFailed = GraphicsPrimitiveQueue_AppendTriangle
                           (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
                            triangle->vertex0,g_ActivePrimitiveQueue);
@@ -380,13 +378,13 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
               nodePaletteAsset->paletteBankCount <= paletteBankIndex)) {
             GraphicsPrimitiveQueue_SetMaterial(0xffffffff,textureEntry,g_ActivePrimitiveQueue);
             triangleSubresource = triangle->subresourceIndex;
-            if ((modelNode->runtimeFlags & 0x80) != 0) {
+            if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) != 0) {
               if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,
                            g_ActivePrimitiveQueue);
               }
-              if (((modelNode->runtimeFlags & 0x400) != 0) &&
+              if (((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) != 0) &&
                  (triangleSubresource == modelNode->secondaryAnimatedSubresourceIndex)) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,
@@ -398,13 +396,13 @@ void ModelRender_SubmitTriangle(Q12 facingThresholdQ12,GraphicsTriangleInput *tr
             GraphicsPrimitiveQueue_SetMaterial
                       (nodePaletteAsset->paletteEntries[paletteBankIndex].argb8888,textureEntry,g_ActivePrimitiveQueue);
             triangleSubresource = triangle->subresourceIndex;
-            if ((modelNode->runtimeFlags & 0x80) != 0) {
+            if ((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL) != 0) {
               if (triangleSubresource == modelNode->primaryAnimatedSubresourceIndex) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->primaryTextureOffsetV,modelNode->primaryTextureOffsetU,
                            g_ActivePrimitiveQueue);
               }
-              if (((modelNode->runtimeFlags & 0x400) != 0) &&
+              if (((modelNode->runtimeFlags & MODEL_RUNTIME_FLAG_SECONDARY_TEXTURE_SCROLL) != 0) &&
                  (triangleSubresource == modelNode->secondaryAnimatedSubresourceIndex)) {
                 GraphicsPrimitiveQueue_OffsetTextureCoordinates
                           (modelNode->secondaryTextureOffsetV,modelNode->secondaryTextureOffsetU,
@@ -437,11 +435,11 @@ void ModelRender_SubmitMeshTriangles
   recordCursor = (GraphicsTriangleInput *)((ModelMeshHeader *)meshGroup + 1);
   for (; remainingCount != 0; remainingCount--) {
     recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
-    recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
+    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
   }
   for (remainingCount = ((ModelMeshHeader *)meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangle(facingThresholdQ12,recordCursor,modelNode);
-    recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
+    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
   }
 }
 
@@ -461,11 +459,11 @@ void ModelRender_SubmitMeshTrianglesAlternatePath(ModelMeshGroupAddress32 meshGr
   recordCursor = (GraphicsTriangleInput *)((ModelMeshHeader *)meshGroup + 1);
   for (; remainingCount != 0; remainingCount--) {
     recordCursor->subresourceIndex = MODEL_VERTEX_NOT_PROJECTED; /* vertex +0x30: projected X */
-    recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
+    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
   }
   for (remainingCount = ((ModelMeshHeader *)meshGroup)->triangleCount; remainingCount != 0; remainingCount--) {
     ModelRender_SubmitTriangleAlternatePath(recordCursor,modelNode);
-    recordCursor = (GraphicsTriangleInput *)&recordCursor[1].textureV0;
+    recordCursor = (GraphicsTriangleInput *)((uint8_t *)recordCursor + MODEL_MESH_RECORD_SIZE);
   }
 }
 
@@ -493,7 +491,7 @@ bool ModelRender_PrepareProjectedVertexAlternatePath
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
     if (vertex[3].y < (int)g_ProjectionScaleFixed) {
-      vertex[4].x = 0x7fffffff;
+      vertex[4].x = MODEL_VERTEX_NEAR_CLIPPED;
       return true;
     }
     projectedPoint = Graphics_ProjectViewPoint((GraphicsFixedVec3 *)&vertex[2].z);
@@ -501,7 +499,7 @@ bool ModelRender_PrepareProjectedVertexAlternatePath
     vertex[4].y = projectedPoint.projectedY;
   }
   else {
-    if (vertex[4].x == 0x7fffffff) {
+    if (vertex[4].x == MODEL_VERTEX_NEAR_CLIPPED) {
       /* Already marked as behind the near plane (the original re-stores the same marker). */
       return true;
     }
@@ -558,18 +556,18 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
       rejected = ModelRender_PrepareProjectedVertexAlternatePath
                         (modelNode,triangle,(GraphicsFixedVec3 *)thirdVertex);
       if (!rejected) {
-        if ((((g_ProjectionClipRect.minX <= firstVertex->screenX) ||
-             (g_ProjectionClipRect.minX <= secondVertex->screenX)) ||
-            (g_ProjectionClipRect.minX <= thirdVertex->screenX)) &&
-           (((firstVertex->screenX < g_ProjectionClipRect.maxX ||
-             (secondVertex->screenX < g_ProjectionClipRect.maxX)) ||
-            (thirdVertex->screenX < g_ProjectionClipRect.maxX)))) {
-          if ((((g_ProjectionClipRect.minY <= firstVertex->screenY) ||
-               (g_ProjectionClipRect.minY <= secondVertex->screenY)) ||
-              (g_ProjectionClipRect.minY <= thirdVertex->screenY)) &&
-             (((firstVertex->screenY < g_ProjectionClipRect.maxY ||
-               (secondVertex->screenY < g_ProjectionClipRect.maxY)) ||
-              (thirdVertex->screenY < g_ProjectionClipRect.maxY)))) {
+        if ((g_ProjectionClipRect.minX <= firstVertex->screenX ||
+             g_ProjectionClipRect.minX <= secondVertex->screenX ||
+             g_ProjectionClipRect.minX <= thirdVertex->screenX) &&
+            (firstVertex->screenX < g_ProjectionClipRect.maxX ||
+             secondVertex->screenX < g_ProjectionClipRect.maxX ||
+             thirdVertex->screenX < g_ProjectionClipRect.maxX)) {
+          if ((g_ProjectionClipRect.minY <= firstVertex->screenY ||
+               g_ProjectionClipRect.minY <= secondVertex->screenY ||
+               g_ProjectionClipRect.minY <= thirdVertex->screenY) &&
+              (firstVertex->screenY < g_ProjectionClipRect.maxY ||
+               secondVertex->screenY < g_ProjectionClipRect.maxY ||
+               thirdVertex->screenY < g_ProjectionClipRect.maxY)) {
             rejected = GraphicsPrimitiveQueue_AppendTriangle
                               (triangle->renderFlags,triangle,triangle->vertex2,triangle->vertex1,
                                triangle->vertex0,g_ActivePrimitiveQueue);
@@ -581,16 +579,19 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
               subresourceOrPaletteBank = triangle->subresourceIndex;
               textureEntry = NULL;
               /* unlike ModelRender_SubmitTriangle there is no NULL check of the texture set */
-              if ((subresourceOrPaletteBank != 0xffffffff) && (subresourceOrPaletteBank < nodeTextureSet->subresourceCount)) {
-                textureEntry = nodeTextureSet->entries + subresourceOrPaletteBank + modelNode->textureSubresourceBaseIndex;
+              if (subresourceOrPaletteBank != 0xffffffff &&
+                  subresourceOrPaletteBank < nodeTextureSet->subresourceCount) {
+                textureEntry = nodeTextureSet->entries + subresourceOrPaletteBank +
+                               modelNode->textureSubresourceBaseIndex;
               }
               nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
               /* the original masks with 0xFFFF01FF here (0x1FF in ModelRender_SubmitTriangle) */
               if ((nodePaletteAsset != NULL) &&
-                 (subresourceOrPaletteBank = triangle->renderFlags & 0xffff01ff, subresourceOrPaletteBank < nodePaletteAsset->paletteBankCount)) {
+                 (subresourceOrPaletteBank = triangle->renderFlags & 0xffff01ff,
+                  subresourceOrPaletteBank < nodePaletteAsset->paletteBankCount)) {
                 GraphicsPrimitiveQueue_SetMaterial
-                          (nodePaletteAsset->paletteEntries[subresourceOrPaletteBank].alternateModulationColorArgb,textureEntry,
-                           g_ActivePrimitiveQueue);
+                          (nodePaletteAsset->paletteEntries[subresourceOrPaletteBank].alternateModulationColorArgb,
+                           textureEntry,g_ActivePrimitiveQueue);
                 return;
               }
               GraphicsPrimitiveQueue_SetMaterial(0,textureEntry,g_ActivePrimitiveQueue);
@@ -611,7 +612,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
 void ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode)
 
 {
-  ModelResourceHitTestAndRenderView210 *resource;
+  ModelResource *resource;
   GraphicsWorldCoordinateQ12 boundsX0Q12;
   GraphicsWorldCoordinateQ12 boundsX1Q12;
 
@@ -699,8 +700,9 @@ ModelRender_ComputeVertexIntensityDefaultPath
        pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
               *(uint64_t *)(distanceAttenuationTable + (lightFacingDotQ12 >> 0x15) * 8));
   shadingRecord = g_GraphicsShadingNearbyRecords;
-  accumulatedLanes = pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
-                            ModelLighting_UnpackBytesMmx(materialPackedColor,2));
+  accumulatedLanes =
+       pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
+              ModelLighting_UnpackBytesMmx(materialPackedColor,2));
   for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords--) {
     if (shadingRecord->targetRadiusQ12 != 0) {
       /* r^2 - dx^2 - dy^2 - dz^2 in 64 bits; the light reaches the vertex while it stays >= 0 */
@@ -709,28 +711,33 @@ ModelRender_ComputeVertexIntensityDefaultPath
       axisDistanceSquared = (int64_t)remainderHigh * (int64_t)remainderHigh;
       squareOrRemainderLow = (uint32_t)axisDistanceSquared;
       remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
-      remainderHigh = (*(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) -
+      /* high dword of r^2 */
+      remainderHigh = (((int *)&shadingRecord->squaredRadiusQ24)[1] -
                (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
       if (-1 < remainderHigh) {
         axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
         radiusOrSquareLow = (uint32_t)axisDistanceSquared;
         squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
-        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
+        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+                        (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
         if (-1 < remainderHigh) {
           axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
           radiusOrSquareLow = (uint32_t)axisDistanceSquared;
-          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
+          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+                          (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (SHRD) */
-            remainderLowOrDivisor = *(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) << 0x14 |
+            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << 0x14 |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> 0xc;
             if (remainderLowOrDivisor != 0) {
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | (squareOrRemainderLow - radiusOrSquareLow) >> 5) / remainderLowOrDivisor]);
+                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 |
+                                                       (squareOrRemainderLow - radiusOrSquareLow) >> 5) /
+                                                      remainderLowOrDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
@@ -789,28 +796,33 @@ ModelRender_ComputeVertexIntensityScaledPath
       axisDistanceSquared = (int64_t)remainderHigh * (int64_t)remainderHigh;
       squareOrRemainderLow = (uint32_t)axisDistanceSquared;
       remainderLowOrDivisor = radiusOrSquareLow - squareOrRemainderLow;
-      remainderHigh = (*(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) -
+      /* high dword of r^2 */
+      remainderHigh = (((int *)&shadingRecord->squaredRadiusQ24)[1] -
                (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(radiusOrSquareLow < squareOrRemainderLow);
       if (-1 < remainderHigh) {
         axisDelta = vertexPositionQ12[1] - shadingRecord->worldYQ12;
         axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
         radiusOrSquareLow = (uint32_t)axisDistanceSquared;
         squareOrRemainderLow = remainderLowOrDivisor - radiusOrSquareLow;
-        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
+        remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+                        (uint32_t)(remainderLowOrDivisor < radiusOrSquareLow);
         if (-1 < remainderHigh) {
           axisDelta = vertexPositionQ12[2] - shadingRecord->worldZQ12;
           axisDistanceSquared = (int64_t)axisDelta * (int64_t)axisDelta;
           radiusOrSquareLow = (uint32_t)axisDistanceSquared;
-          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) - (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
+          remainderHigh = (remainderHigh - (int)((uint64_t)axisDistanceSquared >> 0x20)) -
+                          (uint32_t)(squareOrRemainderLow < radiusOrSquareLow);
           if (-1 < remainderHigh) {
             lightPackedColor = shadingRecord->packedColorRgbActive;
             /* divisor r^2 >> 12 (SHRD) */
-            remainderLowOrDivisor = *(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) << 0x14 |
+            remainderLowOrDivisor = ((int *)&shadingRecord->squaredRadiusQ24)[1] << 0x14 |
                      (uint32_t)shadingRecord->squaredRadiusQ24 >> 0xc;
             if (remainderLowOrDivisor != 0) {
               lightLanes =
                    pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
-                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | (squareOrRemainderLow - radiusOrSquareLow) >> 5) / remainderLowOrDivisor]);
+                          g_PackedLightingLookupTable[(remainderHigh * 0x8000000 |
+                                                       (squareOrRemainderLow - radiusOrSquareLow) >> 5) /
+                                                      remainderLowOrDivisor]);
               /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,lightLanes);
             }
@@ -950,25 +962,26 @@ void ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
   int nodeWorldX;
   int nodeWorldY;
   int nodeWorldZ;
-  GraphicsFixedMatrix3x4 *transformA;
+  GraphicsFixedMatrix3x4 *nodeWorldTransform;
   FixedVectorAngles viewAngles;
 
   nodeWorldX = (modelNodeRuntime->worldTransform).translation.x;
   nodeWorldY = (modelNodeRuntime->worldTransform).translation.y;
   nodeWorldZ = (modelNodeRuntime->worldTransform).translation.z;
-  transformA = &modelNodeRuntime->worldTransform;
+  nodeWorldTransform = &modelNodeRuntime->worldTransform;
   FixedTransform_Compose
-            ((GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform,transformA,
+            ((GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform,nodeWorldTransform,
              &g_ViewProjectionMatrixFixed);
   viewAngles = FixedMath_VectorToAngles3Regs
                     (nodeWorldZ - g_ViewOriginFixed.z,nodeWorldY - g_ViewOriginFixed.y,
                      nodeWorldX - g_ViewOriginFixed.x);
-  FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)&g_ModelViewDirectionWorld,viewAngles.elevationAngle,viewAngles.azimuthAngle);
+  FixedMath_WriteDirectionQ28
+            ((GraphicsFixedVec3 *)&g_ModelViewDirectionWorld,viewAngles.elevationAngle,viewAngles.azimuthAngle);
   FixedTransform_ApplyTransposeDirection
-            ((GraphicsFixedVec3 *)&g_ModelViewDirectionLocal,transformA,
+            ((GraphicsFixedVec3 *)&g_ModelViewDirectionLocal,nodeWorldTransform,
              (GraphicsFixedVec3 *)&g_ModelViewDirectionWorld);
   FixedTransform_ApplyTransposeDirection
-            ((GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,transformA,
+            ((GraphicsFixedVec3 *)&g_ModelAuxiliaryForwardDirectionLocal,nodeWorldTransform,
              &g_AuxiliaryForwardDirectionFixed);
 }
 

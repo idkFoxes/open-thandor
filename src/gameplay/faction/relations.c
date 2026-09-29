@@ -101,19 +101,22 @@ bool GameFactionRelations_TestPairTransitionAllowed
 
   relationState = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
   /* relationUiFlags: bit 4 freezes every relation, bit 2 states 4 and up, bit 1 states 8 and up */
-  if (((((relationState != 2) && (relationState != 5)) && (relationState != 9)) &&
-      ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) == 0)) &&
-     ((relationState < 4 ||
-      (((g_GameFactionRuntimeImage.tail.relationUiFlags & 2) == 0 &&
-       ((relationState < 8 || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) == 0)))))))) {
-    if (3 < relationState) {
+  if (relationState != 2 && relationState != 5 && relationState != 9 &&
+      (g_GameFactionRuntimeImage.tail.relationUiFlags & FACTION_RELATION_FREEZE_ALL) == 0 &&
+      (relationState < FACTION_RELATION_STATE_FRIENDLY ||
+       ((g_GameFactionRuntimeImage.tail.relationUiFlags & FACTION_RELATION_FREEZE_FRIENDLY) == 0 &&
+        (relationState < FACTION_RELATION_STATE_ALLIED ||
+         (g_GameFactionRuntimeImage.tail.relationUiFlags & FACTION_RELATION_FREEZE_ALLIED) == 0)))) {
+    if (FACTION_RELATION_STATE_FRIENDLY - 1 < relationState) {
       return false;
     }
     targetEligibleMask = GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
     sourceEligibleMask = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
-    rulesSatisfied = GameFactionRelations_EvaluateTransitionRules(targetFactionIndex,sourceEligibleMask | targetEligibleMask);
+    rulesSatisfied =
+         GameFactionRelations_EvaluateTransitionRules(targetFactionIndex,sourceEligibleMask | targetEligibleMask);
     if ((!rulesSatisfied) &&
-       (rulesSatisfied = GameFactionRelations_EvaluateTransitionRules(sourceFactionIndex,sourceEligibleMask | targetEligibleMask),
+       (rulesSatisfied =
+             GameFactionRelations_EvaluateTransitionRules(sourceFactionIndex,sourceEligibleMask | targetEligibleMask),
        !rulesSatisfied)) {
       return false;
     }
@@ -142,16 +145,14 @@ FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIn
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       if ((factionIndex == sourceFactionIndex) ||
           (relationStateNibble = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,factionIndex),
-           3 < relationStateNibble)) {
+           FACTION_RELATION_STATE_FRIENDLY - 1 < relationStateNibble)) {
         blocFactionMask = blocFactionMask | currentFactionBit;
       }
     }
     currentFactionBit = currentFactionBit >> 1;
     factionIndex--;
-    if (factionIndex == 0) {
-      return blocFactionMask;
-    }
-  } while( true );
+  } while (factionIndex != 0);
+  return blocFactionMask;
 }
 
 
@@ -191,63 +192,66 @@ bool GameFactionRelations_EvaluateTransitionRules
     remainingCount--;
   } while (remainingCount != 0);
   if (actualActiveMask != activeFactionMask) {
-    remainingCount = 64; /* scheduled conditions */
+    remainingCount = INGAME_SCHEDULED_CONDITION_COUNT;
     conditionCursor = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
     do {
       /* bit 0 of kind is the satisfied flag: clear it, set it again when the condition would hold */
       kindOrStackValue = conditionCursor->conditions[0].statusAndKind.kind;
       conditionCursor->conditions[0].statusAndKind.kind =
-           conditionCursor->conditions[0].statusAndKind.kind & 0xfffffffe;
-      switch(kindOrStackValue & 0xfe) {
-      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
-           ) {
-          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+           conditionCursor->conditions[0].statusAndKind.kind & ~INGAME_SCHEDULED_CONDITION_SATISFIED;
+      switch(kindOrStackValue & INGAME_SCHEDULED_CONDITION_KIND_MASK) {
+      case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY:
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+          conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
-      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_CLASS_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
-           ) {
-          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+      case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_COMMAND_GROUP_A_ARMY:
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+          conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
-      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_RUNTIME_ID:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
-           ) {
-          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+      case INGAME_SCHEDULED_CONDITION_FACTION_HAS_NO_ARMY_OF_ASSET:
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+          conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_FACTION_INACTIVE_OR_RELATION_AT_LEAST_8:
-        conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+        conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         break;
-      case 
-      INGAME_SCHEDULED_CONDITION_MATCHING_DEFINITION_AND_RUNTIME_ID_ACTIVE_ENTITY_COUNT_AT_LEAST:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) != 0
-           ) {
-          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+      case INGAME_SCHEDULED_CONDITION_ARMY_OF_ASSET_COUNT_AT_LEAST:
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) != 0) {
+          conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_FACTION_TERRAIN_OCCUPANCY_MASK_F9_PERCENT_AT_LEAST:
-        conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+        conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         break;
       case INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED:
         if (conditionCursor->conditions[0].payload.operands[1] == 0) {
-          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+          conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
-      case INGAME_SCHEDULED_CONDITION_PRIMARY_RESOURCE_LIMIT_AT_MOST_0FA0:
-        conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+      case INGAME_SCHEDULED_CONDITION_XENITE_STORAGE_LIMIT_AT_MOST_0FA0:
+        conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         break;
-      case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_CLASS_ID_OUTSIDE_CLASS_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
-           ) {
-          conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
+      case INGAME_SCHEDULED_CONDITION_NO_ARMY_OF_CLASS_OUTSIDE_COMMAND_GROUP_A:
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0) {
+          conditionCursor->conditions[0].statusAndKind.kind =
+               conditionCursor->conditions[0].statusAndKind.kind | INGAME_SCHEDULED_CONDITION_SATISFIED;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
         /* postfix bytes after the kind byte, a bit stack in kindOrStackValue: 0xFF OR, 0xFE AND, 0xFD NOT,
            0xFC end, anything else pushes the satisfied bit of that condition index */
-        expressionCursor = (uint8_t *)((int)&conditionCursor->conditions[0].statusAndKind.kind + 1);
+        expressionCursor = &conditionCursor->conditions[0].statusAndKind.kindAndExpression[1];
         kindOrStackValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
         while( true ) {
           while( true ) {
@@ -255,17 +259,19 @@ bool GameFactionRelations_EvaluateTransitionRules
               while( true ) {
                 tokenOrFactionIndex = *expressionCursor;
                 expressionCursor = expressionCursor + 1;
-                if (tokenOrFactionIndex != 0xff) break;
+                if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_OR) break;
                 kindOrStackValue = kindOrStackValue >> 1 | kindOrStackValue & 1;
               }
-              if (tokenOrFactionIndex != 0xfe) break;
+              if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_AND) break;
               kindOrStackValue = kindOrStackValue >> 1 & (kindOrStackValue | 0xfffffffe);
             }
-            if (tokenOrFactionIndex != 0xfd) break;
+            if (tokenOrFactionIndex != INGAME_CONDITION_TOKEN_NOT) break;
             kindOrStackValue = kindOrStackValue ^ 1;
           }
-          if (tokenOrFactionIndex == 0xfc) break;
-          kindOrStackValue = ((levelConditionStorage->schedule).conditions[tokenOrFactionIndex].statusAndKind.kind & 1) + kindOrStackValue * 2;
+          if (tokenOrFactionIndex == INGAME_CONDITION_TOKEN_END) break;
+          kindOrStackValue =
+               ((levelConditionStorage->schedule).conditions[tokenOrFactionIndex].statusAndKind.kind &
+                INGAME_SCHEDULED_CONDITION_SATISFIED) + kindOrStackValue * 2;
         }
         conditionCursor->conditions[0].statusAndKind.kind =
              conditionCursor->conditions[0].statusAndKind.kind | kindOrStackValue & 1;
@@ -274,17 +280,17 @@ bool GameFactionRelations_EvaluateTransitionRules
       remainingCount--;
     } while (remainingCount != 0);
     triggerCursor = (levelConditionStorage->schedule).triggers;
-    remainingCount = 16; /* end triggers */
+    remainingCount = INGAME_END_CONDITION_TRIGGER_COUNT;
     do {
       if ((triggerCursor->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
-         (((levelConditionStorage->schedule).conditions[triggerCursor->conditionIndex].statusAndKind.kind & 1) !=
-          INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED)) {
+         (((levelConditionStorage->schedule).conditions[triggerCursor->conditionIndex].statusAndKind.kind &
+           INGAME_SCHEDULED_CONDITION_SATISFIED) != 0)) {
         tokenOrFactionIndex = triggerCursor->factionRuntimeIndex;
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[tokenOrFactionIndex] ==
             FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
           movieVariant = triggerCursor->movieVariantSelector;
-          if ((focalFactionIndex != (uint32_t)tokenOrFactionIndex) && ((activeFactionMask & 1 << (tokenOrFactionIndex & 0x1f)) == 0)
-             ) {
+          if ((focalFactionIndex != (uint32_t)tokenOrFactionIndex) &&
+              ((activeFactionMask & 1 << (tokenOrFactionIndex & 0x1f)) == 0)) {
             movieVariant = movieVariant ^ 1;
           }
           if (movieVariant == 0) {
@@ -459,7 +465,8 @@ void PlayerPairList_RemoveFirstMatch
 
 {
   int trailingDwordsToMove;
-  SelectionPlayerPairRecord *copySourceCursor;
+  uint32_t *copySourceDword;
+  uint32_t *copyTargetDword;
   uint32_t recordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
   SelectionPlayerRuntimeBlock *playerRuntimeBlock;
@@ -472,16 +479,15 @@ void PlayerPairList_RemoveFirstMatch
   if (recordsRemaining < PLAYER_PAIR_LIST_CAPACITY) {
     for (; recordsRemaining != 0; recordsRemaining--) {
       if ((worldXQ12 == pairRecordCursor->pairKey) && (worldYQ12 == pairRecordCursor->pairValue)) {
-        copySourceCursor = pairRecordCursor + 1;
+        copySourceDword = (uint32_t *)(pairRecordCursor + 1);
+        copyTargetDword = (uint32_t *)pairRecordCursor;
         /* the records behind the match move down one dword at a time (REP MOVSD in the original) */
         trailingDwordsToMove = recordsRemaining * 2 - 2;
         playerRuntimeBlock->activePairCount8084--;
-        if (trailingDwordsToMove != 0) {
-          for (; trailingDwordsToMove != 0; trailingDwordsToMove--) {
-            pairRecordCursor->pairKey = copySourceCursor->pairKey;
-            copySourceCursor = (SelectionPlayerPairRecord *)&copySourceCursor->pairValue;
-            pairRecordCursor = (SelectionPlayerPairRecord *)&pairRecordCursor->pairValue;
-          }
+        for (; trailingDwordsToMove != 0; trailingDwordsToMove--) {
+          *copyTargetDword = *copySourceDword;
+          copySourceDword++;
+          copyTargetDword++;
         }
         if (playerRuntimeId == g_LocalPlayerRuntimeId) {
           inGameRuntimeRoot->localPlayerPairCount0BA4--;

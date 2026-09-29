@@ -63,7 +63,7 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
   OffscreenRenderResult failureResult;
   
   /* 0x200-byte asset header, one 0x20-byte subresource entry, then the pixels */
-  assetBytesOrPixelsLeft = outputWidth * outputHeight * 4 + 0x220;
+  assetBytesOrPixelsLeft = outputWidth * outputHeight * 4 + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
   textureAllocation = g_MemoryApi.alloc(assetBytesOrPixelsLeft);
   assetOrDepthBuffer = (int32_t *)textureAllocation.payloadOrError;
   if (!textureAllocation.failed) {
@@ -92,7 +92,7 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
     /* table descriptor at +0xB0: one subresource, no palette banks, entry table at +0x200 */
     assetOrDepthBuffer[0x2c] = 1;
     assetOrDepthBuffer[0x2d] = 0;
-    assetOrDepthBuffer[0x2e] = 0x200;
+    assetOrDepthBuffer[0x2e] = GFX_ASSET_HEADER_SIZE;
     /* the entry: logical and pixel size, origin 0/0, paletteIndex -1 (ARGB texels), data at +0x220 */
     assetOrDepthBuffer[0x80] = outputWidth;
     assetOrDepthBuffer[0x81] = outputHeight;
@@ -101,7 +101,7 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
     assetOrDepthBuffer[0x84] = 0;
     assetOrDepthBuffer[0x85] = 0;
     assetOrDepthBuffer[0x82] = -1;
-    assetOrDepthBuffer[0x83] = 0x220;
+    assetOrDepthBuffer[0x83] = GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET;
     depthAllocation = g_MemoryApi.alloc(outputHeight * outputWidth * 4);
     zeroCursorOrDepthBuffer = (int32_t *)depthAllocation.payloadOrError;
     if (!depthAllocation.failed) {
@@ -142,7 +142,8 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
         }
         GraphicsPrimitiveQueue_RadixSortForRendering(GRAPHICS_STATE_DISABLED,queue);
         /* the pixels start at +0x220 (int32 index 0x88); rows are outputWidth pixels long */
-        SoftwareRenderer_DrawQueueAuxiliary(outputHeight,outputWidth,assetOrDepthBuffer + 0x88,queue);
+        SoftwareRenderer_DrawQueueAuxiliary(outputHeight,outputWidth,
+                                        assetOrDepthBuffer + GFX_SINGLE_SUBRESOURCE_PIXELS_OFFSET / 4,queue);
       }
       /* restore the caller's depth buffer and epoch, free the temporary one */
       assetOrDepthBuffer = g_SoftwareDepthBuffer;
@@ -151,7 +152,9 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
       g_SoftwareDepthBuffer = savedDepthBuffer;
       g_SoftwareDepthEpoch = savedDepthEpoch;
       g_MemoryApi.free(assetOrDepthBuffer);
-      return THANDOR_BITCAST(uint64_t, OffscreenRenderResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, textureAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
+      /* success: the asset pointer with CF clear */
+      return THANDOR_BITCAST(uint64_t, OffscreenRenderResult,
+                             THANDOR_BITCAST(ArenaAllocResult, uint64_t, textureAllocation) & 0xffffffff);
     }
     g_MemoryApi.free(assetOrDepthBuffer);
     assetOrDepthBuffer = zeroCursorOrDepthBuffer;

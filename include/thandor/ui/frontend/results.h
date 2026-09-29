@@ -23,6 +23,24 @@
 #define TEXT_ID_RESULTS_PLAYER 0x21B4
 #define TEXT_ID_RESULTS_FACTION 0x21B5
 #define TEXT_ID_RESULTS_VALUE_TEMPLATE 0x21C4
+#define TEXT_ID_RESULTS_FIELD_HEADER_BASE 0x21B6 /* + n for faction-field column n (0..9) */
+#define TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE1 0x21C1 /* exploredTerrainPercent */
+#define TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE2 0x21C2 /* technology count and the relation counters */
+#define TEXT_ID_RESULTS_FIELD_VALUE_TEMPLATE3 0x21C3 /* the two resource components */
+/* End-of-game results title: selector 0 = level title, selector 1 = elapsed time (Frontend_MainLoop). */
+#define TEXT_ID_RESULTS_TITLE_TEMPLATE 0x21C0
+/* FrontendResultsColumnSequenceControl68.modeFlags bit 0: graph (factionWeightRaster) instead of the table. */
+#define FRONTEND_RESULTS_MODE_GRAPH 0x1
+/* Column types of the results table (columnTypes0..); each advances by its g_FrontendResultsColumnAdvance*. */
+#define FRONTEND_RESULTS_COLUMN_SPACER0 0
+#define FRONTEND_RESULTS_COLUMN_SPACER1 1
+#define FRONTEND_RESULTS_COLUMN_COLOUR 2
+#define FRONTEND_RESULTS_COLUMN_ECONOMY 3
+#define FRONTEND_RESULTS_COLUMN_MILITARY 4
+#define FRONTEND_RESULTS_COLUMN_POINTS 5
+#define FRONTEND_RESULTS_COLUMN_PLAYER 6
+#define FRONTEND_RESULTS_COLUMN_FACTION 7
+#define FRONTEND_RESULTS_COLUMN_FACTION_FIELD 8 /* 8..0x11: faction record fields +0x98..+0xBC */
 /* Results graph: g_GameStatTableImage holds one 0x38-byte sample (7 factions x 2 dwords) every 128 simulation
    ticks. */
 #define RESULTS_STAT_SAMPLE_BYTES 0x38

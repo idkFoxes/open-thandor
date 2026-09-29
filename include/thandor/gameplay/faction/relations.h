@@ -18,6 +18,15 @@
    PlayerPairList_* functions ignore a list whose count has reached this value. */
 #define PLAYER_PAIR_LIST_CAPACITY 4096
 
+/* Relation state nibbles (GameFactionRuntime_GetPackedStateNibble, 0..11): three tiers 0-3, 4-7 and 8-10 with
+   the pending states 2, 5 and 9 and the top states 3, 6 and 10; 11 is FACTION_RELATION_MERGE. */
+#define FACTION_RELATION_STATE_FRIENDLY 4 /* states 4 and up: same bloc (GameFactionRelations_BuildEligibleFactionMask) */
+#define FACTION_RELATION_STATE_ALLIED 8   /* states 8 and up: allied; the game ends when no two active factions are below */
+/* GameFactionRuntimeImageTail.relationUiFlags (from the level tail +0x318): relation drift freezes */
+#define FACTION_RELATION_FREEZE_ALLIED 0x1   /* states 8 and up stay */
+#define FACTION_RELATION_FREEZE_FRIENDLY 0x2 /* states 4 and up stay */
+#define FACTION_RELATION_FREEZE_ALL 0x4
+
 /* 0x0053C010 */
 void GameFactionRelations_UpdateAllPairsForFaction
           (FactionRuntimeIndex sourceFactionIndex,WorldRuntimeContext *worldRuntime);

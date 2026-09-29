@@ -60,6 +60,8 @@ typedef struct GraphicsObject {
 #define GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK 0x80000000u
 #define GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS 16u
 #define GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE 4
+/* Entries of the g_CursorInputEvents ring (read by GraphicsCursor_ConsumeNextInputEvent). */
+#define GRAPHICS_CURSOR_INPUT_EVENT_CAPACITY 256
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

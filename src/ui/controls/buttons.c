@@ -16,8 +16,7 @@
 */
 /* Rewritten from the assembly (0x004B1D20): a depth-first walk that pushes each node's next
    sibling on the machine stack before descending; the decompiler kept only one level. */
-static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node)
-{
+static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node) {
   while (node != UI_NODE_NONE) {
     if (node->vtable == (UiNodeVtable *)&g_UiSpriteButtonControlVtable) {
       UiSpriteButtonControl_AdvanceAnimation((UiSpriteButtonControl *)node);
@@ -196,7 +195,8 @@ void UiSpriteButtonControl_NonRightPress
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
+          control->activationSoundId != 0) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -222,7 +222,8 @@ void UiSpriteButtonControl_NonRightPress
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
+          control->activationSoundId != 0) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -271,7 +272,8 @@ void UiSpriteButtonControl_NonRightRelease
       control->animationFrameOffset = 0;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+      if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0 &&
+          control->activationSoundId != 0) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -317,8 +319,7 @@ void UiSpriteButtonControl_NonRightDrag
         pointerInside = g_GraphicsTextureSourceTestOpaquePixel
                           (pointerY,pointerX,(control->selectable).base.top,
                            (control->selectable).base.left,
-                           control->normalSubresourceStartOrDescriptor,control->primaryTextureSource
-                          );
+                           control->normalSubresourceStartOrDescriptor,control->primaryTextureSource);
       }
       else {
         pointerInside = g_GraphicsTextureSourceTestOpaquePixel
@@ -377,8 +378,8 @@ UiNodeBase * UiSpriteButtonControl_HitTestOpaque
       }
       spritePixelHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,(control->selectable).base.top,
-                         (control->selectable).base.left,control->normalSubresourceStartOrDescriptor
-                         ,control->primaryTextureSource);
+                         (control->selectable).base.left,control->normalSubresourceStartOrDescriptor,
+                         control->primaryTextureSource);
     }
     else {
       spritePixelHit = g_GraphicsTextureSourceTestOpaquePixel
@@ -415,8 +416,7 @@ void UiImageActionControl_DrawImageAndChildren
   int imageTop;
   bool accessFailed;
 
-  if (((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && (control->textureSource != NULL))
-  {
+  if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 && control->textureSource != NULL) {
     accessFailed = g_GraphicsFramebufferBeginAccess();
     if (!accessFailed) {
       if ((control->displayFlags & UI_IMAGE_ACTION_STRETCH) == 0) {
@@ -456,8 +456,8 @@ void UiImageActionControl_DrawImageAndChildren
                     (clipTop,clipLeft,clipBottom,clipRight,imageBottom,imageLeft,imageTop,control->base.left,
                      UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB,g_FramebufferAccess);
           g_GraphicsFramebufferFillRectArgb
-                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,control->base.right,imageTop,imageLeft + drawWidth,
-                     UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB,g_FramebufferAccess);
+                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,control->base.right,imageTop,
+                     imageLeft + drawWidth,UI_IMAGE_ACTION_LETTERBOX_BAR_ARGB,g_FramebufferAccess);
           g_GraphicsTextureSourceStretchDirectColorBilinear
                     (scaledHeight,control->letterboxWidth,imageTop,imageLeft,control->subresource,
                      control->textureSource,g_FramebufferAccess);
@@ -554,7 +554,7 @@ void UiConditionalActionControl_DrawClipped
   if ((control->lineCount != 0) &&
      (accessFailed = g_GraphicsFramebufferBeginAccess(), !accessFailed)) {
     backgroundSubresource = UI_TEXT_BOX_SUBRESOURCE_INTERIOR;
-    if ((control->base.layoutWidth == 416) && (control->base.layoutHeight == 58)) {
+    if (control->base.layoutWidth == UI_TEXT_BOX_WIDE_WIDTH && control->base.layoutHeight == UI_TEXT_BOX_WIDE_HEIGHT) {
       backgroundSubresource = UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND;
     }
     cornerSize = g_GraphicsTextureSourceGetLogicalSize(UI_TEXT_BOX_SUBRESOURCE_TOP_LEFT,g_UiWindowTextureSource);
@@ -575,8 +575,9 @@ void UiConditionalActionControl_DrawClipped
                 (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,control->base.left,
                  UI_TEXT_BOX_SUBRESOURCE_BOTTOM_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,innerWidthOrRight + control->base.left,
-                 UI_TEXT_BOX_SUBRESOURCE_BOTTOM_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,
+                 innerWidthOrRight + control->base.left,UI_TEXT_BOX_SUBRESOURCE_BOTTOM_RIGHT,g_UiWindowTextureSource,
+                 g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,UI_TEXT_BOX_SUBRESOURCE_TOP,innerWidthOrRight,0,cornerWidth,
                  &control->base);
@@ -595,7 +596,8 @@ void UiConditionalActionControl_DrawClipped
     }
     else {
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,backgroundSubresource,innerHeightOrBottom,innerWidthOrRight,0,0,&control->base);
+                (clipTop,clipLeft,clipBottom,clipRight,backgroundSubresource,innerHeightOrBottom,innerWidthOrRight,0,0,
+                 &control->base);
       innerWidthOrRight = innerWidthOrRight - cornerWidth;
       innerHeightOrBottom = innerHeightOrBottom - cornerHeight;
     }
@@ -630,8 +632,8 @@ void UiConditionalActionControl_DrawClipped
     }
     else {
       lineIndexOrCount = control->lineCount;
-      if (4 < lineIndexOrCount) {
-        lineIndexOrCount = 4;
+      if (UI_TEXT_BOX_WIDE_MAX_LINES < lineIndexOrCount) {
+        lineIndexOrCount = UI_TEXT_BOX_WIDE_MAX_LINES;
       }
       do {
         RichTextCommandStream_DrawSingleLine

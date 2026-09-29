@@ -19,7 +19,9 @@
 #define ARMY_ASSET_LINKED_ID_COUNT 16
 /* Bits of an army record's flags dword (+0x14) that pick the map-editor placement lists: unit placement
    (g_UiCommandModeG 3, g_UiCommandModeGArmyAssetId) cycles records with 0x0100 set and 0x0200 clear, object
-   placement (mode 4, g_UiCommandMode4ArmyAssetId) records with both set (ArmyAssetRegistry_HasId*). */
+   placement (mode 4, g_UiCommandMode4ArmyAssetId) records with both set (ArmyAssetRegistry_HasNo*WithId). */
+/* Bit 0 of the flags: the record is enabled (buildable); ArmyAssetRegistry_FindEnabledById. */
+#define ARMY_ASSET_FLAG_ENABLED 0x1
 #define ARMY_ASSET_FLAG_EDITOR_PLACEABLE 0x100
 #define ARMY_ASSET_FLAG_EDITOR_OBJECT 0x200
 /* The placement lists search ids 0..0xFFF and wrap around at 0x1000. */
@@ -91,7 +93,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(Arm
 ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId);
 
 /* 0x0051B4A0 */
-StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase);
+StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHeader *assetBase);
 
 /* 0x00571D90 */
 uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId);
@@ -100,15 +102,15 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
 ArmyAssetLookupResult ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId);
 
 /* 0x00571910 */
-uint8_t ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId);
+uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId);
 
 /* 0x00571B50 */
-uint8_t ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId);
+uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId);
 
 /* 0x00571980 */
-uint8_t ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId);
+uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId);
 
 /* 0x00571BC0 */
-uint8_t ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId);
+uint8_t ArmyAssetRegistry_HasNoPlaceableObjectWithId(ArmyAssetId recordId);
 
 #endif /* THANDOR_ASSETS_ARMY_CATALOG_H */

@@ -32,6 +32,15 @@
 #define MODEL_TRIANGLE_VERTEX_CACHE_FLAGS 0x8E00 /* the bits a projected vertex's cached colour was computed for */
 /* Marker in a mesh vertex's projected X (+0x30): not transformed and projected yet for this draw */
 #define MODEL_VERTEX_NOT_PROJECTED ((int)0x80000000)
+/* Marker the alternate renderer stores in the projected X of a vertex in front of the near plane */
+#define MODEL_VERTEX_NEAR_CLIPPED 0x7fffffff
+/* Stride of the vertex and triangle records of a mesh (both 0x40 bytes; GraphicsTriangleInput uses 0x38) */
+#define MODEL_MESH_RECORD_SIZE 0x40
+/* ModelMeshGroupHeader.groupFlags bits */
+#define MODEL_MESH_GROUP_FACE_VIEWER 1 /* ModelNodeRuntime_BuildViewFacingRotation before the draw */
+#define MODEL_MESH_GROUP_BILLBOARD 2   /* ModelNodeRuntime_BuildBillboardRotation before the draw */
+/* ModelMeshHeader.flags bit */
+#define MODEL_MESH_SOFT_SHADOW 1 /* shadow silhouette drawn before the blur (graphics/render/shading.c); clear: after */
 
 /* Header of a model mesh group (ModelMeshGroupAddress32 of ModelRender_DrawMeshGroups*); the meshes follow
    at +0x20, each starting with its byte size and group mask. */
@@ -39,7 +48,7 @@ typedef struct ModelMeshGroupHeader {
     uint32_t unknown00;
     int meshCount;           /* +0x04 */
     uint32_t unknown08;
-    uint32_t groupFlags0C;   /* +0x0C, read into the mask local before the node's meshGroupMask replaces it */
+    uint32_t groupFlags;     /* +0x0C MODEL_MESH_GROUP_* */
     uint8_t unknown10_1F[16];
 } ModelMeshGroupHeader;
 /* Header of one mesh of a group (ModelRender_SubmitMeshTriangles*); the vertices follow at +0x20, then the
@@ -49,7 +58,7 @@ typedef struct ModelMeshHeader {
     uint32_t groupMask;      /* +0x04 */
     int vertexCount;         /* +0x08 */
     int triangleCount;       /* +0x0C */
-    uint32_t flags10;        /* +0x10 bit 0 selects the shadow silhouette pass (graphics/render/shading.c) */
+    uint32_t flags;          /* +0x10 MODEL_MESH_SOFT_SHADOW */
     uint8_t unknown14_1F[12];
 } ModelMeshHeader;
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
@@ -89,7 +98,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
 void ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode);
 
 /* 0x004BD7E0 */
-int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *modelNodeRuntime);
+int32_t ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *triangle);
 
 /* 0x004CC710 */
 PackedArgb32 ModelRender_ComputeVertexIntensityDefaultPath (PackedArgb32 vertexPackedColor,int *vertexPositionQ12, GraphicsDistanceAttenuationTableAddress32 distanceAttenuationTable, PackedArgb32 scenePackedColor0,PackedArgb32 scenePackedColor1, GraphicsFixedVec3 *lightDirectionQ12,PackedArgb32 materialPackedColor, GraphicsFixedVec3 *surfaceNormalQ12);

@@ -39,7 +39,8 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
 
 /* 0x005616D0 */
 void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
+          (uint32_t playerRuntimeId,uint32_t unusedCommandValue1,uint32_t unusedCommandValue2,
+          uint32_t unusedCommandValue3);
 
 /* 0x00561830 */
 void TerrainEditBuffer_CopyCellMaterialBytes
@@ -53,7 +54,8 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
 
 /* 0x005619A0 */
 void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
+          (uint32_t playerRuntimeId,uint32_t unusedCommandValue1,uint32_t unusedCommandValue2,
+          uint32_t unusedCommandValue3);
 
 /* 0x00561DC0 */
 void TerrainEditBuffer_ConvertHeightsToDeltas

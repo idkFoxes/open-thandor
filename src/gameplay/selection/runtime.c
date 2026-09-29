@@ -23,7 +23,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
           UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
-          RuntimeModelFactionPrefix10 *runtimeEntry)
+          RuntimeModelFactionPrefix *runtimeEntry)
 
 {
   uint32_t childDefinitionAddress;
@@ -58,11 +58,10 @@ void SelectionPanel_RenderArmyRuntimeMetrics
        special case whose condition fails) ends in the generic frame after this block */
     if (runtimeKindOrValue != 0) {
       if (runtimeKindOrValue == 1) {
-        if (((armyRuntime->classState).classStateB8 == 1) &&
-           ((((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
-             definitionValue9C_4C == 0xd ||
-            (((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
-             definitionValue9C_4C == 0xb)))) {
+        /* a factory (class 13) or production building (class 11) that is building: its build progress */
+        if (((armyRuntime->classState).classStateB8 == ARMY_FACTORY_STATE_BUILDING) &&
+           ((armyRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13 ||
+            (armyRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_11)))) {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
@@ -96,16 +95,17 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           SelectionPanel_DrawSolidCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
-          goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
+          goto EndFramebufferAccess;
         }
       }
       else if (runtimeKindOrValue < 3) {
-        childModelRuntime = armyRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
-        if (((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != NULL)) &&
+        childModelRuntime = armyRuntime->attachments[0].childModelRuntimeOrSavedOffset;
+        if (((armyRuntime->attachmentCount != 0) && (childModelRuntime != NULL)) &&
            ((childDefinitionAddress = (childModelRuntime->definitionOrSavedId).savedIdOrOffset,
-            ((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 5 ||
-            (((((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 6 || (((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 7)) ||
-             (((ModelDefinitionRuntimeSemanticView280 *)childDefinitionAddress)->runtimeClassId4C == 8)))))) {
+            ((ModelDefinition *)childDefinitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_05 ||
+            (((((ModelDefinition *)childDefinitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_06 ||
+               (((ModelDefinition *)childDefinitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_07)) ||
+             (((ModelDefinition *)childDefinitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_08)))))) {
           /* a weapon: its reload countdown against the weapon definition's reload ticks */
           workingValue = ((ModelRuntimeWeaponAimStateView200 *)childModelRuntime)->attachmentReloadCountdownTicks24;
           capacityOrMetric = ((ModelRuntimeWeaponAimStateView200 *)childModelRuntime)->modelDefinition->attachmentReloadTicks;
@@ -148,16 +148,17 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           SelectionPanel_DrawSolidCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
-          goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
+          goto EndFramebufferAccess;
         }
       }
       else if (runtimeKindOrValue == 3) {
-        childModelRuntime = armyRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
-        if ((armyRuntime->attachmentCount0C != 0) && (childModelRuntime != NULL)) {
+        childModelRuntime = armyRuntime->attachments[0].childModelRuntimeOrSavedOffset;
+        if ((armyRuntime->attachmentCount != 0) && (childModelRuntime != NULL)) {
           armyRuntime = (ModelRuntimeSlot *)(childModelRuntime->definitionOrSavedId).savedIdOrOffset;
           runtimeKindOrValue = 0xffffffff;
           workingValue = 7;
-          if (armyRuntime->definitionValue9C_4C == 9) {
+          /* armyRuntime holds the child's definition from here on */
+          if (((ModelDefinition *)armyRuntime)->runtimeClassId4C == MODEL_RUNTIME_CLASS_09) {
             /* unsigned minimum of the child's eight attachment reload ticks, then at least classState80 (signed) */
             do {
               if (((ModelRuntimeWeaponAimStateView200 *)childModelRuntime)->attachmentReloadTicks[workingValue] < runtimeKindOrValue) {
@@ -214,13 +215,12 @@ void SelectionPanel_RenderArmyRuntimeMetrics
             SelectionPanel_DrawSolidCappedBar
                       (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
                        panelRight,SELECTION_PANEL_CELL_RIGHT_BAR);
-            goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
+            goto EndFramebufferAccess;
           }
         }
       }
       else if ((3 < runtimeKindOrValue) &&
-              (((ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset)->
-               definitionValue9C_4C == 0x16)) {
+              (armyRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_22)) {
         if (((ArmyRuntimeArticulatedContactState14 *)&(armyRuntime->classState).classStateAC)->
             terrainContactMode == ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
@@ -260,7 +260,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                     (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
-        else if (((armyRuntime->classState).classStateEC & 0xc0) == 0) {
+        else if (((armyRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
           activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
           workingValue = (int)(activeTotalMetrics >> 0x20);
           if (workingValue == 0) {
@@ -349,10 +349,10 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                     (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,
                      panelRight,runtimeKindOrValue,halfFilledSegments,SELECTION_PANEL_CELL_RIGHT_SEGMENTS);
         }
-        goto SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn;
+        goto EndFramebufferAccess;
       }
     }
-    if (((armyRuntime->classState).classStateEC & 0xc0) == 0) {
+    if (((armyRuntime->classState).stateFlags & (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) == 0) {
       activeTotalMetrics = ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(runtimeEntry);
       workingValue = (int)(activeTotalMetrics >> 0x20);
       if (workingValue == 0) {
@@ -455,7 +455,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
               (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextY,topRightAdvance.nextY,panelRight,
                SELECTION_PANEL_CELL_RIGHT_BAR);
   }
-SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
+EndFramebufferAccess:
   g_GraphicsFramebufferEndAccess();
   return;
 }
@@ -470,7 +470,7 @@ void InGameSelection_RebuildOwnedClass16Selection
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
 
 {
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   GameEntityRuntime *entityRuntime;
   InGameRuntimeRootImageC3E4 *inGameRoot;
 
@@ -507,7 +507,7 @@ void InGameSelection_RebuildOwnedClass16Selection
    and refreshes the local selection panels. Nothing is added when the army has no model node.
 */
 void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,uint32_t unusedPayload2,
           RuntimeToken armyRuntimeIndex)
 
 {
@@ -535,7 +535,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
    A lone class-0x0D entry takes the point into its definition record instead and the selection is cleared.
 */
 void InGamePlayerSelection_ApplyPositionCommandVariantB
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12)
 
 {
@@ -551,7 +551,7 @@ void InGamePlayerSelection_ApplyPositionCommandVariantB
    waypoint for every entry of the player's selection (formation offsets as in the plain move).
 */
 void InGamePlayerSelection_ApplyPositionCommand
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12)
 
 {
@@ -568,7 +568,7 @@ void InGamePlayerSelection_ApplyPositionCommand
    and for armies without a model node.
 */
 void InGamePlayerSelection_SelectArmyRuntimeIndex
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,uint32_t unusedPayload2,
           RuntimeToken armyRuntimeIndex)
 
 {
@@ -602,8 +602,8 @@ void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,C
    In-game command handler 0xE10 (key S, stop): resets the movement of the player's selection, drops its
    class-0x16 entries and recenters the formation offsets (SelectionRuntime_ResetMovementPruneAndRecenterEntries).
 */
-void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3)
 
 {
   SelectionRuntime_ResetMovementPruneAndRecenterEntries
@@ -618,8 +618,8 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId player
    member).
 */
 void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3)
 
 {
   SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
@@ -633,8 +633,8 @@ void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
    selection and clears flag 0x10 of their dword +0x2C.
 */
 void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3)
 
 {
   SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
@@ -648,8 +648,8 @@ void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
    player's selection (SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries).
 */
 void PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3)
 
 {
   SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries
@@ -730,16 +730,16 @@ void SelectionPlayerRuntime_MovePrimarySelectionBy
     (target->common).damageState.trackedCoordinate0Q12 = newWorldXQ12;
     (target->common).damageState.trackedCoordinate1Q12 = newWorldYQ12;
     (modelNode->worldTransform).translation.x = newWorldXQ12;
-    placementContactKind = ((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->placementContactKindIndex278;
+    placementContactKind = ((ModelDefinition *)definitionAddress)->placementContactKindIndex278;
     (modelNode->worldTransform).translation.y = newWorldYQ12;
     if (placementContactKind == ARMY_PLACEMENT_CONTACT_KIND_ARTICULATED_SUSPENSION) {
       ((modelNode->runtimePayload).armyRuntime)->movementTarget0Q12 = 0x7fffffff;
     }
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
-              (((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->placementHeightOffsetQ12,newWorldYQ12,newWorldXQ12,modelNode,
+              (((ModelDefinition *)definitionAddress)->placementHeightOffsetQ12,newWorldYQ12,newWorldXQ12,modelNode,
                worldRuntime);
     ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
-    ModelNodeRuntime_UpdateDepthBinMasks(((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->placementRadiusOrClearanceDC,modelNode);
+    ModelNodeRuntime_UpdateDepthBinMasks(((ModelDefinition *)definitionAddress)->placementRadiusOrClearanceDC,modelNode);
   }
   return;
 }
@@ -1233,7 +1233,7 @@ bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 bool SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
 
 {
-  int *classRecord;
+  ModelRuntimeSlot *classRecord;
   int entriesRemaining;
   int activeEntryCount;
   GameEntityRuntime **selectionEntryCursor;
@@ -1245,15 +1245,14 @@ bool SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerInde
   do {
     currentEntry = *selectionEntryCursor;
     if (currentEntry != NULL) {
-      /* classRecord is the ModelRuntimeSlot: [0] its definition; classRecord[0x1c] = dword +0x70 */
-      classRecord = (currentEntry->common).ownership.definitionOrClassRecord;
+      classRecord = (currentEntry->common).ownership.definitionOrClassRecord; /* the model runtime */
       if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
         return true;
       }
-      if (((ModelRuntimeSlot *)classRecord)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C != 0x16) {
+      if (classRecord->definitionOrSavedId.runtimeDefinition->runtimeClassId4C != MODEL_RUNTIME_CLASS_22) {
         return true;
       }
-      if (classRecord[0x1c] != 0) {
+      if (classRecord->classLinkState.classState70 != 0) {
         activeEntryCount++;
       }
     }
@@ -1292,10 +1291,10 @@ bool SelectionInfo_TestAnyActiveOrSingleClass13(void)
       selectedEntryCount++;
       selectedDefinitionRecordAddress =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinitionRuntimeSemanticView280 *)selectedDefinitionRecordAddress)->runtimeValue18 != 0) {
+      if (((ModelDefinition *)selectedDefinitionRecordAddress)->accelerationPerTick18 != 0) {
         return false;
       }
-      selectedEntryIsClass13 = ((ModelDefinitionRuntimeSemanticView280 *)selectedDefinitionRecordAddress)->runtimeClassId4C == 0xd;
+      selectedEntryIsClass13 = ((ModelDefinition *)selectedDefinitionRecordAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13;
     }
     selectionEntryCursor++;
     entriesRemaining--;
@@ -1334,7 +1333,7 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
   while ((selectedEntity = *selectionEntryCursor, selectedEntity == NULL ||
          (selectedModelNode = (selectedEntity->common).ownership.modelNode,
          ((ModelRuntimeSlot *)(selectedEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-         runtimeDefinition->runtimeValue18 == 0)))
+         runtimeDefinition->accelerationPerTick18 == 0)))
   {
     selectionEntryCursor++;
     entriesRemaining--;
@@ -1343,14 +1342,14 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
       selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
       while ((*selectionEntryCursor == NULL ||
              (class13Definition = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord,
-             ((ModelDefinitionRuntimeSemanticView280 *)class13Definition)->runtimeClassId4C != 0xd))) {
+             ((ModelDefinition *)class13Definition)->runtimeClassId4C != MODEL_RUNTIME_CLASS_13))) {
         selectionEntryCursor++;
         entriesRemaining--;
         if (entriesRemaining == 0) {
           return true;
         }
       }
-      capabilityFlags = ((ModelDefinitionRuntimeSemanticView280 *)class13Definition)->classParameterC4;
+      capabilityFlags = ((ModelDefinition *)class13Definition)->classParameterC4;
       highBandIndex = 3;
       if (((capabilityFlags & 0x80) == 0) && (highBandIndex = 1, (capabilityFlags & 4) == 0)) {
         highBandIndex = 6;
@@ -1534,11 +1533,11 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
     if (*selectionEntryCursor != NULL) {
       currentEntityDefinition =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinitionRuntimeSemanticView280 *)currentEntityDefinition)->runtimeClassId4C == 0x16) {
+      if (((ModelDefinition *)currentEntityDefinition)->runtimeClassId4C == MODEL_RUNTIME_CLASS_22) {
         capabilityMask = capabilityMask | 8;
       }
-      else if (((ModelDefinitionRuntimeSemanticView280 *)currentEntityDefinition)->runtimeClassId4C == 0xd) {
-        capabilityMask = capabilityMask | ((ModelDefinitionRuntimeSemanticView280 *)currentEntityDefinition)->classParameterC4;
+      else if (((ModelDefinition *)currentEntityDefinition)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) {
+        capabilityMask = capabilityMask | ((ModelDefinition *)currentEntityDefinition)->classParameterC4;
       }
     }
     selectionEntryCursor++;
@@ -1649,10 +1648,10 @@ void SelectionPointerArray_ApplyPositionCommandVariantB
       selectedEntryCount++;
       entityDefinitionAddress =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinitionRuntimeSemanticView280 *)entityDefinitionAddress)->runtimeValue18 != 0) {
+      if (((ModelDefinition *)entityDefinitionAddress)->accelerationPerTick18 != 0) {
         return;
       }
-      if (((ModelDefinitionRuntimeSemanticView280 *)entityDefinitionAddress)->runtimeClassId4C == 0xd) {
+      if (((ModelDefinition *)entityDefinitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) {
         singleClass13Entry = (int *)*selectionEntryCursor;
       }
     }
@@ -1664,8 +1663,8 @@ void SelectionPointerArray_ApplyPositionCommandVariantB
     class13Record = (((GameEntityRuntime *)singleClass13Entry)->common).ownership.definitionOrClassRecord;
     ((ModelRuntimeSlot *)class13Record)->classLinkState.classState78 = targetWorldX;
     ((ModelRuntimeSlot *)class13Record)->classLinkState.classState7C = targetWorldY;
-    ((ModelRuntimeSlot *)class13Record)->classState.classStateEC =
-         ((ModelRuntimeSlot *)class13Record)->classState.classStateEC | 0x800;
+    ((ModelRuntimeSlot *)class13Record)->classState.stateFlags =
+         ((ModelRuntimeSlot *)class13Record)->classState.stateFlags | ARMY_MODEL_STATE_RALLY_POINT_SET;
     SelectionPointerArray_Clear32(selection);
   }
 }
@@ -1692,24 +1691,20 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
   ModelLookupEntryResult lookupEntry;
   ModelWorldPoint localPoint;
 
-  /* [6] is the dword at +0x18 (common.commandFlags / ArmyRuntimeSlot.movementStateFlags), [0xb] the one at
-     +0x2C (ArmyRuntimeSlot.commandModeFlags) */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = selectionEntries;
   do {
     currentEntity = *selectionEntryCursor;
     if ((currentEntity != NULL) &&
-       ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset & 2) == 0))
+       ((((ArmyRuntimeSlot *)currentEntity)->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0))
     {
       ArmyRuntime_ResetMovementStateFromModel((ArmyRuntimeSlot *)currentEntity);
-      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[0xb].savedIdOrOffset =
-           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[0xb].savedIdOrOffset &
-           0xffffffef;
-      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset =
-           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset &
-           0xfffffdff;
-      entryModelRuntime = ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)->modelRuntime;
-      if ((entryModelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId4C == 0x16) {
+      ((ArmyRuntimeSlot *)currentEntity)->commandModeFlags =
+           ((ArmyRuntimeSlot *)currentEntity)->commandModeFlags & 0xffffffef;
+      ((ArmyRuntimeSlot *)currentEntity)->movementStateFlags =
+           ((ArmyRuntimeSlot *)currentEntity)->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
+      entryModelRuntime = ((ArmyRuntimeSlot *)currentEntity)->modelRuntimeOrSavedOffset.modelRuntime;
+      if ((entryModelRuntime->definitionOrSavedId).runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_22) {
         *selectionEntryCursor = NULL;
         (entryModelRuntime->classState).classStateDC = 0;
       }
@@ -1727,10 +1722,10 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
     if (*selectionEntryCursor != NULL) {
       selectedEntryCount++;
       definitionAddress = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
-      if (((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->runtimeValue18 != 0) {
+      if (((ModelDefinition *)definitionAddress)->accelerationPerTick18 != 0) {
         return;
       }
-      if (((ModelDefinitionRuntimeSemanticView280 *)definitionAddress)->runtimeClassId4C == 0xd) {
+      if (((ModelDefinition *)definitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) {
         currentEntity = *selectionEntryCursor;
       }
     }
@@ -1740,8 +1735,8 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
   if ((selectedEntryCount == 1) && (currentEntity != NULL)) {
     class13Record = (currentEntity->common).ownership.definitionOrClassRecord;
     modelNodeRuntime = (currentEntity->common).ownership.modelNode;
-    ((ModelRuntimeSlot *)class13Record)->classState.classStateEC =
-         ((ModelRuntimeSlot *)class13Record)->classState.classStateEC & 0xfffff7ff;
+    ((ModelRuntimeSlot *)class13Record)->classState.stateFlags =
+         ((ModelRuntimeSlot *)class13Record)->classState.stateFlags & ~ARMY_MODEL_STATE_RALLY_POINT_SET;
     lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource);
     if (!lookupEntry.notFound) {
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
@@ -2710,17 +2705,14 @@ void SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries(GameEntit
   GameEntityRuntime *armyRuntime;
   int entriesRemaining;
 
-  /* [6] is the dword at +0x18 (common.commandFlags), [0xb] the one at +0x2C (ArmyRuntimeSlot.commandModeFlags) */
   entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     armyRuntime = *selectionEntries;
     if ((armyRuntime != NULL) &&
-       ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&armyRuntime->common)[6].savedIdOrOffset & 2)
-        == 0)) {
+       ((((ArmyRuntimeSlot *)armyRuntime)->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
       ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration((ArmyRuntimeSlot *)armyRuntime);
-      ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&armyRuntime->common)[0xb].savedIdOrOffset =
-           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&armyRuntime->common)[0xb].savedIdOrOffset &
-           0xffffffef;
+      ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags =
+           ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags & 0xffffffef;
     }
     selectionEntries = selectionEntries + 1;
     entriesRemaining--;
@@ -2921,7 +2913,7 @@ void SelectionPointerArray_ApplyType16MarkerCoordinates
           SelectionPointerArray32 *selection)
 
 {
-  int *modelRuntime;
+  ModelRuntimeLinkedChildSpawnAndBuildView200 *padRuntime;
   int markerSourceId;
   int entriesRemaining;
   int packedMarkerMatches;
@@ -2931,13 +2923,13 @@ void SelectionPointerArray_ApplyType16MarkerCoordinates
   do {
     /* entry -> model runtime (dword 0) -> definition */
     if ((*(int **)selection != NULL) &&
-       (modelRuntime = (int *)**(int **)selection,
-       ((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0x16)) {
+       (padRuntime = (ModelRuntimeLinkedChildSpawnAndBuildView200 *)**(int **)selection,
+       padRuntime->modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_22)) {
       markerSlotIndex = 0xc;
       /* one match counter per byte: lane 1 in bits 0-7, lane 2 in bits 8-15, lane 4 in bits 16-23 */
       packedMarkerMatches = 0;
       do {
-        markerSourceId = modelRuntime[markerSlotIndex + 0x1e];
+        markerSourceId = padRuntime->completedSecondaryArmyAssetIds78[markerSlotIndex];
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot0) {
           packedMarkerMatches = packedMarkerMatches + 1;
         }
@@ -2950,25 +2942,23 @@ void SelectionPointerArray_ApplyType16MarkerCoordinates
         markerSlotIndex--;
       } while (-1 < markerSlotIndex);
       if ((laneMask & 1) != 0) {
-        /* the three lane match counts are the low bytes of classStateDC (+0xDC..+0xDE) */
-        ((uint8_t *)&((ModelRuntimeSlot *)modelRuntime)->classState.classStateDC)[0] = (char)packedMarkerMatches;
-        modelRuntime[0x2e] = worldYQ12;
-        modelRuntime[0x2f] = worldXQ12;
-        modelRuntime[0x30] = heading16;
+        /* the lane's match count becomes its pending launch count; the point its launch target */
+        padRuntime->linkedChildPendingSpawnCountsDC.slot0 = (char)packedMarkerMatches;
+        padRuntime->linkedChildSpawnInheritedStateB8[0].inheritedValue70 = worldYQ12;
+        padRuntime->linkedChildSpawnInheritedStateB8[0].inheritedValue74 = worldXQ12;
+        padRuntime->linkedChildSpawnInheritedStateB8[0].inheritedValue78 = heading16;
       }
       if ((laneMask & 2) != 0) {
-        ((uint8_t *)&((ModelRuntimeSlot *)modelRuntime)->classState.classStateDC)[1] =
-             (char)((uint32_t)packedMarkerMatches >> 8);
-        modelRuntime[0x31] = worldYQ12;
-        modelRuntime[0x32] = worldXQ12;
-        modelRuntime[0x33] = heading16;
+        padRuntime->linkedChildPendingSpawnCountsDC.slot1 = (char)((uint32_t)packedMarkerMatches >> 8);
+        padRuntime->linkedChildSpawnInheritedStateB8[1].inheritedValue70 = worldYQ12;
+        padRuntime->linkedChildSpawnInheritedStateB8[1].inheritedValue74 = worldXQ12;
+        padRuntime->linkedChildSpawnInheritedStateB8[1].inheritedValue78 = heading16;
       }
       if ((laneMask & 4) != 0) {
-        ((uint8_t *)&((ModelRuntimeSlot *)modelRuntime)->classState.classStateDC)[2] =
-             (char)((uint32_t)packedMarkerMatches >> 16);
-        modelRuntime[0x34] = worldYQ12;
-        modelRuntime[0x35] = worldXQ12;
-        modelRuntime[0x36] = heading16;
+        padRuntime->linkedChildPendingSpawnCountsDC.slot2 = (char)((uint32_t)packedMarkerMatches >> 16);
+        padRuntime->linkedChildSpawnInheritedStateB8[2].inheritedValue70 = worldYQ12;
+        padRuntime->linkedChildSpawnInheritedStateB8[2].inheritedValue74 = worldXQ12;
+        padRuntime->linkedChildSpawnInheritedStateB8[2].inheritedValue78 = heading16;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);

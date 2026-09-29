@@ -25,6 +25,7 @@
 #define ARMY_MOVEMENT_TARGET_FOLLOWING 0x20 /* started by ArmyRuntimeCommand_UpdateTargetFollowingState; a new
                                                command resets the move first */
 #define ARMY_MOVEMENT_DIRECT 0x80           /* ArmyRuntime_StartDirectMoveCommand: orders are never queued */
+#define ARMY_MOVEMENT_SPECIAL_BEHAVIOR 0x100 /* class 18: AiUnitBehavior_UpdateSpecialClass12Entity runs each tick */
 #define ARMY_MOVEMENT_ROUTED 0x200          /* routed move command: kept by the reset/target-following paths */
 #define ARMY_MOVEMENT_MIRROR_TARGET 0x400   /* ArmyRuntime_SetPendingMoveTarget also sets movementTargetWorld*Q12 */
 /* retryCountdown after every route (re)build; while it is non-zero and the model has not moved,

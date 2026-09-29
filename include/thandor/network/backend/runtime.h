@@ -29,7 +29,7 @@
 #define TEXT_ID_NETWORK_HOST_LOST 0xFF01
 
 /* Player snapshot exchange at session start (FrontendNetwork_HandleHandshakeAndPlayerStatePackets,
-   FrontendNetwork_HostTickCommandAndSnapshotTransfer): each client sends its 0x1300-byte snapshotPayloadB0_13AF
+   FrontendNetwork_HostTickCommandAndSnapshotTransfer): each client sends its 0x1300-byte snapshotPayload
    in chunks of UI_TRANSFER_CHUNK_PAYLOAD_BYTES (0x8000A packets); the last chunk starts at 0x1220 and holds the
    remaining 0xE0 bytes. The host asks for the next chunk with 0x10009 and repeats the request after 4 host ticks
    without an answer; it then packs every player's flags dword (+ payload when complete) and PCK-encodes it. */

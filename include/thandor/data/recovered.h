@@ -119,7 +119,7 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 #define THANDOR_ADDR(object, offset) ((uintptr_t)&(object) + (int)(offset))
 
 /* ---- ui/core: the path of the window class image, after the root-stack action page. */
-#define u_engine_winclass_gfx_004b0eb8 (*(uint16_t (*)[20])THANDOR_IMAGE(0x004b0eb8))
+#define g_UiWindowClassTexturePathUtf16 (*(uint16_t (*)[20])THANDOR_IMAGE(0x004b0eb8))
 
 /* ---- gameplay/selection: transient effect markers over the owned entities (count:
    g_InGameOwnedEntityTransientEffectMarkerCount). */

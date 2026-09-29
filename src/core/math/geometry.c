@@ -61,7 +61,7 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
     return result;
   }
   weightA = (int)(numerator / denominatorShifted);
-  if (weightA < 0 || weightA > 0x10000) {
+  if (weightA < 0 || weightA > TRIANGLE_BARYCENTRIC_WEIGHT_ONE_Q16) {
     return result;
   }
   numerator = (int64_t)(vertexAY - pointY) * vertexCX + (int64_t)(vertexCY - vertexAY) * pointX +
@@ -71,7 +71,7 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
     return result;
   }
   weightB = (int)(numerator / denominatorShifted);
-  if (weightB < 0 || weightA + weightB > 0x10000) {
+  if (weightB < 0 || weightA + weightB > TRIANGLE_BARYCENTRIC_WEIGHT_ONE_Q16) {
     return result;
   }
   result.weightVertexB_Q12 = weightB >> 4; /* EAX */

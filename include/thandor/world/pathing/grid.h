@@ -71,7 +71,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
 
 /* 0x00533E70 */
 bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
-          (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair);
+          (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair *targetRuntimePair);
 
 /* 0x005332C0 */
 GridScratchAllocResult GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid);
@@ -98,7 +98,7 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
 /* 0x005369A0 */
 WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
-          EntityPathingRouteEntityRuntimeView10 *routeEntityRuntime);
+          EntityPathingRouteEntityRuntimeView *routeEntityRuntime);
 
 /* 0x00533D60 */
 bool GridScratch_TestWorldPointReachability(uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,

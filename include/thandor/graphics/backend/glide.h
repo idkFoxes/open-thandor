@@ -18,6 +18,15 @@
    real surface pointers and are ignored). */
 #define GLIDE_CURSOR_PRESENT_SENTINEL ((IDirectDrawSurface3 *)0x1)
 
+/* glide.h GrResolution: one 16-byte entry of the list grQueryResolutions writes (Glide3_InitAndEnumerate,
+   GraphicsGlide3_ApplyDisplayModeAndInitializeResources). */
+typedef struct GrResolution {
+  int32_t resolution;      /* GR_RESOLUTION_* */
+  uint32_t refresh;        /* GR_REFRESH_*: 0 = 60 Hz .. 8 = 120 Hz (g_GlideRefreshRatesHz) */
+  int32_t numColorBuffers;
+  int32_t numAuxBuffers;
+} GrResolution;
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005801B0 */

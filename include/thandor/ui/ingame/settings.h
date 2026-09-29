@@ -27,6 +27,9 @@
 #define INGAME_ACTION_MESSAGE_MOVIE_VOLUME 0x121A /* messageMovieVolumeSlider, needs effects on */
 /* Highest per-player simulation step batch (InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks) */
 #define INGAME_SIMULATION_STEP_TICKS_MAX 5
+/* Minimap view values restored when automatic zoom / rotation is switched off */
+#define INGAME_MINIMAP_DEFAULT_SCALE_Q12 0x800 /* 0.5 */
+#define INGAME_MINIMAP_DEFAULT_ROTATION_ANGLE 0x2000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056AB50 */

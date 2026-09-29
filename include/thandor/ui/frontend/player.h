@@ -30,6 +30,15 @@
 #define FRONTEND_PLAYER_MESSAGE_TEXT_OFFSET 4
 #define PLAYER_CHAT_TEXT_BYTES 0x30
 #define TEXT_ID_CHAT_MESSAGE 0xFF07 /* rich text: selector 0 = sender name, selector 1 = message */
+/* Recipient mask of a chat line to everybody (bits 8+faction and 16+player); the lobby ignores the mask. */
+#define PLAYER_CHAT_RECIPIENTS_ALL 0xFFFFFF00
+/* In-game chat staging: the write offset (low byte of packedSelectionState809C) advances 12 bytes per piece
+   and stops at the last piece of the 0x30-byte line. */
+#define PLAYER_CHAT_PIECE_BYTES 0xC
+#define PLAYER_CHAT_LAST_PIECE_OFFSET 0x24
+/* The player record whose playerName field name points at (loops that walk the records by their names). */
+#define FRONTEND_PLAYER_RECORD_OF_NAME(name) \
+  ((FrontendPlayerRuntimeRecord *)((uint8_t *)(name) - offsetof(FrontendPlayerRuntimeRecord,playerName)))
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00548CD0 */
@@ -57,11 +66,11 @@ bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
 void FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken);
 
 /* 0x00544130 */
-void FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
+void FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x005442B0 */
-void FrontendPlayerRuntime_MarkFlag08ById
+void FrontendPlayerRuntime_MarkLevelReceivedById
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x00544300 */
@@ -69,15 +78,15 @@ void FrontendPlayerRuntime_XorStateMaskByPlayerId
           (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t stateMask);
 
 /* 0x00544360 */
-void FrontendPlayerRuntime_MarkFlag04ById
+void FrontendPlayerRuntime_MarkLevelLoadedById
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x00544820 */
-void FrontendPlayerRuntime_MarkFlag02ById
+void FrontendPlayerRuntime_MarkTaskAssignmentReadyById
           (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x00544D50 */
-void FrontendPlayerRuntime_MarkFlag01AndStoreValuesById
+void FrontendPlayerRuntime_MarkScenarioCatalogReceivedById
           (PlayerRuntimeId playerId,FrontendPlayerValue8C scenarioAvailabilityMask2,
           FrontendPlayerValue88 scenarioAvailabilityMask1,
           FrontendPlayerValue84 scenarioAvailabilityMask0);
@@ -92,15 +101,15 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source);
 void FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source);
 
 /* 0x0054D720 */
-void FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void);
+void FrontendPlayerRuntime_UpdateStartButtonByCdShare(void);
 
 /* 0x0055F470 */
-void FrontendPlayerRuntime_SetReadyFlagById
+void FrontendPlayerRuntime_SetSlowRenderingFlagById
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedArg04,uint32_t reservedArg08,
           FrontendReadyFlagMask slowRenderingFlag);
 
 /* 0x0055F5A0 */
-void FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRuntimeId);
+void FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(PlayerRuntimeId playerRuntimeId);
 
 /* 0x0055F680 */
 void FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
@@ -170,7 +179,7 @@ void FrontendPlayerMessageBuffer_AppendTripleById
 void FrontendPlayerMessageBuffer_PublishTextById(PlayerRuntimeId playerId,uint32_t arg1,uint32_t arg2,uint32_t arg3);
 
 /* 0x0054EBD0 */
-void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsRuntimeView5650 *frontendRoot);
+void FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks(FrontendNetworkListsRuntimeView *frontendRoot);
 
 /* 0x0055FAD0 */
 void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection

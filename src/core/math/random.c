@@ -22,7 +22,7 @@ uint32_t Random_NextPrimary(void)
 
   firstStepSeed = g_RandomGeneratorState.primarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
   g_RandomGeneratorState.primarySeed = firstStepSeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
-  return firstStepSeed * 0x4000 ^ g_RandomGeneratorState.primarySeed >> 2;
+  return (firstStepSeed * 0x4000) ^ (g_RandomGeneratorState.primarySeed >> 2);
 }
 
 
@@ -38,7 +38,7 @@ uint32_t Random_NextSecondary(void)
 
   firstStepSeed = g_RandomGeneratorState.secondarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
   g_RandomGeneratorState.secondarySeed = firstStepSeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
-  return firstStepSeed * 0x4000 ^ g_RandomGeneratorState.secondarySeed >> 2;
+  return (firstStepSeed * 0x4000) ^ (g_RandomGeneratorState.secondarySeed >> 2);
 }
 
 

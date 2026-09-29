@@ -39,7 +39,8 @@ void AiCombatDecision_UpdateTargetAssignment(WorldRuntimeContext *worldRuntime,A
     }
     /* the qword test is the sign of sourceClassCount (TEST EDX,EDX / JLE): count > 0 */
     else if ((selectedTargetArmyRuntime == NULL) &&
-            (selectionResult.sourceClassCount != 0 && -1 < THANDOR_BITCAST(AiCombatTargetSelectionResult, int64_t, selectionResult))) {
+            (selectionResult.sourceClassCount != 0 &&
+             -1 < THANDOR_BITCAST(AiCombatTargetSelectionResult, int64_t, selectionResult))) {
       ArmyRuntime_ResolveCommandTarget((ArmyRuntimeSlot *)armyRuntime->runtimeState98,armyRuntime);
       if ((armyRuntime->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0) {
         armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
@@ -72,7 +73,7 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
   uint32_t remainingOrBestScore;
   int targetCandidateRecordsRemaining;
   uint32_t accumulatedScaleRatio;
-  ArmyRuntimeSlot *collectedOrTargetArmy;
+  ArmyRuntimeSlot *targetArmy;
   AiTargetWorkspaceEntry *targetCandidateRecordCursor;
   ArmyRuntimeSlot **collectedArmyCursor;
   ModelRuntimeScaleRatioRegisterPairQ12 collectedHierarchyScaleRatioPairQ12;
@@ -81,26 +82,27 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
   if (1 < g_AiCollectedEntityCount) {
     accumulatedScaleRatio = 0;
     remainingOrBestScore = g_AiCollectedEntityCount;
-    /* walks the collected army pointers: "->modelRuntimeOrSavedOffset.modelRuntime" (offset 0) reads the
-       pointer at the cursor, "&->modelNodeRuntime" (offset 4) steps to the next one */
-    collectedOrTargetArmy = (ArmyRuntimeSlot *)g_AiWorkspaceBuffer14_Size0100;
+    /* The collected-army cursor shares its variable with the chosen target (the original keeps both in ESI):
+       "->modelRuntimeOrSavedOffset.modelRuntime" (offset 0) reads the army pointer at the cursor,
+       "&->modelNodeRuntime" (offset 4) steps to the next one. */
+    targetArmy = (ArmyRuntimeSlot *)g_AiWorkspace14CollectedArmies;
     do {
       collectedHierarchyScaleRatioPairQ12 =
            ModelRuntime_QueryHierarchyScaleRatioQ12Regs
-                     ((RuntimeModelFactionPrefix10 *)
-                      (collectedOrTargetArmy->modelRuntimeOrSavedOffset).modelRuntime);
+                     ((RuntimeModelFactionPrefix *)(targetArmy->modelRuntimeOrSavedOffset).modelRuntime);
       assignedCommandGeneration = g_AiCommandGenerationCandidateBase;
       THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4) =
            (uint32_t)(collectedHierarchyScaleRatioPairQ12 >> 0x20);
       if ((THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4) != 0) &&
          (accumulatedScaleRatio = accumulatedScaleRatio + (uint32_t)((int)collectedHierarchyScaleRatioPairQ12 << 8) /
-                          THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4), 0x1ff < accumulatedScaleRatio)) {
+                          THANDOR_PART(uint32_t, collectedHierarchyScaleRatioPairQ12, 4),
+          accumulatedScaleRatio > AI_UNIT_GROUP_ATTACK_STRENGTH - 1)) {
         remainingOrBestScore = 0;
         targetCandidateRecordsRemaining = g_AiWorkspace07Count;
-        targetCandidateRecordCursor = g_AiWorkspaceBuffer07_Size0400;
+        targetCandidateRecordCursor = g_AiWorkspace07Targets;
         if ((g_AiWorkspace07Count == 0) &&
            (targetCandidateRecordsRemaining = g_AiWorkspace03Count,
-           targetCandidateRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspaceBuffer03_Size1000,
+           targetCandidateRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspace03UnseenHostiles,
            g_AiWorkspace03Count == 0)) {
           return;
         }
@@ -108,10 +110,10 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
           candidateTargetArmy = targetCandidateRecordCursor->armyRuntime;
           /* ties go to the later candidate */
           if ((candidateTargetArmy != NULL) &&
-             (targetClassIndex = candidateTargetArmy->modelRuntimeOrSavedOffset.modelRuntime->definitionValue9C_4C
-             , remainingOrBestScore <= *(uint32_t *)(&g_AiCombatTargetClassBaseScoreTable24 + targetClassIndex * 4))) {
-            remainingOrBestScore = *(uint32_t *)(&g_AiCombatTargetClassBaseScoreTable24 + targetClassIndex * 4);
-            collectedOrTargetArmy = candidateTargetArmy;
+             (targetClassIndex = candidateTargetArmy->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C,
+              remainingOrBestScore <= g_AiCombatTargetClassBaseScores[targetClassIndex])) {
+            remainingOrBestScore = g_AiCombatTargetClassBaseScores[targetClassIndex];
+            targetArmy = candidateTargetArmy;
           }
           targetCandidateRecordCursor++;
           targetCandidateRecordsRemaining--;
@@ -119,24 +121,24 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
         if (remainingOrBestScore == 0) {
           return;
         }
-        targetRuntime = collectedOrTargetArmy->linkedEntityRuntime;
+        targetRuntime = targetArmy->linkedEntityRuntime;
         remainingOrBestScore = g_AiCollectedEntityCount;
-        collectedArmyCursor = g_AiWorkspaceBuffer14_Size0100;
+        collectedArmyCursor = g_AiWorkspace14CollectedArmies;
         do {
-          collectedOrTargetArmy = *collectedArmyCursor;
-          ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,collectedOrTargetArmy);
-          collectedOrTargetArmy->runtimeState98 = (uint32_t)targetRuntime;
-          collectedOrTargetArmy->commandModeFlags = collectedOrTargetArmy->commandModeFlags | 4;
-          collectedOrTargetArmy->runtimeState94 = collectedOrTargetArmy->runtimeState94 | 1;
-          collectedOrTargetArmy->movementStateFlags = collectedOrTargetArmy->movementStateFlags & ~0x200;
-          collectedOrTargetArmy->runtimeState8C = 8;
-          collectedOrTargetArmy->commandGeneration = assignedCommandGeneration;
+          targetArmy = *collectedArmyCursor;
+          ArmyRuntime_ResolveCommandTargetAndRoute(targetRuntime,targetArmy);
+          targetArmy->runtimeState98 = (uint32_t)targetRuntime;
+          targetArmy->commandModeFlags = targetArmy->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
+          targetArmy->runtimeState94 = targetArmy->runtimeState94 | 1;
+          targetArmy->movementStateFlags = targetArmy->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
+          targetArmy->runtimeState8C = 8;
+          targetArmy->commandGeneration = assignedCommandGeneration;
           collectedArmyCursor++;
           remainingOrBestScore--;
         } while (remainingOrBestScore != 0);
         return;
       }
-      collectedOrTargetArmy = (ArmyRuntimeSlot *)&collectedOrTargetArmy->modelNodeRuntime;
+      targetArmy = (ArmyRuntimeSlot *)&targetArmy->modelNodeRuntime;
       remainingOrBestScore--;
     } while (remainingOrBestScore != 0);
   }
@@ -168,25 +170,25 @@ AiCombatTarget_SelectBestCandidate
   AiCombatTargetSelectionResult targetSelectionResult;
   AiSourceClassCount returnedSourceClassCount;
   ArmyRuntimeSlot *bestCandidateArmyRuntime;
-  WorldRuntimeNode *ownerNodeCursor;
+  WorldOwnerListNode *ownerNodeCursor;
   ModelRuntimeNode *sourceModelNode;
   GameEntityRuntime *candidateEntityRuntime;
   FactionRuntimeIndex sourceFactionIndex;
   
   sourceClassCount = 0;
-  ownerNodeCursor = (WorldRuntimeNode *)worldRuntime->ownerListHead;
+  ownerNodeCursor = worldRuntime->ownerListHead;
   classIndexOrFaction = 7;
   bestCandidateArmyRuntime = NULL;
   /* the eight class counters at +0x100 */
   do {
-    sourceClassCount = sourceClassCount + sourceArmyRuntime->targetClassCounters100[classIndexOrFaction];
+    sourceClassCount = sourceClassCount + sourceArmyRuntime->targetClassShotDamage[classIndexOrFaction];
     classIndexOrFaction--;
   } while (-1 < classIndexOrFaction);
   /* With a zero sum the original returns an EDX never written in this call (stack slot [EBP-0x10]);
      returnedSourceClassCount is likewise left unset. */
   if (sourceClassCount != 0) {
     sourceModelNode = sourceArmyRuntime->modelNodeRuntime;
-    searchRadiusQ12 = sourceArmyRuntime->runtimeState4C + 0x4000;
+    searchRadiusQ12 = sourceArmyRuntime->weaponRangeQ12 + 0x4000;
     sourceDepthMask1 =
          DepthInterval_BuildBinMask(searchRadiusQ12,(sourceModelNode->worldTransform).translation.x)
     ;
@@ -196,9 +198,8 @@ AiCombatTarget_SelectBestCandidate
     sourceFactionIndex = sourceArmyRuntime->factionIndex;
     currentBestScore = 0;
     for (; returnedSourceClassCount = sourceClassCount, ownerNodeCursor != NULL;
-        ownerNodeCursor = (ownerNodeCursor->common).nextNode) {
-      /* the owner node's dword at +0xA4 must be zero */
-      if (ownerNodeCursor[2].common.nextNode == NULL) {
+        ownerNodeCursor = ownerNodeCursor->nextNode) {
+      if (ownerNodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         candidateEntityRuntime = ownerNodeCursor->runtimePayload;
         candidateArmyRuntime = (candidateEntityRuntime->common).ownership.runtimeLink;
         if ((((-1 < sourceClassCount) ||
@@ -213,7 +214,7 @@ AiCombatTarget_SelectBestCandidate
               (classIndexOrFaction != sourceArmyRuntime->factionIndex)) {
             /* bit 1 of the source faction's 2-bit field in the candidate's +0x50 */
             if (((candidateArmyRuntime->terrainOccupancyMask0 &
-                 2 << ((char)sourceFactionIndex * '\x02' & 0x1fU)) != 0) &&
+                 2 << ((char)sourceFactionIndex * 2 & 0x1fU)) != 0) &&
                (candidateScore =
                      AiCombatTarget_EvaluateCandidateScore
                                (currentBestScore,sourceClassCount,sourceDepthMask0,sourceDepthMask1,
@@ -252,7 +253,8 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
           ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
 
 {
-  uint32_t factionOrDefinitionAddress;
+  uint32_t candidateFactionIndex;
+  ModelDefinition *candidateDefinition;
   int64_t clearanceSquaredOrWeight;
   int reachDeltaOrSourceCounter;
   int deltaXOrCandidateCounter;
@@ -267,46 +269,49 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
   ModelRuntimeSlot *sourceModelRuntime;
   ModelRuntimeNode *candidateModelNode;
   
-  factionOrDefinitionAddress = candidateArmyRuntime->factionIndex;
+  candidateFactionIndex = candidateArmyRuntime->factionIndex;
   candidateModelNode = candidateArmyRuntime->modelNodeRuntime;
   testPassed = DepthBinMasks_Overlap
                     (candidateModelNode->depthBinMaskFar,candidateModelNode->depthBinMaskNear,sourceDepthMask0,
                      sourceDepthMask1);
   if (testPassed) {
     if (sourceClassCount < 1) {
-      testPassed = GameFactionRuntime_TestCapabilityBitClear(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
+      testPassed = GameFactionRuntime_TestCapabilityBitClear(candidateFactionIndex,sourceArmyRuntime->factionIndex);
       if (testPassed) {
         return 0;
       }
     }
     else {
-      testPassed = GameFactionRuntime_TestCapabilityBitClear(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
+      testPassed = GameFactionRuntime_TestCapabilityBitClear(candidateFactionIndex,sourceArmyRuntime->factionIndex);
       if (!testPassed) {
         return 0;
       }
     }
     /* clearance^2 = (radius + 2.0)^2 - dx^2 - dy^2 in 64 bits; negative rejects */
-    reachDeltaOrSourceCounter = sourceArmyRuntime->runtimeState4C + 0x2000;
+    reachDeltaOrSourceCounter = sourceArmyRuntime->weaponRangeQ12 + 0x2000;
     deltaXOrCandidateCounter = (sourceArmyRuntime->modelNodeRuntime->worldTransform).translation.x -
             (candidateModelNode->worldTransform).translation.x;
-    clearanceSquaredOrWeight = (int64_t)reachDeltaOrSourceCounter * (int64_t)reachDeltaOrSourceCounter - (int64_t)deltaXOrCandidateCounter * (int64_t)deltaXOrCandidateCounter;
+    clearanceSquaredOrWeight = (int64_t)reachDeltaOrSourceCounter * (int64_t)reachDeltaOrSourceCounter -
+                              (int64_t)deltaXOrCandidateCounter * (int64_t)deltaXOrCandidateCounter;
     if (-1 < clearanceSquaredOrWeight) {
       reachDeltaOrSourceCounter = (sourceArmyRuntime->modelNodeRuntime->worldTransform).translation.y -
               (candidateModelNode->worldTransform).translation.y;
-      clearanceSquaredOrWeight = clearanceSquaredOrWeight - (int64_t)reachDeltaOrSourceCounter * (int64_t)reachDeltaOrSourceCounter;
+      clearanceSquaredOrWeight =
+          clearanceSquaredOrWeight - (int64_t)reachDeltaOrSourceCounter * (int64_t)reachDeltaOrSourceCounter;
       if (-1 < clearanceSquaredOrWeight) {
         radialClearanceQ12 =
-             FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)clearanceSquaredOrWeight >> 32),(UInt64Half32)clearanceSquaredOrWeight);
+             FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)clearanceSquaredOrWeight >> 32),
+                                 (UInt64Half32)clearanceSquaredOrWeight);
         clearanceSquaredOrWeight = (int64_t)(int)g_AiCombatTargetRadialClearanceWeight;
-        sourceRadiusQ12 = sourceArmyRuntime->runtimeState4C;
-        factionOrDefinitionAddress = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                definitionOrSavedId).savedIdOrOffset;
+        sourceRadiusQ12 = sourceArmyRuntime->weaponRangeQ12;
+        candidateDefinition = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+                definitionOrSavedId).runtimeDefinition;
         /* class counters (+0x100): the candidate's for the source's class and the source's for the
            candidate's class; a zero candidate counter selects the shorter command time (shift 2) */
-        reachDeltaOrSourceCounter = candidateArmyRuntime->targetClassCounters100
+        reachDeltaOrSourceCounter = candidateArmyRuntime->targetClassShotDamage
                         [(((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                          definitionOrSavedId).runtimeDefinition->targetClassIndex5C];
-        deltaXOrCandidateCounter = sourceArmyRuntime->targetClassCounters100[((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->targetClassIndex5C];
+        deltaXOrCandidateCounter = sourceArmyRuntime->targetClassShotDamage[candidateDefinition->targetClassIndex5C];
         g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 0;
         if (reachDeltaOrSourceCounter == 0) {
           g_AiCombatTargetCurrentCommandGenerationRightShiftBits = 2;
@@ -317,24 +322,28 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
             reachDeltaOrSourceCounter = 0;
             deltaXOrCandidateCounter = -deltaXOrCandidateCounter;
           }
-          classBaseScore = *(int *)(&g_AiCombatTargetClassBaseScoreTable24 + ((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->runtimeClassId4C * 4) *
-                  g_AiCombatTargetClassBaseScoreMultiplier;
+          classBaseScore =
+               g_AiCombatTargetClassBaseScores
+                 [candidateDefinition->runtimeClassId4C] *
+               g_AiCombatTargetClassBaseScoreMultiplier;
           hierarchyScaleRatioPairQ12 =
                ModelRuntime_QueryHierarchyScaleRatioQ12Regs
-                         ((RuntimeModelFactionPrefix10 *)candidateArmyRuntime);
+                         ((RuntimeModelFactionPrefix *)candidateArmyRuntime);
           THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4) = (uint32_t)(hierarchyScaleRatioPairQ12 >> 32);
           /* low half = condition ratio, high half = Q12 unity; a friendly search needs condition < 1.0 */
           if ((-1 < sourceClassCount) ||
              ((uint32_t)hierarchyScaleRatioPairQ12 < THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4))) {
             candidateScore =
-                 (int)(((int)radialClearanceQ12 * clearanceSquaredOrWeight) / (int64_t)(int)sourceRadiusQ12) + classBaseScore +
+                 (int)(((int)radialClearanceQ12 * clearanceSquaredOrWeight) / (int64_t)(int)sourceRadiusQ12) +
+                classBaseScore +
                  (int)(((int64_t)(int)g_AiCombatTargetSourceCounterCountWeight * (int64_t)reachDeltaOrSourceCounter) /
                       (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4)) +
                  (int)(((int64_t)(int)g_AiCombatTargetCandidateCounterCountWeight * (int64_t)deltaXOrCandidateCounter) /
                       (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4)) +
                  (int)(((int64_t)(int)g_AiCombatTargetScaleDeficitWeight *
                        (int64_t)
-                       (int)(THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4) - (uint32_t)hierarchyScaleRatioPairQ12)) /
+                       (int)(THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4) -
+                            (uint32_t)hierarchyScaleRatioPairQ12)) /
                       (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4));
             if (reachDeltaOrSourceCounter == 0) {
               candidateScore = candidateScore >> 2;
@@ -343,22 +352,22 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
               sourceModelRuntime = (sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
               candidateAimModelNode = candidateArmyRuntime->modelNodeRuntime;
               sourceWeaponModelRuntime =
-                   sourceModelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
-              if ((sourceModelRuntime->attachmentCount0C != 0) &&
-                 ((factionOrDefinitionAddress = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                           definitionOrSavedId).savedIdOrOffset,
+                   sourceModelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
+              if ((sourceModelRuntime->attachmentCount != 0) &&
+                 ((candidateDefinition = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+                           definitionOrSavedId).runtimeDefinition,
                   sourceWeaponModelRuntime != NULL ||
                   ((sourceWeaponModelRuntime =
-                         sourceModelRuntime->attachments140[1].childModelRuntimeOrSavedOffset00,
-                   sourceModelRuntime->attachmentCount0C != 1 &&
+                         sourceModelRuntime->attachments[1].childModelRuntimeOrSavedOffset,
+                   sourceModelRuntime->attachmentCount != 1 &&
                    (sourceWeaponModelRuntime != NULL)))))) {
                 /* the weapon is the first or second attachment; aircraft are aimed at their first child
                    node, all targets at the definition's height offset (+0x50) above the node */
-                if (((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
+                if (candidateDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
                   candidateAimModelNode = candidateAimModelNode->childNodes[0];
                 }
                 testPassed = ArmyWeaponRuntime_TestTargetLineOfFire
-                                  (((ModelDefinitionRuntimeSemanticView280 *)factionOrDefinitionAddress)->aimHeightOffsetQ12 +
+                                  (candidateDefinition->aimHeightOffsetQ12 +
                                    (candidateAimModelNode->worldTransform).translation.z,
                                    (candidateAimModelNode->worldTransform).translation.y,
                                    (candidateAimModelNode->worldTransform).translation.x,
@@ -367,7 +376,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
                 if ((testPassed) &&
                    (candidateScore = candidateScore >> 2,
                    (((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
-                    definitionOrSavedId).runtimeDefinition->runtimeValue18 == 0)) {
+                    definitionOrSavedId).runtimeDefinition->accelerationPerTick18 == 0)) {
                   return 0;
                 }
               }

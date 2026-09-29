@@ -15,6 +15,8 @@
 /* Engine path buffers hold at most 256 UTF-16 code units (0x200 bytes) including the terminator, e.g.
    g_FileSystemCombinedPathScratchUtf16 and g_ExecutableDirectoryUtf16. */
 #define WIDE_PATH_MAX_CODE_UNITS 0x100
+/* WidePath_ParseTrailingNumberBeforeExtensionRegs: code units scanned for the terminator and the digits */
+#define WIDE_PATH_NUMBER_SCAN_MAX_UNITS 32
 /* Extension codes for WidePath_SetExtensionCode: the three lower-case letters packed little-endian (the same
    packing as the ASSET_MAGIC_* values). */
 #ifndef WIDE_PATH_EXTENSION_FLD

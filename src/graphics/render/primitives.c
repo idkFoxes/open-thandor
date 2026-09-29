@@ -36,7 +36,7 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
   GraphicsPrimitivePacket *previousNodeMmx;
   GraphicsPrimitivePacket *linkNode;
   uint32_t nodeSortKey;
-  int bucketCountdownOrPacket;
+  int bucketCountdown;
   uint32_t remainingOrBucketCount;
   uint32_t remainingNodeCount;
   GraphicsPrimitiveQueueNode *readNode;
@@ -51,6 +51,7 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
   uint64_t vertex2HalvedColor;
   GraphicsPrimitivePacket *keyPacket;
   uint32_t *pass2WriteCursor;
+  GraphicsPrimitivePacket *halvedPacket;
   
   /* g_PrimitiveRadixBucketWords holds per pass first the bucket counts, then each bucket's write cursor
      (bucket 0xFF gets the first place, so the result is in descending key order) */
@@ -78,8 +79,8 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
       } while (remainingOrBucketCount != 0);
       /* pass 1: key bits 0..7, primaryNodes -> radixScratchPool */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primaryNodes, bucketCountdownOrPacket != 0;
-          bucketCountdownOrPacket--) {
+      for (bucketCountdown = 0x100; remainingOrBucketCount = remainingNodeCount,
+           nodeCursor = primaryNodes, bucketCountdown != 0; bucketCountdown--) {
         *bucketWordCursor = 0;
         bucketWordCursor++;
       }
@@ -89,7 +90,7 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
         remainingOrBucketCount--;
         nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketCountdownOrPacket = 0x100;
+      bucketCountdown = 0x100;
       bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
       nodeCursor = scratchNodes;
       do {
@@ -97,10 +98,10 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
         *bucketWordCursor = (uint32_t)nodeCursor;
         bucketWordCursor--;
         nodeCursor = nodeCursor + remainingOrBucketCount;
-        bucketCountdownOrPacket--;
+        bucketCountdown--;
         remainingOrBucketCount = remainingNodeCount;
         readNode = primaryNodes;
-      } while (bucketCountdownOrPacket != 0);
+      } while (bucketCountdown != 0);
       do {
         nodeSortKey = readNode->sortKey;
         packetOrNode = readNode->packet;
@@ -114,18 +115,18 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
       } while (remainingOrBucketCount != 0);
       /* pass 2: key bits 8..15 (shifted straight to a byte offset into the bucket words), back to primaryNodes */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = scratchNodes, bucketCountdownOrPacket != 0;
-          bucketCountdownOrPacket--) {
+      for (bucketCountdown = 0x100; remainingOrBucketCount = remainingNodeCount,
+           nodeCursor = scratchNodes, bucketCountdown != 0; bucketCountdown--) {
         *bucketWordCursor = 0;
         bucketWordCursor++;
       }
       do {
-        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff00) >> 6));
+        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff00) >> 6));
         *bucketSlot = *bucketSlot + 1;
         remainingOrBucketCount--;
         nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketCountdownOrPacket = 0x100;
+      bucketCountdown = 0x100;
       bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
       nodeCursor = primaryNodes;
       do {
@@ -133,16 +134,16 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
         *bucketWordCursor = (uint32_t)nodeCursor;
         bucketWordCursor--;
         nodeCursor = nodeCursor + remainingOrBucketCount;
-        bucketCountdownOrPacket--;
+        bucketCountdown--;
         remainingOrBucketCount = remainingNodeCount;
         readNode = scratchNodes;
-      } while (bucketCountdownOrPacket != 0);
+      } while (bucketCountdown != 0);
       do {
         nodeSortKey = readNode->sortKey;
         packetOrNode = readNode->packet;
         bucketIndexOrOffset = (nodeSortKey & 0xff00) >> 6;
-        pass2WriteCursor = *(uint32_t **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        pass2WriteCursor = *(uint32_t **)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
         *bucketSlot = *bucketSlot + 0x10;
         *pass2WriteCursor = nodeSortKey;
         pass2WriteCursor[1] = (uint32_t)packetOrNode;
@@ -151,18 +152,18 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
       } while (remainingOrBucketCount != 0);
       /* pass 3: key bits 16..23, primaryNodes -> radixScratchPool */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = primaryNodes, bucketCountdownOrPacket != 0;
-          bucketCountdownOrPacket--) {
+      for (bucketCountdown = 0x100; remainingOrBucketCount = remainingNodeCount,
+           nodeCursor = primaryNodes, bucketCountdown != 0; bucketCountdown--) {
         *bucketWordCursor = 0;
         bucketWordCursor++;
       }
       do {
-        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff0000) >> 14));
+        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff0000) >> 14));
         *bucketSlot = *bucketSlot + 1;
         remainingOrBucketCount--;
         nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketCountdownOrPacket = 0x100;
+      bucketCountdown = 0x100;
       bucketWordCursor = g_PrimitiveRadixBucketWords + 0xff;
       pass3BucketStart = scratchNodes;
       do {
@@ -170,17 +171,17 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
         *bucketWordCursor = (uint32_t)pass3BucketStart;
         bucketWordCursor--;
         pass3BucketStart = pass3BucketStart + remainingOrBucketCount;
-        bucketCountdownOrPacket--;
+        bucketCountdown--;
         remainingOrBucketCount = remainingNodeCount;
         pass3ReadNode = primaryNodes;
-      } while (bucketCountdownOrPacket != 0);
+      } while (bucketCountdown != 0);
       do {
         nodeSortKey = pass3ReadNode->sortKey;
         packetOrNode = pass3ReadNode->packet;
         pass3ReadNode++;
         bucketIndexOrOffset = (nodeSortKey & 0xff0000) >> 14;
-        bucketWriteCursor = *(uint32_t **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketWriteCursor = *(uint32_t **)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
         *bucketSlot = *bucketSlot + 0x10;
         *bucketWriteCursor = nodeSortKey;
         bucketWriteCursor[1] = (uint32_t)packetOrNode;
@@ -188,34 +189,34 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
       } while (remainingOrBucketCount != 0);
       /* pass 4: key bits 24..31, back to primaryNodes */
       bucketWordCursor = g_PrimitiveRadixBucketWords;
-      for (bucketCountdownOrPacket = 0x100; remainingOrBucketCount = remainingNodeCount, nodeCursor = scratchNodes, bucketCountdownOrPacket != 0;
-          bucketCountdownOrPacket--) {
+      for (bucketCountdown = 0x100; remainingOrBucketCount = remainingNodeCount,
+           nodeCursor = scratchNodes, bucketCountdown != 0; bucketCountdown--) {
         *bucketWordCursor = 0;
         bucketWordCursor++;
       }
       do {
-        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff000000) >> 22));
+        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + ((nodeCursor->sortKey & 0xff000000) >> 22));
         *bucketSlot = *bucketSlot + 1;
         remainingOrBucketCount--;
         nodeCursor++;
       } while (remainingOrBucketCount != 0);
-      bucketCountdownOrPacket = 0x100;
+      bucketCountdown = 0x100;
       pass4BucketCursor = g_PrimitiveRadixBucketWords + 0xff;
       do {
         remainingOrBucketCount = *pass4BucketCursor;
         *pass4BucketCursor = (uint32_t)primaryNodes;
         pass4BucketCursor--;
         primaryNodes = primaryNodes + remainingOrBucketCount;
-        bucketCountdownOrPacket--;
+        bucketCountdown--;
         remainingOrBucketCount = remainingNodeCount;
-      } while (bucketCountdownOrPacket != 0);
+      } while (bucketCountdown != 0);
       do {
         nodeSortKey = scratchNodes->sortKey;
         packetOrNode = scratchNodes->packet;
         scratchNodes++;
         bucketIndexOrOffset = (nodeSortKey & 0xff000000) >> 22;
-        bucketWriteCursor = *(uint32_t **)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
-        bucketSlot = (int *)((int)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketWriteCursor = *(uint32_t **)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
+        bucketSlot = (int *)((uint8_t *)g_PrimitiveRadixBucketWords + bucketIndexOrOffset);
         *bucketSlot = *bucketSlot + 0x10;
         *bucketWriteCursor = nodeSortKey;
         bucketWriteCursor[1] = (uint32_t)packetOrNode;
@@ -227,8 +228,8 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
        and &vertices[0].depth (+0x10) the following node; (queue + 1) is primaryNodes + 1. */
     packetOrNode = (GraphicsPrimitivePacket *)queue->primaryNodes;
     queue->traversalCursor = (GraphicsPrimitiveQueueNode *)packetOrNode;
-    previousNodeMmx = (GraphicsPrimitivePacket *)0xffffffff;
-    previousNode = (GraphicsPrimitivePacket *)0xffffffff;
+    previousNodeMmx = (GraphicsPrimitivePacket *)GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
+    previousNode = (GraphicsPrimitivePacket *)GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
     nextNodeMmx = (GraphicsPrimitivePacket *)(queue + 1);
     nextNode = (GraphicsPrimitivePacket *)(queue + 1);
     if (halveVertexRgb == GRAPHICS_STATE_DISABLED) {
@@ -252,19 +253,19 @@ void GraphicsPrimitiveQueue_RadixSortForRendering(GraphicsBooleanState halveVert
         linkNode->vertices[0].backendCoord0 =
              (GraphicsPrimitiveBackendCoordinate)nextNodeMmx;
         /* the node's packet */
-        bucketCountdownOrPacket = linkNode->vertices[0].screenY;
+        halvedPacket = (GraphicsPrimitivePacket *)linkNode->vertices[0].screenY;
         vertex0HalvedColor =
-             paddusb((((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[0].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[0].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
+             paddusb((halvedPacket->vertices[0].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     halvedPacket->vertices[0].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
         vertex1HalvedColor =
-             paddusb((((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[1].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[1].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
+             paddusb((halvedPacket->vertices[1].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     halvedPacket->vertices[1].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
         vertex2HalvedColor =
-             paddusb((((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[2].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
-                     ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[2].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
-        ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[0].diffuseColor = (int)vertex0HalvedColor;
-        ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[1].diffuseColor = (int)vertex1HalvedColor;
-        ((GraphicsPrimitivePacket *)bucketCountdownOrPacket)->vertices[2].diffuseColor = (int)vertex2HalvedColor;
+             paddusb((halvedPacket->vertices[2].diffuseColor & g_VertexColorRgbHalveMaskMMX) >> 1,
+                     halvedPacket->vertices[2].diffuseColor & g_VertexColorAlphaPreserveMaskMMX);
+        halvedPacket->vertices[0].diffuseColor = (int)vertex0HalvedColor;
+        halvedPacket->vertices[1].diffuseColor = (int)vertex1HalvedColor;
+        halvedPacket->vertices[2].diffuseColor = (int)vertex2HalvedColor;
         remainingNodeCount--;
         previousNodeMmx = linkNode;
         packetOrNode = nextNodeMmx;
@@ -398,7 +399,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
   }
   failureResult.noPacket = true;
   /* EAX still holds the end-node marker */
-  failureResult.packet = (GraphicsPrimitivePacket *)0xffffffff;
+  failureResult.packet = (GraphicsPrimitivePacket *)GRAPHICS_PRIMITIVE_QUEUE_END_NODE;
   return failureResult;
 }
 
@@ -493,10 +494,12 @@ void GraphicsPrimitiveQueue_SetVertexColors
   packetPool[queuedPacketCount - 1].vertices[1].diffuseColor = vertex1Color;
   packetPool[queuedPacketCount - 1].vertices[2].diffuseColor = vertex2Color;
   existingBlendModeFlags = packetPool[queuedPacketCount - 1].renderFlags & GRAPHICS_PRIMITIVE_BLEND_MASK;
-  if (((vertex0Color & vertex1Color & vertex2Color & 0xff000000) != 0xff000000) &&
-     ((existingBlendModeFlags == 0x4000 || (existingBlendModeFlags == GRAPHICS_PRIMITIVE_BLEND_OPAQUE)))) {
+  if ((vertex0Color & vertex1Color & vertex2Color & 0xff000000) != 0xff000000 &&
+      (existingBlendModeFlags == GRAPHICS_PRIMITIVE_BLEND_MODE_4 ||
+       existingBlendModeFlags == GRAPHICS_PRIMITIVE_BLEND_OPAQUE)) {
     packetPool[queuedPacketCount - 1].renderFlags =
-         packetPool[queuedPacketCount - 1].renderFlags ^ existingBlendModeFlags ^ 0x6000;
+         packetPool[queuedPacketCount - 1].renderFlags ^ existingBlendModeFlags ^
+         GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE;
   }
   return;
 }
@@ -648,7 +651,7 @@ PrimitivePacketResult GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriang
       paletteModulationColor = g_TerrainPrimaryPalette->paletteEntries[terrainPacketRecord[7]].
               alternateModulationColorArgb;
     }
-    newPacket->renderFlags = 0x6000;
+    newPacket->renderFlags = GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE;
     newPacket->modulationColor = paletteModulationColor;
     terrainTextureSet = g_TerrainPrimaryTextureSet;
     textureEntryIndex = terrainPacketRecord[6];

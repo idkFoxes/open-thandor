@@ -8,7 +8,7 @@ digraph thandor {
   "ModelLookupTable_FindPackedKeyEntryRegs" [label="0x004BE670\nModelLookupTable_FindPackedKeyEntryRegsCf"];
   "ModelLookupTable_ContainsPackedKey" [label="0x004BE6F0\nModelLookupTable_ContainsPackedKeyCf"];
   "ModelMesh_IntersectTriangleRayDistance" [label="0x0050AEA0\nModelMesh_IntersectTriangleRayDistanceCf"];
-  "ModelDefinitionRegistry_FindBuildMetricTupleById" [label="0x005289C0\nModelDefinitionRegistry_FindBuildMetricTupleByIdCf"];
+  "ModelDefinitionRegistry_FindBuildCostsById" [label="0x005289C0\nModelDefinitionRegistry_FindBuildMetricTupleByIdCf"];
   "ModelDefinitionRegistry_FindByRuntimeClassId" [label="0x0053BA00\nModelDefinitionRegistry_FindByRuntimeClassId"];
   "ModelDefinition_SelectFactionUnlockedLinkedId" [label="0x0051B430\nModelDefinition_SelectFactionUnlockedLinkedIdCf"];
   "ModelDefinition_RegisterAndResolveReferences" [label="0x00528600\nModelDefinition_RegisterAndResolveReferencesCf"];

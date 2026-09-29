@@ -3,7 +3,7 @@ digraph thandor {
   node [shape=box];
   "UiRootCallbacks_Free" [label="0x004228F0\nUiRootCallbacks_FreeCf"];
   "UiRootCallbacks_NoOpMethod08" [label="0x00422980\nUiRootCallbacks_NoOpMethod08"];
-  "UiRuntime_FormatSignedValues140And144" [label="0x00424270\nUiRuntime_FormatSignedValues140And144"];
+  "UiDisplaySettingsRoot_FormatColorReadouts" [label="0x00424270\nUiRuntime_FormatSignedValues140And144"];
   "UiRuntime_OpenFourValueDialog" [label="0x004244E0\nUiRuntime_OpenFourValueDialogCf"];
   "UiRuntimeRecordRing_DiscardOldest" [label="0x004AEF00\nUiRuntimeRecordRing_DiscardOldestCf"];
   "UiRuntimeRecordRing_Clear" [label="0x004AF020\nUiRuntimeRecordRing_Clear"];
@@ -27,5 +27,5 @@ digraph thandor {
   "UiNode_GetRoot" [label="0x004B14B0\nUiNode_GetRoot"];
   "UiNode_InvalidateRoot" [label="0x004B1510\nUiNode_InvalidateRoot"];
   "UiActionQueue_Enqueue" [label="0x004B1590\nUiActionQueue_Enqueue"];
-  "UiNode_GetStateTintArgb" [label="0x004BD160\nUiNode_GetStateTintArgb"];
+  "ModelRuntimeNode_GetStateTintArgb" [label="0x004BD160\nUiNode_GetStateTintArgb"];
 }

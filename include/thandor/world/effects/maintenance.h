@@ -16,7 +16,7 @@
 
 /* 0x0051E790 */
 void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
-          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode);
+          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNode *modelNode);
 
 /* 0x0051E830 */
 void EffectRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,void *runtimeObject);
@@ -26,6 +26,6 @@ void EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime
 
 /* 0x0051E850 */
 void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
-          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode);
+          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNode *modelNode);
 
 #endif /* THANDOR_WORLD_EFFECTS_MAINTENANCE_H */

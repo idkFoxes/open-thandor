@@ -33,10 +33,10 @@ uint32_t WidePath_GetExtensionCode(uint16_t *path)
           return 0;
         }
         /* bytes: char4 << 24 | char3 << 16 | char2 << 8 | char1 (the SHL/SHLD chain of the original) */
-        return ((((extensionCursor[1] & 0xffffff) >> 16) << 8 | extensionCursor[1] & 0xff) << 8 |
-               (*extensionCursor & 0xffffff) >> 16) << 8 | *extensionCursor & 0xff;
+        return (((((extensionCursor[1] & 0xffffff) >> 16) << 8 | (extensionCursor[1] & 0xff)) << 8 |
+                ((*extensionCursor & 0xffffff) >> 16)) << 8) | (*extensionCursor & 0xff);
       }
-      path = (uint16_t *)((int)path + 2);
+      path++;
       if (currentCodeUnit == '\\') break;
       if (currentCodeUnit == '.') {
         extensionCursor = (uint32_t *)path;
@@ -66,16 +66,16 @@ bool WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t 
       if (currentCodeUnit == 0) {
         if (extensionWriteCursor == NULL) {
           *path = '.';
-          extensionWriteCursor = (uint32_t *)((int)path + 2);
+          extensionWriteCursor = (uint32_t *)(path + 1);
         }
         /* first two code units: characters 1 and 2 */
-        *extensionWriteCursor = ((extensionCode & 0xff) << 8 | (extensionCode >> 8) << 0x18) >> 8;
+        *extensionWriteCursor = ((extensionCode & 0xff) << 8 | (extensionCode >> 8) << 24) >> 8;
         /* code units 3 and 4: the upper 16 bits unspread (char3 | char4 << 8, then 0), which also writes
            the terminator for a three-character extension */
-        extensionWriteCursor[1] = extensionCode >> 0x10;
+        extensionWriteCursor[1] = extensionCode >> 16;
         return false;
       }
-      path = (uint16_t *)((int)path + 2);
+      path++;
       if (currentCodeUnit == '\\') break;
       if (currentCodeUnit == '.') {
         extensionWriteCursor = (uint32_t *)path;
@@ -193,7 +193,8 @@ void WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint1
     } while (!leafTerminatorFound);
     if (leafTerminatorFound) {
       /* leaf length including the terminator */
-      for (leafCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS - leafCodeUnitsRemaining; leafCodeUnitsRemaining != 0; leafCodeUnitsRemaining--) {
+      for (leafCodeUnitsRemaining = WIDE_PATH_MAX_CODE_UNITS - leafCodeUnitsRemaining; leafCodeUnitsRemaining != 0;
+           leafCodeUnitsRemaining--) {
         *destination = *leaf;
         leaf++;
         destination++;
@@ -220,7 +221,7 @@ uint32_t WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path)
   uint16_t currentCodeUnit;
   uint16_t digitCodeUnit;
   
-  scanCountOrPlaceValue = 0x20;
+  scanCountOrPlaceValue = WIDE_PATH_NUMBER_SCAN_MAX_UNITS;
   do {
     terminatorCursor = path;
     if (scanCountOrPlaceValue == 0) break;
@@ -243,10 +244,10 @@ uint32_t WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path)
     if (digitCodeUnit < '0') {
       return parsedValue;
     }
-    if (9 < digitValue) break;
+    if (digitValue > 9) break;
     parsedValue = parsedValue + digitValue * scanCountOrPlaceValue;
     scanCountOrPlaceValue = scanCountOrPlaceValue * 10;
-    if (0x1f < scannedCodeUnitCount) {
+    if (WIDE_PATH_NUMBER_SCAN_MAX_UNITS - 1 < scannedCodeUnitCount) {
       return parsedValue;
     }
   }

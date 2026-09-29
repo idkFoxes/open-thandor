@@ -12,6 +12,15 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/faction/runtime. */
+
+/* GameFactionRuntimeRecord army-asset lists (64 entries each): secondaryArmyAssetPointersOrIds is the production
+   queue, primaryArmyAssetPointersOrIds the finished armies waiting for placement. */
+#define FACTION_ARMY_ASSET_LIST_CAPACITY 64
+/* GameFactionRuntime_IsRecentTimedRelationState: a pending relation state (2, 5, 9) does not advance again
+   within this many simulation ticks of the pair's last change. */
+#define FACTION_RELATION_CHANGE_COOLDOWN_TICKS 600
+/* g_OldUnitPrimaryTable: 0x20-byte carry-over unit records (OLD_UNIT_PRIMARY_TABLE_BYTES / 0x20). */
+#define OLD_UNIT_PRIMARY_RECORD_CAPACITY 0x200
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0055F790 */
@@ -50,7 +59,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00514900 */
-RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEntry);
+RuntimeGroupIndexResult GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x0051B800 */
 bool FactionRuntime_HasArmyAssetOrActiveStructure

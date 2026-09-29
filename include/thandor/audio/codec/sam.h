@@ -23,7 +23,7 @@
 PreservedEaxEdxRegisterPair64 __fastcall
 SoundCoefficientTransform_ApplyCosineBanksMmx
           (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputMonoPcm,
-          SoundCoefficientBlock256 *coefficientBlock);
+          SoundCoefficientBlock *coefficientBlock);
 
 /* 0x00418560 */
 void SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients);

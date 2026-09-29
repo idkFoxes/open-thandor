@@ -42,16 +42,16 @@ void FrontendSession_ShowQuitConfirmPage(FrontendUiImage *frontendUi);
 void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source);
 
 /* 0x0054E3A0 */
-void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView5650 *frontendRuntime);
+void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView *frontendRuntime);
 
 /* 0x00565670 */
 void FrontendSession_PeriodicTick(void);
 
 /* 0x005725D0 */
-void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void);
+void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void);
 
 /* 0x00572960 */
-void FrontendHostSession_TickShutdownOrReadyConsensus(void);
+void FrontendClientSession_TickHostTimeout(void);
 
 /* 0x00544210 */
 void FrontendSession_ApplyGameSpeedAndReturnToMainPage

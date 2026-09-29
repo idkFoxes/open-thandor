@@ -23,9 +23,9 @@ void GridInfluence_AddLowDistanceBands(GameEntityRuntime *entityRuntime)
   
   modelNode = (entityRuntime->common).ownership.modelNode;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (*(int *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET) != 0) {
+  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
     GridInfluence_SetLowDistanceBandsAroundWorldPoint
-              (*(FieldGridRadiusUnits *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET),
+              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,
                (modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x);
   }
 }
@@ -44,9 +44,9 @@ void GridInfluence_RemoveLowDistanceBands(GameEntityRuntime *entityRuntime)
   
   modelNode = (entityRuntime->common).ownership.modelNode;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (*(int *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET) != 0) {
+  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
     GridInfluence_ClearLowDistanceBandsAroundWorldPoint
-              (*(FieldGridRadiusUnits *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET),
+              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,
                (modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x);
   }
 }
@@ -70,13 +70,13 @@ void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
   linkedRuntime = (entityRuntime->common).ownership.runtimeLink;
   modelNode = (entityRuntime->common).ownership.modelNode;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (*(int *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET) != 0) {
+  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
     worldXQ12 = (modelNode->worldTransform).translation.x;
     worldYQ12 = (modelNode->worldTransform).translation.y;
     *(Q12 *)((int)linkedRuntime + 0x68) = worldXQ12;
     *(Q12 *)((int)linkedRuntime + 0x6c) = worldYQ12;
     GridInfluence_SetHighDistanceBandsAroundWorldPoint
-              (*(FieldGridRadiusUnits *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET),worldYQ12,worldXQ12);
+              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,worldYQ12,worldXQ12);
   }
 }
 
@@ -94,9 +94,9 @@ void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
   
   linkedRuntime = (entityRuntime->common).ownership.runtimeLink;
   entityDefinition = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (*(int *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET) != 0) {
+  if (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC != 0) {
     GridInfluence_ClearHighDistanceBandsAroundWorldPoint
-              (*(FieldGridRadiusUnits *)((int)entityDefinition + MODEL_DEFINITION_RADIUS_OFFSET),
+              (((ModelDefinition *)entityDefinition)->placementRadiusOrClearanceDC,
                *(Q12 *)((int)linkedRuntime + 0x6c),*(Q12 *)((int)linkedRuntime + 0x68));
   }
 }
@@ -130,7 +130,7 @@ void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime)
    model re-add its influence through the gridInfluenceAdd handler of its runtime class. Runs on tick-wheel
    case 4 and, on the other simulation-tick path, every 16th tick.
 */
-void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entityListHead)
+void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *entityListHead)
 
 {
   int cellsRemaining;
@@ -165,10 +165,9 @@ void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *e
   for (; entityListHead != NULL; entityListHead = entityListHead->nextNode)
   {
     if (entityListHead->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-      /* +0x4C of the definition record is its ModelRuntimeClassId */
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [*(int *)((int)(((GameEntityRuntime *)entityListHead->runtimePayload)->common).ownership.definitionOrClassRecord +
-                 0x4c)])(entityListHead->runtimePayload);
+        [((ModelDefinition *)(((GameEntityRuntime *)entityListHead->runtimePayload)->common).ownership.
+          definitionOrClassRecord)->runtimeClassId4C])(entityListHead->runtimePayload);
     }
   }
 }

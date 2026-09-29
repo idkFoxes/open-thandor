@@ -46,8 +46,7 @@ void RecentTextHistory_SortAndBuildPointerList
   minimumRetainedSerial = g_RecentTextSerialCounter - RECENT_TEXT_HISTORY_LIFETIME;
   output->count = 0;
   do {
-    if (g_RecentTextEntrySerials[outputIndex] == 0)
-    goto RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop;
+    if (g_RecentTextEntrySerials[outputIndex] == 0) goto advanceSerial; /* the rest is empty already */
     if ((int)g_RecentTextEntrySerials[outputIndex] < minimumRetainedSerial) break;
     output->entries[outputIndex] = slotCursor;
     output->count++;
@@ -58,7 +57,7 @@ void RecentTextHistory_SortAndBuildPointerList
   for (; outputIndex < RECENT_TEXT_HISTORY_SLOT_COUNT; outputIndex++) {
     g_RecentTextEntrySerials[outputIndex] = 0;
   }
-RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop:
+advanceSerial:
   g_RecentTextSerialCounter++;
   return;
 }
@@ -118,16 +117,14 @@ void RecentTextHistory_RemoveOldest(void)
   oldestSerial = 0xffffffff;
   currentIndex = 0;
   oldestIndex = -1;
-  entriesRemaining = RECENT_TEXT_HISTORY_SLOT_COUNT;
-  do {
-    if ((*serialCursor != 0) && (*serialCursor <= oldestSerial)) {
+  for (entriesRemaining = RECENT_TEXT_HISTORY_SLOT_COUNT; entriesRemaining != 0; entriesRemaining--) {
+    if (*serialCursor != 0 && *serialCursor <= oldestSerial) {
       oldestSerial = *serialCursor;
       oldestIndex = currentIndex;
     }
     serialCursor++;
     currentIndex++;
-    entriesRemaining--;
-  } while (entriesRemaining != 0);
+  }
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = 0;
   }
@@ -151,11 +148,11 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   (frontendCreditsView->creditsMaskRuntime).textureSource = NULL;
   (frontendCreditsView->creditsMaskRuntime).maskPixels = NULL;
-  (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
-  (frontendCreditsView->creditsMaskRuntime).patternState54 = 0;
-  (frontendCreditsView->creditsMaskRuntime).patternState58 = 0;
+  (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = 0;
+  (frontendCreditsView->creditsMaskRuntime).outgoingSubresource = 0;
+  (frontendCreditsView->creditsMaskRuntime).incomingSubresource = 0;
   (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
-  textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)u_gfx_panel_credits_gfx_00545c22);
+  textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)g_CreditsTexturePathUtf16);
   if (!textureLoadResult.failed) {
     (frontendCreditsView->creditsMaskRuntime).textureSource = textureLoadResult.textureSource;
     textureSizeResult = g_GraphicsTextureSourceGetLogicalSize(0,textureLoadResult.textureSource);
@@ -165,8 +162,8 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
       (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)bufferAllocResult.payloadOrError;
       bufferAllocResult = g_MemoryApi.alloc(bufferBytes);
       if (!bufferAllocResult.failed) {
-        /* unresolved64 is the second work buffer */
-        (frontendCreditsView->creditsMaskRuntime).unresolved64 = bufferAllocResult.payloadOrError;
+        /* blendedSourcePixels is the second work buffer */
+        (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = bufferAllocResult.payloadOrError;
         UiFrame_FlushInputAndResetPendingTicks();
         SoftwareMaskBuffer_Clear(&frontendCreditsView->creditsMaskRuntime);
         /* page 1 of the frontend view-mode stack: the full-screen view instead of the menu room */
@@ -179,10 +176,10 @@ void CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage
             ((frontendCreditsView->creditsMaskRuntime).textureSource);
   g_MemoryApi.free((frontendCreditsView->creditsMaskRuntime).maskPixels);
-  g_MemoryApi.free((void *)(frontendCreditsView->creditsMaskRuntime).unresolved64);
+  g_MemoryApi.free((void *)(frontendCreditsView->creditsMaskRuntime).blendedSourcePixels);
   (frontendCreditsView->creditsMaskRuntime).textureSource = NULL;
   (frontendCreditsView->creditsMaskRuntime).maskPixels = NULL;
-  (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
+  (frontendCreditsView->creditsMaskRuntime).blendedSourcePixels = 0;
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
 }
 
@@ -204,6 +201,7 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
   uint32_t *paletteEntryCursor;
   uint32_t *pixelDwordCursor;
   uint16_t *sanitizedPathCursor;
+  uint8_t *outputCursor;
   PcxDecodeResult pcxDecodeResult;
   ResourceLoadResult resourceLoadResult;
 
@@ -214,17 +212,15 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
     *sanitizedPathCursor = pathChar;
     sourcePath++;
     if (pathChar == 0) break;
-    if ((((pathChar != '*') && (pathChar != '.')) &&
-        ((pathChar != '?' && ((pathChar != '/' && (pathChar != '\\')))))) &&
-       ((pathChar != '<' &&
-        ((((pathChar != '>' && (pathChar != '"')) && (pathChar != ':')) && (pathChar != '|')))))) {
+    if (pathChar != '*' && pathChar != '.' && pathChar != '?' && pathChar != '/' && pathChar != '\\' &&
+        pathChar != '<' && pathChar != '>' && pathChar != '"' && pathChar != ':' && pathChar != '|') {
       sanitizedPathCursor++;
     }
   }
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  WidePath_SetExtensionCode(0x786370,(uint16_t *)&g_LevelResourcePathScratchUtf16); /* ".pcx" */
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_PCX,(uint16_t *)&g_LevelResourcePathScratchUtf16);
   resourceLoadResult = Resource_Load((uint16_t *)&g_LevelResourcePathScratchUtf16);
   sourceBytes = (void *)resourceLoadResult.bufferOrError;
   if (!resourceLoadResult.failed) {
@@ -234,27 +230,26 @@ bool PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *
       /* the decoder's image record: +0xB8 offset of the image header, which holds +0x08 (must be 0),
          +0x0C the offset of the pixels, +0x18 width and +0x1C height; the palette is at +0x200 with
          one 8-byte entry per colour */
-      headerOrPixelDataOffset = *(int *)((int)decodedImage + 0xb8);
-      if (((*(int *)((int)decodedImage + headerOrPixelDataOffset + 8) == 0) &&
-          (*(int *)((int)decodedImage + headerOrPixelDataOffset + 0x18) == 64)) &&
-         (*(int *)((int)decodedImage + headerOrPixelDataOffset + 0x1c) == 64)) {
-        paletteEntryCursor = (uint32_t *)((int)decodedImage + 0x200);
-        dwordsRemaining = 256;
-        headerOrPixelDataOffset = *(int *)((int)decodedImage + headerOrPixelDataOffset + 0xc);
+      headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + 0xb8);
+      if (*(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 8) == 0 &&
+          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 0x18) == 64 &&
+          *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 0x1c) == 64) {
+        paletteEntryCursor = (uint32_t *)((uint8_t *)decodedImage + 0x200);
+        headerOrPixelDataOffset = *(int *)((uint8_t *)decodedImage + headerOrPixelDataOffset + 0xc);
         /* each colour is stored as a whole dword and the output advances by 3 bytes: the fourth byte is
            overwritten by the next colour (the last one by the first pixel dword) */
-        do {
-          *(uint32_t *)outputPreview->paletteRgbTriplets256 = *paletteEntryCursor;
+        outputCursor = (uint8_t *)outputPreview->palette;
+        for (dwordsRemaining = 256; dwordsRemaining != 0; dwordsRemaining--) {
+          *(uint32_t *)outputCursor = *paletteEntryCursor;
           paletteEntryCursor = paletteEntryCursor + 2;
-          outputPreview = (PcxPreview64 *)(outputPreview->paletteRgbTriplets256 + 1);
-          dwordsRemaining--;
-        } while (dwordsRemaining != 0);
-        /* 64 * 64 pixel bytes as 1024 dwords; the output cursor steps 4 bytes (triplet + 1) */
-        pixelDwordCursor = (uint32_t *)((int)decodedImage + headerOrPixelDataOffset);
+          outputCursor = outputCursor + sizeof(PcxRgb24);
+        }
+        /* 64 * 64 pixel bytes as 1024 dwords */
+        pixelDwordCursor = (uint32_t *)((uint8_t *)decodedImage + headerOrPixelDataOffset);
         for (dwordsRemaining = 1024; dwordsRemaining != 0; dwordsRemaining--) {
-          *(uint32_t *)outputPreview->paletteRgbTriplets256 = *pixelDwordCursor;
+          *(uint32_t *)outputCursor = *pixelDwordCursor;
           pixelDwordCursor++;
-          outputPreview = (PcxPreview64 *)&outputPreview->paletteRgbTriplets256[1].green;
+          outputCursor = outputCursor + 4;
         }
         g_MemoryApi.free(decodedImage);
         Resource_Release(sourceBytes);
@@ -288,8 +283,7 @@ void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex second
   g_RecentTextEntrySerials[firstIndex] = serialOrFirstLowDword;
   secondSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + secondIndex);
   firstSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + firstIndex);
-  dwordPairsRemaining = 32;
-  do {
+  for (dwordPairsRemaining = 32; dwordPairsRemaining != 0; dwordPairsRemaining--) {
     secondHighDword = secondSlotDwords[1];
     serialOrFirstLowDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords,*secondSlotDwords);
     firstHighDword = THANDOR_ATOMIC_EXCHANGE(firstSlotDwords + 1,secondHighDword);
@@ -297,7 +291,6 @@ void RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex second
     secondSlotDwords[1] = firstHighDword;
     firstSlotDwords = firstSlotDwords + 2;
     secondSlotDwords = secondSlotDwords + 2;
-    dwordPairsRemaining--;
-  } while (dwordPairsRemaining != 0);
+  }
 }
 

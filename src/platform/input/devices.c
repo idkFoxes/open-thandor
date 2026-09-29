@@ -76,8 +76,8 @@ KeyboardEventResult Keyboard_ReadNextEventRegs(void)
     g_KeyboardReadIndex = nextReadIndex;
     /* EAX = key code, EDX = state mask; the decompiled version filled an unused local instead. */
     readEvent.queueEmpty = false;
-    readEvent.eventCode = eventRecord->keyCode00;
-    readEvent.eventData = eventRecord->stateMask04;
+    readEvent.eventCode = eventRecord->keyCode;
+    readEvent.eventData = eventRecord->stateMask;
     return readEvent;
   }
   emptyResult.eventData = nextReadIndex;
@@ -116,6 +116,7 @@ StatusResult DirectInputMouse_Init(void)
   uint16_t keyState;
   TH_LEGACY_HRESULT directInputResult;
   GraphicsTextureSourceAsset *cursorDataOrError;
+  GraphicsCursorFrameRecord *frameRecord;
   uint32_t remainingFrames;
   uint32_t subresourceIndex;
   uint32_t maxHeight;
@@ -164,8 +165,8 @@ StatusResult DirectInputMouse_Init(void)
             LOCK();
             g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayMode;
             UNLOCK();
-            TimerSystem_RegisterPeriodic(20,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
-            TimerSystem_RegisterPeriodic(64,DirectInputMouse_PollBufferedEvents);
+            TimerSystem_RegisterPeriodic(CURSOR_ANIMATION_TIMER_HZ,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
+            TimerSystem_RegisterPeriodic(MOUSE_POLL_TIMER_HZ,DirectInputMouse_PollBufferedEvents);
             g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
             g_PointerSetPosition = DirectInputMouse_SetPosition;
             packageLoadResult = Package_LoadEntry(u_engine_mouse_gfx_00416864);
@@ -190,19 +191,16 @@ StatusResult DirectInputMouse_Init(void)
               resourceLoadResult = Resource_Load(u_engine_mouse_dat_00416886);
               cursorDataOrError = (GraphicsTextureSourceAsset *)resourceLoadResult.bufferOrError;
               if (!resourceLoadResult.failed) {
-                remainingFrames = resourceLoadResult.byteCount >> 5; /* 32-byte GraphicsCursorFrameRecord */
-                g_CursorFrameRecords = (GraphicsCursorFrameRecord *)cursorDataOrError;
+                remainingFrames = resourceLoadResult.byteCount / sizeof(GraphicsCursorFrameRecord);
+                frameRecord = (GraphicsCursorFrameRecord *)cursorDataOrError;
+                g_CursorFrameRecords = frameRecord;
                 g_CursorFrameCount = remainingFrames;
-                /* Ghidra typed the frame cursor as GraphicsTextureSourceAsset; the accesses are the
-                   frame-record offsets: idleSubresourceIndex (+0x18) = idleAnimationFirstSubresourceIndex
-                   (+0x08) and activeSubresourceIndex (+0x1C) = activeAnimationFirstSubresourceIndex (+0x10),
-                   so every cursor starts on the first frame of its animations. */
+                /* every cursor starts on the first frame of its animations */
                 do {
-                  copiedFrameField = (cursorDataOrError->common).buildMetadata.timestamps.dateValue0;
-                  (cursorDataOrError->common).buildMetadata.timestamps.dateValue1 = (cursorDataOrError->common).formatVersion;
-                  (cursorDataOrError->common).buildMetadata.timestamps.timeValue1 = copiedFrameField;
-                  cursorDataOrError = (GraphicsTextureSourceAsset *)
-                         &(cursorDataOrError->common).buildMetadata.timestamps.dateValue2;
+                  copiedFrameField = frameRecord->activeAnimationFirstSubresourceIndex;
+                  frameRecord->idleSubresourceIndex = frameRecord->idleAnimationFirstSubresourceIndex;
+                  frameRecord->activeSubresourceIndex = copiedFrameField;
+                  frameRecord++;
                   remainingFrames--;
                 } while (remainingFrames != 0);
                 keyState = GetKeyState(VK_NUMLOCK);
@@ -392,7 +390,7 @@ void DirectInputMouse_PollBufferedEvents(void)
         }
         else if (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON0) {
           eventType = LEFT_PRESS;
-          if ((g_MouseDeviceEvent.dwData & 0x80) == 0) {
+          if ((g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) == 0) {
             eventType = LEFT_RELEASE;
             g_MouseButtonMask = g_MouseButtonMask & ~LEFT;
           }
@@ -402,7 +400,7 @@ void DirectInputMouse_PollBufferedEvents(void)
         }
         else if ((g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON2) || (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON3)) {
           eventType = MIDDLE_PRESS;
-          if ((g_MouseDeviceEvent.dwData & 0x80) == 0) {
+          if ((g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) == 0) {
             eventType = MIDDLE_RELEASE;
             g_MouseButtonMask = g_MouseButtonMask & ~MIDDLE;
           }
@@ -413,7 +411,7 @@ void DirectInputMouse_PollBufferedEvents(void)
         else {
           if (g_MouseDeviceEvent.dwOfs != DIMOFS_BUTTON1) continue; /* other axes/buttons: ignored */
           eventType = RIGHT_PRESS;
-          if ((g_MouseDeviceEvent.dwData & 0x80) == 0) {
+          if ((g_MouseDeviceEvent.dwData & DIRECTINPUT_BUTTON_DOWN_BIT) == 0) {
             eventType = RIGHT_RELEASE;
             g_MouseButtonMask = g_MouseButtonMask & ~RIGHT;
           }
@@ -422,12 +420,12 @@ void DirectInputMouse_PollBufferedEvents(void)
           }
         }
         nextWriteIndex = g_CursorInputWriteIndex + 1;
-        if (255 < nextWriteIndex) {
+        if (CURSOR_INPUT_EVENT_RING_SIZE - 1 < nextWriteIndex) {
           nextWriteIndex = 0;
         }
         eventRecord = g_CursorInputEvents + g_CursorInputWriteIndex;
         g_CursorInputWriteIndex = nextWriteIndex;
-        eventRecord->eventType00 = eventType;
+        eventRecord->eventType = eventType;
         buttonState = g_MouseButtonMask;
         wheelDelta = g_MouseWheelDelta;
         clockValue = g_CursorInputClockValue;
@@ -458,11 +456,11 @@ void DirectInputMouse_PollBufferedEvents(void)
           g_CursorOverflowTop = 1 - unclampedY;
         }
         g_MouseY = clampedXOrY;
-        g_CursorInputEvents[wasBusyOrEventIndex].pointerX08 = g_MouseX;
-        g_CursorInputEvents[wasBusyOrEventIndex].pointerY0C = clampedXOrY;
-        g_CursorInputEvents[wasBusyOrEventIndex].wheelDelta10 = wheelDelta;
-        g_CursorInputEvents[wasBusyOrEventIndex].clockValue14 = clockValue;
-        g_CursorInputEvents[wasBusyOrEventIndex].buttonState04 = buttonState;
+        g_CursorInputEvents[wasBusyOrEventIndex].pointerX = g_MouseX;
+        g_CursorInputEvents[wasBusyOrEventIndex].pointerY = clampedXOrY;
+        g_CursorInputEvents[wasBusyOrEventIndex].wheelDelta = wheelDelta;
+        g_CursorInputEvents[wasBusyOrEventIndex].clockValue = clockValue;
+        g_CursorInputEvents[wasBusyOrEventIndex].buttonState = buttonState;
         continue;
       }
       if (directInputResult == DIERR_INPUTLOST) {
@@ -471,7 +469,7 @@ void DirectInputMouse_PollBufferedEvents(void)
         if (directInputResult == DI_OK) continue;
       }
       errorAttempts++;
-      if (15 < errorAttempts) break;
+      if (MOUSE_POLL_MAX_ERRORS - 1 < errorAttempts) break;
     }
     g_MouseEventsProcessed = g_MouseEventsProcessed + processedCount;
     g_MousePollBusy = 0;
@@ -631,8 +629,8 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
             (mappedCodeOrMask = KEYBOARD_KEY_CODE_BACKSPACE, virtualKey != VK_BACK)) &&
            (((((mappedCodeOrMask = KEYBOARD_KEY_CODE_PRINT, virtualKey != VK_PRINT && (virtualKey != VK_SNAPSHOT)) &&
               (mappedCodeOrMask = KEYBOARD_KEY_CODE_PAUSE, virtualKey != VK_EXECUTE)) &&
-             ((virtualKey != VK_PAUSE && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE), virtualKey != VK_DELETE)))) &&
-            ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT), virtualKey != VK_INSERT &&
+             ((virtualKey != VK_PAUSE && (mappedCodeOrMask = KEYBOARD_KEY_CODE_DELETE, virtualKey != VK_DELETE)))) &&
+            ((mappedCodeOrMask = KEYBOARD_KEY_CODE_INSERT, virtualKey != VK_INSERT &&
              ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(1), virtualKey != VK_F1 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(2), virtualKey != VK_F2))))))))))
          && (((((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(3), virtualKey != VK_F3 &&
                 ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(4), virtualKey != VK_F4 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(5), virtualKey != VK_F5)) &&
@@ -641,14 +639,14 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
                   ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(9), virtualKey != VK_F9 &&
                    ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(10), virtualKey != VK_F10 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(11), virtualKey != VK_F11))))
                   )))))) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(12), virtualKey != VK_F12)) &&
-              ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_HOME && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_END)) &&
-                (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_PRIOR)) &&
-               ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NEXT && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_LEFT))))))
-             && (((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_RIGHT &&
-                  ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_UP && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_DOWN))))
+              ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_HOME && (mappedCodeOrMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_END)) &&
+                (mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_PRIOR)) &&
+               ((mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NEXT && (mappedCodeOrMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_LEFT))))))
+             && (((mappedCodeOrMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_RIGHT &&
+                  ((mappedCodeOrMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_UP && (mappedCodeOrMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_DOWN))))
                  && (mappedCodeOrMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_SELECT)))))) {
-        /* digits and letters: KEYBOARD_KEY_CODE_CHAR of the ASCII code, letters in lowercase (+ 0x20) */
-        mappedCodeOrMask = virtualKey + 0x30000;
+        /* digits and letters: KEYBOARD_KEY_CODE_CHAR of the ASCII code, letters in lowercase */
+        mappedCodeOrMask = KEYBOARD_KEY_CODE_CHAR(virtualKey);
         if (virtualKey < '0') {
           return;
         }
@@ -656,7 +654,7 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
           if (virtualKey < 'A') {
             return;
           }
-          mappedCodeOrMask = virtualKey + 0x30020;
+          mappedCodeOrMask = KEYBOARD_KEY_CODE_CHAR(virtualKey + ('a' - 'A'));
           if (((('Z' < virtualKey) && (mappedCodeOrMask = '*', virtualKey != VK_MULTIPLY)) &&
               (mappedCodeOrMask = '/', virtualKey != VK_DIVIDE)) &&
              ((mappedCodeOrMask = '+', virtualKey != VK_ADD && (mappedCodeOrMask = '-', virtualKey != VK_SUBTRACT)))) {
@@ -666,15 +664,15 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
             if (VK_DECIMAL < virtualKey) {
               return;
             }
-            mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT);
-            if ((((virtualKey != VK_NUMPAD0) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_NUMPAD1)) &&
-                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_NUMPAD2 &&
-                 (((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NUMPAD3 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_NUMPAD4)) &&
+            mappedCodeOrMask = KEYBOARD_KEY_CODE_INSERT;
+            if ((((virtualKey != VK_NUMPAD0) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_NUMPAD1)) &&
+                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_NUMPAD2 &&
+                 (((mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NUMPAD3 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_NUMPAD4)) &&
                   (mappedCodeOrMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_NUMPAD5)))))) &&
-               (((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_NUMPAD6 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_NUMPAD7)) &&
-                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_NUMPAD8 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_NUMPAD9))))))
+               (((mappedCodeOrMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_NUMPAD6 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_NUMPAD7)) &&
+                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_NUMPAD8 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_NUMPAD9))))))
             {
-              mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE);
+              mappedCodeOrMask = KEYBOARD_KEY_CODE_DELETE;
             }
           }
         }
@@ -682,14 +680,14 @@ void Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
       eventRecord = g_KeyboardEvents + g_KeyboardWriteIndex;
       nextWriteIndex = g_KeyboardWriteIndex + 1;
       g_KeyboardWriteIndex = g_KeyboardWriteIndex + 1;
-      eventRecord->keyCode00 = mappedCodeOrMask;
-      g_KeyboardEvents[writeIndex].stateMask04 = queuedStateMask;
+      eventRecord->keyCode = mappedCodeOrMask;
+      g_KeyboardEvents[writeIndex].stateMask = queuedStateMask;
       /* KEYBOARD_KEY_CODE_SPECIAL family: remember the key as held */
-      if ((mappedCodeOrMask & 0xffff0000) == 0x10000) {
-        g_KeyboardSpecialKeyDown[mappedCodeOrMask & 0xffff] = 1;
+      if ((mappedCodeOrMask & KEYBOARD_KEY_CODE_FAMILY_MASK) == KEYBOARD_KEY_CODE_SPECIAL(0)) {
+        g_KeyboardSpecialKeyDown[mappedCodeOrMask & KEYBOARD_KEY_CODE_INDEX_MASK] = 1;
       }
-      /* wrap the 64-entry ring */
-      if (0x3f < nextWriteIndex) {
+      /* wrap the ring */
+      if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
         g_KeyboardWriteIndex = 0;
       }
       return;
@@ -736,13 +734,13 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
            (((virtualKey != VK_TAB && (virtualKey != VK_BACK)) && (virtualKey != VK_PRINT)))) &&
           ((virtualKey != VK_SNAPSHOT && (virtualKey != VK_EXECUTE)))) &&
          (((virtualKey != VK_PAUSE &&
-           (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE), virtualKey != VK_DELETE && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT), virtualKey != VK_INSERT)) &&
-            (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_HOME)))) &&
-          (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_END && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_PRIOR)) &&
-           ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NEXT &&
-            (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_LEFT && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_RIGHT)) &&
-             ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_UP &&
-              ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_DOWN && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_SELECT)))))))))
+           (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DELETE, virtualKey != VK_DELETE && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_INSERT, virtualKey != VK_INSERT)) &&
+            (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_HOME)))) &&
+          (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_END && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_PRIOR)) &&
+           ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NEXT &&
+            (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_LEFT && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_RIGHT)) &&
+             ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_UP &&
+              ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_DOWN && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_SELECT)))))))))
            ))))) {
         mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
         if (virtualKey < '0') {
@@ -759,21 +757,21 @@ void Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
             if (VK_F12 < virtualKey) {
               return;
             }
-            mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT);
-            if ((((((virtualKey != VK_NUMPAD0) && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_NUMPAD1)) &&
-                  (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_NUMPAD2)) &&
-                 ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NUMPAD3 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_NUMPAD4)))) &&
+            mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_INSERT;
+            if ((((((virtualKey != VK_NUMPAD0) && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_END, virtualKey != VK_NUMPAD1)) &&
+                  (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DOWN, virtualKey != VK_NUMPAD2)) &&
+                 ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_DOWN, virtualKey != VK_NUMPAD3 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_LEFT, virtualKey != VK_NUMPAD4)))) &&
                 (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_NUMPAD5 &&
-                  ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_NUMPAD6 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_NUMPAD7))))
-                 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_NUMPAD8)))) &&
-               ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_NUMPAD9 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE), virtualKey != VK_DECIMAL)))) {
+                  ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_RIGHT, virtualKey != VK_NUMPAD6 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_HOME, virtualKey != VK_NUMPAD7))))
+                 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_UP, virtualKey != VK_NUMPAD8)))) &&
+               ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_PAGE_UP, virtualKey != VK_NUMPAD9 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_DELETE, virtualKey != VK_DECIMAL)))) {
               mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
             }
           }
         }
       }
-      if ((mappedCodeOrToggleMask & 0xffff0000) == 0x10000) {
-        g_KeyboardSpecialKeyDown[mappedCodeOrToggleMask & 0xffff] = 0;
+      if ((mappedCodeOrToggleMask & KEYBOARD_KEY_CODE_FAMILY_MASK) == KEYBOARD_KEY_CODE_SPECIAL(0)) {
+        g_KeyboardSpecialKeyDown[mappedCodeOrToggleMask & KEYBOARD_KEY_CODE_INDEX_MASK] = 0;
       }
       return;
     }
@@ -804,8 +802,8 @@ void Keyboard_OnChar(KeyboardCharacterCode character)
   if (((g_KeyboardStateMask & KEYBOARD_STATE_CTRL) != 0) && (keyCode < 26 + 1)) {
     keyCode = keyCode + ('a' - 1);
   }
-  g_KeyboardEvents[writeIndex].stateMask04 = g_KeyboardStateMask;
-  eventRecord->keyCode00 = keyCode;
+  g_KeyboardEvents[writeIndex].stateMask = g_KeyboardStateMask;
+  eventRecord->keyCode = keyCode;
   if (KEYBOARD_EVENT_RING_SIZE - 1 < nextWriteIndex) {
     g_KeyboardWriteIndex = 0;
   }

@@ -87,23 +87,17 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
           (AngleTurn32 elevationAngle,int screenDelta,WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 *coordinateField;
   FixedDirection translationDelta;
 
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
-                    (elevationAngle,(worldRuntime->motion).headingAngle + FIXED_ANGLE16_THREE_QUARTER_TURN & 0xffff,
+                    (elevationAngle,worldRuntime->motion.headingAngle + FIXED_ANGLE16_THREE_QUARTER_TURN & 0xffff,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 + translationDelta.x;
-  coordinateField = &(worldRuntime->motion).positionYQ12;
-  *coordinateField = *coordinateField + translationDelta.y;
-  coordinateField = &(worldRuntime->motion).positionZQ12;
-  *coordinateField = *coordinateField + translationDelta.z;
-  coordinateField = &(worldRuntime->motion).targetPositionXQ12;
-  *coordinateField = *coordinateField + translationDelta.x;
-  coordinateField = &(worldRuntime->motion).targetPositionYQ12;
-  *coordinateField = *coordinateField + translationDelta.y;
-  coordinateField = &(worldRuntime->motion).targetPositionZQ12;
-  *coordinateField = *coordinateField + translationDelta.z;
+  worldRuntime->motion.positionXQ12 += translationDelta.x;
+  worldRuntime->motion.positionYQ12 += translationDelta.y;
+  worldRuntime->motion.positionZQ12 += translationDelta.z;
+  worldRuntime->motion.targetPositionXQ12 += translationDelta.x;
+  worldRuntime->motion.targetPositionYQ12 += translationDelta.y;
+  worldRuntime->motion.targetPositionZQ12 += translationDelta.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -118,31 +112,25 @@ void WorldMotion_TranslateCurrentAndTargetByInputElevationAndHeadingQuarterTurn
 void WorldMotion_TranslateCurrentAndTargetByPitchQuarterTurn(int screenDelta,WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 *coordinateField;
   AngleTurn32 azimuthAngle;
   AngleTurn32 elevationAngle;
   FixedDirection translationDelta;
 
-  azimuthAngle = (worldRuntime->motion).headingAngle;
-  elevationAngle = (worldRuntime->motion).pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
+  azimuthAngle = worldRuntime->motion.headingAngle;
+  elevationAngle = worldRuntime->motion.pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
   if ((int)elevationAngle < -FIXED_ANGLE16_QUARTER_TURN) {
-    elevationAngle = -(worldRuntime->motion).pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
+    elevationAngle = -worldRuntime->motion.pitchAngle - FIXED_ANGLE16_QUARTER_TURN;
     azimuthAngle = azimuthAngle + FIXED_ANGLE16_HALF_TURN & 0xffff;
   }
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
                     (elevationAngle,azimuthAngle,screenDelta * _k_CameraScreenDeltaDistanceScaleQ16)
   ;
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 + translationDelta.x;
-  coordinateField = &(worldRuntime->motion).positionYQ12;
-  *coordinateField = *coordinateField + translationDelta.y;
-  coordinateField = &(worldRuntime->motion).positionZQ12;
-  *coordinateField = *coordinateField + translationDelta.z;
-  coordinateField = &(worldRuntime->motion).targetPositionXQ12;
-  *coordinateField = *coordinateField + translationDelta.x;
-  coordinateField = &(worldRuntime->motion).targetPositionYQ12;
-  *coordinateField = *coordinateField + translationDelta.y;
-  coordinateField = &(worldRuntime->motion).targetPositionZQ12;
-  *coordinateField = *coordinateField + translationDelta.z;
+  worldRuntime->motion.positionXQ12 += translationDelta.x;
+  worldRuntime->motion.positionYQ12 += translationDelta.y;
+  worldRuntime->motion.positionZQ12 += translationDelta.z;
+  worldRuntime->motion.targetPositionXQ12 += translationDelta.x;
+  worldRuntime->motion.targetPositionYQ12 += translationDelta.y;
+  worldRuntime->motion.targetPositionZQ12 += translationDelta.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -157,24 +145,18 @@ void WorldMotion_TranslateCurrentAndTargetByNegatedPitchReverseHeading
           (int screenDelta,WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 *coordinateField;
   FixedDirection translationDelta;
 
   translationDelta = FixedMath_DirectionFromAnglesScaledRegs
-                    (-(worldRuntime->motion).pitchAngle,
-                     (worldRuntime->motion).headingAngle + FIXED_ANGLE16_HALF_TURN & 0xffff,
+                    (-worldRuntime->motion.pitchAngle,
+                     worldRuntime->motion.headingAngle + FIXED_ANGLE16_HALF_TURN & 0xffff,
                      screenDelta * _k_CameraScreenDeltaDistanceScaleQ16);
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 + translationDelta.x;
-  coordinateField = &(worldRuntime->motion).positionYQ12;
-  *coordinateField = *coordinateField + translationDelta.y;
-  coordinateField = &(worldRuntime->motion).positionZQ12;
-  *coordinateField = *coordinateField + translationDelta.z;
-  coordinateField = &(worldRuntime->motion).targetPositionXQ12;
-  *coordinateField = *coordinateField + translationDelta.x;
-  coordinateField = &(worldRuntime->motion).targetPositionYQ12;
-  *coordinateField = *coordinateField + translationDelta.y;
-  coordinateField = &(worldRuntime->motion).targetPositionZQ12;
-  *coordinateField = *coordinateField + translationDelta.z;
+  worldRuntime->motion.positionXQ12 += translationDelta.x;
+  worldRuntime->motion.positionYQ12 += translationDelta.y;
+  worldRuntime->motion.positionZQ12 += translationDelta.z;
+  worldRuntime->motion.targetPositionXQ12 += translationDelta.x;
+  worldRuntime->motion.targetPositionYQ12 += translationDelta.y;
+  worldRuntime->motion.targetPositionZQ12 += translationDelta.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -191,15 +173,15 @@ void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRu
   uint32_t azimuthAngle;
   FixedDirection cameraOffset;
   
-  azimuthAngle = (worldRuntime->motion).headingAngle +
+  azimuthAngle = worldRuntime->motion.headingAngle +
                  headingDeltaInput * g_WorldMotionHeadingInputScale & 0xffff;
-  (worldRuntime->motion).headingAngle = azimuthAngle;
+  worldRuntime->motion.headingAngle = azimuthAngle;
   cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
-                    ((worldRuntime->motion).pitchAngle,azimuthAngle,
-                     (worldRuntime->motion).targetDistanceQ12);
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).targetPositionXQ12 - cameraOffset.x;
-  (worldRuntime->motion).positionYQ12 = (worldRuntime->motion).targetPositionYQ12 - cameraOffset.y;
-  (worldRuntime->motion).positionZQ12 = (worldRuntime->motion).targetPositionZQ12 - cameraOffset.z;
+                    (worldRuntime->motion.pitchAngle,azimuthAngle,
+                     worldRuntime->motion.targetDistanceQ12);
+  worldRuntime->motion.positionXQ12 = worldRuntime->motion.targetPositionXQ12 - cameraOffset.x;
+  worldRuntime->motion.positionYQ12 = worldRuntime->motion.targetPositionYQ12 - cameraOffset.y;
+  worldRuntime->motion.positionZQ12 = worldRuntime->motion.targetPositionZQ12 - cameraOffset.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -213,8 +195,8 @@ void WorldMotion_AdjustHeadingAndRecomputePosition(int headingDeltaInput,WorldRu
 void WorldMotion_AdjustHeadingAndClearFieldGridDirty(int headingDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
-  (worldRuntime->motion).headingAngle =
-       (worldRuntime->motion).headingAngle - headingDeltaInput * g_WorldMotionHeadingInputScale &
+  worldRuntime->motion.headingAngle =
+       worldRuntime->motion.headingAngle - headingDeltaInput * g_WorldMotionHeadingInputScale &
        0xffff;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
@@ -235,7 +217,7 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
   FixedDirection cameraOffset;
 
   requestedDistanceQ12 = distanceDeltaInput * g_WorldMotionDistanceInputScaleQ12 +
-          (worldRuntime->motion).committedDistanceQ12;
+          worldRuntime->motion.committedDistanceQ12;
   clampedDistanceQ12 = requestedDistanceQ12;
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)worldRuntime->maximumCameraDistanceQ12 < (int)requestedDistanceQ12) {
@@ -245,22 +227,23 @@ void WorldMotion_AdjustDistanceClampAndRecomputePosition(int distanceDeltaInput,
       clampedDistanceQ12 = worldRuntime->minimumCameraDistanceQ12;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & 0x200) != 0) &&
+  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
            (clampedDistanceQ12 = g_WorldMotionAlternateMaximumDistanceQ12,
            (int)requestedDistanceQ12 <= (int)g_WorldMotionAlternateMaximumDistanceQ12)) &&
-          (clampedDistanceQ12 = requestedDistanceQ12, (int)requestedDistanceQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
+          (clampedDistanceQ12 = requestedDistanceQ12,
+           (int)requestedDistanceQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
     clampedDistanceQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
   }
   if ((int)clampedDistanceQ12 < WORLD_MOTION_MINIMUM_DISTANCE_Q12) {
     clampedDistanceQ12 = WORLD_MOTION_MINIMUM_DISTANCE_Q12;
   }
-  (worldRuntime->motion).targetDistanceQ12 = clampedDistanceQ12;
-  (worldRuntime->motion).committedDistanceQ12 = clampedDistanceQ12;
+  worldRuntime->motion.targetDistanceQ12 = clampedDistanceQ12;
+  worldRuntime->motion.committedDistanceQ12 = clampedDistanceQ12;
   cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
-                    ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,clampedDistanceQ12);
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).targetPositionXQ12 - cameraOffset.x;
-  (worldRuntime->motion).positionYQ12 = (worldRuntime->motion).targetPositionYQ12 - cameraOffset.y;
-  (worldRuntime->motion).positionZQ12 = (worldRuntime->motion).targetPositionZQ12 - cameraOffset.z;
+                    (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,clampedDistanceQ12);
+  worldRuntime->motion.positionXQ12 = worldRuntime->motion.targetPositionXQ12 - cameraOffset.x;
+  worldRuntime->motion.positionYQ12 = worldRuntime->motion.targetPositionYQ12 - cameraOffset.y;
+  worldRuntime->motion.positionZQ12 = worldRuntime->motion.targetPositionZQ12 - cameraOffset.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -277,7 +260,7 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
   UQ12 requestedMagnitudeQ12;
   UQ12 clampedMagnitudeQ12;
 
-  requestedMagnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12 -
+  requestedMagnitudeQ12 = worldRuntime->motion.positionMagnitudeQ12 -
           magnitudeDeltaInput * g_WorldMotionPositionMagnitudeInputScaleQ12;
   clampedMagnitudeQ12 = requestedMagnitudeQ12;
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
@@ -288,16 +271,17 @@ void WorldMotion_AdjustPositionMagnitudeClamp(int magnitudeDeltaInput,WorldRunti
       clampedMagnitudeQ12 = worldRuntime->minimumCameraDistanceQ12;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & 0x200) != 0) &&
+  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
            (clampedMagnitudeQ12 = g_WorldMotionAlternateMaximumDistanceQ12,
            (int)requestedMagnitudeQ12 <= (int)g_WorldMotionAlternateMaximumDistanceQ12)) &&
-          (clampedMagnitudeQ12 = requestedMagnitudeQ12, (int)requestedMagnitudeQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
+          (clampedMagnitudeQ12 = requestedMagnitudeQ12,
+           (int)requestedMagnitudeQ12 < (int)g_WorldMotionAlternateMinimumDistanceQ12)) {
     clampedMagnitudeQ12 = g_WorldMotionAlternateMinimumDistanceQ12;
   }
   if ((int)clampedMagnitudeQ12 < WORLD_MOTION_MINIMUM_DISTANCE_Q12) {
     clampedMagnitudeQ12 = WORLD_MOTION_MINIMUM_DISTANCE_Q12;
   }
-  (worldRuntime->motion).positionMagnitudeQ12 = clampedMagnitudeQ12;
+  worldRuntime->motion.positionMagnitudeQ12 = clampedMagnitudeQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -316,20 +300,21 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
   AngleTurn32 clampedPitchAngle;
   FixedDirection cameraOffset;
 
-  requestedPitchAngle = (worldRuntime->motion).pitchAngle + pitchDeltaInput * g_WorldMotionPitchInputScale;
+  requestedPitchAngle = worldRuntime->motion.pitchAngle + pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)(worldRuntime->motion).maximumPitchAngle < (int)requestedPitchAngle) {
-      clampedPitchAngle = (worldRuntime->motion).maximumPitchAngle;
+      clampedPitchAngle = worldRuntime->motion.maximumPitchAngle;
     }
     else if ((int)requestedPitchAngle < (int)(worldRuntime->motion).minimumPitchAngle) {
-      clampedPitchAngle = (worldRuntime->motion).minimumPitchAngle;
+      clampedPitchAngle = worldRuntime->motion.minimumPitchAngle;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & 0x200) != 0) &&
+  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
            (clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle,
            (int)requestedPitchAngle <= (int)g_WorldMotionAlternateMaximumPitchAngle)) &&
-          (clampedPitchAngle = requestedPitchAngle, (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
+          (clampedPitchAngle = requestedPitchAngle,
+           (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
     clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
   }
   if ((int)clampedPitchAngle < FIXED_ANGLE16_QUARTER_TURN + 1) {
@@ -340,13 +325,13 @@ void WorldMotion_AdjustPitchClampAndRecomputePosition(int pitchDeltaInput,WorldR
   else {
     clampedPitchAngle = FIXED_ANGLE16_QUARTER_TURN;
   }
-  (worldRuntime->motion).pitchAngle = clampedPitchAngle;
+  worldRuntime->motion.pitchAngle = clampedPitchAngle;
   cameraOffset = FixedMath_DirectionFromAnglesScaledRegs
-                    (clampedPitchAngle,(worldRuntime->motion).headingAngle,
-                     (worldRuntime->motion).targetDistanceQ12);
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).targetPositionXQ12 - cameraOffset.x;
-  (worldRuntime->motion).positionYQ12 = (worldRuntime->motion).targetPositionYQ12 - cameraOffset.y;
-  (worldRuntime->motion).positionZQ12 = (worldRuntime->motion).targetPositionZQ12 - cameraOffset.z;
+                    (clampedPitchAngle,worldRuntime->motion.headingAngle,
+                     worldRuntime->motion.targetDistanceQ12);
+  worldRuntime->motion.positionXQ12 = worldRuntime->motion.targetPositionXQ12 - cameraOffset.x;
+  worldRuntime->motion.positionYQ12 = worldRuntime->motion.targetPositionYQ12 - cameraOffset.y;
+  worldRuntime->motion.positionZQ12 = worldRuntime->motion.targetPositionZQ12 - cameraOffset.z;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -363,20 +348,21 @@ void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,Worl
   AngleTurn32 requestedPitchAngle;
   AngleTurn32 clampedPitchAngle;
 
-  requestedPitchAngle = (worldRuntime->motion).pitchAngle - pitchDeltaInput * g_WorldMotionPitchInputScale;
+  requestedPitchAngle = worldRuntime->motion.pitchAngle - pitchDeltaInput * g_WorldMotionPitchInputScale;
   clampedPitchAngle = requestedPitchAngle;
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)(worldRuntime->motion).maximumPitchAngle < (int)requestedPitchAngle) {
-      clampedPitchAngle = (worldRuntime->motion).maximumPitchAngle;
+      clampedPitchAngle = worldRuntime->motion.maximumPitchAngle;
     }
     else if ((int)requestedPitchAngle < (int)(worldRuntime->motion).minimumPitchAngle) {
-      clampedPitchAngle = (worldRuntime->motion).minimumPitchAngle;
+      clampedPitchAngle = worldRuntime->motion.minimumPitchAngle;
     }
   }
-  else if ((((worldRuntime->runtimeFlags & 0x200) != 0) &&
+  else if ((((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE) != 0) &&
            (clampedPitchAngle = g_WorldMotionAlternateMaximumPitchAngle,
            (int)requestedPitchAngle <= (int)g_WorldMotionAlternateMaximumPitchAngle)) &&
-          (clampedPitchAngle = requestedPitchAngle, (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
+          (clampedPitchAngle = requestedPitchAngle,
+           (int)requestedPitchAngle < (int)g_WorldMotionAlternateMinimumPitchAngle)) {
     clampedPitchAngle = g_WorldMotionAlternateMinimumPitchAngle;
   }
   if ((int)clampedPitchAngle < FIXED_ANGLE16_QUARTER_TURN + 1) {
@@ -387,7 +373,7 @@ void WorldMotion_AdjustPitchClampAndClearFieldGridDirty(int pitchDeltaInput,Worl
   else {
     clampedPitchAngle = FIXED_ANGLE16_QUARTER_TURN;
   }
-  (worldRuntime->motion).pitchAngle = clampedPitchAngle;
+  worldRuntime->motion.pitchAngle = clampedPitchAngle;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -410,29 +396,26 @@ void WorldRuntime_TranslateCameraByScreenDelta
   FixedSinCosEdxEax8 sideMovementDeltaXYQ12;
   Q12 *motionCoordinateField;
 
-  distanceScaleOrSideDeltaY = (int)(_k_CameraScreenDeltaDistanceScaleQ16 * (worldRuntime->motion).targetDistanceQ12) >>
-          0x10;
-  angle = (worldRuntime->motion).headingAngle;
+  distanceScaleOrSideDeltaY =
+       (int)(_k_CameraScreenDeltaDistanceScaleQ16 * worldRuntime->motion.targetDistanceQ12) >> 0x10;
+  angle = worldRuntime->motion.headingAngle;
   movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaDown * distanceScaleOrSideDeltaY);
   THANDOR_PART(uint32_t, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 0x20);
-  (worldRuntime->motion).positionXQ12 =
-       (worldRuntime->motion).positionXQ12 - (int)movementDeltaXYQ12;
-  motionCoordinateField = &(worldRuntime->motion).positionYQ12;
+  worldRuntime->motion.positionXQ12 =
+       worldRuntime->motion.positionXQ12 - (int)movementDeltaXYQ12;
+  motionCoordinateField = &worldRuntime->motion.positionYQ12;
   *motionCoordinateField = *motionCoordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
-  coordinateField = &(worldRuntime->motion).targetPositionXQ12;
+  coordinateField = &worldRuntime->motion.targetPositionXQ12;
   *coordinateField = *coordinateField - (int)movementDeltaXYQ12;
-  coordinateField = &(worldRuntime->motion).targetPositionYQ12;
+  coordinateField = &worldRuntime->motion.targetPositionYQ12;
   *coordinateField = *coordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
-  /* angles are 16-bit turns: +0x4000 is a quarter turn */
-  sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + 0x4000 & 0xffff,screenDeltaRight * distanceScaleOrSideDeltaY);
+  sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + FIXED_ANGLE16_QUARTER_TURN & 0xffff,
+                                                  screenDeltaRight * distanceScaleOrSideDeltaY);
   distanceScaleOrSideDeltaY = (int)(sideMovementDeltaXYQ12 >> 0x20);
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 - (int)sideMovementDeltaXYQ12;
-  coordinateField = &(worldRuntime->motion).positionYQ12;
-  *coordinateField = *coordinateField - distanceScaleOrSideDeltaY;
-  coordinateField = &(worldRuntime->motion).targetPositionXQ12;
-  *coordinateField = *coordinateField - (int)sideMovementDeltaXYQ12;
-  coordinateField = &(worldRuntime->motion).targetPositionYQ12;
-  *coordinateField = *coordinateField - distanceScaleOrSideDeltaY;
+  worldRuntime->motion.positionXQ12 -= (int)sideMovementDeltaXYQ12;
+  worldRuntime->motion.positionYQ12 -= distanceScaleOrSideDeltaY;
+  worldRuntime->motion.targetPositionXQ12 -= (int)sideMovementDeltaXYQ12;
+  worldRuntime->motion.targetPositionYQ12 -= distanceScaleOrSideDeltaY;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }

@@ -13,9 +13,8 @@
 
 /* Submodule: world/pathing/influence. */
 
-/* Byte offset of the model radius in a model definition record (definitionOrClassRecord); 0 = no grid influence.
+/* The influence radius is ModelDefinition.placementRadiusOrClearanceDC (+0xDC); 0 = no grid influence.
    Placement and selection read the same field. */
-#define MODEL_DEFINITION_RADIUS_OFFSET 0xdc
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00527330 */
@@ -37,7 +36,7 @@ void GridInfluence_AddNoOp(GameEntityRuntime *entityRuntime);
 void GridInfluence_RemoveNoOp(GameEntityRuntime *entityRuntime);
 
 /* 0x00535A30 */
-void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entityListHead);
+void GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode *entityListHead);
 
 /* 0x00535330 */
 void GridInfluence_SetLowDistanceBandsAroundWorldPoint(FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12);

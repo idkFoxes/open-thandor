@@ -27,6 +27,25 @@
 #define FIXED_ANGLE16_HALF_TURN 0x8000
 #define FIXED_ANGLE16_THREE_QUARTER_TURN 0xC000
 #define FIXED_ANGLE16_FULL_TURN 0x10000
+/* Wraps an angle to 16 bits (one full turn) before a g_FixedSinQ28/g_FixedCosQ28 lookup */
+#define FIXED_ANGLE16_MASK 0xffff
+
+/* The low 32 bits of a signed 64-bit product shifted right by `shift` (0 < shift < 32): the original's
+   SHLD EDX,EAX,32-shift / SHRD EAX,EDX,shift, which drops the fixed-point factor of a product (28 for a Q28
+   factor, 12 for Q12). Written as the two halves so the compiler emits the same SHLD form. */
+#define FIXED_PRODUCT_SHR(product, shift) \
+  ((int)((uint64_t)(product) >> 32) << (32 - (shift)) | (uint32_t)(product) >> (shift))
+/* CosineDerivedLookupTables_Init: two 256x256 tables of shorts (the .sam codec's cosine transform) */
+#define COSINE_DERIVED_TABLE_ORDER 256
+#define COSINE_DERIVED_TABLE_ANGLE_STEP 0x40 /* pi/512 in angle16 units */
+#define COSINE_DERIVED_INV_SQRT2_Q12 2896 /* 1/sqrt(2) in Q12: row 0 of the first table */
+#define COSINE_DERIVED_INV_SQRT2_Q14 11585 /* 1/sqrt(2) in Q14: entry 0 of each row of the second table */
+
+/* High 32 bits of the signed 64-bit product a * b (the EDX of a one-operand IMUL) */
+#define FIXED_MUL_HIGH(a, b) ((int)((uint64_t)((int64_t)(a) * (int64_t)(b)) >> 32))
+/* FixedMath_UInt64Sqrt of a 64-bit sum of squares, passed as its high and low halves */
+#define FIXED_UINT64_SQRT(value) \
+  FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)(value) >> 32),(UInt64Half32)(value))
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BECB0 */

@@ -75,6 +75,11 @@
 /* gaugeFlags of UiFormattedContainer. */
 #define UI_GAUGE_TWO_SIDED_SCALE 0x01
 #define UI_GAUGE_HAS_MARKER 0x02 /* the node is a UiFormattedContainerWithMarker */
+/* UiFormattedContainer_DrawClipped: frame offsets from firstFrameSubresource. Each bar look is three frames
+   (left cap, tiled middle, right cap); the empty bar is look 0, the six fill colours start at 3, 6, ... 18. */
+#define UI_GAUGE_FRAME_TRACK 1
+#define UI_GAUGE_FRAME_END_CAP 2
+#define UI_GAUGE_FRAME_MARKER 21
 
 /* editStateFlags bits of UiPathTextEditControl beyond UiTextEditStateFlags; bits 1-2 are passed on to
    g_FileSystemValidateDos83Path. */
@@ -84,9 +89,29 @@
 /* Code units of the fixed text buffers (the terminator included). */
 #define UI_NUMERIC_TEXT_BUFFER_UNITS 16
 #define UI_PATH_TEXT_BUFFER_UNITS 256
+/* Byte capacity of each expanded-text scratch buffer of UiPointerList_CompareExpandedTextFlags. */
+#define UI_POINTER_LIST_COMPARE_SCRATCH_BYTES 0x400
 
 /* The top byte of editStateFlags (text edits) and listStateFlags (text lists) counts frames down. */
 #define UI_STATE_FRAME_COUNTER_UNIT 0x1000000
+#define UI_STATE_FLAGS_MASK 0xffffff /* the flag bits below the counter */
+
+/* Packed text style (UiPackedTextStyle): a control's own style (packedTextStyle, styleOverride) may replace
+   the font byte and the palette byte of the state style (UI_BUTTON_OWN_STYLE_*, UI_LABEL_OWN_STYLE_*). */
+#define UI_TEXT_STYLE_FONT_BYTE 0xff000000u
+#define UI_TEXT_STYLE_PALETTE_BYTE 0x00ff0000u
+
+/* UiTooltip_Draw: the one-line tooltip box from g_UiWindowTextureSource, and the dimming of the whole screen
+   while no root is open (black at half alpha). */
+#define UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT 0xBC
+#define UI_WINDOW_SUBRESOURCE_TOOLTIP_MIDDLE 0xBD
+#define UI_WINDOW_SUBRESOURCE_TOOLTIP_RIGHT 0xBE
+#define UI_TOOLTIP_NO_ROOT_DIM_ARGB 0x80000000
+/* UiGraphicsAdapterTextButton_DrawFormattedAdapterText: stateFlags bits choosing the payloads, and the text
+   shown as device name of the primary display adapter (GUID 0). */
+#define UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER 0x80
+#define UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME 0x800
+#define TEXT_ID_PRIMARY_DISPLAY_ADAPTER 0x111
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004B0200 */

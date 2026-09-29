@@ -103,7 +103,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
       acceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount;
       if (checkResult) {
         g_ArmyPlacementAcceptedCandidateCount = 0;
-        if (acceptedCandidateCount < 2) goto InGameWorldOverlay_RefreshTransientEffectMarkers;
+        if (acceptedCandidateCount < 2) goto RefreshMarkers;
         previewTint = OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB;
       }
       armyAssetId = *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8);
@@ -131,7 +131,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
         currentModelNode->tintArgb = previewTint;
         recordOrCount = *classRecord;
         ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
-        if (((((ModelDefinitionRuntimeSemanticView280 *)recordOrCount)->runtimeClassId4C == 0xd) &&
+        if (((((ModelDefinition *)recordOrCount)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) &&
             (3 < currentModelNode->childCount)) &&
            (currentModelNode->childNodes[3] != NULL)) {
           /* class-13 armies keep child node 3 opaque */
@@ -145,7 +145,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,g_InGamePlacementPreviewArmyRuntime);
     g_InGamePlacementPreviewArmyRuntime = NULL;
   }
-InGameWorldOverlay_RefreshTransientEffectMarkers:
+RefreshMarkers:
   if (releaseMode == GRAPHICS_STATE_DISABLED) {
     markerDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0143_EGATH0);
     if (!markerDefinition.notFound) {
@@ -157,8 +157,8 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
       do {
         if (((modelNodeCursor->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (armySlot = (modelNodeCursor->runtimePayload).armyRuntime,
-            ((armySlot->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd)) &&
-           (((armySlot->runtimeFlags & 0x800) != 0 &&
+            armySlot->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13)) &&
+           (((armySlot->runtimeFlags & ARMY_MODEL_STATE_RALLY_POINT_SET) != 0 &&
             ((armySlot->linkedEntityRuntime->common).ownership.ownerIndex ==
              worldRuntime->activeFactionRuntimeIndex)))) {
           surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
@@ -193,8 +193,8 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
           if ((entityRuntime != NULL) &&
              (worldRuntime->activeFactionRuntimeIndex == (entityRuntime->common).ownership.ownerIndex)) {
             if ((((ModelRuntimeSlot *)(entityRuntime->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
-                 runtimeDefinition->runtimeValue18 != 0)
-               && (((entityRuntime->common).commandFlags & 1) != 0)) {
+                 runtimeDefinition->accelerationPerTick18 != 0)
+               && (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_ACTIVE) != 0)) {
               InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                         (0x1000,(entityRuntime->common).ownership.modelNode,
                          (entityRuntime->common).pathCoordinate1Q12,(entityRuntime->common).pathCoordinate0Q12,
@@ -202,20 +202,20 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
               if (OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount) {
                 return;
               }
-              if (((entityRuntime->common).commandFlags & 8) != 0) {
-                /* further waypoints: (x, y) Q12 pairs at +0xC0, their count at +0xA8 */
+              if (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) != 0) {
+                /* further waypoints: the army's queued waypoints */
                 indexOrCount = 0;
                 do {
                   InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                             (0x1000,(entityRuntime->common).ownership.modelNode,
-                             *(Q12 *)((entityRuntime->common).reservedC0_EB + indexOrCount * 8 + 4),
-                             *(Q12 *)((entityRuntime->common).reservedC0_EB + indexOrCount * 8),
+                             ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[indexOrCount].worldYQ12,
+                             ((ArmyMovementRuntime *)entityRuntime)->queuedWaypoints[indexOrCount].worldXQ12,
                              markerDefinition.definitionOrError,worldRuntime);
                   indexOrCount++;
                   if (OVERLAY_COMMAND_TARGET_MARKER_CAPACITY - 1 < g_InGameCommandTargetTransientEffectMarkerCount) {
                     return;
                   }
-                } while (indexOrCount < *(uint32_t *)((entityRuntime->common).reservedA4_B7 + 4));
+                } while (indexOrCount < ((ArmyMovementRuntime *)entityRuntime)->queuedWaypointCount);
               }
             }
             if ((((entityRuntime->common).commandTarget.targetFlags & 2) != 0) &&
@@ -257,7 +257,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
         effectSlot = *ownedEffectCursor;
         currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
         InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)currentModelNode);
+        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)currentModelNode);
         (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
         ownedEffectCursor = ownedEffectCursor + 1;
         recordOrCount--;
@@ -271,7 +271,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
         effectSlot = *commandTargetEffectCursor;
         currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
         InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)currentModelNode);
+        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)currentModelNode);
         (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
         commandTargetEffectCursor = commandTargetEffectCursor + 1;
         indexOrCount = indexOrCount - 1;
@@ -315,7 +315,7 @@ void SelectionOverlay_RenderSelectedArmyMetrics
                   (clipTop,clipLeft,clipBottom,clipRight,g_ModelProjectedBoundsPixels.maxY,
                    g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                    g_ModelProjectedBoundsPixels.minX,
-                   (RuntimeModelFactionPrefix10 *)*selectionSlotCursor); /* EDX: the entity (lost local) */
+                   (RuntimeModelFactionPrefix *)*selectionSlotCursor); /* EDX: the entity (lost local) */
       }
     }
     selectionSlotCursor++;
@@ -361,7 +361,7 @@ void SelectionOverlay_RenderArmyMetricsForEntity
                 (clipTop,clipLeft,clipBottom,clipRight,g_ModelProjectedBoundsPixels.maxY,
                  g_ModelProjectedBoundsPixels.maxX,g_ModelProjectedBoundsPixels.minY,
                  g_ModelProjectedBoundsPixels.minX,
-                 (RuntimeModelFactionPrefix10 *)entity); /* EDX: the entity (lost local) */
+                 (RuntimeModelFactionPrefix *)entity); /* EDX: the entity (lost local) */
       g_SelectionPanelTextureSource = savedTextureSource;
       g_SelectionPanelData = savedPanelData;
     }
@@ -686,9 +686,8 @@ void SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
         if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_B_NOT_PROJECTED) == 0) &&
            ((cellCursor->flagsAndMaterial &
             (FIELD_CELL_FLUID_SOURCE_EXCLUDED|FIELD_CELL_FLUID_RECEIVER_EXCLUDED)) != 0)) {
-          /* projectedPointB (cell +0x2C) */
-          screenX = *(int *)(cellCursor->runtime0C_3F + 0x20) >> 12;
-          screenY = *(int *)(cellCursor->runtime0C_3F + 0x24) >> 12;
+          screenX = cellCursor->secondarySurfaceScreenPoint.projectedX >> 12;
+          screenY = cellCursor->secondarySurfaceScreenPoint.projectedY >> 12;
           sourceTextureId = SELECTION_OVERLAY_MARKER_FLUID_SOURCE_EXCLUDED;
           receiverTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;
           sourceTextureSource = g_SelectionPanelTextureSource;
@@ -773,9 +772,8 @@ void SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
       do {
         if (((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0) &&
            ((cellCursor->flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) != 0)) {
-          /* projectedPointA (cell +0x0C) */
-          screenX = *(int *)cellCursor->runtime0C_3F >> 12;
-          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 12;
+          screenX = cellCursor->groundScreenPoint.projectedX >> 12;
+          screenY = cellCursor->groundScreenPoint.projectedY >> 12;
           otherTextureId = SELECTION_OVERLAY_MARKER_OTHER_RESOURCE;
           flaggedTextureId = SELECTION_OVERLAY_MARKER_SELECTED_RESOURCE;
           otherTextureSource = g_SelectionPanelTextureSource;
@@ -853,9 +851,8 @@ void SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
       do {
         if (((cellCursor->flagsAndMaterial & FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15) != 0) &&
            ((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0)) {
-          /* projectedPointA (cell +0x0C) */
-          screenX = *(int *)cellCursor->runtime0C_3F >> 12;
-          screenY = *(int *)(cellCursor->runtime0C_3F + 4) >> 12;
+          screenX = cellCursor->groundScreenPoint.projectedX >> 12;
+          screenY = cellCursor->groundScreenPoint.projectedY >> 12;
           blitTextureId = SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED;
           blitTextureSource = g_SelectionPanelTextureSource;
           blitFramebuffer = g_FramebufferAccess;

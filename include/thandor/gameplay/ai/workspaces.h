@@ -14,6 +14,13 @@
 /* Submodule: gameplay/ai/workspaces. */
 
 /* Entry capacities of the AI workspace buffers allocated by AiRuntime_InitWorkspace (buffer size / entry size). */
+#define AI_WORKSPACE00_CAPACITY 128 /* own structures: 0x400 bytes of 8-byte entries */
+#define AI_WORKSPACE01_CAPACITY 64 /* own units: 0x200 bytes of 8-byte AiRuntimeWorkspaceEntry */
+#define AI_WORKSPACE02_CAPACITY 128 /* visible hostiles: 0x400 bytes */
+#define AI_WORKSPACE03_CAPACITY 512 /* unseen hostiles: 0x1000 bytes */
+#define AI_WORKSPACE04_CAPACITY 8 /* requested assets: 0x40 bytes */
+#define AI_WORKSPACE07_CAPACITY 64 /* targets: 0x400 bytes of 16-byte AiTargetWorkspaceEntry */
+#define AI_WORKSPACE11_CAPACITY 1024 /* producible assets: 0x1000 bytes of ArmyAssetRecordPrefix pointers */
 #define AI_WORKSPACE05_CAPACITY 32 /* general sites: 0x200 bytes of 16-byte AiScoredSiteWorkspaceEntry */
 #define AI_WORKSPACE06_CAPACITY 64 /* flagged sites: 0x400 bytes of 16-byte entries */
 #define AI_WORKSPACE08_CAPACITY 32 /* terrain-feature sites: 0x200 bytes of 16-byte AiTerrainFeatureWorkspaceEntry */

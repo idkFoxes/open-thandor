@@ -11,8 +11,7 @@
 
 /* Diagnostics (open-thandor only): a UI link that is neither UI_NODE_NONE nor a readable node ends the
    walk as UI_NODE_NONE instead of crashing the focus traversal; the first 20 such links are logged. */
-static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,UiNodeBase *link)
-{
+static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,UiNodeBase *link) {
   static int logged;
   if ((link == UI_NODE_NONE) || Thandor_IsReadable(link,sizeof(UiNodeBase))) {
     return link;
@@ -180,8 +179,7 @@ void UiKeyboard_DispatchPendingEvents(void)
           }
         }
         control = walkNode;
-        if ((control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0)
-        continue;
+        if ((control->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
         if (control == g_UiKeyboardFocusNode) {
           dispatchToRoot = true;
           break;
@@ -284,12 +282,12 @@ bool UiRangeSliderControl_HandleKeyboard
     return delegatedResult;
   }
   if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
-    decreaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT);
-    increaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT);
+    decreaseKey = KEYBOARD_KEY_CODE_LEFT;
+    increaseKey = KEYBOARD_KEY_CODE_RIGHT;
   }
   else {
-    decreaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN);
-    increaseKey = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP);
+    decreaseKey = KEYBOARD_KEY_CODE_DOWN;
+    increaseKey = KEYBOARD_KEY_CODE_UP;
   }
   if (keyCode == decreaseKey) {
     if (((keyboardStateMask & KEYBOARD_STATE_CTRL) != 0) ||
@@ -334,7 +332,7 @@ bool UiSingleLineTextControl_ForwardKeyboardEventToChild
 
   childControl = control->focusChild;
   /* key codes without a high word are typed characters (Keyboard_OnChar) and KEYBOARD_KEY_CODE_SPACE */
-  if ((keyCode & 0xffff0000) == 0) {
+  if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
     if (((control->labelFlags & UI_LABEL_SWALLOW_CHARACTERS) != 0) && ((keyCode & 0x30) != 0)) {
       return false;
     }
@@ -394,7 +392,8 @@ void UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
    Default pointerMove slot of most UI vtables (range sliders, labels, lists, ...): the node asks for
    cursor frame 0 (GRAPHICS_CURSOR_FRAME_ARROW).
 */
-GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+GraphicsCursorFrameIndex UiNode_DefaultPointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+                                                   UiNodeBase *control)
 
 {
   return GRAPHICS_CURSOR_FRAME_ARROW;
@@ -433,7 +432,8 @@ void UiRangeSliderControl_UpdateValueFromPointer
               (uint64_t)(uint32_t)(control->maximumValue - control->minimumValue);
       /* offset * range / trackLength, plus one when the remainder is more than half the track */
       sliderValue = control->minimumValue +
-               (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) + (int)(scaledOffset / trackLength);
+               (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) +
+               (int)(scaledOffset / trackLength);
       if (control->maximumValue < sliderValue) {
         sliderValue = control->maximumValue;
       }
@@ -458,7 +458,8 @@ void UiRangeSliderControl_UpdateValueFromPointer
     scaledOffset = (uint64_t)pointerOffset *
             (uint64_t)(uint32_t)(control->maximumValue - control->minimumValue);
     sliderValue = control->minimumValue +
-             (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) + (int)(scaledOffset / trackLength);
+             (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) +
+             (int)(scaledOffset / trackLength);
     if (control->maximumValue < sliderValue) {
       sliderValue = control->maximumValue;
     }
@@ -485,8 +486,8 @@ void UiRangeSliderControl_HandlePointerWheel
 {
   int32_t adjustedSliderValue;
 
-  if ((((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) == 0) && ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0)
-      ) && (wheelDelta != 0)) {
+  if ((control->sliderFlags & UI_RANGE_SLIDER_DRAGGING) == 0 && (control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0 &&
+      wheelDelta != 0) {
     adjustedSliderValue =
          control->value + wheelDelta * g_UiRangeSliderDragScale * control->stepValue;
     if (adjustedSliderValue < control->minimumValue) {
@@ -524,14 +525,13 @@ void UiSingleLineTextControl_RelocateChild(UiSerializedRelocationDelta relocatio
   }
   UiContainer_RelocateChildren(relocationDelta,&controlReg->base);
   if (controlReg->focusChild != NULL) {
-    controlReg->focusChild =
-         (UiNodeBase *)((int)&(controlReg->focusChild)->nextSibling + relocationDelta);
+    controlReg->focusChild = (UiNodeBase *)((uint8_t *)controlReg->focusChild + relocationDelta);
     childNodeFlagsField = &(controlReg->focusChild)->nodeFlags;
     *childNodeFlagsField =
          *childNodeFlagsField & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
   if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
-    control->text = (uint16_t *)((int)control->text + relocationDelta);
+    control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
   return;
@@ -847,8 +847,7 @@ GraphicsCursorFrameIndex UiImageControl_PointerMove
 /* MMX lane helpers for the bilinear scaler below (lanes are little-endian 16-bit words). */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: byte i of pixel becomes word lane i = (byte * 0x101) >> shift. */
-static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shift)
-{
+static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shift) {
   uint64_t lanes;
   int lane;
 
@@ -861,8 +860,7 @@ static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shif
 }
 
 /* PADDW: lane-wise wrapping 16-bit add. */
-static __inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right)
-{
+static __inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right) {
   uint64_t sum;
   int shift;
 
@@ -875,8 +873,7 @@ static __inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right)
 
 /* PSRLW mm,shift then PACKUSWB (low dword): each lane shifted right, saturated to an unsigned
    byte. The logical shift leaves every lane non-negative, so only the 0xFF clamp applies. */
-static __inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift)
-{
+static __inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift) {
   uint32_t packed;
   uint16_t laneValue;
   int lane;
@@ -893,8 +890,7 @@ static __inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift
    rows blended across the column fraction, then across the row fraction, then >> 2 and packed. */
 static __inline PackedArgb32 UiScaler_BlendBilinear
           (PackedArgb32 topLeft,PackedArgb32 topRight,PackedArgb32 bottomLeft,PackedArgb32 bottomRight,
-          int columnWeight,int rowWeight)
-{
+          int columnWeight,int rowWeight) {
   uint64_t topRow;
   uint64_t bottomRow;
 
@@ -922,8 +918,7 @@ static __inline PackedArgb32 UiScaler_BlendBilinear
    paletteIndex) are drawn.
 */
 void UiSelectionGeometryControl_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiSelectionGeometryControl *control
-          )
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiSelectionGeometryControl *control)
 
 {
   GraphicsTextureSourceAsset *sourceTexture;
@@ -987,16 +982,19 @@ void UiSelectionGeometryControl_DrawClipped
     rotationProductB = (int64_t)cosTermOrRowStepV * 0x1c6e9c;
     rotationProductC = (int64_t)(int)-sinTermOrSourceU * -0x20c8cc;
     stepTermOrRowStartV = (int)((uint64_t)rotationProductC >> 0x20) << 0xb | (uint32_t)rotationProductC >> 0x15;
-    sinTermOrSourceU = ((int)((uint64_t)rotationProductB >> 0x20) << 0xc | (uint32_t)rotationProductB >> 0x14) - stepTermOrRowStartV;
+    sinTermOrSourceU =
+         ((int)((uint64_t)rotationProductB >> 0x20) << 0xc | (uint32_t)rotationProductB >> 0x14) - stepTermOrRowStartV;
     cosTermOrRowStepV = stepTermOrRowStartV * 2;
     rowStepU = (uint64_t)sinTermOrSourceU;
     sourceStartU = (uint64_t)
              (control->sourceOriginYQ12 -
              (sinTermOrSourceU * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
-             (((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermOrRowStartU) *
+             (((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) -
+              stepTermOrRowStartU) *
              (((control->base).left + (control->base).right >> 1) - clipRight)));
     /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
-    pixelStepU = ((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermOrRowStartU;
+    pixelStepU =
+         ((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermOrRowStartU;
     pixelStepV = stepTermOrRowStartU * 2;
     texelIndexOrFraction = control->sourceOriginXQ12 -
              (cosTermOrRowStepV * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
@@ -1005,13 +1003,13 @@ void UiSelectionGeometryControl_DrawClipped
     subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
     /* the subresource entry fields (paletteIndex, dataOffset, pixelWidth, pixelHeight) are read relative to
        the asset's address anchor */
-    if (*(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x20)) < 0)
-    {
-      sourceWidth = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x10))
-      ;
-      sourceHeight = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0xc));
-      pixelDataOffset = *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x1c))
-      ;
+    if (*(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x20)) < 0) {
+      sourceWidth =
+           *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x10));
+      sourceHeight =
+           *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0xc));
+      pixelDataOffset =
+           *(int *)((sourceTexture->common).buildMetadata.assetRelativeAddressAnchor28 + (subresourceTable - 0x1c));
       framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
         rowStepUHigh = (int)(rowStepU >> 0x20);
@@ -1426,8 +1424,7 @@ void UiPointer_DispatchRightPress
         }
         nodeVtable = node->vtable;
         g_UiPointerCaptureTarget = node;
-        if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)
-        {
+        if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0) {
           UiKeyboardFocus_Set(node);
         }
         nodeVtable->rightPress(wheelDelta,pointerY,pointerX,node);
@@ -1479,8 +1476,7 @@ void UiKeyboardFocus_MoveNext(void)
       }
     }
     node = nextNode;
-    if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0)
-    continue;
+    if ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) == 0) continue;
     if (node == g_UiKeyboardFocusNode) {
       return;
     }

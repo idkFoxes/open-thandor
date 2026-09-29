@@ -225,7 +225,7 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
       if (surfaceResult == 0) {
         destinationPixel = capturedAsset->argb8888Pixels;
         restoreResultOrPixelOffset = sourceY * g_FramebufferWidth + sourceX;
-        sourcePixel = (uint16_t *)((int)g_SurfaceDesc.lpSurface + restoreResultOrPixelOffset * 2);
+        sourcePixel = (uint16_t *)g_SurfaceDesc.lpSurface + restoreResultOrPixelOffset;
         remainingColumns = captureWidth;
         sourceRowStart = sourcePixel;
         do {
@@ -233,12 +233,12 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
             /* The original loads the pixel into AX; the stale high word of EAX is masked away by the 16-bit
                channel masks. */
             allocationSizeOrPixel = ((uint32_t)restoreResultOrPixelOffset & 0xffff0000) | (uint32_t)*sourcePixel;
-            *(uint8_t *)((int)destinationPixel + 3) = 0xff;
-            *(char *)((int)destinationPixel + 2) =
+            ((uint8_t *)destinationPixel)[3] = 0xff;
+            ((char *)destinationPixel)[2] =
                  (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.redMask) >>
                         ((uint8_t)g_SoftwarePixelFormatConfig.redShift & 0x1f)) <<
                        (8U - (char)g_SoftwarePixelFormatConfig.redBitCount & 0x1f));
-            *(char *)((int)destinationPixel + 1) =
+            ((char *)destinationPixel)[1] =
                  (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.greenMask) >>
                         ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & 0x1f)) <<
                        (8U - (char)g_SoftwarePixelFormatConfig.greenBitCount & 0x1f));
@@ -250,13 +250,14 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion16Bit
             destinationPixel = destinationPixel + 1;
             remainingColumns--;
           } while (remainingColumns != 0);
-          sourcePixel = (uint16_t *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
+          sourcePixel = (uint16_t *)((uint8_t *)sourceRowStart + g_SurfaceDesc.lPitch);
           captureHeight--;
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult,
+                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xffffffff);
       }
     }
     g_MemoryApi.free(capturedAsset);
@@ -345,8 +346,7 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
                         (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
       lockedSurfacePixels = g_SurfaceDesc.lpSurface;
       if (surfaceResult == 0) {
-        sourcePixel = (uint32_t *)((int)g_SurfaceDesc.lpSurface +
-                         (sourceY * g_FramebufferWidth + sourceX) * 4);
+        sourcePixel = (uint32_t *)g_SurfaceDesc.lpSurface + (sourceY * g_FramebufferWidth + sourceX);
         remainingColumns = captureWidth;
         destinationPixel = capturedAsset->argb8888Pixels;
         sourceRowStart = sourcePixel;
@@ -366,13 +366,14 @@ FramebufferCaptureResult GraphicsFramebuffer_CaptureRegion32Bit
             *destinationPixel = *sourcePixel | 0xff000000;
             destinationPixel = destinationPair + 3;
           }
-          sourcePixel = (uint32_t *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
+          sourcePixel = (uint32_t *)((uint8_t *)sourceRowStart + g_SurfaceDesc.lPitch);
           captureHeight--;
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult,
+                               THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xffffffff);
       }
     }
     g_MemoryApi.free(capturedAsset);

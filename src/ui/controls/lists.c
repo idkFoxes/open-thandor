@@ -21,16 +21,16 @@ bool UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control)
 
 {
-  UiTimedListTreeRecord16 *startRecord;
-  UiTimedListTreeRecord16 *scanRecord;
+  UiTimedListTreeRecord *startRecord;
+  UiTimedListTreeRecord *scanRecord;
   UiFrameDelayFrames actionDelayFrames;
-  UiTimedListTreeRecord16 *childBlock;
-  UiTimedListTreeRecord16 *recordCursor;
-  UiTimedListTreeRecord16 *stepRecord;
-  UiTimedListTreeRecord16 *previousSelection;
-  UiTimedListTreeRecord16 *countRecord;
+  UiTimedListTreeRecord *childBlock;
+  UiTimedListTreeRecord *recordCursor;
+  UiTimedListTreeRecord *stepRecord;
+  UiTimedListTreeRecord *previousSelection;
+  UiTimedListTreeRecord *countRecord;
   uint32_t nestedRecordCount;
-  UiTimedListTreeRecord16 *lastRecord;
+  UiTimedListTreeRecord *lastRecord;
   uint32_t siblingIndex;
   int rowAccumulator;
   int rowIndex;
@@ -42,26 +42,27 @@ bool UiTimedListControl_HandleKeyboardNavigation
      followed by count row records; an expanded row (flags 1|2) links its child block. */
   stepCounter = 1;
   previousSelection = control->selectedRecord;
-  if ((keyCode & 0xffff0000) == 0) { /* plain characters */
+  if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) { /* plain characters */
     handled = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return handled;
   }
   switch (keyCode) {
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME):
+  case KEYBOARD_KEY_CODE_HOME:
     control->selectedRecord = control->recordTree + 1;
     break;
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END):
+  case KEYBOARD_KEY_CODE_END:
     childBlock = control->recordTree;
     do {
-      lastRecord = childBlock + (int)childBlock->recordCountOrRowPayload00;
+      lastRecord = childBlock + (int)childBlock->countOrLabelText;
       control->selectedRecord = lastRecord;
-      if (((lastRecord->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) || ((lastRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) == 0)) break;
-      childBlock = lastRecord->nestedRecordBlockOrParentLink08;
+      if (((lastRecord->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) == 0) ||
+          ((lastRecord->flags & UI_TIMED_LIST_RECORD_EXPANDED) == 0)) break;
+      childBlock = lastRecord->childBlockOrParentRecord;
     } while (childBlock != NULL);
     break;
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP):
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP):
-    if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP)) {
+  case KEYBOARD_KEY_CODE_PAGE_UP:
+  case KEYBOARD_KEY_CODE_UP:
+    if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
       /* Page: one step less than the rows visible in the viewport (unsigned 32-bit DIV).
          NOTE: exactly one visible row gives 0 steps, which the do/while wraps like the original. */
       contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
@@ -77,16 +78,17 @@ bool UiTimedListControl_HandleKeyboardNavigation
       stepRecord = control->selectedRecord;
       recordCursor = stepRecord - 1;
       control->selectedRecord = recordCursor;
-      if ((stepRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) {
-        while ((((recordCursor->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0 && ((recordCursor->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
-               (recordCursor = recordCursor->nestedRecordBlockOrParentLink08,
+      if ((stepRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) {
+        while ((((recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0 &&
+                 ((recordCursor->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0)) &&
+               (recordCursor = recordCursor->childBlockOrParentRecord,
                recordCursor != NULL))) {
-          recordCursor = recordCursor + (int)recordCursor->recordCountOrRowPayload00;
+          recordCursor = recordCursor + (int)recordCursor->countOrLabelText;
           control->selectedRecord = recordCursor;
         }
       }
       else {
-        recordCursor = stepRecord[-1].nestedRecordBlockOrParentLink08;
+        recordCursor = stepRecord[-1].childBlockOrParentRecord;
         control->selectedRecord = stepRecord;
         if (recordCursor != NULL) {
           control->selectedRecord = recordCursor;
@@ -95,9 +97,9 @@ bool UiTimedListControl_HandleKeyboardNavigation
       stepCounter--;
     } while (stepCounter != 0);
     break;
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN):
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN):
-    if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN)) {
+  case KEYBOARD_KEY_CODE_PAGE_DOWN:
+  case KEYBOARD_KEY_CODE_DOWN:
+    if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
       contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
       rowAccumulator = (int)((uint32_t)(contentSize >> 32) / control->rowHeight);
       stepCounter = rowAccumulator - 1;
@@ -111,19 +113,19 @@ bool UiTimedListControl_HandleKeyboardNavigation
       startRecord = control->selectedRecord;
       siblingIndex = 0;
       scanRecord = startRecord;
-      if ((((startRecord->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) || ((startRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) == 0)) ||
-         ((recordCursor = startRecord->nestedRecordBlockOrParentLink08,
-          recordCursor == NULL || (recordCursor->recordCountOrRowPayload00 == 0))))
-      {
+      if ((((startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) == 0) ||
+           ((startRecord->flags & UI_TIMED_LIST_RECORD_EXPANDED) == 0)) ||
+         ((recordCursor = startRecord->childBlockOrParentRecord,
+          recordCursor == NULL || (recordCursor->countOrLabelText == 0)))) {
         while( true ) {
           do {
             stepRecord = scanRecord;
             siblingIndex++;
             scanRecord = stepRecord - 1;
-          } while ((stepRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+          } while ((stepRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
           control->selectedRecord = control->selectedRecord + 1;
-          if (siblingIndex < stepRecord[-1].recordCountOrRowPayload00) break;
-          scanRecord = stepRecord[-1].nestedRecordBlockOrParentLink08;
+          if (siblingIndex < stepRecord[-1].countOrLabelText) break;
+          scanRecord = stepRecord[-1].childBlockOrParentRecord;
           siblingIndex = 0;
           control->selectedRecord = scanRecord;
           if (scanRecord == NULL) {
@@ -138,31 +140,31 @@ bool UiTimedListControl_HandleKeyboardNavigation
       stepCounter--;
     } while (stepCounter != 0);
     break;
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT): /* collapse an expanded row */
-    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) {
+  case KEYBOARD_KEY_CODE_LEFT: /* collapse an expanded row */
+    if ((previousSelection->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) == 0) {
       return false;
     }
-    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) == 0) {
+    if ((previousSelection->flags & UI_TIMED_LIST_RECORD_EXPANDED) == 0) {
       return false;
     }
     if (control->recordSelectionCallback == 0) {
       return false;
     }
     control->recordSelectionCallback
-              (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
+              (previousSelection,(UiTimedListTreeControl *)control);
     return false;
-  case KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT): /* expand a collapsed directory row */
-    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) == 0) {
+  case KEYBOARD_KEY_CODE_RIGHT: /* expand a collapsed directory row */
+    if ((previousSelection->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) == 0) {
       return false;
     }
-    if ((previousSelection->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) {
+    if ((previousSelection->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
       return false;
     }
     if (control->recordSelectionCallback == 0) {
       return false;
     }
     control->recordSelectionCallback
-              (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
+              (previousSelection,(UiTimedListTreeControl *)control);
     return false;
   default:
     handled = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -174,15 +176,15 @@ bool UiTimedListControl_HandleKeyboardNavigation
     do {
       previousSelection = countRecord - 1;
       rowIndex = rowAccumulator;
-      if ((countRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) {
+      if ((countRecord[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
         nestedRecordCount = UiTimedListTree_CountRecordArrayAndNestedChildren
-                          (countRecord[-1].nestedRecordBlockOrParentLink08);
+                          (countRecord[-1].childBlockOrParentRecord);
         rowIndex = rowAccumulator + nestedRecordCount;
       }
       countRecord = previousSelection;
       rowAccumulator = rowIndex + 1;
-    } while (((countRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
-            (countRecord = countRecord->nestedRecordBlockOrParentLink08,
+    } while (((countRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
+            (countRecord = countRecord->childBlockOrParentRecord,
             countRecord != NULL));
     rowIndex = rowIndex * (int)control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
@@ -216,18 +218,18 @@ bool UiListControl_HandleKeyboardNavigation
   UiScrollableContentDimensionsEdxEax8 contentSize;
   
   previousSelectedSlot = control->selectedRowSlot;
-  if ((keyCode & 0xffff0000) != 0) { /* not a plain character */
+  if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) != 0) { /* not a plain character */
     if (keyCode == KEYBOARD_KEY_CODE_ENTER) {
       control->listStateFlags = control->listStateFlags | UI_LIST_SELECTION_CONFIRMED;
       UiActionQueue_Enqueue(control->actionId,control);
     }
-    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME)) {
+    else if (keyCode == KEYBOARD_KEY_CODE_HOME) {
       control->selectedRowSlot = control->rowSlots;
     }
-    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END)) {
+    else if (keyCode == KEYBOARD_KEY_CODE_END) {
       control->selectedRowSlot = control->rowSlots + (control->rowCount - 1);
     }
-    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP)) {
+    else if (keyCode == KEYBOARD_KEY_CODE_PAGE_UP) {
       contentSize = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
       rowValue = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) -
@@ -237,7 +239,7 @@ bool UiListControl_HandleKeyboardNavigation
       }
       control->selectedRowSlot = control->rowSlots + rowValue;
     }
-    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN)) {
+    else if (keyCode == KEYBOARD_KEY_CODE_PAGE_DOWN) {
       contentSize = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
       targetRowIndex = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) +
@@ -247,12 +249,12 @@ bool UiListControl_HandleKeyboardNavigation
       }
       control->selectedRowSlot = control->rowSlots + targetRowIndex;
     }
-    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP)) {
+    else if (keyCode == KEYBOARD_KEY_CODE_UP) {
       if (control->rowSlots <= control->selectedRowSlot - 1) {
         control->selectedRowSlot = control->selectedRowSlot - 1;
       }
     }
-    else if (keyCode == KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN)) {
+    else if (keyCode == KEYBOARD_KEY_CODE_DOWN) {
       if (((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) + 1 <
           control->rowCount) {
         control->selectedRowSlot = control->selectedRowSlot + 1;
@@ -300,7 +302,7 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   parentVtable = parentNode->vtable;
   control->base.bottomOffset = control->rowHeight * control->rowCount + 1;
   parentVtable->layout(parentNode);
-  selectedIndex = UiPointerList_GetSelectedIndexVariantB(control);
+  selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(control);
   UiPointerList_SelectIndexVariantB(selectedIndex.rowIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
@@ -554,7 +556,8 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     trackLength = trackLength + textureSize.logicalHeightPixels * -2;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                          g_UiWindowTextureSource);
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
         thumbOffsetOrLocalX = thumbOffsetOrLocalX - textureSize.logicalHeightPixels;
       }
@@ -585,7 +588,8 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowStart = 0;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowStart = textureSize.logicalWidthPixels;
       }
       arrowHovered = ((int)arrowStart <= thumbOffsetOrLocalX) &&
@@ -605,7 +609,8 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowEnd = (control->base).layoutWidth;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalWidthPixels;
       }
       arrowHovered = (thumbOffsetOrLocalX < arrowEnd) && ((int)(arrowEnd - arrowSize) <= thumbOffsetOrLocalX);
@@ -624,7 +629,8 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowStart = 0;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowStart = textureSize.logicalHeightPixels;
       }
       arrowHovered = ((int)arrowStart <= anchorOrLocalY) && (anchorOrLocalY < (int)(arrowStart + arrowSize));
@@ -643,7 +649,8 @@ void UiScrollableControl_UpdatePrimaryScrollDrag
     if (inArrowBar) {
       arrowEnd = (control->base).layoutHeight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) != 0) {
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowEnd = arrowEnd - textureSize.logicalHeightPixels;
       }
       arrowHovered = (anchorOrLocalY < arrowEnd) && ((int)(arrowEnd - arrowSize) <= anchorOrLocalY);
@@ -921,7 +928,7 @@ void UiPointerList_SortByDwordFieldAscending(UiPointerListFieldByteOffset fieldO
       do {
         do {
           scanSlot++;
-          if (*(uint32_t *)((int)*scanSlot + fieldOffset) <= *(uint32_t *)((int)*pivotSlot + fieldOffset)) {
+          if (*(uint32_t *)((uint8_t *)*scanSlot + fieldOffset) <= *(uint32_t *)((uint8_t *)*pivotSlot + fieldOffset)) {
             LOCK(); /* the original swaps with XCHG */
             swapEntry = *scanSlot;
             *scanSlot = *pivotSlot;
@@ -971,11 +978,11 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
   /* Rewritten from the assembly (0x004BBCD0-0x004BBE56): expanded records with children push
      their position on the machine stack and descend; the decompiler kept only one level. */
   enum { TREE_DEPTH_LIMIT = 64 };
-  UiTimedListRuntimeExtendedView88 *list = (UiTimedListRuntimeExtendedView88 *)control;
-  UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
+  UiTimedListTreeControl *list = (UiTimedListTreeControl *)control;
+  UiTimedListTreeRecord *savedRecord[TREE_DEPTH_LIMIT];
   int savedRemaining[TREE_DEPTH_LIMIT];
-  UiTimedListTreeRecord16 *record;
-  UiTimedListTreeRecord16 *header;
+  UiTimedListTreeRecord *record;
+  UiTimedListTreeRecord *header;
   int remaining;
   int depth;
   int x;
@@ -986,7 +993,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
   if (header == NULL) {
     return;
   }
-  remaining = (int)header->recordCountOrRowPayload00;
+  remaining = (int)header->countOrLabelText;
   x = pointerX - control->left;
   if (x < 0) {
     return;
@@ -1004,14 +1011,15 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
     }
     record++;
     remaining--;
-    if ((((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) && ((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
-        (record[-1].nestedRecordBlockOrParentLink08 != NULL) &&
+    if ((((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
+         ((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0)) &&
+        (record[-1].childBlockOrParentRecord != NULL) &&
         (depth < TREE_DEPTH_LIMIT)) {
       savedRecord[depth] = record;
       savedRemaining[depth] = remaining;
       depth++;
-      header = record[-1].nestedRecordBlockOrParentLink08;
-      remaining = (int)header->recordCountOrRowPayload00;
+      header = record[-1].childBlockOrParentRecord;
+      remaining = (int)header->countOrLabelText;
       record = header + 1;
     }
     while (remaining == 0) {
@@ -1023,23 +1031,23 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
       remaining = savedRemaining[depth];
     }
   }
-  indent = depth * (int)list->observedDrawParameter80;
+  indent = depth * (int)list->indentPixelsPerLevel;
   x = x - indent;
   if (x < 0) {
     /* Inside the indentation: the expand/collapse icon of the row. */
-    if (((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) && (indent != 0) &&
+    if (((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) && (indent != 0) &&
         g_GraphicsTextureSourceTestOpaquePixel
-                  (y + (int)list->base.rowHeight,x + (int)list->observedDrawParameter80,0,0,
-                   list->base.observedDrawParameter6C,list->base.rowTextureSource) &&
+                  (y + (int)list->base.rowHeight,x + (int)list->indentPixelsPerLevel,0,0,
+                   list->base.collapsedIconSubresource,list->base.rowTextureSource) &&
         (list->base.recordSelectionCallback != 0)) {
       list->base.recordSelectionCallback(record,list);
     }
     return;
   }
-  x = x - (int)list->observedDrawParameter84;
+  x = x - (int)list->iconColumnPixels;
   if (x > 0) {
     RichTextExtentRegs extent =
-         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
+         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
     x = x - (int)extent.widthPixels;
     if ((x > 0) && (x > 6)) {
       return;
@@ -1050,7 +1058,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
     UiActionQueue_Enqueue(list->base.actionId,control);
   }
   if (((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) &&
-      ((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) && (list->base.recordSelectionCallback != 0)) {
+      ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) && (list->base.recordSelectionCallback != 0)) {
     list->base.recordSelectionCallback(record,list);
   }
   return;
@@ -1062,7 +1070,7 @@ void UiTimedListControl_SelectRowFromPointer(int pointerButton,int pointerY,int 
    256 code units including the terminator), or NULL. Used by UiTimedListTree_BuildDirectoryHierarchy to find
    the directory row of each path level.
 */
-UiTimedListTreeRecord16 * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock)
+UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord *recordBlock)
 
 {
   uint16_t labelChar;
@@ -1081,15 +1089,11 @@ UiTimedListTreeRecord16 * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16
     labelChar = *recordLabelCursor;
     recordLabelCursor++;
   } while (labelChar != 0);
-  recordsRemaining = recordBlock->recordCountOrRowPayload00;
-  do {
-    if (recordsRemaining == 0) {
-      return NULL;
-    }
+  for (recordsRemaining = recordBlock->countOrLabelText; recordsRemaining != 0; recordsRemaining--) {
     recordBlock++;
     charsEqual = false;
     compareRemaining = 256 - scanRemaining;
-    recordLabelCursor = (uint16_t *)recordBlock->recordCountOrRowPayload00;
+    recordLabelCursor = (uint16_t *)recordBlock->countOrLabelText;
     queryLabelCursor = labelUtf16;
     do {
       if (compareRemaining == 0) break;
@@ -1101,8 +1105,8 @@ UiTimedListTreeRecord16 * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16
     if (charsEqual) {
       return recordBlock;
     }
-    recordsRemaining--;
-  } while( true );
+  }
+  return NULL;
 }
 
 /* Address: 0x0040FFE0.
@@ -1115,11 +1119,12 @@ UiTimedListTreeRecord16 * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16
 DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
 
 {
-  uint32_t *recordCursor;
+  UiTimedListTreeRecord *recordCursor;
   uint32_t leafCodeUnitPair;
-  uint32_t *entryStride;
+  uint32_t entryStride;
   uint32_t *scanCursor;
   uint32_t *outputRecords;
+  UiTimedListTreeRecord *driveRow;
   uint32_t driveLetter;
   EngineDriveTypeCode driveType;
   uint32_t *remainingBytes;
@@ -1144,7 +1149,8 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
   DriveLetterEnumerationEaxEcx8 driveEnum;
   
   if (*pathUtf16 == 0) {
-    allocResult = g_MemoryApi.alloc(0x220); /* header, one row, one label */
+    /* header, the "computer" row and its label */
+    allocResult = g_MemoryApi.alloc(2 * sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES);
     outputRecords = (uint32_t *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       *outputRecords = 1;
@@ -1154,38 +1160,43 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
       outputRecords[4] = (uint32_t)(outputRecords + 8);
       outputRecords[5] = UI_TIMED_LIST_ICON_COMPUTER;
       outputRecords[6] = 0;
-      outputRecords[7] = UI_TIMED_LIST_RECORD_OBSERVED_BIT0;
+      outputRecords[7] = UI_TIMED_LIST_RECORD_EXPANDABLE;
       g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(outputRecords + 8));
-      return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult,
+                             ((THANDOR_BITCAST(ArenaAllocResult, uint64_t,
+                                               allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
     driveEnum = g_FileSystemEnumerateDriveLetters((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     directoryEntryCount = driveEnum.driveCount;
-    allocResult = g_MemoryApi.alloc(driveEnum.driveCountMirror * 0x210 + 0x10); /* header, then a row and a label per drive */
+    /* header, then a row and a label per drive */
+    allocResult = g_MemoryApi.alloc
+                            (driveEnum.driveCountMirror * (sizeof(UiTimedListTreeRecord) + UI_TIMED_LIST_LABEL_BYTES) +
+                             sizeof(UiTimedListTreeRecord));
     outputRecords = (uint32_t *)allocResult.payloadOrError;
     if (!allocResult.failed) {
-      result.recordBlockOrError = outputRecords + 4;
+      driveRow = (UiTimedListTreeRecord *)outputRecords + 1;
       *outputRecords = directoryEntryCount;
       outputRecords[1] = 0;
       outputRecords[2] = 0;
       outputRecords[3] = UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY;
-      labelCursor = ((uint32_t *)result.recordBlockOrError) + directoryEntryCount * 4;
+      labelCursor = (uint32_t *)(driveRow + directoryEntryCount);
       driveLetterCursor = (uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0);
       do {
         driveLetter = (uint32_t)*driveLetterCursor;
-        *(uint32_t *)result.recordBlockOrError = (uint32_t)labelCursor;
+        driveRow->countOrLabelText = (uint32_t)labelCursor;
         scanValue = driveLetter;
         driveType = g_FileSystemGetDriveTypeCode(driveLetter);
-        ((uint32_t *)result.recordBlockOrError)[1] = (uint32_t)driveType;
-        ((uint32_t *)result.recordBlockOrError)[2] = 0;
-        ((uint32_t *)result.recordBlockOrError)[3] = 0;
-        u________0040ff58[0] = (wchar_t)driveLetter; /* the pattern L"?:\*.*" */
+        driveRow->parentBlockOrIcon = (uint32_t)driveType;
+        driveRow->childBlockOrParentRecord = NULL;
+        driveRow->flags = 0;
+        g_UiTimedListDriveWildcardUtf16[0] = (wchar_t)driveLetter; /* the pattern L"?:\*.*" */
         *labelCursor = driveLetter;
-        ((uint16_t *)((int)labelCursor + 2))[0] = ':';
-        ((uint16_t *)((int)labelCursor + 2))[1] = '[';
-        ((uint16_t *)((int)labelCursor + 6))[0] = ']';
-        ((uint16_t *)((int)labelCursor + 6))[1] = 0;
+        ((uint16_t *)labelCursor)[1] = ':';
+        ((uint16_t *)labelCursor)[2] = '[';
+        ((uint16_t *)labelCursor)[3] = ']';
+        ((uint16_t *)labelCursor)[4] = 0;
         /* Label "X:[<volume label>]"; any failure closes it as "X:[]" (a failing directory probe
            also truncates an already written volume label, as in the original). */
         mediaCheckResult = g_FileSystemCheckDriveMediaReady(scanValue);
@@ -1193,12 +1204,12 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
         if (!closeLabelEmpty) {
           enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                              (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8, /* the label buffer after "X:[" */
-                              (uint8_t *)((int)labelCursor + 6),(uint8_t *)u________0040ff58);
+                              (uint8_t *)((uint16_t *)labelCursor + 3),(uint8_t *)g_UiTimedListDriveWildcardUtf16);
           closeLabelEmpty = enumResult.failed;
           if (!closeLabelEmpty) {
             if (enumResult.entryCount == 0) {
-              ((uint16_t *)((int)labelCursor + 6))[0] = ']';
-              ((uint16_t *)((int)labelCursor + 6))[1] = 0;
+              ((uint16_t *)labelCursor)[3] = ']';
+              ((uint16_t *)labelCursor)[4] = 0;
             }
             else {
               scanRemaining = 256;
@@ -1207,35 +1218,35 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
                 nextScanPointer = scanPointer;
                 if (scanRemaining == 0) break;
                 scanRemaining--;
-                nextScanPointer = (uint32_t *)((int)scanPointer + 2);
+                nextScanPointer = (uint32_t *)((uint16_t *)scanPointer + 1);
                 scanValue = *scanPointer;
                 scanPointer = nextScanPointer;
               } while ((uint16_t)scanValue != 0);
-              ((uint16_t *)((int)nextScanPointer - 2))[0] = ']';
-              ((uint16_t *)((int)nextScanPointer - 2))[1] = 0;
+              ((uint16_t *)nextScanPointer)[-1] = ']';
+              ((uint16_t *)nextScanPointer)[0] = 0;
             }
             enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                                (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                 (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
-                                (uint8_t *)u________0040ff58);
+                                (uint8_t *)g_UiTimedListDriveWildcardUtf16);
             closeLabelEmpty = enumResult.failed;
             if ((!closeLabelEmpty) && (enumResult.entryCount != 0)) {
-              ((uint32_t *)result.recordBlockOrError)[3] = ((uint32_t *)result.recordBlockOrError)[3] | UI_TIMED_LIST_RECORD_OBSERVED_BIT0;
+              driveRow->flags = driveRow->flags | UI_TIMED_LIST_RECORD_EXPANDABLE;
             }
           }
         }
         if (closeLabelEmpty) {
-          ((uint16_t *)((int)labelCursor + 6))[0] = ']';
-          ((uint16_t *)((int)labelCursor + 6))[1] = 0;
+          ((uint16_t *)labelCursor)[3] = ']';
+          ((uint16_t *)labelCursor)[4] = 0;
         }
         labelCursor = labelCursor + UI_TIMED_LIST_LABEL_BYTES / 4;
-        result.recordBlockOrError = (uint32_t *)((uint32_t *)result.recordBlockOrError) + 4;
+        driveRow++;
         driveLetterCursor++;
         directoryEntryCount--;
-        if (directoryEntryCount == 0) {
-          return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
-        }
-      } while( true );
+      } while (directoryEntryCount != 0);
+      return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult,
+                             ((THANDOR_BITCAST(ArenaAllocResult, uint64_t,
+                                               allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   else {
@@ -1252,10 +1263,10 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
                          (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,largestBlock.blockSizeOrSentinel,
                           (uint8_t *)outputRecords,(uint8_t *)g_UiTimedListRecordPathScratch.codeUnits);
       directoryEntryCount = enumResult.entryCount;
-      entryStride = (uint32_t *)enumResult.recordSizeBytes;
-      result.recordBlockOrError = entryStride;
+      entryStride = enumResult.recordSizeBytes;
+      result.recordBlockOrError = (void *)entryStride;
       if (!enumResult.failed) {
-        shrinkResult = g_MemoryApi.shrinkInPlace((int)entryStride * directoryEntryCount,outputRecords);
+        shrinkResult = g_MemoryApi.shrinkInPlace(entryStride * directoryEntryCount,outputRecords);
         result.recordBlockOrError = (uint32_t *)shrinkResult.scratchOrError;
         if (!shrinkResult.failed) {
           largestBlock = g_MemoryApi.allocLargestFreeBlock();
@@ -1263,8 +1274,10 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
           if (!largestBlock.failed) {
             scanRemaining = directoryEntryCount + 1;
             scanCursor = (uint32_t *)0x14;
-            remainingBytes = (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -0x10);
-            if ((uint32_t)(scanRemaining * 0x10) <= largestBlock.blockSizeOrSentinel && remainingBytes != NULL) {
+            remainingBytes =
+                 (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -(int)sizeof(UiTimedListTreeRecord));
+            if ((uint32_t)(scanRemaining * sizeof(UiTimedListTreeRecord)) <= largestBlock.blockSizeOrSentinel &&
+                remainingBytes != NULL) {
               *(uint32_t *)result.recordBlockOrError = directoryEntryCount;
               ((uint32_t *)result.recordBlockOrError)[1] = 0;
               ((uint32_t *)result.recordBlockOrError)[2] = 0;
@@ -1273,22 +1286,23 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
               leaf = outputRecords;
               recordCursor = result.recordBlockOrError;
               for (; directoryEntryCount != 0; directoryEntryCount--) {
-                recordCursor[4] = (uint32_t)labelWriteCursor;
-                recordCursor[5] = UI_TIMED_LIST_ICON_DIRECTORY;
-                recordCursor[6] = 0;
-                recordCursor[7] = 0;
+                recordCursor[1].countOrLabelText = (uint32_t)labelWriteCursor;
+                recordCursor[1].parentBlockOrIcon = UI_TIMED_LIST_ICON_DIRECTORY;
+                recordCursor[1].childBlockOrParentRecord = NULL;
+                recordCursor[1].flags = 0;
                 WidePath_CombineDirectoryAndLeaf
                           (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)leaf,
                            g_UiTimedListCombinedPathScratch.codeUnits);
                 WidePath_CombineDirectoryAndLeaf
-                          (g_UiTimedListSecondaryPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
+                          (g_UiTimedListSecondaryPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,
+                                    0),
                            g_UiTimedListRecordPathScratch.codeUnits);
                 enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                                    (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                     (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                     (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
                 if ((!enumResult.failed) && (enumResult.entryCount != 0)) {
-                  recordCursor[7] = recordCursor[7] | UI_TIMED_LIST_RECORD_OBSERVED_BIT0;
+                  recordCursor[1].flags = recordCursor[1].flags | UI_TIMED_LIST_RECORD_EXPANDABLE;
                 }
                 scanRemaining = 256;
                 scanCursor = leaf;
@@ -1296,7 +1310,7 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
                   if (scanRemaining == 0) break;
                   scanRemaining--;
                   leafCodeUnitPair = *scanCursor;
-                  scanCursor = (uint32_t *)((int)scanCursor + 2);
+                  scanCursor = (uint32_t *)((uint16_t *)scanCursor + 1);
                 } while ((uint16_t)leafCodeUnitPair != 0);
                 scanCursor = (uint32_t *)(0x102U - scanRemaining & 0xfffffffe);
                 bytesAfterLabel = (uint32_t *)((int)remainingBytes - (int)scanCursor);
@@ -1309,13 +1323,13 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
                   scanCursor++;
                   labelWriteCursor++;
                 }
-                leaf = (uint32_t *)((int)leaf + (int)entryStride);
-                recordCursor = recordCursor + 4;
+                leaf = (uint32_t *)((uint8_t *)leaf + entryStride);
+                recordCursor++;
               }
               /* The loop only ends early (entries left) when the labels no longer fit. */
               if (directoryEntryCount == 0) {
                 shrinkResult = g_MemoryApi.shrinkInPlace
-                                   ((int)labelWriteCursor + (0x200 - (int)result.recordBlockOrError),
+                                   ((int)labelWriteCursor + (UI_TIMED_LIST_LABEL_BYTES - (int)result.recordBlockOrError),
                                     result.recordBlockOrError);
                 scanCursor = (uint32_t *)shrinkResult.scratchOrError;
                 if (!shrinkResult.failed) {
@@ -1352,16 +1366,16 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   /* The original keeps one (record, block) pair per level on the machine stack (PUSH record,
      PUSH block) and pops them again when linking the levels. A path buffer holds at most 256
      code units, so there are at most 255 path levels plus the root-level match. */
-  UiTimedListTreeRecord16 *levelStack[0x202];
+  UiTimedListTreeRecord *levelStack[0x202];
   int levelStackTop;
   int copyRemaining;
   uint32_t recordsRemaining;
   int levelCount;
   uint16_t firstCodeUnit;
   WidePathBuffer256 *pathCopyCursor;
-  UiTimedListTreeRecord16 *levelBlock;
-  UiTimedListTreeRecord16 *parentBlock;
-  UiTimedListTreeRecord16 *recordCursor;
+  UiTimedListTreeRecord *levelBlock;
+  UiTimedListTreeRecord *parentBlock;
+  UiTimedListTreeRecord *recordCursor;
   DirectoryRecordBlockResult builtBlock;
   DirectoryHierarchyResult result;
 
@@ -1369,7 +1383,7 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   levelStackTop = 0;
   while( true ) {
     pathCopyCursor = &g_UiTimedListHierarchyPathScratch;
-    for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) { /* 256 code units */
+    for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) { /* dwords */
       pathCopyCursor->firstTwoCodeUnits = *(uint32_t *)selectedPathUtf16;
       selectedPathUtf16 = (uint16_t *)(selectedPathUtf16 + 2);
       pathCopyCursor = (WidePathBuffer256 *)(&pathCopyCursor->firstTwoCodeUnits + 1);
@@ -1400,10 +1414,10 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits);
   if (builtBlock.failed) goto fail;
   levelBlock = builtBlock.recordBlockOrError;
-  recordsRemaining = levelBlock->recordCountOrRowPayload00;
+  recordsRemaining = levelBlock->countOrLabelText;
   firstCodeUnit = g_UiTimedListHierarchyPathScratch.codeUnits[0];
   recordCursor = levelBlock + 1;
-  while (((firstCodeUnit ^ *(uint16_t *)recordCursor->recordCountOrRowPayload00) & 0xdf) != 0) {
+  while (((firstCodeUnit ^ *(uint16_t *)recordCursor->countOrLabelText) & 0xdf) != 0) {
     recordCursor++;
     recordsRemaining--;
     if (recordsRemaining == 0) {
@@ -1424,13 +1438,12 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   do {
     levelBlock = levelStack[--levelStackTop];
     if (levelBlock != NULL) {
-      levelBlock->rowPayload04 = (uint32_t)parentBlock;
-      levelBlock->nestedRecordBlockOrParentLink08 = recordCursor;
+      levelBlock->parentBlockOrIcon = (uint32_t)parentBlock;
+      levelBlock->childBlockOrParentRecord = recordCursor;
     }
     if (recordCursor != NULL) {
-      recordCursor->recordFlags0C =
-           recordCursor->recordFlags0C | UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
-      recordCursor->nestedRecordBlockOrParentLink08 = levelBlock;
+      recordCursor->flags = recordCursor->flags | UI_TIMED_LIST_RECORD_EXPANDED;
+      recordCursor->childBlockOrParentRecord = levelBlock;
     }
     parentBlock = levelBlock;
     recordCursor = levelStack[--levelStackTop];
@@ -1458,10 +1471,10 @@ fail:
    selection to the collapsed row.
 */
 bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
-          (UiTimedListTreeRecord16 *targetRecord,UiTimedListTreeRecord16 *recordBlock)
+          (UiTimedListTreeRecord *targetRecord,UiTimedListTreeRecord *recordBlock)
 
 {
-  UiTimedListTreeRecord16 *recordCursor;
+  UiTimedListTreeRecord *recordCursor;
   uint32_t recordsRemaining;
   int containsCount;
   bool childContains;
@@ -1469,14 +1482,14 @@ bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
   containsCount = 0;
   if (recordBlock != NULL) {
     recordCursor = recordBlock;
-    for (recordsRemaining = recordBlock->recordCountOrRowPayload00; recordsRemaining != 0; recordsRemaining--) {
+    for (recordsRemaining = recordBlock->countOrLabelText; recordsRemaining != 0; recordsRemaining--) {
       if (recordCursor + 1 == targetRecord) {
         containsCount++;
       }
-      if ((((recordCursor[1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
-          ((recordCursor[1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
+      if ((((recordCursor[1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
+          ((recordCursor[1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0)) &&
          (childContains = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
-                            (targetRecord,recordCursor[1].nestedRecordBlockOrParentLink08), childContains)) {
+                            (targetRecord,recordCursor[1].childBlockOrParentRecord), childContains)) {
         containsCount++;
       }
       recordCursor++;
@@ -1492,29 +1505,29 @@ bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
    links the block below the row (the block header points back to the row and to the row's own block).
    The root "computer" row lists the drives. CF set when the path or the block cannot be built.
 */
-bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
+bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record)
 
 {
   uint32_t *directory;
-  UiTimedListTreeRecord16 *linkedRecord;
+  UiTimedListTreeRecord *linkedRecord;
   int copyRemaining;
-  UiTimedListTreeRecord16 *scanRecord;
-  UiTimedListTreeRecord16 *previousRecord;
+  UiTimedListTreeRecord *scanRecord;
+  UiTimedListTreeRecord *previousRecord;
   uint32_t *recordPathSourceDwords;
   uint32_t *combinedPathSourceDwords;
   uint32_t *recordPathScratchDestDwords;
   uint32_t *combinedPathScratchDestDwords;
   DirectoryRecordBlockResult builtBlock;
   
-  recordPathSourceDwords = (uint32_t *)record->recordCountOrRowPayload00;
+  recordPathSourceDwords = (uint32_t *)record->countOrLabelText;
   recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-  for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
+  for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
     *recordPathScratchDestDwords = *recordPathSourceDwords;
     recordPathSourceDwords++;
     recordPathScratchDestDwords++;
   }
-  if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
-     (record[-1].rowPayload04 != 0)) {
+  if (((record[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
+     (record[-1].parentBlockOrIcon != 0)) {
     linkedRecord = record;
     if (g_UiTimedListRecordPathScratch.codeUnits[1] == ':') {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
@@ -1527,19 +1540,19 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
         do {
           scanRecord = linkedRecord;
           linkedRecord = scanRecord - 1;
-        } while ((scanRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
-        linkedRecord = scanRecord[-1].nestedRecordBlockOrParentLink08;
+        } while ((scanRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+        linkedRecord = scanRecord[-1].childBlockOrParentRecord;
         if (linkedRecord == NULL) {
           return true;
         }
-        directory = (uint32_t *)linkedRecord->recordCountOrRowPayload00;
+        directory = (uint32_t *)linkedRecord->countOrLabelText;
         if (((uint16_t *)directory)[1] == ':') break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
         combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
         combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-        for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
+        for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
           *combinedPathScratchDestDwords = *combinedPathSourceDwords;
           combinedPathSourceDwords++;
           combinedPathScratchDestDwords++;
@@ -1549,8 +1562,7 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
       THANDOR_PART(uint32_t, g_UiTimedListCombinedPathScratch, 4) = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
-                 g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
-                );
+                 g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits);
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListHierarchyParentPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                  g_UiTimedListSecondaryPathScratch.codeUnits);
@@ -1566,14 +1578,14 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
   if (builtBlock.failed) {
     return true;
   }
-  record->nestedRecordBlockOrParentLink08 = linkedRecord;
-  linkedRecord->nestedRecordBlockOrParentLink08 = record;
+  record->childBlockOrParentRecord = linkedRecord;
+  linkedRecord->childBlockOrParentRecord = record;
   do {
     previousRecord = record - 1;
     scanRecord = record - 1;
     record = previousRecord;
-  } while ((scanRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
-  linkedRecord->rowPayload04 = (uint32_t)previousRecord;
+  } while ((scanRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+  linkedRecord->parentBlockOrIcon = (uint32_t)previousRecord;
   return false;
 }
 
@@ -1584,31 +1596,29 @@ bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
    in src/ or image_data.c (only the function map).
 */
 void UiTimedListControl_ToggleDirectoryRecordExpansion
-          (UiTimedListTreeRecord16 *record,UiTimedListRuntimeExtendedView88 *control)
+          (UiTimedListTreeRecord *record,UiTimedListTreeControl *control)
 
 {
-  UiTimedListTreeRecord16 *targetRecord;
+  UiTimedListTreeRecord *targetRecord;
   bool cfResult;
   
   targetRecord = UiTimedListControl_GetSelectedRecord(control);
-  if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) {
-    if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) {
+  if ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) {
+    if ((record->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
       cfResult = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
-                        (targetRecord,record->nestedRecordBlockOrParentLink08);
+                        (targetRecord,record->childBlockOrParentRecord);
       if (cfResult) {
         UiActionQueue_Enqueue((control->base).actionId,control);
         targetRecord = record;
       }
-      record->recordFlags0C =
-           record->recordFlags0C & ~UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
+      record->flags = record->flags & ~UI_TIMED_LIST_RECORD_EXPANDED;
       UiTimedListControl_SetRecordTreeAndRecomputeLayout((control->base).recordTree,control);
       UiTimedListControl_SelectRecordAndScrollIntoView(targetRecord,control);
       return;
     }
     cfResult = UiTimedListTree_AttachDirectoryRecordBlock(record);
     if (!cfResult) {
-      record->recordFlags0C =
-           record->recordFlags0C | UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
+      record->flags = record->flags | UI_TIMED_LIST_RECORD_EXPANDED;
       UiTimedListControl_SetRecordTreeAndRecomputeLayout((control->base).recordTree,control);
       UiTimedListControl_SelectRecordAndScrollIntoView(targetRecord,control);
     }
@@ -1622,22 +1632,22 @@ void UiTimedListControl_ToggleDirectoryRecordExpansion
    when the ancestor chain does not end in a drive row. No caller found in src/ or image_data.c (only the
    function map).
 */
-bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record)
+bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record)
 
 {
   uint32_t *directory;
   int copyRemaining;
-  UiTimedListTreeRecord16 *scanRecord;
+  UiTimedListTreeRecord *scanRecord;
   uint32_t *recordPathSourceDwords;
   uint32_t *combinedPathSourceDwords;
   uint32_t *recordPathScratchDestDwords;
   uint32_t *combinedPathScratchDestDwords;
   
   recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-  recordPathSourceDwords = (uint32_t *)record->recordCountOrRowPayload00;
-  copyRemaining = 0x80;
-  if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
-     (record[-1].rowPayload04 != 0)) {
+  recordPathSourceDwords = (uint32_t *)record->countOrLabelText;
+  copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2;
+  if (((record[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
+     (record[-1].parentBlockOrIcon != 0)) {
     for (; copyRemaining != 0; copyRemaining--) {
       *recordPathScratchDestDwords = *recordPathSourceDwords;
       recordPathSourceDwords++;
@@ -1652,19 +1662,19 @@ bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeR
         do {
           scanRecord = record;
           record = scanRecord - 1;
-        } while ((scanRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
-        record = scanRecord[-1].nestedRecordBlockOrParentLink08;
+        } while ((scanRecord[-1].flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+        record = scanRecord[-1].childBlockOrParentRecord;
         if (record == NULL) {
           return true;
         }
-        directory = (uint32_t *)record->recordCountOrRowPayload00;
+        directory = (uint32_t *)record->countOrLabelText;
         if (((uint16_t *)directory)[1] == ':') break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
                    g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
         combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
         combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
-        for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
+        for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
           *combinedPathScratchDestDwords = *combinedPathSourceDwords;
           combinedPathSourceDwords++;
           combinedPathScratchDestDwords++;
@@ -1674,12 +1684,11 @@ bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeR
       THANDOR_PART(uint32_t, g_UiTimedListCombinedPathScratch, 4) = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
-                 g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
-                );
+                 g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits);
       recordPathSourceDwords = (uint32_t *)&g_UiTimedListSecondaryPathScratch;
     }
   }
-  for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining--) {
+  for (copyRemaining = WIDE_PATH_MAX_CODE_UNITS / 2; copyRemaining != 0; copyRemaining--) {
     *outputPathDwords = *recordPathSourceDwords;
     recordPathSourceDwords++;
     outputPathDwords++;
@@ -1789,7 +1798,8 @@ bool UiSelectableControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
 
 /* Address: 0x004B26E0.
    Disables (greys out) a selectable control bound to actionId: sets UI_NODE_SUPPRESSED and gives up the
-   keyboard focus if it had it. suppressActionId of g_UiGraphicsAdapterTextButtonVtable, g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
+   keyboard focus if it had it. suppressActionId of g_UiGraphicsAdapterTextButtonVtable,
+   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
    g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
    _004BC570, _005162C0, _00516310, _00516530.
 */
@@ -1809,7 +1819,8 @@ void UiSelectableControl_SuppressIfActionId(UiActionId actionId,UiSelectableCont
 
 /* Address: 0x004B2710.
    Re-enables a selectable control bound to actionId: clears UI_NODE_SUPPRESSED and takes the keyboard focus
-   when no node has it. unsuppressActionId of g_UiGraphicsAdapterTextButtonVtable, g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
+   when no node has it. unsuppressActionId of g_UiGraphicsAdapterTextButtonVtable,
+   g_UiSpriteButtonControlVtable, g_UiWindowControlVtable,
    g_UiNumericPairTextButtonVtable, g_UiPayloadPairTextButtonVtable and g_UiNodeVtable_004B1D80, _004B2CE0,
    _004BC570, _005162C0, _00516310, _00516530.
 */
@@ -1877,7 +1888,8 @@ SelectableGroupIndexResult UiSelectableGroup_NoneSelected(UiControlCount control
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
-    if (((*(UiSelectableControl **)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset))->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+    if (((*(UiSelectableControl **)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset))->stateFlags &
+         UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       selectedResult.noneSelected = false;
       selectedResult.selectedIndexOrCount = controlIndex;
       return selectedResult;
@@ -2036,13 +2048,15 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       edgeScratch = contentRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM) == 0) {
         barOffset = 0;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowLength = textureSize.logicalWidthPixels;
         contentTop = contentTop + textureSize.logicalHeightPixels;
       }
       else {
         trackStart = contentBottom;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowLength = textureSize.logicalWidthPixels;
         barOffset = contentBottom - textureSize.logicalHeightPixels;
         contentBottom = trackStart - textureSize.logicalHeightPixels;
@@ -2059,13 +2073,16 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   horizontalBarLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource,g_FramebufferAccess);
+                   horizontalBarLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         tileEnd = capSize;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   horizontalBarLeft + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   horizontalBarLeft + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         tileEnd = capSize;
       }
       trackStart = horizontalBarLeft + arrowLength;
@@ -2074,23 +2091,29 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
         contentRight = edgeScratch;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackEnd + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW_RIGHT + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         contentRight = edgeScratch;
       }
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,control->horizontalThumbLeft,barOffset,
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,
+                   control->horizontalThumbLeft,barOffset,
                    trackStart,control);
       }
       else {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,control->horizontalThumbLeft,barOffset,
+                  (clipTop,clipLeft,clipBottom,clipRight,
+                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
+                   control->horizontalThumbLeft,barOffset,
                    trackStart,control);
       }
       edgeScratch = control->horizontalThumbRight;
@@ -2099,40 +2122,53 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
           edgeScratch = clipRight;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,trackEnd,barOffset,trackStart,control);
+                  (clipTop,clipLeft,clipBottom,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK,trackEnd,barOffset,
+                   trackStart,control);
       }
       else {
         if (edgeScratch < clipRight) {
           edgeScratch = clipRight;
         }
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,edgeScratch,UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,barOffset,trackStart,control);
+                  (clipTop,clipLeft,clipBottom,edgeScratch,
+                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,barOffset,
+                   trackStart,control);
       }
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,
+                                                          g_UiWindowTextureSource);
       capSize = textureSize.logicalWidthPixels;
       edgeScratch = control->horizontalThumbLeft;
       trackStart = control->horizontalThumbRight;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_THUMB_ACTIVE) == 0) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   edgeScratch + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource,g_FramebufferAccess);
+                   edgeScratch + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
         trackStart = trackStart - capSize;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackStart + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackStart + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE,trackStart,barOffset,edgeScratch + capSize,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE,trackStart,
+                   barOffset,edgeScratch + capSize,control);
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   edgeScratch + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   edgeScratch + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         trackStart = trackStart - capSize;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   trackStart + (control->base).left,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   trackStart + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackStart,barOffset,edgeScratch + capSize,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,
+                   UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackStart,
+                   barOffset,edgeScratch + capSize,control);
       }
     }
     if ((control->scrollStateFlags &
@@ -2141,14 +2177,16 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       barOffset = contentTop;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_RIGHT) == 0) {
         capSize = tileEnd;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowLength = textureSize.logicalHeightPixels;
         capSize = capSize + textureSize.logicalWidthPixels;
       }
       else {
         trackStart = contentRight;
         capSize = tileEnd;
-        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
+        textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
+                                                            g_UiWindowTextureSource);
         arrowLength = textureSize.logicalHeightPixels;
         tileEnd = contentRight - textureSize.logicalWidthPixels;
         contentRight = trackStart - textureSize.logicalWidthPixels;
@@ -2157,12 +2195,15 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
       }
       trackStart = contentTop + arrowLength;
       trackEnd = contentBottom - arrowLength;
@@ -2170,25 +2211,31 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
          ((control->scrollStateFlags & UI_SCROLL_PRIMARY_INTERACTION_ACTIVE) == 0)) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
         contentBottom = edgeScratch;
         contentTop = barOffset;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,trackEnd + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW_DOWN + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         contentBottom = edgeScratch;
         contentTop = barOffset;
       }
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) == 0) {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,control->verticalThumbTop,trackStart,
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,control->verticalThumbTop,
+                   trackStart,
                    tileEnd,control);
       }
       else {
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,control->verticalThumbTop,trackStart,
+                  (clipTop,clipLeft,clipBottom,clipRight,
+                   UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,
+                   control->verticalThumbTop,trackStart,
                    tileEnd,control);
       }
       edgeScratch = control->verticalThumbBottom;
@@ -2197,14 +2244,17 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
           edgeScratch = clipBottom;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,edgeScratch,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,trackEnd,trackStart,tileEnd,control);
+                  (clipTop,clipLeft,edgeScratch,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK,trackEnd,trackStart,
+                   tileEnd,control);
       }
       else {
         if (edgeScratch < clipBottom) {
           edgeScratch = clipBottom;
         }
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,edgeScratch,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,trackStart,tileEnd,control);
+                  (clipTop,clipLeft,edgeScratch,clipRight,
+                   UI_WINDOW_SUBRESOURCE_VERTICAL_TRACK + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,trackEnd,trackStart,
+                   tileEnd,control);
       }
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
       arrowLength = textureSize.logicalHeightPixels;
@@ -2213,25 +2263,34 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_THUMB_ACTIVE) == 0) {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END,g_UiWindowTextureSource,
+                   g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE,barOffset,edgeScratch + arrowLength,tileEnd,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE,barOffset,
+                   edgeScratch + arrowLength,tileEnd,control);
         tileEnd = capSize;
       }
       else {
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,edgeScratch + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         barOffset = barOffset - arrowLength;
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,barOffset + (control->base).top,
-                   tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,g_UiWindowTextureSource,g_FramebufferAccess);
+                   tileEnd + (control->base).left,
+                   UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_END + UI_WINDOW_SUBRESOURCE_THUMB_ACTIVE_OFFSET,
+                   g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledVerticalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,barOffset,edgeScratch + arrowLength,tileEnd,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,
+                   UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB_MIDDLE + UI_WINDOW_SUBRESOURCE_PRESSED_OFFSET,barOffset,
+                   edgeScratch + arrowLength,tileEnd,control);
         tileEnd = capSize;
       }
     }
@@ -2242,27 +2301,35 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       contentRight = contentRight - capSize;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource,
+                 g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 1,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_TOP_RIGHT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 2,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM_LEFT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 4,contentRight,contentTop,tileEnd + capSize,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_TOP,
+                 contentRight,contentTop,tileEnd + capSize,control);
       contentTop = contentTop + textureSize.logicalHeightPixels;
       edgeScratch = (tileEnd + capSize) - capSize;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 5,contentBottom,contentTop,edgeScratch,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_LEFT,
+                 contentBottom,contentTop,edgeScratch,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 6,contentBottom,contentTop,contentRight,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_RIGHT,
+                 contentBottom,contentTop,contentRight,control);
       tileEnd = edgeScratch + capSize;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + 7,contentRight,contentBottom,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST + UI_WINDOW_FRAME_BOTTOM,
+                 contentRight,contentBottom,tileEnd,control);
     }
     if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource);
@@ -2271,27 +2338,35 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
       contentRight = contentRight - capSize;
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource,
+                 g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentTop + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 1,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_TOP_RIGHT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 2,g_UiWindowTextureSource,g_FramebufferAccess);
+                 tileEnd + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM_LEFT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,contentBottom + (control->base).top,
-                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+                 contentRight + (control->base).left,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM_RIGHT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 4,contentRight,contentTop,tileEnd + capSize,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_TOP,
+                 contentRight,contentTop,tileEnd + capSize,control);
       contentTop = contentTop + textureSize.logicalHeightPixels;
       edgeScratch = (tileEnd + capSize) - capSize;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 5,contentBottom,contentTop,edgeScratch,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_LEFT,
+                 contentBottom,contentTop,edgeScratch,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 6,contentBottom,contentTop,contentRight,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_RIGHT,
+                 contentBottom,contentTop,contentRight,control);
       tileEnd = edgeScratch + capSize;
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + 7,contentRight,contentBottom,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST + UI_WINDOW_FRAME_BOTTOM,
+                 contentRight,contentBottom,tileEnd,control);
     }
     if ((control->scrollStateFlags & (UI_SCROLL_FILL_INTERIOR|UI_SCROLL_FILL_INTERIOR_TEXTURED)) != 0) {
       subresource = 0;
@@ -2299,8 +2374,8 @@ void UiScrollableControl_DrawFrameContentAndScrollbars
         subresource = UI_WINDOW_SUBRESOURCE_INTERIOR;
       }
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,subresource,contentBottom,contentRight,contentTop,tileEnd,control
-                );
+                (clipTop,clipLeft,clipBottom,clipRight,subresource,contentBottom,contentRight,contentTop,tileEnd,
+                 control);
     }
     g_GraphicsFramebufferEndAccess();
     edgeScratch = tileEnd + (control->base).left;
@@ -2375,15 +2450,15 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     contentChild->bottom = childHeight + offsetX + horizontalExtent;
     control->contentOriginX = 0;
     control->contentOriginY = 0;
-    if ((control->scrollStateFlags & 0x400) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x6a,g_UiWindowTextureSource);
+    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_A) != 0) {
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_A_FIRST,g_UiWindowTextureSource);
       control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
       availableWidth = availableWidth + textureSize.logicalWidthPixels * -2;
       availableHeight = availableHeight + textureSize.logicalHeightPixels * -2;
     }
-    if ((control->scrollStateFlags & 0x800) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x72,g_UiWindowTextureSource);
+    if ((control->scrollStateFlags & UI_SCROLL_FRAME_STYLE_B) != 0) {
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FRAME_B_FIRST,g_UiWindowTextureSource);
       control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
       availableWidth = availableWidth + textureSize.logicalWidthPixels * -2;
@@ -2415,7 +2490,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     if (((control->scrollStateFlags & 0xffffffcf) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0)) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       horizontalExtent = horizontalExtent - textureSize.logicalWidthPixels;
       if (horizontalExtent < 0) {
         control->scrollStateFlags =
@@ -2426,12 +2501,14 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     if (((control->scrollStateFlags & 0xffffff3f) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                          g_UiWindowTextureSource);
       if ((int)(verticalExtent - textureSize.logicalHeightPixels) < 0) {
         if (((control->scrollStateFlags &
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) &&
            ((control->scrollStateFlags & 0xffffffcf) != 0)) {
-          textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+          textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
+                                                              g_UiWindowTextureSource);
           if ((int)(horizontalExtent - textureSize.logicalWidthPixels) < 0) {
             control->scrollStateFlags =
                  control->scrollStateFlags |
@@ -2450,7 +2527,8 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
            UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP));
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                          g_UiWindowTextureSource);
       control->viewportHeight = control->viewportHeight - textureSize.logicalHeightPixels;
       if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
         control->contentOriginY = control->contentOriginY + textureSize.logicalHeightPixels;
@@ -2458,7 +2536,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       control->viewportWidth = control->viewportWidth - textureSize.logicalWidthPixels;
       if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
         control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
@@ -2505,12 +2583,13 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                          g_UiWindowTextureSource);
       control->verticalThumbTop = control->verticalThumbTop + textureSize.logicalHeightPixels;
       control->verticalThumbBottom = control->verticalThumbBottom + textureSize.logicalHeightPixels;
     }
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       control->horizontalThumbLeft = control->horizontalThumbLeft + textureSize.logicalWidthPixels;
       control->horizontalThumbRight = control->horizontalThumbRight + textureSize.logicalWidthPixels;
     }
@@ -2518,7 +2597,8 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     verticalExtent = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                          g_UiWindowTextureSource);
       arrowSize = textureSize.logicalWidthPixels;
       control->horizontalThumbLeft = control->horizontalThumbLeft + arrowSize;
       control->horizontalThumbRight = control->horizontalThumbRight + arrowSize;
@@ -2527,7 +2607,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalHeightPixels;
       control->verticalThumbTop = control->verticalThumbTop + arrowSize;
       control->verticalThumbBottom = control->verticalThumbBottom + arrowSize;
@@ -2538,7 +2618,8 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
                     (int64_t)(int)control->contentWidth);
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc0,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,
+                                                          g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalWidthPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
@@ -2553,7 +2634,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
                     (int64_t)(int)control->contentHeight);
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc2,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalHeightPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
@@ -2649,8 +2730,8 @@ void UiScrollableControl_BeginSecondaryScrollInteraction
    the pinned cursor and restores the arrow cursor.
 */
 void UiScrollableControl_EndSecondaryScrollInteraction
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiScrollableControl *control)
+               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+               UiScrollableControl *control)
 
 {
   g_CursorUseOverridePosition = 0;
@@ -2704,12 +2785,12 @@ void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
    (0x0054C29C) passes EAX straight to the backend call, FrontendUiAction200F_Handler (0x0054D4AD) overwrites
    CF with a CMP.
 */
-UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *control)
+UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control)
 
 {
   UiListRowIndex selectedRowIndex;
   
-  selectedRowIndex = (int)control->selectedRowSlot - (int)control->rowSlots >> 2;
+  selectedRowIndex = control->selectedRowSlot - control->rowSlots;
   if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
     return selectedRowIndex;
   }
@@ -2759,20 +2840,25 @@ void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,
             widthOrColumnCount = (control->base).layoutWidth;
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,widthOrColumnCount,rowTop,0,control);
+                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,widthOrColumnCount,
+                         rowTop,0,control);
             }
             else {
-              textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource);
+              textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,
+                                                                  g_UiWindowTextureSource);
               widthOrColumnCount = widthOrColumnCount - textureSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,widthOrColumnCount,rowTop,
+                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,
+                         widthOrColumnCount,rowTop,
                          textureSize.logicalWidthPixels,control);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
-                         (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+                         (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource,
+                         g_FramebufferAccess);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
-                         widthOrColumnCount + (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,g_UiWindowTextureSource,
+                         widthOrColumnCount + (control->base).left,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_RIGHT,
+                         g_UiWindowTextureSource,
                          g_FramebufferAccess);
             }
           }
@@ -2954,11 +3040,11 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
      remaining counts of the parent levels. The decompiler kept only one level. Argument
      positions follow the original pushes. */
   enum { TREE_DEPTH_LIMIT = 64 };
-  UiTimedListRuntimeExtendedView88 *list = (UiTimedListRuntimeExtendedView88 *)control;
-  UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
+  UiTimedListTreeControl *list = (UiTimedListTreeControl *)control;
+  UiTimedListTreeRecord *savedRecord[TREE_DEPTH_LIMIT];
   uint32_t savedRemaining[TREE_DEPTH_LIMIT];
-  UiTimedListTreeRecord16 *header;
-  UiTimedListTreeRecord16 *record;
+  UiTimedListTreeRecord *header;
+  UiTimedListTreeRecord *record;
   uint32_t remaining;
   int depth;
   int rowY;
@@ -2971,9 +3057,9 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
     return;
   }
   header = list->base.recordTree;
-  if ((header != NULL) && (header->recordCountOrRowPayload00 != 0)) {
+  if ((header != NULL) && (header->countOrLabelText != 0)) {
     rowTexture = list->base.rowTextureSource;
-    remaining = header->recordCountOrRowPayload00;
+    remaining = header->countOrLabelText;
     record = header + 1;
     depth = 0;
     rowY = 0;
@@ -2986,31 +3072,31 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
         for (level = 1; level < depth; level++) {
           if (savedRemaining[level] != 0) {
             g_GraphicsTextureSourceBlitSourceAlpha
-                      (clipTop,clipLeft,clipBottom,clipRight,y,x,list->observedDrawParameter74,
+                      (clipTop,clipLeft,clipBottom,clipRight,y,x,list->ancestorConnectorSubresource,
                        rowTexture,g_FramebufferAccess);
           }
-          x = x + (int)list->observedDrawParameter80;
+          x = x + (int)list->indentPixelsPerLevel;
         }
         g_GraphicsTextureSourceBlitSourceAlpha
                   (clipTop,clipLeft,clipBottom,clipRight,y,x,
-                   (remaining <= 1) ? list->observedDrawParameter7C : list->observedDrawParameter78,
+                   (remaining <= 1) ? list->lastRowConnectorSubresource : list->siblingConnectorSubresource,
                    rowTexture,g_FramebufferAccess);
-        if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) {
+        if ((record->flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) {
           g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,y,x,
-                     ((record->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) ? list->observedDrawParameter70 :
-                                                          list->base.observedDrawParameter6C,
+                     ((record->flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) ? list->expandedIconSubresource :
+                                                          list->base.collapsedIconSubresource,
                      rowTexture,g_FramebufferAccess);
         }
-        x = x + (int)list->observedDrawParameter80;
+        x = x + (int)list->indentPixelsPerLevel;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,y,x,record->rowPayload04,rowTexture,
+                (clipTop,clipLeft,clipBottom,clipRight,y,x,record->parentBlockOrIcon,rowTexture,
                  g_FramebufferAccess);
-      x = x + (int)list->observedDrawParameter84 - control->left;
+      x = x + (int)list->iconColumnPixels - control->left;
       if (record == list->base.selectedRecord) {
         RichTextExtentRegs extent =
-             RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
+             RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
         int width = (int)extent.widthPixels + 6;
         if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) != 0) {
           TextureSizeResult cap =
@@ -3018,7 +3104,8 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
           int capWidth = (int)cap.logicalWidthPixels;
           int endX = width - capWidth + x;
           UiWindow_BlitTiledHorizontalEdge
-                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,endX,rowY,capWidth + x,control);
+                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_FOCUS_MIDDLE,endX,rowY,
+                     capWidth + x,control);
           g_GraphicsTextureSourceBlitSourceAlpha
                     (clipTop,clipLeft,clipBottom,clipRight,rowY + control->top,x + control->left,
                      UI_WINDOW_SUBRESOURCE_ROW_FOCUS_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
@@ -3028,25 +3115,26 @@ void UiTimedListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBo
         }
         else {
           UiWindow_BlitTiledHorizontalEdge
-                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,width + x,rowY,x,control);
+                    (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_ROW_HIGHLIGHT,width + x,rowY,x,
+                     control);
         }
       }
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
-                 (uint16_t *)record->recordCountOrRowPayload00,rowY + 1 + control->top,
+                 (uint16_t *)record->countOrLabelText,rowY + 1 + control->top,
                  x + 3 + control->left);
       rowY = rowY + (int)list->base.rowHeight;
       record++;
       remaining--;
-      if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
-          ((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) &&
-          (record[-1].nestedRecordBlockOrParentLink08 != NULL) &&
+      if (((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
+          ((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) &&
+          (record[-1].childBlockOrParentRecord != NULL) &&
           (depth < TREE_DEPTH_LIMIT)) {
-        UiTimedListTreeRecord16 *children = record[-1].nestedRecordBlockOrParentLink08;
+        UiTimedListTreeRecord *children = record[-1].childBlockOrParentRecord;
         savedRecord[depth] = record;
         savedRemaining[depth] = remaining;
         depth++;
-        remaining = children->recordCountOrRowPayload00;
+        remaining = children->countOrLabelText;
         record = children + 1;
       }
       while ((remaining == 0) && (depth != 0)) {
@@ -3082,8 +3170,8 @@ void UiTimedListControl_TickActionDelay(UiTimedListControl *control)
 /* Address: 0x004BC3F0.
    Returns the selected row of the tree list. Called by UiTimedListControl_ToggleDirectoryRecordExpansion.
 */
-UiTimedListTreeRecord16 *
-UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control)
+UiTimedListTreeRecord *
+UiTimedListControl_GetSelectedRecord(UiTimedListTreeControl *control)
 
 {
   return (control->base).selectedRecord;
@@ -3100,7 +3188,7 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   if ((control->labelFlags & UI_LABEL_TEXT_NEEDS_RELOCATION) != 0) {
-    control->text = (uint16_t *)((int)control->text + relocationDelta);
+    control->text = (uint16_t *)((uint8_t *)control->text + relocationDelta);
     control->labelFlags = control->labelFlags & ~UI_LABEL_TEXT_NEEDS_RELOCATION;
   }
   return;
@@ -3112,8 +3200,8 @@ void UiWrappedTextControl_RelocateAndApplyDeferredOffset
    sprite button, its price (runtimeDisplayValueQ4 in whole units, in the alert colour when the active
    faction's xenite does not cover it), how many of this army asset the faction already owns (top left) and
    the highest ownerValue64/ownerValue68 percentage among the faction's armies of this asset in a given
-   model state (top right, alert colour when that army has runtimeFlags bit 0). The entry is looked up by its offset in the in-game root in the
-   group-42 and group-48 catalog tables.
+   model state (top right, alert colour when that army has runtimeFlags bit 0). The entry is looked up by its
+   offset in the in-game root in the group-42 and group-48 catalog tables.
 */
 void UiCatalogEntryControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
@@ -3139,7 +3227,7 @@ void UiCatalogEntryControl_DrawClipped
   
   if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) != 0) ||
      (((((control->command).sprite.selectable.stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0
-       && (((control->command).sprite.selectable.stateFlags & 0x400) != 0)) || /* hidden while not selected */
+       && (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_SELECTED_ONLY) != 0)) ||
       (accessFailed = g_GraphicsFramebufferBeginAccess(), accessFailed)))) {
     return;
   }
@@ -3150,18 +3238,18 @@ void UiCatalogEntryControl_DrawClipped
   }
   else {
     if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) == 0) &&
-       (((control->command).sprite.selectable.stateFlags & 0x800) != 0)) {
+       (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ALTERNATE_SELECTED_TEXTURE) != 0)) {
       spriteTextureSource = (control->command).sprite.alternateTextureSource;
     }
     subresourceOrTextLength = (control->command).sprite.selectedSubresourceStart;
-    if (((control->command).sprite.selectable.stateFlags & 0x40) != 0) { /* normal frame drawn underneath */
+    if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_NORMAL_UNDER_SELECTED) != 0) {
       backgroundSubresource = (control->command).sprite.normalSubresourceStartOrDescriptor;
       if (((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
         backgroundSubresource = backgroundSubresource + (control->command).sprite.animationFrameOffset;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top
-                 ,(control->command).sprite.selectable.base.left,backgroundSubresource,
+                (clipTop,clipLeft,clipBottom,clipRight,(control->command).sprite.selectable.base.top,
+                 (control->command).sprite.selectable.base.left,backgroundSubresource,
                  (control->command).sprite.primaryTextureSource,g_FramebufferAccess);
     }
   }
@@ -3184,7 +3272,8 @@ void UiCatalogEntryControl_DrawClipped
   subresourceOrTextLength = g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
-  *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' '; /* ' ' and the terminator */
+  /* ' ' and the terminator */
+  *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
   textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -3193,14 +3282,15 @@ void UiCatalogEntryControl_DrawClipped
              + (control->command).sprite.selectable.base.left);
   recordIndexOrPercent = 42 - 1; /* the last group-42 record */
   do {
-    if ((int)control - (int)g_InGameRuntimeRoot ==
+    if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
         g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndexOrPercent]) {
       assetCountOrPercent = 0;
       catalogArmyAssetId = g_UiCatalogGroup42Records[recordIndexOrPercent]->armyAssetId;
-      for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount; assetSlotIndex != 0;
-          assetSlotIndex--) {
+      for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount;
+           assetSlotIndex != 0; assetSlotIndex--) {
         if (g_UiCatalogGroup42Records[recordIndexOrPercent] ==
-            *(UiCommandRuntimeRecordPrefix **)(factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
+            *(UiCommandRuntimeRecordPrefix **)
+             (factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
           assetCountOrPercent++;
         }
       }
@@ -3210,7 +3300,8 @@ void UiCatalogEntryControl_DrawClipped
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
         factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' '; /* ' ' and the terminator */
+        /* ' ' and the terminator */
+        *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
                    g_UiCatalogEntryRichTextScratchUtf16,factionIndexOrPercent + 2,
@@ -3223,14 +3314,16 @@ void UiCatalogEntryControl_DrawClipped
           modelNodePrimary = (ModelRuntimeNode *)(modelNodePrimary->common).nextNode) {
         if (((modelNodePrimary->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (armyRuntime = (modelNodePrimary->runtimePayload).armyRuntime,
-            ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xb))
+            armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_11))
            && (((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1 &&
                (((((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex ==
                    (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex &&
                   (catalogArmyAssetId == armyRuntime->classState60)) &&
                  (recordIndexOrPercent = (int)(((int64_t)(int)armyRuntime->ownerValue64 * 100) /
-                               (int64_t)(int)armyRuntime->ownerValue68), factionIndexOrPercent <= recordIndexOrPercent)) &&
-                (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, factionIndexOrPercent = recordIndexOrPercent, (armyRuntime->runtimeFlags & 1) != 0)))))) {
+                               (int64_t)(int)armyRuntime->ownerValue68),
+                  factionIndexOrPercent <= recordIndexOrPercent)) &&
+                (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, factionIndexOrPercent = recordIndexOrPercent,
+                 (armyRuntime->runtimeFlags & 1) != 0)))))) {
           overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
         }
       }
@@ -3239,9 +3332,11 @@ void UiCatalogEntryControl_DrawClipped
         subresourceOrTextLength = g_WideNumberFormatUtf16
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,factionIndexOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
-        *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
-        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' '; /* ' ' and the terminator */
-        textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
+        *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
+        /* ' ' and the terminator */
+        *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' ';
+        textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,
+                                                       g_UiCatalogEntryRichTextScratchUtf16);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
                    g_UiCatalogEntryRichTextScratchUtf16,
@@ -3254,7 +3349,7 @@ void UiCatalogEntryControl_DrawClipped
     recordIndexOrPercent--;
   } while (-1 < recordIndexOrPercent);
   recordIndexOrPercent = 48 - 1; /* the last group-48 record */
-  while ((int)control - (int)g_InGameRuntimeRoot !=
+  while ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot !=
          g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][recordIndexOrPercent]) {
     recordIndexOrPercent--;
     if (recordIndexOrPercent < 0) {
@@ -3264,10 +3359,11 @@ void UiCatalogEntryControl_DrawClipped
   }
   assetCountOrPercent = 0;
   catalogArmyAssetId = g_UiCatalogGroup48Records[recordIndexOrPercent]->armyAssetId;
-  for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount; assetSlotIndex != 0;
-      assetSlotIndex--) {
+  for (assetSlotIndex = g_GameFactionRuntimeImage.records[factionIndexOrPercent].secondaryArmyAssetCount;
+       assetSlotIndex != 0; assetSlotIndex--) {
     if (g_UiCatalogGroup48Records[recordIndexOrPercent] ==
-        *(UiCommandRuntimeRecordPrefix **)(factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
+        *(UiCommandRuntimeRecordPrefix **)
+         (factionIndexOrPercent * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xdc) + assetSlotIndex * 4)) {
       assetCountOrPercent++;
     }
   }
@@ -3277,7 +3373,8 @@ void UiCatalogEntryControl_DrawClipped
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
     factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' '; /* ' ' and the terminator */
+    /* ' ' and the terminator */
+    *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = ' ';
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                factionIndexOrPercent + 2,(control->command).sprite.selectable.base.left);
@@ -3289,24 +3386,27 @@ void UiCatalogEntryControl_DrawClipped
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
     if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       slotArmyRuntime = (modelNode->runtimePayload).armyRuntime;
-      if (((slotArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0x16) {
+      if (slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_22) {
         if ((((slotArmyRuntime->articulatedContact).terrainContactMode ==
               ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) &&
             (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
            ((catalogArmyAssetId == slotArmyRuntime->classState60 &&
             ((assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
                            (int64_t)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent &&
-             (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))))) {
+             (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
+              (slotArmyRuntime->runtimeFlags & 1) != 0)))))) {
           overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
         }
       }
-      else if ((((((slotArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd)
+      else if ((((slotArmyRuntime->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13)
                 && ((slotArmyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
                (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
               (((catalogArmyAssetId == slotArmyRuntime->classState60 &&
                 (assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
-                              (int64_t)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent)) &&
-               (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))) {
+                              (int64_t)(int)slotArmyRuntime->ownerValue68),
+                 recordIndexOrPercent <= assetCountOrPercent)) &&
+               (overlayTextStyle = UI_CATALOG_TEXT_STYLE_NORMAL, recordIndexOrPercent = assetCountOrPercent,
+                (slotArmyRuntime->runtimeFlags & 1) != 0)))) {
         overlayTextStyle = UI_CATALOG_TEXT_STYLE_ALERT;
       }
     }
@@ -3316,8 +3416,9 @@ void UiCatalogEntryControl_DrawClipped
     subresourceOrTextLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordIndexOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
-    *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
-    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' '; /* ' ' and the terminator */
+    *(uint16_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = '%';
+    /* ' ' and the terminator */
+    *(uint32_t *)((uint8_t *)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = ' ';
     textExtent = RichTextCommandStream_MeasureRegs(UI_CATALOG_TEXT_STYLE_MEASURE,g_UiCatalogEntryRichTextScratchUtf16);
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -3345,7 +3446,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
   if (((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     recordIndex = 42 - 1; /* the last group-42 record */
     do {
-      if ((int)control - (int)g_InGameRuntimeRoot ==
+      if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
           g_UiCatalogGroup42OffsetTables[g_UiCatalogGroup42ColumnCount][recordIndex]) {
         g_UiHoverSelectionRecord = g_UiCatalogGroup42Records[recordIndex];
         InGameSelectionDetailPanel_Rebuild();
@@ -3356,7 +3457,7 @@ GraphicsCursorFrameIndex UiCatalogEntryControl_PointerMove
     if (recordIndex < 0) {
       group48Index = 48 - 1; /* the last group-48 record */
       do {
-        if ((int)control - (int)g_InGameRuntimeRoot ==
+        if ((uint8_t *)control - (uint8_t *)g_InGameRuntimeRoot ==
             g_UiCatalogGroup48OffsetTables[g_UiCatalogGroup48ColumnCount][group48Index]) {
           g_UiHoverSelectionRecord = g_UiCatalogGroup48Records[group48Index];
           InGameSelectionDetailPanel_Rebuild();
@@ -3393,7 +3494,7 @@ void UiCatalogEntryControl_NonRightRelease
     stateFlagsField = &(control->command).sprite.selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     (control->command).activationInputState = activationInputState;
-    if ((((control->command).sprite.selectable.stateFlags & 0x200) != 0) && /* sound on release */
+    if ((((control->command).sprite.selectable.stateFlags & UI_SPRITE_BUTTON_ACTIVATION_SOUND) != 0) &&
        ((control->command).sprite.activationSoundId != 0)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,
@@ -3412,29 +3513,28 @@ void UiCatalogEntryControl_NonRightRelease
    Does not queue the list's action.
 */
 void UiTimedListControl_SelectRecordAndScrollIntoView
-          (UiTimedListTreeRecord16 *selectedRecord,UiTimedListRuntimeExtendedView88 *control)
+          (UiTimedListTreeRecord *selectedRecord,UiTimedListTreeControl *control)
 
 {
   uint32_t nestedRecordCount;
   int rowAccumulator;
   int rowIndex;
-  UiTimedListTreeRecord16 *previousRecord;
+  UiTimedListTreeRecord *previousRecord;
   
   rowAccumulator = 0;
   (control->base).selectedRecord = selectedRecord;
   do {
     previousRecord = selectedRecord - 1;
     rowIndex = rowAccumulator;
-    if ((selectedRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) !=
-        0) {
+    if ((selectedRecord[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
       nestedRecordCount = UiTimedListTree_CountRecordArrayAndNestedChildren
-                        (selectedRecord[-1].nestedRecordBlockOrParentLink08);
+                        (selectedRecord[-1].childBlockOrParentRecord);
       rowIndex = rowAccumulator + nestedRecordCount;
     }
     selectedRecord = previousRecord;
     rowAccumulator = rowIndex + 1;
-  } while (((selectedRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
-          (selectedRecord = selectedRecord->nestedRecordBlockOrParentLink08,
+  } while (((selectedRecord->flags & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
+          (selectedRecord = selectedRecord->childBlockOrParentRecord,
           selectedRecord != NULL));
   rowIndex = rowIndex * (control->base).rowHeight;
   UiScrollableControl_ClampOffsetsToViewport
@@ -3469,14 +3569,14 @@ void UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl
    Returns the index of the selected row of a pointer list; CF (confirmed) is set when the selection was
    confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
 */
-ListSelectionResult UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control)
+ListSelectionResult UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control)
 
 {
   UiListRowIndex selectedRowIndex;
   ListSelectionResult unconfirmedResult;
   ListSelectionResult confirmedResult;
   
-  selectedRowIndex = ((int)control->selectedRowSlot - (int)control->rowSlots) >> 2;
+  selectedRowIndex = control->selectedRowSlot - control->rowSlots;
   if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
     unconfirmedResult.confirmed = false;
     unconfirmedResult.rowIndex = selectedRowIndex;
@@ -3516,15 +3616,15 @@ UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control)
    scroll frame is laid out again for the new content size.
 */
 void UiTimedListControl_SetRecordTreeAndRecomputeLayout
-          (UiTimedListTreeRecord16 *recordTree,UiTimedListRuntimeExtendedView88 *control)
+          (UiTimedListTreeRecord *recordTree,UiTimedListTreeControl *control)
 
 {
   /* Rewritten from the assembly (0x004BC1C0): expanded records with children push their position
      on the machine stack and descend; the decompiler kept only one level. */
   enum { TREE_DEPTH_LIMIT = 64 };
-  UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
+  UiTimedListTreeRecord *savedRecord[TREE_DEPTH_LIMIT];
   uint32_t savedRemaining[TREE_DEPTH_LIMIT];
-  UiTimedListTreeRecord16 *record;
+  UiTimedListTreeRecord *record;
   UiNodeBase *parent;
   GlyphSizeResult glyph;
   uint32_t remaining;
@@ -3533,7 +3633,7 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
   int depth;
 
   glyph = FontGlyph_GetLogicalSizeActiveRegs(0);
-  remaining = (recordTree == NULL) ? 0 : recordTree->recordCountOrRowPayload00;
+  remaining = (recordTree == NULL) ? 0 : recordTree->countOrLabelText;
   (control->base).rowHeight = glyph.lineHeight + 1;
   (control->base).rowCount = remaining;
   (control->base).recordTree = recordTree;
@@ -3543,23 +3643,23 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
   depth = 0;
   while (remaining != 0) {
     RichTextExtentRegs extent =
-         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
-    width = extent.widthPixels + control->observedDrawParameter84 +
-            control->observedDrawParameter80 * (uint32_t)depth;
+         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->countOrLabelText);
+    width = extent.widthPixels + control->iconColumnPixels +
+            control->indentPixelsPerLevel * (uint32_t)depth;
     record++;
     remaining--;
     if (widest < width) {
       widest = width;
     }
-    if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
-        ((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) &&
-        (record[-1].nestedRecordBlockOrParentLink08 != NULL) &&
+    if (((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDABLE) != 0) &&
+        ((record[-1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) &&
+        (record[-1].childBlockOrParentRecord != NULL) &&
         (depth < TREE_DEPTH_LIMIT)) {
-      UiTimedListTreeRecord16 *children = record[-1].nestedRecordBlockOrParentLink08;
+      UiTimedListTreeRecord *children = record[-1].childBlockOrParentRecord;
       savedRecord[depth] = record;
       savedRemaining[depth] = remaining;
       depth++;
-      remaining = children->recordCountOrRowPayload00;
+      remaining = children->countOrLabelText;
       record = children + 1;
       (control->base).rowCount = (control->base).rowCount + remaining;
     }
@@ -3582,7 +3682,7 @@ void UiTimedListControl_SetRecordTreeAndRecomputeLayout
    Returns the root record block of the tree list. No caller found in src/ or image_data.c (only the
    function map).
 */
-UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *control)
+UiTimedListTreeRecord * UiTimedListControl_GetRecordTree(UiTimedListControl *control)
 
 {
   return control->recordTree;
@@ -3592,7 +3692,7 @@ UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *c
    Counts the visible rows of a record block: its rows plus, recursively, the rows of every expanded child
    block (0 for NULL). Used to turn a row position into a row index for scrolling.
 */
-uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock)
+uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord *recordBlock)
 
 {
   uint32_t nestedRecordCount;
@@ -3601,13 +3701,12 @@ uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord
   
   totalCount = 0;
   if (recordBlock != NULL) {
-    totalCount = recordBlock->recordCountOrRowPayload00;
+    totalCount = recordBlock->countOrLabelText;
     recordsRemaining = totalCount;
     do {
-      if ((recordBlock[1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)
-      {
+      if ((recordBlock[1].flags & UI_TIMED_LIST_RECORD_EXPANDED) != 0) {
         nestedRecordCount = UiTimedListTree_CountRecordArrayAndNestedChildren
-                          (recordBlock[1].nestedRecordBlockOrParentLink08);
+                          (recordBlock[1].childBlockOrParentRecord);
         totalCount = totalCount + nestedRecordCount;
       }
       recordsRemaining--;
@@ -3696,7 +3795,8 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
     control->verticalThumbBottom = 0;
     /* the thumb rectangles start at the bar positions: a bar at the top/left shifts the other bar's thumb */
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                          g_UiWindowTextureSource);
       control->verticalThumbTop = control->verticalThumbTop + textureSize.logicalHeightPixels;
       control->verticalThumbBottom = control->verticalThumbBottom + textureSize.logicalHeightPixels;
     }
@@ -3710,7 +3810,8 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
     verticalExtent = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
+                                                          g_UiWindowTextureSource);
       arrowSize = textureSize.logicalWidthPixels;
       control->horizontalThumbLeft = control->horizontalThumbLeft + arrowSize;
       control->horizontalThumbRight = control->horizontalThumbRight + arrowSize;
@@ -3730,7 +3831,8 @@ void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *contro
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
                     (int64_t)(int)control->contentWidth);
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,
+                                                          g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalWidthPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;

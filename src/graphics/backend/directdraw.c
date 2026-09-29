@@ -146,24 +146,24 @@ int __stdcall DirectDraw_EnumAdapterCallback
   int dwordsRemaining;
   int guidDwordsRemaining;
   GraphicsAdapterRecord *adapterRecord;
-  GraphicsAdapterRecord *zeroCursor;
-  GraphicsAdapterRecord *adapterRecordCursor;
+  uint32_t *zeroCursor;
+  uint32_t *adapterRecordCursor;
 
   if (g_GraphicsAdapterCount < GRAPHICS_ADAPTER_CAPACITY) {
     adapterRecord = g_GraphicsAdapters + g_GraphicsAdapterCount;
-    zeroCursor = adapterRecord;
+    zeroCursor = (uint32_t *)adapterRecord;
     for (dwordsRemaining = sizeof(GraphicsAdapterRecord) / sizeof(uint32_t); dwordsRemaining != 0;
          dwordsRemaining--) {
-      (zeroCursor->adapterGuid).Data1 = 0;
-      zeroCursor = (GraphicsAdapterRecord *)&(zeroCursor->adapterGuid).Data2;
+      *zeroCursor = 0;
+      zeroCursor++;
     }
     if (adapterGuid != NULL) {
-      adapterRecordCursor = adapterRecord;
+      adapterRecordCursor = (uint32_t *)&adapterRecord->adapterGuid;
       for (guidDwordsRemaining = sizeof(TH_LEGACY_GUID) / sizeof(uint32_t); guidDwordsRemaining != 0;
            guidDwordsRemaining--) {
-        (adapterRecordCursor->adapterGuid).Data1 = adapterGuid->Data1;
-        adapterGuid = (TH_LEGACY_GUID *)&adapterGuid->Data2;
-        adapterRecordCursor = (GraphicsAdapterRecord *)&(adapterRecordCursor->adapterGuid).Data2;
+        *adapterRecordCursor = *(uint32_t *)adapterGuid;
+        adapterGuid = (TH_LEGACY_GUID *)((uint32_t *)adapterGuid + 1);
+        adapterRecordCursor++;
       }
     }
     Text_CopyNarrowToUtf16(40,adapterRecord->driverDescriptionUtf16,(uint8_t *)driverDescription);
@@ -273,7 +273,8 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
   int stageOrLoopCounter;
   uint32_t errorCodeOrCullMode;
   uint32_t *formatSource;
-  GraphicsAdapterRecord *requestedGuidCursor;
+  uint32_t *activeGuidCursor;
+  uint32_t *requestedGuidCursor;
   uint32_t *formatDest;
   GraphicsTextureResource **textureSlotCursor;
   bool guidMatchOrCarry;
@@ -302,7 +303,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
   if (g_ActiveGraphicsAdapterIndex != GRAPHICS_ADAPTER_INDEX_NONE) {
     /* DirectDraw backend already active: release every surface and device object, then keep the DirectDraw
        objects only if the requested adapter GUID matches the active one. */
-    stageOrLoopCounter = 0x1000; /* texture slots */
+    stageOrLoopCounter = GRAPHICS_TEXTURE_SLOT_CAPACITY;
     textureSlotCursor = g_GraphicsTextureSlots;
     do {
       if (*textureSlotCursor != NULL) {
@@ -356,14 +357,14 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
     /* REPE CMPSD over the 16-byte adapter GUIDs. */
     guidMatchOrCarry = g_GraphicsAdapters + adapterIndex == NULL;
     stageOrLoopCounter = sizeof(TH_LEGACY_GUID) / sizeof(uint32_t);
-    adapterRecord = g_GraphicsAdapters + g_ActiveGraphicsAdapterIndex;
-    requestedGuidCursor = g_GraphicsAdapters + adapterIndex;
+    activeGuidCursor = (uint32_t *)&g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid;
+    requestedGuidCursor = (uint32_t *)&g_GraphicsAdapters[adapterIndex].adapterGuid;
     do {
       if (stageOrLoopCounter == 0) break;
       stageOrLoopCounter--;
-      guidMatchOrCarry = (adapterRecord->adapterGuid).Data1 == (requestedGuidCursor->adapterGuid).Data1;
-      adapterRecord = (GraphicsAdapterRecord *)&(adapterRecord->adapterGuid).Data2;
-      requestedGuidCursor = (GraphicsAdapterRecord *)&(requestedGuidCursor->adapterGuid).Data2;
+      guidMatchOrCarry = *activeGuidCursor == *requestedGuidCursor;
+      activeGuidCursor++;
+      requestedGuidCursor++;
     } while (guidMatchOrCarry);
     if (!guidMatchOrCarry) {
       g_ActiveGraphicsAdapterIndex = GRAPHICS_ADAPTER_INDEX_NONE;
@@ -394,16 +395,16 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
     comResult = pDirectDrawCreate(&adapterRecord->adapterGuid,&g_DirectDraw,NULL);
     errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE;
     stageOrLoopCounter = completedStages;
-    if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    if (comResult != 0) goto failed;
     comResult = g_DirectDraw->lpVtbl->SetCooperativeLevel(g_DirectDraw,g_MainWindow,DDSCL_NORMAL);
     errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE;
     stageOrLoopCounter = 1;
-    if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    if (comResult != 0) goto failed;
     comResult = g_DirectDraw->lpVtbl->QueryInterface
                       (g_DirectDraw,&IID_IDirectDraw2_Local,&g_DirectDraw2);
     errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE;
     stageOrLoopCounter = 2;
-    if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    if (comResult != 0) goto failed;
 #ifdef THANDOR_TEST_AIDS
     comResult = g_DirectDraw2->lpVtbl->SetCooperativeLevel(g_DirectDraw2,g_MainWindow,
                                                         Thandor_TestAidWindowed() ? DDSCL_NORMAL :
@@ -414,7 +415,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
 #endif
     errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE;
     stageOrLoopCounter = 3;
-    if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+    if (comResult != 0) goto failed;
     completedStages = 4;
     g_ActiveGraphicsAdapterIndex = adapterIndex;
   }
@@ -470,12 +471,12 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           comResult = g_DirectDraw2->lpVtbl->CreateSurface
                             (g_DirectDraw2,&g_SurfaceDesc,&g_BackSurfaceBase,NULL);
           errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
-          if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+          if (comResult != 0) goto failed;
           comResult = g_BackSurfaceBase->lpVtbl->QueryInterface
                             (g_BackSurfaceBase,&IID_IDirectDrawSurface3_Local,&g_BackSurface3);
           errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
           stageOrLoopCounter = completedStages + 4;
-          if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+          if (comResult != 0) goto failed;
           completedStages = completedStages + 5;
         }
         else {
@@ -483,7 +484,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           comResult = g_PrimarySurface3->lpVtbl->GetAttachedSurface
                             (g_PrimarySurface3,&g_SurfaceDesc.ddsCaps,&g_BackSurface3);
           errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
-          if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+          if (comResult != 0) goto failed;
           completedStages = completedStages + 4;
         }
         Memory_ZeroDwords(sizeof g_SurfaceDesc.ddpfPixelFormat,&g_SurfaceDesc.ddpfPixelFormat);
@@ -492,9 +493,10 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                           (g_PrimarySurface3,&g_SurfaceDesc.ddpfPixelFormat);
         errorCodeOrCullMode = FATAL_ERROR_DIRECTDRAW_PIXEL_FORMAT;
         stageOrLoopCounter = completedStages;
-        if ((((comResult == 0) && (stageOrLoopCounter = completedStages + 1, g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0)
-             ) && (stageOrLoopCounter = completedStages + 2, g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0)) &&
-           (stageOrLoopCounter = completedStages + 3, g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0)) {
+        if ((comResult == 0) &&
+            (stageOrLoopCounter = completedStages + 1, g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) &&
+            (stageOrLoopCounter = completedStages + 2, g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) &&
+            (stageOrLoopCounter = completedStages + 3, g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0)) {
 #ifdef THANDOR_TEST_AIDS
           if (Thandor_TestAidWindowed() && (bitsPerPixel != g_SurfaceDesc.ddpfPixelFormat.dwRGBBitCount)) {
             /* windowed test aid: the surfaces have the desktop's depth, and the blitters chosen below, the
@@ -511,43 +513,39 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           /* shift = lowest set bit, bit count = highest set bit + 1 - shift */
           g_SoftwarePixelFormatConfig.redShift = 0;
           if (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) {
-            for (; (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> g_SoftwarePixelFormatConfig.redShift
-                   & 1) == 0;
-                g_SoftwarePixelFormatConfig.redShift = g_SoftwarePixelFormatConfig.redShift + 1) {
+            for (; (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> g_SoftwarePixelFormatConfig.redShift & 1) == 0;
+                 g_SoftwarePixelFormatConfig.redShift++) {
             }
           }
           g_SoftwarePixelFormatConfig.greenShift = 0;
           if (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) {
-            for (; (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >>
-                    g_SoftwarePixelFormatConfig.greenShift & 1) == 0;
-                g_SoftwarePixelFormatConfig.greenShift = g_SoftwarePixelFormatConfig.greenShift + 1)
-            {
+            for (; (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >> g_SoftwarePixelFormatConfig.greenShift & 1) == 0;
+                 g_SoftwarePixelFormatConfig.greenShift++) {
             }
           }
           g_SoftwarePixelFormatConfig.blueShift = 0;
           if (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0) {
-            for (; (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >>
-                    g_SoftwarePixelFormatConfig.blueShift & 1) == 0;
-                g_SoftwarePixelFormatConfig.blueShift = g_SoftwarePixelFormatConfig.blueShift + 1) {
+            for (; (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >> g_SoftwarePixelFormatConfig.blueShift & 1) == 0;
+                 g_SoftwarePixelFormatConfig.blueShift++) {
             }
           }
           stageOrLoopCounter = 0x1f;
           if (g_SurfaceDesc.ddpfPixelFormat.dwRBitMask != 0) {
-            for (; g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter = stageOrLoopCounter + -1) {
+            for (; g_SurfaceDesc.ddpfPixelFormat.dwRBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter--) {
             }
           }
           g_SoftwarePixelFormatConfig.redBitCount =
                (stageOrLoopCounter + 1) - g_SoftwarePixelFormatConfig.redShift;
           stageOrLoopCounter = 0x1f;
           if (g_SurfaceDesc.ddpfPixelFormat.dwGBitMask != 0) {
-            for (; g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter = stageOrLoopCounter + -1) {
+            for (; g_SurfaceDesc.ddpfPixelFormat.dwGBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter--) {
             }
           }
           g_SoftwarePixelFormatConfig.greenBitCount =
                (stageOrLoopCounter + 1) - g_SoftwarePixelFormatConfig.greenShift;
           stageOrLoopCounter = 0x1f;
           if (g_SurfaceDesc.ddpfPixelFormat.dwBBitMask != 0) {
-            for (; g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter = stageOrLoopCounter + -1) {
+            for (; g_SurfaceDesc.ddpfPixelFormat.dwBBitMask >> stageOrLoopCounter == 0; stageOrLoopCounter--) {
             }
           }
           g_SoftwarePixelFormatConfig.blueBitCount =
@@ -558,7 +556,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                               (g_DirectDraw2,&IID_IDirect3D2_Local,&g_Direct3D2);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
             stageOrLoopCounter = completedStages + 4;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            if (comResult != 0) goto failed;
             hardwareDeviceDesc = adapterRecord->hardwareDesc;
             Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
             g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
@@ -577,59 +575,59 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                               (g_DirectDraw2,&g_SurfaceDesc,&g_ZSurfaceBase,NULL);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_ZBUFFER;
             stageOrLoopCounter = completedStages + 5;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            if (comResult != 0) goto failed;
             comResult = g_ZSurfaceBase->lpVtbl->QueryInterface
                               (g_ZSurfaceBase,&IID_IDirectDrawSurface3_Local,&g_ZSurface3);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_ZBUFFER;
             stageOrLoopCounter = completedStages + 6;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            if (comResult != 0) goto failed;
             comResult = g_BackSurface3->lpVtbl->AddAttachedSurface(g_BackSurface3,g_ZSurface3);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_ZBUFFER;
             stageOrLoopCounter = completedStages + 7;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            if (comResult != 0) goto failed;
             comResult = g_Direct3D2->lpVtbl->CreateDevice
                               (g_Direct3D2,&g_GraphicsAdapters[adapterIndex].deviceGuid,
                                (IDirectDrawSurface *)g_BackSurface3,&g_Direct3DDevice2);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_CREATE_DEVICE;
             stageOrLoopCounter = completedStages + 8;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            if (comResult != 0) goto failed;
             comResult = g_Direct3D2->lpVtbl->CreateViewport
                               (g_Direct3D2,&g_Direct3DViewport2,NULL);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_VIEWPORT;
             stageOrLoopCounter = completedStages + 9;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-            comResult = g_Direct3DDevice2->lpVtbl->AddViewport(g_Direct3DDevice2,g_Direct3DViewport2)
-            ;
+            if (comResult != 0) goto failed;
+            comResult = g_Direct3DDevice2->lpVtbl->AddViewport(g_Direct3DDevice2,g_Direct3DViewport2);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_VIEWPORT;
             stageOrLoopCounter = completedStages + 10;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            if (comResult != 0) goto failed;
             comResult = g_Direct3DDevice2->lpVtbl->SetCurrentViewport
                               (g_Direct3DDevice2,g_Direct3DViewport2);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_VIEWPORT;
-            stageOrLoopCounter = completedStages + 0xb;
-            if (comResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-            Memory_ZeroDwords(sizeof(DDPIXELFORMAT),(void *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0));
-            Memory_ZeroDwords(sizeof(DDPIXELFORMAT),(void *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0));
+            stageOrLoopCounter = completedStages + 11;
+            if (comResult != 0) goto failed;
+            Memory_ZeroDwords(sizeof(DDPIXELFORMAT),&g_Direct3DOpaqueTextureFormat);
+            Memory_ZeroDwords(sizeof(DDPIXELFORMAT),&g_Direct3DAlphaTextureFormat);
             comResult = g_Direct3DDevice2->lpVtbl->EnumTextureFormats
                               (g_Direct3DDevice2,
                                GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback,
                                NULL);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT;
-            stageOrLoopCounter = completedStages + 0xc;
-            if (((comResult != 0) ||
-                (stageOrLoopCounter = completedStages + 0xd, g_Direct3DOpaqueTextureFormatBitsPerPixel == 0)) ||
-               (stageOrLoopCounter = completedStages + 0xe, g_Direct3DAlphaTextureFormatBitsPerPixel == 0))
-            goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-            formatSource = (uint32_t *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
-            formatDest = (uint32_t *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
+            stageOrLoopCounter = completedStages + 12;
+            if ((comResult != 0) ||
+                (stageOrLoopCounter = completedStages + 13, g_Direct3DOpaqueTextureFormatBitsPerPixel == 0) ||
+                (stageOrLoopCounter = completedStages + 14, g_Direct3DAlphaTextureFormatBitsPerPixel == 0)) {
+              goto failed;
+            }
+            formatSource = (uint32_t *)&g_Direct3DOpaqueTextureFormat;
+            formatDest = (uint32_t *)&g_Direct3DSelectedOpaqueTextureFormat;
             for (stageOrLoopCounter = sizeof(DDPIXELFORMAT) / sizeof(uint32_t); stageOrLoopCounter != 0;
                  stageOrLoopCounter--) {
               *formatDest = *formatSource;
               formatSource = formatSource + 1;
               formatDest = formatDest + 1;
             }
-            formatSource = (uint32_t *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
-            formatDest = (uint32_t *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
+            formatSource = (uint32_t *)&g_Direct3DAlphaTextureFormat;
+            formatDest = (uint32_t *)&g_Direct3DSelectedAlphaTextureFormat;
             for (stageOrLoopCounter = sizeof(DDPIXELFORMAT) / sizeof(uint32_t); stageOrLoopCounter != 0;
                  stageOrLoopCounter--) {
               *formatDest = *formatSource;
@@ -641,18 +639,18 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_SHADEMODE,D3DSHADE_GOURAUD);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0xf;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 15;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_SPECULARENABLE,0);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x10;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 16;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_CULLMODE,D3DCULL_NONE);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x11;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 17;
+            if (renderStateResult != 0) goto failed;
             g_Direct3DDevice2->lpVtbl->GetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_CULLMODE,&g_ImmediateVertexCount);
             /* the cull-mode read-back picks the immediate vertex count (3 when culling is off, else 4) */
@@ -664,46 +662,46 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_ZENABLE,D3DZB_TRUE);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x12;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 18;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_ZFUNC,D3DCMP_LESSEQUAL);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x13;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 19;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_FILLMODE,D3DFILL_SOLID);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x14;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 20;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAPBLEND,D3DTBLEND_MODULATEALPHA);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x15;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 21;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,g_Direct3DAntialiasMode);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x16;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 22;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMAG,
                                g_Direct3DTextureFilterMode);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x17;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 23;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,
                                g_Direct3DTextureFilterMode);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x18;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 24;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,
                                g_Direct3DTexturePerspectiveEnabled);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x19;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 25;
+            if (renderStateResult != 0) goto failed;
             g_Direct3DDevice2->lpVtbl->SetRenderState
                       (g_Direct3DDevice2,D3DRENDERSTATE_ZWRITEENABLE,
                        g_PrimitiveRenderStateCache.zWriteEnable);
@@ -711,26 +709,26 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                               (g_Direct3DDevice2,D3DRENDERSTATE_ALPHABLENDENABLE,
                                g_PrimitiveRenderStateCache.alphaBlendEnable);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x1a;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 26;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_SRCBLEND,
                                g_PrimitiveRenderStateCache.sourceBlend);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x1b;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 27;
+            if (renderStateResult != 0) goto failed;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_DESTBLEND,
                                g_PrimitiveRenderStateCache.destinationBlend);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x1c;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 28;
+            if (renderStateResult != 0) goto failed;
             g_BoundTextureHandle = 0;
             renderStateResult = g_Direct3DDevice2->lpVtbl->SetRenderState
                               (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREHANDLE,0);
             errorCodeOrCullMode = FATAL_ERROR_DIRECT3D_SETUP;
-            stageOrLoopCounter = completedStages + 0x1d;
-            if (renderStateResult != 0) goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
+            stageOrLoopCounter = completedStages + 29;
+            if (renderStateResult != 0) goto failed;
           }
           g_FramebufferWidth = width;
           g_FramebufferHeight = height;
@@ -752,8 +750,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                  SoftwareTextureSource_BlitSourceAlphaPaletteBank16;
             g_GraphicsTextureSourceBlitModulatedSourceAlpha =
                  SoftwareTextureSource_BlitModulatedSourceAlpha16;
-            g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb16
-            ;
+            g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb16;
             g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
                  SoftwareTextureSource_BlitHalfRgbSaturatedAdd16;
             g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb16;
@@ -771,8 +768,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
                  SoftwareTextureSource_BlitSourceAlphaPaletteBank32;
             g_GraphicsTextureSourceBlitModulatedSourceAlpha =
                  SoftwareTextureSource_BlitModulatedSourceAlpha32;
-            g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb32
-            ;
+            g_GraphicsTextureSourceBlitSaturatedAddRgb = SoftwareTextureSource_BlitSaturatedAddRgb32;
             g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd =
                  SoftwareTextureSource_BlitHalfRgbSaturatedAdd32;
             g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
@@ -783,7 +779,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
             displayModeResult.failed = true;
             return displayModeResult;
           }
-          stageOrLoopCounter = 0x1000; /* texture slots */
+          stageOrLoopCounter = GRAPHICS_TEXTURE_SLOT_CAPACITY;
           textureSlotCursor = g_GraphicsTextureSlots;
           do {
             if (*textureSlotCursor != NULL) {
@@ -799,7 +795,7 @@ DisplayModeResult GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
       }
     }
   }
-GraphicsDirectDraw_ReleasePartialInitializationAfterFailure:
+failed:
   completedStages = stageOrLoopCounter;
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,completedStages,g_PackageLastErrorPath);
   failureResult.failed = true;

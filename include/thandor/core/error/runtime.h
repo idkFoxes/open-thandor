@@ -58,7 +58,7 @@
 #define FATAL_ERROR_SOUND_SAMPLE_INVALID 0x4A
 /* Arena heap (core/memory/allocator): no free block is large enough (ArenaHeap_Alloc,
    ArenaHeap_AllocLargestFreeBlock; the largest free payload size is left in g_PackageLastErrorPath).
-   A corrupt block chain returns ARENA_HEAP_FAILURE_SENTINEL_0x13 instead. */
+   A corrupt block chain returns ARENA_HEAP_CORRUPT instead. */
 #define FATAL_ERROR_ARENA_EXHAUSTED 0x12
 /* Win32 file layer (platform/filesystem/win32, the g_FileSystem* table); the path is left in
    g_PackageLastErrorPath. Named after the operations that return them. */
@@ -139,6 +139,12 @@
 /* Texture sources (graphics/resources/texture): not a 'gfx' asset or the subresource index is out of range
    (GraphicsTextureSource_ConvertPaletteEntries, GraphicsTextureSource_DecomposeSubresourceRegions) */
 #define FATAL_ERROR_GFX_ASSET_INVALID 0x2C
+
+/* The fatal-error handlers take an error code (a text id of the error page, below 0x100) or a pointer to a
+   rich-text message; a value with no bits above the low byte is a code */
+#define FATAL_ERROR_IS_CODE(errorOrValue) (((errorOrValue) & 0xffffff00) == 0)
+/* FatalError_CopyRichTextToNarrow: nested rich-text streams it follows at most (deeper nesting cuts the text) */
+#define FATAL_ERROR_RICHTEXT_NESTING_MAX 64
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

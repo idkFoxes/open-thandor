@@ -32,7 +32,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   uint16_t *destination;
   uint8_t *commandLineOptionBytes;
   uint8_t *secondaryCommandLineOptionBytes;
-  UiTransferEndpointDescriptor *localEndpointCursor;
+  uint32_t *localEndpointCursor;
   uint32_t *localPlayerNameDwordCursor;
   uint32_t *endpointSourceDwordCursor;
   uint32_t *endpointDestinationDwordCursor;
@@ -67,23 +67,25 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     /* the local player becomes the only player record: name, local endpoint, command sync pending */
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
     sequenceToken = g_UiTransferSequenceToken;
-    g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff;
+    g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff; /* the local player never times out */
     firstPlayerRecord->peerSequenceToken = sequenceToken;
     localPlayerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
     localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
-    for (remainingOrRootNode = 10; remainingOrRootNode != 0; remainingOrRootNode--) {
+    for (remainingOrRootNode = sizeof(FrontendPlayerNameUtf16_28) / sizeof(uint32_t); remainingOrRootNode != 0;
+         remainingOrRootNode--) {
       *localPlayerRecordDwordCursor = *localPlayerNameDwordCursor;
       localPlayerNameDwordCursor++;
       localPlayerRecordDwordCursor++;
     }
     /* the cursor continues into firstPlayerRecord->endpoint and then commandSyncPending */
     endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
-    for (remainingOrRootNode = 4; remainingOrRootNode != 0; remainingOrRootNode--) {
+    for (remainingOrRootNode = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingOrRootNode != 0;
+         remainingOrRootNode--) {
       *localPlayerRecordDwordCursor = *endpointSourceDwordCursor;
       endpointSourceDwordCursor++;
       localPlayerRecordDwordCursor++;
     }
-    *localPlayerRecordDwordCursor = 1;
+    *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING;
     g_FrontendPendingSessionPlayerCount = 0;
     g_FrontendPlayerRuntimeCount = 1;
     g_FrontendPlayerRuntimeBlockCount = 1;
@@ -96,7 +98,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
               (&g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
     RichTextCommandStream_CopyExpanded
-              (0x80,((UiRequiredTextEditControl *)FRONTEND_UI(frontendUi,hostAddressEdit))->textPrefix6C,
+              (0x80,((UiRequiredTextEditControl *)FRONTEND_UI(frontendUi,hostAddressEdit))->textBuffer,
                (uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
     UiPageStack_SetActiveIndex(FRONTEND_PAGE_NETWORK_GAME,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
     if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
@@ -112,33 +114,34 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_CLIENT;
     g_FrontendPlayerRuntimeBlockCount = 1;
     g_LocalPlayerRuntimeId = 0;
-    (firstPlayerRecord->playerName).textUtf16[0] = 0;
-    (firstPlayerRecord->playerName).textUtf16[1] = 0;
+    firstPlayerRecord->playerName.textUtf16[0] = 0;
+    firstPlayerRecord->playerName.textUtf16[1] = 0;
     firstPlayerRecord->playerRuntimeId = 0;
-    (firstPlayerRecord->factionAssignment).roleStateFlags = 0;
-    firstPlayerRecord->runtimeState64 = 0;
+    firstPlayerRecord->factionAssignment.roleStateFlags = 0;
+    firstPlayerRecord->colourCycleFlags = 0;
     firstPlayerRecord->snapshotTransferFlags = 0;
-    UiTransfer_SendPlayerDescriptorPacket20002();
+    UiTransfer_SendPlayerDescriptor();
     return;
   }
   /* no session yet: open the backend selected in the protocol list, else the first one that opens */
   UiRuntimeRecordRing_Clear();
   UiTransferMailbox_RandomizeSequenceToken();
-  backendIndex = UiPointerList_GetSelectedIndexVariantA
+  backendIndex = UiPointerList_GetSelectedIndex
                           ((UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
   setSessionResult = g_NetworkBackendSlot0(backendIndex);
   if (!setSessionResult.failed) {
     openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
     if (!openBindResult.failed) {
-FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
+backendOpened:
       UiPointerList_SelectIndexVariantA
                 (backendIndex,(UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
-      localEndpointCursor = &g_NetworkLocalEndpointDescriptor16;
+      localEndpointCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
       /* copies the 16-byte local endpoint dword by dword */
-      for (remainingOrRootNode = 4; remainingOrRootNode != 0; remainingOrRootNode--) {
-        *endpointDestinationDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, uint32_t, localEndpointCursor->addressHeader);
-        localEndpointCursor = (UiTransferEndpointDescriptor *)&localEndpointCursor->ipv4AddressNetworkOrder;
+      for (remainingOrRootNode = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingOrRootNode != 0;
+           remainingOrRootNode--) {
+        *endpointDestinationDwordCursor = *localEndpointCursor;
+        localEndpointCursor++;
         endpointDestinationDwordCursor++;
       }
       /* -NAME="player name" */
@@ -148,16 +151,16 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
         optionTextCursor = commandLineOptionBytes + 6;
         remainingOrRootNode = 19;
         /* find the closing quote within 19 characters (stop at control characters) */
-        while( true ) {
+        for (;;) {
           optionChar = *optionTextCursor;
-          if ((optionChar == 0) || (optionChar < ' ')) break;
+          if (optionChar == 0 || optionChar < ' ') break;
           if (optionChar == '"') break;
           remainingOrRootNode--;
           if (remainingOrRootNode == 0) break;
           optionTextCursor++;
         }
         if (optionChar == '"') {
-          destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,playerNameEdit))->textPrefix6C;
+          destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,playerNameEdit))->textBuffer;
           *optionTextCursor = 0;
           if (optionTextCursor[1] == 0) {
             *commandLineOptionBytes = 'n';
@@ -187,7 +190,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
       UiPointerList_InitializeColumnLayout
                 (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
-      UiTransfer_SendPacketType10000Value2931();
+      UiTransfer_SendDiscoveryProbe();
       /* -HOST */
       findOptionResult = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
       if (findOptionResult.notFound) {
@@ -197,7 +200,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
         if (!findOptionResult.notFound) {
           remainingOrRootNode = 0x7fffff;
           optionTextCursor = secondaryCommandLineOptionBytes + 8;
-          while( true ) {
+          for (;;) {
             optionChar = *optionTextCursor;
             if (optionChar == 0) {
               return;
@@ -224,9 +227,9 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
               /* join that host directly, without picking a session from the list */
               g_NetworkBackendSlot6
                         (&g_FrontendNetworkEndpointScratch,(char *)g_PackageScratchBuffer);
-              g_FrontendSessionToken = 0x12340000;
+              g_FrontendSessionToken = FRONTEND_SEQUENCE_TOKEN_HIGH_WORD;
               g_FrontendSelectedPlayerToken = 0xffffffff;
-              UiTransfer_SendPlayerDescriptorPacket20002();
+              UiTransfer_SendPlayerDescriptor();
               remainingOrRootNode = g_FrontendRootNode;
               g_NetworkBackendSlot7
                         (&g_FrontendNetworkEndpointTextUtf16,
@@ -234,7 +237,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
               RichTextCommandStream_CopyExpanded
                         (0x80,
                          ((UiRequiredTextEditControl *)FRONTEND_UI(remainingOrRootNode,hostAddressEdit))
-                         ->textPrefix6C,(uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
+                         ->textBuffer,(uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
             }
           }
         }
@@ -255,7 +258,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
     if (!setSessionResult.failed) {
       openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
       errorOrValue = openBindResult.valueOrError;
-      if (!openBindResult.failed) goto FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage;
+      if (!openBindResult.failed) goto backendOpened;
       g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed a stale register */
     }
     backendIndex++;
@@ -266,11 +269,11 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
         FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(0xdc0,0,0,0);
+        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE,0,0,0);
       }
       return;
     }
-  } while( true );
+  } while (true);
 }
 
 
@@ -278,7 +281,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
    Frontend teardown: carries the status text id and the host address the player typed over into the frontend
    template, so the next frontend built from it (and the in-game template's info text) shows them again.
 */
-void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
+void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root)
 
 {
   int dwordsRemaining;
@@ -290,10 +293,10 @@ void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
      and the 0x40-code-unit hostAddressEdit text). */
   g_FrontendTemplateStatusTextResourceId =
        (TextResourceId)((UiSingleLineTextControl *)FRONTEND_UI(root,bottomBarStatusText))->text;
-  sourceCursor = (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(root,hostAddressEdit))->textPrefix6C;
+  sourceCursor = (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(root,hostAddressEdit))->textBuffer;
   destinationCursor = (int32_t *)g_FrontendHostAddressTextTemplate;
   g_InGameTemplateWorldViewInfoTextResourceId = g_FrontendTemplateStatusTextResourceId;
-  for (dwordsRemaining = 0x20; dwordsRemaining != 0; dwordsRemaining--) {
+  for (dwordsRemaining = 0x20; dwordsRemaining != 0; dwordsRemaining--) { /* 0x40 code units */
     *destinationCursor = *sourceCursor;
     sourceCursor++;
     destinationCursor++;
@@ -314,7 +317,7 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
   bool endpointParseFailed;
 
   endpointParseFailed = g_NetworkBackendSlot6
-                    (&g_FrontendNetworkEndpointScratch,(char *)hostAddressEdit->textPrefix6C);
+                    (&g_FrontendNetworkEndpointScratch,(char *)hostAddressEdit->textBuffer);
   if (endpointParseFailed) {
     hostAddressEdit->editStateFlags =
          hostAddressEdit->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
@@ -322,7 +325,7 @@ void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *host
   }
   hostAddressEdit->editStateFlags =
        hostAddressEdit->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
-  UiTransfer_SendPacketType10000Value2931();
+  UiTransfer_SendDiscoveryProbe();
   g_NetworkBackendSlot7
             (&g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
             );
@@ -351,7 +354,7 @@ void FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
   UiNodeList_SuppressActionId(FRONTEND_ACTION_JOIN_GAME,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
             (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
-  UiTransfer_SendPacketType10000Value2931();
+  UiTransfer_SendDiscoveryProbe();
   return;
 }
 
@@ -381,9 +384,9 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   /* -SPIELER="n" */
   findOptionResult = g_CommandLineFindOption(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
   optionText = findOptionResult.option;
-  if ((((!findOptionResult.notFound) && (optionText[10] == '"')) &&
-      (digitValueOrSpeed = optionText[9] - '0', '/' < optionText[9] && digitValueOrSpeed != 0)) &&
-     (((optionText[11] == 0 && (digitValueOrSpeed < 9)) && (1 < digitValueOrSpeed)))) {
+  if (!findOptionResult.notFound && optionText[10] == '"' &&
+      (digitValueOrSpeed = optionText[9] - '0', '/' < optionText[9] && digitValueOrSpeed != 0) &&
+      optionText[11] == 0 && digitValueOrSpeed < 9 && 1 < digitValueOrSpeed) {
     *optionText = 's';
     appliedOptionMask = 1;
     ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,maxPlayersSlider))->value =
@@ -396,16 +399,16 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     optionTextCursor = optionText + 7;
     remainingChars = 19;
     /* find the closing quote within 19 characters (stop at control characters) */
-    while( true ) {
+    for (;;) {
       optionChar = *optionTextCursor;
-      if ((optionChar == 0) || (optionChar < ' ')) break;
+      if (optionChar == 0 || optionChar < ' ') break;
       if (optionChar == '"') break;
       remainingChars--;
       if (remainingChars == 0) break;
       optionTextCursor++;
     }
     if (optionChar == '"') {
-      destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,gameNameEdit))->textPrefix6C;
+      destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,gameNameEdit))->textBuffer;
       *optionTextCursor = 0;
       if (optionTextCursor[1] == 0) {
         *optionText = 's';
@@ -418,9 +421,9 @@ void FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   /* -NETZWERK="n" */
   findOptionResult = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
   optionText = findOptionResult.option;
-  if (((((!findOptionResult.notFound) && (optionText[11] == '"')) &&
-       (digitValueOrSpeed = optionText[10] - '0', '/' < optionText[10] && digitValueOrSpeed != 0)) &&
-      ((optionText[12] == 0 && (digitValueOrSpeed < 8)))) && (digitValueOrSpeed != 0)) {
+  if (!findOptionResult.notFound && optionText[11] == '"' &&
+      (digitValueOrSpeed = optionText[10] - '0', '/' < optionText[10] && digitValueOrSpeed != 0) &&
+      optionText[12] == 0 && digitValueOrSpeed < 8 && digitValueOrSpeed != 0) {
     *optionText = 'n';
     ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,networkSpeedSlider))->value =
          digitValueOrSpeed;
@@ -493,17 +496,16 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
   for (remainingDwords = sizeof(FrontendPlayerNameUtf16_28) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
-    *(uint32_t *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 = *localPlayerNameCursor;
-    localPlayerNameCursor = localPlayerNameCursor + 1;
-    localPlayerRecordDwordCursor =
-         (uint32_t *)(((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 + 2);
+    *localPlayerRecordDwordCursor = *localPlayerNameCursor;
+    localPlayerNameCursor++;
+    localPlayerRecordDwordCursor++;
   }
   localEndpointDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
   for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
        remainingDwords--) {
     *localPlayerRecordDwordCursor = *localEndpointDwordCursor;
-    localEndpointDwordCursor = localEndpointDwordCursor + 1;
-    localPlayerRecordDwordCursor = localPlayerRecordDwordCursor + 1;
+    localEndpointDwordCursor++;
+    localPlayerRecordDwordCursor++;
   }
   /* the cursor now points at +0x50 of the player record; the indices below are dwords from there */
   *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING; /* commandSyncPending */
@@ -513,7 +515,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_HOST;
   localPlayerRecordDwordCursor[6] = 0; /* snapshotTransferFlags */
-  /* the preview goes into snapshotPayloadB0_13AF (+0xB0), its name is the player name (+0x18) */
+  /* the preview goes into snapshotPayload (+0xB0), its name is the player name (+0x18) */
   previewLoadFailed = PcxPreview_Load64x64PaletteAndPixels
                     ((PcxPreview64 *)(localPlayerRecordDwordCursor + 0x18),
                      (uint16_t *)(localPlayerRecordDwordCursor + -0xe));
@@ -528,7 +530,7 @@ void FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButt
   localPlayerRecordDwordCursor[10] = 0;
   localPlayerRecordDwordCursor[0xb] = 0;
   localPlayerRecordDwordCursor[10] = 0x440043; /* L"CD" at +0x78 */
-  FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction();
+  FrontendPlayerRuntime_UpdateStartButtonByCdShare();
   return;
 }
 

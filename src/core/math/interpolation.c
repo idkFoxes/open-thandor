@@ -50,7 +50,7 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
                             (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[3]);
       yawAngle = CubicSpline_EvaluateValueQ12
                         (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[4]);
-      yawAngle = yawAngle & 0xffff; /* 16-bit angle: wrap to one turn */
+      yawAngle = yawAngle & FIXED_ANGLE16_MASK; /* 16-bit angle: wrap to one turn */
       pitchAngle = CubicSpline_EvaluateValueQ12
                              (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetMotionParameters6CThrough78Clamped
@@ -84,7 +84,7 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
   WorldRuntime_SetPosition60AndDistanceFromPosition80
             (currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
   WorldRuntime_SetMotionParameters6CThrough78Clamped
-            ((worldRuntime->motion).motionValue78,currentKeyframe->channel5Q12,yawAngle & 0xffff,
+            ((worldRuntime->motion).motionValue78,currentKeyframe->channel5Q12,yawAngle & FIXED_ANGLE16_MASK,
              currentKeyframe->channel3Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
   return false;
@@ -126,7 +126,7 @@ uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
                            (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[3]);
       yawAngle = CubicSpline_EvaluateValueQ12
                         (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[4]);
-      yawAngle = yawAngle & 0xffff; /* 16-bit angle: wrap to one turn */
+      yawAngle = yawAngle & FIXED_ANGLE16_MASK; /* 16-bit angle: wrap to one turn */
       pitchAngle = CubicSpline_EvaluateValueQ12
                              (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
@@ -157,7 +157,7 @@ uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
   } while (keyframeCount != 0);
   /* past the end: hold the last keyframe */
   WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-            (currentKeyframe->channel5Q12,currentKeyframe->channel4Q12 & 0xffff,currentKeyframe->channel3Q12,
+            (currentKeyframe->channel5Q12,currentKeyframe->channel4Q12 & FIXED_ANGLE16_MASK,currentKeyframe->channel3Q12,
              currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
   return 0;
@@ -186,7 +186,7 @@ void WorldMotionSpline_BuildSixChannelCurves
     keyframeCursor = keyframes;
     do {
       /* shortest signed turn from the previous yaw to the next one */
-      unwrapDelta = (keyframeCursor[1].channel4Q12 & 0xffffU) - (previousAngle & 0xffff);
+      unwrapDelta = (keyframeCursor[1].channel4Q12 & 0xffffU) - (previousAngle & FIXED_ANGLE16_MASK);
       if (FIXED_ANGLE16_HALF_TURN < unwrapDelta) {
         unwrapDelta = unwrapDelta - FIXED_ANGLE16_FULL_TURN;
       }
@@ -194,7 +194,7 @@ void WorldMotionSpline_BuildSixChannelCurves
         unwrapDelta = unwrapDelta + FIXED_ANGLE16_FULL_TURN;
       }
       unwrappedAngle = unwrappedAngle + unwrapDelta;
-      previousAngle = (previousAngle & 0xffff) + unwrapDelta;
+      previousAngle = (previousAngle & FIXED_ANGLE16_MASK) + unwrapDelta;
       keyframeCursor[1].channel4Q12 = unwrappedAngle;
       remainingCount--;
       keyframeCursor++;
@@ -290,8 +290,8 @@ void InterpolationState_SetNegatedTargetAndRescaleProgress
   }
   /* Switch-off path. The original stores EAX here, which is -fadeOutTicks (not 0) when the light
      was already fading out (0x004CCC19). */
-  *(PackedRgb24 *)((int)&shadingRecord->squaredRadiusQ24 + 4) = negatedDurationOrZero;
-  *(PackedRgb24 *)&shadingRecord->squaredRadiusQ24 = negatedDurationOrZero;
+  ((PackedRgb24 *)&shadingRecord->squaredRadiusQ24)[1] = negatedDurationOrZero; /* high dword */
+  ((PackedRgb24 *)&shadingRecord->squaredRadiusQ24)[0] = negatedDurationOrZero;
   shadingRecord->packedColorRgbActive = negatedDurationOrZero;
   shadingRecord->targetRadiusQ12 = negatedDurationOrZero;
 }
@@ -311,8 +311,7 @@ void InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedT
   GraphicsShadingRuntimeRecord *shadingRecord;
 
   shadingRecord = g_GraphicsShadingRuntimeRecords;
-  remainingCount = 256;
-  do {
+  for (remainingCount = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT; remainingCount != 0; remainingCount--) {
     durationTicks = shadingRecord->radiusTransitionDurationTicks;
     if ((shadingRecord->packedColorRgbActive != 0) && (durationTicks != 0)) {
       /* the radius uses the elapsed time from before this step */
@@ -337,11 +336,7 @@ void InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedT
       }
     }
     shadingRecord++;
-    remainingCount--;
-    if (remainingCount == 0) {
-      return;
-    }
-  } while( true );
+  }
 }
 
 
@@ -414,7 +409,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
 
   /* In the matrix loops floatCursor points at the top-left of segment s's 4x4 diagonal block and steps one
      block (4 rows and 4 columns) per segment; indices below are written as row * order + column. */
-  endValueCursor = (int *)((int)&keyframes->channel0Q12 + channelByteOffset);
+  endValueCursor = (int *)((uint8_t *)&keyframes->channel0Q12 + channelByteOffset);
   *outEquationCount = keyframeCount * 4 - 4;
   floatCursor = matrix32x32;
   for (remainingCount = CUBIC_SPLINE_MATRIX_ORDER * CUBIC_SPLINE_MATRIX_ORDER; remainingCount != 0;
@@ -493,7 +488,7 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
   matrix32x32[1 * CUBIC_SPLINE_MATRIX_ORDER + 2] = knotTimeOrTerm + knotTimeOrTerm;
   knotTimeOrTerm = knotTimeOrTerm * knotTimeOrTerm;
   matrix32x32[1 * CUBIC_SPLINE_MATRIX_ORDER + 3] = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
-  /* right-hand side per segment: start value, 0, 0, end value (keyframes are 8 dwords apart) */
+  /* right-hand side per segment: start value, 0, 0, end value (one keyframe apart) */
   remainingCount = keyframeCount - 1;
   startValueCursor = endValueCursor;
   floatCursor = outCoefficients;
@@ -501,14 +496,14 @@ void CubicSpline_BuildNaturalCoefficientSystem(float startDerivative,CubicSpline
     *floatCursor = (float)*startValueCursor / g_Q12FloatScale4096;
     floatCursor[1] = 0.0;
     floatCursor[2] = 0.0;
-    startValueCursor = startValueCursor + 8;
+    startValueCursor = startValueCursor + sizeof(WorldMotionSplineKeyframe) / sizeof(int);
     floatCursor = floatCursor + 4;
     remainingCount--;
   } while (remainingCount != 0);
   remainingCount = keyframeCount - 1;
   floatCursor = outCoefficients;
   do {
-    endValueCursor = endValueCursor + 8;
+    endValueCursor = endValueCursor + sizeof(WorldMotionSplineKeyframe) / sizeof(int);
     floatCursor[3] = (float)*endValueCursor / g_Q12FloatScale4096;
     floatCursor = floatCursor + 4;
     remainingCount--;
@@ -589,7 +584,7 @@ void WorldMotionSpline_ClearCachedDerivatives(void)
   float *derivativeCursor;
 
   derivativeCursor = g_WorldMotionSplineCachedDerivatives;
-  for (derivativesRemaining = 6; derivativesRemaining != 0; derivativesRemaining--) {
+  for (derivativesRemaining = WORLD_MOTION_SPLINE_CHANNEL_COUNT; derivativesRemaining != 0; derivativesRemaining--) {
     *derivativeCursor = 0.0;
     derivativeCursor++;
   }

@@ -131,13 +131,13 @@ CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void)
     emptyResult.queueEmpty = true;
     return emptyResult;
   }
-  if (255 < nextReadIndex) { /* wrap around the ring */
+  if (GRAPHICS_CURSOR_INPUT_EVENT_CAPACITY - 1 < nextReadIndex) { /* wrap around the ring */
     nextReadIndex = 0;
   }
   g_CursorInputReadIndex = nextReadIndex;
-  consumedEventType = g_CursorInputEvents[eventIndex].eventType00;
-  eventClock = g_CursorInputEvents[eventIndex].clockValue14;
-  rawButtonState = g_CursorInputEvents[eventIndex].buttonState04;
+  consumedEventType = g_CursorInputEvents[eventIndex].eventType;
+  eventClock = g_CursorInputEvents[eventIndex].clockValue;
+  rawButtonState = g_CursorInputEvents[eventIndex].buttonState;
   g_CursorButtonState = rawButtonState;
   /* ESI: ticks since the release of the pressed button; releases (and motion) leave the limit itself, which
      never counts as a double click. The compare is unsigned (JNC at 0x00416978). */
@@ -164,8 +164,8 @@ CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void)
      is measured to the previous press, before this press becomes the last click below. */
   rawButtonState = rawButtonState & ~GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK;
   if (ticksSinceRelease < GRAPHICS_CURSOR_DOUBLE_CLICK_TICKS) {
-    clickDeltaX = g_CursorInputEvents[eventIndex].pointerX08 - g_CursorLastClickX;
-    clickDeltaY = g_CursorInputEvents[eventIndex].pointerY0C - g_CursorLastClickY;
+    clickDeltaX = g_CursorInputEvents[eventIndex].pointerX - g_CursorLastClickX;
+    clickDeltaY = g_CursorInputEvents[eventIndex].pointerY - g_CursorLastClickY;
     if ((-GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE <= clickDeltaX) &&
         (clickDeltaX <= GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE) &&
         (-GRAPHICS_CURSOR_DOUBLE_CLICK_DISTANCE <= clickDeltaY) &&
@@ -173,20 +173,20 @@ CursorEventResult GraphicsCursor_ConsumeNextInputEvent(void)
       rawButtonState = rawButtonState | GRAPHICS_CURSOR_BUTTON_DOUBLE_CLICK;
     }
   }
-  g_CursorOverrideX = g_CursorInputEvents[eventIndex].pointerX08;
-  g_CursorOverrideY = g_CursorInputEvents[eventIndex].pointerY0C;
-  g_CursorWheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
-  if ((consumedEventType != MOTION_OR_WHEEL) && (consumedEventType < 4)) {
-    g_CursorLastClickX = g_CursorInputEvents[eventIndex].pointerX08;
-    g_CursorLastClickY = g_CursorInputEvents[eventIndex].pointerY0C;
+  g_CursorOverrideX = g_CursorInputEvents[eventIndex].pointerX;
+  g_CursorOverrideY = g_CursorInputEvents[eventIndex].pointerY;
+  g_CursorWheelDelta = g_CursorInputEvents[eventIndex].wheelDelta;
+  if ((consumedEventType != MOTION_OR_WHEEL) && (consumedEventType < 4)) { /* a press: LEFT/MIDDLE/RIGHT_PRESS */
+    g_CursorLastClickX = g_CursorInputEvents[eventIndex].pointerX;
+    g_CursorLastClickY = g_CursorInputEvents[eventIndex].pointerY;
   }
   /* Called through GraphicsCursorConsumeEventProc: the event also leaves the button state in EBX,
      position in ECX/EDX and wheel delta in ESI, which Ghidra's EAX/CF view of this function dropped. */
   eventResult.eventType = consumedEventType;
   eventResult.buttonState = (GraphicsCursorButtonState)rawButtonState;
-  eventResult.pointerX = g_CursorInputEvents[eventIndex].pointerX08;
-  eventResult.pointerY = g_CursorInputEvents[eventIndex].pointerY0C;
-  eventResult.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
+  eventResult.pointerX = g_CursorInputEvents[eventIndex].pointerX;
+  eventResult.pointerY = g_CursorInputEvents[eventIndex].pointerY;
+  eventResult.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta;
   eventResult.queueEmpty = false;
   return eventResult;
 }
@@ -208,7 +208,8 @@ GraphicsProjectedPointPair Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoin
   int64_t projectedYProduct;
   
   if (g_ProjectionNumerator.high < viewPoint->z) {
-    perspectiveScaleQ12 = (int)(THANDOR_BITCAST(GraphicsWideFixed, int64_t, g_ProjectionNumerator) / (int64_t)viewPoint->z);
+    perspectiveScaleQ12 =
+         (int)(THANDOR_BITCAST(GraphicsWideFixed, int64_t, g_ProjectionNumerator) / (int64_t)viewPoint->z);
     projectedXProduct = (int64_t)viewPoint->x * (int64_t)perspectiveScaleQ12;
     projectedYProduct = (int64_t)viewPoint->y * (int64_t)perspectiveScaleQ12;
     /* SHLD EDX,EAX,20: bits 12..43 of the 64-bit product, i.e. the Q12 product shifted back by 12 */
@@ -392,8 +393,8 @@ void Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
 /* Address: 0x004867B0.
    Rebuilds the four side planes of the view frustum from the current view angles, projection scale and shift
    (call after Graphics_SetViewProjectionParameters). Two edge rays are forward + / - a sideways vector of length
-   1 << (12 - shift), two are forward + / - an up/down vector of that length; the plane normals are cross products of neighbouring
-   rays, normalised to Q28 in g_FrustumPlaneNormalFixed_0[0..3].
+   1 << (12 - shift), two are forward + / - an up/down vector of that length; the plane normals are cross
+   products of neighbouring rays, normalised to Q28 in g_FrustumPlaneNormalFixed_0[0..3].
 */
 void Graphics_RebuildFrustumPlanes(void)
 
@@ -498,12 +499,10 @@ FixedElevationAzimuth GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesReg
   FixedElevationAzimuth localAngles;
   
   FixedTransform_InvertRigidQ28
-            ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0),&((GraphicsObject *)graphicsObject)->worldTransform);
-  FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),elevationAngle,azimuthAngle);
-  FixedTransform_ApplyPoint
-            ((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0),(GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),
-             (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0));
-  localAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0));
+            (&g_GraphicsDirectionInverseTransform,&((GraphicsObject *)graphicsObject)->worldTransform);
+  FixedMath_WriteDirectionQ28(&g_GraphicsDirectionWorld,elevationAngle,azimuthAngle);
+  FixedTransform_ApplyPoint(&g_GraphicsDirectionLocal,&g_GraphicsDirectionWorld,&g_GraphicsDirectionInverseTransform);
+  localAngles = FixedMath_VectorToAnglesVec3Regs(&g_GraphicsDirectionLocal);
   return localAngles;
 }
 
@@ -519,9 +518,11 @@ void GraphicsObject_SetTranslationDirectionPackedAnglesAndScale
           FixedMathScale32 distance,GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
-  ((GraphicsObject *)graphicsObjectAddress)->translationDistance = distance;
-  ((GraphicsObject *)graphicsObjectAddress)->translationAnglesPacked =
-       azimuthAngle16 | elevationAngle16 << 0x10;
+  GraphicsObject *object;
+
+  object = (GraphicsObject *)graphicsObjectAddress;
+  object->translationDistance = distance;
+  object->translationAnglesPacked = azimuthAngle16 | elevationAngle16 << 0x10;
 }
 
 
@@ -535,9 +536,11 @@ void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleT
           AngleTurn16Stored32 elevationAngle16,GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
-  ((GraphicsObject *)graphicsObjectAddress)->rotationAzimuth = azimuthAngle;
-  ((GraphicsObject *)graphicsObjectAddress)->rotationAnglesPacked =
-       elevationAngle16 | rollAngle16 << 0x10;
+  GraphicsObject *object;
+
+  object = (GraphicsObject *)graphicsObjectAddress;
+  object->rotationAzimuth = azimuthAngle;
+  object->rotationAnglesPacked = elevationAngle16 | rollAngle16 << 0x10;
 }
 
 
@@ -552,34 +555,33 @@ void GraphicsObject_SetRotationEulerAnglesPacked(AngleTurn32 azimuthAngle,AngleT
 void GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
+  GraphicsObject *object;
   int remainingChildCount;
   int parentObjectOrCursor;
   GraphicsFixedMatrix3x4 *output;
   FixedDirection translationDirection;
   
+  object = (GraphicsObject *)graphicsObjectAddress;
   /* a child builds its local transform in the scratch matrix shared with
      GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs */
-  output = (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0);
-  parentObjectOrCursor = ((GraphicsObject *)graphicsObjectAddress)->parentObject;
+  output = &g_GraphicsDirectionInverseTransform;
+  parentObjectOrCursor = object->parentObject;
   if (parentObjectOrCursor == 0) {
-    output = &((GraphicsObject *)graphicsObjectAddress)->worldTransform;
+    output = &object->worldTransform;
   }
   FixedTransform_BuildRotationBasis
-            (output,(int)((GraphicsObject *)graphicsObjectAddress)->rotationAnglesPacked >> 0x10,
-             ((GraphicsObject *)graphicsObjectAddress)->rotationAnglesPacked & 0xffff,
-             ((GraphicsObject *)graphicsObjectAddress)->rotationAzimuth);
+            (output,(int)object->rotationAnglesPacked >> 0x10,object->rotationAnglesPacked & 0xffff,
+             object->rotationAzimuth);
   translationDirection = FixedMath_DirectionFromAnglesScaledRegs
-                    ((int)((GraphicsObject *)graphicsObjectAddress)->translationAnglesPacked >> 0x10,
-                     ((GraphicsObject *)graphicsObjectAddress)->translationAnglesPacked & 0xffff,
-                     ((GraphicsObject *)graphicsObjectAddress)->translationDistance);
+                    ((int)object->translationAnglesPacked >> 0x10,object->translationAnglesPacked & 0xffff,
+                     object->translationDistance);
   (output->translation).x = translationDirection.x;
   (output->translation).y = translationDirection.y;
   (output->translation).z = translationDirection.z;
-  remainingChildCount = ((GraphicsObject *)graphicsObjectAddress)->childCount;
+  remainingChildCount = object->childCount;
   if (parentObjectOrCursor != 0) {
     FixedTransform_Compose
-              (&((GraphicsObject *)graphicsObjectAddress)->worldTransform,output,
-               &((GraphicsObject *)parentObjectOrCursor)->worldTransform);
+              (&object->worldTransform,output,&((GraphicsObject *)parentObjectOrCursor)->worldTransform);
   }
   for (; remainingChildCount != 0; remainingChildCount--) {
     /* the cursor advances 4 bytes per child: childObjects[i] of the parent */
@@ -602,7 +604,8 @@ StatusResult __cdecl Graphics_Init(void)
   SoftwareDisplayModeHookProc *displayModeHook;
   int remainingDwords;
   uint32_t remainingAdapters;
-  GraphicsAdapterRecord *cursorOrResult; /* also the fill cursor of the zeroing loops, and the error code */
+  GraphicsAdapterRecord *cursorOrResult; /* allocation, adapter cursor, and the error code */
+  uint32_t *zeroCursor;
   uint32_t displayAdapterIndex;
   GraphicsAdapterRecord *adapterOrModule;
   StatusResult glideResult;
@@ -613,32 +616,34 @@ StatusResult __cdecl Graphics_Init(void)
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
 
-  allocResult = g_MemoryApi.alloc(0x4000); /* 4096 texture-slot pointers */
+  allocResult = g_MemoryApi.alloc(GRAPHICS_TEXTURE_SLOT_CAPACITY * sizeof(GraphicsTextureResource *));
   cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_GraphicsTextureSlots = (GraphicsTextureResource **)cursorOrResult;
-    for (remainingDwords = 0x1000; remainingDwords != 0; remainingDwords--) {
-      (cursorOrResult->adapterGuid).Data1 = 0;
-      cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
+    zeroCursor = (uint32_t *)cursorOrResult;
+    for (remainingDwords = GRAPHICS_TEXTURE_SLOT_CAPACITY; remainingDwords != 0; remainingDwords--) {
+      *zeroCursor = 0;
+      zeroCursor++;
     }
-    allocResult = g_MemoryApi.alloc(0x400); /* 256 palette entries */
+    allocResult = g_MemoryApi.alloc(256 * sizeof(DirectDrawPaletteEntry)); /* 256 palette entries */
     cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       g_TexturePaletteEntries = (DirectDrawPaletteEntry *)cursorOrResult;
-      for (remainingDwords = 0x100; remainingDwords != 0; remainingDwords--) {
-        (cursorOrResult->adapterGuid).Data1 = 0;
-        cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
+      zeroCursor = (uint32_t *)cursorOrResult;
+      for (remainingDwords = 256; remainingDwords != 0; remainingDwords--) {
+        *zeroCursor = 0;
+        zeroCursor++;
       }
       /* ADC of the not-found carry: the flag becomes nonzero without -D3DALL, and then
          Direct3D_EnumDeviceCallback accepts only hardware devices with the required caps */
       optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll);
       g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.notFound;
-      allocResult = g_MemoryApi.alloc(0x800); /* 16 adapter records of 0x80 bytes */
+      allocResult = g_MemoryApi.alloc(GRAPHICS_ADAPTER_CAPACITY * sizeof(GraphicsAdapterRecord));
       cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         g_GraphicsAdapterCount = 0;
         g_GraphicsAdapters = (GraphicsAdapterRecord *)allocResult.payloadOrError;
-        allocResult = g_MemoryApi.alloc(0x1000);
+        allocResult = g_MemoryApi.alloc(GRAPHICS_DISPLAY_MODE_CAPACITY * sizeof(GraphicsDisplayMode));
         cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
         if (!allocResult.failed) {
           g_GraphicsDisplayModeCount = 0;
@@ -648,25 +653,29 @@ StatusResult __cdecl Graphics_Init(void)
              the original) runs only the software renderer, so it enumerates neither Glide nor Direct3D. */
           if (!Thandor_TestAidWindowed()) {
             glideResult = Glide3_InitAndEnumerate();
-            if ((glideResult.failed) && (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide), !optionResult.notFound)) {
+            if ((glideResult.failed) &&
+                (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide),
+                 !optionResult.notFound)) {
               FatalError_ExitIfFailed(glideResult.valueOrError,true);
             }
           }
 #else
           /* Glide is optional, unless -GLIDE asks for it */
           glideResult = Glide3_InitAndEnumerate();
-          if ((glideResult.failed) && (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide), !optionResult.notFound)) {
+          if ((glideResult.failed) &&
+              (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide),
+               !optionResult.notFound)) {
             FatalError_ExitIfFailed(glideResult.valueOrError,true);
           }
 #endif
-          moduleLoad = DynDLL_Load(dynapi_2);
+          moduleLoad = DynDLL_Load(sz_DDRAW);
           adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;
           cursorOrResult = adapterOrModule;
           if (!moduleLoad.failed) {
-            procResolve = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,dynapi_17);
+            procResolve = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,sz_DirectDrawCreate);
             cursorOrResult = procResolve.procedureOrError;
             if (!procResolve.failed) {
-              procResolve = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,dynapi_18);
+              procResolve = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,sz_DirectDrawEnumerateA);
               cursorOrResult = procResolve.procedureOrError;
               if (!procResolve.failed) {
                 hresult = pDirectDrawEnumerateA(DirectDraw_EnumAdapterCallback,NULL);
@@ -786,7 +795,8 @@ void Graphics_Shutdown(void)
   GraphicsTextureResource **remainingSlots;
   GraphicsTextureResource **slotCursor;
 
-  g_GraphicsBackendAccessState = -1; /* nonzero: GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer draws nothing */
+  /* nonzero: GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer draws nothing */
+  g_GraphicsBackendAccessState = -1;
   g_MemoryApi.free(g_CursorSavedBackground);
   g_MemoryApi.free(g_CursorCompositeBuffer);
   g_MemoryApi.free(g_CursorAlternateSavedBackground);
@@ -794,9 +804,9 @@ void Graphics_Shutdown(void)
   g_CursorCompositeBuffer = NULL;
   g_CursorAlternateSavedBackground = NULL;
   GlideBackend_ShutdownWrapper();
-  /* 0x1000 texture slots; slotsOrRemaining first carries the table pointer (skipped when it is NULL), then
-     the number of slots still to visit */
-  remainingSlots = (GraphicsTextureResource **)0x1000;
+  /* GRAPHICS_TEXTURE_SLOT_CAPACITY texture slots; slotsOrRemaining first carries the table pointer (skipped
+     when it is NULL), then the number of slots still to visit */
+  remainingSlots = (GraphicsTextureResource **)GRAPHICS_TEXTURE_SLOT_CAPACITY;
   slotCursor = g_GraphicsTextureSlots;
   slotsOrRemaining = g_GraphicsTextureSlots;
   while (slotsOrRemaining != NULL) {
@@ -885,8 +895,8 @@ void Graphics_SetViewportAndClearDepth(GraphicsScreenCoordinate clipMaxY,Graphic
       savedMaxX = clipMaxX;
       savedMinY = clipMinY;
       savedMinX = clipMinX;
-      Memory_ZeroDwords(0x2c,&g_Direct3DViewportState); /* sizeof(D3DVIEWPORT2) */
-      g_Direct3DViewportState.dwSize = 0x2c;
+      Memory_ZeroDwords(sizeof g_Direct3DViewportState,&g_Direct3DViewportState);
+      g_Direct3DViewportState.dwSize = sizeof g_Direct3DViewportState;
       g_Direct3DViewportState.dvMinZ = 0.0;
       g_Direct3DViewportState.dwX = clipMinX;
       g_Direct3DViewportState.dwY = clipMinY;
@@ -999,8 +1009,8 @@ void Graphics_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY,GraphicsScree
     packetResult = GraphicsPrimitiveQueue_Begin(queue);
     while (!packetResult.noPacket) {
       /* render-flag bits 12..17 select the handler that fills g_ImmediateTLVertices */
-      g_GraphicsDispatchTable.primitive[(packetResult.packet->renderFlags & 0x3f000) >> 12]
-                (packetResult.packet);
+      g_GraphicsDispatchTable.primitive[(packetResult.packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >>
+                                        12](packetResult.packet);
       g_Direct3DDevice2->lpVtbl->DrawPrimitive
                 (g_Direct3DDevice2,D3DPT_TRIANGLEFAN,D3DVT_TLVERTEX,g_ImmediateTLVertices,
                  g_ImmediateVertexCount,D3DDP_DONOTUPDATEEXTENTS);
@@ -1016,8 +1026,9 @@ void Graphics_DrawPrimitiveQueue(GraphicsScreenCoordinate clipMaxY,GraphicsScree
 
 /* Address: 0x0057A330.
    Draws the software mouse cursor into backSurface before it is presented (the animation timer also redraws it
-   on the primary surface when it moved): the background under the cursor is saved twice (once to draw on, once for GraphicsCursor_RestoreAfterPresent), the cursor frame is
-   blended onto the first copy (the pressed image while a mouse button is down) and that copy is written back.
+   on the primary surface when it moved): the background under the cursor is saved twice (once to draw on, once
+   for GraphicsCursor_RestoreAfterPresent), the cursor frame is blended onto the first copy (the pressed image
+   while a mouse button is down) and that copy is written back.
    The visibility token is latched so the restore matches what was drawn. Glide draws its cursor itself.
 */
 void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
@@ -1046,7 +1057,7 @@ void GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
       GraphicsCursor_SaveSurfaceBackground(g_CursorCompositeBuffer,drawY,cursorX,backSurface);
       GraphicsCursor_SaveSurfaceBackground(g_CursorSavedBackground,drawY,cursorX,backSurface);
       cursorSubresourceIndex = cursorFrame->activeSubresourceIndex;
-      if ((g_CursorButtonState & 7) == 0) { /* none of the three mouse buttons is down */
+      if ((g_CursorButtonState & LEFT_MIDDLE_RIGHT) == 0) { /* none of the three mouse buttons is down */
         cursorSubresourceIndex = cursorFrame->idleSubresourceIndex;
       }
       /* the composite buffer holds the saved rectangle at its origin, so the cursor is drawn at (0,0) */
@@ -1133,9 +1144,9 @@ void GraphicsCursor_SaveSurfaceBackground(SoftwareFramebufferAccess *destination
     result = sourceSurface->lpVtbl->Restore(sourceSurface);
   }
   if (result == 0) {
-    /* 0x6C = sizeof(DDSURFACEDESC): cleared, then dwSize set */
-    Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
-    g_GraphicsCursorSurfaceDescScratch = 0x6c;
+    /* the scratch DDSURFACEDESC (its first dword is dwSize): cleared, then dwSize set */
+    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDescScratch);
+    g_GraphicsCursorSurfaceDescScratch = sizeof(DDSURFACEDESC_DX6);
     result = sourceSurface->lpVtbl->Lock
                        (sourceSurface,NULL,
                         (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,DDLOCK_WAIT | DDLOCK_READONLY,
@@ -1205,9 +1216,9 @@ void GraphicsCursor_RestoreSurfaceBackground(SoftwareFramebufferAccess *sourceBu
     result = destinationSurface->lpVtbl->Restore(destinationSurface);
   }
   if (result == 0) {
-    /* 0x6C = sizeof(DDSURFACEDESC): cleared, then dwSize set */
-    Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
-    g_GraphicsCursorSurfaceDescScratch = 0x6c;
+    /* the scratch DDSURFACEDESC (its first dword is dwSize): cleared, then dwSize set */
+    Memory_ZeroDwords(sizeof(DDSURFACEDESC_DX6),&g_GraphicsCursorSurfaceDescScratch);
+    g_GraphicsCursorSurfaceDescScratch = sizeof(DDSURFACEDESC_DX6);
     /* write lock, as the original (PUSH 0x21 at 0x0057A176 / 0x0057A266) */
     result = destinationSurface->lpVtbl->Lock
                        (destinationSurface,NULL,

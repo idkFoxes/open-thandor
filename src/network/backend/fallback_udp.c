@@ -207,7 +207,7 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
     g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[7] = 0;
-    winsockResultOrError = g_WinSock_bind(socketResult.valueOrError,&g_NetworkFallbackBindEndpoint,0x10);
+    winsockResultOrError = g_WinSock_bind(socketResult.valueOrError,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress));
     socketToClose = socketResult.valueOrError;
     if (winsockResultOrError == 0) {
       /* g_NetworkFallbackSocketOptionOn holds 1: enable SO_BROADCAST and non-blocking mode */
@@ -276,7 +276,7 @@ NetworkReceiveResult NetworkFallback_ReceiveDatagram
   NetworkReceiveResult successResult;
   NetworkReceiveResult failureResult;
 
-  g_NetworkFallbackAddressLength = 0x10;
+  g_NetworkFallbackAddressLength = sizeof(WinSockAddress);
   receivedByteCount = g_NetworkFallbackSocket;
   if (g_NetworkFallbackSocket != INVALID_SOCKET) {
     receivedByteCount =
@@ -319,7 +319,7 @@ NetworkSendResult NetworkFallback_SendDatagram
     Thandor_TestAidLogDatagram("send",destinationAddress,byteCount,buffer);
 #endif
     sentByteCount =
-         g_WinSock_sendto(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,0x10);
+         g_WinSock_sendto(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,sizeof(WinSockAddress));
     if ((int)sentByteCount < 0) {
       winsockErrorCode = g_WinSock_WSAGetLastError();
       g_WideNumberFormatUtf16
@@ -469,10 +469,10 @@ StatusResult NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
     winsockResultOrError = g_Ws2_32_bind(socketHandle,&g_NetworkBackendBindAddress.ipv4,socketOrAddressLength);
     if (winsockResultOrError == 0) {
       /* g_NetworkFallbackSocketOptionOn holds 1: enable SO_BROADCAST and non-blocking mode */
-      winsockResultOrError = g_Ws2_32_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,(uint8_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
+      winsockResultOrError = g_Ws2_32_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,(uint8_t *)&g_NetworkFallbackSocketOptionOn,4);
       if (winsockResultOrError == 0) {
         winsockResultOrError = g_Ws2_32_WSAIoctl
-                          (socketHandle,FIONBIO,(void *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4,NULL,0,&bytesReturned,
+                          (socketHandle,FIONBIO,&g_NetworkFallbackSocketOptionOn,4,NULL,0,&bytesReturned,
                            NULL,NULL);
         if (winsockResultOrError == 0) {
           if (g_NetworkBackendActiveAddressFamily == AF_INET) {
@@ -527,9 +527,9 @@ void NetworkFallbackUdp_CloseSocket(void)
 {
   NetworkSocketHandle32 socket;
 
-  if (g_NetworkFallbackSocket != 0xffffffff) {
+  if (g_NetworkFallbackSocket != INVALID_SOCKET) {
     /* XCHG: the timer thread sends and receives on this socket */
-    socket = (NetworkSocketHandle32)THANDOR_ATOMIC_EXCHANGE(&g_NetworkFallbackSocket,0xffffffff);
+    socket = (NetworkSocketHandle32)THANDOR_ATOMIC_EXCHANGE(&g_NetworkFallbackSocket,INVALID_SOCKET);
     g_Ws2_32_closesocket(socket);
   }
   return;
@@ -642,7 +642,7 @@ bool NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut
     }
     /* the game's port: sin_port for IPv4, sa_socket (+0xC) for IPX */
     if (g_NetworkBackendActiveAddressFamily == AF_INET) {
-      (endpointOut->fields).portNetworkOrder =
+      endpointOut->fields.portNetworkOrder =
            (NetworkAddressFamily)g_NetworkBackendPortNetworkOrderCarrier;
     }
     else if (g_NetworkBackendActiveAddressFamily == AF_IPX) {

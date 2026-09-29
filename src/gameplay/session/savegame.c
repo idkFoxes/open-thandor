@@ -39,7 +39,7 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
        (UiWrappedTextControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameDescriptionText);
   rowSlotArray = catalogList->rowSlots;
   lastRowIndex = catalogList->rowCount - 1;
-  selectionResult = UiPointerList_GetSelectedIndexVariantB(catalogList);
+  selectionResult = UiPointerList_GetSelectedIndexAndConfirmed(catalogList);
   selectedIndex = selectionResult.rowIndex;
   selectedRowRecord = rowSlotArray[selectedIndex];
   if (selectionResult.confirmed) {
@@ -58,13 +58,13 @@ void InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = ((ScenarioCatalogSaveRecord *)selectedRowRecord)->localizedStringId70;
         descriptionText = TextResource_Resolve(resourceId);
-        *descriptionText.text = 0x8000;
+        *descriptionText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         descriptionBox->text = (uint16_t *)resourceId;
       }
       else {
         descriptionText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
         fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->localizedStringId70);
-        *fieldText.text = 0x8000;
+        *fieldText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,descriptionText.text);
         fieldText = TextResource_Resolve(((ScenarioCatalogSaveRecord *)selectedRowRecord)->optionalLocalizedStringId90);
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,descriptionText.text);
@@ -101,7 +101,7 @@ void InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog(InGameSaveGamePage
   ListSelectionResult selectionResult;
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
-  selectionResult = UiPointerList_GetSelectedIndexVariantB
+  selectionResult = UiPointerList_GetSelectedIndexAndConfirmed
                     ((UiPointerListControl *)
                      THANDOR_UI_SIBLING(deleteButton,InGameUiImage,saveGameDeleteButton,saveGameList));
   rowOrdinal = selectionResult.rowIndex + 1;
@@ -216,7 +216,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       *clearCursor = 0;
       clearCursor++;
     }
-    resolvedText = TextResource_Resolve(0x2151);
+    resolvedText = TextResource_Resolve(TEXT_ID_SAVE_GAME_NEW_ROW);
     RichTextCommandStream_CopyExpanded(0x100,(uint16_t *)destination,resolvedText.text);
     /* The action source is the game menu's Save button (in-game template +0x2550). */
     inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
@@ -235,31 +235,31 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
       firstNode = firstNode->parent;
       parentCursor = firstNode->parent;
     }
-    UiNodeList_SuppressActionId(0x1210,firstNode);
-    UiNodeList_SuppressActionId(0x1219,firstNode);
+    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
+    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_DELETE,firstNode);
     UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)INGAME_UI(firstNode, saveNameEdit));
     InGameSaveName_UpdateSaveActionValidity(INGAME_UI(firstNode, saveNameEdit));
     listRowCount = saveList->rowCount;
     rowSlots = saveList->rowSlots;
-    selectionResult = UiPointerList_GetSelectedIndexVariantB(saveList);
+    selectionResult = UiPointerList_GetSelectedIndexAndConfirmed(saveList);
     selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectionResult.rowIndex];
     /* The description text holds a TextResourceId (labelFlags & 0x10 clear); the last row is the new save. */
-    descriptionText->text = (uint16_t *)0x215d;
+    descriptionText->text = (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
     if (listRowCount - 1 != selectionResult.rowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = selectedRecord->localizedStringId70;
         resolvedText = TextResource_Resolve(resourceId);
-        *resolvedText.text = 0x8000;
+        *resolvedText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         descriptionText->text = (uint16_t *)resourceId;
       }
       else {
-        resolvedText = TextResource_Resolve(0x215e);
+        resolvedText = TextResource_Resolve(TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE);
         fieldText = TextResource_Resolve(selectedRecord->localizedStringId70);
-        *fieldText.text = 0x8000;
+        *fieldText.text = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,resolvedText.text);
         fieldText = TextResource_Resolve(selectedRecord->optionalLocalizedStringId90);
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,resolvedText.text);
-        descriptionText->text = (uint16_t *)0x215e;
+        descriptionText->text = (uint16_t *)TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE;
       }
     }
   }
@@ -286,11 +286,11 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
 
   g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
-  selectionResult = UiPointerList_GetSelectedIndexVariantB(saveList);
+  selectionResult = UiPointerList_GetSelectedIndexAndConfirmed(saveList);
   errorOrValue = selectionResult.rowIndex + 1;
   /* the typed name of the trailing new-save row, else the selected row's file name */
   leaf = ((UiTextEditControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveNameEdit))->
-         textPrefix6C;
+         textBuffer;
   if (errorOrValue != saveList->rowCount) {
     leaf = (uint16_t *)saveList->rowSlots[errorOrValue - 1];
   }
@@ -302,7 +302,7 @@ void InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
              (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
   WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_SVE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
   /* The error check below uses the save routine's CF, not the extension helper's. */
-  saveStatus = InGameUiAction1210_ResourceRegistrationHelper
+  saveStatus = InGameSaveGame_WritePackage
                     (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
                      &g_ScenarioCatalogPathScratchUtf16);
   saveCarry = (uint32_t)(saveStatus & 1);
@@ -345,9 +345,9 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   if ((((UiTextEditControl *)nameControl)->editStateFlags & 1) != 0) {
     /* REPNE SCASW for the NUL; nameLength then counts the characters including the NUL. Each forbidden
        character is searched by its own REPNE SCASW pass below. */
-    remainingLength = ((UiTextEditControl *)nameControl)->valueOrCapacity58;
+    remainingLength = ((UiTextEditControl *)nameControl)->bufferCapacityCodeUnits;
     matched = true;
-    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
     do {
       scanEnd = charCursor;
       if (remainingLength == 0) break;
@@ -357,10 +357,10 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
       charCursor = scanEnd;
     } while (!matched);
     if (matched) {
-      nameLength = (uint32_t)-((int)(int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C - (int)scanEnd) >> 1;
+      nameLength = (uint32_t)-((int)(int32_t *)((UiTextEditControl *)nameControl)->textBuffer - (int)scanEnd) >> 1;
       matched = nameLength == 0;
       scanRemaining = nameLength;
-      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
       do {
         if (scanRemaining == 0) break;
         scanRemaining--;
@@ -369,7 +369,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
       } while (!matched);
       if (!matched) {
         scanRemaining = nameLength;
-        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
         do {
           if (scanRemaining == 0) break;
           scanRemaining--;
@@ -378,7 +378,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
         } while (!matched);
         if (!matched) {
           scanRemaining = nameLength;
-          charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+          charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
           do {
             if (scanRemaining == 0) break;
             scanRemaining--;
@@ -387,7 +387,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
           } while (!matched);
           if (!matched) {
             scanRemaining = nameLength;
-            charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+            charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
             do {
               if (scanRemaining == 0) break;
               scanRemaining--;
@@ -396,7 +396,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
             } while (!matched);
             if (!matched) {
               scanRemaining = nameLength;
-              charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+              charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
               do {
                 if (scanRemaining == 0) break;
                 scanRemaining--;
@@ -405,7 +405,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
               } while (!matched);
               if (!matched) {
                 scanRemaining = nameLength;
-                charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
                 do {
                   if (scanRemaining == 0) break;
                   scanRemaining--;
@@ -414,7 +414,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                 } while (!matched);
                 if (!matched) {
                   scanRemaining = nameLength;
-                  charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                  charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
                   do {
                     if (scanRemaining == 0) break;
                     scanRemaining--;
@@ -423,7 +423,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                   } while (!matched);
                   if (!matched) {
                     scanRemaining = nameLength;
-                    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
                     do {
                       if (scanRemaining == 0) break;
                       scanRemaining--;
@@ -432,7 +432,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                     } while (!matched);
                     if (!matched) {
                       scanRemaining = nameLength;
-                      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
                       do {
                         if (scanRemaining == 0) break;
                         scanRemaining--;
@@ -440,7 +440,7 @@ void InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                         charCursor = (int32_t *)((int)charCursor + 2);
                       } while (!matched);
                       if (!matched) {
-                        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textBuffer;
                         do {
                           if (nameLength == 0) break;
                           nameLength--;

@@ -12,6 +12,13 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/system/time_locale. */
+
+/* The timer tables are walked by byte offset (the offset is the WinMM dwUser value); one slot of each */
+#define TIMER_CALLBACK_AT(byteOffset) \
+  (*(TimerCallbackProc **)((uint8_t *)g_TimerSystemState.callbacks + (byteOffset)))
+#define TIMER_WINMM_ID_AT(byteOffset) (*(WinMmTimerId *)((uint8_t *)g_TimerSystemState.winmmTimerIds + (byteOffset)))
+/* Locale_Init: output capacity passed for every locale string (8 UTF-16 units, half of each 16-unit field) */
+#define LOCALE_STRING_COPY_CAPACITY_BYTES 0x10
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005867B0 */

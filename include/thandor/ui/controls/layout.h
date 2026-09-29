@@ -104,6 +104,11 @@
 #define UI_WINDOW_SUBRESOURCE_GAUGE_FILL_LEFT 0x7F /* fill caps and tiled middle */
 #define UI_WINDOW_SUBRESOURCE_GAUGE_FILL 0x80
 #define UI_WINDOW_SUBRESOURCE_GAUGE_FILL_RIGHT 0x81
+/* UiTitledWindowControl.titleFlags and UiHorizontalGaugeControl.gaugeFlags bits. */
+#define UI_TITLED_WINDOW_CENTERED_TITLE 0x1
+#define UI_HORIZONTAL_GAUGE_SHOW_PERCENT 0x1
+/* UiFrame_Update calls between two DirectInputMouse_RefreshDeviceIfIdle calls (g_DirectInputMouseRefreshCountdown). */
+#define UI_FRAME_DIRECT_INPUT_REFRESH_INTERVAL 48
 
 /* 0x004B49A0 */
 void UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren

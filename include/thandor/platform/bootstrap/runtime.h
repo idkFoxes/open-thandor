@@ -25,6 +25,32 @@
 #define CPU_FEATURE_MMX 0x1 /* bit of g_CpuFeatureFlags */
 /* DynDLL_Load: capacity of g_DynamicModules */
 #define DYNAMIC_MODULE_CAPACITY 16
+/* ProcessEntry sets this display mode first (with PERSISTENT_DEFAULT_BITS_PER_PIXEL); Game_Run switches to the
+   saved mode when it differs */
+#define GAME_START_DISPLAY_WIDTH 640
+#define GAME_START_DISPLAY_HEIGHT 480
+/* GameRuntime_InitializeSpatialAudioAndRendering: packets of the global primitive queue */
+#define GAME_PRIMITIVE_QUEUE_PACKET_COUNT 0xA000
+/* Text pages Game_LoadCoreAssets loads (TextResourcePage_Load), named after their files in texte\ */
+#define GAME_TEXT_PAGE_NETERROR 0xFF /* neterror.str */
+#define GAME_TEXT_PAGE_HELP 0x18 /* help.str */
+#define GAME_TEXT_PAGE_HILFE 0x20 /* hilfe.str */
+#define GAME_TEXT_PAGE_MENUE 0x21 /* menue.str */
+#define GAME_TEXT_PAGE_LEVEL 0x22 /* level.str */
+#define GAME_TEXT_PAGE_INHALT 0x23 /* inhalt.str */
+#define GAME_TEXT_PAGE_TASTATUR 0x24 /* tastatur.str */
+#define GAME_TEXT_PAGE_TECHNO 0x30 /* techno.str (page 0x30 is later the loaded level's text page) */
+/* Text 2 of tastatur.str: the mouse help whose inline icons come from the cursor texture */
+#define TEXT_ID_MOUSE_HELP 0x2402
+/* Slots of g_BootstrapApiBindings, bound by DynAPI_Bootstrap (order of the image data table) */
+#define BOOTSTRAP_API_LOAD_LIBRARY_A 0 /* KERNEL32 */
+#define BOOTSTRAP_API_FREE_LIBRARY 1 /* KERNEL32 */
+#define BOOTSTRAP_API_TIME_SET_EVENT 2 /* WINMM */
+#define BOOTSTRAP_API_TIME_KILL_EVENT 3 /* WINMM */
+#define BOOTSTRAP_API_MCI_SEND_COMMAND_A 4 /* WINMM */
+#define BOOTSTRAP_API_REG_OPEN_KEY_EX_A 5 /* ADVAPI32 */
+#define BOOTSTRAP_API_REG_QUERY_VALUE_EX_A 6 /* ADVAPI32 */
+#define BOOTSTRAP_API_REG_CLOSE_KEY 7 /* ADVAPI32 */
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

@@ -11,8 +11,8 @@ digraph thandor {
   "FrontendTransferPage_ResetSessionOpenAndRequestMailbox" [label="0x0054D2E0\nFrontendTransferPage_ResetSessionOpenAndRequestMailbox"];
   "FrontendSessionList_DecrementExpiryAndCompactRows" [label="0x0054E3A0\nFrontendSessionList_DecrementExpiryAndCompactRows"];
   "FrontendSession_PeriodicTick" [label="0x00565670\nFrontendSession_PeriodicTick"];
-  "FrontendClientSession_DecrementTimeoutsAndCompactPlayers" [label="0x005725D0\nFrontendClientSession_DecrementTimeoutsAndCompactPlayers"];
-  "FrontendHostSession_TickShutdownOrReadyConsensus" [label="0x00572960\nFrontendHostSession_TickShutdownOrReadyConsensus"];
+  "FrontendHostSession_TickPeerTimeoutsAndDropPlayers" [label="0x005725D0\nFrontendHostSession_TickPeerTimeoutsAndDropPlayers"];
+  "FrontendClientSession_TickHostTimeout" [label="0x00572960\nFrontendClientSession_TickHostTimeout"];
   "FrontendSession_ApplyGameSpeedAndReturnToMainPage" [label="0x00544210\nFrontendSession_ApplyGameSpeedAndReturnToMainPage"];
   "FrontendSession_ReturnToMainPage" [label="0x00544D10\nFrontendSession_ReturnToMainPage"];
   "FrontendSession_ReleaseSelectedResourceAndReturnToMainPage" -> "FrontendSession_ReturnToMainPage";

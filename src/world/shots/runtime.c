@@ -66,51 +66,49 @@ void ShotRuntime_ApplyArmyHitRelationAndNotifications(ArmyRuntimeSlot *targetArm
   uint32_t shooterFactionIndex;
   GameEntityRuntime *targetEntity;
   
-  shooterArmy = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
+  shooterArmy = shotRuntime->ownerAndTrajectory.ownerArmyRuntime;
   targetEntity = targetArmyRuntime->linkedEntityRuntime;
   if (shooterArmy != NULL) {
-    if (((shotRuntime->definitionOrSavedId).definition)->targetClassImpactDamageQ12[0] < 0) {
+    if (shotRuntime->definitionOrSavedId.definition->targetClassImpactDamageQ12[0] < 0) {
       /* EAX = condition ratio, EDX = 0x1000: equal means the target is fully repaired */
       conditionRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs
-                        ((RuntimeModelFactionPrefix10 *)targetEntity);
-      if ((((int)conditionRatio == (int)(conditionRatio >> 0x20)) && ((shooterArmy->commandModeFlags & 1) != 0)) &&
-         (targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime)) {
+                        ((RuntimeModelFactionPrefix *)targetEntity);
+      if ((int)conditionRatio == (int)(conditionRatio >> 0x20) &&
+          (shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
+          targetEntity == (GameEntityRuntime *)shooterArmy->commandTargetArmyRuntime) {
         ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(shooterArmy);
         shooterArmy->commandGeneration = 1;
       }
     }
     else {
       shooterFactionIndex = shooterArmy->factionIndex;
-      /* the target's owning faction (entity +0xC) */
-      targetFactionIndex =
-           ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&targetEntity->common)[3].savedIdOrOffset;
-      g_GameDataAuxState.pairPressureMatrix8x8
-      [((ModelRuntimeSlotReferenceOrSavedOffset4 *)&targetEntity->common)[3].savedIdOrOffset * 8 +
-       shooterFactionIndex] =
+      /* the target's owning faction */
+      targetFactionIndex = targetEntity->common.ownership.ownerIndex;
+      g_GameDataAuxState.pairPressureMatrix8x8[targetEntity->common.ownership.ownerIndex * 8 + shooterFactionIndex] =
            g_GameDataAuxState.pairPressureMatrix8x8
-           [((ModelRuntimeSlotReferenceOrSavedOffset4 *)&targetEntity->common)[3].savedIdOrOffset *
-            8 + shooterFactionIndex] + 0x100;
-      if (((shooterFactionIndex != 0) && (targetFactionIndex != 0)) && (shooterFactionIndex != targetFactionIndex)
-         ) {
+           [targetEntity->common.ownership.ownerIndex * 8 + shooterFactionIndex] + 0x100;
+      if (shooterFactionIndex != 0 && targetFactionIndex != 0 && shooterFactionIndex != targetFactionIndex) {
         alreadyHostile = GameFactionRuntime_TestCapabilityBitClear(targetFactionIndex,shooterFactionIndex);
         inGameRoot = g_InGameRuntimeRoot;
         currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
-        /* faction record +0x700 + 4 * other faction: tick of the pair's last relation change */
+        /* relationStateTicks: tick of the pair's last relation change */
         if (alreadyHostile) {
-          *(InGameSimulationTick *)(shooterFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + targetFactionIndex * 4) =
+          g_GameFactionRuntimeImage.records[shooterFactionIndex].relationStateTicks[targetFactionIndex] =
                g_GameFactionRuntimeImage.tail.simulationTick;
-          *(InGameSimulationTick *)(targetFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + shooterFactionIndex * 4) =
+          g_GameFactionRuntimeImage.records[targetFactionIndex].relationStateTicks[shooterFactionIndex] =
                currentTick;
           GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
                     (targetArmyRuntime,&inGameRoot->worldRuntime0A30);
           ShotRuntime_PostImpactRelationNotificationNoOp(shotRuntime,&inGameRoot->worldRuntime0A30);
         }
-        else if ((((shooterArmy->commandModeFlags & 1) == 0) ||
-                 ((shooterArmy->commandTargetArmyRuntime != NULL &&
-                  (targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)))) &&
-                (99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -
-                            *(int *)(shooterFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + targetFactionIndex * 4)) -
-                           *(int *)(targetFactionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + shooterFactionIndex * 4)))) {
+        else if (((shooterArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) == 0 ||
+                  (shooterArmy->commandTargetArmyRuntime != NULL &&
+                   targetFactionIndex == shooterArmy->commandTargetArmyRuntime->factionIndex)) &&
+                 99 < (int)((g_GameFactionRuntimeImage.tail.simulationTick * 2 -
+                             g_GameFactionRuntimeImage.records[shooterFactionIndex].relationStateTicks
+                             [targetFactionIndex]) -
+                            g_GameFactionRuntimeImage.records[targetFactionIndex].relationStateTicks
+                            [shooterFactionIndex])) {
           stateSecondTowardFirst = 0;
           stateFirstTowardSecond = 0;
           /* notification text code 11, or 12 when the relation was at state 8 or above */
@@ -146,14 +144,16 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
   ArenaAllocResult loadResult;
   StatusResult initResult;
   
-  WidePath_SetExtensionCode(0x786667,mutableBasePath); /* "gfx" */
+  WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
+  loadResult =
+       THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
   if (!loadResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_ShotTextureSet = (GraphicsTextureSet *)loadResult.payloadOrError;
-    WidePath_SetExtensionCode(0x6c6170,mutableBasePath); /* "pal" */
-    loadResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
+    WidePath_SetExtensionCode(ASSET_MAGIC_PAL,mutableBasePath);
+    loadResult =
+         THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
     if (!loadResult.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_ShotPalette = (GraphicsPaletteAsset *)loadResult.payloadOrError;
@@ -161,15 +161,13 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
       runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.payloadOrError;
       if (!loadResult.failed) {
         /* pool address - 1 */
-        g_ShotRuntimeRebaseBaseMinusOne =
-             (uint8_t *)((int)&runtimeSlotCursor[-1].ownerAndTrajectory.secondaryEffectCountdownTicks +
-                     3);
+        g_ShotRuntimeRebaseBaseMinusOne = (uint8_t *)runtimeSlotCursor - 1;
         g_ShotRuntimeSlots = runtimeSlotCursor;
         /* clears the pool dword by dword */
         for (runtimeSlotsRemaining = SHOT_RUNTIME_POOL_BYTES / 4; runtimeSlotsRemaining != 0;
             runtimeSlotsRemaining--) {
-          (runtimeSlotCursor->definitionOrSavedId).definition = NULL;
-          runtimeSlotCursor = (ShotRuntimeSlot *)&runtimeSlotCursor->launchSpeedQ12;
+          runtimeSlotCursor->definitionOrSavedId.definition = NULL;
+          runtimeSlotCursor = (ShotRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
         }
         loadResult.payloadOrError = 0;
         loadResult.failed = false;
@@ -205,17 +203,15 @@ void ShotRuntime_ShutdownGraphicsResources(void)
     g_ShotPalette = NULL;
   }
   registryCursor = g_ShotDefinitionRegistry;
-  registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOTS;
-  do {
+  for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
     currentDefinition = *registryCursor;
-    if ((currentDefinition != NULL) &&
-       (currentDefinition->ownedNestedResourcePresent != 0)) {
+    if (currentDefinition != NULL && currentDefinition->ownedNestedResourcePresent != 0) {
       Resource_Release(currentDefinition->ownedNestedResource);
     }
     *registryCursor = NULL;
     registryCursor++;
-    registrySlotsRemaining--;
-  } while (registrySlotsRemaining != 0);
+  }
   return;
 }
 
@@ -237,8 +233,7 @@ ShotDefinitionResult ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog d
 
   registryCursor = g_ShotDefinitionRegistry;
   registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-  while ((registryDefinition = *registryCursor, registryDefinition == NULL ||
-         (registryDefinition->definitionId != definitionId))) {
+  while (registryDefinition = *registryCursor, registryDefinition == NULL || registryDefinition->definitionId != definitionId) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -278,44 +273,40 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
   shotSlot = g_ShotRuntimeSlots;
   shotSlotsRemaining = SHOT_RUNTIME_SLOT_COUNT;
   /* NOT dword ptr [slot0 + 0x3C]: inverted on every call, purpose unknown */
-  firstSlotCountdown = &(g_ShotRuntimeSlots->ownerAndTrajectory).secondaryEffectCountdownTicks;
+  firstSlotCountdown = &g_ShotRuntimeSlots->ownerAndTrajectory.secondaryEffectCountdownTicks;
   *firstSlotCountdown = ~*firstSlotCountdown;
   do {
-    rebasedRuntimeState = (shotSlot->runtimeStateOrSavedOffset).runtimeStatePointer;
-    savedOwnerArmy = (shotSlot->ownerAndTrajectory).ownerArmyRuntime;
-    if ((shotSlot->modelNodeOrSavedOffset).modelNode != NULL) {
+    rebasedRuntimeState = shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer;
+    savedOwnerArmy = shotSlot->ownerAndTrajectory.ownerArmyRuntime;
+    if (shotSlot->modelNodeOrSavedOffset.modelNode != NULL) {
       if (rebasedRuntimeState != NULL) {
         rebasedRuntimeState = (void *)((int)rebasedRuntimeState + g_ModelRuntimeRebaseDelta);
       }
       rebasedOwnerArmy = NULL;
       if (savedOwnerArmy != NULL) {
-        rebasedOwnerArmy = (ArmyRuntimeSlot *)
-                    ((int)&savedOwnerArmy->modelRuntimeOrSavedOffset +
-                    (int)g_ArmyRuntimeRebaseBaseMinusOne);
+        rebasedOwnerArmy = (ArmyRuntimeSlot *)((int)savedOwnerArmy + (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
       /* saved model node offset + g_RuntimeObjectRebaseBaseMinusOne */
-      (shotSlot->modelNodeOrSavedOffset).modelNode =
-           (ModelRuntimeNode *)
-           (g_RuntimeObjectRebaseBaseMinusOne +
-           (int)(&((shotSlot->modelNodeOrSavedOffset).modelNode)->modelPayload + -1) + 0x30);
-      (shotSlot->runtimeStateOrSavedOffset).runtimeStatePointer = rebasedRuntimeState;
-      (shotSlot->ownerAndTrajectory).ownerArmyRuntime = rebasedOwnerArmy;
+      shotSlot->modelNodeOrSavedOffset.modelNode =
+           (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)shotSlot->modelNodeOrSavedOffset.modelNode);
+      shotSlot->runtimeStateOrSavedOffset.runtimeStatePointer = rebasedRuntimeState;
+      shotSlot->ownerAndTrajectory.ownerArmyRuntime = rebasedOwnerArmy;
       registryCursor = g_ShotDefinitionRegistry;
-      registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOTS;
+      registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
       for (;;) {
         registryDefinition = *registryCursor;
         if ((registryDefinition != NULL) &&
-           ((shotSlot->definitionOrSavedId).definition ==
+           (shotSlot->definitionOrSavedId.definition ==
             (ShotDefinition *)registryDefinition->definitionId)) break;
         registryCursor++;
         registrySlotsRemaining--;
         if (registrySlotsRemaining == 0) {
           /* saved definition no longer registered: drop the shot (definition = last registry entry) */
-          (shotSlot->modelNodeOrSavedOffset).modelNode = NULL;
+          shotSlot->modelNodeOrSavedOffset.modelNode = NULL;
           break;
         }
       }
-      (shotSlot->definitionOrSavedId).definition = registryDefinition;
+      shotSlot->definitionOrSavedId.definition = registryDefinition;
     }
     shotSlot++;
     shotSlotsRemaining--;
@@ -331,7 +322,7 @@ void ShotRuntime_RebaseSlotsAfterLoad(void)
    free slot of the shot pool and a world object record for its model node, links the node into the world's
    owner list and seeds position, launch angles, velocity (plus half the ballistic divisor upwards for
    ballistic shots), lifetime, animation, optional shading light, occupancy class flags and tint; a launch
-   effect is spawned when the model has a launch point (lookup key 3). Called by the army and model weapon
+   effect is spawned when the model has an effect point (MODEL_POINT_CLASS_EFFECT). Called by the army and model weapon
    code (ArmyRuntime_ResolveShotLaunchFromModelAttachment, ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate,
    ArmyRuntime_UpdateTimedShotAndEffectEmitters, ModelRuntime_EmitProjectilesFromAttachmentPoints) and by
    EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions. The original sets CF when no slot
@@ -344,7 +335,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
           WorldRuntimeContext *worldRuntime)
 
 {
-  ModelResourceHitTestAndRenderView210 *nestedModelResource;
+  ModelResource *nestedModelResource;
   Q12 modelBoundingRadiusQ12;
   ShotAnimationFrameAccumulatorQ4 frameThresholdQ4;
   AngleTurn16Stored32 elevationOffsetAngle;
@@ -352,7 +343,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   PackedArgb32 definitionTintArgb;
   ShotRuntimeSlot *slotsRemainingOrPool;
   GraphicsPaletteAsset *shotPalette;
-  ShotModelRuntimeNodeClassView100 *shotModelNode;
+  ShotModelRuntimeNode *shotModelNode;
   PackedArgb32 nodeTintArgb;
   ShotRuntimeSlot *slotsRemaining;
   Q12 runtimeLaunchSpeedQ12;
@@ -375,70 +366,70 @@ void ShotRuntimePool_CreateProjectileFromDefinition
     if (slotsRemainingOrPool == NULL) {
       return;
     }
-    if ((shotRuntimeCursor->modelNodeOrSavedOffset).modelNode == NULL) break;
+    if (shotRuntimeCursor->modelNodeOrSavedOffset.modelNode == NULL) break;
     shotRuntimeCursor = shotRuntimeCursor + 1;
     slotsRemaining = (ShotRuntimeSlot *)((int)slotsRemaining - 1);
     slotsRemainingOrPool = slotsRemaining;
   }
   allocatedRecord = WorldObjectArray_AllocateFreeRecord(worldRuntime);
-  shotModelNode = (ShotModelRuntimeNodeClassView100 *)allocatedRecord.recordOrError;
+  shotModelNode = (ShotModelRuntimeNode *)allocatedRecord.recordOrError;
   if (allocatedRecord.failed) {
     return;
   }
-  WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)shotModelNode);
-  (shotRuntimeCursor->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)shotModelNode;
-  (shotRuntimeCursor->definitionOrSavedId).definition = shotDefinition;
+  WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode *)shotModelNode);
+  shotRuntimeCursor->modelNodeOrSavedOffset.modelNode = (ModelRuntimeNode *)shotModelNode;
+  shotRuntimeCursor->definitionOrSavedId.definition = shotDefinition;
   shotModelNode->ownerClassId = WORLD_OWNER_RUNTIME_SHOT;
   shotModelNode->shotRuntime = shotRuntimeCursor;
-  (shotModelNode->worldTransform).translation.x = launchWorldXQ12;
-  (shotModelNode->worldTransform).translation.y = launchWorldYQ12;
-  (shotModelNode->worldTransform).translation.z = launchWorldZQ12;
+  shotModelNode->worldTransform.translation.x = launchWorldXQ12;
+  shotModelNode->worldTransform.translation.y = launchWorldYQ12;
+  shotModelNode->worldTransform.translation.z = launchWorldZQ12;
   runtimeLaunchSpeedQ12 = shotDefinition->launchSpeedQ12;
   if (shotDefinition->trajectoryRampDurationTicks != 0) {
     runtimeLaunchSpeedQ12 = 0;
   }
   shotRuntimeCursor->lifetimeTicksRemaining = shotDefinition->projectileLifetimeTicks;
   shotRuntimeCursor->launchSpeedQ12 = runtimeLaunchSpeedQ12;
-  (shotRuntimeCursor->ownerAndTrajectory).ownerArmyRuntime = ownerArmyRuntime;
+  shotRuntimeCursor->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
   launchAngles = ShotDefinition_ComputeLaunchAnglesRegs
                      (targetWorldZQ12,targetWorldYQ12,targetWorldXQ12,launchWorldZQ12,
                       launchWorldYQ12,launchWorldXQ12,shotDefinition);
-  (shotModelNode->modelPayload).worldRotationAngle0 = launchAngles.headingAngle;
-  (shotModelNode->modelPayload).worldRotationAngle1 = launchAngles.elevationAngle;
-  (shotModelNode->modelPayload).worldRotationAngle2 = launchAngles.headingAngle;
+  shotModelNode->modelPayload.worldRotationAngle0 = launchAngles.headingAngle;
+  shotModelNode->modelPayload.worldRotationAngle1 = launchAngles.elevationAngle;
+  shotModelNode->modelPayload.worldRotationAngle2 = launchAngles.headingAngle;
   launchDirection = FixedMath_DirectionFromAnglesScaledRegs
                      (launchAngles.elevationAngle,launchAngles.headingAngle,shotDefinition->launchSpeedQ12);
   directionZOrNeighborhoodMask = launchDirection.z;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent0Q12 = launchDirection.x;
+  shotRuntimeCursor->ownerAndTrajectory.directionComponent0Q12 = launchDirection.x;
   if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
     directionZOrNeighborhoodMask = directionZOrNeighborhoodMask + (shotDefinition->ballisticDivisorQ12 >> 1);
   }
   shotModelNode->renderDepthBiasOrState = 0;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent1Q12 = launchDirection.y;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent2Q12 = directionZOrNeighborhoodMask;
+  shotRuntimeCursor->ownerAndTrajectory.directionComponent1Q12 = launchDirection.y;
+  shotRuntimeCursor->ownerAndTrajectory.directionComponent2Q12 = directionZOrNeighborhoodMask;
   shotRuntimeCursor->projectileAgeTicks = 0;
   shotPalette = g_ShotPalette;
   nestedModelResource = shotDefinition->ownedNestedResource;
-  (shotModelNode->modelPayload).textureSet = g_ShotTextureSet;
+  shotModelNode->modelPayload.textureSet = g_ShotTextureSet;
   modelBoundingRadiusQ12 = nestedModelResource->boundingRadiusQ12;
-  (shotModelNode->modelPayload).paletteAsset = shotPalette;
+  shotModelNode->modelPayload.paletteAsset = shotPalette;
   shotModelNode->subtreeBoundingRadiusQ12 = modelBoundingRadiusQ12;
-  (shotModelNode->modelPayload).modelResource = nestedModelResource;
+  shotModelNode->modelPayload.modelResource = nestedModelResource;
   frameThresholdQ4 = shotDefinition->animationFrameAdvanceThresholdQ4;
   elevationOffsetAngle = shotDefinition->elevationOffsetAngle16;
-  (shotRuntimeCursor->ownerAndTrajectory).animationFrameIndex = 0;
+  shotRuntimeCursor->ownerAndTrajectory.animationFrameIndex = 0;
   shotRuntimeCursor->impactEffectEmissionFlags = 0;
   shotRuntimeCursor->animationFrameAccumulatorQ4 = frameThresholdQ4;
-  (shotRuntimeCursor->runtimeStateOrSavedOffset).runtimeState = shotRuntimeState14;
+  shotRuntimeCursor->runtimeStateOrSavedOffset.runtimeState = shotRuntimeState14;
   shotRuntimeCursor->elevationOffsetAngle16 = elevationOffsetAngle;
-  (shotModelNode->modelPayload).meshGroupMask = 0xffffffff;
+  shotModelNode->modelPayload.meshGroupMask = 0xffffffff;
   secondaryEffectInterval = shotDefinition->secondaryEffectIntervalTicks;
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | 1;
-  (shotRuntimeCursor->ownerAndTrajectory).secondaryEffectCountdownTicks = secondaryEffectInterval;
+  shotRuntimeCursor->ownerAndTrajectory.secondaryEffectCountdownTicks = secondaryEffectInterval;
   shotModelNode->textureSubresourceBaseIndex = 0;
   shotModelNode->modelRuntimeLinkOrSavedOffset = NULL;
-  /* optional light point of the model (lookup key 4): allocates a shading record there */
-  lookupEntry = ModelLookupTable_ContainsPackedKey(0,4,shotDefinition->ownedNestedResource);
+  /* optional light point of the model: allocates a shading record there */
+  lookupEntry = ModelLookupTable_ContainsPackedKey(0,MODEL_POINT_CLASS_LIGHT,shotDefinition->ownedNestedResource);
   if (lookupEntry.notFound) {
     shotModelNode->shadingRecord = NULL;
   }
@@ -447,7 +438,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
     shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
                        (shotDefinition->shadingTransitionDurationTicks,
-                        (shotDefinition->shadingColorArgb >> 0x18) << 8,
+                        (shotDefinition->shadingColorArgb >> 24) << 8, /* alpha byte = radius / 16 */
                         shotDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
     shotModelNode->shadingRecord = shadingAllocation.record;
   }
@@ -455,12 +446,13 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->childCount = 0;
   runtimeClassIndex = (char)worldRuntime->activeFactionRuntimeIndex;
   directionZOrNeighborhoodMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                     (0x1000,(shotModelNode->worldTransform).translation.y,
-                      (shotModelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-  resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,directionZOrNeighborhoodMask,runtimeClassIndex);
+                     (Q12_ONE,shotModelNode->worldTransform.translation.y,
+                      shotModelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
+  resolvedMasks =
+       TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,directionZOrNeighborhoodMask,runtimeClassIndex);
   shotRuntimeCursor->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | 0x10;
-  nodeTintArgb = UiNode_GetStateTintArgb((UiNodeBase *)shotModelNode);
+  nodeTintArgb = ModelRuntimeNode_GetStateTintArgb(shotModelNode);
   definitionTintArgb = shotDefinition->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
   tintProduct = pmulhw(ShotTint_UnpackBytesShiftRight(nodeTintArgb,4),
@@ -468,15 +460,15 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(tintProduct);
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
-  lookupEntry = ModelLookupTable_ContainsPackedKey(0,3,shotDefinition->ownedNestedResource);
+  lookupEntry = ModelLookupTable_ContainsPackedKey(0,MODEL_POINT_CLASS_EFFECT,shotDefinition->ownedNestedResource);
   if (!lookupEntry.notFound) {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
     EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
-               (shotModelNode->modelPayload).worldRotationAngle2,
-               (shotModelNode->modelPayload).worldRotationAngle1,
-               (shotModelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
+               shotModelNode->modelPayload.worldRotationAngle2,
+               shotModelNode->modelPayload.worldRotationAngle1,
+               shotModelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
                shotDefinition->launchEffectDefinition,worldRuntime);
   }
   return;

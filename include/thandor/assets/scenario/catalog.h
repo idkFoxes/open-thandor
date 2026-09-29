@@ -28,6 +28,7 @@
 /* A level's description text is 0x230010 + 0x10 * its title index (record +0x70), registered by
    TextResourcePage_LoadCompatibilityAliases. 0x215D fills a scenario description box while no row is selected. */
 #define TEXT_ID_LEVEL_DESCRIPTION_BASE 0x230010
+#define TEXT_ID_LEVEL_DESCRIPTION_STRIDE 0x10 /* description + TEXT_LEVEL_EXTRA_LINE_COUNT lines per level */
 #define TEXT_ID_SCENARIO_DESCRIPTION_EMPTY 0x215D
 /* A campaign's description text is 0x230000 + its title index (record +0x50). */
 #define TEXT_ID_CAMPAIGN_DESCRIPTION_BASE 0x230000

@@ -99,7 +99,7 @@ FatalErrorCheckResult FatalErrorRuntime_DispatchPendingError(uint32_t errorOrVal
     errorOrValue = dispatchResult.valueOrError;
   }
   stream = (uint16_t *)errorOrValue;
-  if ((errorOrValue & 0xffffff00) == 0) { /* an error code, not a text pointer */
+  if (FATAL_ERROR_IS_CODE(errorOrValue)) {
     resolvedText = TextResource_Resolve(errorOrValue);
     stream = resolvedText.text;
     RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
@@ -217,7 +217,7 @@ FatalErrorCheckResult FatalError_Exit(uint32_t errorOrValue,bool carryIn)
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
   Thandor_Log("fatal error 0x%08X, last path \"%ls\"", errorOrValue, (wchar_t *)g_PackageLastErrorPath);
   Thandor_LogStack("fatal error stack", errorOrValue);
-  if ((errorOrValue & 0xffffff00) == 0) { /* an error code, not a text pointer */
+  if (FATAL_ERROR_IS_CODE(errorOrValue)) {
     resolvedText = TextResource_Resolve(errorOrValue);
     errorOrValue = (uint32_t)resolvedText.text;
   }
@@ -249,7 +249,7 @@ int FatalError_CopyRichTextToNarrow
   uint16_t *commandCursor;
   uint16_t *streamCursor;
   bool newlineCapacityUnderflow;
-  uint16_t *nestedReturnStack[64]; /* the original's machine-stack chain */
+  uint16_t *nestedReturnStack[FATAL_ERROR_RICHTEXT_NESTING_MAX]; /* the original's machine-stack chain */
   int nestedDepth;
   uint16_t commandOrCodeUnit;
   
@@ -271,7 +271,7 @@ int FatalError_CopyRichTextToNarrow
         case RICHTEXT_OP_FIXED_SPACE:
           remainingCapacityBytes--;
           if (remainingCapacityBytes == 0)
-          goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
+            goto outputFull;
           *destination = ' ';
           destination++;
           nextCommand = streamCursor;
@@ -280,7 +280,7 @@ int FatalError_CopyRichTextToNarrow
           newlineCapacityUnderflow = remainingCapacityBytes < 2;
           remainingCapacityBytes = remainingCapacityBytes - 2;
           if (newlineCapacityUnderflow || remainingCapacityBytes == 0)
-          goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
+            goto outputFull;
           destination[0] = '\r';
           destination[1] = '\n';
           destination = destination + 2;
@@ -292,8 +292,8 @@ int FatalError_CopyRichTextToNarrow
           nextCommand = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
           break;
         case RICHTEXT_OP_CALL_NESTED:
-          if (nestedDepth == 64)
-          goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
+          if (nestedDepth == FATAL_ERROR_RICHTEXT_NESTING_MAX)
+            goto outputFull;
           nestedReturnStack[nestedDepth++] = streamCursor;
           nextCommand = *(uint16_t **)streamCursor;
           break;
@@ -309,7 +309,7 @@ int FatalError_CopyRichTextToNarrow
         if ((commandOrCodeUnit & 0xff00) == 0) { /* only glyphs that fit a narrow character */
           remainingCapacityBytes--;
           if (remainingCapacityBytes == 0)
-          goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
+            goto outputFull;
           *destination = (uint8_t)commandOrCodeUnit;
           destination++;
           nextCommand = streamCursor;
@@ -323,7 +323,7 @@ int FatalError_CopyRichTextToNarrow
     *destination = 0;
     return capacityBytes - (remainingCapacityBytes - 1);
   }
-FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError:
+outputFull:
   destination[-1] = 0;
   return FATAL_ERROR_GENERAL_FAILURE;
 }

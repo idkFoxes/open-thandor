@@ -38,7 +38,7 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
     cell = cursorOrSpanEndCell;
   }
   /* row above: from the span start up to the column of the cell that ended the span */
-  aboveRowCell = (FieldGridCell *)((int)spanStartCell - rowStrideBytes);
+  aboveRowCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(spanStartCell,-rowStrideBytes);
   do {
     if (((aboveRowCell->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
        ((aboveRowCell->flagsAndMaterial & requiredCellFlags) != 0)) {
@@ -46,10 +46,9 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
                 (requiredCellFlags,rowStrideBytes,aboveRowCell);
     }
     aboveRowCell = aboveRowCell + 1;
-  } while (aboveRowCell <= (FieldGridCell *)((int)cursorOrSpanEndCell - rowStrideBytes));
-  /* row below: from one cell left of the span start up to the span's last cell
-     (runtime0C_3F - 0xC is the cell's own address) */
-  rowCellCursor = (FieldGridCell *)(spanStartCell[-1].runtime0C_3F + rowStrideBytes - 0xc);
+  } while (aboveRowCell <= FIELD_GRID_CELL_AT_BYTE_OFFSET(cursorOrSpanEndCell,-rowStrideBytes));
+  /* row below: from one cell left of the span start up to the span's last cell */
+  rowCellCursor = FIELD_GRID_CELL_AT_BYTE_OFFSET(spanStartCell - 1,rowStrideBytes);
   do {
     if (((rowCellCursor->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
        ((rowCellCursor->flagsAndMaterial & requiredCellFlags) != 0)) {
@@ -57,7 +56,7 @@ void TerrainRegionCollection_CollectConnectedCellsRecursive
                 (requiredCellFlags,rowStrideBytes,rowCellCursor);
     }
     rowCellCursor = rowCellCursor + 1;
-  } while (rowCellCursor < (FieldGridCell *)(cursorOrSpanEndCell->runtime0C_3F + rowStrideBytes - 0xc));
+  } while (rowCellCursor < FIELD_GRID_CELL_AT_BYTE_OFFSET(cursorOrSpanEndCell,rowStrideBytes));
   return;
 }
 
@@ -153,10 +152,11 @@ void TerrainMaterialEdit_SeedNonTargetRegionReplacement
    Editor command INGAME_COMMAND_EDITOR_COMMIT_HEIGHTS (0x25A0; U key in height mode): toggles the last height
    edit. Each cell with a delta in the player's height plane is lowered by it (the water surface keeps its
    level), the delta is negated so the next call redoes the edit, and the normals and lighting of the cell and
-   its lattice neighbours are recomputed. commandArg0 is the player runtime id.
+   its lattice neighbours are recomputed.
 */
 void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
+          (uint32_t playerRuntimeId,uint32_t unusedCommandValue1,uint32_t unusedCommandValue2,
+          uint32_t unusedCommandValue3)
 
 {
   FieldGridAsset *fieldGridAsset;
@@ -169,7 +169,7 @@ void TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
   int *heightDeltaCursor;
 
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  heightDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainHeightScratchPlane8088;
+  heightDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainHeightScratchPlane8088;
   widthCells = fieldGridAsset->gridWidth;
   remainingCount = widthCells * fieldGridAsset->gridHeight;
   fieldGridAsset->runtimeStateFlags = fieldGridAsset->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
@@ -287,10 +287,11 @@ void TerrainEditBuffer_SubtractCurrentCellMaterialBytes
 /* Address: 0x005619A0.
    Editor command INGAME_COMMAND_EDITOR_COMMIT_MATERIALS (0x2870; U key in material mode): toggles the last
    material edit by adding the player's material deltas to the cells and negating them, so the next call
-   redoes the edit. commandArg0 is the player runtime id.
+   redoes the edit.
 */
 void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
-          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
+          (uint32_t playerRuntimeId,uint32_t unusedCommandValue1,uint32_t unusedCommandValue2,
+          uint32_t unusedCommandValue3)
 
 {
   FieldGridAsset *fieldGridAsset;
@@ -299,7 +300,7 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   uint32_t *materialDeltaCursor;
 
   fieldGridAsset = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[commandArg0]->terrainMaterialEditPlane808C;
+  materialDeltaCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->terrainMaterialEditPlane808C;
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   /* The original ORs 1 into the dword 0x14C bytes before the field grid asset (OR [ESI-0x14C],1) instead of
      its runtimeStateFlags at +0xB4, so the surface is not marked dirty here; kept as in the original. */
@@ -361,14 +362,14 @@ void TerrainRegionCollection_RecordConnectedCell(FieldGridRegionMask requiredOcc
 
   storedCount = g_TerrainRegionCollectionStoredCount;
   g_TerrainRegionCollectionVisitedCount++;
-  extractionDescriptor = cell->resourceExtractionDescriptor7C;
+  extractionDescriptor = cell->resourceExtractionDescriptor;
   cell->flagsAndMaterial = cell->flagsAndMaterial | FIELD_CELL_CONNECTED_REGION_VISITED;
   if ((requiredOccupancyMask & extractionDescriptor) != 0) {
-    cell->resourceExtractionDescriptor7C = 0;
+    cell->resourceExtractionDescriptor = 0;
     /* XCHG: take the model offset and clear it in one instruction */
     LOCK();
-    savedArmyOffset = cell->armyRuntimeSavedOffset6C;
-    cell->armyRuntimeSavedOffset6C = 0;
+    savedArmyOffset = cell->armyRuntimeSavedOffset;
+    cell->armyRuntimeSavedOffset = 0;
     entriesBase = g_TerrainRegionCollectionEntries;
     UNLOCK();
     if (storedCount < TERRAIN_REGION_COLLECTION_CAPACITY) {
@@ -396,7 +397,7 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
   uint32_t cellMaterial;
   int columnOrMaterialDelta;
   int widthOrColumn;
-  int leftCellAddress;
+  FieldGridCell *leftCell;
   int *leftDeltaCursor;
   int *rightDeltaCursor;
   int spanStartColumn;
@@ -410,19 +411,19 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
     cellIndexOrColumn = (int)&((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->cells[cellIndexOrColumn];
     cellMaterial = (uint32_t)((FieldGridCell *)cellIndexOrColumn)->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
     columnOrMaterialDelta = gridX;
-    leftCellAddress = cellIndexOrColumn;
+    leftCell = (FieldGridCell *)cellIndexOrColumn;
     leftDeltaCursor = rightDeltaCursor;
     if (g_TerrainMaterialEditReferenceMaterialByte == cellMaterial) {
       /* the start cell and the matching cells to its left */
       do {
         spanStartColumn = columnOrMaterialDelta;
         columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
-        ((FieldGridCell *)leftCellAddress)->flagsAndMaterial = ((FieldGridCell *)leftCellAddress)->flagsAndMaterial - columnOrMaterialDelta;
+        leftCell->flagsAndMaterial = leftCell->flagsAndMaterial -columnOrMaterialDelta;
         *leftDeltaCursor = *leftDeltaCursor + columnOrMaterialDelta;
         if (spanStartColumn < 1) break;
-        cellMaterial = (uint32_t)((FieldGridCell *)leftCellAddress)[-1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+        cellMaterial = (uint32_t)leftCell[-1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
         columnOrMaterialDelta = spanStartColumn - 1;
-        leftCellAddress = leftCellAddress - 0x80;
+        leftCell = leftCell - 1;
         leftDeltaCursor = leftDeltaCursor - 1;
       } while (referenceMaterial == cellMaterial);
       /* the matching cells to its right; gridX ends one past the run */
@@ -468,7 +469,7 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
   uint32_t cellMaterial;
   int columnOrMaterialDelta;
   int widthOrColumn;
-  int leftCellAddress;
+  FieldGridCell *leftCell;
   int *leftDeltaCursor;
   int *rightDeltaCursor;
   int spanStartColumn;
@@ -482,17 +483,17 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
     cellIndexOrColumn = (int)&((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->cells[cellIndexOrColumn];
     cellMaterial = (uint32_t)((FieldGridCell *)cellIndexOrColumn)->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
     columnOrMaterialDelta = gridX;
-    leftCellAddress = cellIndexOrColumn;
+    leftCell = (FieldGridCell *)cellIndexOrColumn;
     leftDeltaCursor = rightDeltaCursor;
     if (g_TerrainMaterialEditReferenceMaterialByte != cellMaterial) {
       do {
         spanStartColumn = columnOrMaterialDelta;
-        ((FieldGridCell *)leftCellAddress)->flagsAndMaterial = ((FieldGridCell *)leftCellAddress)->flagsAndMaterial - (cellMaterial - referenceMaterial);
+        leftCell->flagsAndMaterial = leftCell->flagsAndMaterial -(cellMaterial - referenceMaterial);
         *leftDeltaCursor = *leftDeltaCursor + (cellMaterial - referenceMaterial);
         if (spanStartColumn < 1) break;
-        cellMaterial = (uint32_t)((FieldGridCell *)leftCellAddress)[-1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+        cellMaterial = (uint32_t)leftCell[-1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
         columnOrMaterialDelta = spanStartColumn - 1;
-        leftCellAddress = leftCellAddress - 0x80;
+        leftCell = leftCell - 1;
         leftDeltaCursor = leftDeltaCursor - 1;
       } while (referenceMaterial != cellMaterial);
       while( true ) {

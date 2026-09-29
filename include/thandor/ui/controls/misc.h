@@ -22,6 +22,8 @@
 #define UI_DISPLAY_MODE_ACTION_REVERT 0x20D /* "keep the new mode?" dialog: back to the previous mode */
 #define UI_DISPLAY_MODE_ACTION_CANCEL 0x20E
 #define UI_DISPLAY_MODE_ACTION_FIRST_ADAPTER 0x20F /* 5 adapter buttons */
+/* g_UiActionHandlerPages page of these action ids (0x200 >> 8), installed by the dialog when it opens. */
+#define UI_DISPLAY_MODE_ACTION_HANDLER_PAGE 2
 /* The display settings dialog's applyButton (a framed text button, g_UiNodeVtable_004B1D80) with extra fields in
    its tail: the selected mode tuple and colour bias/scale, then the same six values as they were when the
    dialog opened. 0x8C bytes. */
@@ -43,7 +45,7 @@ typedef struct UiDisplaySettingsApplyButton {
     int32_t originalColorScaleQ16;    /* +0x88 */
 } UiDisplaySettingsApplyButton;
 /* The display settings dialog's colorBiasValueText label; its tail holds the number buffers of both readouts
-   (written by UiRuntime_FormatSignedValues140And144). 0x9C bytes. */
+   (written by UiDisplaySettingsRoot_FormatColorReadouts). 0x9C bytes. */
 typedef struct UiDisplaySettingsValueReadout {
     UiSingleLineTextControl label;
     uint16_t colorScaleTextUtf16[16]; /* +0x5C, shown by colorScaleValueText */
@@ -56,6 +58,8 @@ typedef struct UiDisplayModeOptionPrefix {
     int32_t modeValue;        /* -0x8: bits per pixel, resolution width or adapter index */
     uint32_t tooltipTextResourceId; /* -0x4 */
 } UiDisplayModeOptionPrefix;
+/* The UiDisplayModeOptionPrefix of option button node in a copy of g_UiDisplaySettingsRootTemplate at root. */
+#define UI_DISPLAY_MODE_OPTION_PREFIX(root, node) (((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,node))[-1])
 /* The "keep the new display mode?" dialog's countdownMessageText (a wrapped text, g_UiListOffsetControlVtable)
    with extra fields in its tail, see UiRuntime_OpenFourValueDialog. 0x98 bytes. */
 typedef struct UiFourValueDialogCountdownText {
@@ -71,6 +75,8 @@ typedef struct UiFourValueDialogCountdownText {
 /* Frame updates per step of the countdown in the "keep the new display mode?" dialog
    (UiFourValueDialog_TickCountdownAndRequestClose). */
 #define UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS 20
+/* Rich text of that dialog's countdownMessageText; selector 0 is the countdown number. */
+#define TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN 0x109
 /* Pointer coordinate far outside every control, used by UiImageControl_NonRightDrag for the synthetic events
    it sends when the pointer moves from one child to another (the new child's press, the old child's drag and
    release), so that no pixel test of theirs hits. */

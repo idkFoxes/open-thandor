@@ -50,7 +50,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate panelBottom,UiPixelCoordinate panelRight,
           UiPixelCoordinate panelTop,UiPixelCoordinate panelLeft,
-          RuntimeModelFactionPrefix10 *runtimeEntry);
+          RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x0055FA20 */
 void InGameSelection_RebuildOwnedClass16Selection
@@ -58,22 +58,22 @@ void InGameSelection_RebuildOwnedClass16Selection
 
 /* 0x0055FB30 */
 void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,uint32_t unusedPayload2,
           RuntimeToken armyRuntimeIndex);
 
 /* 0x0055FE70 */
 void InGamePlayerSelection_ApplyPositionCommandVariantB
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12);
 
 /* 0x0055FEA0 */
 void InGamePlayerSelection_ApplyPositionCommand
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12);
 
 /* 0x0055FED0 */
 void InGamePlayerSelection_SelectArmyRuntimeIndex
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t unusedPayload1,uint32_t unusedPayload2,
           RuntimeToken armyRuntimeIndex);
 
 /* 0x0055FF10 */
@@ -81,23 +81,23 @@ void InGamePlayerSelection_ApplyTargetPositionCommand(PlayerRuntimeId playerId,C
           CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12);
 
 /* 0x0055FF40 */
-void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C);
+void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FF60 */
 void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C);
+          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FF80 */
 void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C);
+          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FFA0 */
 void PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C);
+          (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
+          CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FFC0 */
 void InGameSelection_ApplyType16MarkerCoordinatesVariant1

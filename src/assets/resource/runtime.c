@@ -14,7 +14,7 @@
    Creates a new, empty PCK package at packagePath and mounts it: builds a fresh 0x200-byte archive header
    (magic "pck", timestamps of now, the computer label as producer and source name, no entries) in the
    package scratch buffer, writes it as the whole file and returns Package_Mount's result (CF set on failure).
-   Called directly by the save-game writer InGameUiAction1210_ResourceRegistrationHelper, which creates the
+   Called directly by the save-game writer InGameSaveGame_WritePackage, which creates the
    save directory and retries when it fails.
 */
 StatusResult ResourceRegistration_OpenSource(void *packagePath)
@@ -28,7 +28,7 @@ StatusResult ResourceRegistration_OpenSource(void *packagePath)
 
   header = g_PackageScratchBuffer;
   clearCursor = g_PackageScratchBuffer;
-  for (clearDwordsRemaining = 0x80; clearDwordsRemaining != 0; clearDwordsRemaining--) {
+  for (clearDwordsRemaining = PCK_ENTRY_HEADER_BYTES / 4; clearDwordsRemaining != 0; clearDwordsRemaining--) {
     clearCursor[0] = 0;
     clearCursor[1] = 0;
     clearCursor[2] = 0;
@@ -112,7 +112,7 @@ ResourceLoadResult Resource_Load(uint16_t *path)
     if (openResult.failed) {
       openResult = g_FileSystemOpen(0,path);
       fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
-      if (openResult.failed) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
+      if (openResult.failed) goto ReturnFailure;
     }
     sizeResult = g_FileSystemGetSize(fileOrPackageResult.bufferOrError);
     fileSize = (uint8_t *)sizeResult.sizeOrError;
@@ -128,7 +128,8 @@ ResourceLoadResult Resource_Load(uint16_t *path)
         sizeOrErrorCode = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
       }
       else {
-        readResult = g_FileSystemReadExact((FileIoByteCount)fileSize,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
+        readResult = g_FileSystemReadExact((FileIoByteCount)fileSize,fileLoadResult.bufferOrError,
+                                           fileOrPackageResult.bufferOrError);
         sizeOrErrorCode = (uint8_t *)readResult.valueOrError;
         if (!readResult.failed) {
           g_FileSystemClose(fileOrPackageResult.bufferOrError);
@@ -160,7 +161,7 @@ ResourceLoadResult Resource_Load(uint16_t *path)
       }
     }
   }
-Resource_Load_ReturnOpenAllocationOrDecodeResult:
+ReturnFailure:
   failureResult.byteCount = failureByteCount;
   failureResult.bufferOrError = (uint32_t)fileOrPackageResult.bufferOrError;
   failureResult.failed = true;
@@ -184,46 +185,47 @@ void Resource_Release(void *resourceBuffer)
    every allocated 0x100-byte record into saved offsets or ids, zeroes the free records and returns the record
    array with its byte size (recordCount * 0x100) for Package_UpsertEntry. The payload pointer is rebased per
    domain (0 army/model, 1 shot, 2 effect). ResourceRegistrationRuntime_RebaseLoadedRecords undoes it.
-   Called directly by the save-game writer InGameUiAction1210_ResourceRegistrationHelper.
+   Called directly by the save-game writer InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX, and the
    C caller splits the qword the same way, so the swap is internal to the C.
 */
 ResourceRegistrationImagePair
 ResourceRegistration_SelectDomainPair
-          (ResourceRegistrationRuntimeImageSerializedScalarViewDC *runtimeImage)
+          (ResourceRegistrationRuntimeImageSavedView *runtimeImage)
 
 {
   uint32_t rebasedOffset;
   uint32_t secondaryOffsetOrNestedCount;
   int clearCountOrArmyDefinition;
-  ResourceRegistrationRecord100 *tailRecord;
+  ResourceRegistrationRecord *tailRecord;
   uint32_t recordsRemainingOrCount;
   uint32_t nestedBaseOffset;
-  ResourceRegistrationRecordSerializedScalarView100 *nestedOffsetCursor;
-  ResourceRegistrationRecordSerializedScalarView100 *recordCursor;
+  ResourceRegistrationRecordSavedView *nestedOffsetCursor;
+  ResourceRegistrationRecordSavedView *recordCursor;
   
-  recordCursor = runtimeImage->records58;
-  recordsRemainingOrCount = runtimeImage->recordCountAC;
+  recordCursor = runtimeImage->records;
+  recordsRemainingOrCount = runtimeImage->recordCount;
   do {
     while ((recordCursor->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) == 0) {
       /* free record: zero its 0x40 dwords, which also advances recordCursor to the next record */
-      for (clearCountOrArmyDefinition = 0x40; clearCountOrArmyDefinition != 0; clearCountOrArmyDefinition--) {
+      for (clearCountOrArmyDefinition = sizeof(ResourceRegistrationRecordSavedView) / 4;
+           clearCountOrArmyDefinition != 0; clearCountOrArmyDefinition--) {
         recordCursor->primarySavedIdOrOffset = 0;
-        recordCursor = (ResourceRegistrationRecordSerializedScalarView100 *)
-                 &recordCursor->secondarySavedIdOrOffset;
+        recordCursor = (ResourceRegistrationRecordSavedView *)((uint32_t *)recordCursor + 1);
       }
       recordsRemainingOrCount--;
       if (recordsRemainingOrCount == 0) {
-        tailRecord = runtimeImage->tailRecordD8;
-        recordCursor = runtimeImage->records58;
+        tailRecord = runtimeImage->tailRecord;
+        recordCursor = runtimeImage->records;
         if (tailRecord != NULL) {
-          tailRecord = (ResourceRegistrationRecord100 *)
+          tailRecord = (ResourceRegistrationRecord *)
                    ((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
         }
-        recordsRemainingOrCount = runtimeImage->recordCountAC;
+        recordsRemainingOrCount = runtimeImage->recordCount;
         /* the saved tail-record offset goes into the last dword of the image (record array + size - 4) */
-        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (uint32_t)tailRecord;
-        return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) | (uint32_t)(recordsRemainingOrCount * 0x100);
+        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[0xc] = (uint32_t)tailRecord;
+        return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) |
+               (uint32_t)(recordsRemainingOrCount * sizeof(ResourceRegistrationRecordSavedView));
       }
     }
     rebasedOffset = recordCursor->primarySavedIdOrOffset;
@@ -243,19 +245,19 @@ ResourceRegistration_SelectDomainPair
     recordCursor->nestedBaseSavedOffset = nestedBaseOffset;
     recordCursor->ownerRuntimeSavedOffset = 0;
     rebasedOffset = recordCursor->auxiliarySavedIdOrOffset;
-    secondaryOffsetOrNestedCount = recordCursor->nestedCountC8;
+    secondaryOffsetOrNestedCount = recordCursor->nestedCount;
     if (rebasedOffset != 0) {
       rebasedOffset = rebasedOffset - THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1); /* 1-based offset, 0 = none */
     }
     recordCursor->auxiliarySavedIdOrOffset = rebasedOffset;
     nestedOffsetCursor = recordCursor;
     for (; secondaryOffsetOrNestedCount != 0; secondaryOffsetOrNestedCount--) {
-      if (nestedOffsetCursor->nestedSavedOffsets13[0] != 0) {
-        nestedOffsetCursor->nestedSavedOffsets13[0] =
-             nestedOffsetCursor->nestedSavedOffsets13[0] - (int)g_RuntimeObjectRebaseBaseMinusOne;
+      if (nestedOffsetCursor->nestedSavedOffsets[0] != 0) {
+        nestedOffsetCursor->nestedSavedOffsets[0] =
+             nestedOffsetCursor->nestedSavedOffsets[0] - (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      nestedOffsetCursor = (ResourceRegistrationRecordSerializedScalarView100 *)
-               &nestedOffsetCursor->secondarySavedIdOrOffset;
+      /* next dword */
+      nestedOffsetCursor = (ResourceRegistrationRecordSavedView *)((uint32_t *)nestedOffsetCursor + 1);
     }
     rebasedOffset = recordCursor->runtimePayloadSavedOffset;
                     
@@ -286,14 +288,15 @@ ResourceRegistration_SelectDomainPair
     recordCursor = recordCursor + 1;
     recordsRemainingOrCount--;
   } while (recordsRemainingOrCount != 0);
-  tailRecord = runtimeImage->tailRecordD8;
-  recordCursor = runtimeImage->records58;
+  tailRecord = runtimeImage->tailRecord;
+  recordCursor = runtimeImage->records;
   if (tailRecord != NULL) {
-    tailRecord = (ResourceRegistrationRecord100 *)((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
+    tailRecord = (ResourceRegistrationRecord *)((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
   }
-  recordsRemainingOrCount = runtimeImage->recordCountAC;
-  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (uint32_t)tailRecord;
-  return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) | (uint32_t)(recordsRemainingOrCount * 0x100);
+  recordsRemainingOrCount = runtimeImage->recordCount;
+  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets[0xc] = (uint32_t)tailRecord;
+  return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) |
+               (uint32_t)(recordsRemainingOrCount * sizeof(ResourceRegistrationRecordSavedView));
 }
 
 /* Address: 0x00513020.
@@ -301,7 +304,7 @@ ResourceRegistration_SelectDomainPair
    records the army asset pointers are replaced by the asset ids (+8 of each asset) and the 8x32 group member
    pointers by saved army-slot offsets. Returns the image with its byte size 0x3A20 for Package_UpsertEntry;
    GameFactionRuntime_RebaseLoadedArmyReferences undoes it. Called directly by the save-game writer
-   InGameUiAction1210_ResourceRegistrationHelper.
+   InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
 */
 ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void)
@@ -312,27 +315,27 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
   FactionArmyAssetCount armyAssetPointersRemaining;
   FactionArmyAssetCount primaryArmyAssetPointersRemaining;
   int runtimeMembersRemaining;
-  GameFactionRuntimeImage *factionRecordCursor;
+  GameFactionRuntimeRecord *factionRecordCursor;
   uint32_t *armyAssetPointerCursor;
   uint32_t *primaryArmyAssetPointerCursor;
   ArmyRuntimeSlot **runtimeMemberCursor;
 
-  factionRecordCursor = &g_GameFactionRuntimeImage;
+  factionRecordCursor = g_GameFactionRuntimeImage.records;
   factionRecordsRemaining = 8;
   do {
-    armyAssetPointerCursor = factionRecordCursor->records[0].secondaryArmyAssetPointersOrIds;
-    for (armyAssetPointersRemaining = factionRecordCursor->records[0].secondaryArmyAssetCount;
+    armyAssetPointerCursor = factionRecordCursor->secondaryArmyAssetPointersOrIds;
+    for (armyAssetPointersRemaining = factionRecordCursor->secondaryArmyAssetCount;
         armyAssetPointersRemaining != 0; armyAssetPointersRemaining--) {
-      *armyAssetPointerCursor = *(uint32_t *)(*armyAssetPointerCursor + 8);
+      *armyAssetPointerCursor = ((ArmyAssetRecordPrefix *)*armyAssetPointerCursor)->registryId;
       armyAssetPointerCursor = armyAssetPointerCursor + 1;
     }
-    primaryArmyAssetPointerCursor = factionRecordCursor->records[0].primaryArmyAssetPointersOrIds;
-    for (primaryArmyAssetPointersRemaining = factionRecordCursor->records[0].primaryArmyAssetCount;
+    primaryArmyAssetPointerCursor = factionRecordCursor->primaryArmyAssetPointersOrIds;
+    for (primaryArmyAssetPointersRemaining = factionRecordCursor->primaryArmyAssetCount;
         primaryArmyAssetPointersRemaining != 0; primaryArmyAssetPointersRemaining--) {
-      *primaryArmyAssetPointerCursor = *(uint32_t *)(*primaryArmyAssetPointerCursor + 8);
+      *primaryArmyAssetPointerCursor = ((ArmyAssetRecordPrefix *)*primaryArmyAssetPointerCursor)->registryId;
       primaryArmyAssetPointerCursor = primaryArmyAssetPointerCursor + 1;
     }
-    runtimeMemberCursor = factionRecordCursor->records[0].runtimeGroupMembers8x32;
+    runtimeMemberCursor = factionRecordCursor->runtimeGroupMembers8x32;
     runtimeMembersRemaining = 0x100;
     do {
       runtimeMember = *runtimeMemberCursor;
@@ -344,10 +347,10 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
       runtimeMemberCursor = runtimeMemberCursor + 1;
       runtimeMembersRemaining--;
     } while (runtimeMembersRemaining != 0);
-    factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
+    factionRecordCursor++;
     factionRecordsRemaining--;
   } while (factionRecordsRemaining != 0);
-  return ((uint64_t)(uint32_t)(uintptr_t)&g_GameFactionRuntimeImage << 32) | 0x3a20;
+  return ((uint64_t)(uint32_t)(uintptr_t)&g_GameFactionRuntimeImage << 32) | sizeof(GameFactionRuntimeImage);
 }
 
 /* Address: 0x0051E2B0.
@@ -355,7 +358,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
    model node and owner pointers become saved offsets (the owner is a model node or an army slot depending on
    the completion action) and the definition pointer becomes the definition id; free slots are zeroed.
    Returns the slot array with its byte size 0x40000; EffectRuntime_RebaseSlotsAfterLoad undoes it. Called
-   directly by the save-game writer InGameUiAction1210_ResourceRegistrationHelper.
+   directly by the save-game writer InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
 */
 ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void)
@@ -375,20 +378,21 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
     while( true ) {
       slotCompletionAction = runtimeSlotCursor->completionAction;
       ownerModelNode =
-           (runtimeSlotCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
-      if ((runtimeSlotCursor->modelNodeOrSavedOffset).modelNode != NULL) break;
+           runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
+      if (runtimeSlotCursor->modelNodeOrSavedOffset.modelNode != NULL) break;
       /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
       for (clearDwordsRemaining = 0x10; effectRuntimeSlotsBase = g_EffectRuntimeSlots,
           clearDwordsRemaining != 0; clearDwordsRemaining--) {
-        (runtimeSlotCursor->definitionOrSavedId).definition = NULL;
-        runtimeSlotCursor = (EffectRuntimeSlot *)&runtimeSlotCursor->modelNodeOrSavedOffset;
+        runtimeSlotCursor->definitionOrSavedId.definition = NULL;
+        runtimeSlotCursor = (EffectRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
       }
       runtimeSlotsRemaining--;
       if (runtimeSlotsRemaining == 0) {
         /* NOT [slot0 + 0x3C] only on this exit (last slot free); EffectRuntime_RebaseSlotsAfterLoad
            inverts it on every load */
         g_EffectRuntimeSlots->effectAgeTicks = ~g_EffectRuntimeSlots->effectAgeTicks;
-        return ((uint64_t)(uint32_t)(uintptr_t)effectRuntimeSlotsBase << 32) | 0x40000;
+        return ((uint64_t)(uint32_t)(uintptr_t)effectRuntimeSlotsBase << 32) |
+               (EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot));
       }
     }
     if (ownerModelNode != NULL) {
@@ -400,19 +404,22 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
              (ModelRuntimeNode *)((int)ownerModelNode - (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
     }
-    (runtimeSlotCursor->modelNodeOrSavedOffset).modelNode =
+    runtimeSlotCursor->modelNodeOrSavedOffset.modelNode =
          (ModelRuntimeNode *)
-         ((int)(runtimeSlotCursor->modelNodeOrSavedOffset).modelNode -
+         ((int)runtimeSlotCursor->modelNodeOrSavedOffset.modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
     runtimeSlotCursor->completionAction = slotCompletionAction;
-    serializedDefinitionId = THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
-    (runtimeSlotCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode =
+    serializedDefinitionId =
+         THANDOR_BITCAST(PckEffectDefinitionIdCatalog, EffectDefinitionReferenceOrSavedId4,
+                         runtimeSlotCursor->definitionOrSavedId.definition->definitionId);
+    runtimeSlotCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
          ownerModelNode;
     runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining--;
   } while (runtimeSlotsRemaining != 0);
-  return ((uint64_t)(uint32_t)(uintptr_t)g_EffectRuntimeSlots << 32) | 0x40000;
+  return ((uint64_t)(uint32_t)(uintptr_t)g_EffectRuntimeSlots << 32) |
+         (EFFECT_RUNTIME_SLOT_COUNT * sizeof(EffectRuntimeSlot));
 }
 
 /* Address: 0x0052B6D0.
@@ -420,7 +427,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
    node, runtime state and owner army pointers become saved offsets and the definition pointer becomes the
    definition id; free slots are zeroed. Returns the slot array with its byte size 0x40000;
    ShotRuntime_RebaseSlotsAfterLoad undoes it. Called directly by the save-game writer
-   InGameUiAction1210_ResourceRegistrationHelper.
+   InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
 */
 ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void)
@@ -439,23 +446,23 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
   runtimeSlotCursor = g_ShotRuntimeSlots;
   do {
     while( true ) {
-      runtimeStateRef = (runtimeSlotCursor->runtimeStateOrSavedOffset).runtimeStatePointer;
-      ownerArmyRuntime = (runtimeSlotCursor->ownerAndTrajectory).ownerArmyRuntime;
-      if ((runtimeSlotCursor->modelNodeOrSavedOffset).modelNode != NULL) break;
+      runtimeStateRef = runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer;
+      ownerArmyRuntime = runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime;
+      if (runtimeSlotCursor->modelNodeOrSavedOffset.modelNode != NULL) break;
       /* free slot: zero its 0x10 dwords, which also advances runtimeSlotCursor to the next slot */
       for (clearDwordsRemaining = 0x10; shotRuntimeSlotsBase = g_ShotRuntimeSlots,
           clearDwordsRemaining != 0; clearDwordsRemaining--) {
-        (runtimeSlotCursor->definitionOrSavedId).definition = NULL;
-        runtimeSlotCursor = (ShotRuntimeSlot *)&runtimeSlotCursor->launchSpeedQ12;
+        runtimeSlotCursor->definitionOrSavedId.definition = NULL;
+        runtimeSlotCursor = (ShotRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
       }
       runtimeSlotsRemaining--;
       if (runtimeSlotsRemaining == 0) {
         /* NOT [slot0 + 0x3C] only on this exit (last slot free); ShotRuntime_RebaseSlotsAfterLoad
            inverts it on every load */
         terminalToggleField =
-             &(g_ShotRuntimeSlots->ownerAndTrajectory).secondaryEffectCountdownTicks;
+             &g_ShotRuntimeSlots->ownerAndTrajectory.secondaryEffectCountdownTicks;
         *terminalToggleField = ~*terminalToggleField;
-        return ((uint64_t)(uint32_t)(uintptr_t)shotRuntimeSlotsBase << 32) | 0x40000;
+        return ((uint64_t)(uint32_t)(uintptr_t)shotRuntimeSlotsBase << 32) | SHOT_RUNTIME_POOL_BYTES;
       }
     }
     if (runtimeStateRef != NULL) {
@@ -465,25 +472,27 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
       ownerArmyRuntime =
            (ArmyRuntimeSlot *)((int)ownerArmyRuntime - (int)g_ArmyRuntimeRebaseBaseMinusOne);
     }
-    (runtimeSlotCursor->modelNodeOrSavedOffset).modelNode =
+    runtimeSlotCursor->modelNodeOrSavedOffset.modelNode =
          (ModelRuntimeNode *)
-         ((int)(runtimeSlotCursor->modelNodeOrSavedOffset).modelNode -
+         ((int)runtimeSlotCursor->modelNodeOrSavedOffset.modelNode -
          (int)g_RuntimeObjectRebaseBaseMinusOne);
-    (runtimeSlotCursor->runtimeStateOrSavedOffset).runtimeStatePointer = runtimeStateRef;
-    serializedDefinitionId = THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId4, ((runtimeSlotCursor->definitionOrSavedId).definition)->definitionId);
-    (runtimeSlotCursor->ownerAndTrajectory).ownerArmyRuntime = ownerArmyRuntime;
+    runtimeSlotCursor->runtimeStateOrSavedOffset.runtimeStatePointer = runtimeStateRef;
+    serializedDefinitionId =
+         THANDOR_BITCAST(PckShotDefinitionIdCatalog, ShotDefinitionReferenceOrSavedId4,
+                         runtimeSlotCursor->definitionOrSavedId.definition->definitionId);
+    runtimeSlotCursor->ownerAndTrajectory.ownerArmyRuntime = ownerArmyRuntime;
     runtimeSlotCursor->definitionOrSavedId = serializedDefinitionId;
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining--;
   } while (runtimeSlotsRemaining != 0);
-  return ((uint64_t)(uint32_t)(uintptr_t)g_ShotRuntimeSlots << 32) | 0x40000;
+  return ((uint64_t)(uint32_t)(uintptr_t)g_ShotRuntimeSlots << 32) | SHOT_RUNTIME_POOL_BYTES;
 }
 
 /* Address: 0x00532B00.
    Before the level image is saved: stores the current camera (orientation as magnitude plus packed
    heading/pitch, and position) into the start-camera fields of the level player slot selected by
-   runtimeImage->levelRuntimeRecordIndex50, so a loaded game starts with the camera where it was.
-   Called directly by the save-game writer InGameUiAction1210_ResourceRegistrationHelper.
+   runtimeImage->factionAssignmentIndex, so a loaded game starts with the camera where it was.
+   Called directly by the save-game writer InGameSaveGame_WritePackage.
 */
 
 void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage)
@@ -493,18 +502,20 @@ void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage 
   InGameLevelConditionStorageView800 *levelConditionStorage;
   WorldVector1EaxEcxEdx12 cameraOrientation;
   WorldVector0EaxEcxEdx12 cameraPosition;
+  LevelPlayerSlotRecord *playerSlot;
   
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets
-          [runtimeImage->levelRuntimeRecordIndex50 - 1];
+          [runtimeImage->factionAssignmentIndex - 1];
   cameraOrientation = WorldRuntime_GetVector1Regs((WorldRuntimeContext *)runtimeImage);
-  *(UQ12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraMagnitudeQ12 + playerSlotByteOffset) =
-       cameraOrientation.magnitudeQ12;
-  *(AngleTurn32 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].packedHeadingLow16PitchHigh16 + playerSlotByteOffset)
-       = cameraOrientation.headingAngle & 0xffff | cameraOrientation.pitchAngle << 16;
+  playerSlot = (LevelPlayerSlotRecord *)((uint8_t *)levelConditionStorage->levelImage.playerSlots +
+                                         playerSlotByteOffset);
+  playerSlot->startCameraMagnitudeQ12 = cameraOrientation.magnitudeQ12;
+  playerSlot->packedHeadingLow16PitchHigh16 =
+       cameraOrientation.headingAngle & 0xffff | cameraOrientation.pitchAngle << 16;
   cameraPosition = WorldRuntime_GetVector0Regs((WorldRuntimeContext *)runtimeImage);
-  *(Q12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraXQ12 + playerSlotByteOffset) = cameraPosition.xQ12;
-  *(Q12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraYQ12 + playerSlotByteOffset) = cameraPosition.yQ12;
-  *(Q12 *)((uint8_t *)&(levelConditionStorage->levelImage).playerSlots[0].startCameraZQ12 + playerSlotByteOffset) = cameraPosition.zQ12;
+  playerSlot->startCameraXQ12 = cameraPosition.xQ12;
+  playerSlot->startCameraYQ12 = cameraPosition.yQ12;
+  playerSlot->startCameraZQ12 = cameraPosition.zQ12;
 }
 

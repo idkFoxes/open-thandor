@@ -36,10 +36,12 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeRuntimeClassCompatibleCandid
   if (candidateDefinition == NULL) {
     return 0;
   }
-  runtimeClassId = candidateDefinition[6].flags; /* +0x4C of the definition */
-  if (runtimeClassId != 1) {
-    if ((((runtimeClassId != 0x15) && (runtimeClassId != 2)) && (runtimeClassId != 3)) && ((runtimeClassId != 0x11 && (runtimeClassId != 0x13))))
-    {
+  runtimeClassId = ((ModelDefinition *)candidateDefinition)->runtimeClassId4C;
+  if (runtimeClassId != MODEL_RUNTIME_CLASS_01_GROUND) {
+    if (runtimeClassId != MODEL_RUNTIME_CLASS_21_AIRCRAFT && runtimeClassId != MODEL_RUNTIME_CLASS_02_TRACKED &&
+        runtimeClassId != MODEL_RUNTIME_CLASS_03_ARTICULATED_WALKER &&
+        runtimeClassId != MODEL_RUNTIME_CLASS_17_DEPLOYING_GLIDER &&
+        runtimeClassId != MODEL_RUNTIME_CLASS_19_WATER_SURFACE) {
       /* The original leaves the definition pointer in EAX here (JNZ 0x0053BE79), so every other class
          "scores" with its record address. */
       return (AiTechnologyCandidateScore)candidateDefinition;
@@ -94,43 +96,53 @@ bool AiTechnologyCandidate_IsCurrentlyAvailable
   int remainingCount;
   AiWorkspace00EntryView8 *workspaceEntry;
 
-  workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
+  workspaceEntry = g_AiWorkspace00Structures;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
     runtimeSlotAddress = workspaceEntry->runtimeSlotAddressOrZero;
     if (((runtimeSlotAddress != 0) &&
-        ((((ModelRuntimeSlot *)runtimeSlotAddress)->classState.classStateEC & 0xc0) != 0)) &&
+        ((((ModelRuntimeSlot *)runtimeSlotAddress)->classState.stateFlags &
+          (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) != 0)) &&
        (technologyIndex == ((ModelRuntimeSlot *)runtimeSlotAddress)->researchTechnologyId100)) {
       return true;
     }
     workspaceEntry++;
   }
   /* the first test reads the unlock bit in technologyMasks256Bits (faction record +0x6E0) */
-  if (((((((((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[technologyIndex >> 5]) &
-          1 << ((uint8_t)technologyIndex & 0x1f)) == 0) &&
-        ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
-         ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[0]) ==
-         g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0])) &&
-       (((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &
-         ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[1]) ==
-         g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &&
-        (((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &
-          ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[2]) ==
-          g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &&
-         ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3] &
-          ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[3]) ==
-          g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3])))))) &&
-      ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4] &
-       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[4]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4])) &&
-     ((((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &
-        ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[5]) ==
-        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &&
-       ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6] &
-        ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[6]) ==
-        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6])) &&
-      ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7] &
-       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordOffset))->technologyMasks256Bits[7]) ==
-       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7])))) {
+  if ((((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[technologyIndex >> 5] &
+       1 << ((uint8_t)technologyIndex & 0x1f)) == 0 &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[0]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[1]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[2]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[3]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3] &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[4]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4] &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[5]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[6]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6] &&
+      (g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7] &
+       ((GameFactionRuntimeRecord *)((uint8_t *)g_GameFactionRuntimeImage.records +
+                                     factionRecordOffset))->technologyMasks256Bits[7]) ==
+       g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7]) {
     return false;
   }
   return true;
@@ -155,9 +167,9 @@ AiTechnologyPlanning_AddCandidateRecord
   MdlDefinitionSemanticPrefix80 *sourceArmyModelDefinition;
   
   candidateIndex = g_AiWorkspace12Count;
-  candidateBuffer = g_AiWorkspaceBuffer12_Size0200;
+  candidateBuffer = g_AiWorkspace12TechnologyCandidates;
   if ((g_AiWorkspace12Count < AI_WORKSPACE12_CAPACITY) && (technologyId != TEC_011_PIONEER_VEHICLE)) {
-    g_AiWorkspaceBuffer12_Size0200[g_AiWorkspace12Count].technologyId00 = technologyId;
+    g_AiWorkspace12TechnologyCandidates[g_AiWorkspace12Count].technologyId00 = technologyId;
     candidateBuffer[candidateIndex].sourceArmyRuntime04 = sourceArmyRuntime;
     candidateBuffer[candidateIndex].scoreKind08 = AI_TECHNOLOGY_SCORE_DEFAULT_ZERO;
     g_AiWorkspace12Count++;
@@ -180,14 +192,16 @@ AiTechnologyPlanning_AddCandidateRecord
                 candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
           sourceArmyModelDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_13 &&
           (sourceArmyModelDefinition->runtimeClassId != MODEL_RUNTIME_CLASS_22)))))) &&
-       ((candidateBuffer[candidateIndex].scoreKind08 = candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED,
+       ((candidateBuffer[candidateIndex].scoreKind08 = candidateBuffer[candidateIndex].scoreKind08 +
+         AI_TECHNOLOGY_SCORE_FACTION_SCALED,
         technologyId != TEC_183_RADAR &&
         ((((technologyId != TEC_184_RADAR_RANGE_PLUS_10_PERCENT &&
            (technologyId != TEC_185_RADAR_RANGE_PLUS_10_PERCENT)) &&
           (technologyId != TEC_189_AR_MINUS_M_SILO)) &&
          ((technologyId != TEC_190_AR_MINUS_M_SILO_RANGE_PLUS_10_PERCENT &&
           (technologyId != TEC_191_AR_MINUS_M_SILO_RANGE_PLUS_10_PERCENT)))))))) {
-      candidateBuffer[candidateIndex].scoreKind08 = candidateBuffer[candidateIndex].scoreKind08 + AI_TECHNOLOGY_SCORE_FACTION_SCALED;
+      candidateBuffer[candidateIndex].scoreKind08 = candidateBuffer[candidateIndex].scoreKind08 +
+           AI_TECHNOLOGY_SCORE_FACTION_SCALED;
     }
   }
   continuityResult.preservedEcxSourceArmyEntriesRemaining = sourceArmyEntriesRemaining;
@@ -362,15 +376,16 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
   if (g_AiWorkspace01Count != 0) {
     occupiedEntryCount = 0;
     remainingCount = g_AiWorkspace01Count;
-    runtimeWorkspaceEntry = g_AiWorkspaceBuffer01_Size0200;
+    runtimeWorkspaceEntry = g_AiWorkspace01Units;
     do {
       if (runtimeWorkspaceEntry->armyRuntime != NULL) {
         occupiedEntryCount++;
         unitDefinitionId = (((runtimeWorkspaceEntry->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                  ownerArmyRuntimeOrSavedOffset).armyRuntime;
         definitionIdDelta = (int)unitDefinitionId - (int)candidateDefinition->definitionId;
-        if ((((unitDefinitionId == (ArmyRuntimeSlot *)candidateDefinition->definitionId) || (definitionIdDelta == -1000))
-            || (definitionIdDelta == -2000)) || ((definitionIdDelta == 1000 || (definitionIdDelta == 2000)))) {
+        if ((((unitDefinitionId == (ArmyRuntimeSlot *)candidateDefinition->definitionId) ||
+              (definitionIdDelta == -1000)) || (definitionIdDelta == -2000)) ||
+            ((definitionIdDelta == 1000 || (definitionIdDelta == 2000)))) {
           averageScaleQ8 = averageScaleQ8 + 0x200; /* 2.0 */
         }
       }

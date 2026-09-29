@@ -12,6 +12,16 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/model/definitions. */
+
+/* Linked model-definition ids of an army model-tree node (ArmyModelTreeNode.linkedDefinitionIds, +0x20):
+   [0] is the default, the others are upgrade stages that need a technology. */
+#define MODEL_LINKED_DEFINITION_COUNT 8
+/* Key classes of a model resource's packed points (ModelPackedPointRecord.packedLookupKey = keyIndex << 4 |
+   keyClass; ModelLookupTable_ContainsPackedKey / FindPackedKeyEntryRegs). */
+#define MODEL_POINT_CLASS_ATTACHMENT 0 /* child node attachment point, keyIndex = child index */
+#define MODEL_POINT_CLASS_SHOT 2 /* shot launch point, keyIndex = weapon / emitter index */
+#define MODEL_POINT_CLASS_EFFECT 3 /* effect spawn point (0 linked effect, 1 periodic effect) */
+#define MODEL_POINT_CLASS_LIGHT 4 /* shading light position */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051B3C0 */
@@ -33,18 +43,18 @@ StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset);
 ModelLookupPayloadResult
 ModelLookupTable_FindPackedKeyEntryRegs
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResourceHitTestAndRenderView210 *modelDefinition);
+          ModelResource *modelDefinition);
 
 /* 0x004BE6F0 */
 ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResourceHitTestAndRenderView210 *modelDefinition);
+          ModelResource *modelDefinition);
 
 /* 0x0050AEA0 */
 MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle);
 
 /* 0x005289C0 */
-BuildMetricResult
-ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog definitionId);
+BuildCostsResult
+ModelDefinitionRegistry_FindBuildCostsById(PckModelDefinitionIdCatalog definitionId);
 
 /* 0x0053BA00 */
 ModelDefinitionRecordPrefix * ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId);
@@ -55,7 +65,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
 
 /* 0x00528600 */
 StatusResult ModelDefinition_RegisterAndResolveReferences
-          (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset);
+          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset);
 
 /* 0x0052ADE0 */
 void ModelDefinition_UnlockLinkedTechnologyForFaction

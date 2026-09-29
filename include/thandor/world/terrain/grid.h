@@ -39,11 +39,17 @@
                                                            (FieldGrid_ClassifyCellFlagsToRuntimeByte, minimap) */
 /* a byte mask moved into the faction slot's byte of the 64-bit occupancyMask */
 #define FIELD_CELL_OCCUPANCY_SLOT_MASK(bits,factionSlot) ((uint64_t)(bits) << ((factionSlot) * 8))
+/* the faction slot's occupancy byte of a cell (an lvalue) */
+#define FIELD_CELL_OCCUPANCY_BYTE(cell,factionSlot) (((uint8_t *)&(cell)->occupancyMask)[factionSlot])
+/* the cell byteOffset bytes away from cell; byteOffset is usually +-the row stride (one grid row) */
+#define FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,byteOffset) ((FieldGridCell *)((uint8_t *)(cell) + (byteOffset)))
 
-/* FieldGridCell.runtime60_6B spans +0x60..+0x6B; code indexes through it past its end, so these are the
-   array indices of the fields it reaches. */
-#define FIELD_CELL_RUNTIME60_INDEX_RUNTIME_BYTE68 8      /* +0x68: runtime class byte */
-#define FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK 0x10   /* +0x70: occupancyMask byte 0 */
+/* FieldGridCell.visibilityLightingIndex (+0x68) as FieldGrid_ClassifyCellFlagsToRuntimeByte sets it; the
+   projection pass indexes g_PackedLightingLookupTable with it, FIELD_CELL_LIGHTING_VISIBLE selects the dynamic
+   lights instead. */
+#define FIELD_CELL_LIGHTING_VISIBLE 0xff     /* a current presence bit of the faction is set */
+#define FIELD_CELL_LIGHTING_EXPLORED 0x87    /* only the persistent occupancy bit 7 is set */
+#define FIELD_CELL_LIGHTING_UNEXPLORED 0x00
 
 /* FieldGridAsset.runtimeStateFlags bit 0: set by every height/cell edit, cleared by the projection pass
    (projection.c) after it rebuilt the terrain surface. */
@@ -106,15 +112,15 @@ void FieldGrid_ApplyEncodedCellUpdate(PlayerRuntimeId playerRuntimeId,Q12 gridRo
           PackedFieldGridDeltaXY16 packedDragDeltaXY16);
 
 /* 0x005623D0 */
-void FieldGrid_ApplyMaskDFFFFFFF
+void FieldGrid_SetCellFluidReceiverExcluded
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00562410 */
-void FieldGrid_ApplyMaskBFFFFFFF
+void FieldGrid_SetCellFluidSourceExcluded
           (PlayerRuntimeId playerRuntimeId,FieldGridRegionMask setMask,Q12 gridRowQ12,Q12 gridColumnQ12);
 
 /* 0x00562450 */
-void FieldGrid_ApplyCallerMask
+void FieldGrid_SetCellResourceSupportFlag
           (PlayerRuntimeId playerRuntimeId,FieldGridMaterialBitIndex materialBitIndex,Q12 gridRowQ12,
           Q12 gridColumnQ12);
 

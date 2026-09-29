@@ -15,8 +15,9 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* Receive ring of network packets (g_UiRuntimeRecordRing, 0x100-byte UiRuntimeRecord slots) with a parallel
-   array of 0x80-byte sender-endpoint slots (g_UiRuntimeAuxiliaryBuffer8000); indices wrap after 256. */
+   array of 0x80-byte sender-endpoint slots (g_UiRuntimeRecordEndpointSlots); indices wrap after 256. */
 #define UI_RUNTIME_RECORD_RING_LAST_INDEX 0xff
+#define UI_RUNTIME_RECORD_RING_CAPACITY 0x100
 #define UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE 0x80
 
 /* Action queue (g_UiActionQueueEntries, allocated by UiRuntime_Initialize): 16 entries of 8 bytes
@@ -37,7 +38,7 @@ bool UiRootCallbacks_Free(UiRootNode *root);
 bool UiRootCallbacks_NoOpMethod08(UiRootNode *root);
 
 /* 0x00424270 */
-void UiRuntime_FormatSignedValues140And144(void *root);
+void UiDisplaySettingsRoot_FormatColorReadouts(void *root);
 
 /* 0x004244E0 */
 void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixelCoordinate previousBitsPerPixel,
@@ -117,7 +118,7 @@ void UiNode_InvalidateRoot(UiNodeBase *node);
 void UiActionQueue_Enqueue(UiActionId actionId,void *source);
 
 /* 0x004BD160 */
-PackedArgb32 UiNode_GetStateTintArgb(UiNodeBase *node);
+PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node);
 
 
 /* 0x00422990 */

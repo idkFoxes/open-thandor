@@ -65,7 +65,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
      and the interaction sound. */
   recomputeLayout = true;
   normalizeSelection = false;
-  if ((keyCode & 0xffff0000) == 0) {
+  if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
     /* Character: digits always, '-' for signed values, A-F/a-f for hexadecimal ones. */
     if (keyCode == '-') {
       characterAccepted = (control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0;
@@ -92,7 +92,8 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
       countOrIndex = codeUnitIndex - control->selectionStart;
       sourceCursor = control->textBuffer + codeUnitIndex;
       destinationCursor = control->textBuffer + control->selectionStart;
-      for (shiftCountOrScanIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex--) {
+      for (shiftCountOrScanIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0;
+           shiftCountOrScanIndex--) {
         *destinationCursor = *sourceCursor;
         sourceCursor++;
         destinationCursor++;
@@ -150,7 +151,8 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
           countOrIndex = codeUnitIndex - control->selectionStart;
           sourceCursor = control->textBuffer + codeUnitIndex;
           destinationCursor = control->textBuffer + control->selectionStart;
-          for (shiftCountOrScanIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex--) {
+          for (shiftCountOrScanIndex = UI_NUMERIC_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0;
+               shiftCountOrScanIndex--) {
             *destinationCursor = *sourceCursor;
             sourceCursor++;
             destinationCursor++;
@@ -235,7 +237,7 @@ bool UiNumericTextEditControl_HandleKeyboardAndCommit(UiKeyboardStateMask keyboa
         return false;
       default:
         /* Raw letter/digit key codes (KEYBOARD_KEY_CODE_CHAR) are swallowed; the characters arrive separately. */
-        if ((keyCode & 0x30000) == 0x30000) {
+        if ((keyCode & KEYBOARD_KEY_CODE_CHAR(0)) == KEYBOARD_KEY_CODE_CHAR(0)) {
           return false;
         }
         delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -377,10 +379,11 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
        (((keyCode == ']' || (keyCode == '}')) ||
         ((keyCode == '\\' || ((keyCode == 0xb5 || (keyCode == 0x80)))))));
   /* Letters typed with Ctrl or Alt are shortcuts, not text. */
-  if ((!isAltGrCharacter) &&
-     (((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) ||
-      ((((keyCode & 0xffff0000) == 0) && ((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0)) &&
-       (('@' < keyCode) && ((keyCode < '[' || (('`' < keyCode && (keyCode < '{'))))))))) {
+  if (!isAltGrCharacter &&
+      ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0 ||
+       ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0 &&
+        (keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0 &&
+        '@' < keyCode && (keyCode < '[' || ('`' < keyCode && keyCode < '{'))))) {
     delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
@@ -388,7 +391,7 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
      then validity update, action, invalidate and the interaction sound. */
   recomputeLayout = true;
   normalizeSelection = false;
-  if ((isAltGrCharacter) || ((keyCode & 0xffff0000) == 0)) {
+  if ((isAltGrCharacter) || ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0)) {
     /* Path characters: letters, digits, '-' and '.'; '*' and '?' only with UI_PATH_TEXT_ALLOW_WILDCARDS,
        ':' and the backslash not with UI_PATH_TEXT_NAME_ONLY. */
     if ((keyCode == '*') || (keyCode == '?')) {
@@ -425,7 +428,8 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
       countOrIndex = codeUnitIndex - control->selectionStart;
       sourceCursor = control->pathBuffer + codeUnitIndex;
       destinationCursor = control->pathBuffer + control->selectionStart;
-      for (shiftCountOrScanIndex = UI_PATH_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex--) {
+      for (shiftCountOrScanIndex = UI_PATH_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0;
+           shiftCountOrScanIndex--) {
         *destinationCursor = *sourceCursor;
         sourceCursor++;
         destinationCursor++;
@@ -469,7 +473,8 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
           countOrIndex = codeUnitIndex - control->selectionStart;
           sourceCursor = control->pathBuffer + codeUnitIndex;
           destinationCursor = control->pathBuffer + control->selectionStart;
-          for (shiftCountOrScanIndex = UI_PATH_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex--) {
+          for (shiftCountOrScanIndex = UI_PATH_TEXT_BUFFER_UNITS - codeUnitIndex; shiftCountOrScanIndex != 0;
+               shiftCountOrScanIndex--) {
             *destinationCursor = *sourceCursor;
             sourceCursor++;
             destinationCursor++;
@@ -554,7 +559,7 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
         return false;
       default:
         /* Raw letter/digit key codes (KEYBOARD_KEY_CODE_CHAR) are swallowed; the characters arrive separately. */
-        if ((keyCode & 0x30000) == 0x30000) {
+        if ((keyCode & KEYBOARD_KEY_CODE_CHAR(0)) == KEYBOARD_KEY_CODE_CHAR(0)) {
           return false;
         }
         delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -647,7 +652,8 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
           segmentBoundaryIndex = 0;
           if (codeUnitIndex != 1) {
             for (countOrIndex = codeUnitIndex - 2;
-                ((segmentBoundaryIndex = 0, countOrIndex != 0 && (segmentBoundaryIndex = countOrIndex + 1, control->pathBuffer[countOrIndex] != '\\'))
+                ((segmentBoundaryIndex = 0, countOrIndex != 0 && (segmentBoundaryIndex = countOrIndex + 1,
+                                                                  control->pathBuffer[countOrIndex] != '\\'))
                 && (control->pathBuffer[countOrIndex] != '.')); countOrIndex--) {
             }
           }
@@ -681,7 +687,9 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
         segmentBoundaryIndex = 0;
         if (codeUnitIndex != 1) {
           for (shiftCountOrScanIndex = codeUnitIndex - 2;
-              ((segmentBoundaryIndex = 0, shiftCountOrScanIndex != 0 && (segmentBoundaryIndex = shiftCountOrScanIndex + 1, control->pathBuffer[shiftCountOrScanIndex] != '\\')) &&
+              ((segmentBoundaryIndex = 0, shiftCountOrScanIndex != 0 &&
+                (segmentBoundaryIndex = shiftCountOrScanIndex + 1,
+                 control->pathBuffer[shiftCountOrScanIndex] != '\\')) &&
               (control->pathBuffer[shiftCountOrScanIndex] != '.')); shiftCountOrScanIndex--) {
           }
         }
@@ -776,10 +784,11 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
        (((keyCode == ']' || (keyCode == '}')) ||
         ((keyCode == '\\' || ((keyCode == 0xb5 || (keyCode == 0x80)))))));
   /* Letters typed with Ctrl or Alt are shortcuts, not text. */
-  if ((!isAltGrCharacter) &&
-     (((keyboardStateMask & KEYBOARD_STATE_ALT) != 0) ||
-      ((((keyCode & 0xffff0000) == 0) && ((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0)) &&
-       (('@' < keyCode) && ((keyCode < '[' || (('`' < keyCode && (keyCode < '{'))))))))) {
+  if (!isAltGrCharacter &&
+      ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0 ||
+       ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0 &&
+        (keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0 &&
+        '@' < keyCode && (keyCode < '[' || ('`' < keyCode && keyCode < '{'))))) {
     delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
@@ -787,15 +796,16 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
      then validity update, action, invalidate and the interaction sound. */
   recomputeLayout = true;
   normalizeSelection = false;
-  if ((isAltGrCharacter) || ((keyCode & 0xffff0000) == 0)) {
+  if ((isAltGrCharacter) || ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0)) {
     /* Insert the character, replacing a selection. */
     insertLimit = control->bufferCapacityCodeUnits - 1;
     if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
       codeUnitIndex = control->selectionEnd;
       countOrIndex = codeUnitIndex - control->selectionStart;
-      sourceCursor = control->textPrefix6C + codeUnitIndex;
-      destinationCursor = control->textPrefix6C + control->selectionStart;
-      for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex--) {
+      sourceCursor = control->textBuffer + codeUnitIndex;
+      destinationCursor = control->textBuffer + control->selectionStart;
+      for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0;
+           shiftCountOrScanIndex--) {
         *destinationCursor = *sourceCursor;
         sourceCursor++;
         destinationCursor++;
@@ -815,15 +825,15 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
       if ((control->editStateFlags & UI_REQUIRED_TEXT_OVERWRITE_MODE) == 0) {
         do {
           LOCK();
-          displacedCodeUnit = control->textPrefix6C[insertIndex];
-          control->textPrefix6C[insertIndex] = (uint16_t)keyCode;
+          displacedCodeUnit = control->textBuffer[insertIndex];
+          control->textBuffer[insertIndex] = (uint16_t)keyCode;
           keyCode = (UiKeyboardEventCode)displacedCodeUnit;
           UNLOCK();
           insertIndex++;
         } while (insertIndex < insertLimit);
       }
       else {
-        control->textPrefix6C[insertIndex] = (uint16_t)keyCode;
+        control->textBuffer[insertIndex] = (uint16_t)keyCode;
       }
     }
   }
@@ -837,9 +847,10 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           /* Backspace/Delete with a selection: remove the selected range, zero-fill the tail. */
           codeUnitIndex = control->selectionEnd;
           countOrIndex = codeUnitIndex - control->selectionStart;
-          sourceCursor = control->textPrefix6C + codeUnitIndex;
-          destinationCursor = control->textPrefix6C + control->selectionStart;
-          for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0; shiftCountOrScanIndex--) {
+          sourceCursor = control->textBuffer + codeUnitIndex;
+          destinationCursor = control->textBuffer + control->selectionStart;
+          for (shiftCountOrScanIndex = control->bufferCapacityCodeUnits - codeUnitIndex; shiftCountOrScanIndex != 0;
+               shiftCountOrScanIndex--) {
             *destinationCursor = *sourceCursor;
             sourceCursor++;
             destinationCursor++;
@@ -857,8 +868,8 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
             recomputeLayout = false;
             break;
           }
-          sourceCursor = control->textPrefix6C + codeUnitIndex;
-          destinationCursor = control->textPrefix6C + (codeUnitIndex - 1);
+          sourceCursor = control->textBuffer + codeUnitIndex;
+          destinationCursor = control->textBuffer + (codeUnitIndex - 1);
           for (countOrIndex = control->bufferCapacityCodeUnits - codeUnitIndex; countOrIndex != 0; countOrIndex--) {
             *destinationCursor = *sourceCursor;
             sourceCursor++;
@@ -870,13 +881,13 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         }
         else {
           /* Delete: remove the code unit at the cursor. */
-          if (control->textPrefix6C[codeUnitIndex] == 0) {
+          if (control->textBuffer[codeUnitIndex] == 0) {
             recomputeLayout = false;
             break;
           }
           countOrIndex = control->bufferCapacityCodeUnits - codeUnitIndex;
-          sourceCursor = control->textPrefix6C + codeUnitIndex + 1;
-          destinationCursor = control->textPrefix6C + codeUnitIndex;
+          sourceCursor = control->textBuffer + codeUnitIndex + 1;
+          destinationCursor = control->textBuffer + codeUnitIndex;
           while (--countOrIndex != 0) {
             *destinationCursor = *sourceCursor;
             sourceCursor++;
@@ -897,7 +908,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           control->cursorIndex = 0;
         }
         else if (keyCode == KEYBOARD_KEY_CODE_END) {
-          while (control->textPrefix6C[control->cursorIndex] != 0) {
+          while (control->textBuffer[control->cursorIndex] != 0) {
             control->cursorIndex++;
           }
         }
@@ -906,7 +917,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
             control->cursorIndex--;
           }
         }
-        else if (control->textPrefix6C[control->cursorIndex] != 0) {
+        else if (control->textBuffer[control->cursorIndex] != 0) {
           control->cursorIndex++;
         }
         control->selectionStart = control->cursorIndex;
@@ -928,7 +939,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
           return delegatedResult;
         }
-        sourceCursor = control->textPrefix6C;
+        sourceCursor = control->textBuffer;
         for (remainingCodeUnits = control->bufferCapacityCodeUnits; remainingCodeUnits != 0; remainingCodeUnits--) {
           *sourceCursor = 0;
           sourceCursor++;
@@ -944,7 +955,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         return false;
       default:
         /* Raw letter/digit key codes (KEYBOARD_KEY_CODE_CHAR) are swallowed; the characters arrive separately. */
-        if ((keyCode & 0x30000) == 0x30000) {
+        if ((keyCode & KEYBOARD_KEY_CODE_CHAR(0)) == KEYBOARD_KEY_CODE_CHAR(0)) {
           return false;
         }
         delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -971,7 +982,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         break;
       case KEYBOARD_KEY_CODE_END:
         codeUnitIndex = control->cursorIndex;
-        if (control->textPrefix6C[codeUnitIndex] == 0) {
+        if (control->textBuffer[codeUnitIndex] == 0) {
           recomputeLayout = false;
           break;
         }
@@ -987,7 +998,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
           control->cursorIndex++;
           shiftCountOrScanIndex = codeUnitIndex + 1;
           codeUnitIndex++;
-        } while (control->textPrefix6C[shiftCountOrScanIndex] != 0);
+        } while (control->textBuffer[shiftCountOrScanIndex] != 0);
         normalizeSelection = true;
         break;
       case KEYBOARD_KEY_CODE_LEFT:
@@ -1006,7 +1017,7 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         break;
       case KEYBOARD_KEY_CODE_RIGHT:
         codeUnitIndex = control->cursorIndex;
-        if (control->textPrefix6C[codeUnitIndex] == 0) {
+        if (control->textBuffer[codeUnitIndex] == 0) {
           recomputeLayout = false;
           break;
         }
@@ -1034,13 +1045,13 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
     if ((keyboardStateMask & KEYBOARD_STATE_SHIFT) == 0) {
       if (keyCode == KEYBOARD_KEY_CODE_LEFT) {
         if (codeUnitIndex != 0) {
-          if (control->textPrefix6C[codeUnitIndex - 1] == ' ') {
+          if (control->textBuffer[codeUnitIndex - 1] == ' ') {
             do {
               wordBoundaryIndex = codeUnitIndex - 1;
               if (wordBoundaryIndex == 0) break;
               countOrIndex = codeUnitIndex - 2;
               codeUnitIndex = wordBoundaryIndex;
-            } while (control->textPrefix6C[countOrIndex] == ' ');
+            } while (control->textBuffer[countOrIndex] == ' ');
           }
           else {
             do {
@@ -1048,8 +1059,8 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
               wordBoundaryIndex = scanIndex - 1;
               if (wordBoundaryIndex == 0) break;
               codeUnitIndex = wordBoundaryIndex;
-            } while (control->textPrefix6C[scanIndex - 2] != ' ');
-            if ((1 < (int)wordBoundaryIndex) && (control->textPrefix6C[scanIndex - 3] != ' ')) {
+            } while (control->textBuffer[scanIndex - 2] != ' ');
+            if ((1 < (int)wordBoundaryIndex) && (control->textBuffer[scanIndex - 3] != ' ')) {
               wordBoundaryIndex = scanIndex - 2;
             }
           }
@@ -1059,17 +1070,17 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         }
       }
       else {
-        if (control->textPrefix6C[codeUnitIndex] == ' ') {
-          for (; (control->textPrefix6C[codeUnitIndex] != 0 && (control->textPrefix6C[codeUnitIndex] == ' '));
+        if (control->textBuffer[codeUnitIndex] == ' ') {
+          for (; (control->textBuffer[codeUnitIndex] != 0 && (control->textBuffer[codeUnitIndex] == ' '));
               codeUnitIndex++) {
           }
         }
         else {
           /* Past the next space; back onto it when another space follows. */
-          while (control->textPrefix6C[codeUnitIndex] != 0) {
+          while (control->textBuffer[codeUnitIndex] != 0) {
             codeUnitIndex++;
-            if (control->textPrefix6C[codeUnitIndex - 1] == ' ') {
-              if (control->textPrefix6C[codeUnitIndex] == ' ') {
+            if (control->textBuffer[codeUnitIndex - 1] == ' ') {
+              if (control->textBuffer[codeUnitIndex] == ' ') {
                 codeUnitIndex--;
               }
               break;
@@ -1088,13 +1099,13 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
         if (codeUnitIndex != control->selectionStart) {
           selectionBoundary = &control->selectionEnd;
         }
-        if (control->textPrefix6C[codeUnitIndex - 1] == ' ') {
+        if (control->textBuffer[codeUnitIndex - 1] == ' ') {
           do {
             wordBoundaryIndex = codeUnitIndex - 1;
             if (wordBoundaryIndex == 0) break;
             shiftCountOrScanIndex = codeUnitIndex - 2;
             codeUnitIndex = wordBoundaryIndex;
-          } while (control->textPrefix6C[shiftCountOrScanIndex] == ' ');
+          } while (control->textBuffer[shiftCountOrScanIndex] == ' ');
         }
         else {
           do {
@@ -1102,8 +1113,8 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
             wordBoundaryIndex = scanIndex - 1;
             if (wordBoundaryIndex == 0) break;
             codeUnitIndex = wordBoundaryIndex;
-          } while (control->textPrefix6C[scanIndex - 2] != ' ');
-          if ((1 < (int)wordBoundaryIndex) && (control->textPrefix6C[scanIndex - 3] != ' ')) {
+          } while (control->textBuffer[scanIndex - 2] != ' ');
+          if ((1 < (int)wordBoundaryIndex) && (control->textBuffer[scanIndex - 3] != ' ')) {
             wordBoundaryIndex = scanIndex - 2;
           }
         }
@@ -1117,16 +1128,16 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
          not taken even if the cursor is on a space. */
       selectionBoundary = &control->selectionStart;
       if ((codeUnitIndex != control->selectionStart) &&
-         (selectionBoundary = &control->selectionEnd, control->textPrefix6C[codeUnitIndex] == ' ')) {
-        for (; (control->textPrefix6C[codeUnitIndex] != 0 && (control->textPrefix6C[codeUnitIndex] == ' '));
+         (selectionBoundary = &control->selectionEnd, control->textBuffer[codeUnitIndex] == ' ')) {
+        for (; (control->textBuffer[codeUnitIndex] != 0 && (control->textBuffer[codeUnitIndex] == ' '));
             codeUnitIndex++) {
         }
       }
       else {
-        while (control->textPrefix6C[codeUnitIndex] != 0) {
+        while (control->textBuffer[codeUnitIndex] != 0) {
           codeUnitIndex++;
-          if (control->textPrefix6C[codeUnitIndex - 1] == ' ') {
-            if (control->textPrefix6C[codeUnitIndex] == ' ') {
+          if (control->textBuffer[codeUnitIndex - 1] == ' ') {
+            if (control->textBuffer[codeUnitIndex] == ' ') {
               codeUnitIndex--;
             }
             break;
@@ -1185,7 +1196,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
     resolvedText = TextResource_Resolve(control->textResourceId);
     adapterRecords = g_GraphicsAdapters;
     stream = resolvedText.text;
-    if (((control->selectable).stateFlags & 0x80) != 0) {
+    if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER) != 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
                  (uint16_t *)&g_GraphicsAdapterFormatScratch0Utf16);
@@ -1193,7 +1204,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
       UiTextButtonControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,control);
       return;
     }
-    if (((control->selectable).stateFlags & 0x800) == 0) {
+    if (((control->selectable).stateFlags & UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME) == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control[-1].packedTextStyle,
                  (uint16_t *)&g_GraphicsAdapterFormatScratch0Utf16);
@@ -1209,7 +1220,7 @@ void UiGraphicsAdapterTextButton_DrawFormattedAdapterText
     RichTextCommandStream_PatchPayloadBySelector
               (0,g_GraphicsAdapters[adapterIndex].driverDescriptionUtf16,stream);
     if (adapterRecords[adapterIndex].deviceGuid.Data1 == 0) {
-      resolvedText = TextResource_Resolve(0x111);
+      resolvedText = TextResource_Resolve(TEXT_ID_PRIMARY_DISPLAY_ADAPTER);
       replacementPayload = resolvedText.text;
     }
     else {
@@ -1240,7 +1251,7 @@ void UiNumericTextEditControl_RelocateAndRebuildText
     *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   /* clears the caret phase and the blink frame counter (top byte) */
-  control->editStateFlags = control->editStateFlags & 0xffffef;
+  control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
   UiNumericTextControl_RebuildTextFromValue(control);
   textCursor = control->textBuffer;
   control->cursorIndex = 0;
@@ -1297,36 +1308,47 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     else {
       rightOrCaretX = (control->base).layoutWidth;
       bottomOrCaretY = (control->base).layoutHeight;
-      cornerTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 3,g_UiWindowTextureSource);
+      cornerTileSize = g_GraphicsTextureSourceGetLogicalSize
+                         (UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,g_UiWindowTextureSource);
       tileBottom = cornerTileSize.logicalHeightPixels;
       borderWidthOrCaretFrame = cornerTileSize.logicalWidthPixels;
       rightOrCaretX = rightOrCaretX - borderWidthOrCaretFrame;
       bottomOrCaretY = bottomOrCaretY - tileBottom;
       if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_TILED_INTERIOR) != 0) {
         UiWindow_BlitTiledInterior
-                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_INTERIOR,bottomOrCaretY,rightOrCaretX,
+                  (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_INTERIOR,bottomOrCaretY,
+                   rightOrCaretX,
                    tileBottom,borderWidthOrCaretFrame,control);
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,(control->base).left,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME
-                 ,g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,(control->base).left,
+                 UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
-                 rightOrCaretX + (control->base).left,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 1,g_UiWindowTextureSource,g_FramebufferAccess);
+                 rightOrCaretX + (control->base).left,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_TOP_RIGHT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY + (control->base).top,
-                 (control->base).left,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 2,g_UiWindowTextureSource,g_FramebufferAccess);
+                 (control->base).left,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_BOTTOM_LEFT,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY + (control->base).top,
-                 rightOrCaretX + (control->base).left,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+                 rightOrCaretX + (control->base).left,
+                 UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_BOTTOM_RIGHT,g_UiWindowTextureSource,
+                 g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 4,rightOrCaretX,0,borderWidthOrCaretFrame,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_TOP,
+                 rightOrCaretX,0,borderWidthOrCaretFrame,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 5,bottomOrCaretY,tileBottom,0,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_LEFT,
+                 bottomOrCaretY,tileBottom,0,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 6,bottomOrCaretY,tileBottom,rightOrCaretX,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_RIGHT,
+                 bottomOrCaretY,tileBottom,rightOrCaretX,control);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + 7,rightOrCaretX,bottomOrCaretY,borderWidthOrCaretFrame,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME + UI_WINDOW_FRAME_BOTTOM,
+                 rightOrCaretX,bottomOrCaretY,borderWidthOrCaretFrame,control);
       topOrTextOffsetY = tileBottom + (control->base).top;
       rightOrCaretX = rightOrCaretX + (control->base).left;
       leftOrTextOffsetX = borderWidthOrCaretFrame + (control->base).left;
@@ -1360,7 +1382,8 @@ void UiTextEditControl_DrawTextSelectionAndCaret
         rightOrCaretX = clipLeft;
       }
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_SELECTION,rightOrCaretX,topOrTextOffsetY - 1,startOrCaretWidth + leftOrTextOffsetX,control);
+                (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_TEXT_SELECTION,rightOrCaretX,
+                 topOrTextOffsetY - 1,startOrCaretWidth + leftOrTextOffsetX,control);
     }
     packedStyle = g_UiTextEditActiveTextStyle;
     if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
@@ -1377,7 +1400,7 @@ void UiTextEditControl_DrawTextSelectionAndCaret
     }
     if ((control->editStateFlags & UI_TEXT_EDIT_CARET_VISIBLE_PHASE) == 0) {
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,packedStyle,control->textPrefix6C,
+                (clipTop,clipLeft,clipBottom,clipRight,packedStyle,control->textBuffer,
                  topOrTextOffsetY + (control->base).top,leftOrTextOffsetX + (control->base).left);
     }
     else {
@@ -1396,14 +1419,16 @@ void UiTextEditControl_DrawTextSelectionAndCaret
       caretFramebuffer = g_FramebufferAccess;
       /* the shadow always uses the insert caret, also in overwrite mode (as in the original) */
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY,rightOrCaretX + styleVerticalOffset,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_CARET_INSERT,
+                (clipTop,clipLeft,clipBottom,clipRight,bottomOrCaretY,rightOrCaretX + styleVerticalOffset,
+                 TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_CARET_INSERT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,packedStyle,control->textPrefix6C,
+                (clipTop,clipLeft,clipBottom,clipRight,packedStyle,control->textBuffer,
                  topOrTextOffsetY + (control->base).top,leftOrTextOffsetX + (control->base).left);
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,topOrTextOffsetY + (control->base).top - 1,rightOrCaretX,borderWidthOrCaretFrame
-                 ,caretTextureSource,caretFramebuffer);
+                (clipTop,clipLeft,clipBottom,clipRight,topOrTextOffsetY + (control->base).top - 1,rightOrCaretX,
+                 borderWidthOrCaretFrame,
+                 caretTextureSource,caretFramebuffer);
     }
     g_GraphicsFramebufferEndAccess();
   }
@@ -1496,7 +1521,7 @@ void UiPathTextEditControl_RelocateAndValidateDos83
     *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   /* clears the caret phase and the blink frame counter (top byte) */
-  control->editStateFlags = control->editStateFlags & 0xffffef;
+  control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
   UiPathTextControl_UpdateDos83Validity(control);
   textCursor = control->pathBuffer;
   control->cursorIndex = 0;
@@ -1531,9 +1556,9 @@ void UiRequiredTextEditControl_RelocateAndValidateNonEmpty
     *nodeFlagsField = *nodeFlagsField | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   /* clears the caret phase and the blink frame counter (top byte) */
-  control->editStateFlags = control->editStateFlags & 0xffffef;
+  control->editStateFlags = control->editStateFlags & (UI_STATE_FLAGS_MASK & ~UI_TEXT_EDIT_CARET_VISIBLE_PHASE);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)control);
-  textCursor = control->textPrefix6C;
+  textCursor = control->textBuffer;
   control->cursorIndex = 0;
   control->selectionStart = 0;
   control->selectionEnd = 0;
@@ -1578,8 +1603,8 @@ void UiPointerList_SortByExpandedTextFieldAscending
         do {
           rowSlotCursor++;
           compareFlags = UiPointerList_CompareExpandedTextFlags
-                            ((uint16_t *)((int)*rowSlotCursor + fieldOffset),
-                             (uint16_t *)((int)*passAnchorSlot + fieldOffset));
+                            ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
+                             (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
           if (!compareFlags.less) {
             LOCK();
             swappedRecord = *rowSlotCursor;
@@ -1646,8 +1671,8 @@ void UiPointerList_SortByExpandedTextFieldDescending
         do {
           rowSlotCursor++;
           compareFlags = UiPointerList_CompareExpandedTextFlags
-                            ((uint16_t *)((int)*rowSlotCursor + fieldOffset),
-                             (uint16_t *)((int)*passAnchorSlot + fieldOffset));
+                            ((uint16_t *)((uint8_t *)*rowSlotCursor + fieldOffset),
+                             (uint16_t *)((uint8_t *)*passAnchorSlot + fieldOffset));
           if (compareFlags.less || compareFlags.equal) {
             LOCK();
             swappedRecord = *rowSlotCursor;
@@ -1761,8 +1786,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
   TextureSizeResult tileSize;
   
   tooltipTarget = g_UiTooltipState.targetNode;
-  if ((g_UiTooltipState.targetNode != NULL) && (g_UiTooltipState.countdownFrames == 0))
-  {
+  if ((g_UiTooltipState.targetNode != NULL) && (g_UiTooltipState.countdownFrames == 0)) {
     rootNode = UiNode_GetRoot(g_UiTooltipState.targetNode);
     /* the dword just before the node: a text resource id, or with UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16 the
        text itself */
@@ -1772,7 +1796,7 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
       commandStream = resolvedText.text;
     }
     textExtent = RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
-    tileSize = g_GraphicsTextureSourceGetLogicalSize(0xbc,g_UiWindowTextureSource);
+    tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,g_UiWindowTextureSource);
     edgeTileWidth = tileSize.logicalWidthPixels;
     frameWidthOrMiddleEnd = textExtent.widthPixels + edgeTileWidth * 2;
     targetLeftOrTileX = tooltipTarget->left;
@@ -1797,20 +1821,23 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
         frameTop = frameTop + tooltipTarget->layoutHeight + tileSize.logicalHeightPixels;
       }
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameLeft,0xbc,g_UiWindowTextureSource,
+                (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameLeft,UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,
+                 g_UiWindowTextureSource,
                  g_FramebufferAccess);
       frameWidthOrMiddleEnd = frameRight - edgeTileWidth;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameWidthOrMiddleEnd,0xbe,g_UiWindowTextureSource,
+                (clipBottom,clipRight,clipTop,clipLeft,frameTop,frameWidthOrMiddleEnd,
+                 UI_WINDOW_SUBRESOURCE_TOOLTIP_RIGHT,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       if (clipRight < frameWidthOrMiddleEnd) {
         frameWidthOrMiddleEnd = clipRight;
       }
-      tileSize = g_GraphicsTextureSourceGetLogicalSize(0xbd,g_UiWindowTextureSource);
+      tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_MIDDLE,g_UiWindowTextureSource);
       targetLeftOrTileX = edgeTileWidth + frameLeft;
       do {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipBottom,frameWidthOrMiddleEnd,clipTop,clipLeft,frameTop,targetLeftOrTileX,0xbd,g_UiWindowTextureSource,
+                  (clipBottom,frameWidthOrMiddleEnd,clipTop,clipLeft,frameTop,targetLeftOrTileX,
+                   UI_WINDOW_SUBRESOURCE_TOOLTIP_MIDDLE,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         targetLeftOrTileX = targetLeftOrTileX + tileSize.logicalWidthPixels;
       } while (targetLeftOrTileX < frameWidthOrMiddleEnd);
@@ -1824,8 +1851,8 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       g_GraphicsFramebufferFillRectArgb
-                (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0
-                 ,0,0x80000000,g_FramebufferAccess);
+                (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0,
+                 UI_TOOLTIP_NO_ROOT_DIM_ARGB,g_FramebufferAccess);
       g_GraphicsFramebufferEndAccess();
     }
   }
@@ -1835,8 +1862,9 @@ void UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiP
 
 /* Address: 0x004B0F90.
    Closes the UI roots of an ending session: pops the front root until the stack is empty; a root that vetoes
-   its close stops the loop and is reported as CF (true). The original also stops at the dword after g_UiRootNode (0x004B0E34, the
-   window texture source), which is never a root, so in practice this pops every root.
+   its close stops the loop and is reported as CF (true). The original also stops at the dword after
+   g_UiRootNode (0x004B0E34, the window texture source), which is never a root, so in practice this pops every
+   root.
 */
 bool UiRootStack_PopUntilWindowTextureBoundary(void)
 
@@ -1950,24 +1978,31 @@ void UiFramedTextButtonControl_DrawClipped
                  (control->selectable).base.left,framePieceOrTextWidth,g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
-                 rightCornerXOrTextY + (control->selectable).base.left,framePieceOrTextWidth + 1,g_UiWindowTextureSource,
+                 rightCornerXOrTextY + (control->selectable).base.left,
+                 framePieceOrTextWidth + UI_WINDOW_FRAME_TOP_RIGHT,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomCornerYOrTextX + (control->selectable).base.top,
-                 (control->selectable).base.left,framePieceOrTextWidth + 2,g_UiWindowTextureSource,
+                 (control->selectable).base.left,framePieceOrTextWidth + UI_WINDOW_FRAME_BOTTOM_LEFT,
+                 g_UiWindowTextureSource,
                  g_FramebufferAccess);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,bottomCornerYOrTextX + (control->selectable).base.top,
-                 rightCornerXOrTextY + (control->selectable).base.left,framePieceOrTextWidth + 3,g_UiWindowTextureSource,
+                 rightCornerXOrTextY + (control->selectable).base.left,
+                 framePieceOrTextWidth + UI_WINDOW_FRAME_BOTTOM_RIGHT,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 4,rightCornerXOrTextY,0,cornerWidth,control);
+                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_TOP,rightCornerXOrTextY,
+                 0,cornerWidth,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 5,bottomCornerYOrTextX,cornerHeight,0,control);
+                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_LEFT,
+                 bottomCornerYOrTextX,cornerHeight,0,control);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 6,bottomCornerYOrTextX,cornerHeight,rightCornerXOrTextY,control);
+                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_RIGHT,
+                 bottomCornerYOrTextX,cornerHeight,rightCornerXOrTextY,control);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 7,rightCornerXOrTextY,bottomCornerYOrTextX,cornerWidth,control);
+                (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_BOTTOM,
+                 rightCornerXOrTextY,bottomCornerYOrTextX,cornerWidth,control);
     }
     resolvedText = TextResource_Resolve(control->textResourceId);
     commandStream = resolvedText.text;
@@ -1982,25 +2017,25 @@ void UiFramedTextButtonControl_DrawClipped
       textStyle = g_UiTextStyleSelected;
     }
     /* packedTextStyle may override the font byte (bits 24-31) and the palette byte (bits 16-23) */
-    /* packedTextStyle may override the font byte (bits 24-31) and the palette byte (bits 16-23) */
-  if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT) == 0) {
-      control->packedTextStyle = control->packedTextStyle & 0xff0000;
+    if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT) == 0) {
+      control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_PALETTE_BYTE;
     }
     else {
-      textStyle = textStyle & 0xffffff;
+      textStyle = textStyle & ~UI_TEXT_STYLE_FONT_BYTE;
     }
     if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE) == 0) {
-      control->packedTextStyle = control->packedTextStyle & 0xff000000;
+      control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_FONT_BYTE;
     }
     else {
-      textStyle = textStyle & 0xff00ffff;
+      textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
     }
     textStyle = textStyle | control->packedTextStyle;
     if ((((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) ||
        (((control->selectable).stateFlags & UI_BUTTON_NO_FOCUS_MARK) != 0)) {
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,
-                 rightCornerXOrTextY + (control->selectable).base.top,bottomCornerYOrTextX + (control->selectable).base.left);
+                 rightCornerXOrTextY + (control->selectable).base.top,
+                 bottomCornerYOrTextX + (control->selectable).base.left);
     }
     else {
       bottomCornerYOrTextX = bottomCornerYOrTextX + (control->selectable).base.left;
@@ -2008,22 +2043,29 @@ void UiFramedTextButtonControl_DrawClipped
       textX = bottomCornerYOrTextX;
       textY = rightCornerXOrTextY;
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,rightCornerXOrTextY,bottomCornerYOrTextX - 2,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                (clipTop,clipLeft,clipBottom,clipRight,rightCornerXOrTextY,bottomCornerYOrTextX - 2,
+                 TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource);
-      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
+      tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                                                                   g_UiWindowTextureSource);
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                                                            g_UiWindowTextureSource);
       focusTileXOrTop = bottomCornerYOrTextX - 2 + focusTileSize.logicalWidthPixels;
-      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
-      bottomCornerYOrTextX = ((bottomCornerYOrTextX + 4) - tileSizeOrEndCapSize.logicalWidthPixels) + framePieceOrTextWidth;
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                            g_UiWindowTextureSource);
+      bottomCornerYOrTextX =
+           ((bottomCornerYOrTextX + 4) - tileSizeOrEndCapSize.logicalWidthPixels) + framePieceOrTextWidth;
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,rightCornerXOrTextY,bottomCornerYOrTextX,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                (clipTop,clipLeft,clipBottom,clipRight,rightCornerXOrTextY,bottomCornerYOrTextX,TEXT_SHADOW_COLOR_ARGB,
+                 UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       if (clipLeft < bottomCornerYOrTextX) {
         bottomCornerYOrTextX = clipLeft;
       }
       do {
         g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                  (clipTop,bottomCornerYOrTextX,clipBottom,clipRight,rightCornerXOrTextY,focusTileXOrTop,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                  (clipTop,bottomCornerYOrTextX,clipBottom,clipRight,rightCornerXOrTextY,focusTileXOrTop,
+                   TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         focusTileXOrTop = focusTileXOrTop + focusTileSize.logicalWidthPixels;
       } while (focusTileXOrTop < bottomCornerYOrTextX);
@@ -2033,20 +2075,25 @@ void UiFramedTextButtonControl_DrawClipped
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,textX - 3,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
                  g_UiWindowTextureSource,g_FramebufferAccess);
-      tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource);
-      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
+      tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                                                                   g_UiWindowTextureSource);
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                                                            g_UiWindowTextureSource);
       rightCornerXOrTextY = textX - 3 + focusTileSize.logicalWidthPixels;
-      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
+      focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                            g_UiWindowTextureSource);
       bottomCornerYOrTextX = ((textX + 3) - tileSizeOrEndCapSize.logicalWidthPixels) + framePieceOrTextWidth;
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,bottomCornerYOrTextX,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
+                (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,bottomCornerYOrTextX,
+                 UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       if (clipLeft < bottomCornerYOrTextX) {
         bottomCornerYOrTextX = clipLeft;
       }
       do {
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,bottomCornerYOrTextX,clipBottom,clipRight,focusTileXOrTop,rightCornerXOrTextY,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
+                  (clipTop,bottomCornerYOrTextX,clipBottom,clipRight,focusTileXOrTop,rightCornerXOrTextY,
+                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         rightCornerXOrTextY = rightCornerXOrTextY + focusTileSize.logicalWidthPixels;
       } while (rightCornerXOrTextY < bottomCornerYOrTextX);
@@ -2086,7 +2133,8 @@ void UiFramedTextButtonControl_NonRightPress
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+          (control->activationSoundId != 0)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -2098,7 +2146,8 @@ void UiFramedTextButtonControl_NonRightPress
       return;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+          (control->activationSoundId != 0)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -2128,7 +2177,8 @@ void UiFramedTextButtonControl_NonRightRelease
   if (((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
       (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0)) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
-    if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+    if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+        (control->activationSoundId != 0)) {
       g_SoundPlayOneShot
                 (g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control->activationSoundId);
     }
@@ -2281,32 +2331,41 @@ void UiWindowControl_DrawFramedTextAndChrome
   rightCornerXOrTextY = (control->selectable).base.layoutWidth - cornerWidth;
   bottomCornerYOrTextX = (control->selectable).base.layoutHeight - cornerHeight;
   g_GraphicsTextureSourceBlitSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,(control->selectable).base.left,framePieceOrTextWidth,
+            (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,(control->selectable).base.left,
+             framePieceOrTextWidth,
              g_UiWindowTextureSource,g_FramebufferAccess);
   g_GraphicsTextureSourceBlitSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,rightCornerXOrTextY + (control->selectable).base.left,framePieceOrTextWidth + 1,
+            (clipTop,clipLeft,clipBottom,clipRight,(control->selectable).base.top,
+             rightCornerXOrTextY + (control->selectable).base.left,framePieceOrTextWidth + UI_WINDOW_FRAME_TOP_RIGHT,
              g_UiWindowTextureSource,g_FramebufferAccess);
   g_GraphicsTextureSourceBlitSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,bottomCornerYOrTextX + (control->selectable).base.top,(control->selectable).base.left,framePieceOrTextWidth + 2,
+            (clipTop,clipLeft,clipBottom,clipRight,bottomCornerYOrTextX + (control->selectable).base.top,
+             (control->selectable).base.left,framePieceOrTextWidth + UI_WINDOW_FRAME_BOTTOM_LEFT,
              g_UiWindowTextureSource,g_FramebufferAccess);
   g_GraphicsTextureSourceBlitSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,bottomCornerYOrTextX + (control->selectable).base.top,rightCornerXOrTextY + (control->selectable).base.left,
-             framePieceOrTextWidth + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+            (clipTop,clipLeft,clipBottom,clipRight,bottomCornerYOrTextX + (control->selectable).base.top,
+             rightCornerXOrTextY + (control->selectable).base.left,
+             framePieceOrTextWidth + UI_WINDOW_FRAME_BOTTOM_RIGHT,g_UiWindowTextureSource,g_FramebufferAccess);
   UiWindow_BlitTiledHorizontalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 4,rightCornerXOrTextY,0,cornerWidth,control);
+            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_TOP,rightCornerXOrTextY,0,
+             cornerWidth,control);
   UiWindow_BlitTiledVerticalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 5,bottomCornerYOrTextX,cornerHeight,0,control);
+            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_LEFT,bottomCornerYOrTextX,
+             cornerHeight,0,control);
   UiWindow_BlitTiledVerticalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 6,bottomCornerYOrTextX,cornerHeight,rightCornerXOrTextY,control);
+            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_RIGHT,bottomCornerYOrTextX,
+             cornerHeight,rightCornerXOrTextY,control);
   UiWindow_BlitTiledHorizontalEdge
-            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + 7,rightCornerXOrTextY,bottomCornerYOrTextX,cornerWidth,control);
+            (clipTop,clipLeft,clipBottom,clipRight,framePieceOrTextWidth + UI_WINDOW_FRAME_BOTTOM,rightCornerXOrTextY,
+             bottomCornerYOrTextX,cornerWidth,control);
   resolvedText = TextResource_Resolve(control->textResourceId);
   commandStream = resolvedText.text;
   bottomCornerYOrTextX = (control->selectable).base.layoutWidth;
   textExtent = RichTextCommandStream_MeasureRegs(control->packedTextStyle,commandStream);
   framePieceOrTextWidth = textExtent.widthPixels;
   rightCornerXOrTextY = (int)((control->selectable).base.layoutHeight - textExtent.heightPixels) >> 1;
-  bottomCornerYOrTextX = ((int)(((uint32_t)(bottomCornerYOrTextX * 3) >> 2) - framePieceOrTextWidth) >> 1) + ((uint32_t)(control->selectable).base.layoutWidth >> 2);
+  bottomCornerYOrTextX = ((int)(((uint32_t)(bottomCornerYOrTextX * 3) >> 2) - framePieceOrTextWidth) >> 1) +
+                         ((uint32_t)(control->selectable).base.layoutWidth >> 2);
   textStyle = g_UiTextStyleDisabled;
   if ((((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
      (textStyle = g_UiTextStyleNormal, ((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)) {
@@ -2314,21 +2373,22 @@ void UiWindowControl_DrawFramedTextAndChrome
   }
   /* packedTextStyle may override the font byte (bits 24-31) and the palette byte (bits 16-23) */
   if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT) == 0) {
-    control->packedTextStyle = control->packedTextStyle & 0xff0000;
+    control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_PALETTE_BYTE;
   }
   else {
-    textStyle = textStyle & 0xffffff;
+    textStyle = textStyle & ~UI_TEXT_STYLE_FONT_BYTE;
   }
   if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE) == 0) {
-    control->packedTextStyle = control->packedTextStyle & 0xff000000;
+    control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_FONT_BYTE;
   }
   else {
-    textStyle = textStyle & 0xff00ffff;
+    textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
   }
   textStyle = textStyle | control->packedTextStyle;
   if (((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
     RichTextCommandStream_DrawSingleLine
-              (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,rightCornerXOrTextY + (control->selectable).base.top,
+              (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,
+               rightCornerXOrTextY + (control->selectable).base.top,
                bottomCornerYOrTextX + (control->selectable).base.left);
   }
   else {
@@ -2338,22 +2398,28 @@ void UiWindowControl_DrawFramedTextAndChrome
     focusCoordOrIconX = styleOffsetOrIconY - 3 + bottomCornerYOrTextX;
     styleOffsetOrIconY = styleOffsetOrIconY - 1 + rightCornerXOrTextY;
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+              (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,TEXT_SHADOW_COLOR_ARGB,
+               UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource);
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
+    tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                                                                 g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                                                          g_UiWindowTextureSource);
     focusTileX = focusCoordOrIconX + focusTileSize.logicalWidthPixels;
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                          g_UiWindowTextureSource);
     focusCoordOrIconX = ((focusCoordOrIconX + 6) - tileSizeOrEndCapSize.logicalWidthPixels) + framePieceOrTextWidth;
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+              (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,TEXT_SHADOW_COLOR_ARGB,
+               UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
                g_UiWindowTextureSource,g_FramebufferAccess);
     if (clipLeft < focusCoordOrIconX) {
       focusCoordOrIconX = clipLeft;
     }
     do {
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,focusCoordOrIconX,clipBottom,clipRight,styleOffsetOrIconY,focusTileX,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                (clipTop,focusCoordOrIconX,clipBottom,clipRight,styleOffsetOrIconY,focusTileX,TEXT_SHADOW_COLOR_ARGB,
+                 UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       focusTileX = focusTileX + focusTileSize.logicalWidthPixels;
     } while (focusTileX < focusCoordOrIconX);
@@ -2361,30 +2427,40 @@ void UiWindowControl_DrawFramedTextAndChrome
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,textStyle,commandStream,rightCornerXOrTextY,bottomCornerYOrTextX);
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomCornerYOrTextX - 3,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomCornerYOrTextX - 3,
+               UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource,
                g_FramebufferAccess);
-    tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource);
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
+    tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                                                                 g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                                                          g_UiWindowTextureSource);
     rightCornerXOrTextY = bottomCornerYOrTextX - 3 + focusTileSize.logicalWidthPixels;
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
-    bottomCornerYOrTextX = ((bottomCornerYOrTextX + 3) - tileSizeOrEndCapSize.logicalWidthPixels) + framePieceOrTextWidth;
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                          g_UiWindowTextureSource);
+    bottomCornerYOrTextX =
+         ((bottomCornerYOrTextX + 3) - tileSizeOrEndCapSize.logicalWidthPixels) + framePieceOrTextWidth;
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomCornerYOrTextX,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,focusCoordOrIconX,bottomCornerYOrTextX,
+               UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
                g_FramebufferAccess);
     if (clipLeft < bottomCornerYOrTextX) {
       bottomCornerYOrTextX = clipLeft;
     }
     do {
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,bottomCornerYOrTextX,clipBottom,clipRight,focusCoordOrIconX,rightCornerXOrTextY,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
+                (clipTop,bottomCornerYOrTextX,clipBottom,clipRight,focusCoordOrIconX,rightCornerXOrTextY,
+                 UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       rightCornerXOrTextY = rightCornerXOrTextY + focusTileSize.logicalWidthPixels;
     } while (rightCornerXOrTextY < bottomCornerYOrTextX);
   }
   tileSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize
                      (control->iconSubresource,control->iconTextureSource);
-  focusCoordOrIconX = (((uint32_t)(control->selectable).base.layoutWidth >> 2) - tileSizeOrEndCapSize.logicalWidthPixels) + (control->selectable).base.left;
-  styleOffsetOrIconY = ((int)((control->selectable).base.layoutHeight - tileSizeOrEndCapSize.logicalHeightPixels) >> 1) + (control->selectable).base.top;
+  focusCoordOrIconX =
+       (((uint32_t)(control->selectable).base.layoutWidth >> 2) - tileSizeOrEndCapSize.logicalWidthPixels) +
+       (control->selectable).base.left;
+  styleOffsetOrIconY = ((int)((control->selectable).base.layoutHeight - tileSizeOrEndCapSize.logicalHeightPixels) >> 1) +
+                       (control->selectable).base.top;
   bottomCornerYOrTextX = focusCoordOrIconX;
   rightCornerXOrTextY = styleOffsetOrIconY;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
@@ -2400,7 +2476,8 @@ void UiWindowControl_DrawFramedTextAndChrome
     rightCornerXOrTextY = styleOffsetOrIconY + iconOffsetY;
   }
   g_GraphicsTextureSourceBlitModulatedSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,rightCornerXOrTextY,bottomCornerYOrTextX,TEXT_SHADOW_COLOR_ARGB,control->iconSubresource,
+            (clipTop,clipLeft,clipBottom,clipRight,rightCornerXOrTextY,bottomCornerYOrTextX,TEXT_SHADOW_COLOR_ARGB,
+             control->iconSubresource,
              control->iconTextureSource,g_FramebufferAccess);
   g_GraphicsTextureSourceBlitSourceAlpha
             (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,control->iconSubresource,
@@ -2446,7 +2523,8 @@ void UiTextButtonControl_NonRightPress
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_PUSH_BUTTON,g_UiWindowTextureSource);
       if (pixelHit) {
-        if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+        if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+            (control->activationSoundId != 0)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
                      (DirectSoundVoiceSet *)control->activationSoundId);
@@ -2465,7 +2543,8 @@ void UiTextButtonControl_NonRightPress
                         (pointerY,pointerX,(control->selectable).base.top,
                          (control->selectable).base.left,UI_WINDOW_SUBRESOURCE_CHECKBOX,g_UiWindowTextureSource);
       if (pixelHit) {
-        if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+        if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+            (control->activationSoundId != 0)) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
                      (DirectSoundVoiceSet *)control->activationSoundId);
@@ -2504,7 +2583,8 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
       (control == (UiTextButtonControl *)g_UiKeyboardFocusNode)) &&
      (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) == 0)) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+          (control->activationSoundId != 0)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -2518,7 +2598,8 @@ bool UiTextButtonControl_KeyboardEvent(UiKeyboardStateMask keyboardStateMask,UiK
       return false;
     }
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) && (control->activationSoundId != 0)) {
+      if ((((control->selectable).stateFlags & UI_BUTTON_PLAY_ACTIVATION_SOUND) != 0) &&
+          (control->activationSoundId != 0)) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
                    (DirectSoundVoiceSet *)control->activationSoundId);
@@ -2627,7 +2708,8 @@ void UiImagePanelControl_DrawAlignedTextureAndChildren
    the point must lie on an opaque pixel of the aligned texture (unless UI_IMAGE_PANEL_HIT_WHOLE_BOX), then
    the children are tested. UI_NODE_NONE for UI_IMAGE_PANEL_NEVER_HIT or a miss.
 */
-UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control)
+UiNodeBase * UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,
+                                                                  UiImagePanelControl *control)
 
 {
   bool childrenAlreadyRetried;
@@ -2716,7 +2798,8 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       g_GraphicsFramebufferFillRectArgb
-                (clipTop,clipLeft,clipBottom,clipRight,controlBottom,controlRight,tileTop,tileLeft,control->subresourceOrFillArgb,
+                (clipTop,clipLeft,clipBottom,clipRight,controlBottom,controlRight,tileTop,tileLeft,
+                 control->subresourceOrFillArgb,
                  g_FramebufferAccess);
       g_GraphicsFramebufferEndAccess();
     }
@@ -2751,7 +2834,8 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
           if (tileLeft < clipLeft) continue;
           tileLeft = (control->base).left;
         }
-        if (((control->fillFlags & UI_FILL_PANEL_TILE_Y) == 0) || (tileTop = tileTop + tileHeight, clipTop <= tileTop)) break;
+        if (((control->fillFlags & UI_FILL_PANEL_TILE_Y) == 0) || (tileTop = tileTop + tileHeight,
+                                                                   clipTop <= tileTop)) break;
       }
       g_GraphicsFramebufferEndAccess();
     }
@@ -2766,8 +2850,8 @@ void UiFillPanelControl_DrawColorOrTiledTextureAndChildren
    vtables): ends the pointer selection and plays the interaction sound when enabled.
 */
 void UiTextEditControl_EndSelection
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiTextEditControl *control)
+               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+               UiTextEditControl *control)
 
 {
   control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_POINTER_SELECTION_ACTIVE;
@@ -2882,16 +2966,16 @@ void UiSingleLineTextControl_DrawClipped
   if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) ||
      ((control->labelFlags & UI_LABEL_HIDE_WHILE_SUPPRESSED) == 0)) {
     if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
-      control->styleOverride = control->styleOverride & 0xffffff;
+      control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_FONT_BYTE;
     }
     else {
-      textStyle = g_UiTextStyleNormal & 0xffffff;
+      textStyle = g_UiTextStyleNormal & ~UI_TEXT_STYLE_FONT_BYTE;
     }
     if ((control->labelFlags & UI_LABEL_OWN_STYLE_PALETTE) == 0) {
-      control->styleOverride = control->styleOverride & 0xff00ffff;
+      control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_PALETTE_BYTE;
     }
     else {
-      textStyle = textStyle & 0xff00ffff;
+      textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
     }
     packedStyleOverride = control->styleOverride;
     streamOrCapWidthOrChild = (UiNodeBase *)control->text;
@@ -2899,7 +2983,8 @@ void UiSingleLineTextControl_DrawClipped
       resolvedText = TextResource_Resolve((TextResourceId)streamOrCapWidthOrChild);
       streamOrCapWidthOrChild = (UiNodeBase *)resolvedText.text;
     }
-    textExtent = RichTextCommandStream_MeasureRegs((textStyle | packedStyleOverride) & 0xffff0000,(uint16_t *)streamOrCapWidthOrChild);
+    textExtent = RichTextCommandStream_MeasureRegs((textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
+                                                   (uint16_t *)streamOrCapWidthOrChild);
     lineWidth = (int)(g_UiTextStyleNormal << 0x10) >> 0x18;
     if (lineWidth < 0) {
       lineWidth = -lineWidth;
@@ -2931,21 +3016,25 @@ void UiSingleLineTextControl_DrawClipped
         frameTopOrTileX = alignOffsetY + 1 + (control->base).top;
         rightCapXOrFrameTop = lineWidth + tileX;
         g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                  (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,TEXT_SHADOW_COLOR_ARGB,
+                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         rightCapXOrFrameTop = rightCapXOrFrameTop - (int)streamOrCapWidthOrChild;
         g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                  (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,rightCapXOrFrameTop,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                  (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,rightCapXOrFrameTop,TEXT_SHADOW_COLOR_ARGB,
+                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         tileX = (int)streamOrCapWidthOrChild + tileX;
         if (rightCapXOrFrameTop <= clipLeft) {
           clipLeft = rightCapXOrFrameTop;
         }
-        tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
+        tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                         g_UiWindowTextureSource);
         capWidthOrStream = streamOrCapWidthOrChild;
         do {
           g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                    (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                    (clipTop,clipLeft,clipBottom,clipRight,frameTopOrTileX,tileX,TEXT_SHADOW_COLOR_ARGB,
+                     UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
                      g_UiWindowTextureSource,g_FramebufferAccess);
           tileX = tileX + tileSize.logicalWidthPixels;
         } while (tileX < clipLeft);
@@ -2954,21 +3043,25 @@ void UiSingleLineTextControl_DrawClipped
         streamOrCapWidthOrChild = capWidthOrStream;
         restoredClipLeft = originalClipLeft;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource,
+                  (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,
+                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         lineWidth = (lineWidth + frameTopOrTileX) - (int)capWidthOrStream;
         g_GraphicsTextureSourceBlitSourceAlpha
-                  (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,lineWidth,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
+                  (clipTop,originalClipLeft,clipBottom,clipRight,rightCapXOrFrameTop,lineWidth,
+                   UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
                    g_FramebufferAccess);
         frameTopOrTileX = (int)capWidthOrStream + frameTopOrTileX;
         clipLeft = originalClipLeft;
         if (lineWidth <= originalClipLeft) {
           clipLeft = lineWidth;
         }
-        tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
+        tileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                         g_UiWindowTextureSource);
         do {
           g_GraphicsTextureSourceBlitSourceAlpha
-                    (clipTop,clipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
+                    (clipTop,clipLeft,clipBottom,clipRight,rightCapXOrFrameTop,frameTopOrTileX,
+                     UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
                      g_FramebufferAccess);
           frameTopOrTileX = frameTopOrTileX + tileSize.logicalWidthPixels;
         } while (frameTopOrTileX < clipLeft);
@@ -2989,18 +3082,18 @@ void UiSingleLineTextControl_DrawClipped
         textStyle = g_UiTextStyleDisabled;
       }
       if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
-        control->styleOverride = control->styleOverride & 0xffffff;
+        control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_FONT_BYTE;
       }
       else {
-        textStyle = textStyle & 0xffffff;
+        textStyle = textStyle & ~UI_TEXT_STYLE_FONT_BYTE;
       }
       if ((control->labelFlags & UI_LABEL_OWN_STYLE_PALETTE) == 0) {
-        control->styleOverride = control->styleOverride & 0xff00ffff;
+        control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_PALETTE_BYTE;
       }
       else {
-        textStyle = textStyle & 0xff00ffff;
+        textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
       }
-      control->styleOverride = control->styleOverride & 0xffff0000;
+      control->styleOverride = control->styleOverride & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,textStyle | control->styleOverride,
                  (uint16_t *)capWidthOrStream,alignOffsetY + (control->base).top,alignOffsetX + (control->base).left);
@@ -3064,20 +3157,25 @@ void UiTextListControl_DrawRowsAndSelection
             highlightWidth = rowExtent.widthPixels + 6;
             if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_LIST_SELECTION,highlightWidth,firstRowOrRowTop,0,control);
+                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_LIST_SELECTION,highlightWidth,
+                         firstRowOrRowTop,0,control);
             }
             else {
-              capSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_LEFT,g_UiWindowTextureSource);
+              capSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_LEFT,
+                                                              g_UiWindowTextureSource);
               highlightWidth = highlightWidth - capSize.logicalWidthPixels;
               UiWindow_BlitTiledHorizontalEdge
-                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_MIDDLE,highlightWidth,firstRowOrRowTop,
+                        (clipTop,clipLeft,clipBottom,clipRight,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_MIDDLE,
+                         highlightWidth,firstRowOrRowTop,
                          capSize.logicalWidthPixels,control);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,firstRowOrRowTop + (control->base).top,
-                         (control->base).left,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_LEFT,g_UiWindowTextureSource,g_FramebufferAccess);
+                         (control->base).left,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_LEFT,g_UiWindowTextureSource,
+                         g_FramebufferAccess);
               g_GraphicsTextureSourceBlitSourceAlpha
                         (clipTop,clipLeft,clipBottom,clipRight,firstRowOrRowTop + (control->base).top,
-                         highlightWidth + (control->base).left,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_RIGHT,g_UiWindowTextureSource,
+                         highlightWidth + (control->base).left,UI_WINDOW_SUBRESOURCE_LIST_FOCUS_SELECTION_RIGHT,
+                         g_UiWindowTextureSource,
                          g_FramebufferAccess);
             }
           }
@@ -3165,7 +3263,7 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
   UiScrollableContentDimensionsEdxEax8 contentSize;
   
   previousSelectedSlot = control->selectedRowSlot;
-  if ((keyCode & 0xffff0000) == 0) {
+  if ((keyCode & KEYBOARD_KEY_CODE_FAMILY_MASK) == 0) {
     if (((keyboardStateMask & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) ||
        ((control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED) == 0)) {
       delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
@@ -3234,15 +3332,16 @@ bool UiTextListControl_HandleKeyboardNavigationAndSearch
        (control->activationSound != NULL)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
-    rowIndexOrTopOrPulse = ((uint32_t)((int)slotCursorOrSelection - (int)control->rowTextSlots) >> 2) * control->rowHeight;
+    rowIndexOrTopOrPulse =
+         ((uint32_t)((int)slotCursorOrSelection - (int)control->rowTextSlots) >> 2) * control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
               (rowIndexOrTopOrPulse + control->rowHeight + 1,(control->base).rightOffset,rowIndexOrTopOrPulse,0,
                (UiScrollableControl *)(control->base).parent);
     /* arm the deferred action: the frame counter lives in the top byte */
     rowIndexOrTopOrPulse = g_UiListActivationPulseFrames;
     control->listStateFlags = control->listStateFlags | UI_TEXT_LIST_DEFERRED_ACTION_PENDING;
-    control->listStateFlags = control->listStateFlags & 0xffffff;
-    control->listStateFlags = control->listStateFlags | rowIndexOrTopOrPulse << 0x18;
+    control->listStateFlags = control->listStateFlags & UI_LIST_FLAGS_MASK;
+    control->listStateFlags = control->listStateFlags | rowIndexOrTopOrPulse << UI_LIST_COUNTDOWN_SHIFT;
   }
   return false;
 }
@@ -3258,9 +3357,10 @@ void UiTextListControl_TickActivationPulse(UiTextListControl *control)
 {
   if (((control->listStateFlags & UI_TEXT_LIST_DEFERRED_ACTION_PENDING) != 0) &&
      (control->listStateFlags = control->listStateFlags - UI_STATE_FRAME_COUNTER_UNIT,
-     (control->listStateFlags & 0xff000000) == 0)) {
-    /* clears the pending and confirmed bits */
-    control->listStateFlags = control->listStateFlags & 0xfffff9;
+     (control->listStateFlags & UI_LIST_COUNTDOWN_MASK) == 0)) {
+    control->listStateFlags =
+         control->listStateFlags &
+         (UI_LIST_FLAGS_MASK & ~(UI_TEXT_LIST_DEFERRED_ACTION_PENDING|UI_TEXT_LIST_SELECTION_CONFIRMED));
     UiActionQueue_Enqueue(control->actionId,control);
   }
   return;
@@ -3366,16 +3466,16 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinat
     }
     textStyle = g_UiTextStyleNormal;
     if ((control->labelFlags & UI_LABEL_OWN_STYLE_FONT) == 0) {
-      control->styleOverride = control->styleOverride & 0xffffff;
+      control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_FONT_BYTE;
     }
     else {
-      textStyle = g_UiTextStyleNormal & 0xffffff;
+      textStyle = g_UiTextStyleNormal & ~UI_TEXT_STYLE_FONT_BYTE;
     }
     if ((control->labelFlags & UI_LABEL_OWN_STYLE_PALETTE) == 0) {
-      control->styleOverride = control->styleOverride & 0xff00ffff;
+      control->styleOverride = control->styleOverride & ~UI_TEXT_STYLE_PALETTE_BYTE;
     }
     else {
-      textStyle = textStyle & 0xff00ffff;
+      textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
     }
     packedStyleOverride = control->styleOverride;
     commandStream = control->text;
@@ -3384,7 +3484,7 @@ void UiWrappedTextControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinat
       commandStream = resolvedText.text;
     }
     RichTextCommandStream_DrawWrappedBlock
-              (clipTop,clipLeft,clipBottom,clipRight,(textStyle | packedStyleOverride) & 0xffff0000,
+              (clipTop,clipLeft,clipBottom,clipRight,(textStyle | packedStyleOverride) & (UI_TEXT_STYLE_FONT_BYTE|UI_TEXT_STYLE_PALETTE_BYTE),
                commandStream,control->wrapWidth,(control->base).top,(control->base).left);
     g_GraphicsFramebufferEndAccess();
   }
@@ -3526,7 +3626,8 @@ void UiFormattedContainer_RelocateWithPatchedTextPayloads
     RichTextCommandStream_PatchPayloadBySelector(0,control->currentValueTextUtf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,control->limitValueTextUtf16,stream);
     if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
-      RichTextCommandStream_PatchPayloadBySelector(2,((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16,stream);
+      RichTextCommandStream_PatchPayloadBySelector(2,((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16,
+                                                   stream);
       *(uint32_t *)((UiFormattedContainerWithMarker *)control)->markerValueTextUtf16 = 0;
     }
   }
@@ -3562,115 +3663,127 @@ void UiFormattedContainer_DrawClipped
   TextureSizeResult frameSize;
   int tertiaryMarkerOffset;
   
-  if ((control->limitValue == 0) ||
-     (framebufferUnavailable = g_GraphicsFramebufferBeginAccess(), framebufferUnavailable))
-  goto UiFormattedContainer_RefreshNumericText;
-  if (clipRight < (control->base).left) {
-    clipRight = (control->base).left;
-  }
-  if (clipBottom < (control->base).top) {
-    clipBottom = (control->base).top;
-  }
-  if ((control->base).right < clipLeft) {
-    clipLeft = (control->base).right;
-  }
-  if ((control->base).bottom < clipTop) {
-    clipTop = (control->base).bottom;
-  }
-  textureFrame = control->firstFrameSubresource;
-  barStartX = (control->base).left;
-  barEndOrSpanOrMarkerX = (control->base).right;
-  g_GraphicsTextureSourceBlitSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barStartX,textureFrame,
-             control->textureSource,g_FramebufferAccess);
-  frameSize = g_GraphicsTextureSourceGetLogicalSize
-                     (textureFrame,control->textureSource);
-  barStartX = barStartX + frameSize.logicalWidthPixels;
-  frameSize = g_GraphicsTextureSourceGetLogicalSize
-                     (textureFrame + 2,control->textureSource);
-  barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - frameSize.logicalWidthPixels;
-  g_GraphicsTextureSourceBlitSourceAlpha
-            (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barEndOrSpanOrMarkerX,textureFrame + 2,
-             control->textureSource,g_FramebufferAccess);
-  if (barStartX < barEndOrSpanOrMarkerX) {
-    GraphicsTextureSource_BlitTiledSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,barEndOrSpanOrMarkerX,(control->base).top,barStartX,textureFrame + 1,
+  if (control->limitValue != 0 &&
+      (framebufferUnavailable = g_GraphicsFramebufferBeginAccess(), !framebufferUnavailable)) {
+    if (clipRight < (control->base).left) {
+      clipRight = (control->base).left;
+    }
+    if (clipBottom < (control->base).top) {
+      clipBottom = (control->base).top;
+    }
+    if ((control->base).right < clipLeft) {
+      clipLeft = (control->base).right;
+    }
+    if ((control->base).bottom < clipTop) {
+      clipTop = (control->base).bottom;
+    }
+    textureFrame = control->firstFrameSubresource;
+    barStartX = (control->base).left;
+    barEndOrSpanOrMarkerX = (control->base).right;
+    g_GraphicsTextureSourceBlitSourceAlpha
+              (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barStartX,textureFrame,
                control->textureSource,g_FramebufferAccess);
-    primaryValue = control->currentValue;
-    scaleRange = control->initialScaleRange;
-    barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - barStartX;
-    /* Grow the scale by factors of 4 until it covers the value, the limit and the marker. */
-    while( true ) {
-      for (; (scaleRange < primaryValue || (scaleRange < control->limitValue)); scaleRange = scaleRange << 2) {
-      }
-      if (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) == 0) ||
-         (((UiFormattedContainerWithMarker *)control)->markerValue <= scaleRange)) break;
-      scaleRange = scaleRange << 2;
-    }
-    if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
-      tertiaryMarkerOffset = (int)(((int64_t)((UiFormattedContainerWithMarker *)control)->markerValue * (int64_t)barEndOrSpanOrMarkerX) / (int64_t)scaleRange);
-    }
-    secondaryValue = control->limitValue;
-    scaleLimit = control->limitValue;
-    if (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) && (((UiFormattedContainerWithMarker *)control)->markerValue < scaleLimit)) {
-      scaleLimit = ((UiFormattedContainerWithMarker *)control)->markerValue;
-    }
-    fillPercent = (uint32_t)(((int64_t)primaryValue * 100) / (int64_t)scaleLimit);
-    /* Fill colour variant (frame offset 3..18, three frames each) by the fill percentage: rising from 80%
-       on, or for the two-sided scale also falling below 40%. */
-    if ((control->gaugeFlags & UI_GAUGE_TWO_SIDED_SCALE) == 0) {
-      variantOrFillEnd = 3;
-      if ((((79 < fillPercent) && (variantOrFillEnd = 6, 83 < fillPercent)) && (variantOrFillEnd = 9, 87 < fillPercent)) &&
-         ((variantOrFillEnd = 12, 91 < fillPercent && (variantOrFillEnd = 15, 95 < fillPercent)))) {
-        variantOrFillEnd = 18;
-      }
-    }
-    else {
-      variantOrFillEnd = 18;
-      if (((((7 < fillPercent) && (variantOrFillEnd = 15, 15 < fillPercent)) && (variantOrFillEnd = 12, 23 < fillPercent)) &&
-          ((((variantOrFillEnd = 9, 31 < fillPercent && (variantOrFillEnd = 6, 39 < fillPercent)) &&
-            ((variantOrFillEnd = 3, 85 < fillPercent && ((variantOrFillEnd = 6, 87 < fillPercent && (variantOrFillEnd = 9, 89 < fillPercent))))))
-           && (variantOrFillEnd = 12, 91 < fillPercent)))) && (variantOrFillEnd = 15, 93 < fillPercent)) {
-        variantOrFillEnd = 18;
-      }
-    }
-    textureFrame = variantOrFillEnd + control->firstFrameSubresource;
-    if (control->currentValue != 0) {
-      frameSize = g_GraphicsTextureSourceGetLogicalSize
-                         (textureFrame,control->textureSource);
-      barStartX = barStartX - frameSize.logicalWidthPixels;
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barStartX,textureFrame,
-                 control->textureSource,g_FramebufferAccess);
-      barStartX = barStartX + frameSize.logicalWidthPixels;
-      variantOrFillEnd = (int)(((int64_t)primaryValue * (int64_t)barEndOrSpanOrMarkerX) / (int64_t)scaleRange) + barStartX;
-      GraphicsTextureSource_BlitTiledSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,variantOrFillEnd,(control->base).top,barStartX,
-                 textureFrame + 1,control->textureSource,g_FramebufferAccess);
-      g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,variantOrFillEnd,textureFrame + 2,
-                 control->textureSource,g_FramebufferAccess);
-    }
-    barEndOrSpanOrMarkerX = barStartX + (int)(((int64_t)secondaryValue * (int64_t)barEndOrSpanOrMarkerX) / (int64_t)scaleRange);
-    textureFrame = control->firstFrameSubresource + 21; /* marker */
     frameSize = g_GraphicsTextureSourceGetLogicalSize
                        (textureFrame,control->textureSource);
+    barStartX = barStartX + frameSize.logicalWidthPixels;
+    frameSize = g_GraphicsTextureSourceGetLogicalSize
+                       (textureFrame + UI_GAUGE_FRAME_END_CAP,control->textureSource);
+    barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - frameSize.logicalWidthPixels;
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
-               barEndOrSpanOrMarkerX - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
+              (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barEndOrSpanOrMarkerX,
+               textureFrame + UI_GAUGE_FRAME_END_CAP,
                control->textureSource,g_FramebufferAccess);
-    if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
-      textureFrame = control->firstFrameSubresource + 21; /* marker */
+    if (barStartX < barEndOrSpanOrMarkerX) {
+      GraphicsTextureSource_BlitTiledSourceAlpha
+                (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,barEndOrSpanOrMarkerX,
+                 (control->base).top,barStartX,textureFrame + UI_GAUGE_FRAME_TRACK,
+                 control->textureSource,g_FramebufferAccess);
+      primaryValue = control->currentValue;
+      scaleRange = control->initialScaleRange;
+      barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - barStartX;
+      /* Grow the scale by factors of 4 until it covers the value, the limit and the marker. */
+      while( true ) {
+        for (; (scaleRange < primaryValue || (scaleRange < control->limitValue)); scaleRange = scaleRange << 2) {
+        }
+        if (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) == 0) ||
+           (((UiFormattedContainerWithMarker *)control)->markerValue <= scaleRange)) break;
+        scaleRange = scaleRange << 2;
+      }
+      if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
+        tertiaryMarkerOffset =
+             (int)(((int64_t)((UiFormattedContainerWithMarker *)control)->markerValue * (int64_t)barEndOrSpanOrMarkerX) /
+                   (int64_t)scaleRange);
+      }
+      secondaryValue = control->limitValue;
+      scaleLimit = control->limitValue;
+      if (((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) &&
+          (((UiFormattedContainerWithMarker *)control)->markerValue < scaleLimit)) {
+        scaleLimit = ((UiFormattedContainerWithMarker *)control)->markerValue;
+      }
+      fillPercent = (uint32_t)(((int64_t)primaryValue * 100) / (int64_t)scaleLimit);
+      /* Fill colour variant (frame offset 3..18, three frames each) by the fill percentage: rising from 80%
+         on, or for the two-sided scale also falling below 40%. */
+      if ((control->gaugeFlags & UI_GAUGE_TWO_SIDED_SCALE) == 0) {
+        variantOrFillEnd = 3;
+        if ((((79 < fillPercent) && (variantOrFillEnd = 6, 83 < fillPercent)) &&
+             (variantOrFillEnd = 9, 87 < fillPercent)) &&
+           ((variantOrFillEnd = 12, 91 < fillPercent && (variantOrFillEnd = 15, 95 < fillPercent)))) {
+          variantOrFillEnd = 18;
+        }
+      }
+      else {
+        variantOrFillEnd = 18;
+        if (((((7 < fillPercent) && (variantOrFillEnd = 15, 15 < fillPercent)) &&
+              (variantOrFillEnd = 12, 23 < fillPercent)) &&
+            ((((variantOrFillEnd = 9, 31 < fillPercent && (variantOrFillEnd = 6, 39 < fillPercent)) &&
+              ((variantOrFillEnd = 3, 85 < fillPercent && ((variantOrFillEnd = 6, 87 < fillPercent &&
+                                                            (variantOrFillEnd = 9, 89 < fillPercent))))))
+             && (variantOrFillEnd = 12, 91 < fillPercent)))) && (variantOrFillEnd = 15, 93 < fillPercent)) {
+          variantOrFillEnd = 18;
+        }
+      }
+      textureFrame = variantOrFillEnd + control->firstFrameSubresource;
+      if (control->currentValue != 0) {
+        frameSize = g_GraphicsTextureSourceGetLogicalSize
+                           (textureFrame,control->textureSource);
+        barStartX = barStartX - frameSize.logicalWidthPixels;
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,barStartX,textureFrame,
+                   control->textureSource,g_FramebufferAccess);
+        barStartX = barStartX + frameSize.logicalWidthPixels;
+        variantOrFillEnd =
+             (int)(((int64_t)primaryValue * (int64_t)barEndOrSpanOrMarkerX) / (int64_t)scaleRange) + barStartX;
+        GraphicsTextureSource_BlitTiledSourceAlpha
+                  (clipTop,clipLeft,clipBottom,clipRight,GRAPHICS_TILED_BLIT_ONE_TILE,variantOrFillEnd,
+                   (control->base).top,barStartX,
+                   textureFrame + UI_GAUGE_FRAME_TRACK,control->textureSource,g_FramebufferAccess);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,variantOrFillEnd,
+                   textureFrame + UI_GAUGE_FRAME_END_CAP,
+                   control->textureSource,g_FramebufferAccess);
+      }
+      barEndOrSpanOrMarkerX =
+           barStartX + (int)(((int64_t)secondaryValue * (int64_t)barEndOrSpanOrMarkerX) / (int64_t)scaleRange);
+      textureFrame = control->firstFrameSubresource + UI_GAUGE_FRAME_MARKER;
       frameSize = g_GraphicsTextureSourceGetLogicalSize
                          (textureFrame,control->textureSource);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
-                 (barStartX + tertiaryMarkerOffset) - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
+                 barEndOrSpanOrMarkerX - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
                  control->textureSource,g_FramebufferAccess);
+      if ((control->gaugeFlags & UI_GAUGE_HAS_MARKER) != 0) {
+        textureFrame = control->firstFrameSubresource + UI_GAUGE_FRAME_MARKER;
+        frameSize = g_GraphicsTextureSourceGetLogicalSize
+                           (textureFrame,control->textureSource);
+        g_GraphicsTextureSourceBlitSourceAlpha
+                  (clipTop,clipLeft,clipBottom,clipRight,(control->base).top,
+                   (barStartX + tertiaryMarkerOffset) - ((int)frameSize.logicalWidthPixels >> 1),textureFrame,
+                   control->textureSource,g_FramebufferAccess);
+      }
     }
+    g_GraphicsFramebufferEndAccess();
   }
-  g_GraphicsFramebufferEndAccess();
-UiFormattedContainer_RefreshNumericText:
+  /* the tooltip value strings, also when nothing was drawn */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->currentValue,
              control->currentValueTextUtf16);
@@ -3909,11 +4022,11 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
   control->textBuffer[8] = 0;
   control->textBuffer[9] = 0;
   control->textBuffer[10] = 0;
-  control->textBuffer[0xb] = 0;
-  control->textBuffer[0xc] = 0;
-  control->textBuffer[0xd] = 0;
-  control->textBuffer[0xe] = 0;
-  control->textBuffer[0xf] = 0;
+  control->textBuffer[11] = 0;
+  control->textBuffer[12] = 0;
+  control->textBuffer[13] = 0;
+  control->textBuffer[14] = 0;
+  control->textBuffer[15] = 0;
   if (((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0) && ((int)remainingValue < 0)) {
     *outputCursor = '-';
     remainingValue = -remainingValue;
@@ -3995,7 +4108,8 @@ void UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
         if ((codeUnit < '0') ||
            ((9 < digitValue &&
             ((digitValue = codeUnit - ('A' - 10), digitValue < 10 ||
-             ((0xf < digitValue && ((digitValue = codeUnit - ('a' - 10), digitValue < 10 || (0xf < digitValue)))))))))) {
+             ((0xf < digitValue && ((digitValue = codeUnit - ('a' - 10), digitValue < 10 ||
+                                     (0xf < digitValue)))))))))) {
           control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
           return;
         }
@@ -4038,7 +4152,7 @@ void UiTooltip_PrepareTargetText(UiNodeBase *node)
     }
     RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
     /* the size of window piece 0xBC is queried but not used */
-    g_GraphicsTextureSourceGetLogicalSize(0xbc,g_UiWindowTextureSource);
+    g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TOOLTIP_LEFT,g_UiWindowTextureSource);
     UiRootStack_InvalidateAll();
   }
   return;
@@ -4090,11 +4204,11 @@ UiPixelCoordinate UiTextEditControl_MeasurePrefixWidth(UiTextCodeUnitCount prefi
   accumulatedWidth = 0;
   if (prefixLength != 0) {
     do {
-      if (control->textPrefix6C[glyphIndex] == 0) {
+      if (control->textBuffer[glyphIndex] == 0) {
         return accumulatedWidth;
       }
       glyphSize = FontGlyph_GetLogicalSizeForStyleRegs
-                        (g_UiTextEditActiveTextStyle,(uint32_t)control->textPrefix6C[glyphIndex]);
+                        (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[glyphIndex]);
       glyphIndex++;
       accumulatedWidth = accumulatedWidth + glyphSize.width;
     } while (glyphIndex < prefixLength);
@@ -4120,18 +4234,19 @@ UiTextCodeUnitCount UiTextEditControl_FindCursorIndexAtX(UiPixelCoordinate point
   
   targetOffsetX = (pointerX - (control->base).left) + control->horizontalScrollPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
-    decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,g_UiWindowTextureSource);
+    decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
+                                                           g_UiWindowTextureSource);
     targetOffsetX = targetOffsetX - decorationSize.logicalWidthPixels;
   }
   measuredPrefixWidthPixels = 0;
   nextTextIndex = 0;
   do {
     currentTextIndex = nextTextIndex;
-    if (control->textPrefix6C[currentTextIndex] == 0) {
+    if (control->textBuffer[currentTextIndex] == 0) {
       return currentTextIndex;
     }
     glyphSize = FontGlyph_GetLogicalSizeForStyleRegs
-                      (g_UiTextEditActiveTextStyle,(uint32_t)control->textPrefix6C[currentTextIndex]);
+                      (g_UiTextEditActiveTextStyle,(uint32_t)control->textBuffer[currentTextIndex]);
     measuredPrefixWidthPixels = measuredPrefixWidthPixels + glyphSize.width;
     nextTextIndex = currentTextIndex + 1;
   } while (measuredPrefixWidthPixels < targetOffsetX);
@@ -4167,7 +4282,7 @@ void UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
 void UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
 
 {
-  if (control->textPrefix6C[0] == 0) {
+  if (control->textBuffer[0] == 0) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
   }
   else {
@@ -4187,9 +4302,10 @@ TextCompareResult UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uin
 {
   TextCompareResult compareFlags;
 
-  /* 0x400: byte capacity of each scratch buffer */
-  RichTextCommandStream_CopyExpanded(0x400,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText);
-  RichTextCommandStream_CopyExpanded(0x400,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText);
+  RichTextCommandStream_CopyExpanded
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText);
+  RichTextCommandStream_CopyExpanded
+            (UI_POINTER_LIST_COMPARE_SCRATCH_BYTES,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText);
   /* CF and ZF are the comparator's: nothing after the call changes the flags (0x004BB5A5). */
   compareFlags = (*(TextCompareResult (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
             ((uint16_t *)&g_UiPointerListExpandedRightTextUtf16,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16);
@@ -4219,22 +4335,23 @@ void UiTextEditControl_RecomputeLayoutAndClampScroll(UiTextEditControl *control)
   cursorWidthOrMinScroll = UiTextEditControl_MeasurePrefixWidth(prefixLength,control);
   maxScrollOffset = cursorWidthOrMinScroll;
   if (prefixLength != 0) {
-    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint32_t)control->textPrefix6C[prefixLength - 1]);
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint32_t)control->textBuffer[prefixLength - 1]);
     maxScrollOffset = cursorWidthOrMinScroll - glyphSize.width;
   }
   overflowOrContentWidth = cursorWidthOrMinScroll - (control->base).layoutWidth;
-  if (control->textPrefix6C[prefixLength] != 0) {
-    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint32_t)control->textPrefix6C[prefixLength]);
+  if (control->textBuffer[prefixLength] != 0) {
+    glyphSize = FontGlyph_GetLogicalSizeActiveRegs((uint32_t)control->textBuffer[prefixLength]);
     overflowOrContentWidth = overflowOrContentWidth + glyphSize.width;
   }
-  /* NOTE: as in the original (PUSH 0x10), only the first 16 code units count, also for the longer path and
-     required text edits. */
-  fullTextWidth = UiTextEditControl_MeasurePrefixWidth(0x10,control);
+  /* NOTE: as in the original (PUSH 0x10), only the first 16 code units (the numeric text buffer) count, also
+     for the longer path and required text edits. */
+  fullTextWidth = UiTextEditControl_MeasurePrefixWidth(UI_NUMERIC_TEXT_BUFFER_UNITS,control);
   decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_CARET_OVERWRITE,g_UiWindowTextureSource);
   cursorWidthOrMinScroll = overflowOrContentWidth + decorationSize.logicalWidthPixels;
   overflowOrContentWidth = fullTextWidth + decorationSize.logicalWidthPixels;
   if ((control->editStateFlags & UI_TEXT_EDIT_DRAW_FRAMED_CHROME) != 0) {
-    decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,g_UiWindowTextureSource);
+    decorationSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_TEXT_EDIT_FRAME,
+                                                           g_UiWindowTextureSource);
     overflowOrContentWidth = overflowOrContentWidth + decorationSize.logicalWidthPixels * 2;
     cursorWidthOrMinScroll = cursorWidthOrMinScroll + decorationSize.logicalWidthPixels * 2;
   }
@@ -4313,16 +4430,16 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate
   }
   /* packedTextStyle may override the font byte (bits 24-31) and the palette byte (bits 16-23) */
   if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_FONT) == 0) {
-    control->packedTextStyle = control->packedTextStyle & 0xff0000;
+    control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_PALETTE_BYTE;
   }
   else {
-    textStyle = textStyle & 0xffffff;
+    textStyle = textStyle & ~UI_TEXT_STYLE_FONT_BYTE;
   }
   if (((control->selectable).stateFlags & UI_BUTTON_OWN_STYLE_PALETTE) == 0) {
-    control->packedTextStyle = control->packedTextStyle & 0xff000000;
+    control->packedTextStyle = control->packedTextStyle & UI_TEXT_STYLE_FONT_BYTE;
   }
   else {
-    textStyle = textStyle & 0xff00ffff;
+    textStyle = textStyle & ~UI_TEXT_STYLE_PALETTE_BYTE;
   }
   textStyle = textStyle | control->packedTextStyle;
   if ((((control->selectable).base.nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) ||
@@ -4337,22 +4454,28 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate
     textX = textXOrFocusEnd;
     textY = textYOrTileX;
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd - 2,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+              (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd - 2,TEXT_SHADOW_COLOR_ARGB,
+               UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource);
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
+    skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                                                                 g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                                                          g_UiWindowTextureSource);
     focusTileXOrTop = textXOrFocusEnd - 2 + focusTileSize.logicalWidthPixels;
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                          g_UiWindowTextureSource);
     textXOrFocusEnd = ((textXOrFocusEnd + 4) - skinSizeOrEndCapSize.logicalWidthPixels) + textExtent.widthPixels;
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+              (clipTop,clipLeft,clipBottom,clipRight,textYOrTileX,textXOrFocusEnd,TEXT_SHADOW_COLOR_ARGB,
+               UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
                g_UiWindowTextureSource,g_FramebufferAccess);
     if (clipLeft < textXOrFocusEnd) {
       textXOrFocusEnd = clipLeft;
     }
     do {
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
-                (clipTop,textXOrFocusEnd,clipBottom,clipRight,textYOrTileX,focusTileXOrTop,TEXT_SHADOW_COLOR_ARGB,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                (clipTop,textXOrFocusEnd,clipBottom,clipRight,textYOrTileX,focusTileXOrTop,TEXT_SHADOW_COLOR_ARGB,
+                 UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       focusTileXOrTop = focusTileXOrTop + focusTileSize.logicalWidthPixels;
     } while (focusTileXOrTop < textXOrFocusEnd);
@@ -4362,20 +4485,25 @@ void UiTextButtonControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate
     g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,textX - 3,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource);
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,g_UiWindowTextureSource);
+    skinSizeOrEndCapSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,
+                                                                 g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_LEFT,
+                                                          g_UiWindowTextureSource);
     textYOrTileX = textX - 3 + focusTileSize.logicalWidthPixels;
-    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource);
+    focusTileSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,
+                                                          g_UiWindowTextureSource);
     textXOrFocusEnd = ((textX + 3) - skinSizeOrEndCapSize.logicalWidthPixels) + textExtent.widthPixels;
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,textXOrFocusEnd,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
+              (clipTop,clipLeft,clipBottom,clipRight,focusTileXOrTop,textXOrFocusEnd,
+               UI_WINDOW_SUBRESOURCE_FOCUS_MARK_RIGHT,g_UiWindowTextureSource,
                g_FramebufferAccess);
     if (clipLeft < textXOrFocusEnd) {
       textXOrFocusEnd = clipLeft;
     }
     do {
       g_GraphicsTextureSourceBlitSourceAlpha
-                (clipTop,textXOrFocusEnd,clipBottom,clipRight,focusTileXOrTop,textYOrTileX,UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
+                (clipTop,textXOrFocusEnd,clipBottom,clipRight,focusTileXOrTop,textYOrTileX,
+                 UI_WINDOW_SUBRESOURCE_FOCUS_MARK_MIDDLE,g_UiWindowTextureSource,
                  g_FramebufferAccess);
       textYOrTileX = textYOrTileX + focusTileSize.logicalWidthPixels;
     } while (textYOrTileX < textXOrFocusEnd);

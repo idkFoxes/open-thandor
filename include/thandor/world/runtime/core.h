@@ -18,8 +18,10 @@
 /* WorldRuntimeContext.runtimeFlags bits (world/runtime/core, world/motion/runtime):
    UNLIMITED_CAMERA skips the camera distance and pitch limits; FIELD_GRID_DIRTY is cleared whenever the
    camera state or the field grid is (re)set (WorldRuntime_ClearFieldGridDirtyFlag); SECONDARY_SURFACE_ONLY
-   makes the view ray test only the secondary field surface (set by UiCommandModeG_SetNodeFlag01000000). */
+   makes the view ray test only the secondary field surface (set by UiCommandModeG_SetSecondarySurfaceOnly). */
 #define WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA 0x40000
+/* with UNLIMITED_CAMERA: clamp distance and pitch to the g_WorldMotionAlternate* range instead of not at all */
+#define WORLD_RUNTIME_FLAG_ALTERNATE_CAMERA_RANGE 0x200
 #define WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY 0x800
 #define WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY 0x1000000
 /* Mirrors PERSISTENT_SETTING_SHADING_ENABLED (session start and the in-game shading option); also toggled by
@@ -32,7 +34,7 @@
 #define WORLD_RUNTIME_FLAG_HIDE_PANEL 0x4000000
 /* WorldRuntimeContext.runtimeFlags bits that switch on world view overlays (tested in
    FrontendModelPointerContext_RenderWorldViewQueuesClipped; the editor mode tabs InGameCommandModeG_Select0..5
-   set them per tool through the UiCommandModeG_Set/ClearNodeFlag* helpers). */
+   set them per tool through the UiCommandModeG_Show/Hide* helpers). */
 #define WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS 0x400 /* SelectionOverlay_RenderSelectedArmyMetrics */
 #define WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER 0x100000 /* SelectionOverlay_DrawMarkerACForWorldSurfacePoint */
 #define WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS 0x200000 /* SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints */
@@ -42,8 +44,13 @@
    the view draws the attached field grid (terrain pass), and the spatial sound listener follows the camera. */
 #define WORLD_RUNTIME_FLAG_DRAW_TERRAIN 0x4000
 #define WORLD_RUNTIME_FLAG_SOUND_LISTENER 0x10000
-/* WorldOwnerListNode100.runtimeFlags bit: the node is linked into its world's owner list. */
+/* WorldOwnerListNode.runtimeFlags bit: the node is linked into its world's owner list. */
 #define WORLD_OWNER_NODE_LINKED 0x80000000
+/* Range of the auxiliary elevation angle (fieldRegion.regionHeight) set by WorldRuntime_AdjustFieldOriginWrappedClamped */
+#define WORLD_AUXILIARY_ELEVATION_MINIMUM (-0x4000) /* a quarter turn down */
+#define WORLD_AUXILIARY_ELEVATION_MAXIMUM (-0x1000)
+/* Smallest camera magnitude WorldRuntime_SetMotionParameters6CThrough78Clamped accepts (0.25 in Q12) */
+#define WORLD_MOTION_MINIMUM_MAGNITUDE_Q12 0x400
 /* Height returned by the WorldRuntime_Interpolate*HeightOrSentinel functions when no field grid is attached. */
 #define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
@@ -86,7 +93,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 w
 
 /* 0x0050A610 */
 bool WorldRuntimeNode_IsPositionInsideBounds
-          (WorldOwnerListNode100 *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl);
+          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl);
 
 /* 0x0050D260 */
 void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime);
@@ -141,10 +148,10 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
 WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D830 */
-void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node);
+void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode *node);
 
 /* 0x0050D880 */
-void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node);
+void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode *node);
 
 /* 0x0050D8F0 */
 void WorldRuntime_ForEachNodeInOwnerListD8(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
@@ -163,7 +170,7 @@ ResourceRegistrationImagePair RuntimeHexSegment_GetFieldImageRegs(InGameFieldIma
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext);
 
 /* 0x0051BFA0 */
-void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode100 *node);
+void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode *node);
 
 /* 0x0051D500 */
 void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime);
@@ -193,10 +200,10 @@ bool UnifiedRuntimeDefault_TwoArgSuccess
 void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00529430 */
-void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject,WorldOwnerListNode100 *node);
+void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject,WorldOwnerListNode *node);
 
 /* 0x00565110 */
-void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode100 *node);
+void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode *node);
 
 /* 0x0050D3B0 */
 void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *worldRuntime);

@@ -22,6 +22,8 @@
 /* A free block is split only when it exceeds the aligned request by more than this (room for a header
    and a 32-byte payload); smaller remainders stay with the allocation. */
 #define ARENA_BLOCK_SPLIT_SLACK_BYTES 0x40
+/* DwordBlock64Array_ContainsExactRecord: dwords per compared record */
+#define DWORD_BLOCK64_RECORD_DWORDS 0x40
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005368E0 */

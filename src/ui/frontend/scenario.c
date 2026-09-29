@@ -24,10 +24,10 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
   FrontendPlayerRuntimeBlockCount playersRemaining;
   FrontendPlayerRuntimeRecord *playerCursor;
   FrontendPlayerRuntimeRecord *nextPlayer;
-  FrontendNetworkListsRuntimeView5650 *frontendRoot;
+  FrontendNetworkListsRuntimeView *frontendRoot;
   uint32_t networkState;
   UiNodeBase *hoveredNode;
-  int levelRecordAddress;
+  ScenarioCatalogRuntimeExpandedRecord100 *levelRecord;
   GraphicsCursorFrameIndex cursorFrame;
   uint32_t levelMaskBit;
   ScenarioCatalogRecordCount levelsRemaining;
@@ -82,7 +82,7 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
              (FrontendModelPointerContextRuntimeState118 *)FRONTEND_UI(frontendRoot,menuRoomModelView));
   hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
                     (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
-  if (hoveredNode == (UiNodeBase *)0xffffffff) { /* nothing hit */
+  if (hoveredNode == UI_NODE_NONE) {
     g_GraphicsCursorSetFrame(0);
   }
   else {
@@ -103,28 +103,29 @@ void FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCa
         (selectedGroup.selectedIndexOrCount == SCENARIO_SELECTION_TAB_SINGLE_GAMES)) &&
        (g_ScenarioCatalog != NULL)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
-      levelRecordAddress = (int)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset;
+      levelRecord = (ScenarioCatalogRuntimeExpandedRecord100 *)
+                    ((uint8_t *)g_ScenarioCatalog + g_ScenarioCatalog->levelRecordsOffset);
       if (levelsRemaining != 0) {
         /* level n has bit n of the players' scenarioAvailabilityMask0..2; its title starts with the rich-text
            code 0x8001 (highlighted) when one of the other players (records 1..) lacks it, else 0x8000 */
         levelMaskBit = 1;
         maskWordIndex = 0;
         do {
-          availabilityMarker = 0x8001;
+          availabilityMarker = FRONTEND_TEXT_STYLE_HIGHLIGHTED;
           playerCursor = g_FrontendPlayerRuntimeBlocks;
           playersRemaining = g_FrontendPlayerRuntimeBlockCount;
           do {
             playersRemaining = playersRemaining - 1;
             if (playersRemaining == 0) {
-              availabilityMarker = 0x8000;
+              availabilityMarker = FRONTEND_TEXT_STYLE_NORMAL;
               break;
             }
             nextPlayer = playerCursor + 1;
             playerCursor = playerCursor + 1;
           } while (((&nextPlayer->scenarioAvailabilityMask0)[maskWordIndex] & levelMaskBit) != 0);
-          markerText = TextResource_Resolve(((ScenarioCatalogRuntimeExpandedRecord100 *)levelRecordAddress)->scenarioTextResourceId + TEXT_ID_LEVEL_TITLE_BASE);
+          markerText = TextResource_Resolve(levelRecord->scenarioTextResourceId + TEXT_ID_LEVEL_TITLE_BASE);
           *markerText.text = availabilityMarker;
-          levelRecordAddress = levelRecordAddress + SCENARIO_CATALOG_RECORD_SIZE;
+          levelRecord++;
           levelMaskBit = levelMaskBit * 2;
           if (levelMaskBit == 0) {
             maskWordIndex = maskWordIndex + 1;
@@ -190,17 +191,17 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     playerRecord++;
     playersRemaining--;
   } while (playersRemaining != 0);
-  titleTextId = (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex;
-  /* briefingText's text resource id: level text page entry 0x230017 + faction + level * 0x10 */
+  titleTextId = g_FrontendLoadedLevelAsset->header.titleTextResourceIndex;
+  /* briefingText's text resource id: the faction's briefing entry of the level's text page */
   ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,briefingText))->text =
-       (uint16_t *)((playerRecord->factionAssignment).factionAssignmentIndex + 0x230017 +
-       (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
+       (uint16_t *)(playerRecord->factionAssignment.factionAssignmentIndex + TEXT_ID_LEVEL_BRIEFING_BASE +
+       g_FrontendLoadedLevelAsset->header.titleTextResourceIndex * 0x10);
   briefingText = TextResource_Resolve(titleTextId + TEXT_ID_LEVEL_TITLE_BASE);
-  *briefingText.text = 0x8000;
+  *briefingText.text = FRONTEND_TEXT_STYLE_NORMAL;
   templateText = TextResource_Resolve(TEXT_ID_MISSION_BRIEFING_TEMPLATE);
   RichTextCommandStream_PatchPayloadBySelector(0,briefingText.text,templateText.text);
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,(loadedLevel->header).titleTextResourceIndex,
+            (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
              (uint16_t *)&g_FrontendMissionBriefingLevelDigitsUtf16);
   WidePath_SetExtensionCode(0x6d6c66 /* "flm" */,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
   movieOpen = Movie_Open(0x80000000,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
@@ -232,14 +233,14 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
       FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags |= UI_NODE_SUPPRESSED;
       ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags |=
            FRONTEND_CONTROL_INACTIVE;
-      goto FrontendMissionBriefing_InitializePlayerReadinessAndLayout;
+      goto updateBeginButton;
     }
   }
   FRONTEND_UI(frontendRoot,briefingExitButton)->nodeFlags |= UI_NODE_SUPPRESSED;
   ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingExitButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
   FRONTEND_UI(frontendRoot,briefingSaveButton)->nodeFlags |= UI_NODE_SUPPRESSED;
   ((UiSelectableControl *)FRONTEND_UI(frontendRoot,briefingSaveButton))->stateFlags |= FRONTEND_CONTROL_INACTIVE;
-FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
+updateBeginButton:
   /* in a network game with other players only the host starts the mission */
   FRONTEND_UI(frontendRoot,briefingBeginButton)->nodeFlags &= ~UI_NODE_SUPPRESSED;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
@@ -251,7 +252,7 @@ FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
     playerRecord = g_FrontendPlayerRuntimeBlocks;
   }
   do {
-    (playerRecord->factionAssignment).readyOrWaitState = 0;
+    playerRecord->factionAssignment.readyOrWaitState = 0;
     playersRemaining--;
     playerRecord++;
   } while (playersRemaining != 0);
@@ -280,30 +281,27 @@ FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     if (*factionStateCursor == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       do {
-        if (factionSlot == (playerRecord->factionAssignment).factionAssignmentIndex)
-        goto FrontendMissionBriefing_AdvanceFactionAvailabilityScan;
+        if (factionSlot == playerRecord->factionAssignment.factionAssignmentIndex) goto nextFaction;
         playerRecord++;
         playersRemaining--;
       } while (playersRemaining != 0);
       unclaimedActiveFactions++;
     }
-FrontendMissionBriefing_AdvanceFactionAvailabilityScan:
+nextFaction:
     factionSlot++;
     factionsRemaining--;
-    if (factionsRemaining == 0) {
-      /* opponent settings: only with computer factions, and in a campaign only on its first level
-         (CampaignAsset.firstLevelId) */
-      if (((g_FrontendLoadedCampaignAsset == 0) ||
-          (((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId ==
-           ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->firstLevelId)) && (unclaimedActiveFactions != 0)) {
-        FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags &= ~UI_NODE_SUPPRESSED;
-      }
-      else {
-        FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags |= UI_NODE_SUPPRESSED;
-        UiNodeList_SuppressActionId(FRONTEND_ACTION_GAME_SPEED,&frontendRoot->base);
-      }
-      return;
-    }
-  } while( true );
+  } while (factionsRemaining != 0);
+  /* opponent settings: only with computer factions, and in a campaign only on its first level
+     (CampaignAsset.firstLevelId) */
+  if ((g_FrontendLoadedCampaignAsset == 0 ||
+       ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->currentLevelId ==
+       ((CampaignAsset *)g_FrontendLoadedCampaignAsset)->firstLevelId) && unclaimedActiveFactions != 0) {
+    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags &= ~UI_NODE_SUPPRESSED;
+  }
+  else {
+    FRONTEND_UI(frontendRoot,opponentSettingsGroup)->nodeFlags |= UI_NODE_SUPPRESSED;
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_GAME_SPEED,&frontendRoot->base);
+  }
+  return;
 }
 

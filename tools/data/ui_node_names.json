@@ -114,7 +114,7 @@
   },
   "0x0B38": {
    "name": "ColorBiasValueText",
-   "note": "Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiRuntime_FormatSignedValues140And144."
+   "note": "Text readout below the color bias slider; its tail holds both number buffers (0xB94 scale, 0xBB4 bias) written by UiDisplaySettingsRoot_FormatColorReadouts."
   }
  },
  "FatalErrorUiImage": {

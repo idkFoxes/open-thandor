@@ -49,22 +49,19 @@ void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldU
        ((cellColumn < gridColumnCount &&
         (cellIndex = cellRow * gridColumnCount + cellColumn,
          (fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)))) {
-      centerMaskByte =
-           fieldGrid->cells[cellIndex].runtime60_6B + occupancyByteOffset + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK;
+      centerMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(&fieldGrid->cells[cellIndex],occupancyByteOffset);
       *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       /* the six neighbours of centre cell C, one per sector: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width;
-         the first address is cells[cellIndex + 1], and runtime0C_3F - 0xC is a cell's own address) */
-      wedge0Or3Cell = (FieldGridCell *)
-               (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-               cellIndex * 0x80 - 0x28);
-      wedge1Or4Cell = (FieldGridCell *)((int)wedge0Or3Cell - g_TerrainScanRowStrideBytes);
+         the first address is cells[cellIndex + 1]) */
+      wedge0Or3Cell = &fieldGrid->cells[cellIndex + 1];
+      wedge1Or4Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedge0Or3Cell,-g_TerrainScanRowStrideBytes);
       TerrainOccupancyBit2_MarkWedge0(0,wedge0Or3Cell);
       cell = wedge1Or4Cell - 1;
       TerrainOccupancyBit2_MarkWedge1(0,wedge1Or4Cell);
-      wedge0Or3Cell = (FieldGridCell *)(cell[-1].runtime0C_3F + rowStrideBytes - 0xc);
+      wedge0Or3Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,rowStrideBytes);
       TerrainOccupancyBit2_MarkWedge2(0,cell);
-      wedge1Or4Cell = (FieldGridCell *)(wedge0Or3Cell->runtime0C_3F + rowStrideBytes - 0xc);
+      wedge1Or4Cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedge0Or3Cell,rowStrideBytes);
       TerrainOccupancyBit2_MarkWedge3(0,wedge0Or3Cell);
       TerrainOccupancyBit2_MarkWedge4(0,wedge1Or4Cell);
       TerrainOccupancyBit2_MarkWedge5(0,wedge1Or4Cell + 1);
@@ -144,19 +141,19 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
         runRemainingA = runStepCount;
         if (runStepCount != 0) {
           /* each ray restarts at the centre; the edge cell that stops a ray is still counted */
-          do { /* right: +0x70 occupancyMask, +0x50 flags of the next cell */
-            combinedMask = combinedMask | *(uint64_t *)((int)(runCursorA + 1) + 0x70);
+          do { /* right */
+            combinedMask = combinedMask | runCursorA[1].occupancyMask;
             runCursorB = centerCell;
             runRemainingB = runStepCount;
-            if ((*(uint32_t *)((int)(runCursorA + 1) + 0x50) & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            if ((runCursorA[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
             runRemainingA--;
             runCursorA = runCursorA + 1;
           } while (runRemainingA != 0);
           do { /* left */
-            combinedMask = combinedMask | *(uint64_t *)((int)(runCursorB - 1) + 0x70);
+            combinedMask = combinedMask | runCursorB[-1].occupancyMask;
             runCursorA = centerCell;
             runRemainingA = runStepCount;
-            if ((*(uint32_t *)((int)(runCursorB - 1) + 0x50) & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            if ((runCursorB[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
             runRemainingB--;
             runCursorB = runCursorB - 1;
           } while (runRemainingB != 0);
@@ -271,26 +268,24 @@ void TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       legStartCell = cell + 1;
       TerrainOccupancyBit2_MarkDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,legStartCell);
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* the direction-1 neighbour C+1-W: +0x50 flags, +0x70 occupancy mask, 0x80 = one cell */
-      if ((*(uint32_t *)((int)legStartCell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the direction-1 neighbour C+1-W */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(legStartCell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) !=
+          0) {
         return;
       }
-      diagonalMaskByte = (uint8_t *)((int)legStartCell +
-                       occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
+      diagonalMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(FIELD_GRID_CELL_AT_BYTE_OFFSET(legStartCell,-rowStrideBytes),
+                                                    occupancyMarkByteIndex.occupancyMaskByteIndex);
       *diagonalMaskByte = *diagonalMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
-      cell = (FieldGridCell *)((int)legStartCell + (0x80 - rowStrideBytes));
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(legStartCell + 1,-rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      TerrainOccupancyBit2_MarkDirection1
-                (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+      TerrainOccupancyBit2_MarkDirection1(scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -317,24 +312,21 @@ void TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       TerrainOccupancyBit2_MarkDirection1
-                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* the direction-2 neighbour C-W: +0x50 flags, +0x70 occupancy mask */
-      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the direction-2 neighbour C-W */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      diagonalMaskByte = (uint8_t *)((int)cell +
-                       occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
+      diagonalMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes),
+                                                    occupancyMarkByteIndex.occupancyMaskByteIndex);
       *diagonalMaskByte = *diagonalMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
-      legStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
+      legStartCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes - rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = legStartCell + 1;
       TerrainOccupancyBit2_MarkDirection2(scanStep,legStartCell);
@@ -362,24 +354,20 @@ void TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       TerrainOccupancyBit2_MarkDirection2
-                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
       if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      /* runtime0C_3F (+0x0C) - 0x1C = +0x70 of cell[-1]: the direction-3 neighbour's occupancy byte */
-      cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex - 0x1c] =
-           cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex - 0x1c] | FIELD_CELL_OCCUPANCY_BIT1;
+      /* the direction-3 neighbour C-1 */
+      FIELD_CELL_OCCUPANCY_BYTE(cell - 1,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       legStartCell = cell - 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,-g_TerrainScanRowStrideBytes);
       TerrainOccupancyBit2_MarkDirection3(scanStep,legStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -407,8 +395,7 @@ void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-      centerMaskByte = (uint8_t *)((int)cell->runtime60_6B +
-                       occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK);
+      centerMaskByte = &FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex);
       *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       legStartCell = cell - 1;
@@ -416,20 +403,17 @@ void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGr
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* the direction-4 neighbour C-1+W: runtime60_6B (+0x60) - 0x10 = its flags (+0x50) */
-      if ((*(uint32_t *)(legStartCell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the direction-4 neighbour C-1+W */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(legStartCell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) !=
+          0) {
         return;
       }
-      legStartCell->runtime60_6B
-      [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           legStartCell->runtime60_6B
-           [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address: C-2+W */
-      cell = (FieldGridCell *)(legStartCell[-1].runtime0C_3F + rowStrideBytes - 0xc);
+      FIELD_CELL_OCCUPANCY_BYTE(FIELD_GRID_CELL_AT_BYTE_OFFSET(legStartCell,rowStrideBytes),
+                                occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
+      /* C-2+W */
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(legStartCell - 1,rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      TerrainOccupancyBit2_MarkDirection4
-                (scanStep,(FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+      TerrainOccupancyBit2_MarkDirection4(scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -447,7 +431,7 @@ void TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGr
 void TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  uint8_t *cellRuntimeBytes;
+  FieldGridCell *twoRowsDownCell;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
 
@@ -455,32 +439,23 @@ void TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
       TerrainOccupancyBit2_MarkDirection4
-                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* the direction-5 neighbour C+W: runtime60_6B (+0x60) - 0x10 = its flags (+0x50) */
-      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the direction-5 neighbour C+W */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B
-      [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B
-           [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
-      cellRuntimeBytes = cell->runtime0C_3F;
+      FIELD_CELL_OCCUPANCY_BYTE(FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes),
+                                occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
+      twoRowsDownCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes + rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = (FieldGridCell *)(cellRuntimeBytes + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc) - 1;
-      TerrainOccupancyBit2_MarkDirection5
-                (scanStep,(FieldGridCell *)
-                          (cellRuntimeBytes + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc));
+      cell = twoRowsDownCell - 1;
+      TerrainOccupancyBit2_MarkDirection5(scanStep,twoRowsDownCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -505,25 +480,19 @@ void TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGr
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       TerrainOccupancyBit2_MarkDirection5
-                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
       if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell + 1,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       legStartCell = cell + 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,g_TerrainScanRowStrideBytes);
       TerrainOccupancyBit2_MarkDirection0(scanStep,legStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -550,9 +519,7 @@ void TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       cell++;
     } while (scanStep < g_TerrainScanStepLimit);
@@ -577,11 +544,9 @@ void TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)); /* 0x80 = one cell */
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -604,11 +569,9 @@ void TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -631,9 +594,7 @@ void TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       cell--;
     } while (scanStep < g_TerrainScanStepLimit);
@@ -658,12 +619,9 @@ void TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
-      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -686,12 +644,9 @@ void TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,Fie
       if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
-           | FIELD_CELL_OCCUPANCY_BIT1;
+      FIELD_CELL_OCCUPANCY_BYTE(cell,occupancyMarkByteIndex.occupancyMaskByteIndex) |= FIELD_CELL_OCCUPANCY_BIT1;
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
-      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;

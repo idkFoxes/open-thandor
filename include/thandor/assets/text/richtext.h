@@ -80,7 +80,7 @@ void RichTextCommandStream_PatchPayloadBySelector
 void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream);
 
 /* 0x0041B300 */
-bool RichTextCommandStream_FindNthCommandPayloadPair
+bool RichTextCommandStream_SetNthInlineValuePayload
           (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
           uint16_t *commandStream);
 
@@ -89,17 +89,17 @@ void RichTextCommandStream_PatchNestedStreamPointerPayloads
           (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,uint16_t *commandStream);
 
 /* 0x0041B520 */
-void RichTextCommandStream_PatchOpcode1APayloadPair(RichTextOpcode1APayloadValue32 imageSubresourceValue,
+void RichTextCommandStream_PatchInlineImagePayloads(RichTextOpcode1APayloadValue32 imageSubresourceValue,
           RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream);
 
 /* 0x0041B620 */
 void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream);
 
 /* 0x0041B720 */
-bool RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream);
+bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream);
 
 /* 0x0041B840 */
-RichTextCommandQueryResult RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream);
+RichTextCommandQueryResult RichTextCommandStream_QueryNthInlineValueVariant(int commandOrdinal,uint16_t *commandStream);
 
 /* 0x0041B950 */
 StatusResult RichTextCommandStream_CopyToNarrow

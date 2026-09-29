@@ -18,12 +18,9 @@
 void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
 
 {
-  int parentNodeAddress;
 
-  parentNodeAddress = (int)source->parent;
-  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
+  while (source->parent != UI_NODE_NONE) {
     source = source->parent;
-    parentNodeAddress = (int)source->parent;
   }
   /* source is now the in-game UI root (template start) */
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,missionObjectivesButton));
@@ -41,18 +38,15 @@ void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
 void InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
 
 {
-  int parentNodeAddress;
 
-  parentNodeAddress = (int)source->parent;
-  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
+  while (source->parent != UI_NODE_NONE) {
     source = source->parent;
-    parentNodeAddress = (int)source->parent;
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand150_HandlePlayerDepartureAndOwnership(g_LocalPlayerRuntimeId,0,0,0);
+    InGameCommand_HandlePlayerDeparture(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_DEPARTURE,0,0,0);
@@ -63,29 +57,26 @@ void InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
 
 /* Address: 0x0056ABF0.
    UI action 0x101E (INGAME_ACTION_QUIT_SURRENDER, quitMenuSurrenderButton; g_InGameUiActionHandlersPage10[30]):
-   closes the game menu and gives up, command 0x150 with INGAME_COMMAND150_FLAG_SURRENDER destroys every army
+   closes the game menu and gives up, command 0x150 with INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER destroys every army
    of the local faction. Local games call the handler directly, network games queue the command.
 */
 void InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
 
 {
-  int parentNodeAddress;
 
-  parentNodeAddress = (int)source->parent;
-  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
+  while (source->parent != UI_NODE_NONE) {
     source = source->parent;
-    parentNodeAddress = (int)source->parent;
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    InGameCommand150_HandlePlayerDepartureAndOwnership
-              (g_LocalPlayerRuntimeId,0,0,INGAME_COMMAND150_FLAG_SURRENDER);
+    InGameCommand_HandlePlayerDeparture
+              (g_LocalPlayerRuntimeId,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
   }
   else {
     InGameCommandQueue_AppendLocalPlayerCommand
-              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_COMMAND150_FLAG_SURRENDER);
+              (INGAME_COMMAND_PLAYER_DEPARTURE,0,0,INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER);
   }
   return;
 }
@@ -98,12 +89,9 @@ void InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
 void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
 
 {
-  UiNodeBase *parentCursor;
 
-  parentCursor = source->parent;
-  while (parentCursor != UI_NODE_NONE) {
+  while (source->parent != UI_NODE_NONE) {
     source = source->parent;
-    parentCursor = source->parent;
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
@@ -119,12 +107,9 @@ void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source)
 void InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *source)
 
 {
-  UiNodeBase *parentCursor;
 
-  parentCursor = source->parent;
-  while (parentCursor != UI_NODE_NONE) {
+  while (source->parent != UI_NODE_NONE) {
     source = source->parent;
-    parentCursor = source->parent;
   }
   UiSelectableControl_SetSelected(1,(UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)INGAME_UI(source,inGameMenuButton));
@@ -292,9 +277,9 @@ void InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
-    /* control is autoZoomOffCheckbox; reset the minimap zoom to 0.5 (Q12) */
+    /* control is autoZoomOffCheckbox; reset the minimap zoom */
     ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoZoomOffCheckbox,minimapView))->sampleScaleQ12 =
-         0x800;
+         INGAME_MINIMAP_DEFAULT_SCALE_Q12;
   }
   else {
     value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF;
@@ -322,7 +307,7 @@ void InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control
     value = optionFlags | PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
     /* control is autoRotationOffCheckbox; reset the minimap rotation to its default angle */
     ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoRotationOffCheckbox,minimapView))->
-    rotationAngle = 0x2000;
+    rotationAngle = INGAME_MINIMAP_DEFAULT_ROTATION_ANGLE;
   }
   else {
     value = optionFlags & ~PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF;
@@ -451,18 +436,16 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
   uint32_t settingValue;
   uint32_t storedSubresourceCount;
   int shadingDepth;
-  UiNodeBase *parentOrSelectedButton;
+  UiNodeBase *selectedButton;
 
 /* graphicsButton is gameMenuGraphicsButton of the in-game UI template copy */
 #define GRAPHICS_UI(node) THANDOR_UI_SIBLING(graphicsButton,InGameUiImage,gameMenuGraphicsButton,node)
-  UiPageStack_SetActiveIndex(6,(UiPageStackControl *)GRAPHICS_UI(gameWindowPageStack));
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_GRAPHICS_SETTINGS,(UiPageStackControl *)GRAPHICS_UI(gameWindowPageStack));
   settingValue = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
   UiSelectableControl_SetSelected(settingValue,(UiSelectableControl *)GRAPHICS_UI(shadingEnabledCheckbox));
-  parentOrSelectedButton = graphicsButton->parent;
   uiRoot = graphicsButton;
-  while (parentOrSelectedButton != UI_NODE_NONE) {
+  while (uiRoot->parent != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
-    parentOrSelectedButton = uiRoot->parent;
   }
   if (settingValue == 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_SHADING_LEVEL,uiRoot);
@@ -477,29 +460,30 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
   else {
     UiNodeList_SuppressActionId(INGAME_ACTION_TEXTURE_QUALITY,uiRoot);
   }
-  settingValue = PersistentSettings_Read(0x20,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
-  storedSubresourceCount = PersistentSettings_Read(0x10,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
+  settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+  storedSubresourceCount = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT,
+                                                  PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   /* the buttons name the depth, the setting stores a quarter of it */
   shadingDepth = storedSubresourceCount * 4;
-  if (settingValue == 0x20) {
-    parentOrSelectedButton = GRAPHICS_UI(shadingLevel32x32Button);
-    if (shadingDepth == 0x40) {
-      parentOrSelectedButton = GRAPHICS_UI(shadingLevel32x64Button);
+  if (settingValue == 32) {
+    selectedButton = GRAPHICS_UI(shadingLevel32x32Button);
+    if (shadingDepth == 64) {
+      selectedButton = GRAPHICS_UI(shadingLevel32x64Button);
     }
-    else if (shadingDepth == 0x80) {
-      parentOrSelectedButton = GRAPHICS_UI(shadingLevel32x128Button);
+    else if (shadingDepth == 128) {
+      selectedButton = GRAPHICS_UI(shadingLevel32x128Button);
     }
   }
-  else if (settingValue == 0x40) {
-    parentOrSelectedButton = GRAPHICS_UI(shadingLevel64x64Button);
-    if (shadingDepth == 0x80) {
-      parentOrSelectedButton = GRAPHICS_UI(shadingLevel64x128Button);
+  else if (settingValue == 64) {
+    selectedButton = GRAPHICS_UI(shadingLevel64x64Button);
+    if (shadingDepth == 128) {
+      selectedButton = GRAPHICS_UI(shadingLevel64x128Button);
     }
   }
   else {
-    parentOrSelectedButton = GRAPHICS_UI(shadingLevel128x128Button);
+    selectedButton = GRAPHICS_UI(shadingLevel128x128Button);
   }
-  UiSelectableGroup_SelectExclusive(6,parentOrSelectedButton,
+  UiSelectableGroup_SelectExclusive(6,selectedButton,
       GRAPHICS_UI(shadingLevel128x128Button),
       GRAPHICS_UI(shadingLevel64x128Button),
       GRAPHICS_UI(shadingLevel64x64Button),
@@ -508,19 +492,20 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
       GRAPHICS_UI(shadingLevel32x32Button));
   settingValue = PersistentSettings_Read(TEXTURE_QUALITY_MEDIUM,PERSISTENT_SETTING_TEXTURE_QUALITY);
   if (settingValue == TEXTURE_QUALITY_HIGH) {
-    parentOrSelectedButton = GRAPHICS_UI(textureQualityHighButton);
+    selectedButton = GRAPHICS_UI(textureQualityHighButton);
   }
   else if (settingValue == TEXTURE_QUALITY_MEDIUM) {
-    parentOrSelectedButton = GRAPHICS_UI(textureQualityMediumButton);
+    selectedButton = GRAPHICS_UI(textureQualityMediumButton);
   }
   else {
-    parentOrSelectedButton = GRAPHICS_UI(textureQualityLowButton);
+    selectedButton = GRAPHICS_UI(textureQualityLowButton);
   }
-  UiSelectableGroup_SelectExclusive(3,parentOrSelectedButton,
+  UiSelectableGroup_SelectExclusive(3,selectedButton,
       GRAPHICS_UI(textureQualityHighButton),
       GRAPHICS_UI(textureQualityMediumButton),
       GRAPHICS_UI(textureQualityLowButton));
-  settingValue = PersistentSettings_Read(0x10000,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
+  settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD,
+                                         PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
   ((UiRangeSliderControl *)GRAPHICS_UI(modelDetailSlider))->value = settingValue;
 #undef GRAPHICS_UI
   return;
@@ -536,29 +521,26 @@ void InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
 void InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr settingsSourceNode)
 
 {
-  UiNodeBase *parentCursor;
   uint32_t audioFlags;
   uint32_t gainQ15;
 
 #define AUDIO_PAGE THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)
-  UiPageStack_SetActiveIndex(7,&AUDIO_PAGE->settingsPageStack);
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_SOUND_SETTINGS,&AUDIO_PAGE->settingsPageStack);
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS,&AUDIO_PAGE->soundEffectsEnabledControl);
   UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_MUSIC,&AUDIO_PAGE->musicEnabledControl);
   UiSelectableControl_SetSelected(audioFlags & PERSISTENT_SOUND_OPTION_REVERSE_STEREO,&AUDIO_PAGE->reverseStereoControl);
-  gainQ15 = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN);
+  gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
   (AUDIO_PAGE->soundEffectsGainControl).currentValue = gainQ15;
-  gainQ15 = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
+  gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   (AUDIO_PAGE->movieDefaultAudioGainControl).currentValue = gainQ15;
-  gainQ15 = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
+  gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   (AUDIO_PAGE->movieAlternateAudioGainControl).currentValue = gainQ15;
-  gainQ15 = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MUSIC_GAIN);
+  gainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MUSIC_GAIN);
   (AUDIO_PAGE->musicGainControl).currentValue = gainQ15;
 #undef AUDIO_PAGE
-  parentCursor = settingsSourceNode->parent;
-  while (parentCursor != UI_NODE_NONE) {
+  while (settingsSourceNode->parent != UI_NODE_NONE) {
     settingsSourceNode = settingsSourceNode->parent;
-    parentCursor = settingsSourceNode->parent;
   }
   if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,settingsSourceNode);
@@ -595,13 +577,10 @@ void InGameShadingSettings_SetEnabled(UiSelectableControl *control)
 
 {
   uint8_t selectedState;
-  UiNodeBase *parentCursor;
 
   selectedState = UiSelectableControl_IsSelected(control);
-  parentCursor = (control->base).parent;
-  while (parentCursor != UI_NODE_NONE) {
+  while ((control->base).parent != UI_NODE_NONE) {
     control = (UiSelectableControl *)(control->base).parent;
-    parentCursor = (control->base).parent;
   }
   if ((selectedState & 1) == 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_SHADING_LEVEL,&control->base);
@@ -658,18 +637,18 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
     shadingDepth = newSubresourceCount << 2;
     /* control is one of the shading level buttons, its parent is shadingLevelGroup */
     shadingLevelGroup = (control->base).parent;
-    if (newGridHalfSize == 0x20) {
+    if (newGridHalfSize == 32) {
       selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel32x32Button);
-      if (shadingDepth == 0x40) {
+      if (shadingDepth == 64) {
         selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel32x64Button);
       }
-      else if (shadingDepth == 0x80) {
+      else if (shadingDepth == 128) {
         selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel32x128Button);
       }
     }
-    else if (newGridHalfSize == 0x40) {
+    else if (newGridHalfSize == 64) {
       selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel64x64Button);
-      if (shadingDepth == 0x80) {
+      if (shadingDepth == 128) {
         selectedControl = THANDOR_UI_SIBLING(shadingLevelGroup,InGameUiImage,shadingLevelGroup,shadingLevel64x128Button);
       }
     }
@@ -685,9 +664,11 @@ void InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
       THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel32x32Button));
     return;
   }
-  textureDimension = PersistentSettings_Read(0x40,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
-  gridHalfSize = PersistentSettings_Read(0x20,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
-  storedSubresourceCount = PersistentSettings_Read(0x10,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
+  textureDimension = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION,
+                                            PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
+  gridHalfSize = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+  storedSubresourceCount = PersistentSettings_Read(PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT,
+                                                  PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
   GraphicsShadingRuntime_InitializeGeneratedTexture
             (storedSubresourceCount,gridHalfSize,textureDimension);
   return;
@@ -723,7 +704,7 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
   UiNodeBase *selectedQualityControl;
   UiNodeBase *textureQualityGroup;
 
-  g_GraphicsCursorSetFrame(6);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   /* control is one of the texture quality buttons, its parent is textureQualityGroup */
   textureQualityGroup = (control->base).parent;
   if ((UiSelectableControl *)THANDOR_UI_SIBLING(textureQualityGroup,InGameUiImage,textureQualityGroup,textureQualityLowButton) == control) {
@@ -745,7 +726,7 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
   PersistentSettings_Write(qualityLevel,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_TextureDownsampleShift = qualityLevel;
   g_GraphicsRebuildAllStagingTextures();
-  g_GraphicsCursorSetFrame(0);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
   return;
 }
 
@@ -758,7 +739,6 @@ void InGameTextureSettings_SetQuality(UiSelectableControl *control)
 void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
-  UiNodeBase *parentCursor;
   uint32_t audioFlags;
   AudioMixerGainQ15 effectsGainQ15;
   MovieAudioGainQ15 movieDefaultGainQ15;
@@ -773,10 +753,8 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   PersistentSettings_Write((uint32_t)isEnabled | audioFlags & ~PERSISTENT_SOUND_OPTION_EFFECTS,
                            PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  parentCursor = (control->base).parent;
-  while (parentCursor != UI_NODE_NONE) {
+  while ((control->base).parent != UI_NODE_NONE) {
     control = (UiSelectableControl *)(control->base).parent;
-    parentCursor = (control->base).parent;
   }
   if (isEnabled) {
     UiNodeList_UnsuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,&control->base);
@@ -802,18 +780,18 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   }
   effectsGainQ15 = 0;
   if (isEnabled) {
-    effectsGainQ15 = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN);
+    effectsGainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
   }
   movieDefaultGainQ15 = 0;
   g_UiSoundGainQ15 = effectsGainQ15;
   g_SoundEffectsGainQ15 = effectsGainQ15;
   if (isEnabled) {
-    movieDefaultGainQ15 = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
+    movieDefaultGainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
   }
   movieAlternateGainQ15 = 0;
   g_MovieDefaultAudioGainQ15 = movieDefaultGainQ15;
   if (isEnabled) {
-    movieAlternateGainQ15 = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
+    movieAlternateGainQ15 = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
   }
   g_MovieAlternateAudioGainQ15 = movieAlternateGainQ15;
   return;
@@ -828,7 +806,6 @@ void InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
-  UiNodeBase *parentCursor;
   uint32_t audioFlags;
   uint32_t musicEnabledBit;
   bool isEnabled;
@@ -846,10 +823,8 @@ void InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   audioFlags = PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
   PersistentSettings_Write(musicEnabledBit | audioFlags & ~PERSISTENT_SOUND_OPTION_MUSIC,
                            PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
-  parentCursor = (control->base).parent;
-  while (parentCursor != UI_NODE_NONE) {
+  while ((control->base).parent != UI_NODE_NONE) {
     control = (UiSelectableControl *)(control->base).parent;
-    parentCursor = (control->base).parent;
   }
   if ((audioFlags & PERSISTENT_SOUND_OPTION_EFFECTS) == 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_EFFECTS_VOLUME,&control->base);
@@ -979,21 +954,18 @@ void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle)
 
 {
-  UiNodeBase *parentCursor;
   UiNodeBase *uiRoot;
   uint32_t settingValue;
   bool isSelected;
 
-  parentCursor = (settingsToggle->base).parent;
   uiRoot = &settingsToggle->base;
-  while (parentCursor != UI_NODE_NONE) {
+  while (uiRoot->parent != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
-    parentCursor = uiRoot->parent;
   }
   isSelected = (bool)UiSelectableControl_IsSelected(settingsToggle);
   if (!isSelected) {
-    UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
-    INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
+    UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
+    INGAME_UI(uiRoot,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW) == 0) {
@@ -1009,31 +981,30 @@ void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settin
     return;
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(uiRoot,missionObjectivesButton));
-  INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags | UI_NODE_SUPPRESSED;
+  INGAME_UI(uiRoot,worldView)->nodeFlags |= UI_NODE_SUPPRESSED;
   UiKeyboardFocus_ReleaseNode(INGAME_UI(uiRoot,worldView));
-  UiPageStack_SetActiveIndex(3,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
+  UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_GAME_MENU,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
   settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
                                   (UiSelectableControl *)INGAME_UI(uiRoot,autoZoomOffCheckbox));
   UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
                                   (UiSelectableControl *)INGAME_UI(uiRoot,autoRotationOffCheckbox));
-  /* bit 4: "right button does not scroll" per the frontend settings page (persistent.h names it
-     PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN, which the Tab key also toggles) */
+  /* "right button does not scroll" per the frontend settings page (the Tab key also toggles this bit) */
   UiSelectableControl_SetSelected
-            (settingValue & 4,(UiSelectableControl *)INGAME_UI(uiRoot,rightButtonNoScrollCheckbox));
-  /* bit 1 links rotation with zoom, bit 2 with tilt; each excludes the other */
+            (settingValue & PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN,(UiSelectableControl *)INGAME_UI(uiRoot,rightButtonNoScrollCheckbox));
+  /* rotation is linked with zoom or with tilt; each excludes the other */
   settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
-  if ((settingValue & 1) != 0) {
+  if ((settingValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM) != 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,uiRoot);
   }
   UiSelectableControl_SetSelected
-            (settingValue & 1,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationZoomCheckbox));
-  if ((settingValue & 2) != 0) {
+            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_ZOOM,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationZoomCheckbox));
+  if ((settingValue & PERSISTENT_LINK_OPTION_ROTATION_TILT) != 0) {
     UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,uiRoot);
   }
   UiSelectableControl_SetSelected
-            (settingValue & 2,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationTiltCheckbox));
-  settingValue = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+            (settingValue & PERSISTENT_LINK_OPTION_ROTATION_TILT,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationTiltCheckbox));
+  settingValue = PersistentSettings_Read(PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
   ((UiRangeSliderControl *)INGAME_UI(uiRoot,scrollSpeedSlider))->value = settingValue;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {

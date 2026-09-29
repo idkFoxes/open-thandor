@@ -26,8 +26,7 @@ EffectDefinitionResult EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCat
   
   registryCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
-  while ((registryDefinition = *registryCursor, registryDefinition == NULL ||
-         (registryDefinition->definitionId != definitionId))) {
+  while (registryDefinition = *registryCursor, registryDefinition == NULL || registryDefinition->definitionId != definitionId) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -60,25 +59,28 @@ StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
   
   WidePath_SetExtensionCode(ASSET_MAGIC_GFX,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadOrAllocResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
+  loadOrAllocResult =
+       THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
   if (!loadOrAllocResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_EffectTextureSet = (GraphicsTextureSet *)loadOrAllocResult.payloadOrError;
     WidePath_SetExtensionCode(ASSET_MAGIC_PAL,mutableBasePath);
-    loadOrAllocResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
+    loadOrAllocResult =
+         THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
     if (!loadOrAllocResult.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_EffectPalette = (GraphicsPaletteAsset *)loadOrAllocResult.payloadOrError;
-      loadOrAllocResult = g_MemoryApi.alloc(0x40000);
+      loadOrAllocResult = g_MemoryApi.alloc(EFFECT_RUNTIME_POOL_BYTES);
       runtimeSlotCursor = (EffectRuntimeSlot *)loadOrAllocResult.payloadOrError;
       if (!loadOrAllocResult.failed) {
         /* pool base - 1 (the rebase value for saved offsets) */
-        g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)((int)&runtimeSlotCursor[-1].effectAgeTicks + 3);
+        g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)runtimeSlotCursor - 1;
         g_EffectRuntimeSlots = runtimeSlotCursor;
-        /* 0x10000 dwords */
-        for (runtimeSlotsRemaining = 0x10000; runtimeSlotsRemaining != 0; runtimeSlotsRemaining--) {
-          (runtimeSlotCursor->definitionOrSavedId).definition = NULL;
-          runtimeSlotCursor = (EffectRuntimeSlot *)&runtimeSlotCursor->modelNodeOrSavedOffset;
+        /* zero the pool dword by dword */
+        for (runtimeSlotsRemaining = EFFECT_RUNTIME_POOL_BYTES / 4; runtimeSlotsRemaining != 0;
+             runtimeSlotsRemaining--) {
+          runtimeSlotCursor->definitionOrSavedId.definition = NULL;
+          runtimeSlotCursor = (EffectRuntimeSlot *)((uint32_t *)runtimeSlotCursor + 1);
         }
         loadOrAllocResult.payloadOrError = 0;
         loadOrAllocResult.failed = false;
@@ -114,17 +116,15 @@ void EffectRuntime_ShutdownGraphicsResources(void)
     g_EffectPalette = NULL;
   }
   registryCursor = g_EffectDefinitionRegistry;
-  registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
-  do {
+  for (registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
     currentDefinition = *registryCursor;
-    if ((currentDefinition != NULL) &&
-       (currentDefinition->ownedNestedResourcePresent != 0)) {
+    if (currentDefinition != NULL && currentDefinition->ownedNestedResourcePresent != 0) {
       Resource_Release(currentDefinition->ownedNestedResource);
     }
     *registryCursor = NULL;
     registryCursor++;
-    registrySlotsRemaining--;
-  } while (registrySlotsRemaining != 0);
+  }
 }
 
 
@@ -150,44 +150,37 @@ void EffectRuntime_RebaseSlotsAfterLoad(void)
   g_EffectRuntimeSlots->effectAgeTicks = ~g_EffectRuntimeSlots->effectAgeTicks;
   do {
     slotCompletionAction = effectSlot->completionAction;
-    ownerModelNode = (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
-    if ((effectSlot->modelNodeOrSavedOffset).modelNode != NULL) {
-      /* Ghidra's field arithmetic below: owner + g_ModelRuntimeRebaseDelta, owner + g_ArmyRuntimeRebaseBaseMinusOne
-         and modelNode + g_RuntimeObjectRebaseBaseMinusOne */
+    ownerModelNode = effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
+    if (effectSlot->modelNodeOrSavedOffset.modelNode != NULL) {
+      /* saved offset + pool base - 1 */
       if (ownerModelNode != NULL) {
         if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-          ownerModelNode = (ModelRuntimeNode *)
-                       ((ownerModelNode->modelPayload).reserved2C_33 + g_ModelRuntimeRebaseDelta + -0x38
-                       );
+          ownerModelNode = (ModelRuntimeNode *)((uint8_t *)ownerModelNode + g_ModelRuntimeRebaseDelta);
         }
         else if (slotCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
-          ownerModelNode = (ModelRuntimeNode *)
-                       ((int)g_ArmyRuntimeRebaseBaseMinusOne +
-                       (int)(&ownerModelNode->modelPayload + -1) + 0x30);
+          ownerModelNode = (ModelRuntimeNode *)((int)g_ArmyRuntimeRebaseBaseMinusOne + (int)ownerModelNode);
         }
       }
-      (effectSlot->modelNodeOrSavedOffset).modelNode =
-           (ModelRuntimeNode *)
-           (g_RuntimeObjectRebaseBaseMinusOne +
-           (int)(&((effectSlot->modelNodeOrSavedOffset).modelNode)->modelPayload + -1) + 0x30);
+      effectSlot->modelNodeOrSavedOffset.modelNode =
+           (ModelRuntimeNode *)(g_RuntimeObjectRebaseBaseMinusOne + (int)effectSlot->modelNodeOrSavedOffset.modelNode);
       effectSlot->completionAction = slotCompletionAction;
-      (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode = ownerModelNode;
+      effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = ownerModelNode;
       registryCursor = g_EffectDefinitionRegistry;
       registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
       for (;;) {
         registryDefinition = *registryCursor;
         if ((registryDefinition != NULL) &&
-           ((effectSlot->definitionOrSavedId).definition ==
+           (effectSlot->definitionOrSavedId.definition ==
             (EffectDefinition *)registryDefinition->definitionId)) break;
         registryCursor++;
         registrySlotsRemaining--;
         if (registrySlotsRemaining == 0) {
           /* saved definition no longer registered: drop the effect (definition = last registry entry) */
-          (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
+          effectSlot->modelNodeOrSavedOffset.modelNode = NULL;
           break;
         }
       }
-      (effectSlot->definitionOrSavedId).definition = registryDefinition;
+      effectSlot->definitionOrSavedId.definition = registryDefinition;
     }
     effectSlot++;
     effectSlotsRemaining--;
@@ -214,7 +207,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
 
 {
   GraphicsFixedVec3 *worldPosition;
-  ModelResourceHitTestAndRenderView210 *nestedModelResource;
+  ModelResource *nestedModelResource;
   Q12 resourceRadiusQ12;
   EffectAnimationFrameCount frameCount;
   DefinitionReferencePresentFlag effectLinkPresent;
@@ -224,7 +217,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
   EffectShadingCountdownTicks shadingStartTicks;
   EffectShadingCountdownTicks shadingStopTicks;
   DirectSoundVoiceSet **voiceSetRef;
-  EffectModelRuntimeNodeClassView100 *effectModelNode;
+  EffectModelRuntimeNode *effectModelNode;
   uint32_t randomOrRuntimeValue;
   GraphicsTextureSet *chosenTextureSet;
   int slotsRemaining;
@@ -241,7 +234,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
   char runtimeClassIndex;
   uint32_t soundTableIndex;
   
-  effectModelNode = (EffectModelRuntimeNodeClassView100 *)FATAL_ERROR_GENERAL_FAILURE; /* error code: no free slot */
+  effectModelNode = (EffectModelRuntimeNode *)FATAL_ERROR_GENERAL_FAILURE; /* error code: no free slot */
   effectRuntimeCursor = g_EffectRuntimeSlots;
   if (effectDefinition == NULL) {
     /* the original returns CF clear with EAX = the pool base */
@@ -256,29 +249,29 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
   }
   slotsRemaining = EFFECT_RUNTIME_SLOT_COUNT;
   do {
-    if ((effectRuntimeCursor->modelNodeOrSavedOffset).modelNode == NULL) {
+    if (effectRuntimeCursor->modelNodeOrSavedOffset.modelNode == NULL) {
       recordAlloc = WorldObjectArray_AllocateFreeRecord(worldRuntime);
-      effectModelNode = (EffectModelRuntimeNodeClassView100 *)recordAlloc.recordOrError;
+      effectModelNode = (EffectModelRuntimeNode *)recordAlloc.recordOrError;
       if (!recordAlloc.failed) {
-        WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)effectModelNode);
-        (effectRuntimeCursor->modelNodeOrSavedOffset).modelNode =
+        WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode *)effectModelNode);
+        effectRuntimeCursor->modelNodeOrSavedOffset.modelNode =
              (ModelRuntimeNode *)effectModelNode;
-        (effectRuntimeCursor->definitionOrSavedId).definition = effectDefinition;
+        effectRuntimeCursor->definitionOrSavedId.definition = effectDefinition;
         effectModelNode->ownerClassId = WORLD_OWNER_RUNTIME_EFFECT;
         effectModelNode->effectRuntime = effectRuntimeCursor;
         effectModelNode->renderDepthBiasOrState = 0;
         /* worldYQ12 goes to translation.x and worldXQ12 to translation.y, as in the original: the parameter
            names are swapped relative to the node fields */
-        (effectModelNode->worldTransform).translation.x = worldYQ12;
-        (effectModelNode->worldTransform).translation.y = worldXQ12;
-        (effectModelNode->worldTransform).translation.z = worldZQ12;
+        effectModelNode->worldTransform.translation.x = worldYQ12;
+        effectModelNode->worldTransform.translation.y = worldXQ12;
+        effectModelNode->worldTransform.translation.z = worldZQ12;
         if ((effectDefinition->creationFlags & EFFECT_CREATION_RANDOMIZE_ORIENTATION) != 0) {
           randomOrRuntimeValue = g_RandomGeneratorState.next();
           orientationAngle0 = randomOrRuntimeValue & 0xffff;
         }
-        (effectModelNode->modelPayload).worldRotationAngle0 = orientationAngle2;
-        (effectModelNode->modelPayload).worldRotationAngle1 = orientationAngle1;
-        (effectModelNode->modelPayload).worldRotationAngle2 = orientationAngle0;
+        effectModelNode->modelPayload.worldRotationAngle0 = orientationAngle2;
+        effectModelNode->modelPayload.worldRotationAngle1 = orientationAngle1;
+        effectModelNode->modelPayload.worldRotationAngle2 = orientationAngle0;
         chosenTextureSet = g_EffectTextureSet;
         chosenPalette = g_EffectPalette;
         if ((effectDefinition->creationFlags & EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET) !=
@@ -287,15 +280,15 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
           chosenPalette = g_ArmyGraphicsBindings[0].paletteAsset;
         }
         nestedModelResource = effectDefinition->ownedNestedResource;
-        (effectModelNode->modelPayload).textureSet = chosenTextureSet;
+        effectModelNode->modelPayload.textureSet = chosenTextureSet;
         resourceRadiusQ12 = nestedModelResource->boundingRadiusQ12;
-        (effectModelNode->modelPayload).paletteAsset = chosenPalette;
+        effectModelNode->modelPayload.paletteAsset = chosenPalette;
         effectModelNode->subtreeBoundingRadiusQ12 = resourceRadiusQ12;
-        (effectModelNode->modelPayload).modelResource = nestedModelResource;
+        effectModelNode->modelPayload.modelResource = nestedModelResource;
         frameCount = effectDefinition->animationFrameCount;
         effectLinkPresent = effectDefinition->linkedEffectPresent;
         shotLinkPresent = effectDefinition->linkedShotPresent;
-        (effectModelNode->modelPayload).meshGroupMask = 0xffffffff; /* all mesh groups */
+        effectModelNode->modelPayload.meshGroupMask = 0xffffffff; /* all mesh groups */
         effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | (MODEL_RUNTIME_FLAG_APPLY_SCALE | 0x1);
         effectModelNode->textureSubresourceBaseIndex = 0;
         effectModelNode->modelRuntimeLinkOrSavedOffset = NULL;
@@ -318,13 +311,15 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
         effectRuntimeCursor->stateTintArgb = 0xffffff; /* white */
         effectRuntimeCursor->effectAgeTicks = 0;
         if (shadingStartTicks == 0) {
-          lookupEntry = ModelLookupTable_ContainsPackedKey(0,4,effectDefinition->ownedNestedResource);
+          lookupEntry = ModelLookupTable_ContainsPackedKey
+                           (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource);
           if (!lookupEntry.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupEntry.entry,(ModelRuntimeNode *)effectModelNode);
+            /* the alpha byte of the shading colour is the radius in 1/16 world units */
             shadingAlloc = GraphicsShadingRuntime_AllocateRecordRegs
                                (effectDefinition->shadingTransitionDurationTicks,
-                                (effectDefinition->shadingColorArgb >> 0x18) << 8,
+                                (effectDefinition->shadingColorArgb >> 24) << 8,
                                 effectDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
             effectModelNode->shadingRecord = shadingAlloc.record;
           }
@@ -335,36 +330,36 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
         else {
           effectModelNode->shadingRecord = NULL;
         }
-        randomOrRuntimeValue = effectDefinition->runtimeValue24;
-        soundTableIndex = effectDefinition->terrainGridMaskIndex;
-        (effectRuntimeCursor->lifecycleOwnerAndDefinition).runtimeState14 = 0;
-        (effectRuntimeCursor->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 = 0;
-        (effectRuntimeCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.owner = ownerRuntime;
-        (effectRuntimeCursor->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24 =
+        randomOrRuntimeValue = effectDefinition->completionCountdownTicks;
+        soundTableIndex = effectDefinition->soundSlotIndex;
+        effectRuntimeCursor->lifecycleOwnerAndDefinition.nextShotPointIndex = 0;
+        effectRuntimeCursor->lifecycleOwnerAndDefinition.animationFrameAccumulatorQ4 = 0;
+        effectRuntimeCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.owner = ownerRuntime;
+        effectRuntimeCursor->lifecycleOwnerAndDefinition.ownerAndDefinition.completionCountdownTicks =
              randomOrRuntimeValue;
         runtimeClassIndex = (char)worldRuntime->activeFactionRuntimeIndex;
         effectRuntimeCursor->completionAction = completionAction;
         randomOrRuntimeValue = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                           (Q12_ONE,(effectModelNode->worldTransform).translation.y,
-                            (effectModelNode->worldTransform).translation.x,worldRuntime->fieldGrid)
+                           (Q12_ONE,effectModelNode->worldTransform.translation.y,
+                            effectModelNode->worldTransform.translation.x,worldRuntime->fieldGrid)
         ;
-        occupancyMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,randomOrRuntimeValue,runtimeClassIndex);
+        occupancyMasks =
+             TerrainOccupancyMask_ResolveRuntimeClassFlags(0x10,0,randomOrRuntimeValue,runtimeClassIndex);
         effectRuntimeCursor->terrainRuntimeClassState = occupancyMasks.primaryOccupancyMask;
         effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | occupancyMasks.runtimeFlags | 0x10;
         effectModelNode->tintArgb = 0xffffff;
-        if ((((soundTableIndex != 0) && (soundTableIndex < worldRuntime->dwordArrayCount)) &&
-            (worldRuntime->dwordArray != NULL)) &&
-           (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex],
-           voiceSetRef != NULL)) {
-          worldPosition = &(effectModelNode->worldTransform).translation;
+        if (soundTableIndex != 0 && soundTableIndex < worldRuntime->dwordArrayCount &&
+            worldRuntime->dwordArray != NULL &&
+            (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex], voiceSetRef != NULL)) {
+          worldPosition = &effectModelNode->worldTransform.translation;
           projectedCellMasked = TerrainGrid_TestProjectedCellMaskBits01
-                             ((effectModelNode->worldTransform).translation.y,worldPosition->x,
+                             (effectModelNode->worldTransform.translation.y,worldPosition->x,
                               worldRuntime);
           if (!projectedCellMasked) {
             SpatialSound_PlayPositionedOneShot
-                      (((effectRuntimeCursor->definitionOrSavedId).definition)->
+                      (effectRuntimeCursor->definitionOrSavedId.definition->
                        positionedSoundMaximumDistanceQ12,
-                       ((effectRuntimeCursor->definitionOrSavedId).definition)->
+                       effectRuntimeCursor->definitionOrSavedId.definition->
                        positionedSoundGainQ15,worldPosition,voiceSetRef);
           }
         }

@@ -50,7 +50,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   GridPathMarkedRegionCellRegisterResult reachableRegionCell;
   PathingDestinationResult resolvedDestination;
   PathBacktrackResult backtrackResult;
-  ModelDefinitionRuntimeSemanticView280 *modelDefinition;
+  ModelDefinition *modelDefinition;
   ArmyRuntimeSlot *armyRuntime;
   GameEntityRuntime *overlappedEntity;
   ModelRuntimeNode *entityModelNode;
@@ -110,7 +110,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   runtimeClassId = modelDefinition->runtimeClassId4C;
   if (overlappedEntity != NULL) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
-      [((ModelDefinitionRuntimeSemanticView280 *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
+      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
               (overlappedEntity);
   }
   armyRuntime = (routeEntityRuntime->common).ownership.runtimeLink;
@@ -190,7 +190,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       }
       backtrackResult = GridPathCost_BacktrackBestHexRoute
                          (callerBlockingMask,startRow,startColumnOrScratch,
-                          (GridScratchCell *)((int)&routeScratchCell->stateMask + cellCoordOrStrideBytes));
+                          (GridScratchCell *)((uint8_t *)routeScratchCell + cellCoordOrStrideBytes));
       if (!backtrackResult.reachedTarget) {
         /* both branches head for the centre of the selected cell (the original has two identical copies) */
         if (backtrackResult.routeStateMask == 0) {
@@ -225,10 +225,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
   targetWorldXQ12 = fallbackWorldPosition.worldXQ12;
   overlappedEntity =
        (routeEntityRuntime->common).pathingAndImpactState.pathingReferences.overlappingEntity;
-  startColumnOrScratch = ((ModelDefinitionRuntimeSemanticView280 *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->runtimeClassId4C;
+  startColumnOrScratch = ((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->runtimeClassId4C;
   if (overlappedEntity != NULL) {
     (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-      [((ModelDefinitionRuntimeSemanticView280 *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
+      [((ModelDefinition *)(overlappedEntity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
               (overlappedEntity);
   }
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd[startColumnOrScratch](routeEntityRuntime);
@@ -397,7 +397,7 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
   FieldGridCell *fieldCell;
   GridScratchCell *promoteCursor;
   GridScratchCell *scratchCursor;
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   FieldGridDimension rowsRemaining;
   FieldGridAsset *fieldGridAsset;
   
@@ -669,13 +669,13 @@ void GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext
    code or in the handler tables references it.
 */
 bool GridScratch_TestRuntimePairReachabilityFromWorldPoint
-          (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair)
+          (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair *targetRuntimePair)
 
 {
   bool unreachable;
-  ModelDefinitionRuntimeSemanticView280 *targetModelDefinition;
+  ModelDefinition *targetModelDefinition;
 
-  targetModelDefinition = (ModelDefinitionRuntimeSemanticView280 *)
+  targetModelDefinition = (ModelDefinition *)
           (targetRuntimePair->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   unreachable = GridScratch_TestWorldPointReachability
                     (GRID_SCRATCH_LOW_BAND0 << ((uint8_t)targetModelDefinition->gridClassification260 & 0x1f) |
@@ -950,7 +950,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
   uint32_t pairsRemaining;
   uint32_t routesRemaining;
   uint32_t heapSize;
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   int deltaY;
   EntityPathingPriorityPair *influencePair;
   EntityPathingPriorityPair *pairCursor;
@@ -979,7 +979,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     searchRadius = deltaY;
   }
   /* the definition's clearance radius */
-  searchRadius = searchRadius + (int)((ModelDefinitionRuntimeSemanticView280 *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->placementRadiusOrClearanceDC;
+  searchRadius = searchRadius + (int)((ModelDefinition *)(routeEntityRuntime->common).ownership.definitionOrClassRecord)->placementRadiusOrClearanceDC;
   secondMaskHigh = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldXOrScratch + targetWorldX) >> 1);
   secondMaskLow = DepthInterval_BuildBinMask(searchRadius,(int)(entityWorldY + targetWorldY) >> 1);
   entityWorldXOrScratch = 32; /* capacity of g_EntityPathingPriorityPairs */
@@ -992,7 +992,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
       masksOverlap = DepthBinMasks_Overlap
                          (ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear,
                           secondMaskLow,secondMaskHigh);
-      if ((masksOverlap) && (((ModelDefinitionRuntimeSemanticView280 *)candidateRecord)->runtimeValue18 != 0)) {
+      if ((masksOverlap) && (((ModelDefinition *)candidateRecord)->accelerationPerTick18 != 0)) {
         pairCursor->entity = candidateEntity;
         pairCursor->priority = 0;
         g_EntityPathingPriorityPairCount++;
@@ -1017,7 +1017,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
           entityWorldXOrScratch == ((ArmyRuntimeSlot *)candidateRecord)->factionIndex)) &&
          (pairCursor->priority = pairCursor->priority + 1,
          (((ArmyRuntimeSlot *)candidateRecord)->movementStateFlags & 1) == 0)) {
-        pairCursor->priority = pairCursor->priority + ((ModelDefinitionRuntimeSemanticView280 *)candidateDefinition)->runtimeValue0C;
+        pairCursor->priority = pairCursor->priority + ((ModelDefinition *)candidateDefinition)->movementSpeed0C;
       }
       heapBase = g_EntityPathingPriorityPairs;
       pairCursor++;
@@ -1053,7 +1053,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     } while (1 < heapSize);
     do {
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
-        [((ModelDefinitionRuntimeSemanticView280 *)(influencePair->entity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
+        [((ModelDefinition *)(influencePair->entity->common).ownership.definitionOrClassRecord)->runtimeClassId4C])
                 (influencePair->entity);
       pairsRemaining--;
       routesRemaining = g_EntityPathingPriorityPairCount;
@@ -1068,19 +1068,19 @@ EntityPathing_RebuildOverlappingGroupRoutes
         /* another faction's model is only an obstacle */
         entityModelNode = (candidateEntity->common).ownership.modelNode;
         GridInfluence_SetLowDistanceBandsAroundWorldPoint
-                  (((ModelDefinitionRuntimeSemanticView280 *)(candidateEntity->common).ownership.definitionOrClassRecord)->
+                  (((ModelDefinition *)(candidateEntity->common).ownership.definitionOrClassRecord)->
                    placementRadiusOrClearanceDC,(entityModelNode->worldTransform).translation.y,
                    (entityModelNode->worldTransform).translation.x);
       }
       else if (candidateEntity == routeEntityRuntime) {
         routeTarget = EntityPathing_UpdateRouteSegment
                            (targetWorldY,targetWorldX,routeEntityRuntime,
-                            (EntityPathingRouteEntityRuntimeView10 *)candidateEntity);
+                            (EntityPathingRouteEntityRuntimeView *)candidateEntity);
       }
       else {
         /* the others keep their own movement target (the 0,0 target is replaced inside) */
         EntityPathing_UpdateRouteSegment
-                  (0,0,routeEntityRuntime,(EntityPathingRouteEntityRuntimeView10 *)candidateEntity);
+                  (0,0,routeEntityRuntime,(EntityPathingRouteEntityRuntimeView *)candidateEntity);
       }
       routesRemaining--;
       pairCursor++;
@@ -1173,12 +1173,11 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
         oppositeWalkCursor--;
         rowOrWalkerValue = rowOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        walkCursor++;
-        rowOrWalkerValue = GridFootprint_ClearTraversalFlagsDiagonalPositive
-                          (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
-                           columnOrWalkerValue,&walkCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (walkCursor++,
+             rowOrWalkerValue = GridFootprint_ClearTraversalFlagsDiagonalPositive
+                               (worldYQ12,worldXQ12,centerCellWorldY + GRID_SCRATCH_ROW_ABOVE_WORLD_Y,
+                                columnOrWalkerValue,&walkCursor->stateMask),
+             rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
       /* row below: downward walks, rightwards then leftwards */
@@ -1193,12 +1192,11 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
         walkCursor++;
         rowOrWalkerValue = rowOrWalkerValue + GRID_SCRATCH_COLUMN_WORLD_X;
       }
-      while( true ) {
-        centerCellCursor--;
-        rowOrWalkerValue = GridFootprint_ClearTraversalFlagsDiagonalNegative
-                          (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
-                           columnOrWalkerValue,&centerCellCursor->stateMask);
-        if (rowOrWalkerValue == 0) break;
+      while (centerCellCursor--,
+             rowOrWalkerValue = GridFootprint_ClearTraversalFlagsDiagonalNegative
+                               (worldYQ12,worldXQ12,centerCellWorldY - GRID_SCRATCH_ROW_BELOW_WORLD_Y,
+                                columnOrWalkerValue,&centerCellCursor->stateMask),
+             rowOrWalkerValue != 0) {
         columnOrWalkerValue = columnOrWalkerValue - GRID_SCRATCH_COLUMN_WORLD_X;
       }
       return;
@@ -1218,7 +1216,7 @@ void GridFootprint_ClearTraversalFlagsAroundWorldPoint
 */
 WorldPositionXYEaxEdx8 EntityPathing_UpdateRouteSegment
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *sourceRouteEntityRuntime,
-          EntityPathingRouteEntityRuntimeView10 *routeEntityRuntime)
+          EntityPathingRouteEntityRuntimeView *routeEntityRuntime)
 
 {
   ArmyMovementRuntime *entityMovement;
@@ -1610,23 +1608,20 @@ void GridScratch_FloodFillConnectedCellsRegs
     }
     /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
        below from the column of the left stopping cell up to the span's last cell (addresses as in the original) */
-    nextRowCursor = (GridScratchCell *)((int)&spanLeftOrPrevRowCursor->stateMask + rowStrideBytes);
-    spanLeftOrPrevRowCursor = (GridScratchCell *)((int)spanLeftOrPrevRowCursor + (8 - rowStrideBytes));
+    nextRowCursor = (GridScratchCell *)((uint8_t *)spanLeftOrPrevRowCursor + rowStrideBytes);
+    spanLeftOrPrevRowCursor = (GridScratchCell *)((uint8_t *)(spanLeftOrPrevRowCursor + 1) - rowStrideBytes);
     do {
       if ((spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
         GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,spanLeftOrPrevRowCursor);
       }
       spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor + 1;
-    } while (spanLeftOrPrevRowCursor <= (GridScratchCell *)((int)currentCell - rowStrideBytes));
+    } while (spanLeftOrPrevRowCursor <= (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes));
     do {
       if ((nextRowCursor->stateMask & traversalMask) == 0) {
         GridScratch_FloodFillConnectedCellsRegs(traversalMask,rowStrideBytes,nextRowCursor);
       }
       nextRowCursor = nextRowCursor + 1;
-    } while (nextRowCursor <
-             (GridScratchCell *)
-             ((int)&((GridScratchCell *)((int)currentCell - rowStrideBytes))->stateMask +
-             rowStrideBytes * 2));
+    } while (nextRowCursor < (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes + rowStrideBytes * 2));
   }
   return;
 }
@@ -1674,18 +1669,18 @@ bool GridScratch_TestConnectedReachabilityRecursiveRegs
   }
   if (targetCell <= spanLeftBoundary) {
     /* the target lies in an earlier row: search the previous row first, then the next one */
-    secondRowCursor = (uint32_t *)(rowStrideBytes + (int)spanLeftBoundary);
-    firstRowCursor = (uint32_t *)((int)spanLeftBoundary + (8 - rowStrideBytes));
+    secondRowCursor = (uint32_t *)((uint8_t *)spanLeftBoundary + rowStrideBytes);
+    firstRowCursor = (uint32_t *)((uint8_t *)(spanLeftBoundary + 2) - rowStrideBytes);
     while (((*firstRowCursor & traversalMask) != 0 ||
            (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                               (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
       firstRowCursor = firstRowCursor + 2;
-      if ((uint32_t *)((int)currentCell - rowStrideBytes) < firstRowCursor) {
+      if ((uint32_t *)((uint8_t *)currentCell - rowStrideBytes) < firstRowCursor) {
         while (((*secondRowCursor & traversalMask) != 0 ||
                (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                                   (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
           secondRowCursor = secondRowCursor + 2;
-          if ((uint32_t *)((int)((int)currentCell - rowStrideBytes) + rowStrideBytes * 2) <= secondRowCursor) {
+          if ((uint32_t *)((uint8_t *)currentCell - rowStrideBytes + rowStrideBytes * 2) <= secondRowCursor) {
             return true;
           }
         }
@@ -1695,18 +1690,18 @@ bool GridScratch_TestConnectedReachabilityRecursiveRegs
     return false;
   }
   /* the target lies in a later row: search the next row first, then the previous one */
-  secondRowCursor = (uint32_t *)((int)spanLeftCell - rowStrideBytes);
-  firstRowCursor = (uint32_t *)((int)spanLeftBoundary + rowStrideBytes);
+  secondRowCursor = (uint32_t *)((uint8_t *)spanLeftCell - rowStrideBytes);
+  firstRowCursor = (uint32_t *)((uint8_t *)spanLeftBoundary + rowStrideBytes);
   while (((*firstRowCursor & traversalMask) != 0 ||
          (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                             (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
     firstRowCursor = firstRowCursor + 2;
-    if ((uint32_t *)((int)currentCell + rowStrideBytes) <= firstRowCursor) {
+    if ((uint32_t *)((uint8_t *)currentCell + rowStrideBytes) <= firstRowCursor) {
       while (((*secondRowCursor & traversalMask) != 0 ||
              (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                                 (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
         secondRowCursor = secondRowCursor + 2;
-        if ((uint32_t *)((int)((int)currentCell + rowStrideBytes) + rowStrideBytes * -2) < secondRowCursor) {
+        if ((uint32_t *)((uint8_t *)currentCell + rowStrideBytes + rowStrideBytes * -2) < secondRowCursor) {
           return true;
         }
       }
@@ -2046,7 +2041,7 @@ GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
   bestResult.bestCost = updatedBestCost;
   bestResult.bestCellByteOffset = bestCellByteOffset;
   /* recurse into the unreached, unvisited, open cells of the rows above and below the span */
-  probeOrRowCursor = (GridScratchCell *)((int)leftEndCell + (8 - rowStrideBytes));
+  probeOrRowCursor = (GridScratchCell *)((uint8_t *)(leftEndCell + 1) - rowStrideBytes);
   do {
     cellState = probeOrRowCursor->stateMask;
     if (((GRID_PATH_COST_MAX_REACHED < probeOrRowCursor->pathCost) &&
@@ -2056,8 +2051,8 @@ GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
                          (rowStrideBytes,probeOrRowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
     }
     probeOrRowCursor++;
-  } while (probeOrRowCursor <= (GridScratchCell *)((int)probeOrRightEndCell - rowStrideBytes));
-  probeOrRowCursor = (GridScratchCell *)((int)&leftEndCell->stateMask + rowStrideBytes);
+  } while (probeOrRowCursor <= (GridScratchCell *)((uint8_t *)probeOrRightEndCell - rowStrideBytes));
+  probeOrRowCursor = (GridScratchCell *)((uint8_t *)leftEndCell + rowStrideBytes);
   do {
     cellState = probeOrRowCursor->stateMask;
     if (((GRID_PATH_COST_MAX_REACHED < probeOrRowCursor->pathCost) &&
@@ -2067,9 +2062,8 @@ GridPathUnreachableRecursiveEdiEdx8 GridPathRegion_MarkUnreachableRecursive
                          (rowStrideBytes,probeOrRowCursor,bestResult.bestCost,bestResult.bestCellByteOffset);
     }
     probeOrRowCursor++;
-  } while (probeOrRowCursor < (GridScratchCell *)
-                     ((int)&((GridScratchCell *)((int)probeOrRightEndCell - rowStrideBytes))->stateMask +
-                     rowStrideBytes * 2));
+  } while (probeOrRowCursor <
+           (GridScratchCell *)((uint8_t *)probeOrRightEndCell - rowStrideBytes + rowStrideBytes * 2));
   return bestResult;
 }
 
@@ -2165,9 +2159,9 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
     currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   }
   /* spanLeftCell and currentCell are now the stop cells left and right of the run */
-  nextRowCursor = (GridScratchCell *)((int)&spanLeftCell->stateMask + rowStrideBytes);
-  prevRowEnd = (GridScratchCell *)((int)currentCell - rowStrideBytes);
-  prevRowCursor = (GridScratchCell *)((int)spanLeftCell + (8 - rowStrideBytes));
+  nextRowCursor = (GridScratchCell *)((uint8_t *)spanLeftCell + rowStrideBytes);
+  prevRowEnd = (GridScratchCell *)((uint8_t *)currentCell - rowStrideBytes);
+  prevRowCursor = (GridScratchCell *)((uint8_t *)(spanLeftCell + 1) - rowStrideBytes);
   do {
     if ((prevRowCursor->stateMask & GRID_REACHABILITY_OPEN_STOP_MASK) == 0) {
       GridReachability_MarkOpenRegionRecursive(rowStrideBytes,prevRowCursor);
@@ -2179,7 +2173,7 @@ void GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratc
       GridReachability_MarkOpenRegionRecursive(rowStrideBytes,nextRowCursor);
     }
     nextRowCursor++;
-  } while (nextRowCursor < (GridScratchCell *)((int)&prevRowEnd->stateMask + rowStrideBytes * 2));
+  } while (nextRowCursor < (GridScratchCell *)((uint8_t *)prevRowEnd + rowStrideBytes * 2));
   return;
 }
 
@@ -2209,9 +2203,9 @@ void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScr
       spanRightCell = spanRightCell + 1) {
     spanRightCell->stateMask = spanRightCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
   }
-  nextRowCursor = (GridScratchCell *)((int)&spanLeftCell->stateMask + rowStrideBytes);
-  prevRowEnd = (GridScratchCell *)((int)spanRightCell - rowStrideBytes);
-  prevRowCursor = (GridScratchCell *)((int)spanLeftCell + (8 - rowStrideBytes));
+  nextRowCursor = (GridScratchCell *)((uint8_t *)spanLeftCell + rowStrideBytes);
+  prevRowEnd = (GridScratchCell *)((uint8_t *)spanRightCell - rowStrideBytes);
+  prevRowCursor = (GridScratchCell *)((uint8_t *)(spanLeftCell + 1) - rowStrideBytes);
   do {
     if (((prevRowCursor->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0) && (prevRowCursor->pathCost != 0)
        ) {
@@ -2225,7 +2219,7 @@ void GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScr
       GridReachability_ClearCostedRegionRecursive(rowStrideBytes,nextRowCursor);
     }
     nextRowCursor++;
-  } while (nextRowCursor < (GridScratchCell *)((int)&prevRowEnd->stateMask + rowStrideBytes * 2));
+  } while (nextRowCursor < (GridScratchCell *)((uint8_t *)prevRowEnd + rowStrideBytes * 2));
   return;
 }
 

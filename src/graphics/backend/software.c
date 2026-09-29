@@ -34,16 +34,16 @@ void SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *mas
     cycleTicks = previousTick + 20;
     shapeStep = cycleTicks % 100;
     if (shapeStep == 0) {
-      if (maskRuntime->patternState58 != 0) {
-        maskRuntime->patternState54++;
+      if (maskRuntime->incomingSubresource != 0) {
+        maskRuntime->outgoingSubresource++;
       }
-      maskRuntime->patternState58++;
+      maskRuntime->incomingSubresource++;
       SoftwareMaskBuffer_Clear(maskRuntime);
-      if (13 < maskRuntime->patternState54) {
-        maskRuntime->patternState54 = 13;
+      if (13 < maskRuntime->outgoingSubresource) {
+        maskRuntime->outgoingSubresource = 13;
       }
-      if (13 < maskRuntime->patternState58) {
-        maskRuntime->patternState58 = 13;
+      if (13 < maskRuntime->incomingSubresource) {
+        maskRuntime->incomingSubresource = 13;
       }
     }
     else {
@@ -131,8 +131,8 @@ void SoftwareRenderer_DrawQueue16Bit(GraphicsScreenCoordinate clipMaxY,GraphicsS
   while (packet = queueCursor.packet, !queueCursor.noPacket) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     /* handler index * 4 = byte offset into the handler table */
-    (**(code **)((int)g_SoftwareRasterHandlers16Bit +
-                 ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
+    (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlers16Bit +
+                                  ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount++;
     queueCursor = GraphicsPrimitiveQueue_Next(queue);
@@ -157,8 +157,8 @@ void SoftwareRenderer_DrawQueueNon16Bit(GraphicsScreenCoordinate clipMaxY,Graphi
   while (packet = queueCursor.packet, !queueCursor.noPacket) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
     /* handler index * 4 = byte offset into the handler table */
-    (**(code **)((int)g_SoftwareRasterHandlersNon16Bit +
-                 ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
+    (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlersNon16Bit +
+                                  ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
     g_PrimitiveDrawCallCount++;
     queueCursor = GraphicsPrimitiveQueue_Next(queue);
@@ -189,8 +189,8 @@ void SoftwareRenderer_DrawQueueAuxiliary
        ((packet->textureEntry->subresourceIndex != 99 &&
         (packet->textureEntry->subresourceIndex != 113)))) {
       /* handler index * 4 = byte offset into the handler table */
-      (**(code **)((int)g_SoftwareRasterHandlersAuxiliary +
-                   ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
+      (*(SoftwareRasterHandler **)((uint8_t *)g_SoftwareRasterHandlersAuxiliary +
+                                    ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
                 (clipMaxY,clipMaxX,0,0,packet);
       g_PrimitiveDrawCallCount++;
     }
@@ -263,7 +263,7 @@ DisplayModeResult SoftwarePixelFormat_BaseDisplayModeHook
   
   packTables = g_SoftwarePixelPackTables;
   if (g_SoftwarePixelPackTables == NULL) {
-    tableAllocation = g_MemoryApi.alloc(0xc00); /* sizeof(SoftwarePixelPackTables): 3 x 256 dwords */
+    tableAllocation = g_MemoryApi.alloc(sizeof(SoftwarePixelPackTables)); /* 3 x 256 dwords */
     packTables = (SoftwarePixelPackTables *)tableAllocation.payloadOrError;
     if (tableAllocation.failed) {
       failureResult.valueOrError = tableAllocation.payloadOrError;
@@ -325,21 +325,22 @@ SoftwareFramebufferResult SoftwareFramebuffer_Create
           GraphicsPixelDimension width)
 
 {
-  GraphicsPixelDimension *cursor;
+  SoftwareFramebufferAccess *framebuffer;
+  uint32_t *cursor;
   uint32_t pixelBytesOrDwordsLeft;
   ArenaAllocResult frameAllocation;
   SoftwareFramebufferResult createResult;
 
   pixelBytesOrDwordsLeft = width * height * bytesPerPixel;
-  frameAllocation = g_MemoryApi.alloc(pixelBytesOrDwordsLeft + 0x10);
-  cursor = (GraphicsPixelDimension *)frameAllocation.payloadOrError;
+  frameAllocation = g_MemoryApi.alloc(pixelBytesOrDwordsLeft + sizeof(SoftwareFramebufferAccess));
+  framebuffer = (SoftwareFramebufferAccess *)frameAllocation.payloadOrError;
   if (!frameAllocation.failed) {
-    /* header: width, height, bytesPerPixel, pixels (right behind the header) */
-    cursor[2] = bytesPerPixel;
-    *cursor = width;
-    cursor[1] = height;
-    cursor[3] = (GraphicsPixelDimension)(cursor + 4);
-    cursor = cursor + 4;
+    /* the pixels follow the header */
+    framebuffer->bytesPerPixel = bytesPerPixel;
+    framebuffer->width = width;
+    framebuffer->height = height;
+    framebuffer->pixels = (uint8_t *)(framebuffer + 1);
+    cursor = (uint32_t *)(framebuffer + 1);
     /* whole dwords only; the original also leaves up to 3 trailing bytes as allocated */
     for (pixelBytesOrDwordsLeft = pixelBytesOrDwordsLeft >> 2; pixelBytesOrDwordsLeft != 0; pixelBytesOrDwordsLeft--) {
       *cursor = 0;
@@ -597,12 +598,12 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
      the forward (0x00420F20) and inverse (0x0041FF20) word tables, then packs to 16 bits with the
      runtime quantize masks (0x0041F6E8) and PMADDWD weights (0x0041F6E0), which the display
      setup fills for 555 or 565. */
-  const short *forward = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearInverseFactors,0);
-  const short *inverse = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearForwardFactors,0);
-  const uint16_t *quantizeMask = (const uint16_t *)(uintptr_t)THANDOR_ADDR(g_SoftwarePixelMmxConstants,0x8);
-  const short *packWeights = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwarePixelMmxConstants,0);
+  const short *forward = (const short *)g_SoftwareBilinearInverseFactors;
+  const short *inverse = (const short *)g_SoftwareBilinearForwardFactors;
+  const uint16_t *quantizeMask = (const uint16_t *)&g_SoftwarePixelMmxConstants.quantizeMasksQ12;
+  const short *packWeights = (const short *)&g_SoftwarePixelMmxConstants.packWeights;
   uint8_t *asset = (uint8_t *)sourceAsset;
-  uint8_t *entry;
+  GraphicsTextureSourceEntry *entry;
   uint8_t *sourceBase;
   uint8_t *sourceRow;
   uint16_t *destinationRow;
@@ -616,23 +617,25 @@ void SoftwareTextureSource_StretchDirectColorBilinear16
   uint32_t pair;
 
   /* only a "gfx" texture source; the entry table holds 0x20-byte GraphicsTextureSourceEntry records */
-  if (((uint32_t)((GraphicsTextureSourceAsset *)asset)->common.magic != ASSET_MAGIC_GFX) || (subresourceIndex >= ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceCount)) {
+  if (((uint32_t)sourceAsset->common.magic != ASSET_MAGIC_GFX) ||
+      (subresourceIndex >= sourceAsset->tableDescriptor.subresourceCount)) {
     return;
   }
-  entry = asset + ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceTableOffset + subresourceIndex * 0x20;
+  entry = (GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset +
+                                         subresourceIndex * sizeof(GraphicsTextureSourceEntry));
   /* paletteIndex -1: ARGB8888 texels */
-  if (((uint32_t)framebuffer->bytesPerPixel != 2) || (((GraphicsTextureSourceEntry *)entry)->paletteIndex != -1)) {
+  if (((uint32_t)framebuffer->bytesPerPixel != 2) || (entry->paletteIndex != -1)) {
     return;
   }
   pitchPixels = framebuffer->width;
   destinationRow = (uint16_t *)framebuffer->pixels +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = ((GraphicsTextureSourceEntry *)entry)->pixelWidth;
-  sourceHeight = ((GraphicsTextureSourceEntry *)entry)->pixelHeight;
+  sourceWidth = entry->pixelWidth;
+  sourceHeight = entry->pixelHeight;
   /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + ((GraphicsTextureSourceEntry *)entry)->dataOffset;
+  sourceBase = asset + entry->dataOffset;
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
@@ -700,11 +703,11 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
      decompiled version (300 lines of lane emulation) left the end-movie frames static. Two
      destination pixels per step; each blends four ARGB8888 neighbours through the forward
      (0x00420F20) and inverse (0x0041FF20) word tables, as PMULHW does. */
-  const short *forward = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearInverseFactors,0);
-  const short *inverse = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearForwardFactors,0);
-  const unsigned long long clampMask = *(const unsigned long long *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearPackedByteClampMask,0);
+  const short *forward = (const short *)g_SoftwareBilinearInverseFactors;
+  const short *inverse = (const short *)g_SoftwareBilinearForwardFactors;
+  const unsigned long long clampMask = g_SoftwareBilinearPackedByteClampMask;
   uint8_t *asset = (uint8_t *)sourceAsset;
-  uint8_t *entry;
+  GraphicsTextureSourceEntry *entry;
   uint8_t *sourceBase;
   uint8_t *sourceRow;
   uint32_t *destinationRow;
@@ -718,23 +721,25 @@ void SoftwareTextureSource_StretchDirectColorBilinear32
   uint32_t pair;
 
   /* only a "gfx" texture source; the entry table holds 0x20-byte GraphicsTextureSourceEntry records */
-  if (((uint32_t)((GraphicsTextureSourceAsset *)asset)->common.magic != ASSET_MAGIC_GFX) || (subresourceIndex >= ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceCount)) {
+  if (((uint32_t)sourceAsset->common.magic != ASSET_MAGIC_GFX) ||
+      (subresourceIndex >= sourceAsset->tableDescriptor.subresourceCount)) {
     return;
   }
-  entry = asset + ((GraphicsTextureSourceAsset *)asset)->tableDescriptor.subresourceTableOffset + subresourceIndex * 0x20;
+  entry = (GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset +
+                                         subresourceIndex * sizeof(GraphicsTextureSourceEntry));
   /* paletteIndex -1: ARGB8888 texels */
-  if (((uint32_t)framebuffer->bytesPerPixel != 4) || (((GraphicsTextureSourceEntry *)entry)->paletteIndex != -1)) {
+  if (((uint32_t)framebuffer->bytesPerPixel != 4) || (entry->paletteIndex != -1)) {
     return;
   }
   pitchPixels = framebuffer->width;
   destinationRow = (uint32_t *)framebuffer->pixels +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = ((GraphicsTextureSourceEntry *)entry)->pixelWidth;
-  sourceHeight = ((GraphicsTextureSourceEntry *)entry)->pixelHeight;
+  sourceWidth = entry->pixelWidth;
+  sourceHeight = entry->pixelHeight;
   /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + ((GraphicsTextureSourceEntry *)entry)->dataOffset;
+  sourceBase = asset + entry->dataOffset;
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
@@ -942,8 +947,9 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank16
     if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
       return;
     }
-    /* the palette banks follow the 0x200-byte asset header, 256 entries of 8 bytes each */
-    region.palette = (const uint8_t *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
+    /* the palette banks follow the asset header, 256 entries of 8 bytes each */
+    region.palette =
+        (const uint8_t *)sourceAsset + GFX_ASSET_HEADER_SIZE + paletteBankIndex * GFX_PALETTE_BANK_SIZE;
   }
   for (y = 0; y < region.height; y++) {
     const uint8_t *texel = region.texels + y * region.texelStride;
@@ -996,8 +1002,9 @@ void SoftwareTextureSource_BlitSourceAlphaPaletteBank32
     if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
       return;
     }
-    /* the palette banks follow the 0x200-byte asset header, 256 entries of 8 bytes each */
-    region.palette = (const uint8_t *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
+    /* the palette banks follow the asset header, 256 entries of 8 bytes each */
+    region.palette =
+        (const uint8_t *)sourceAsset + GFX_ASSET_HEADER_SIZE + paletteBankIndex * GFX_PALETTE_BANK_SIZE;
   }
   for (y = 0; y < region.height; y++) {
     const uint8_t *texel = region.texels + y * region.texelStride;
@@ -2880,7 +2887,8 @@ DisplayModeResult SoftwareRenderer_SetDisplayMode
     else {
       g_SoftwareDrawQueue = SoftwareRenderer_DrawQueueNon16Bit;
     }
-    hookResult = THANDOR_BITCAST(ArenaAllocResult, DisplayModeResult, g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height));
+    hookResult = THANDOR_BITCAST(ArenaAllocResult, DisplayModeResult,
+                                 g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height));
     previousDepthBuffer = g_SoftwareDepthBuffer;
     if (!hookResult.failed) {
       LOCK();
@@ -2997,8 +3005,8 @@ static void SoftwareTexture_BuildIntensityLut(void)
    below it. Horizontal: the two neighbours, widened like SoftwareTexture_CrossFadeByte, weighted by
    g_SoftwareBilinearPackedInterpolationWeights256[fraction] (PMADDWD, high half kept). Vertical:
    the two results times the first lane of the row weights (PMULHW), summed, >> 2, clamped to 255. */
-static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sourceWidth, uint32_t xFixed, short upperWeight,
-                                             short lowerWeight)
+static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sourceWidth, uint32_t xFixed,
+                                                short upperWeight, short lowerWeight)
 {
     const short *weights = (const short *)(&g_SoftwareBilinearPackedInterpolationWeights256 + (xFixed & 0xff) * 8);
     const uint8_t *upper = row + (xFixed >> 8);
@@ -3123,8 +3131,9 @@ void SoftwareTexture_BilinearBlendScaleSubresources
 
 /* Address: 0x004D16D0.
    Starts a new depth epoch instead of clearing the depth buffer: the epoch in the top byte of every depth
-   value drops by one (0x01000000), so every new depth is nearer than any value left from earlier epochs. Only when the epoch underflows or
-   reaches zero is the width*height depth buffer really cleared (0xFFFFFFFF) and the epoch reset to 0xFF000000.
+   value drops by one (0x01000000), so every new depth is nearer than any value left from earlier epochs. Only
+   when the epoch underflows or reaches zero is the width*height depth buffer really cleared (0xFFFFFFFF) and the
+   epoch reset to 0xFF000000.
 */
 void SoftwareRenderer_AdvanceDepthEpoch(void)
 
@@ -3183,8 +3192,9 @@ void SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 
 /* Address: 0x00519270.
    Called by SoftwareMaskBuffer_AdvancePatternByPercentTick once per tick: adds 0x1F to every nonzero byte of
-   the software mask, saturating at 0xFF (PCMPEQB / PAND / PXOR / PADDUSB); zero bytes stay zero. The mask size is taken from g_GraphicsTextureSourceGetLogicalSize, and the
-   buffer is processed in 32-byte blocks, width * height >> 5 of them (the remainder is left alone). Quirk kept:
+   the software mask, saturating at 0xFF (PCMPEQB / PAND / PXOR / PADDUSB); zero bytes stay zero. The mask size
+   is taken from g_GraphicsTextureSourceGetLogicalSize, and the buffer is processed in 32-byte blocks,
+   width * height >> 5 of them (the remainder is left alone). Quirk kept:
    the block counter is a do-while loop, so fewer than 32 pixels means 2^32 blocks. Nothing happens when
    maskPixels is NULL. ABI: all registers are preserved.
 */
@@ -3416,13 +3426,12 @@ void SoftwareMaskBuffer_ApplyHorizontalBandBit(UiBooleanState32 reverseRows,Terr
    Readies one packet for the software raster handlers: sorts the three 0x20-byte vertices by screen Y, snaps
    screen X/Y to whole Q12 pixels, adds the current depth epoch to each depth, sets the flat-shaded flag when all
    vertex colours are equal and, for textured packets, scales U/V from a 256-texel range down to the texture's
-   widthLog2/heightLog2 size. The vertex slots are addressed as packet pointers (slot->vertices[0]), as Ghidra
-   typed the swap registers.
+   widthLog2/heightLog2 size.
 */
 void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
 
 {
-  GraphicsPrimitivePacket *thirdVertexSlot;
+  GraphicsPrimitiveVertexRaw *thirdVertexSlot;
   GraphicsPrimitiveScreenCoordinate *screenYField;
   GraphicsPrimitiveDepthFixed *depthField;
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordField;
@@ -3448,50 +3457,50 @@ void SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
   GraphicsPrimitiveTextureCoordinateFixed savedTextureV;
   int32_t depthEpoch;
   uint8_t texelShift;
-  GraphicsPrimitivePacket *swapTarget;
-  GraphicsPrimitivePacket *swapSource;
-  GraphicsPrimitivePacket *rotateSource;
+  GraphicsPrimitiveVertexRaw *swapTarget;
+  GraphicsPrimitiveVertexRaw *swapSource;
+  GraphicsPrimitiveVertexRaw *rotateSource;
   
   screenY0 = packet->vertices[0].screenY;
   screenY1 = packet->vertices[1].screenY;
   screenY2 = packet->vertices[2].screenY;
-  rotateSource = (GraphicsPrimitivePacket *)(packet->vertices + 1);
-  thirdVertexSlot = (GraphicsPrimitivePacket *)(packet->vertices + 2);
+  rotateSource = packet->vertices + 1;
+  thirdVertexSlot = packet->vertices + 2;
   swapSource = thirdVertexSlot;
   if (screenY1 < screenY0) {
-    swapTarget = packet;
+    swapTarget = packet->vertices;
     if ((screenY1 <= screenY2) &&
-       (swapTarget = (GraphicsPrimitivePacket *)(packet->vertices + 1), swapSource = packet,
+       (swapTarget = packet->vertices + 1, swapSource = packet->vertices,
        rotateSource = thirdVertexSlot, screenY2 < screenY0))
-    goto SoftwareRenderer_PrepareTrianglePacket_RotateThreeVerticesForScreenYOrdering;
+    goto rotate;
   }
   else {
     swapTarget = thirdVertexSlot;
     if (screenY2 < screenY0) {
-SoftwareRenderer_PrepareTrianglePacket_RotateThreeVerticesForScreenYOrdering:
-      savedScreenX = swapTarget->vertices[0].screenX;
-      savedScreenY = swapTarget->vertices[0].screenY;
-      savedBackendCoord0 = swapTarget->vertices[0].backendCoord0;
-      savedBackendCoord1 = swapTarget->vertices[0].backendCoord1;
-      savedDepth = swapTarget->vertices[0].depth;
-      savedTextureU = swapTarget->vertices[0].textureU;
-      savedTextureV = swapTarget->vertices[0].textureV;
-      savedColorOrSecondColor = swapTarget->vertices[0].diffuseColor;
-      movedScreenY = rotateSource->vertices[0].screenY;
-      movedBackendCoord0 = rotateSource->vertices[0].backendCoord0;
-      movedBackendCoord1 = rotateSource->vertices[0].backendCoord1;
-      movedDepth = rotateSource->vertices[0].depth;
-      movedTextureU = rotateSource->vertices[0].textureU;
-      movedTextureV = rotateSource->vertices[0].textureV;
-      movedColorOrFirstColor = rotateSource->vertices[0].diffuseColor;
-      swapTarget->vertices[0].screenX = rotateSource->vertices[0].screenX;
-      swapTarget->vertices[0].screenY = movedScreenY;
-      swapTarget->vertices[0].backendCoord0 = movedBackendCoord0;
-      swapTarget->vertices[0].backendCoord1 = movedBackendCoord1;
-      swapTarget->vertices[0].depth = movedDepth;
-      swapTarget->vertices[0].textureU = movedTextureU;
-      swapTarget->vertices[0].textureV = movedTextureV;
-      swapTarget->vertices[0].diffuseColor = movedColorOrFirstColor;
+rotate:
+      savedScreenX = swapTarget->screenX;
+      savedScreenY = swapTarget->screenY;
+      savedBackendCoord0 = swapTarget->backendCoord0;
+      savedBackendCoord1 = swapTarget->backendCoord1;
+      savedDepth = swapTarget->depth;
+      savedTextureU = swapTarget->textureU;
+      savedTextureV = swapTarget->textureV;
+      savedColorOrSecondColor = swapTarget->diffuseColor;
+      movedScreenY = rotateSource->screenY;
+      movedBackendCoord0 = rotateSource->backendCoord0;
+      movedBackendCoord1 = rotateSource->backendCoord1;
+      movedDepth = rotateSource->depth;
+      movedTextureU = rotateSource->textureU;
+      movedTextureV = rotateSource->textureV;
+      movedColorOrFirstColor = rotateSource->diffuseColor;
+      swapTarget->screenX = rotateSource->screenX;
+      swapTarget->screenY = movedScreenY;
+      swapTarget->backendCoord0 = movedBackendCoord0;
+      swapTarget->backendCoord1 = movedBackendCoord1;
+      swapTarget->depth = movedDepth;
+      swapTarget->textureU = movedTextureU;
+      swapTarget->textureV = movedTextureV;
+      swapTarget->diffuseColor = movedColorOrFirstColor;
       movedScreenY = packet->vertices[0].screenY;
       movedBackendCoord0 = packet->vertices[0].backendCoord0;
       movedBackendCoord1 = packet->vertices[0].backendCoord1;
@@ -3499,14 +3508,14 @@ SoftwareRenderer_PrepareTrianglePacket_RotateThreeVerticesForScreenYOrdering:
       movedTextureU = packet->vertices[0].textureU;
       movedTextureV = packet->vertices[0].textureV;
       movedColorOrFirstColor = packet->vertices[0].diffuseColor;
-      rotateSource->vertices[0].screenX = packet->vertices[0].screenX;
-      rotateSource->vertices[0].screenY = movedScreenY;
-      rotateSource->vertices[0].backendCoord0 = movedBackendCoord0;
-      rotateSource->vertices[0].backendCoord1 = movedBackendCoord1;
-      rotateSource->vertices[0].depth = movedDepth;
-      rotateSource->vertices[0].textureU = movedTextureU;
-      rotateSource->vertices[0].textureV = movedTextureV;
-      rotateSource->vertices[0].diffuseColor = movedColorOrFirstColor;
+      rotateSource->screenX = packet->vertices[0].screenX;
+      rotateSource->screenY = movedScreenY;
+      rotateSource->backendCoord0 = movedBackendCoord0;
+      rotateSource->backendCoord1 = movedBackendCoord1;
+      rotateSource->depth = movedDepth;
+      rotateSource->textureU = movedTextureU;
+      rotateSource->textureV = movedTextureV;
+      rotateSource->diffuseColor = movedColorOrFirstColor;
       packet->vertices[0].screenX = savedScreenX;
       packet->vertices[0].screenY = savedScreenY;
       packet->vertices[0].backendCoord0 = savedBackendCoord0;
@@ -3515,44 +3524,44 @@ SoftwareRenderer_PrepareTrianglePacket_RotateThreeVerticesForScreenYOrdering:
       packet->vertices[0].textureU = savedTextureU;
       packet->vertices[0].textureV = savedTextureV;
       packet->vertices[0].diffuseColor = savedColorOrSecondColor;
-      goto SoftwareRenderer_PrepareTrianglePacket_QuantizeOrderedVerticesAndPrepareFlags;
+      goto quantize;
     }
     swapTarget = rotateSource;
     if (screenY1 <= screenY2)
-    goto SoftwareRenderer_PrepareTrianglePacket_QuantizeOrderedVerticesAndPrepareFlags;
+    goto quantize;
   }
-  savedScreenX = swapTarget->vertices[0].screenX;
-  savedScreenY = swapTarget->vertices[0].screenY;
-  savedBackendCoord0 = swapTarget->vertices[0].backendCoord0;
-  savedBackendCoord1 = swapTarget->vertices[0].backendCoord1;
-  savedDepth = swapTarget->vertices[0].depth;
-  savedTextureU = swapTarget->vertices[0].textureU;
-  savedTextureV = swapTarget->vertices[0].textureV;
-  savedColorOrSecondColor = swapTarget->vertices[0].diffuseColor;
-  movedScreenY = swapSource->vertices[0].screenY;
-  movedBackendCoord0 = swapSource->vertices[0].backendCoord0;
-  movedBackendCoord1 = swapSource->vertices[0].backendCoord1;
-  movedDepth = swapSource->vertices[0].depth;
-  movedTextureU = swapSource->vertices[0].textureU;
-  movedTextureV = swapSource->vertices[0].textureV;
-  movedColorOrFirstColor = swapSource->vertices[0].diffuseColor;
-  swapTarget->vertices[0].screenX = swapSource->vertices[0].screenX;
-  swapTarget->vertices[0].screenY = movedScreenY;
-  swapTarget->vertices[0].backendCoord0 = movedBackendCoord0;
-  swapTarget->vertices[0].backendCoord1 = movedBackendCoord1;
-  swapTarget->vertices[0].depth = movedDepth;
-  swapTarget->vertices[0].textureU = movedTextureU;
-  swapTarget->vertices[0].textureV = movedTextureV;
-  swapTarget->vertices[0].diffuseColor = movedColorOrFirstColor;
-  swapSource->vertices[0].screenX = savedScreenX;
-  swapSource->vertices[0].screenY = savedScreenY;
-  swapSource->vertices[0].backendCoord0 = savedBackendCoord0;
-  swapSource->vertices[0].backendCoord1 = savedBackendCoord1;
-  swapSource->vertices[0].depth = savedDepth;
-  swapSource->vertices[0].textureU = savedTextureU;
-  swapSource->vertices[0].textureV = savedTextureV;
-  swapSource->vertices[0].diffuseColor = savedColorOrSecondColor;
-SoftwareRenderer_PrepareTrianglePacket_QuantizeOrderedVerticesAndPrepareFlags:
+  savedScreenX = swapTarget->screenX;
+  savedScreenY = swapTarget->screenY;
+  savedBackendCoord0 = swapTarget->backendCoord0;
+  savedBackendCoord1 = swapTarget->backendCoord1;
+  savedDepth = swapTarget->depth;
+  savedTextureU = swapTarget->textureU;
+  savedTextureV = swapTarget->textureV;
+  savedColorOrSecondColor = swapTarget->diffuseColor;
+  movedScreenY = swapSource->screenY;
+  movedBackendCoord0 = swapSource->backendCoord0;
+  movedBackendCoord1 = swapSource->backendCoord1;
+  movedDepth = swapSource->depth;
+  movedTextureU = swapSource->textureU;
+  movedTextureV = swapSource->textureV;
+  movedColorOrFirstColor = swapSource->diffuseColor;
+  swapTarget->screenX = swapSource->screenX;
+  swapTarget->screenY = movedScreenY;
+  swapTarget->backendCoord0 = movedBackendCoord0;
+  swapTarget->backendCoord1 = movedBackendCoord1;
+  swapTarget->depth = movedDepth;
+  swapTarget->textureU = movedTextureU;
+  swapTarget->textureV = movedTextureV;
+  swapTarget->diffuseColor = movedColorOrFirstColor;
+  swapSource->screenX = savedScreenX;
+  swapSource->screenY = savedScreenY;
+  swapSource->backendCoord0 = savedBackendCoord0;
+  swapSource->backendCoord1 = savedBackendCoord1;
+  swapSource->depth = savedDepth;
+  swapSource->textureU = savedTextureU;
+  swapSource->textureV = savedTextureV;
+  swapSource->diffuseColor = savedColorOrSecondColor;
+quantize:
   depthEpoch = g_SoftwareDepthEpoch;
   movedColorOrFirstColor = packet->vertices[0].diffuseColor;
   savedColorOrSecondColor = packet->vertices[1].diffuseColor;

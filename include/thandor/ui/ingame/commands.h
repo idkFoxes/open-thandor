@@ -17,11 +17,11 @@
 #define UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING 0x800 /* an end trigger fired and chose the end movie
                                                            (set in gameplay/session/runtime.c) */
 #define UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED 0x10000 /* command 150 with flag bit 1: the session is closed
-                                                          (InGameCommand150_HandlePlayerDepartureAndOwnership) */
+                                                          (InGameCommand_HandlePlayerDeparture) */
 #define UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT 0x20000 /* command 150 reported the local player's departure */
 /* g_UiCommandRuntimeFlags bits that gate the simulation step (InGameRuntime_UpdateSimulationAndNetworkTick) */
-#define UI_COMMAND_RUNTIME_FLAG_PAUSED 0x01 /* toggled once every player agrees (InGameCommandMode_
-                                               TogglePlayerFlagBit0AndReconcileGlobal); set at session start */
+#define UI_COMMAND_RUNTIME_FLAG_PAUSED 0x01 /* toggled once every player agrees
+                                               (InGameCommand_TogglePauseRequest); set at session start */
 #define UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED 0x08 /* an end trigger ended the local faction
                                                             (InGameConditionRuntime_UpdateScheduledRecords);
                                                             the step then sets occupancy bit 0 on every cell */
@@ -49,7 +49,7 @@
                                                           (InGameUiAction1024_Handler) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD 0x100000 /* cheat hotkey: build and research times / 16 */
 /* SelectionPlayerRuntimeBlock.sessionFlags bit: the player asks for a pause (shown as "P" in the player roster;
-   toggled by InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal) */
+   toggled by InGameCommand_TogglePauseRequest) */
 #define PLAYER_SESSION_FLAG_PAUSE_REQUESTED 0x01
 /* sessionFlags bit: the player's machine renders too few frames (set/cleared through command 0x340 by
    InGameHud_UpdateStatusCountersAndSessionPrompts; shown as a highlighted "W" in the player roster) */
@@ -64,13 +64,13 @@
 /* Buttons of the quit game window (InGameUiImage.quitMenuSurrenderButton / quitMenuRestartMissionButton) */
 #define INGAME_ACTION_QUIT_SURRENDER 0x101E /* command 150 mode 1: destroys the local faction's armies */
 #define INGAME_ACTION_QUIT_RESTART_MISSION 0x1027 /* command 150 mode 2 (label unverified) */
-/* flags of InGameCommand150_HandlePlayerDepartureAndOwnership; neither bit: the player left the session */
-#define INGAME_COMMAND150_FLAG_SURRENDER 0x01 /* destroy every army of the player's faction */
-#define INGAME_COMMAND150_FLAG_CLOSE_SESSION 0x02 /* sets UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED */
+/* flags of InGameCommand_HandlePlayerDeparture; neither bit: the player left the session */
+#define INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER 0x01 /* destroy every army of the player's faction */
+#define INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION 0x02 /* sets UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED */
 
 /* Action id of the results screen's resultsContinueButton (InGameCommandAction_SetFlag1000OrMarkReady);
    a network host only shows it once every client has pressed its own
-   (FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B). */
+   (FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton). */
 #define INGAME_ACTION_RESULTS_CONTINUE 0x101B
 #define UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED 0x80 /* a command-mode click captured the pointer
                                                                  (InGameWorldInput_BeginPointerCapture); the
@@ -87,6 +87,31 @@
 /* Bit of the last argument of InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState (command
    INGAME_COMMAND_EDITOR_ACTIVE_STATE): set leaves the editor, clear enters it. */
 #define EDITOR_ACTIVE_STATE_LEAVE 0x04
+/* g_UiCommandRuntimeFlags bit hiding the world view status texts (UiCommandVisibility*Text_DrawWhenAllowed); no
+   writer with a constant mask, so it can only come from command 0x310 */
+#define UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS 0x200
+/* labelFlags bits of those world view status texts */
+#define UI_WORLD_TEXT_PAUSED_ONLY 0x800 /* drawn only while the game is paused */
+#define UI_WORLD_TEXT_SHIFT_BY_STEP_TICKS 0x1000 /* needs g_InGameSimulationStepTicks > 1; text shifted by ticks - 2
+                                                    bytes */
+/* Army stock panel (UiCommandSpriteVariantA_*, g_UiCommandSpriteVariantARecords) */
+#define ARMY_STOCK_ENTRY_COUNT 24
+#define ARMY_STOCK_MAX_COLUMNS 4
+#define INGAME_CURSOR_FRAME_ARMY_STOCK 10 /* pointer over an army stock slot */
+#define INGAME_CURSOR_FRAME_ARMY_STOCK_SELL 12 /* the same with Ctrl held: a click sells the army */
+/* Message history text of another player's departure (rich text: selector 0 = player name) */
+#define TEXT_ID_PLAYER_DEPARTED 0xFF08
+/* Terrain material swatches of the material tool (UiCommandMatrix_SelectIndex): twelve per page, the page
+   scrolls in rows of three */
+#define MATERIAL_SWATCH_COUNT 12
+#define MATERIAL_SWATCH_ROW_LENGTH 3
+/* Relaxation passes of the smoothing page buttons (InGameCommandRange_DispatchState0/1) */
+#define TERRAIN_RELAXATION_BUTTON_PASSES 128
+/* g_UiCommandModeGColorVariantFlags bit and g_UiCommandModeGColorVariantLimit values of the two terrain colour
+   variants (UiCommandModeG_ApplyMaskedColorVariant / _ApplyRawColorVariant) */
+#define UI_COMMAND_MODE_G_COLOR_VARIANT_MASKED 0x1000
+#define UI_COMMAND_MODE_G_COLOR_LIMIT_MASKED 0x7FFFFFFF
+#define UI_COMMAND_MODE_G_COLOR_LIMIT_RAW 0x00FFFFFF
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
@@ -150,7 +175,7 @@ void UiCommandVisibilitySingleLineText_DrawWhenAllowed
           UiPixelCoordinate clipRight,UiNodeBase *control);
 
 /* 0x0055F4A0 */
-void InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
+void InGameCommand_TogglePauseRequest
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x005604D0 */
@@ -185,7 +210,7 @@ void InGameCommandState_SetRuntimeFlag1000(UiNodeBase *source);
 void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source);
 
 /* 0x0056D920 */
-void UiCommandModeG_ClearNodeFlag00800000(WorldRuntimeContext *context);
+void UiCommandModeG_HideGridVertexMarkers(WorldRuntimeContext *context);
 
 /* 0x0056DD50 */
 void InGameCommandModeC_Select0(UiSpriteButtonControl *source);
@@ -254,7 +279,7 @@ void InGameCommandModeF_Select1(UiSpriteButtonControl *source);
 void UiCommandRuntime_CallbackNoOp(void);
 
 /* 0x0055F280 */
-void InGameCommand150_HandlePlayerDepartureAndOwnership
+void InGameCommand_HandlePlayerDeparture
           (PlayerOrFactionRuntimeId32 playerOrFactionId,uint32_t value1,uint32_t value2,
           GameEntityCommandFlags flags);
 
@@ -262,7 +287,7 @@ void InGameCommand150_HandlePlayerDepartureAndOwnership
 void UiCommandModeG_ApplyMaskedColorVariant(void *worldRuntime);
 
 /* 0x0056DA50 */
-void UiCommandModeG_SetNodeFlag02000000(WorldRuntimeContext *context);
+void UiCommandModeG_ShowRegionMarkers(WorldRuntimeContext *context);
 
 /* 0x00571440 */
 void UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root);
@@ -272,37 +297,37 @@ void UiCommandRuntimeFlags_ApplyClearSetToggleMasks(PlayerRuntimeId playerRuntim
           UiCommandRuntimeFlagMask setMask,UiCommandRuntimeFlagMask clearMask);
 
 /* 0x0056D860 */
-void UiCommandModeG_ClearNodeFlag00100000(WorldRuntimeContext *context);
+void UiCommandModeG_HideSurfacePointMarker(WorldRuntimeContext *context);
 
 /* 0x0056D880 */
-void UiCommandModeG_SetNodeFlag00200000(WorldRuntimeContext *context);
+void UiCommandModeG_ShowTerrainPointMarkers(WorldRuntimeContext *context);
 
 /* 0x0056D940 */
-void UiCommandModeG_SetNodeFlag01000000(WorldRuntimeContext *context);
+void UiCommandModeG_SetSecondarySurfaceOnly(WorldRuntimeContext *context);
 
 /* 0x0056D8C0 */
-void UiCommandModeG_SetNodeFlag00000400(WorldRuntimeContext *context);
+void UiCommandModeG_ShowArmyMetrics(WorldRuntimeContext *context);
 
 /* 0x0056D8E0 */
-void UiCommandModeG_ClearNodeFlags00000480(WorldRuntimeContext *context);
+void UiCommandModeG_HideArmyMetricsAndEndDragSelect(WorldRuntimeContext *context);
 
 /* 0x0056D840 */
-void UiCommandModeG_SetNodeFlag00100000(WorldRuntimeContext *context);
+void UiCommandModeG_ShowSurfacePointMarker(WorldRuntimeContext *context);
 
 /* 0x0056D8A0 */
-void UiCommandModeG_ClearNodeFlag00200000(WorldRuntimeContext *context);
+void UiCommandModeG_HideTerrainPointMarkers(WorldRuntimeContext *context);
 
 /* 0x0056D960 */
-void UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context);
+void UiCommandModeG_ClearSecondarySurfaceOnly(WorldRuntimeContext *context);
 
 /* 0x0056D9F0 */
 void UiCommandModeG_ApplyRawColorVariant(void *worldRuntime);
 
 /* 0x0056DA70 */
-void UiCommandModeG_ClearNodeFlag02000000(WorldRuntimeContext *context);
+void UiCommandModeG_HideRegionMarkers(WorldRuntimeContext *context);
 
 /* 0x0056D900 */
-void UiCommandModeG_SetNodeFlag00800000(WorldRuntimeContext *context);
+void UiCommandModeG_ShowGridVertexMarkers(WorldRuntimeContext *context);
 
 /* 0x0056DA90 */
 InGameRuntimeRootImageC3E4 * UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableControl *source);

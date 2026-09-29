@@ -28,12 +28,12 @@
 #define INGAME_COMMAND_TARGET_POSITION 0xDE0 /* InGamePlayerSelection_ApplyTargetPositionCommand */
 #define INGAME_COMMAND_PLACE_ARMY 0x13A0 /* InGameCommand_ExecuteLocalPlacementFromSelection */
 #define INGAME_COMMAND_SELECT_MODEL_AND_ARMY 0x1620 /* FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel */
-#define INGAME_COMMAND_SET_SESSION_FLAGS 0x340 /* FrontendPlayerRuntime_SetReadyFlagById */
+#define INGAME_COMMAND_SET_SESSION_FLAGS 0x340 /* FrontendPlayerRuntime_SetSlowRenderingFlagById */
 #define INGAME_COMMAND_ASSIGN_ARMY_TOKEN 0x16B0 /* FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 */
 #define INGAME_COMMAND_APPLY_UI_FLAG_MASKS 0x310 /* UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
-#define INGAME_COMMAND_MARK_PLAYER_READY_101B 0x470 /* FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B */
+#define INGAME_COMMAND_MARK_PLAYER_READY_101B 0x470 /* FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton */
 /* Commands issued by the in-game command buttons (ui/ingame/commands) */
-#define INGAME_COMMAND_PLAYER_DEPARTURE 0x150 /* InGameCommand150_HandlePlayerDepartureAndOwnership */
+#define INGAME_COMMAND_PLAYER_DEPARTURE 0x150 /* InGameCommand_HandlePlayerDeparture */
 #define INGAME_COMMAND_SELECTION_GROUP 0xBE0 /* FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh */
 #define INGAME_COMMAND_QUEUE_ARMY 0xFE0 /* GameFactionRuntime_RegisterArmyAssetPointers */
 #define INGAME_COMMAND_CONSUME_PENDING_ARMY 0x14F0 /* GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid */
@@ -78,9 +78,9 @@
 #define INGAME_COMMAND_PLACEMENT_ROTATE 0x30F0 /* SelectionPlayerRuntime_RotatePrimarySelectionBy */
 #define INGAME_COMMAND_EDITOR_SAVE_MAP 0x31C0 /* InGameUiCommand_SaveFieldAndLevelAssetImages */
 #define INGAME_COMMAND_EDITOR_SMOOTH 0x3260 /* FieldGrid_ApplyEncodedCellUpdate */
-#define INGAME_COMMAND_EDITOR_SET_RECEIVER_EXCLUDED 0x32A0 /* FieldGrid_ApplyMaskDFFFFFFF */
-#define INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED 0x32E0 /* FieldGrid_ApplyMaskBFFFFFFF */
-#define INGAME_COMMAND_EDITOR_APPLY_REGION_MASK 0x3320 /* FieldGrid_ApplyCallerMask */
+#define INGAME_COMMAND_EDITOR_SET_RECEIVER_EXCLUDED 0x32A0 /* FieldGrid_SetCellFluidReceiverExcluded */
+#define INGAME_COMMAND_EDITOR_SET_SOURCE_EXCLUDED 0x32E0 /* FieldGrid_SetCellFluidSourceExcluded */
+#define INGAME_COMMAND_EDITOR_APPLY_REGION_MASK 0x3320 /* FieldGrid_SetCellResourceSupportFlag */
 /* Frontend command codes work the same way, relative to FrontendCommandQueue_EnqueueLocalPlayerCommand
    (0x00543F50). */
 #define FRONTEND_COMMAND_CODE_BASE 0x00543F50
@@ -89,10 +89,11 @@
 #define FRONTEND_COMMAND_STOP_ROM_TRANSITION 0x1340 /* ScenarioCatalog_RequestRomTransitionStopCallback */
 #define FRONTEND_COMMAND_EXECUTE_ROM_ACTION 0x1350 /* FrontendRomActionTable_ExecuteRecord */
 #define FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE 0x16F0 /* FrontendTransfer_MarkUnavailableIfModeBit0Callback */
+#define FRONTEND_COMMAND_SNAPSHOTS_RECEIVED 0x1710 /* FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady */
 /* Lobby handshake and chat (ui/frontend/player) */
-#define FRONTEND_COMMAND_BRIEFING_READY 0x1E0 /* FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08 */
+#define FRONTEND_COMMAND_BRIEFING_READY 0x1E0 /* FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton */
 #define FRONTEND_COMMAND_SET_CONSENSUS_VALUE 0x820 /* FrontendPlayerRuntime_SetConsensusValueAndRefresh */
-#define FRONTEND_COMMAND_SCENARIO_CATALOG_RECEIVED 0xE00 /* FrontendPlayerRuntime_MarkFlag01AndStoreValuesById */
+#define FRONTEND_COMMAND_SCENARIO_CATALOG_RECEIVED 0xE00 /* FrontendPlayerRuntime_MarkScenarioCatalogReceivedById */
 #define FRONTEND_COMMAND_CHAT_BEGIN 0x1540 /* FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById */
 #define FRONTEND_COMMAND_CHAT_APPEND 0x15B0 /* FrontendPlayerMessageBuffer_AppendTripleById */
 #define FRONTEND_COMMAND_CHAT_PUBLISH 0x1640 /* FrontendPlayerMessageBuffer_PublishTextById */
@@ -107,13 +108,19 @@
 #define FRONTEND_COMMAND_SELECT_SAVED_GAME 0x11F0 /* ScenarioCatalog_RefreshSelectedRecordLocalizedText */
 #define FRONTEND_COMMAND_SELECT_SINGLE_GAME 0x12A0 /* ScenarioCatalog_RefreshSelectedRecordField70DisplayId */
 #define FRONTEND_COMMAND_SELECT_CAMPAIGN 0x12F0 /* ScenarioCatalog_RefreshSelectedRecordField50DisplayId */
+/* Scenario transfer acknowledgements of a network client (FrontendScenarioTransfer_ProcessReceivedAsset) */
+#define FRONTEND_COMMAND_LEVEL_RECEIVED 0x8D0 /* FrontendPlayerRuntime_MarkTaskAssignmentReadyById */
+#define FRONTEND_COMMAND_FIELD_GRID_RECEIVED 0x360 /* FrontendPlayerRuntime_MarkLevelReceivedById */
+#define FRONTEND_COMMAND_BUNDLE_RECEIVED 0x410 /* FrontendPlayerRuntime_MarkLevelLoadedById (campaign or level bundle) */
 /* Faction setup page, mission briefing and leaving pages (ui/frontend/runtime, ui/frontend/session) */
-#define FRONTEND_COMMAND_CYCLE_FACTION_COLOUR 0x650 /* FrontendUiAction2044_IndexedSelectionHelper */
-#define FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE 0x6F0 /* FrontendUiAction2045_IndexedSelectionHelper */
-#define FRONTEND_COMMAND_CHOOSE_FACTION 0x750 /* FrontendUiAction2046_IndexedSelectionHelper */
+#define FRONTEND_COMMAND_CYCLE_FACTION_COLOUR 0x650 /* FrontendFactionSetup_CycleFactionColour */
+#define FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE 0x6F0 /* FrontendFactionSetup_ToggleFactionActive */
+#define FRONTEND_COMMAND_CHOOSE_FACTION 0x750 /* FrontendFactionSetup_ChooseFaction */
 #define FRONTEND_COMMAND_APPLY_GAME_SPEED 0x2C0 /* FrontendSession_ApplyGameSpeedAndReturnToMainPage */
 #define FRONTEND_COMMAND_SET_GAME_SPEED 0x300 /* FrontendSession_SetGameSpeedPercent */
 #define FRONTEND_COMMAND_RELEASE_CAMPAIGN 0x320 /* FrontendSession_ReleaseSelectedResourceAndReturnToMainPage */
+/* Records of the frontend and in-game command queues (g_*CommandQueueRecords[16]); more commands are dropped. */
+#define COMMAND_QUEUE_CAPACITY 16
 /* Received commands are executed only below these original addresses (CMP EAX,imm32; JNC skip). */
 #define FRONTEND_COMMAND_HANDLER_REGION_END 0x005456F0 /* g_FrontendRootNode in the original image */
 #define INGAME_COMMAND_HANDLER_REGION_END 0x00562499 /* InGameCommandHandlerCodeRegionEnd */

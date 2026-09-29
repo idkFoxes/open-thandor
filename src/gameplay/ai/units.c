@@ -30,7 +30,7 @@ void AiUnitBehavior_UpdateWorkspace01Entities(FactionRuntimeIndex factionIndex,W
 
   g_AiCollectedEntityCount = 0;
   workspaceEntriesRemaining = g_AiWorkspace01Count;
-  workspaceEntryCursor = g_AiWorkspaceBuffer01_Size0200;
+  workspaceEntryCursor = g_AiWorkspace01Units;
   for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--, workspaceEntryCursor++) {
     armySlot = workspaceEntryCursor->armyRuntime;
     if (armySlot == NULL) continue;
@@ -69,7 +69,8 @@ void AiUnitBehavior_UpdateWorkspace01Entities(FactionRuntimeIndex factionIndex,W
 
 
 /* Address: 0x0053B4C0.
-   Decides what an idle military unit (ground, tracked, walker, glider or water class) does next. Three scorers run in turn, each
+   Decides what an idle military unit (ground, tracked, walker,
+                                       glider or water class) does next. Three scorers run in turn, each
    given the best score so far and returning it unchanged unless it found better: a general site (workspace 05)
    -> move there (kind 1), the faction anchor -> move there (kind 2), a secondary-workspace target (kind 3).
    With kind 3 or no winner the unit is collected for the group assignment of
@@ -144,7 +145,7 @@ AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeWorkspace05DistanceSco
   AiWorkspace05DistanceSelectionRegs8 selection;
   
   bestEntry = NULL;
-  workspaceRecordCursor = g_AiWorkspaceBuffer05_Size0200;
+  workspaceRecordCursor = g_AiWorkspace05GeneralSites;
   for (recordsRemaining = g_AiWorkspace05Count; recordsRemaining != 0; recordsRemaining--) {
     negDeltaXOrScore = (armyRuntimeSlot->articulatedContact).fallbackPosition0Q12 -
             workspaceRecordCursor->cellWorldXQ12;
@@ -226,7 +227,8 @@ AiCandidateScore32 AiUnitBehavior_ComputeFactionAnchorDistanceScore
     if (-1 < secondaryAnchorNegAbsDeltaQ12) {
       secondaryAnchorNegAbsDeltaQ12 = -secondaryAnchorNegAbsDeltaQ12;
     }
-    negDeltaOrScore = negDeltaOrScore + secondaryAnchorNegAbsDeltaQ12 + (g_AiKnowledgeData->parameters).factionAnchorDistanceBiasQ12;
+    negDeltaOrScore = negDeltaOrScore + secondaryAnchorNegAbsDeltaQ12 +
+         (g_AiKnowledgeData->parameters).factionAnchorDistanceBiasQ12;
     if (negDeltaOrScore < 0) {
       negDeltaOrScore = 0;
     }
@@ -261,10 +263,10 @@ AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorksp
   
   bestEntry = NULL;
   recordsRemaining = g_AiWorkspace07Count;
-  workspaceRecordCursor = g_AiWorkspaceBuffer07_Size0400;
+  workspaceRecordCursor = g_AiWorkspace07Targets;
   if (g_AiWorkspace07Count == 0) {
     recordsRemaining = g_AiWorkspace03Count;
-    workspaceRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspaceBuffer03_Size1000;
+    workspaceRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspace03UnseenHostiles;
   }
   for (; recordsRemaining != 0; recordsRemaining--) {
     negDeltaXOrScore = (armyRuntimeSlot->modelNodeRuntime->worldTransform).translation.x -
@@ -277,7 +279,8 @@ AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorksp
     if (-1 < negAbsDeltaYQ12) {
       negAbsDeltaYQ12 = -negAbsDeltaYQ12;
     }
-    negDeltaXOrScore = negDeltaXOrScore + negAbsDeltaYQ12 + (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceBiasQ12
+    negDeltaXOrScore = negDeltaXOrScore + negAbsDeltaYQ12 +
+         (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceBiasQ12
     ;
     if (negDeltaXOrScore < 0) {
       negDeltaXOrScore = 0;
@@ -356,7 +359,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
 {
   if ((g_AiCollectedEntityCount < AI_WORKSPACE14_CAPACITY) &&
       ((armyRuntimeSlot->runtimeState94 & AI_UNIT_STATE94_GROUP_ASSIGNED) == 0)) {
-    g_AiWorkspaceBuffer14_Size0100[g_AiCollectedEntityCount] = armyRuntimeSlot;
+    g_AiWorkspace14CollectedArmies[g_AiCollectedEntityCount] = armyRuntimeSlot;
     g_AiCollectedEntityCount++;
   }
   return;
@@ -407,13 +410,14 @@ void AiUnitBehavior_UpdateSpecialClass12Entity
       siteScoreOrY = (modelNode->worldTransform).translation.y;
       armyRuntime->runtimeState8C = 8;
       ArmyRuntime_QueueOrStartMoveCommandVariantA
-                ((int)(headingOffset >> 0x20) + siteScoreOrY,(int)headingOffset + sitesRemainingOrX,(ArmyMovementRuntime *)armyRuntime)
+                ((int)(headingOffset >> 0x20) + siteScoreOrY,(int)headingOffset + sitesRemainingOrX,
+                 (ArmyMovementRuntime *)armyRuntime)
       ;
     }
     else if (((armyRuntime->movementStateFlags & 0x100) == 0) && (g_AiWorkspace08Count != 0)) {
       bestScore = 0;
       sitesRemainingOrX = g_AiWorkspace08Count;
-      terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200;
+      terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
       do {
         knowledgeData = g_AiKnowledgeData;
         workspaceRecord = terrainFeatureEntry->cell;
@@ -471,7 +475,8 @@ void AiUnitBehavior_UpdateSpecialClass12Entity
               }
               distanceTerm = distanceTerm + deltaY + (knowledgeData->parameters).specialClass12EntityDistanceBiasQ12;
               if (-1 < distanceTerm) {
-                siteScoreOrY = siteScoreOrY + distanceTerm * (knowledgeData->parameters).specialClass12EntityDistanceCoefficient
+                siteScoreOrY = siteScoreOrY + distanceTerm *
+                     (knowledgeData->parameters).specialClass12EntityDistanceCoefficient
                 ;
               }
             }

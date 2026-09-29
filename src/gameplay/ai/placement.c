@@ -117,7 +117,7 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
   AiScoredSiteWorkspaceEntry *siteEntry;
   
   remainingCount = g_AiWorkspace05Count;
-  siteEntry = g_AiWorkspaceBuffer05_Size0200;
+  siteEntry = g_AiWorkspace05GeneralSites;
   while( true ) {
     if (remainingCount == 0) {
       cellWorldX = currentCell->worldX;
@@ -189,7 +189,7 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
   uint8_t *siteEntryBytes;
 
   remainingCount = g_AiWorkspace06Count;
-  siteEntryBytes = g_AiWorkspaceBuffer06_Size0400;
+  siteEntryBytes = g_AiWorkspace06FlaggedSites;
   while( true ) {
     if (remainingCount == 0) {
       cellWorldX = currentCell->worldX;
@@ -212,12 +212,14 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
           workspace02Distance = workspace02CapOrScore;
         }
         workspace02CapOrScore =
-             deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance * (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords56_66[0];
+             deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance *
+                  (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords56_66[0];
         deltaXOrCapTerm = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords49_50[1];
         deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if (-1 < deltaXOrCapTerm - deltaYOrDistanceOrWeight) {
           workspace02CapOrScore =
-               workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) * (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[2];
+               workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) *
+                    (int)((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[2];
         }
         g_AiWorkspace06Count++;
         ((AiScoredSiteWorkspaceEntry *)siteEntryBytes)->score = workspace02CapOrScore;
@@ -272,11 +274,12 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
   featureAssetId = ARM_0330_BUILDING_MDL0303;
   duplicateSeparation = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 0x55 >> 8; /* ~1/3 */
   countOrDeltaX = g_AiWorkspace00Count;
-  workspace00Entry = g_AiWorkspaceBuffer00_Size0400;
+  workspace00Entry = g_AiWorkspace00Structures;
   if ((terrainFeatureCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
     featureAssetId = ARM_0332_BUILDING_MDL0302;
   }
-  for (; terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200, countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
+  for (; terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites, countOrDeltaX != 0; countOrDeltaX = countOrDeltaX -
+       1) {
     runtimeSlot = (int *)workspace00Entry->runtimeSlotAddressOrZero;
     /* runtimeSlot is a ModelRuntimeSlot: [0] the model definition, [1] the model node */
     if ((runtimeSlot != NULL) &&
@@ -302,7 +305,7 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
         terrainFeatureEntry->cell = terrainFeatureCell;
         terrainFeatureEntry->armyAssetId = featureAssetId;
         nearestDistanceOrPriority = 0x7fffffff;
-        workspace00Entry = g_AiWorkspaceBuffer00_Size0400;
+        workspace00Entry = g_AiWorkspace00Structures;
         for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
           if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
             entityOrDeltaY =
@@ -329,7 +332,8 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
           }
           workspace00Entry++;
         }
-        nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 - nearestDistanceOrPriority;
+        nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 -
+             nearestDistanceOrPriority;
         if (nearestDistanceOrPriority < 0) {
           nearestDistanceOrPriority = 0;
         }
@@ -349,11 +353,12 @@ void AiSiteCandidate_AddTerrainFeatureCellIfSeparated
       }
       if ((countOrDeltaX < (int)duplicateSeparation) && (entityOrDeltaY < (int)duplicateSeparation)) {
         nearestDistanceOrPriority = 0x7fffffff;
-        workspace00Entry = g_AiWorkspaceBuffer00_Size0400;
+        workspace00Entry = g_AiWorkspace00Structures;
         countOrDeltaX = g_AiWorkspace00Count;
         do {
           if (countOrDeltaX == 0) {
-            nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 - nearestDistanceOrPriority;
+            nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 -
+                 nearestDistanceOrPriority;
             if (nearestDistanceOrPriority < 0) {
               nearestDistanceOrPriority = 0;
             }
@@ -508,7 +513,8 @@ bool AiPlacement_ReserveMode3SiteCluster(PckArmyAssetIdCatalog armyAssetId,Field
   /* ceil(placementCount / quantum) */
   if ((dispatchResult.failed) ||
      (quantumOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
-     quantumOrBucketCount = ((dispatchResult.value - 1) + quantumOrBucketCount) / quantumOrBucketCount, quantumOrBucketCount == 0)) {
+     quantumOrBucketCount = ((dispatchResult.value - 1) + quantumOrBucketCount) / quantumOrBucketCount,
+          quantumOrBucketCount == 0)) {
     return true;
   }
   if ((quantumOrBucketCount < 5) &&
@@ -542,7 +548,7 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
 
   knowledgeData = g_AiKnowledgeData;
   countOrTritium = g_AiWorkspace08Count;
-  featureEntry = g_AiWorkspaceBuffer08_Size0200;
+  featureEntry = g_AiWorkspace08TerrainFeatureSites;
   while( true ) {
     if (countOrTritium == 0) {
       /* No site (CF set): EAX holds whatever the last check left there; callers read the score only with CF
@@ -613,7 +619,7 @@ AiAnchorResult AiPlacement_FindNearestValidWorkspace09Anchor
   if (g_AiWorkspace09Count != 0) {
     bestDistance = 0x7fffffff;
     remainingCount = g_AiWorkspace09Count;
-    gridCellCursor = g_AiWorkspaceBuffer09_Size1000;
+    gridCellCursor = g_AiWorkspace09Cells;
     do {
       candidateCell = *gridCellCursor;
       deltaX = referenceWorldXQ12 - candidateCell->worldX;
@@ -697,16 +703,16 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
   if (deltaY < 0) {
     deltaY = -deltaY;
   }
-  if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12)
-  goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarryClear;
+  if ((uint32_t)(deltaX + deltaY) <
+      (knowledgeData->parameters).specialSiteSeparationQuantumQ12) goto destroy_first_and_succeed;
   anchor = AiPlacement_FindNearestValidWorkspace09Anchor
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
-  if (anchor.notFound) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
+  if (anchor.notFound) goto destroy_first_and_fail;
   secondInstance = ArmyRuntime_CreateInstanceFromAsset
                     (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
                      worldRuntime);
-  if (secondInstance.failed) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
+  if (secondInstance.failed) goto destroy_first_and_fail;
   deltaX = anchor.worldXQ12 - workspaceRecord->worldX;
   if (deltaX < 0) {
     deltaX = -deltaX;
@@ -733,9 +739,9 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
           deltaY = -deltaY;
         }
         if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12) {
-AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear:
+destroy_third_second_first_and_succeed:
           ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.armyRuntimeOrError);
-          goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroySecondFirstAndReturnCarryClear;
+          goto destroy_second_first_and_succeed;
         }
         anchor = AiPlacement_FindNearestValidWorkspace09Anchor
                           (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307
@@ -755,25 +761,25 @@ AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCar
             }
             if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12)
             {
-              ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
-              goto 
-              AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear
-              ;
+              ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,
+                                                      (GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
+              goto destroy_third_second_first_and_succeed;
             }
-            ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
+            ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,
+                                                    (GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
           }
         }
         ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.armyRuntimeOrError);
       }
     }
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.armyRuntimeOrError);
-AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet:
+destroy_first_and_fail:
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.armyRuntimeOrError);
     return true;
   }
-AiPlacement_ReserveSeparatedSpecialSiteChain_DestroySecondFirstAndReturnCarryClear:
+destroy_second_first_and_succeed:
   ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.armyRuntimeOrError);
-AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarryClear:
+destroy_first_and_succeed:
   ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.armyRuntimeOrError);
   return false;
 }

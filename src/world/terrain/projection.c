@@ -114,26 +114,25 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
              fieldGrid->cells[centerCellIndex].occupancyMask | occupancyMaskBits;
         rowStrideBytes = g_TerrainScanRowStrideBytes;
         /* the six neighbours of centre cell C, one per sector: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width;
-           the first address is cells[centerCellIndex + 1], and runtime0C_3F - 0xC is a cell's own address) */
-        wedgeCellA = (FieldGridCell *)
-                 (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 centerCellIndex * 0x80 - 0x28);
-        wedgeCellB = (FieldGridCell *)((int)wedgeCellA - g_TerrainScanRowStrideBytes);
+           the first address is cells[centerCellIndex + 1]) */
+        wedgeCellA = &fieldGrid->cells[centerCellIndex + 1];
+        wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,-g_TerrainScanRowStrideBytes);
         TerrainProjectedOcclusion_TraceWedge0
                   (occupancyMaskBits,wedgeCellB->terrainHeight - referenceHeight,0,wedgeCellA);
         TerrainProjectedOcclusion_TraceWedge1
                   (occupancyMaskBits,wedgeCellB[-1].terrainHeight - referenceHeight,0,wedgeCellB);
-        wedgeCellA = (FieldGridCell *)((wedgeCellB - 1)[-1].runtime0C_3F + rowStrideBytes - 0xc);
+        wedgeCellA = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellB - 2,rowStrideBytes);
         TerrainProjectedOcclusion_TraceWedge2
                   (occupancyMaskBits,wedgeCellA->terrainHeight - referenceHeight,0,wedgeCellB - 1);
-        wedgeCellB = (FieldGridCell *)(wedgeCellA->runtime0C_3F + rowStrideBytes - 0xc);
+        wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,rowStrideBytes);
         TerrainProjectedOcclusion_TraceWedge3
                   (occupancyMaskBits,wedgeCellB->terrainHeight - referenceHeight,0,wedgeCellA);
         TerrainProjectedOcclusion_TraceWedge4
                   (occupancyMaskBits,wedgeCellB[1].terrainHeight - referenceHeight,0,wedgeCellB);
-        /* (C+W) + 0x80 - stride + 0x48: terrainHeight of C+1, the first cell of sector 0 */
+        /* the terrain height of C+1 (one row up from C+W+1), the first cell of sector 0 */
         TerrainProjectedOcclusion_TraceWedge5
-                  (occupancyMaskBits,*(int *)((int)(wedgeCellB + 1) + (0xc8 - rowStrideBytes)) - referenceHeight,0,
+                  (occupancyMaskBits,
+                   FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellB + 2,-rowStrideBytes)->terrainHeight - referenceHeight,0,
                    wedgeCellB + 1);
       }
     }
@@ -144,7 +143,7 @@ void TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
 /* Address: 0x005099D0.
    Terrain-class overlay callback for land classes (g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
    slots 0, 2, 3 and 4, called by WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries): stores cellValue into
-   runtimeOverlayOrHeightValue04 of every cell within the radius around the world point that has a bit of
+   overlayColor of every cell within the radius around the world point that has a bit of
    cellFlagMask and no water above it; the centre cell here, the rest by the six sector walks (the same hexagon
    as TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint, without line of sight). Marks the field grid
    surface dirty. CF set (nothing applied) without a grid, outside it or on a map-edge cell.
@@ -213,21 +212,19 @@ bool FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
         (fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)))) {
       if (((fieldGrid->cells[centerCellIndex].flagsAndMaterial & cellFlagMask) != 0) &&
          (fieldGrid->cells[centerCellIndex].waterSurfaceDelta < 0)) {
-        fieldGrid->cells[centerCellIndex].runtimeOverlayOrHeightValue04 = cellValue;
+        fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       /* the first cell of each sector walk: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width; the first address
-         is cells[centerCellIndex + 1], and runtime0C_3F - 0xC is a cell's own address) */
-      wedgeCellA = (FieldGridCell *)
-               (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-               centerCellIndex * 0x80 - 0x28);
-      wedgeCellB = (FieldGridCell *)((int)wedgeCellA - g_TerrainScanRowStrideBytes);
+         is cells[centerCellIndex + 1]) */
+      wedgeCellA = &fieldGrid->cells[centerCellIndex + 1];
+      wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,-g_TerrainScanRowStrideBytes);
       FieldGridTerrainOverlayVariantA_ApplyWedge0(0,wedgeCellA);
       fieldCell = wedgeCellB - 1;
       FieldGridTerrainOverlayVariantA_ApplyWedge1(0,wedgeCellB);
-      wedgeCellA = (FieldGridCell *)((uint8_t *)(fieldCell - 1) + rowStrideBytes);
+      wedgeCellA = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,rowStrideBytes);
       FieldGridTerrainOverlayVariantA_ApplyWedge2(0,fieldCell);
-      wedgeCellB = (FieldGridCell *)((uint8_t *)wedgeCellA + rowStrideBytes);
+      wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,rowStrideBytes);
       FieldGridTerrainOverlayVariantA_ApplyWedge3(0,wedgeCellA);
       FieldGridTerrainOverlayVariantA_ApplyWedge4(0,wedgeCellB);
       FieldGridTerrainOverlayVariantA_ApplyWedge5(0,wedgeCellB + 1);
@@ -308,21 +305,19 @@ bool FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
         (fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)))) {
       if (((fieldGrid->cells[centerCellIndex].flagsAndMaterial & cellFlagMask) != 0) &&
          (0 < fieldGrid->cells[centerCellIndex].waterSurfaceDelta)) {
-        fieldGrid->cells[centerCellIndex].runtimeOverlayOrHeightValue04 = cellValue;
+        fieldGrid->cells[centerCellIndex].overlayColor = cellValue;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       /* the first cell of each sector walk: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width; the first address
-         is cells[centerCellIndex + 1], and runtime0C_3F - 0xC is a cell's own address) */
-      wedgeCellA = (FieldGridCell *)
-               (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-               centerCellIndex * 0x80 - 0x28);
-      wedgeCellB = (FieldGridCell *)((int)wedgeCellA - g_TerrainScanRowStrideBytes);
+         is cells[centerCellIndex + 1]) */
+      wedgeCellA = &fieldGrid->cells[centerCellIndex + 1];
+      wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,-g_TerrainScanRowStrideBytes);
       FieldGridTerrainOverlayVariantB_ApplyWedge0(0,wedgeCellA);
       fieldCell = wedgeCellB - 1;
       FieldGridTerrainOverlayVariantB_ApplyWedge1(0,wedgeCellB);
-      wedgeCellA = (FieldGridCell *)((uint8_t *)(fieldCell - 1) + rowStrideBytes);
+      wedgeCellA = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,rowStrideBytes);
       FieldGridTerrainOverlayVariantB_ApplyWedge2(0,fieldCell);
-      wedgeCellB = (FieldGridCell *)((uint8_t *)wedgeCellA + rowStrideBytes);
+      wedgeCellB = FIELD_GRID_CELL_AT_BYTE_OFFSET(wedgeCellA,rowStrideBytes);
       FieldGridTerrainOverlayVariantB_ApplyWedge3(0,wedgeCellA);
       FieldGridTerrainOverlayVariantB_ApplyWedge4(0,wedgeCellB);
       FieldGridTerrainOverlayVariantB_ApplyWedge5(0,wedgeCellB + 1);
@@ -522,7 +517,7 @@ void TerrainProjectedOcclusion_TraceWedge0(uint64_t occupancyMaskBits,
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
@@ -536,28 +531,28 @@ void TerrainProjectedOcclusion_TraceWedge0(uint64_t occupancyMaskBits,
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      /* the direction-1 neighbour C+1-W: +0x48 terrainHeight, +0x4C waterSurfaceDelta, +0x50 flags,
-         +0x70 occupancyMask, 0x80 = one cell */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)adjacentCell - heightOrRowStride))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the direction-1 neighbour C+1-W */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-heightOrRowStride)->flagsAndMaterial &
+           FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      neighborHeight = ((FieldGridCell *)((uint8_t *)adjacentCell - heightOrRowStride))->terrainHeight;
-      if (0 < ((FieldGridCell *)((uint8_t *)adjacentCell - heightOrRowStride))->waterSurfaceDelta) {
-        neighborHeight = neighborHeight + ((FieldGridCell *)((uint8_t *)adjacentCell - heightOrRowStride))->waterSurfaceDelta;
+      neighborHeight = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-heightOrRowStride)->terrainHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-heightOrRowStride)->waterSurfaceDelta) {
+        neighborHeight = neighborHeight + FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-heightOrRowStride)->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[projectedHeightOrStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        ((FieldGridCell *)((uint8_t *)adjacentCell - heightOrRowStride))->occupancyMask =
-             ((FieldGridCell *)((uint8_t *)adjacentCell - heightOrRowStride))->occupancyMask | occupancyMaskBits;
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-heightOrRowStride)->occupancyMask =
+             FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-heightOrRowStride)->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      cell = (FieldGridCell *)((int)adjacentCell + (0x80 - heightOrRowStride));
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell + 1,-heightOrRowStride);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainProjectedOcclusion_ScanDirection1
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
-                 (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
       cellThreshold = projectedHeightThresholdQ20;
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -595,7 +590,7 @@ void TerrainProjectedOcclusion_TraceWedge1(uint64_t occupancyMaskBits,
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
@@ -605,28 +600,27 @@ void TerrainProjectedOcclusion_TraceWedge1(uint64_t occupancyMaskBits,
       projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       TerrainProjectedOcclusion_ScanDirection1
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
-                 (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      /* the direction-2 neighbour C-W: +0x48 terrainHeight, +0x4C waterSurfaceDelta, +0x50 flags,
-         +0x70 occupancyMask */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)cell - heightOrRowStride))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the direction-2 neighbour C-W */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-heightOrRowStride)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      neighborHeight = ((FieldGridCell *)((uint8_t *)cell - heightOrRowStride))->terrainHeight;
-      if (0 < ((FieldGridCell *)((uint8_t *)cell - heightOrRowStride))->waterSurfaceDelta) {
-        neighborHeight = neighborHeight + ((FieldGridCell *)((uint8_t *)cell - heightOrRowStride))->waterSurfaceDelta;
+      neighborHeight = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-heightOrRowStride)->terrainHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-heightOrRowStride)->waterSurfaceDelta) {
+        neighborHeight = neighborHeight + FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-heightOrRowStride)->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[projectedHeightOrStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        ((FieldGridCell *)((uint8_t *)cell - heightOrRowStride))->occupancyMask =
-             ((FieldGridCell *)((uint8_t *)cell - heightOrRowStride))->occupancyMask | occupancyMaskBits;
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-heightOrRowStride)->occupancyMask =
+             FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-heightOrRowStride)->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      adjacentCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - heightOrRowStride));
+      adjacentCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes - heightOrRowStride);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = adjacentCell + 1;
       TerrainProjectedOcclusion_ScanDirection2
@@ -667,7 +661,7 @@ void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
@@ -676,7 +670,7 @@ void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
       projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       TerrainProjectedOcclusion_ScanDirection2
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
-                 (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
@@ -688,7 +682,7 @@ void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell[-1].waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[projectedHeightOrStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
         cell[-1].occupancyMask = cell[-1].occupancyMask | occupancyMaskBits;
@@ -696,7 +690,7 @@ void TerrainProjectedOcclusion_TraceWedge2(uint64_t occupancyMaskBits,
       }
       adjacentCell = cell - 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,-g_TerrainScanRowStrideBytes);
       TerrainProjectedOcclusion_ScanDirection3
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,adjacentCell);
       cellThreshold = projectedHeightThresholdQ20;
@@ -737,7 +731,7 @@ void TerrainProjectedOcclusion_TraceWedge3(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(int)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
@@ -752,27 +746,28 @@ void TerrainProjectedOcclusion_TraceWedge3(uint64_t occupancyMaskBits,
         return;
       }
       /* the direction-4 neighbour C-1+W, one row stride on */
-      if (((uint32_t)((FieldGridCell *)((uint32_t)adjacentCell + rowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) !=
+          0) {
         return;
       }
-      neighborHeight = ((FieldGridCell *)((uint32_t)adjacentCell + rowStrideBytes))->terrainHeight;
-      if (0 < ((FieldGridCell *)((uint32_t)adjacentCell + rowStrideBytes))->waterSurfaceDelta) {
-        neighborHeight = neighborHeight + ((FieldGridCell *)((uint32_t)adjacentCell + rowStrideBytes))->waterSurfaceDelta;
+      neighborHeight = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,rowStrideBytes)->terrainHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,rowStrideBytes)->waterSurfaceDelta) {
+        neighborHeight = neighborHeight + FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,rowStrideBytes)->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[projectedHeightOrStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        ((FieldGridCell *)((uint32_t)adjacentCell + rowStrideBytes))->occupancyMask =
-             ((FieldGridCell *)((uint32_t)adjacentCell + rowStrideBytes))->occupancyMask | occupancyMaskBits;
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,rowStrideBytes)->occupancyMask =
+             FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,rowStrideBytes)->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address: C-2+W */
-      cell = (FieldGridCell *)(adjacentCell[-1].runtime0C_3F + rowStrideBytes - 0xc);
+      /* C-2+W */
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell - 1,rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainProjectedOcclusion_ScanDirection4
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
-                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes));
       cellThreshold = projectedHeightThresholdQ20;
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -795,7 +790,7 @@ void TerrainProjectedOcclusion_TraceWedge4(uint64_t occupancyMaskBits,
 
 {
   int64_t scaledHeightProduct;
-  uint8_t *cellRuntimeBase;
+  uint8_t *cellBytes;
   int heightOrRowStride;
   int neighborHeight;
   uint32_t projectedHeightOrStep;
@@ -810,7 +805,7 @@ void TerrainProjectedOcclusion_TraceWedge4(uint64_t occupancyMaskBits,
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
@@ -818,35 +813,35 @@ void TerrainProjectedOcclusion_TraceWedge4(uint64_t occupancyMaskBits,
       }
       heightOrRowStride = g_TerrainScanRowStrideBytes;
       projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
       TerrainProjectedOcclusion_ScanDirection4
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
-                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
       /* the direction-5 neighbour C+W, one row stride on */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)cell + heightOrRowStride))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,heightOrRowStride)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      neighborHeight = ((FieldGridCell *)((uint8_t *)cell + heightOrRowStride))->terrainHeight;
-      if (0 < ((FieldGridCell *)((uint8_t *)cell + heightOrRowStride))->waterSurfaceDelta) {
-        neighborHeight = neighborHeight + ((FieldGridCell *)((uint8_t *)cell + heightOrRowStride))->waterSurfaceDelta;
+      neighborHeight = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,heightOrRowStride)->terrainHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,heightOrRowStride)->waterSurfaceDelta) {
+        neighborHeight = neighborHeight + FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,heightOrRowStride)->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[projectedHeightOrStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        ((FieldGridCell *)((uint8_t *)cell + heightOrRowStride))->occupancyMask =
-             ((FieldGridCell *)((uint8_t *)cell + heightOrRowStride))->occupancyMask | occupancyMaskBits;
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,heightOrRowStride)->occupancyMask =
+             FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,heightOrRowStride)->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      cellRuntimeBase = cell->runtime0C_3F;
+      cellBytes = (uint8_t *)cell;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + heightOrRowStride - 0xc) - 1;
+      /* two rows down: C+2W, the spine continues at C-1+2W */
+      cell = (FieldGridCell *)(cellBytes + g_TerrainScanRowStrideBytes + heightOrRowStride) - 1;
       TerrainProjectedOcclusion_ScanDirection5
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
-                 (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + heightOrRowStride - 0xc));
+                 (FieldGridCell *)(cellBytes + g_TerrainScanRowStrideBytes + heightOrRowStride));
       cellThreshold = projectedHeightThresholdQ20;
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -883,17 +878,16 @@ void TerrainProjectedOcclusion_TraceWedge5(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
       TerrainProjectedOcclusion_ScanDirection5
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
-                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
@@ -905,7 +899,7 @@ void TerrainProjectedOcclusion_TraceWedge5(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell[1].waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[projectedHeightOrStep];
       projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
         cell[1].occupancyMask = cell[1].occupancyMask | occupancyMaskBits;
@@ -913,7 +907,7 @@ void TerrainProjectedOcclusion_TraceWedge5(uint64_t occupancyMaskBits,
       }
       adjacentCell = cell + 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      cell = (FieldGridCell *)((uint8_t *)(cell + 1) + g_TerrainScanRowStrideBytes);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,g_TerrainScanRowStrideBytes);
       TerrainProjectedOcclusion_ScanDirection0
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,adjacentCell);
       cellThreshold = projectedHeightThresholdQ20;
@@ -943,7 +937,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge0(TerrainDirectionalScanStep scan
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       adjacentCell = fieldCell + 1;
@@ -951,19 +945,19 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge0(TerrainDirectionalScanStep scan
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* +0x50 flagsAndMaterial, +0x4C waterSurfaceDelta, +4 runtimeOverlayOrHeightValue04 of the cell one row up */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)adjacentCell - rowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row up */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if ((((uint32_t)((FieldGridCell *)((uint8_t *)adjacentCell - rowStrideBytes))->flagsAndMaterial &
+      if (((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-rowStrideBytes)->flagsAndMaterial &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
-         (((FieldGridCell *)((uint8_t *)adjacentCell - rowStrideBytes))->waterSurfaceDelta < 0)) {
-        ((FieldGridCell *)((uint8_t *)adjacentCell - rowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+         (FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-rowStrideBytes)->waterSurfaceDelta < 0)) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-rowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
-      fieldCell = (FieldGridCell *)((int)adjacentCell + (0x80 - rowStrideBytes));
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell + 1,-rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       FieldGridTerrainOverlayVariantA_ApplyDirection1
-                (scanStep,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
+                (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -990,26 +984,25 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge1(TerrainDirectionalScanStep scan
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantA_ApplyDirection1
                 (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes)));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell + 1,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* +0x50 flagsAndMaterial, +0x4C waterSurfaceDelta, +4 runtimeOverlayOrHeightValue04 of the cell one row up */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)fieldCell - rowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row up */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if ((((uint32_t)((FieldGridCell *)((uint8_t *)fieldCell - rowStrideBytes))->flagsAndMaterial &
+      if (((FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-rowStrideBytes)->flagsAndMaterial &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
-         (((FieldGridCell *)((uint8_t *)fieldCell - rowStrideBytes))->waterSurfaceDelta < 0)) {
-        ((FieldGridCell *)((uint8_t *)fieldCell - rowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+         (FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-rowStrideBytes)->waterSurfaceDelta < 0)) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-rowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
-      adjacentCell = (FieldGridCell *)
-                     ((int)fieldCell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
+      adjacentCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes - rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       fieldCell = adjacentCell + 1;
       FieldGridTerrainOverlayVariantA_ApplyDirection2(scanStep,adjacentCell);
@@ -1038,10 +1031,10 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge2(TerrainDirectionalScanStep scan
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantA_ApplyDirection2
-                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
@@ -1050,11 +1043,11 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge2(TerrainDirectionalScanStep scan
       }
       if (((fieldCell[-1].flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) !=
            0) && (fieldCell[-1].waterSurfaceDelta < 0)) {
-        fieldCell[-1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell[-1].overlayColor = g_TerrainScanReferenceHeight;
       }
       adjacentCell = fieldCell - 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      fieldCell = (FieldGridCell *)((int)fieldCell + (-0x80 - g_TerrainScanRowStrideBytes));
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,-g_TerrainScanRowStrideBytes);
       FieldGridTerrainOverlayVariantA_ApplyDirection3(scanStep,adjacentCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -1083,7 +1076,7 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge3(TerrainDirectionalScanStep scan
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanRowStrideBytes = g_TerrainScanRowStrideBytes;
       adjacentCell = fieldCell - 1;
@@ -1091,19 +1084,19 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge3(TerrainDirectionalScanStep scan
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* flagsAndMaterial, waterSurfaceDelta and runtimeOverlayOrHeightValue04 of the cell one row down */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)adjacentCell + scanRowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row down */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,scanRowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if ((((uint32_t)((FieldGridCell *)((uint8_t *)adjacentCell + scanRowStrideBytes))->flagsAndMaterial &
+      if (((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,scanRowStrideBytes)->flagsAndMaterial &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
-         (((FieldGridCell *)((uint8_t *)adjacentCell + scanRowStrideBytes))->waterSurfaceDelta < 0)) {
-        ((FieldGridCell *)((uint8_t *)adjacentCell + scanRowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+         (FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,scanRowStrideBytes)->waterSurfaceDelta < 0)) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,scanRowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
-      fieldCell = (FieldGridCell *)((uint8_t *)(adjacentCell - 1) + scanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell - 1,scanRowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       FieldGridTerrainOverlayVariantA_ApplyDirection4
-                (scanStep,(FieldGridCell *)((uint8_t *)fieldCell + g_TerrainScanRowStrideBytes));
+                (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -1130,23 +1123,23 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge4(TerrainDirectionalScanStep scan
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantA_ApplyDirection4
                 (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((uint8_t *)(fieldCell - 1) + g_TerrainScanRowStrideBytes));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* flagsAndMaterial, waterSurfaceDelta and runtimeOverlayOrHeightValue04 of the cell one row down */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)fieldCell + rowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row down */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if ((((uint32_t)((FieldGridCell *)((uint8_t *)fieldCell + rowStrideBytes))->flagsAndMaterial &
+      if (((FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,rowStrideBytes)->flagsAndMaterial &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
-         (((FieldGridCell *)((uint8_t *)fieldCell + rowStrideBytes))->waterSurfaceDelta < 0)) {
-        ((FieldGridCell *)((uint8_t *)fieldCell + rowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+         (FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,rowStrideBytes)->waterSurfaceDelta < 0)) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,rowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
       currentCellBytes = (uint8_t *)fieldCell;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
@@ -1180,11 +1173,11 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge5(TerrainDirectionalScanStep scan
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantA_ApplyDirection5
                 (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((uint8_t *)fieldCell + g_TerrainScanRowStrideBytes));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
@@ -1193,11 +1186,11 @@ void FieldGridTerrainOverlayVariantA_ApplyWedge5(TerrainDirectionalScanStep scan
       }
       if (((fieldCell[1].flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0
           ) && (fieldCell[1].waterSurfaceDelta < 0)) {
-        fieldCell[1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell[1].overlayColor = g_TerrainScanReferenceHeight;
       }
       adjacentCell = fieldCell + 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      fieldCell = (FieldGridCell *)((uint8_t *)(fieldCell + 1) + g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell + 1,g_TerrainScanRowStrideBytes);
       FieldGridTerrainOverlayVariantA_ApplyDirection0(scanStep,adjacentCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -1224,7 +1217,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge0(TerrainDirectionalScanStep scan
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       adjacentCell = fieldCell + 1;
@@ -1232,17 +1225,17 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge0(TerrainDirectionalScanStep scan
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* +0x50 flagsAndMaterial, +0x4C waterSurfaceDelta, +4 runtimeOverlayOrHeightValue04 of the cell one row up */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)adjacentCell - rowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row up */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if (0 < ((FieldGridCell *)((uint8_t *)adjacentCell - rowStrideBytes))->waterSurfaceDelta) {
-        ((FieldGridCell *)((uint8_t *)adjacentCell - rowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-rowStrideBytes)->waterSurfaceDelta) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,-rowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
-      fieldCell = (FieldGridCell *)((int)adjacentCell + (0x80 - rowStrideBytes));
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell + 1,-rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       FieldGridTerrainOverlayVariantB_ApplyDirection1
-                (scanStep,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
+                (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -1268,24 +1261,23 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge1(TerrainDirectionalScanStep scan
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantB_ApplyDirection1
                 (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes)));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell + 1,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* +0x50 flagsAndMaterial, +0x4C waterSurfaceDelta, +4 runtimeOverlayOrHeightValue04 of the cell one row up */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)fieldCell - rowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row up */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if (0 < ((FieldGridCell *)((uint8_t *)fieldCell - rowStrideBytes))->waterSurfaceDelta) {
-        ((FieldGridCell *)((uint8_t *)fieldCell - rowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-rowStrideBytes)->waterSurfaceDelta) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-rowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
-      adjacentCell = (FieldGridCell *)
-                     ((int)fieldCell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
+      adjacentCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes - rowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       fieldCell = adjacentCell + 1;
       FieldGridTerrainOverlayVariantB_ApplyDirection2(scanStep,adjacentCell);
@@ -1313,10 +1305,10 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge2(TerrainDirectionalScanStep scan
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantB_ApplyDirection2
-                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,(FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes));
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
@@ -1324,11 +1316,11 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge2(TerrainDirectionalScanStep scan
         return;
       }
       if (0 < fieldCell[-1].waterSurfaceDelta) {
-        fieldCell[-1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell[-1].overlayColor = g_TerrainScanReferenceHeight;
       }
       adjacentCell = fieldCell - 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      fieldCell = (FieldGridCell *)((int)fieldCell + (-0x80 - g_TerrainScanRowStrideBytes));
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,-g_TerrainScanRowStrideBytes);
       FieldGridTerrainOverlayVariantB_ApplyDirection3(scanStep,adjacentCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -1356,7 +1348,7 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge3(TerrainDirectionalScanStep scan
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanRowStrideBytes = g_TerrainScanRowStrideBytes;
       adjacentCell = fieldCell - 1;
@@ -1364,17 +1356,17 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge3(TerrainDirectionalScanStep scan
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* flagsAndMaterial, waterSurfaceDelta and runtimeOverlayOrHeightValue04 of the cell one row down */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)adjacentCell + scanRowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row down */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,scanRowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if (0 < ((FieldGridCell *)((uint8_t *)adjacentCell + scanRowStrideBytes))->waterSurfaceDelta) {
-        ((FieldGridCell *)((uint8_t *)adjacentCell + scanRowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,scanRowStrideBytes)->waterSurfaceDelta) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell,scanRowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
-      fieldCell = (FieldGridCell *)((uint8_t *)(adjacentCell - 1) + scanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(adjacentCell - 1,scanRowStrideBytes);
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       FieldGridTerrainOverlayVariantB_ApplyDirection4
-                (scanStep,(FieldGridCell *)((uint8_t *)fieldCell + g_TerrainScanRowStrideBytes));
+                (scanStep,FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -1400,21 +1392,21 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge4(TerrainDirectionalScanStep scan
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       FieldGridTerrainOverlayVariantB_ApplyDirection4
                 (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((uint8_t *)(fieldCell - 1) + g_TerrainScanRowStrideBytes));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      /* flagsAndMaterial, waterSurfaceDelta and runtimeOverlayOrHeightValue04 of the cell one row down */
-      if (((uint32_t)((FieldGridCell *)((uint8_t *)fieldCell + rowStrideBytes))->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+      /* the neighbour one row down */
+      if ((FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,rowStrideBytes)->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      if (0 < ((FieldGridCell *)((uint8_t *)fieldCell + rowStrideBytes))->waterSurfaceDelta) {
-        ((FieldGridCell *)((uint8_t *)fieldCell + rowStrideBytes))->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+      if (0 < FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,rowStrideBytes)->waterSurfaceDelta) {
+        FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,rowStrideBytes)->overlayColor = g_TerrainScanReferenceHeight;
       }
       currentCellBytes = (uint8_t *)fieldCell;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
@@ -1447,11 +1439,11 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scan
   if (scanStep < g_TerrainScanStepLimit) {
     while ((fieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       FieldGridTerrainOverlayVariantB_ApplyDirection5
                 (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
-                 (FieldGridCell *)((uint8_t *)fieldCell + g_TerrainScanRowStrideBytes));
+                 FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
@@ -1459,11 +1451,11 @@ void FieldGridTerrainOverlayVariantB_ApplyWedge5(TerrainDirectionalScanStep scan
         return;
       }
       if (0 < fieldCell[1].waterSurfaceDelta) {
-        fieldCell[1].runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell[1].overlayColor = g_TerrainScanReferenceHeight;
       }
       adjacentCell = fieldCell + 2;
       scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
-      fieldCell = (FieldGridCell *)((uint8_t *)(fieldCell + 1) + g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell + 1,g_TerrainScanRowStrideBytes);
       FieldGridTerrainOverlayVariantB_ApplyDirection0(scanStep,adjacentCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -1485,17 +1477,15 @@ void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
           FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
-  /* reserved08_0B + stride - 8 is the vertex one row down */
+  /* + rowStrideBytes: the vertex one row down */
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
-             (TerrainProjectedVertexWorkRecord *)
-             (topLeftVertex->reserved08_0B + (rowStrideBytes - 8)),topLeftVertex,renderContext);
+             (TerrainProjectedVertexWorkRecord *)((uint8_t *)topLeftVertex + rowStrideBytes),topLeftVertex,
+             renderContext);
   TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             (topLeftVertex->surfacePacketIndex,topLeftVertex + 1,
-             (TerrainProjectedVertexWorkRecord *)
-             (topLeftVertex[1].reserved08_0B + (rowStrideBytes - 8)),
-             (TerrainProjectedVertexWorkRecord *)
-             (topLeftVertex->reserved08_0B + (rowStrideBytes - 8)),renderContext);
+             (TerrainProjectedVertexWorkRecord *)((uint8_t *)(topLeftVertex + 1) + rowStrideBytes),
+             (TerrainProjectedVertexWorkRecord *)((uint8_t *)topLeftVertex + rowStrideBytes),renderContext);
   return;
 }
 
@@ -1523,8 +1513,10 @@ void TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVer
   uint64_t shadedProduct;
   GraphicsProjectedPointPair projectedPoint;
   
-  /* keeps the material and bits 8..16, 27 and 29..31; the clip bits and SECONDARY_VISIBLE start cleared */
-  resultFlags = vertex->projectionFlags & 0xe801ffff;
+  /* keeps the material and bits 8..16, 27 and 29..31 (0xe801ffff); the clip bits and SECONDARY_VISIBLE start
+     cleared */
+  resultFlags = vertex->projectionFlags &
+                ~(TERRAIN_VERTEX_POINT_A_BITS | TERRAIN_VERTEX_POINT_B_BITS | TERRAIN_VERTEX_SECONDARY_VISIBLE);
   if ((vertex->projectionFlags & TERRAIN_VERTEX_MATERIAL_MASK) != TERRAIN_VERTEX_MATERIAL_NONE) {
     pointAFlags = resultFlags | TERRAIN_VERTEX_POINT_A_NOT_PROJECTED;
     FixedTransform_ApplyPoint(&vertex->viewPointA,&vertex->sourcePoint,&g_ViewProjectionMatrixFixed);
@@ -1630,8 +1622,7 @@ void TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVer
   resultFlags = vertex->projectionFlags;
   offsetVector = vertex->secondaryOffset;
   if ((resultFlags & TERRAIN_VERTEX_SECONDARY_VISIBLE) != 0) {
-    /* clears the five point-B bits */
-    maskedFlags = resultFlags & 0xf83fffff;
+    maskedFlags = resultFlags & ~TERRAIN_VERTEX_POINT_B_BITS;
     resultFlags = maskedFlags | TERRAIN_VERTEX_POINT_B_NOT_PROJECTED;
     offsetX = offsetVector->x;
     offsetY = offsetVector->y;
@@ -1734,7 +1725,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
   flagsOrClampedDepth0 = vertex0->projectionFlags | vertex1->projectionFlags | vertex2->projectionFlags;
   if ((flagsOrClampedDepth0 & TERRAIN_VERTEX_MATERIAL_MASK) != TERRAIN_VERTEX_MATERIAL_NONE) {
     /* all four point-A side bits set by some vertex and every point A projected */
-    if ((flagsOrClampedDepth0 & 0x3e0000) == 0x1e0000) {
+    if ((flagsOrClampedDepth0 & TERRAIN_VERTEX_POINT_A_BITS) == TERRAIN_VERTEX_POINT_A_SIDE_BITS) {
       outsideTriangle = false;
       if ((g_UiCommandModeGColorVariantLimit & 0xff000000) == 0) {
         barycentricWeights = Triangle2D_ComputeBarycentricWeightsQ12Packed
@@ -1819,7 +1810,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       vertex0Projected = vertex0;
       savedRenderContext = renderContext;
       queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                         ((uint32_t *)((int)g_TerrainSoilPacketTablePayload +
+                         ((uint32_t *)((uint8_t *)g_TerrainSoilPacketTablePayload +
                                    materialOffset0 + (vertex0->projectionFlags & 0x700)),vertex2Color,vertex1Color,vertex0Color
                           ,(GraphicsProjectedVertexSource *)vertex2,
                           (GraphicsProjectedVertexSource *)vertex1,
@@ -1828,7 +1819,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         if (materialOffset0 == materialOffset1) {
           if (materialOffset0 != yOrTableIndexC) {
             queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                               ((uint32_t *)((int)soilPacketTable + yOrTableIndexB + 0x20),vertex2Color,vertex1Color,vertex0Color,
+                               ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexB + 0x20),vertex2Color,vertex1Color,vertex0Color,
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1840,7 +1831,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         }
         else if (materialOffset0 == yOrTableIndexC) {
           queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             ((uint32_t *)((int)soilPacketTable + yOrTableIndexA + 0x40),vertex2Color,vertex1Color,vertex0Color,
+                             ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexA + 0x40),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1851,7 +1842,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         }
         else if (materialOffset1 == yOrTableIndexC) {
           queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             ((uint32_t *)((int)soilPacketTable + yOrTableIndexA + 0x60),vertex2Color,vertex1Color,vertex0Color,
+                             ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexA + 0x60),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1862,7 +1853,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         }
         else {
           queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             ((uint32_t *)((int)soilPacketTable + yOrTableIndexA + 0x80),vertex2Color,vertex1Color,vertex0Color,
+                             ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexA + 0x80),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1870,7 +1861,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
             *packetRenderFlags = *packetRenderFlags | 0x10020000;
             queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                               ((uint32_t *)((int)soilPacketTable + yOrTableIndexB + 0xa0),vertex2Color,vertex1Color,vertex0Color,
+                               ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexB + 0xa0),vertex2Color,vertex1Color,vertex0Color,
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1886,7 +1877,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
           (0 < vertex0->secondaryProjectionDepthQ12)) || (0 < vertex1->secondaryProjectionDepthQ12))
         || (0 < vertex2->secondaryProjectionDepthQ12)) &&
        (((vertex0->projectionFlags | vertex1->projectionFlags | vertex2->projectionFlags) &
-        0x7c00000) == 0x3c00000)) { /* the same test for point B */
+        TERRAIN_VERTEX_POINT_B_BITS) == TERRAIN_VERTEX_POINT_B_SIDE_BITS)) { /* the same test for point B */
       vertex0->projectionFlags = vertex0->projectionFlags | TERRAIN_VERTEX_SECONDARY_VISIBLE;
       vertex1->projectionFlags = vertex1->projectionFlags | TERRAIN_VERTEX_SECONDARY_VISIBLE;
       vertex2->projectionFlags = vertex2->projectionFlags | TERRAIN_VERTEX_SECONDARY_VISIBLE;
@@ -2076,7 +2067,7 @@ void TerrainProjectedOcclusion_ScanDirection0(uint64_t occupancyMaskBits,
       }
       /* the table holds one int per scan step; the product keeps bits 12..43 (SHLD EDX,EAX,20) */
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
@@ -2113,14 +2104,14 @@ void TerrainProjectedOcclusion_ScanDirection1(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)); /* 0x80 = one cell */
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell + 1,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2150,14 +2141,14 @@ void TerrainProjectedOcclusion_ScanDirection2(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2187,7 +2178,7 @@ void TerrainProjectedOcclusion_ScanDirection3(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
@@ -2224,14 +2215,14 @@ void TerrainProjectedOcclusion_ScanDirection4(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      cell = (FieldGridCell *)((uint8_t *)(cell - 1) + g_TerrainScanRowStrideBytes);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell - 1,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2261,14 +2252,14 @@ void TerrainProjectedOcclusion_ScanDirection5(uint64_t occupancyMaskBits,
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+              (int64_t)g_TerrainHeightDeltaScaleByStepQ12[scanStep];
       projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      cell = (FieldGridCell *)((uint8_t *)cell + g_TerrainScanRowStrideBytes);
+      cell = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2277,7 +2268,7 @@ void TerrainProjectedOcclusion_ScanDirection5(uint64_t occupancyMaskBits,
 
 /* Address: 0x00509320.
    Overlay leg along direction 0 (C+1, right) of FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint:
-   stores the overlay value (g_TerrainScanReferenceHeight) into runtimeOverlayOrHeightValue04 of every cell
+   stores the overlay value (g_TerrainScanReferenceHeight) into overlayColor of every cell
    that has a bit of the overlay's cell flag mask and no water above it (waterSurfaceDelta < 0), 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void FieldGridTerrainOverlayVariantA_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2290,7 +2281,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection0(TerrainDirectionalScanStep 
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       fieldCell = fieldCell + 1;
@@ -2314,10 +2305,10 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection1(TerrainDirectionalScanStep 
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes));
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell + 1,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2338,10 +2329,10 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection2(TerrainDirectionalScanStep 
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2362,7 +2353,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection3(TerrainDirectionalScanStep 
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       fieldCell = fieldCell - 1;
@@ -2386,10 +2377,10 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection4(TerrainDirectionalScanStep 
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((uint8_t *)(fieldCell - 1) + g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2410,10 +2401,10 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection5(TerrainDirectionalScanStep 
       }
       if (((fieldCell->flagsAndMaterial & g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0)
          && (fieldCell->waterSurfaceDelta < 0)) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((uint8_t *)fieldCell + g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2422,7 +2413,7 @@ void FieldGridTerrainOverlayVariantA_ApplyDirection5(TerrainDirectionalScanStep 
 
 /* Address: 0x00509B90.
    Overlay leg along direction 0 (C+1, right) of FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint:
-   stores the overlay value (g_TerrainScanReferenceHeight) into runtimeOverlayOrHeightValue04 of every cell
+   stores the overlay value (g_TerrainScanReferenceHeight) into overlayColor of every cell
    with water above it (waterSurfaceDelta > 0), whatever its flags, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void FieldGridTerrainOverlayVariantB_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
@@ -2434,7 +2425,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection0(TerrainDirectionalScanStep 
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       fieldCell = fieldCell + 1;
@@ -2457,10 +2448,10 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection1(TerrainDirectionalScanStep 
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((int)fieldCell + (0x80 - g_TerrainScanRowStrideBytes));
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell + 1,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2480,10 +2471,10 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection2(TerrainDirectionalScanStep 
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((int)fieldCell - g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,-g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2503,7 +2494,7 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection3(TerrainDirectionalScanStep 
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       fieldCell = fieldCell - 1;
@@ -2526,10 +2517,10 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection4(TerrainDirectionalScanStep 
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((uint8_t *)(fieldCell - 1) + g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell - 1,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2549,10 +2540,10 @@ void FieldGridTerrainOverlayVariantB_ApplyDirection5(TerrainDirectionalScanStep 
         return;
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        fieldCell->runtimeOverlayOrHeightValue04 = g_TerrainScanReferenceHeight;
+        fieldCell->overlayColor = g_TerrainScanReferenceHeight;
       }
       scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
-      fieldCell = (FieldGridCell *)((uint8_t *)fieldCell + g_TerrainScanRowStrideBytes);
+      fieldCell = FIELD_GRID_CELL_AT_BYTE_OFFSET(fieldCell,g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;

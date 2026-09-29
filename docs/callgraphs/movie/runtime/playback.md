@@ -14,7 +14,7 @@
 - `0x004A8C00` **[`Movie_StreamWorkerThread`](../../../../src/movie/runtime/playback.c#L409)**
 - `0x004A8D50` **[`Movie_Rewind`](../../../../src/movie/runtime/playback.c#L461)**
 - `0x004A8D90` **[`Movie_Close`](../../../../src/movie/runtime/playback.c#L483)**
-- `0x005657D0` **[`EndMovieUiRuntime_HandleModeTransition`](../../../../src/movie/runtime/playback.c#L523)** — cross: [`FrontendClientSession_DecrementTimeoutsAndCompactPlayers`](../../../../src/ui/frontend/session.c#L398) → [`ui/frontend/session`](../../ui/frontend/session.md), [`FrontendHostSession_TickShutdownOrReadyConsensus`](../../../../src/ui/frontend/session.c#L510) → [`ui/frontend/session`](../../ui/frontend/session.md)
+- `0x005657D0` **[`EndMovieUiRuntime_HandleModeTransition`](../../../../src/movie/runtime/playback.c#L523)** — cross: [`FrontendHostSession_TickPeerTimeoutsAndDropPlayers`](../../../../src/ui/frontend/session.c#L398) → [`ui/frontend/session`](../../ui/frontend/session.md), [`FrontendClientSession_TickHostTimeout`](../../../../src/ui/frontend/session.c#L510) → [`ui/frontend/session`](../../ui/frontend/session.md)
 - `0x00565810` **[`EndMovieUiRuntime_DispatchCommandByFlags`](../../../../src/movie/runtime/playback.c#L544)**
 - `0x005739C0` **[`IntroMovie_TimerTick`](../../../../src/movie/runtime/playback.c#L595)**
 - `0x004A7030` **[`Movie_EncodeFrame4x4Keyframe`](../../../../src/movie/runtime/playback.c#L607)** — local: [`MovieColor_ComputeLuma5FromRgb888`](../../../../src/movie/runtime/playback.c#L1612), [`MovieColor_ComputeChromaCodeFromRgb888`](../../../../src/movie/runtime/playback.c#L1593)

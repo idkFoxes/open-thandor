@@ -23,6 +23,18 @@
 /* UiImageControl stateFlags bit: hit-test against alternateSubresource instead of normalSubresource
    (UiImageControl_PointerMove). */
 #define UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE 0x40
+/* Further UiImageControl stateFlags bits (UiImageControl_* in ui/controls/misc.c): POINTER_SOUND plays
+   pointerActivationSoundId when the image opens/closes; RIGHT_BUTTON_LATCHED holds a right-button press until
+   its release (UiImageControl_TickHover); PRESSED_ON_IMAGE is set by a press and cleared when the pointer
+   leaves the image's opaque pixels; OPEN keeps the image open after the release; PRESS_STARTED is set by a
+   press and cleared by the right-button re-dispatch. A press sets / clears the PRESS_STATE_BITS (bits 0, 1,
+   9 and 11) at once. */
+#define UI_IMAGE_CONTROL_POINTER_SOUND 0x20
+#define UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED 0x100
+#define UI_IMAGE_CONTROL_PRESSED_ON_IMAGE 0x200
+#define UI_IMAGE_CONTROL_OPEN 0x400
+#define UI_IMAGE_CONTROL_PRESS_STARTED 0x800
+#define UI_IMAGE_CONTROL_PRESS_STATE_BITS 0xA03
 /* Cursor frame an image control in persistent-activation mode shows over a transparent pixel with no child
    below while no image control is hovered (UiImageControl_PointerMove). */
 #define UI_IMAGE_CONTROL_CURSOR_FRAME_IDLE 8
@@ -39,6 +51,9 @@
 #define UI_RANGE_SLIDER_SUBRESOURCE_BASE 0xAC
 #define UI_RANGE_SLIDER_SUBRESOURCE_BASE_SUPPRESSED 0xB0
 #define UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET 8
+#define UI_RANGE_SLIDER_PIECE_TRACK 1 /* piece offsets from the look's base; +0 is the start cap */
+#define UI_RANGE_SLIDER_PIECE_END_CAP 2
+#define UI_RANGE_SLIDER_PIECE_THUMB 3
 /* labelFlags of a UiSingleLineTextControl behind g_UiFocusProxyControlVtable (UiSingleLineTextControl_*
    forwarding handlers), next to the UI_LABEL_* bits in text.h. */
 #define UI_LABEL_TEXT_NEEDS_RELOCATION 0x20 /* text is still a serialized offset */

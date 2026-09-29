@@ -32,7 +32,7 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
   GameFactionRuntimeRecord *decayRecord;
   GameFactionRuntimeRecord *maximumScanRecord;
   FactionRuntimeLifecycleObservedState *lifecycleState;
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   
   planningRecord = g_GameFactionRuntimeImage.records;
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
@@ -59,79 +59,77 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
     }
     factionIndexOrScratch++;
     remainingFactionsOrPressureValue--;
-    if (remainingFactionsOrPressureValue == 0) {
-      /* Decay: value = ((value * 3 + 1) >> 2) + 1, two channels per step. */
-      decayRecord = g_GameFactionRuntimeImage.records + 1;
-      factionIndexOrScratch = 7;
-      channelOrFactionIndex = 0;
-      do {
-        do {
-          nextChannelOrFactionBit = channelOrFactionIndex + 2;
-          decayRecord->aiPressureValues[channelOrFactionIndex] =
-               ((decayRecord->aiPressureValues[channelOrFactionIndex] * 3 + 1U) >> 2) + 1;
-          decayRecord->aiPressureValues[channelOrFactionIndex + 1] =
-               ((decayRecord->aiPressureValues[channelOrFactionIndex + 1] * 3 + 1U) >> 2) + 1;
-          channelOrFactionIndex = nextChannelOrFactionBit;
-        } while (nextChannelOrFactionBit < 8);
-        decayRecord->maximumAiPressure = 0;
-        channelOrFactionIndex = 0;
-        decayRecord++;
-        factionIndexOrScratch--;
-      } while (factionIndexOrScratch != 0);
-      ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      if (ownerNode != NULL) {
-        do {
-          if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-            /* runtimePayload is the ModelRuntimeSlot: its definition's target class is the pressure channel;
-               the owner army holds the owning faction and a faction mask at +0x50 (bit 3 + 2 * (f - 1) for
-               faction f). */
-            factionIndexOrScratch =
-                 (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-            if (((ArmyRuntimeSlot *)factionIndexOrScratch)->factionIndex != 0) {
-              remainingFactionsOrPressureValue =
-                   ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->
-                   targetClassIndex5C;
-              nextChannelOrFactionBit = 8;
-              channelOrFactionIndex = 1;
-              pressureTargetRecord = g_GameFactionRuntimeImage.records;
-              do {
-                pressureTargetRecord++;
-                if (((((ArmyRuntimeSlot *)factionIndexOrScratch)->terrainOccupancyMask0 & nextChannelOrFactionBit) != 0) &&
-                   (channelOrFactionIndex != (uint32_t)((ArmyRuntimeSlot *)factionIndexOrScratch)->factionIndex)) {
-                  pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] =
-                       pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] + 0x100;
-                }
-                nextChannelOrFactionBit = nextChannelOrFactionBit << 2;
-                channelOrFactionIndex++;
-              } while (channelOrFactionIndex < 8);
-            }
-          }
-          ownerNode = ownerNode->nextNode;
-        } while (ownerNode != NULL);
-        maximumScanRecord = g_GameFactionRuntimeImage.records + 1;
-        factionIndexOrScratch = 7;
-        channelOrFactionIndex = 0;
-        do {
+  } while (remainingFactionsOrPressureValue != 0);
+  /* Decay: value = ((value * 3 + 1) >> 2) + 1, two channels per step. */
+  decayRecord = g_GameFactionRuntimeImage.records + 1;
+  factionIndexOrScratch = 7;
+  channelOrFactionIndex = 0;
+  do {
+    do {
+      nextChannelOrFactionBit = channelOrFactionIndex + 2;
+      decayRecord->aiPressureValues[channelOrFactionIndex] =
+           ((decayRecord->aiPressureValues[channelOrFactionIndex] * 3 + 1U) >> 2) + 1;
+      decayRecord->aiPressureValues[channelOrFactionIndex + 1] =
+           ((decayRecord->aiPressureValues[channelOrFactionIndex + 1] * 3 + 1U) >> 2) + 1;
+      channelOrFactionIndex = nextChannelOrFactionBit;
+    } while (nextChannelOrFactionBit < 8);
+    decayRecord->maximumAiPressure = 0;
+    channelOrFactionIndex = 0;
+    decayRecord++;
+    factionIndexOrScratch--;
+  } while (factionIndexOrScratch != 0);
+  ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+  if (ownerNode != NULL) {
+    do {
+      if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+        /* runtimePayload is the ModelRuntimeSlot: its definition's target class is the pressure channel;
+           the owner army holds the owning faction and a faction mask at +0x50 (bit 3 + 2 * (f - 1) for
+           faction f). */
+        factionIndexOrScratch =
+             (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+        if (((ArmyRuntimeSlot *)factionIndexOrScratch)->factionIndex != 0) {
+          remainingFactionsOrPressureValue =
+               ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->
+               targetClassIndex5C;
+          nextChannelOrFactionBit = 8;
+          channelOrFactionIndex = 1;
+          pressureTargetRecord = g_GameFactionRuntimeImage.records;
           do {
-            remainingFactionsOrPressureValue = maximumScanRecord->aiPressureValues[channelOrFactionIndex + 1];
-            if (maximumScanRecord->maximumAiPressure <
-                maximumScanRecord->aiPressureValues[channelOrFactionIndex]) {
-              maximumScanRecord->maximumAiPressure =
-                   maximumScanRecord->aiPressureValues[channelOrFactionIndex];
+            pressureTargetRecord++;
+            if (((((ArmyRuntimeSlot *)factionIndexOrScratch)->terrainOccupancyMask0 & nextChannelOrFactionBit) != 0) &&
+               (channelOrFactionIndex != (uint32_t)((ArmyRuntimeSlot *)factionIndexOrScratch)->factionIndex)) {
+              pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] =
+                   pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] + 0x100;
             }
-            channelOrFactionIndex = channelOrFactionIndex + 2;
-            if (maximumScanRecord->maximumAiPressure < remainingFactionsOrPressureValue) {
-              maximumScanRecord->maximumAiPressure = remainingFactionsOrPressureValue;
-            }
+            nextChannelOrFactionBit = nextChannelOrFactionBit << 2;
+            channelOrFactionIndex++;
           } while (channelOrFactionIndex < 8);
-          channelOrFactionIndex = 0;
-          maximumScanRecord++;
-          factionIndexOrScratch--;
-        } while (factionIndexOrScratch != 0);
+        }
       }
-      return;
-    }
-  } while( true );
+      ownerNode = ownerNode->nextNode;
+    } while (ownerNode != NULL);
+    maximumScanRecord = g_GameFactionRuntimeImage.records + 1;
+    factionIndexOrScratch = 7;
+    channelOrFactionIndex = 0;
+    do {
+      do {
+        remainingFactionsOrPressureValue = maximumScanRecord->aiPressureValues[channelOrFactionIndex + 1];
+        if (maximumScanRecord->maximumAiPressure <
+            maximumScanRecord->aiPressureValues[channelOrFactionIndex]) {
+          maximumScanRecord->maximumAiPressure =
+               maximumScanRecord->aiPressureValues[channelOrFactionIndex];
+        }
+        channelOrFactionIndex = channelOrFactionIndex + 2;
+        if (maximumScanRecord->maximumAiPressure < remainingFactionsOrPressureValue) {
+          maximumScanRecord->maximumAiPressure = remainingFactionsOrPressureValue;
+        }
+      } while (channelOrFactionIndex < 8);
+      channelOrFactionIndex = 0;
+      maximumScanRecord++;
+      factionIndexOrScratch--;
+    } while (factionIndexOrScratch != 0);
+  }
+  return;
 }
 
 
@@ -148,7 +146,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
           ModelRuntimeClassId runtimeClassId)
 
 {
-  ArmyAssetRuntimeSemanticView80 *armyAssetRecord;
+  ArmyAssetRecord *armyAssetRecord;
   uint32_t assetDefinitionListAddress;
   ModelDefinitionRecordPrefix *modelDefinition;
   AiCandidateScore32 candidateScore;
@@ -172,25 +170,34 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
     for (; registryEntriesRemaining != 0;
         armyAssetRegistryCursor++,
         registryEntriesRemaining--) {
-      armyAssetRecord = (ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor;
+      armyAssetRecord = (ArmyAssetRecord *)*armyAssetRegistryCursor;
       if ((armyAssetRecord != NULL) &&
-         ((armyAssetRecord->flags14 & 1) != 0)) { /* bit 0: asset enabled */
+         ((armyAssetRecord->flags & 1) != 0)) { /* bit 0: asset enabled */
         /* the asset's root node is an AiLinkedDefinitionListView */
         assetDefinitionListAddress = armyAssetRecord->rootNodeOffsetOrPointer;
-        if ((((candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]) &&
-             (((candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[1] &&
-               (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[2])) &&
-              (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[3])))) &&
-            (((candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[4] &&
-              (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[5])) &&
-             (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[6])))) &&
-           (candidateModelDefinitionId != ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[7])) {
+        if ((((candidateModelDefinitionId !=
+               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]) &&
+             (((candidateModelDefinitionId !=
+                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[1] &&
+               (candidateModelDefinitionId !=
+                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[2])) &&
+              (candidateModelDefinitionId !=
+               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[3])))) &&
+            (((candidateModelDefinitionId !=
+               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[4] &&
+              (candidateModelDefinitionId !=
+               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[5])) &&
+             (candidateModelDefinitionId !=
+              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[6])))) &&
+           (candidateModelDefinitionId !=
+            ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[7])) {
           /* despite its name the check returns true (CF set) while the technology is still locked */
           technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
                             (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                              ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->definitionIds[0]);
           if (((technologyLocked) ||
-              (nestedLinkedDefinitions = (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address,
+              (nestedLinkedDefinitions =
+               (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList0Address,
               ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount == 0)) ||
              ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[0] &&
                 ((((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[1] &&
@@ -200,7 +207,8 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                   (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[5])))))) &&
                ((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[6] &&
                 (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[7])))) &&
-              ((secondNestedLinkedDefinitions = (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address,
+              ((secondNestedLinkedDefinitions =
+                (AiLinkedDefinitionListView *)((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childList1Address,
                ((AiLinkedDefinitionListView *)assetDefinitionListAddress)->childListCount < 2 ||
                (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[0] &&
                  (candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[1])) &&
@@ -260,7 +268,7 @@ void AiPlanning_CollectActiveGridMaskClasses(void)
   maskClass0 = g_AiActiveGridMaskClass0;
   maskClass1 = g_AiActiveGridMaskClass1;
   maskClass2 = g_AiActiveGridMaskClass2;
-  runtimeWorkspaceEntry = g_AiWorkspaceBuffer01_Size0200;
+  runtimeWorkspaceEntry = g_AiWorkspace01Units;
   /* The condition chain below inserts combinedMask into the first free slot unless one of the slots already
      holds it; the slots are written back through the locals as in the original. */
   for (remainingEntries = g_AiWorkspace01Count; g_AiActiveGridMaskClass0 = maskClass0, remainingEntries != 0;
@@ -274,7 +282,8 @@ void AiPlanning_CollectActiveGridMaskClasses(void)
         highClassShift = entityModelRuntime[1].classLinkState.classState64;
         if ((((-1 < (int)highClassShift) &&
              ((((combinedMask = 0x100 << ((uint8_t)lowClassShift & 0x1f) | 0x80000000U |
-                         0x1000000 << ((uint8_t)highClassShift & 0x1f), combinedMask != maskClass0 && (combinedMask != maskClass1)) &&
+                         0x1000000 << ((uint8_t)highClassShift & 0x1f),
+                combinedMask != maskClass0 && (combinedMask != maskClass1)) &&
                (combinedMask != maskClass2)) &&
               ((combinedMask != g_AiActiveGridMaskClass3 &&
                (g_AiActiveGridMaskClass0 = combinedMask, maskClass0 != 0xffffffff)))))) &&
@@ -311,68 +320,68 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,Wor
 
 {
   uint32_t planningPhaseDispatchIndex;
-  WorldObjectRecordCount *worldRuntime;
+  WorldRuntimeContext *worldRuntime;
   bool phaseResult;
   AiKnowledgeDataImage *knowledgeData;
 
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
        SESSION_NETWORK_ROLE_LOCAL) || ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF) == 0)) {
     planningPhaseDispatchIndex = g_GameFactionRuntimeImage.tail.simulationTick >> 6 & 1;
-    /* the world view inside the in-game root: inGameRuntime + 0xA30 (ADD EBX,0xa30 in the original) */
-    worldRuntime = &inGameRuntime[7].objectCount;
+    /* inGameRuntime is really the in-game root (the caller passes g_InGameRuntimeRoot); its world view */
+    worldRuntime = &((InGameRuntimeRootImageC3E4 *)inGameRuntime)->worldRuntime0A30;
     if ((g_GameFactionRuntimeImage.tail.simulationTick >> 3 & 7) == factionIndex) {
       AiPlanning_RebuildFactionWorkspaces
                 (planningPhaseDispatchIndex,factionIndex,factionIndex,
-                 (WorldRuntimeContext *)worldRuntime);
+                 worldRuntime);
       switch(planningPhaseDispatchIndex) {
       case 0:
-        AiUnitBehavior_UpdateWorkspace01Entities(factionIndex,(WorldRuntimeContext *)worldRuntime);
+        AiUnitBehavior_UpdateWorkspace01Entities(factionIndex,worldRuntime);
         AiUnitGroup_AssignCollectedEntitiesToBestTarget();
         break;
       case 1:
         AiFactionPlanning_UpdateActiveEntityPressureFlag(factionIndex);
         GameFactionRelations_UpdateAllPairsForFaction
-                  (factionIndex,(WorldRuntimeContext *)worldRuntime);
+                  (factionIndex,worldRuntime);
         phaseResult = AiConstructionPlanner_ProcessPendingAssetRequests
-                          (factionIndex,(WorldRuntimeContext *)worldRuntime);
+                          (factionIndex,worldRuntime);
         knowledgeData = g_AiKnowledgeData;
         if (!phaseResult) {
           if (((g_GameFactionRuntimeImage.records[factionIndex].candidateCache.cacheReuseState == 0)
-              || (0x31 < (int)g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown)
-              ) || (0x31 < (int)g_GameFactionRuntimeImage.records[factionIndex].anchorCooldown0)) {
+              || (49 < (int)g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown)
+              ) || (49 < (int)g_GameFactionRuntimeImage.records[factionIndex].anchorCooldown0)) {
             AiCandidateWorkspace_Clear();
             AiResourceCandidate_AddWeightedId136(factionIndex);
             AiWorkspaceAssetCandidate_AddWeightedEntry
                       ((knowledgeData->parameters).specialSite14aBaseWeight,
-                       ARM_0330_BUILDING_MDL0303,factionIndex,(WorldRuntimeContext *)worldRuntime);
+                       ARM_0330_BUILDING_MDL0303,factionIndex,worldRuntime);
             AiWorkspaceAssetCandidate_AddWeightedEntry
                       ((knowledgeData->parameters).specialSite14cBaseWeight,
-                       ARM_0332_BUILDING_MDL0302,factionIndex,(WorldRuntimeContext *)worldRuntime);
+                       ARM_0332_BUILDING_MDL0302,factionIndex,worldRuntime);
             AiStructureCandidate_AddWeightedId14BOr14CCandidate
                       ((knowledgeData->parameters).structure14bBaseWeight,ARM_0331_BUILDING_MDL0308,
-                       factionIndex,(WorldRuntimeContext *)worldRuntime);
+                       factionIndex,worldRuntime);
             AiStructureCandidate_AddWeightedId14BOr14CCandidate
                       ((knowledgeData->parameters).structure14dBaseWeight,ARM_0333_BUILDING_MDL0307,
-                       factionIndex,(WorldRuntimeContext *)worldRuntime);
+                       factionIndex,worldRuntime);
             AiCandidatePlanning_AddSpecialSiteCandidate
-                      (factionIndex,(WorldRuntimeContext *)worldRuntime);
-            AiArmyCandidate_AddBestScoredVariantA(factionIndex,(WorldRuntimeContext *)worldRuntime);
-            AiArmyCandidate_AddBestScoredVariantB(factionIndex,(WorldRuntimeContext *)worldRuntime);
-            AiArmyCandidate_AddBestScoredVariantC(factionIndex,(WorldRuntimeContext *)worldRuntime);
+                      (factionIndex,worldRuntime);
+            AiArmyCandidate_AddBestScoredVariantA(factionIndex,worldRuntime);
+            AiArmyCandidate_AddBestScoredVariantB(factionIndex,worldRuntime);
+            AiArmyCandidate_AddBestScoredVariantC(factionIndex,worldRuntime);
             AiStrategicClass_AddCandidate12DOr12FTo132
-                      (factionIndex,(WorldRuntimeContext *)worldRuntime);
+                      (factionIndex,worldRuntime);
             AiStrategicClass_AddWeightedClassCandidate
-                      (factionIndex,(WorldRuntimeContext *)worldRuntime);
+                      (factionIndex,worldRuntime);
             AiStrategicCandidate_AddBestWorkspace12Entry
-                      (factionIndex,(WorldRuntimeContext *)worldRuntime);
+                      (factionIndex,worldRuntime);
             phaseResult = AiPurchasePlanner_ExecuteAffordableCandidates(factionIndex);
             if (phaseResult) {
-              AiCandidateWorkspace_SaveToFactionImage(factionIndex * 0x740);
+              AiCandidateWorkspace_SaveToFactionImage(factionIndex * (int)sizeof(GameFactionRuntimeRecord));
               g_GameFactionRuntimeImage.records[factionIndex].candidateCache.cacheReuseState = 0x10;
             }
           }
           else {
-            AiCandidateWorkspace_LoadFromFactionImage(factionIndex * 0x740);
+            AiCandidateWorkspace_LoadFromFactionImage(factionIndex * (int)sizeof(GameFactionRuntimeRecord));
             phaseResult = AiPurchasePlanner_ExecuteAffordableCandidates(factionIndex);
             if (!phaseResult) {
               g_GameFactionRuntimeImage.records[factionIndex].candidateCache.cacheReuseState = 0;
@@ -405,11 +414,8 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
   
   g_AiConstructionPendingAssetConsumedCount = 0;
   remainingRequests = g_AiWorkspace04Count;
-  requestEntry = g_AiWorkspaceBuffer04_Size0040;
-  do {
-    if (remainingRequests == 0) {
-      return false;
-    }
+  requestEntry = g_AiWorkspace04RequestedAssets;
+  while (remainingRequests != 0) {
     armyAssetId = requestEntry->armyAssetId;
     if (armyAssetId == ARM_0300_BUILDING_MDL0301) {
       hasUnassignedEntry = AiPrimaryWorkspace_HasUnassignedEntryById(ARM_0330_BUILDING_MDL0303);
@@ -450,7 +456,8 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
     }
     requestEntry++;
     remainingRequests--;
-  } while( true );
+  }
+  return false;
 }
 
 
@@ -471,7 +478,7 @@ bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIn
   bool insufficientOrNoProducer;
   
   remainingCandidates = g_AiCandidateWorkspaceEntryCount;
-  entry = g_AiWorkspaceBuffer13_Size0400;
+  entry = g_AiWorkspace13Candidates;
   g_AiPurchaseAppliedArmyClassMask = 0;
   noCandidateApplied = false;
   if (g_AiCandidateWorkspaceEntryCount != 0) {
@@ -522,7 +529,7 @@ void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetI
   ArmyRuntimeCreateResult createdInstance;
   AiAnchorResult anchorResult;
   
-  arm0330SiteEntry = g_AiWorkspaceBuffer08_Size0200;
+  arm0330SiteEntry = g_AiWorkspace08TerrainFeatureSites;
   remainingArm0330Entries = g_AiWorkspace08Count;
   if (g_AiWorkspace08Count != 0) {
     do {
@@ -555,7 +562,7 @@ void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetI
                        ((WorldRuntimeNodeModelPayload *)&createdModelNode->factionIndex)->worldRotationAngle0,
                        createdModelNode->depthBinClass,createdModelNode->runtimeState98,
                        ((GraphicsFixedVec3 *)&createdModelNode->runtimeState94)->x,
-                       (EffectDefinition *)createdModelRuntime->attachments140[2].childLocalRotationAngle0,
+                       (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
                        worldRuntime);
             AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
             return;
@@ -564,7 +571,7 @@ void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetI
       }
       arm0330SiteEntry++;
       remainingArm0330Entries--;
-      arm0332SiteEntry = g_AiWorkspaceBuffer08_Size0200;
+      arm0332SiteEntry = g_AiWorkspace08TerrainFeatureSites;
       remainingArm0332Entries = g_AiWorkspace08Count;
     } while (remainingArm0330Entries != 0);
     do {
@@ -597,7 +604,7 @@ void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetI
                        ((WorldRuntimeNodeModelPayload *)&createdModelNode->factionIndex)->worldRotationAngle0,
                        createdModelNode->depthBinClass,createdModelNode->runtimeState98,
                        ((GraphicsFixedVec3 *)&createdModelNode->runtimeState94)->x,
-                       (EffectDefinition *)createdModelRuntime->attachments140[2].childLocalRotationAngle0,
+                       (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
                        worldRuntime);
             AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
             return;
@@ -634,7 +641,7 @@ void AiArmyCandidate_AddBestScoredVariantA(FactionRuntimeIndex factionIndex,Worl
   bool blockingCondition;
   
   remainingEntries = g_AiWorkspace11Count;
-  armyAssetRegistryCursor = g_AiWorkspaceBuffer11_Size1000;
+  armyAssetRegistryCursor = g_AiWorkspace11ProducibleAssets;
   if (g_AiWorkspace11Count != 0) {
     bestScore = 0;
     blockingCondition = AiFactionRuntime_TestPlanningCapacityExceeded(4,factionIndex);
@@ -642,10 +649,10 @@ void AiArmyCandidate_AddBestScoredVariantA(FactionRuntimeIndex factionIndex,Worl
     if ((!blockingCondition) &&
        (blockingCondition = Technology_IsUnlockedForFaction(TEC_001_ARMS_FACTORIES,factionIndex), !blockingCondition)) {
       do {
-        if (((((ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor)->flags14 & 1) != 0) &&
+        if (((((ArmyAssetRecord *)*armyAssetRegistryCursor)->flags & 1) != 0) &&
            (candidateScore = AiArmyCandidate_ComputeFactionWeightedScore
                               (&g_AiArmyCandidateScoreWeightsVariantA15,factionIndex,
-                               (ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor),
+                               (ArmyAssetRecord *)*armyAssetRegistryCursor),
            bestScore < candidateScore)) {
           bestArmyAsset = *armyAssetRegistryCursor;
           bestScore = candidateScore;
@@ -655,7 +662,7 @@ void AiArmyCandidate_AddBestScoredVariantA(FactionRuntimeIndex factionIndex,Worl
       } while (remainingEntries != 0);
       if (0 < bestScore) {
         pendingCountOrWeight = 1;
-        runtimeWorkspaceEntry = g_AiWorkspaceBuffer04_Size0040;
+        runtimeWorkspaceEntry = g_AiWorkspace04RequestedAssets;
         for (remainingEntries = g_AiWorkspace04Count; remainingEntries != 0; remainingEntries--) {
           if (((ARM_0340_BUILDING_MDL0314 - 1) < runtimeWorkspaceEntry->armyAssetId) &&
              (runtimeWorkspaceEntry->armyAssetId < ARM_0380_BUILDING_MDL0329)) {
@@ -796,7 +803,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
      (g_AiWorkspace09Count != 0)) {
     bestScore = 0x7fffffff;
     remainingCells = g_AiWorkspace09Count;
-    gridCellCursor = g_AiWorkspaceBuffer09_Size1000;
+    gridCellCursor = g_AiWorkspace09Cells;
     do {
       candidateCell = *gridCellCursor;
       anchorDistanceY = g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorYQ12 - candidateCell->worldX;
@@ -845,7 +852,8 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
     } while (remainingCells != 0);
     if (bestScore < 0x7fffffff) {
       createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                        (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
+                        (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,
+                         bestCell->worldY,
                          bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
       createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
       if (!createdInstance.failed) {
@@ -863,7 +871,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
                    worldRotationAngle0,modelNodeRuntime->depthBinClass,
                    modelNodeRuntime->runtimeState98,
                    ((GraphicsFixedVec3 *)&modelNodeRuntime->runtimeState94)->x,
-                   (EffectDefinition *)createdModelRuntime->attachments140[2].childLocalRotationAngle0,
+                   (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
                    worldRuntime);
         AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
       }
@@ -893,12 +901,12 @@ void AiArmyCandidate_AddBestScoredVariantB(FactionRuntimeIndex factionIndex,Worl
   {
     bestScore = 0;
     remainingEntries = g_AiWorkspace11Count;
-    armyAssetRegistryCursor = g_AiWorkspaceBuffer11_Size1000;
+    armyAssetRegistryCursor = g_AiWorkspace11ProducibleAssets;
     do {
-      if ((((ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor)->flags14 & 1) != 0) {
+      if ((((ArmyAssetRecord *)*armyAssetRegistryCursor)->flags & 1) != 0) {
         candidateScore = AiArmyCandidate_ComputeFactionWeightedScore
                           (&g_AiArmyCandidateScoreWeightsVariantB15,factionIndex,
-                           (ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor);
+                           (ArmyAssetRecord *)*armyAssetRegistryCursor);
         if (bestScore < candidateScore) {
           bestArmyAsset = *armyAssetRegistryCursor;
           bestScore = candidateScore;
@@ -943,12 +951,12 @@ void AiArmyCandidate_AddBestScoredVariantC(FactionRuntimeIndex factionIndex,Worl
   {
     bestScore = 0;
     remainingEntries = g_AiWorkspace11Count;
-    armyAssetRegistryCursor = g_AiWorkspaceBuffer11_Size1000;
+    armyAssetRegistryCursor = g_AiWorkspace11ProducibleAssets;
     do {
-      if ((((ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor)->flags14 & 1) != 0) {
+      if ((((ArmyAssetRecord *)*armyAssetRegistryCursor)->flags & 1) != 0) {
         candidateScore = AiArmyCandidate_ComputeFactionWeightedScore
                           (&g_AiArmyCandidateScoreWeightsVariantC15,factionIndex,
-                           (ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor);
+                           (ArmyAssetRecord *)*armyAssetRegistryCursor);
         if (bestScore < candidateScore) {
           bestArmyAsset = *armyAssetRegistryCursor;
           bestScore = candidateScore;
@@ -993,7 +1001,7 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
   technologyIndex = candidateEntry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
   if ((candidateEntry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
     technologyAvailable = Technology_IsAvailableForFaction(technologyIndex,factionIndex);
-    workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
+    workspaceEntry = g_AiWorkspace00Structures;
     countOrClassMask = g_AiWorkspace00Count;
     if (technologyAvailable) {
       for (; countOrClassMask != 0; countOrClassMask = countOrClassMask - 1) {
@@ -1002,7 +1010,7 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
         if ((entitySlot != NULL) && ((entitySlot[0x3b] & 0x89U) == 0)) {
           technologySlotIndex = 0x1c;
           do {
-            if (technologyIndex == ((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->researchTechnologyIds1C4[technologySlotIndex]) {
+            if (technologyIndex == ((ModelDefinition *)*entitySlot)->researchTechnologyIds1C4[technologySlotIndex]) {
               return false;
             }
             technologySlotIndex--;
@@ -1018,15 +1026,17 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
     countOrClassMask = armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
     if ((g_AiWorkspace00Count != 0) && ((g_AiPurchaseAppliedArmyClassMask & countOrClassMask) == 0)) {
       remainingEntries = g_AiWorkspace00Count;
-      workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
+      workspaceEntry = g_AiWorkspace00Structures;
       if ((countOrClassMask & 0x10) == 0) {
         if ((countOrClassMask & 8) == 0) {
           remainingGuard = countOrClassMask & 0xee;
           while (remainingGuard != 0) {
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-            if (((entitySlot != NULL) && (((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->runtimeClassId4C == MODEL_RUNTIME_CLASS_13)) &&
+            if (((entitySlot != NULL) && (((ModelDefinition *)*entitySlot)->runtimeClassId4C ==
+                                          MODEL_RUNTIME_CLASS_13)) &&
                (((entitySlot[0x3b] & 0xc9U) == 0 &&
-                (((((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->classParameterC4 & countOrClassMask & 0xee) != 0 && (entitySlot[0x2e] == 0)))))) {
+                (((((ModelDefinition *)*entitySlot)->classParameterC4 & countOrClassMask & 0xee) != 0 &&
+                  (entitySlot[0x2e] == 0)))))) {
               return false;
             }
             workspaceEntry++;
@@ -1037,7 +1047,8 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
         else {
           do {
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-            if (((entitySlot != NULL) && (((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->runtimeClassId4C == MODEL_RUNTIME_CLASS_22)) &&
+            if (((entitySlot != NULL) && (((ModelDefinition *)*entitySlot)->runtimeClassId4C ==
+                                          MODEL_RUNTIME_CLASS_22)) &&
                (((entitySlot[0x3b] & 0xc9U) == 0 && (entitySlot[0x2b] == 0)))) {
               return false;
             }
@@ -1049,7 +1060,8 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
       else {
         do {
           entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-          if ((((entitySlot != NULL) && (((ModelDefinitionRuntimeSemanticView280 *)*entitySlot)->runtimeClassId4C == MODEL_RUNTIME_CLASS_11)) &&
+          if ((((entitySlot != NULL) && (((ModelDefinition *)*entitySlot)->runtimeClassId4C ==
+                                         MODEL_RUNTIME_CLASS_11)) &&
               ((entitySlot[0x3b] & 0xc9U) == 0)) && (entitySlot[0x2e] == 0)) {
             return false;
           }
@@ -1081,7 +1093,7 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
   
   technologyIndex = candidateEntry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
   remainingEntries = g_AiWorkspace00Count;
-  workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
+  workspaceEntry = g_AiWorkspace00Structures;
   if ((candidateEntry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
     for (; remainingEntries != 0; remainingEntries--) {
       entity = (GameEntityRuntime *)workspaceEntry->runtimeSlotAddressOrZero;
@@ -1089,7 +1101,7 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
         technologySlotIndex = 0x1c;
         do {
           if (technologyIndex ==
-              ((ModelDefinitionRuntimeSemanticView280 *)(entity->common).ownership.definitionOrClassRecord)->
+              ((ModelDefinition *)(entity->common).ownership.definitionOrClassRecord)->
               researchTechnologyIds1C4[technologySlotIndex]) {
             Technology_ApplyRecordToEntity(technologyIndex,entity);
             workspaceEntry->runtimeSlotAddressOrZero = 0;
@@ -1132,11 +1144,12 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
   ArmyRuntimeSlot *armySlot;
   
   thresholdOrRemaining = 2;
-  primaryEntry = g_AiWorkspaceBuffer00_Size0400;
+  primaryEntry = g_AiWorkspace00Structures;
   for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries--) {
     if ((primaryEntry->runtimeSlotAddressOrZero != 0) &&
        ((primaryEntry->armyAssetId < ARM_0340_BUILDING_MDL0314 ||
-        ((primaryEntry->armyAssetId < ARM_0380_BUILDING_MDL0329 && (thresholdOrRemaining = thresholdOrRemaining + -1, thresholdOrRemaining == 0)))))) {
+        ((primaryEntry->armyAssetId < ARM_0380_BUILDING_MDL0329 && (thresholdOrRemaining = thresholdOrRemaining + -1,
+                                                                    thresholdOrRemaining == 0)))))) {
       factionRuntimeFlags = &g_GameFactionRuntimeImage.records[factionIndex].runtimeFlags;
       *factionRuntimeFlags = *factionRuntimeFlags | 1;
       return;
@@ -1145,14 +1158,14 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
   }
   thresholdOrRemaining++;
   remainingEntries = g_AiWorkspace01Count;
-  runtimeWorkspaceEntry = g_AiWorkspaceBuffer01_Size0200;
+  runtimeWorkspaceEntry = g_AiWorkspace01Units;
   while( true ) {
     if (remainingEntries == 0) {
       if ((g_GameFactionRuntimeImage.records[factionIndex].runtimeFlags & 1) != 0) {
         contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
-        primaryEntry = g_AiWorkspaceBuffer00_Size0400;
+        primaryEntry = g_AiWorkspace00Structures;
         for (thresholdOrRemaining = g_AiWorkspace00Count; remainingEntries = g_AiWorkspace01Count,
-            runtimeWorkspaceEntry = g_AiWorkspaceBuffer01_Size0200, thresholdOrRemaining != 0; thresholdOrRemaining--)
+            runtimeWorkspaceEntry = g_AiWorkspace01Units, thresholdOrRemaining != 0; thresholdOrRemaining--)
         {
           if (primaryEntry->runtimeSlotAddressOrZero != 0) {
             ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
@@ -1227,14 +1240,14 @@ void AiStructureCandidate_AddWeightedId14BOr14CCandidate
     }
     else {
       conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0332_BUILDING_MDL0302);
-      terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200;
+      terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
       remainingOrAssignedCount = g_AiWorkspace08Count;
       if (((conditionMet) && (storageLimit != 0)) &&
          ((storageLimit < knowledgeData->parameters.structure14dPrerequisite14cCountLimit &&
           (storageLimit - g_GameFactionRuntimeImage.records[factionIndex].tritiumCurrentQ4 <
            knowledgeData->parameters.structure14dCountGapLimit)))) {
         AiCandidateWorkspace_AddOrAccumulateWeightedEntry(candidateArmyAssetId,baseWeight,1);
-        terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200;
+        terrainFeatureEntry = g_AiWorkspace08TerrainFeatureSites;
         remainingOrAssignedCount = g_AiWorkspace08Count;
       }
       for (; remainingOrAssignedCount != 0; remainingOrAssignedCount--) {
@@ -1504,9 +1517,11 @@ AiStrategicClassSelectionRegs8 AiStrategicClass_SelectWeightedClass141To143
            g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[3] +
            g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[4] + 1;
   randomBits = g_RandomGeneratorState.next();
-  class141Score = ((pressure2For141 + 1) * class141Coefficient0OrExistingCount + (pressure3For141 + 1) * class141Coefficient1 + (pressure4For141 + 1) * class141Coefficient2) / pressureSumPlusOne +
+  class141Score = ((pressure2For141 + 1) * class141Coefficient0OrExistingCount + (pressure3For141 + 1) *
+                   class141Coefficient1 + (pressure4For141 + 1) * class141Coefficient2) / pressureSumPlusOne +
            (randomBits & 0x7f);
-  class142Score = ((pressure2For142 + 1) * class142Coefficient0 + (pressure3For142 + 1) * class142Coefficient1 + (pressure4For142 + 1) * class142Coefficient2) / pressureSumPlusOne +
+  class142Score = ((pressure2For142 + 1) * class142Coefficient0 + (pressure3For142 + 1) * class142Coefficient1 +
+                   (pressure4For142 + 1) * class142Coefficient2) / pressureSumPlusOne +
            (randomBits >> 0x13 & 0x7f);
   bestScore = 0;
   class141Coefficient0OrExistingCount = 3;
@@ -1534,7 +1549,8 @@ AiStrategicClassSelectionRegs8 AiStrategicClass_SelectWeightedClass141To143
     class141Coefficient0OrExistingCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0323_BUILDING_MDL0328);
     if ((!conditionMet) &&
-       (bestScore < ((pressure2For143 + 1) * class143Coefficient0 + (pressure3For143 + 1) * class143Coefficient1 + (pressure4For143 + 1) * class143Coefficient2) / pressureSumPlusOne +
+       (bestScore < ((pressure2For143 + 1) * class143Coefficient0 + (pressure3For143 + 1) * class143Coefficient1 +
+                     (pressure4For143 + 1) * class143Coefficient2) / pressureSumPlusOne +
                  (randomBits >> 7 & 0x7f))) {
       selectedToken = ARM_0323_BUILDING_MDL0328;
     }
@@ -1585,11 +1601,11 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                         definitionIds[0]);
     if (!modelDefinitionLookup.notFound) {
       radiusMetric =
-           ((ModelDefinitionRuntimeSemanticView280 *)modelDefinitionLookup.modelDefinition)->placementRadiusOrClearanceDC;
+           ((ModelDefinition *)modelDefinitionLookup.modelDefinition)->placementRadiusOrClearanceDC;
       if (g_AiWorkspace10Count != 0) {
         bestScore = 0x7fffffff;
         remainingCells = g_AiWorkspace10Count;
-        gridCellCursor = g_AiWorkspaceBuffer10_Size0400;
+        gridCellCursor = g_AiWorkspace10Cells;
         do {
           candidateCell = *gridCellCursor;
           distanceXOrScore = candidateCell->worldX;
@@ -1626,7 +1642,8 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
         } while (remainingCells != 0);
         if (bestScore < 0x7fffffff) {
           createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                             (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
+                             (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,
+                              bestCell->worldY,
                               bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
           createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
           if (!createdInstance.failed) {
@@ -1644,7 +1661,7 @@ void AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                        worldRotationAngle0,modelNodeRuntime->depthBinClass,
                        modelNodeRuntime->runtimeState98,
                        ((GraphicsFixedVec3 *)&modelNodeRuntime->runtimeState94)->x,
-                       (EffectDefinition *)createdModelRuntime->attachments140[2].childLocalRotationAngle0,
+                       (EffectDefinition *)createdModelRuntime->attachments[2].childLocalRotationAngle0,
                        worldRuntime);
             AiConstructionPlanner_ConsumeFactionPendingArmyAsset(armyAssetId,factionIndex);
           }
@@ -1730,11 +1747,11 @@ bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDema
 */
 AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
           (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
-          ArmyAssetRuntimeSemanticView80 *armyAssetRecord)
+          ArmyAssetRecord *armyAssetRecord)
 
 {
-  ModelDefinitionResolvePhaseView280 *selectedModelDefinition;
-  ModelDefinitionResolvePhaseView280 *selectedChildModelDefinition0;
+  ModelDefinitionResolveView *selectedModelDefinition;
+  ModelDefinitionResolveView *selectedChildModelDefinition0;
   uint32_t pressureWeightedDamage0;
   uint32_t pressureWeightedDamage1;
   uint32_t pressureWeightedDamage2;
@@ -1743,7 +1760,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   uint32_t pressureWeightedDamage5;
   uint32_t pressureWeightedDamage6;
   uint32_t pressureWeightedDamage7;
-  ModelDefinitionResolvePhaseView280 *selectedChildModelDefinition1;
+  ModelDefinitionResolveView *selectedChildModelDefinition1;
   uint32_t childCountOrWeightedDamage;
   int weightedDefinitionScore;
   ModelDefinitionResult definitionLookup;
@@ -1756,28 +1773,28 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
   linkedDefinitionList = (AiLinkedDefinitionListView *)armyAssetRecord->rootNodeOffsetOrPointer;
   definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                     (factionIndex,(ModelLinkedDefinitionListAddress32)linkedDefinitionList);
-  selectedModelDefinition = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
+  selectedModelDefinition = (ModelDefinitionResolveView *)definitionLookup.modelDefinition;
   if (definitionLookup.notFound) {
     return 0;
   }
   weightedDefinitionScore = scoreWeights->baseScore;
-  if (selectedModelDefinition->runtimeValue18 != 0) {
+  if (selectedModelDefinition->accelerationPerTick18 != 0) {
     weightedDefinitionScore = weightedDefinitionScore + scoreWeights->nonzeroDefinition18Bonus;
   }
   childCountOrWeightedDamage = linkedDefinitionList->childListCount;
   weightedDefinitionScore =
-       ((int)(((int64_t)(int)selectedModelDefinition->runtimeValue0C *
+       ((int)(((int64_t)(int)selectedModelDefinition->movementSpeed0C *
               (int64_t)scoreWeights->definitionValue0CWeight) /
              (int64_t)(int)g_AiArmyCandidateFlaggedDefinitionValueMaximum) +
        weightedDefinitionScore +
-       (int)(((int64_t)(int)selectedModelDefinition->runtimeValue60 *
+       (int)(((int64_t)(int)selectedModelDefinition->maximumHealth60 *
              (int64_t)scoreWeights->definitionValue60Weight) /
             (int64_t)
             (&g_TechnologyCategoryMaximum0)[selectedModelDefinition->categoryMaximumIndex5C])) * 8;
   if (childCountOrWeightedDamage != 0) {
     definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                       (factionIndex,linkedDefinitionList->childList0Address);
-    selectedChildModelDefinition0 = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
+    selectedChildModelDefinition0 = (ModelDefinitionResolveView *)definitionLookup.modelDefinition;
     if (definitionLookup.notFound) {
       return 0;
     }
@@ -1864,7 +1881,7 @@ AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
     if (1 < childCountOrWeightedDamage) {
       definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                         (factionIndex,linkedDefinitionList->childList1Address);
-      selectedChildModelDefinition1 = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
+      selectedChildModelDefinition1 = (ModelDefinitionResolveView *)definitionLookup.modelDefinition;
       if (definitionLookup.notFound) {
         return 0;
       }

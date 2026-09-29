@@ -4,13 +4,13 @@ digraph thandor {
   "InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags" [label="0x0056E3C0\nInGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf"];
   "InGameSevenSlotCommand_SubmitAndClosePage" [label="0x0056BAD0\nInGameSevenSlotCommand_SubmitAndClosePage"];
   "InGameUiAction1024_Handler" [label="0x0056A610\nInGameUiAction1024_Handler"];
-  "InGameUiAction1210_ResourceRegistrationHelper" [label="0x0050ECE0\nInGameUiAction1210_ResourceRegistrationHelper"];
+  "InGameSaveGame_WritePackage" [label="0x0050ECE0\nInGameSaveGame_WritePackage"];
   "InGameMapAction_RecenterViewFromGridCoordinates" [label="0x0053D9F0\nInGameMapAction_RecenterViewFromGridCoordinates"];
   "InGameUiRuntime_InitializeControlTreeResources" [label="0x0055C990\nInGameUiRuntime_InitializeControlTreeResourcesCf"];
   "InGameHud_UpdateStatusCountersAndSessionPrompts" [label="0x00563BD0\nInGameHud_UpdateStatusCountersAndSessionPrompts"];
   "InGamePanel_RebuildPlayerStatusRows" [label="0x005640E0\nInGamePanel_RebuildPlayerStatusRows"];
   "InGameUiRuntime_DispatchCommandByCodeAndModifierFlags" [label="0x005678C0\nInGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf"];
-  "InGameUiRuntime_ClearTransientState1BCallback" [label="0x00569750\nInGameUiRuntime_ClearTransientState1BCallback"];
+  "InGameUiRuntime_ResetNotificationButtonCursor" [label="0x00569750\nInGameUiRuntime_ResetNotificationButtonCursor"];
   "InGameUiRuntime_DispatchWorldContextActionCallback" [label="0x00569780\nInGameUiRuntime_DispatchWorldContextActionCallback"];
   "InGameNotificationQueue_InsertPriorityRecord" [label="0x00569890\nInGameNotificationQueue_InsertPriorityRecord"];
   "InGameOtherPlayerCommand_RebuildTargetEntries" [label="0x00569B00\nInGameOtherPlayerCommand_RebuildTargetEntries"];

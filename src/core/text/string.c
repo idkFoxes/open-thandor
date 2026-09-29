@@ -118,7 +118,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
               (g_WideNumberFormatState.hexPrefixLength,g_WideNumberFormatState.hexPrefix,destination);
     destinationCursor = destination + segmentLength;
     /* drop leading zero bytes, keeping at least one byte (two digits) */
-    for (digitCount = 8; ((value & 0xff000000U) == 0 && (2 < digitCount)); digitCount = digitCount - 2) {
+    for (digitCount = 8; (value & 0xff000000U) == 0 && digitCount > 2; digitCount -= 2) {
       value = value << 8;
     }
     do {
@@ -136,7 +136,7 @@ uint32_t WideNumber_FormatUtf16(WideNumberFormatFlags flags,WideNumberFractional
       *destinationCursor = 0;
     }
   }
-  return (int)destinationCursor - (int)destination;
+  return (uint8_t *)destinationCursor - (uint8_t *)destination;
 }
 
 
@@ -169,14 +169,14 @@ TextCompareResult Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightTe
     /* Fold only when one side is an upper-case letter ('A'..'Z', 0x41..0x5A) and the other a lower-case one
        ('a'..'z', 0x61..0x7A); the lower-case test on leftCodeUnit has no upper bound in the original either
        (CMP EAX,0x61 / JC only), which is harmless because rightCodeUnit is then an upper-case letter. */
-    if (0x40 < leftCodeUnit) {
-      if (leftCodeUnit < 0x5b) {
-        if ((0x60 < rightCodeUnit) && (rightCodeUnit < 0x7b)) {
-          leftCodeUnit = leftCodeUnit | 0x20;
+    if ('A' - 1 < leftCodeUnit) {
+      if (leftCodeUnit < 'Z' + 1) {
+        if ('a' - 1 < rightCodeUnit && rightCodeUnit < 'z' + 1) {
+          leftCodeUnit = leftCodeUnit | 0x20; /* to lower case */
         }
       }
-      else if ((((0x60 < leftCodeUnit) && (rightCodeUnit < 0x7b)) && (0x40 < rightCodeUnit)) &&
-              (rightCodeUnit < 0x5b)) {
+      else if ('a' - 1 < leftCodeUnit && rightCodeUnit < 'z' + 1 && 'A' - 1 < rightCodeUnit &&
+               rightCodeUnit < 'Z' + 1) {
         rightCodeUnit = rightCodeUnit | 0x20;
       }
     }

@@ -20,7 +20,7 @@ uint32_t FncModule_GetBindingMode(FncModuleHeader *module)
 
 {
   if (module->magic == ASSET_MAGIC_FNC) {
-    return (module->exportBinding).bindingMode;
+    return module->exportBinding.bindingMode;
   }
   return FATAL_ERROR_FNC_MODULE_INVALID;
 }
@@ -50,7 +50,7 @@ FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
   if (serializedModule->magic == ASSET_MAGIC_FNC) {
     moduleBaseOrError = (AssetMagic *)FATAL_ERROR_FNC_MODULE_BINDING;
     sizeOrDwordCount = serializedModule->allocationSizeBytes;
-    if ((serializedModule->exportBinding).bindingMode == 0) {
+    if (serializedModule->exportBinding.bindingMode == 0) {
       reserveResult = g_MemoryApi.reserveLinear(sizeOrDwordCount);
       moduleBaseOrError = (AssetMagic *)reserveResult.baseOrError;
       if (!reserveResult.failed) {
@@ -61,17 +61,19 @@ FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
           serializedModule = (FncModuleHeader *)&serializedModule->allocationSizeBytes;
           copyCursor = copyCursor + 1;
         }
-        /* dword 0x2E = exportBinding.exportTableOffset, 0x2C = exportBinding.exportCount of the copy */
-        relocationCursor = (int *)((int)moduleBaseOrError + moduleBaseOrError[0x2e]);
+        /* relocate the export table of the copy */
+        relocationCursor = (int *)((int)moduleBaseOrError +
+                                   ((FncModuleHeader *)moduleBaseOrError)->exportBinding.exportTableOffset);
         arenaFreeProc = g_MemoryApi.free;
-        for (relocationsRemaining = moduleBaseOrError[0x2c]; g_MemoryApi.free = arenaFreeProc, relocationsRemaining != 0; relocationsRemaining--) {
+        for (relocationsRemaining = ((FncModuleHeader *)moduleBaseOrError)->exportBinding.exportCount;
+             g_MemoryApi.free = arenaFreeProc, relocationsRemaining != 0; relocationsRemaining--) {
           *relocationCursor = *relocationCursor + (int)moduleBaseOrError;
           relocationCursor = relocationCursor + 1;
           arenaFreeProc = g_MemoryApi.free;
         }
-        /* dword 0x2F = exportBinding.hostApiTableOffset, 0x2D = exportBinding.bindingMode */
-        hostApiTable = (void **)((int)moduleBaseOrError + moduleBaseOrError[0x2f]);
-        if (moduleBaseOrError[0x2d] == 0) {
+        hostApiTable = (void **)((int)moduleBaseOrError +
+                                 ((FncModuleHeader *)moduleBaseOrError)->exportBinding.hostApiTableOffset);
+        if (((FncModuleHeader *)moduleBaseOrError)->exportBinding.bindingMode == 0) {
           *hostApiTable = g_MemoryApi.alloc;
           hostApiTable[1] = arenaFreeProc;
           arenaShrinkProc = g_MemoryApi.shrinkInPlace;
@@ -83,7 +85,8 @@ FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
           hostApiTable[6] = g_LocaleCopyDefaultComputerLabelUtf16;
         }
         /* success: the module base with CF clear */
-        return THANDOR_BITCAST(uint64_t, FncModuleLoadResult, ((THANDOR_BITCAST(ArenaReserveResult, uint64_t, reserveResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FncModuleLoadResult,
+                               THANDOR_BITCAST(ArenaReserveResult, uint64_t, reserveResult) & 0xffffffff);
       }
     }
   }
@@ -104,12 +107,11 @@ StatusResult FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHead
   StatusResult successResult;
   StatusResult failureResult;
 
-  if (exportIndex < (module->exportBinding).exportCount) {
+  if (exportIndex < module->exportBinding.exportCount) {
     successResult.failed = false;
-    /* reserved10_AF starts at byte 0x10, so this reads module + exportTableOffset + exportIndex * 4 */
+    /* the relocated entry at module + exportTableOffset + exportIndex * 4 */
     successResult.valueOrError =
-         *(uint32_t *)(module->reserved10_AF +
-                  exportIndex * 4 + (module->exportBinding).exportTableOffset - 0x10);
+         *(uint32_t *)((uint8_t *)module + exportIndex * 4 + module->exportBinding.exportTableOffset);
     return successResult;
   }
   failureResult.failed = true;

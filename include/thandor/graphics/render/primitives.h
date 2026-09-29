@@ -37,6 +37,8 @@
 #define GRAPHICS_PRIMITIVE_BLEND_OPAQUE 0
 #define GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT 0x1000
 #define GRAPHICS_PRIMITIVE_BLEND_ADDITIVE 0x2000
+#define GRAPHICS_PRIMITIVE_BLEND_MODE_4 0x4000 /* kept by GraphicsPrimitiveQueue_SetVertexColors like opaque */
+#define GRAPHICS_PRIMITIVE_BLEND_ALPHA_DEPTH_WRITE 0x6000 /* blend mode 6: alpha-blended with depth writes */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00486080 */

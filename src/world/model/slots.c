@@ -23,7 +23,7 @@
    both starting at texture offset 0.
 */
 void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
-          (ModelDefinitionRuntimeSemanticView280 *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot
+          (ModelDefinition *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot
           )
 
 {
@@ -31,7 +31,7 @@ void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
   ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex;
   AssetRecordByteCount secondaryAnimatedSubresourceIndex;
 
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
   primaryAnimatedSubresourceIndex = modelDefinition->primaryAnimatedSubresourceIndex1B8;
   secondaryAnimatedSubresourceIndex = modelDefinition->secondaryAnimatedSubresourceIndex1BC;
   if (primaryAnimatedSubresourceIndex != 0) {
@@ -66,30 +66,30 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   ModelRuntimeNode *rootChild0Node;
   Q12 grandchildLocalYQ12;
 
-  /* modelDefinition[i] is 12 bytes: [1].byteSize is +0x0C, [2].byteSize +0x18, [0x10] +0xC0 / +0xC4 */
-  definitionValue0C = modelDefinition[1].byteSize;
-  (modelRuntimeSlot->classLinkState).classState68 = 0x80000000;
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.classState = 0x80000000;
-  (modelRuntimeSlot->classLinkState).classState70 = 0x80000000;
-  (modelRuntimeSlot->classLinkState).classState74 = 0x80000000;
-  (modelRuntimeSlot->classState).classStateA8 = 0;
-  (modelRuntimeSlot->classState).classStateAC = 0;
-  (modelRuntimeSlot->classState).classStateB8 = 0;
-  (modelRuntimeSlot->classLinkState).classState78 = 0x7fffffff;
-  rootChild0Node = ((modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode)->childNodes[0];
-  grandchildLocalYQ12 = (rootChild0Node->childNodes[0]->modelPayload).localTranslationYQ12;
-  (modelRuntimeSlot->classState).classStateB0 = (rootChild0Node->modelPayload).localTranslationYQ12;
-  (modelRuntimeSlot->classState).classStateB4 = grandchildLocalYQ12;
-  definitionValueC0 = modelDefinition[0x10].byteSize;
-  initialTimingValue = (int)(((int64_t)
-                 (int)(((int64_t)(int)definitionValue0C << 12) /
-                      (int64_t)(int)definitionValueC0) * (int64_t)(int)(modelDefinition[0x10].flags + definitionValueC0))
-               / (int64_t)(int)definitionValueC0) -
-          (int)(((int64_t)(int)definitionValueC0 * (int64_t)(int)modelDefinition[2].byteSize) /
-               (int64_t)(int)(definitionValue0C << 2));
-  *(int *)modelRuntimeSlot->reserved10_37 = initialTimingValue;
-  (modelRuntimeSlot->classState).classStateD0 = initialTimingValue;
-  (modelRuntimeSlot->classState).enabledStateE8 = 0x7fffffff;
+  definitionValue0C = ((ModelDefinition *)modelDefinition)->movementSpeed0C;
+  modelRuntimeSlot->classLinkState.classState68 = 0x80000000;
+  modelRuntimeSlot->classLinkState.armyLinkOrState6C.classState = 0x80000000;
+  modelRuntimeSlot->classLinkState.classState70 = 0x80000000;
+  modelRuntimeSlot->classLinkState.classState74 = 0x80000000;
+  modelRuntimeSlot->classState.classStateA8 = 0;
+  modelRuntimeSlot->classState.classStateAC = 0;
+  modelRuntimeSlot->classState.classStateB8 = 0;
+  modelRuntimeSlot->classLinkState.classState78 = 0x7fffffff;
+  rootChild0Node = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode->childNodes[0];
+  grandchildLocalYQ12 = rootChild0Node->childNodes[0]->modelPayload.localTranslationYQ12;
+  modelRuntimeSlot->classState.classStateB0 = rootChild0Node->modelPayload.localTranslationYQ12;
+  modelRuntimeSlot->classState.classStateB4 = grandchildLocalYQ12;
+  definitionValueC0 = ((ModelDefinition *)modelDefinition)->classParameterC0;
+  initialTimingValue =
+       (int)(((int64_t)(int)(((int64_t)(int)definitionValue0C << 12) / (int64_t)(int)definitionValueC0) *
+              (int64_t)(int)(((ModelDefinition *)modelDefinition)->classParameterC4 + definitionValueC0)) /
+             (int64_t)(int)definitionValueC0) -
+       (int)(((int64_t)(int)definitionValueC0 *
+              (int64_t)((ModelDefinition *)modelDefinition)->accelerationPerTick18) /
+             (int64_t)(int)(definitionValue0C << 2));
+  *(int *)modelRuntimeSlot->reserved10_37 = initialTimingValue; /* +0x10 */
+  modelRuntimeSlot->classState.classStateD0 = initialTimingValue;
+  modelRuntimeSlot->classState.effectEmitterTimerTicks = 0x7fffffff;
   return;
 }
 
@@ -103,23 +103,21 @@ void ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint32_t *classStateFlags;
   ModelRuntimeNode *rootModelNode;
   Q12 rootWorldYQ12;
 
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.classState = 0x4000;
-  (modelRuntimeSlot->classLinkState).classState64 =
-       (rootModelNode->modelPayload).worldRotationAngle2;
-  (modelRuntimeSlot->classState).classStateB8 = 0;
-  (modelRuntimeSlot->classLinkState).classState70 = 0x18;
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
+  modelRuntimeSlot->classLinkState.modelLinkOrState60.classState = 0x4000;
+  modelRuntimeSlot->classLinkState.classState64 =
+       rootModelNode->modelPayload.worldRotationAngle2;
+  modelRuntimeSlot->classState.classStateB8 = 0;
+  modelRuntimeSlot->classLinkState.classState70 = 0x18;
   if (2 < rootModelNode->childCount) {
-    classStateFlags = &(modelRuntimeSlot->classState).classStateB8;
-    *classStateFlags = *classStateFlags | 6;
+    modelRuntimeSlot->classState.classStateB8 |= 6;
   }
-  rootWorldYQ12 = (rootModelNode->worldTransform).translation.y;
-  (modelRuntimeSlot->classLinkState).classState68 = (rootModelNode->worldTransform).translation.x;
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.classState = rootWorldYQ12;
+  rootWorldYQ12 = rootModelNode->worldTransform.translation.y;
+  modelRuntimeSlot->classLinkState.classState68 = rootModelNode->worldTransform.translation.x;
+  modelRuntimeSlot->classLinkState.armyLinkOrState6C.classState = rootWorldYQ12;
   return;
 }
 
@@ -133,64 +131,64 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint32_t *classCounterField;
   ModelRuntimeArmyLinkOrState4 *armyLinkCounterField;
   ModelLookupPayloadResult keyLookupResult;
-  uint32_t *matchedClassCounterField;
   ModelRuntimeNode *rootModelNode;
   ModelRuntimeNode *rootGrandchildNode;
 
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  (modelRuntimeSlot->classLinkState).classState80 = 0;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
+  modelRuntimeSlot->classLinkState.classState80 = 0;
+  modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime = NULL;
   rootGrandchildNode = rootModelNode->childNodes[0];
-  (modelRuntimeSlot->classLinkState).classState64 = 0;
-  (modelRuntimeSlot->classLinkState).classState68 = 0;
+  modelRuntimeSlot->classLinkState.classState64 = 0;
+  modelRuntimeSlot->classLinkState.classState68 = 0;
   rootGrandchildNode = rootGrandchildNode->childNodes[0];
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = NULL;
-  (modelRuntimeSlot->classLinkState).classState70 = 0;
-  (modelRuntimeSlot->classLinkState).classState74 = 0;
-  (modelRuntimeSlot->classLinkState).classState78 = 0;
-  (modelRuntimeSlot->classLinkState).classState7C = 0;
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(0,2,(rootGrandchildNode->modelPayload).modelResource);
+  modelRuntimeSlot->classLinkState.armyLinkOrState6C.armyRuntime = NULL;
+  modelRuntimeSlot->classLinkState.classState70 = 0;
+  modelRuntimeSlot->classLinkState.classState74 = 0;
+  modelRuntimeSlot->classLinkState.classState78 = 0;
+  modelRuntimeSlot->classLinkState.classState7C = 0;
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (0,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime =
-         (ModelRuntimeSlot *)((modelRuntimeSlot->classLinkState).modelLinkOrState60.classState - 1);
+    modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime =
+         (ModelRuntimeSlot *)(modelRuntimeSlot->classLinkState.modelLinkOrState60.classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(1,2,(rootGrandchildNode->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (1,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    matchedClassCounterField = &(modelRuntimeSlot->classLinkState).classState64;
-    *matchedClassCounterField = *matchedClassCounterField - 1;
+    modelRuntimeSlot->classLinkState.classState64 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(2,2,(rootGrandchildNode->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (2,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    classCounterField = &(modelRuntimeSlot->classLinkState).classState68;
-    *classCounterField = *classCounterField - 1;
+    modelRuntimeSlot->classLinkState.classState68 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(3,2,(rootGrandchildNode->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (3,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    armyLinkCounterField = &(modelRuntimeSlot->classLinkState).armyLinkOrState6C;
+    armyLinkCounterField = &modelRuntimeSlot->classLinkState.armyLinkOrState6C;
     armyLinkCounterField->armyRuntime = (ArmyRuntimeSlot *)(armyLinkCounterField->classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(4,2,(rootGrandchildNode->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (4,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    classCounterField = &(modelRuntimeSlot->classLinkState).classState70;
-    *classCounterField = *classCounterField - 1;
+    modelRuntimeSlot->classLinkState.classState70 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(5,2,(rootGrandchildNode->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (5,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    classCounterField = &(modelRuntimeSlot->classLinkState).classState74;
-    *classCounterField = *classCounterField - 1;
+    modelRuntimeSlot->classLinkState.classState74 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(6,2,(rootGrandchildNode->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (6,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    classCounterField = &(modelRuntimeSlot->classLinkState).classState78;
-    *classCounterField = *classCounterField - 1;
+    modelRuntimeSlot->classLinkState.classState78 -= 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(7,2,(rootGrandchildNode->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs
+                      (7,MODEL_POINT_CLASS_SHOT,rootGrandchildNode->modelPayload.modelResource);
   if (keyLookupResult.notFound) {
-    classCounterField = &(modelRuntimeSlot->classLinkState).classState7C;
-    *classCounterField = *classCounterField - 1;
+    modelRuntimeSlot->classLinkState.classState7C -= 1;
   }
   return;
 }
@@ -204,10 +202,10 @@ void ModelRuntimeSlotClassInit_ClearFields64_68_74_B8
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  (modelRuntimeSlot->classState).classStateB8 = 0;
-  (modelRuntimeSlot->classLinkState).classState74 = 0;
-  (modelRuntimeSlot->classLinkState).classState64 = 0;
-  (modelRuntimeSlot->classLinkState).classState68 = 0;
+  modelRuntimeSlot->classState.classStateB8 = 0;
+  modelRuntimeSlot->classLinkState.classState74 = 0;
+  modelRuntimeSlot->classLinkState.classState64 = 0;
+  modelRuntimeSlot->classLinkState.classState68 = 0;
   return;
 }
 
@@ -220,9 +218,9 @@ void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRunti
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
 
-  linkedArmyRuntime = (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime;
+  linkedArmyRuntime = modelRuntime->classLinkState.armyLinkOrState6C.armyRuntime;
   if (linkedArmyRuntime != NULL) {
-    (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime =
+    modelRuntime->classLinkState.armyLinkOrState6C.armyRuntime =
          (ArmyRuntimeSlot *)((int)linkedArmyRuntime - (int)g_ArmyRuntimeRebaseBaseMinusOne);
   }
   return;
@@ -238,13 +236,10 @@ void ModelRuntimeSlot_RebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime
 {
   ArmyRuntimeSlot *linkedArmyRuntime;
 
-  linkedArmyRuntime = (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime;
+  linkedArmyRuntime = modelRuntimeSlot->classLinkState.armyLinkOrState6C.armyRuntime;
   if (linkedArmyRuntime != NULL) {
-    /* the address of modelRuntimeOrSavedOffset (+0) is the pointer value itself, i.e. the saved offset */
-    (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime =
-         (ArmyRuntimeSlot *)
-         ((int)&linkedArmyRuntime->modelRuntimeOrSavedOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne)
-    ;
+    modelRuntimeSlot->classLinkState.armyLinkOrState6C.armyRuntime =
+         (ArmyRuntimeSlot *)((int)linkedArmyRuntime + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   }
   return;
 }
@@ -262,17 +257,14 @@ void ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0
   ModelRuntimeNode *rootModelNode;
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
 
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  (modelRuntimeSlot->classState).classStateB8 = 0;
-  (modelRuntimeSlot->classState).reservedBC_BF[0] = 1;
-  (modelRuntimeSlot->classState).reservedBC_BF[1] = 0;
-  (modelRuntimeSlot->classState).reservedBC_BF[2] = 0;
-  (modelRuntimeSlot->classState).reservedBC_BF[3] = 0;
-  (modelRuntimeSlot->classLinkState).classState74 = 0;
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = NULL;
-  (modelRuntimeSlot->classLinkState).classState64 = 0;
-  (modelRuntimeSlot->classLinkState).classState68 = 0;
-  primaryAnimatedSubresourceIndex = modelDefinition[0x10].byteSize;
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
+  modelRuntimeSlot->classState.classStateB8 = 0;
+  modelRuntimeSlot->classState.classStateBC = 1;
+  modelRuntimeSlot->classLinkState.classState74 = 0;
+  modelRuntimeSlot->classLinkState.armyLinkOrState6C.armyRuntime = NULL;
+  modelRuntimeSlot->classLinkState.classState64 = 0;
+  modelRuntimeSlot->classLinkState.classState68 = 0;
+  primaryAnimatedSubresourceIndex = ((ModelDefinition *)modelDefinition)->classParameterC0;
   rootModelNode->primaryTextureOffsetU = 0;
   rootModelNode->primaryTextureOffsetV = 0;
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
@@ -297,19 +289,19 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
   ArmyRuntimeSlot *ownerArmy;
   ModelRuntimeNode *rootModelNode;
 
-  ownerArmy = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  ownerArmy = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+  modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime = NULL;
   factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
-  if (modelDefinition[0x10].byteSize != 0) {
+  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
     storageLimitOffset = factionRecordOffset + 0x14; /* tritiumStorageLimitQ4 */
   }
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  storageLimit = g_GameFactionRuntimeImage.records[0].reserved78_87 + storageLimitOffset - 0x78;
-  *(uint32_t *)storageLimit = *(int *)storageLimit + modelDefinition[0x10].flags;
-  if ((((ownerArmy->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
+  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
+  *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
+  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != 0x6000000) &&
       (3 < rootModelNode->childCount)) && (rootModelNode->childNodes[3] != NULL)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)rootModelNode->childNodes[3]);
+    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)rootModelNode->childNodes[3]);
     rootModelNode->childNodes[3] = NULL;
   }
   return;
@@ -332,18 +324,18 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
   ArmyRuntimeSlot *ownerArmy;
   ModelRuntimeNode *rootModelNode;
 
-  ownerArmy = (modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime;
+  ownerArmy = modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime;
   factionRecordOffset = ownerArmy->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   storageLimitOffset = factionRecordOffset + 4; /* xeniteStorageLimitQ4 */
-  if (modelDefinition[0x10].byteSize != 0) {
+  if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
     storageLimitOffset = factionRecordOffset + 0x14; /* tritiumStorageLimitQ4 */
   }
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  storageLimit = g_GameFactionRuntimeImage.records[0].reserved78_87 + storageLimitOffset - 0x78;
-  *(uint32_t *)storageLimit = *(int *)storageLimit + modelDefinition[0x10].flags;
-  if ((((ownerArmy->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
+  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
+  *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
+  if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != 0x6000000) &&
       (1 < rootModelNode->childCount)) && (rootModelNode->childNodes[1] != NULL)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)rootModelNode->childNodes[1]);
+    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)rootModelNode->childNodes[1]);
     rootModelNode->childNodes[1] = NULL;
   }
   return;
@@ -363,9 +355,9 @@ void ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity
 
   factionProgressLimitQ4 =
        &g_GameFactionRuntimeImage.records
-        [((modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex].
+        [modelRuntimeSlot->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex].
         energyGenerationCapacityQ4;
-  *factionProgressLimitQ4 = *factionProgressLimitQ4 + modelDefinition[0x10].byteSize;
+  *factionProgressLimitQ4 = *factionProgressLimitQ4 + ((ModelDefinition *)modelDefinition)->classParameterC0;
   return;
 }
 
@@ -383,9 +375,9 @@ void ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity
 
   factionProgressLimitQ4 =
        &g_GameFactionRuntimeImage.records
-        [((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex].
+        [modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex].
         energyGenerationCapacityQ4;
-  *factionProgressLimitQ4 = *factionProgressLimitQ4 - modelDefinition[0x10].byteSize;
+  *factionProgressLimitQ4 = *factionProgressLimitQ4 - ((ModelDefinition *)modelDefinition)->classParameterC0;
   return;
 }
 
@@ -400,9 +392,9 @@ void ModelRuntimeSlot_UnrebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRunt
 {
   ModelRuntimeSlot *linkedModelRuntime;
 
-  linkedModelRuntime = (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime;
+  linkedModelRuntime = modelRuntime->classLinkState.modelLinkOrState60.modelRuntime;
   if (linkedModelRuntime != NULL) {
-    (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime =
+    modelRuntime->classLinkState.modelLinkOrState60.modelRuntime =
          (ModelRuntimeSlot *)((int)linkedModelRuntime - g_ModelRuntimeRebaseDelta);
   }
   return;
@@ -419,12 +411,10 @@ void ModelRuntimeSlot_RebaseClassModelLinkOffset60(ModelRuntimeSlot *modelRuntim
 {
   ModelRuntimeSlot *linkedModelRuntime;
 
-  linkedModelRuntime = (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime;
+  linkedModelRuntime = modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime;
   if (linkedModelRuntime != NULL) {
-    /* reserved10_37 - 0x10 is the saved offset itself (byte pointer arithmetic) */
-    (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime =
-         (ModelRuntimeSlot *)(linkedModelRuntime->reserved10_37 + g_ModelRuntimeRebaseDelta - 0x10)
-    ;
+    modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime =
+         (ModelRuntimeSlot *)((uint8_t *)linkedModelRuntime + g_ModelRuntimeRebaseDelta);
   }
   return;
 }
@@ -441,11 +431,11 @@ void ModelRuntimeSlotClassInit_ClearStateAndSetRootChild0Offset
   ModelRuntimeNode *rootChild0Node;
   ModelRuntimeNode *rootModelNode;
 
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
+  modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime = NULL;
   rootChild0Node = rootModelNode->childNodes[0];
-  (modelRuntimeSlot->classState).classStateB8 = 0;
-  (rootChild0Node->modelPayload).localTranslationZQ12 = Q12_ONE;
+  modelRuntimeSlot->classState.classStateB8 = 0;
+  rootChild0Node->modelPayload.localTranslationZQ12 = Q12_ONE;
   return;
 }
 
@@ -463,24 +453,23 @@ void ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
   ModelRuntimeNode *rootModelNode;
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
 
-  rootModelNode = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
-  primaryAnimatedSubresourceIndex = modelDefinition[0x10].byteSize;
-  (modelRuntimeSlot->classState).classStateAC = 0;
-  (modelRuntimeSlot->classState).classStateB0 = 0;
-  (modelRuntimeSlot->classState).classStateB4 = 0;
-  (modelRuntimeSlot->classLinkState).classState74 = 0;
-  (modelRuntimeSlot->classLinkState).classState64 = 0;
-  (modelRuntimeSlot->classLinkState).classState68 = 0;
-  (modelRuntimeSlot->classLinkState).armyLinkOrState6C.armyRuntime = NULL;
-  (modelRuntimeSlot->classLinkState).classState70 = 0;
-  (modelRuntimeSlot->classState).classStateDC = 0;
+  rootModelNode = modelRuntimeSlot->rootModelNodeOrSavedOffset.modelNode;
+  primaryAnimatedSubresourceIndex = ((ModelDefinition *)modelDefinition)->classParameterC0;
+  modelRuntimeSlot->classState.classStateAC = 0;
+  modelRuntimeSlot->classState.classStateB0 = 0;
+  modelRuntimeSlot->classState.classStateB4 = 0;
+  modelRuntimeSlot->classLinkState.classState74 = 0;
+  modelRuntimeSlot->classLinkState.classState64 = 0;
+  modelRuntimeSlot->classLinkState.classState68 = 0;
+  modelRuntimeSlot->classLinkState.armyLinkOrState6C.armyRuntime = NULL;
+  modelRuntimeSlot->classLinkState.classState70 = 0;
+  modelRuntimeSlot->classState.classStateDC = 0;
   rootModelNode->runtimeFlags = rootModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_PRIMARY_TEXTURE_SCROLL;
   rootModelNode->primaryAnimatedSubresourceIndex = primaryAnimatedSubresourceIndex;
   rootModelNode->primaryTextureOffsetU = 0;
   rootModelNode->primaryTextureOffsetV = 0;
-  stateClearCursor = &(modelRuntimeSlot->classLinkState).classState78;
-  for (stateDwordsRemaining = 13; stateDwordsRemaining != 0;
-      stateDwordsRemaining = stateDwordsRemaining - 1) {
+  stateClearCursor = &modelRuntimeSlot->classLinkState.classState78;
+  for (stateDwordsRemaining = 13; stateDwordsRemaining != 0; stateDwordsRemaining--) {
     *stateClearCursor = 0;
     stateClearCursor = stateClearCursor + 1;
   }
@@ -518,7 +507,7 @@ void ModelRuntimeSlotClassInit_ClearField60
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime = NULL;
   return;
 }
 
@@ -529,7 +518,7 @@ void ModelRuntimeSlotClassInit_ClearFields60AndB8
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  (modelRuntimeSlot->classState).classStateB8 = 0;
-  (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime = NULL;
+  modelRuntimeSlot->classState.classStateB8 = 0;
+  modelRuntimeSlot->classLinkState.modelLinkOrState60.modelRuntime = NULL;
   return;
 }

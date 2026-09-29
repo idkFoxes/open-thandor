@@ -19,9 +19,50 @@
 #define TEXT_ID_PLAYER_NUMBER_BASE 0x2190
 #define TEXT_ID_DIPLOMATIC_RELATION_BASE 0x21A3
 
-/* The 0x200-byte header at the start of a save-game package, patched by InGameUiAction1210_ResourceRegistrationHelper
+/* Pages of the in-game window page stack (InGameUiImage.gameWindowPageStack) */
+#define INGAME_WINDOW_PAGE_NONE 0 /* no window open, the world view is shown */
+#define INGAME_WINDOW_PAGE_TECHNOLOGY 2
+#define INGAME_WINDOW_PAGE_GAME_MENU 3
+#define INGAME_WINDOW_PAGE_QUIT_MENU 4
+#define INGAME_WINDOW_PAGE_SAVE_GAME 5
+#define INGAME_WINDOW_PAGE_GRAPHICS_SETTINGS 6
+#define INGAME_WINDOW_PAGE_SOUND_SETTINGS 7
+#define INGAME_WINDOW_PAGE_MISSION_HELP 8
+
+/* Info texts the world view cycles through with Ctrl+I (worldViewCyclingInfoText holds the text resource id) */
+#define TEXT_ID_WORLD_VIEW_INFO_FIRST 0x112
+#define TEXT_ID_WORLD_VIEW_INFO_LAST 0x117
+/* Step of the editor's light direction and field origin hotkeys (Ctrl/Shift + arrow keys) */
+#define EDITOR_ADJUST_STEP 0x400
+/* Selection detail panel text templates (patched by InGameUiRuntime_InitializeControlTreeResources, chosen by
+   InGameSelectionDetailPanel_Rebuild): 0x18002C.. single selection + the asset's template variant, 0x18003C..
+   the same while researching, 0x180045.. hover/placement stats; 0x18004E fills an unused weapon slot. Model
+   names are TEXT_ID_MODEL_NAME_BASE (ui/ingame/technology.h) + name index. */
+#define TEXT_ID_SELECTION_DETAIL_TEMPLATE_BASE 0x18002C
+#define TEXT_ID_SELECTION_DETAIL_RESEARCH_TEMPLATE_BASE 0x18003C
+#define TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE 0x180045
+#define TEXT_ID_SELECTION_DETAIL_NO_WEAPON 0x18004E
+/* Faction status lines of the HUD (InGameHud_UpdateStatusCountersAndSessionPrompts): template with the faction
+   name (selector 0), the roster (1) and the score (2); the roster text with the player list (selector 0), or
+   the text used without players */
+#define TEXT_ID_FACTION_STATUS_TEMPLATE 0x21D2
+#define TEXT_ID_FACTION_ROSTER_TEMPLATE 0x21D3
+#define TEXT_ID_FACTION_NO_ROSTER 0x21D4
+/* Labels of the message window's recipient check boxes, one per active faction (selector 0 = faction name) */
+#define TEXT_ID_MESSAGE_RECIPIENT_LABEL_BASE 0x216D
+/* Player status lines of a network game (InGamePanel_RebuildPlayerStatusRows), by readyOrWaitState zero or not;
+   selector 0 = player name */
+#define TEXT_ID_PLAYER_STATUS_STATE_ZERO 0xFF05
+#define TEXT_ID_PLAYER_STATUS_STATE_SET 0xFF06
+/* Mission help text: TEXT_ID_LEVEL_DESCRIPTION_BASE + 7 + TEXT_ID_LEVEL_DESCRIPTION_STRIDE * level title index +
+   active faction (InGameUiAction101F_Handler) */
+#define TEXT_ID_MISSION_HELP_BASE 0x230017
+/* Slots of the in-game notification queue (notificationQueue9E60, InGameNotificationQueue_InsertPriorityRecord) */
+#define INGAME_NOTIFICATION_QUEUE_SLOTS 4
+
+/* The 0x200-byte header at the start of a save-game package, patched by InGameSaveGame_WritePackage
    after the entries are written (the save path's directory is split off behind the header, at +0x200). */
-typedef struct InGameSavePackageHeader200 {
+typedef struct InGameSavePackageHeader {
     uint8_t reserved000_0FF[0x100];
     uint16_t saveNameUtf16[0x38]; /* +0x100 file name of the save path */
     uint32_t levelTitleTextId; /* +0x170 */
@@ -32,7 +73,7 @@ typedef struct InGameSavePackageHeader200 {
     uint32_t packedDate; /* +0x1F0 */
     uint32_t packedTime; /* +0x1F4 */
     uint8_t reserved1F8_1FF[8];
-} InGameSavePackageHeader200;
+} InGameSavePackageHeader;
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
@@ -47,7 +88,7 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source);
 void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit);
 
 /* 0x0050ECE0 */
-bool InGameUiAction1210_ResourceRegistrationHelper(void *worldView,void *savePath); /* CF: true = failed */
+bool InGameSaveGame_WritePackage(void *worldView,void *savePath); /* CF: true = failed */
 
 /* 0x0053D9F0 */
 void InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl);
@@ -66,15 +107,15 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
           WorldRuntimeContext *world);
 
 /* 0x00569750 */
-void InGameUiRuntime_ClearTransientState1BCallback(void *worldView);
+void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView);
 
 /* 0x00569780 */
 void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *world);
 
 /* 0x00569890 */
-void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind payloadKind,uint32_t payloadReserved10,
-          uint32_t orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
-          Q12 secondaryWorldCoordinateQ12_04,Q12 primaryWorldCoordinateQ12_00,
+void InGameNotificationQueue_InsertPriorityRecord(InGameNotificationPayloadKind payloadKind,uint32_t payloadReserved,
+          uint32_t orientationValue,AngleTurn32 orientationAngle,
+          Q12 secondaryWorldCoordinateQ12,Q12 primaryWorldCoordinateQ12,
           InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId);
 
 /* 0x00569B00 */
@@ -127,7 +168,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
 /* 0x00570D60 */
 void InGameUiCommand_EndInteractionByMode
           (uint32_t callbackArg0,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3,
-          WorldOwnerListNode100 *worldNode,WorldRuntimeContext *worldRuntime);
+          WorldOwnerListNode *worldNode,WorldRuntimeContext *worldRuntime);
 
 /* 0x00570F30 */
 void InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime);

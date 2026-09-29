@@ -23,7 +23,7 @@
 PreservedEaxEdxRegisterPair64 __fastcall
 SoundCoefficientTransform_ApplyCosineBanksMmx
           (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputMonoPcm,
-          SoundCoefficientBlock256 *coefficientBlock)
+          SoundCoefficientBlock *coefficientBlock)
 
 {
   MmxPackedValue64 coefficientQuadHigh;
@@ -2989,7 +2989,8 @@ uint32_t SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *i
    Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of
    SoundSample_EncodePackedCoefficientBlock). Each coefficient is prefix-coded from the low bits of a 32-bit
    little-endian bit accumulator (prefix bits listed from bit 0): 0 -> zero (1 bit), 1,0 -> 3-bit value (5 bits),
-   1,1,0 -> 6-bit value (9 bits), 1,1,1 -> 12-bit value (15 bits). Returns the encoded byte count consumed, rounded DOWN to a multiple of 4.
+   1,1,0 -> 6-bit value (9 bits), 1,1,1 -> 12-bit value (15 bits). Returns the encoded byte count consumed,
+   rounded DOWN to a multiple of 4.
 */
 uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock)
 
@@ -3003,7 +3004,7 @@ uint32_t SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint
   uint16_t *inputCursor;
   int coefficientsRemaining;
 
-  coefficientsRemaining = 256;
+  coefficientsRemaining = SAM_BLOCK_SAMPLE_COUNT;
   bitAccumulator = *(uint32_t *)encodedBlock;
   availableBitCount = 32;
   inputCursor = (uint16_t *)(encodedBlock + 4);

@@ -28,6 +28,8 @@ PckCodecResult PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapaci
   uint32_t bytes;
   PckCompactFieldImageByteCount compactImageSizeBytes;
   AssetMagic *compactWriteCursor;
+  AssetMagic *headerReadCursor;
+  FieldGridCell *sourceCell;
   ArenaAllocResult allocResult;
   PckCodecResult encodeResult;
   PckCodecResult successResult;
@@ -39,28 +41,27 @@ PckCodecResult PckCodec_EncodeFieldGrid(PckOutputCapacityBytes destinationCapaci
   compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     compactWriteCursor = compactFieldImageBase;
-    /* the header dword by dword; sourceGrid then points at cells[0] */
+    /* the header dword by dword; the read cursor then points at cells[0] */
+    headerReadCursor = (AssetMagic *)sourceGrid;
     for (headerDwordCount = FIELD_GRID_HEADER_DWORDS; headerDwordCount != 0; headerDwordCount--) {
-      *compactWriteCursor = (sourceGrid->common).magic;
-      sourceGrid = (FieldGridAsset *)&(sourceGrid->common).allocationSizeBytes;
+      *compactWriteCursor = *headerReadCursor;
+      headerReadCursor++;
       compactWriteCursor++;
     }
+    sourceCell = (FieldGridCell *)headerReadCursor;
     cellCount = cellCount & 0xfffffff; /* (count * 0x10) >> 4 in the original */
-    /* per cell: the dwords at cell offsets 0x54, 0x48, 0x4C and 0x50 (persistedAux54, terrainHeight,
-       waterSurfaceDelta, flagsAndMaterial), addressed through the header fields at the same offsets */
+    /* per cell: persistedAux54, terrainHeight, waterSurfaceDelta and flagsAndMaterial (cell offsets 0x54, 0x48,
+       0x4C and 0x50) */
     do {
-      persistedCellDword =
-           *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0xc);
-      *compactWriteCursor =
-           *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0x12);
+      persistedCellDword = sourceCell->terrainHeight;
+      *compactWriteCursor = sourceCell->persistedAux54;
       compactWriteCursor[1] = persistedCellDword;
-      pendingCellDword = *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0x10);
-      compactWriteCursor[2] =
-           *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0xe);
+      pendingCellDword = sourceCell->flagsAndMaterial;
+      compactWriteCursor[2] = sourceCell->waterSurfaceDelta;
       compactWriteCursor[3] = pendingCellDword;
-      sourceGrid = (FieldGridAsset *)((sourceGrid->common).buildMetadata.names.sourceName + 8); /* next cell */
+      sourceCell++;
       compactWriteCursor = compactWriteCursor + 4;
-      cellCount = cellCount - 1;
+      cellCount--;
     } while (cellCount != 0);
     *(uint32_t *)destination = bytes;
     encodeResult = PckCodec_EncodeHuffmanRle
@@ -102,8 +103,9 @@ PckCodecResult PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapaci
   Q12 currentWorldYQ12;
   AssetMagic *compactReadCursor;
   FieldGridCell *currentWorldCoordinateCell;
-  FieldGridAsset *expandedZeroCursor;
-  FieldGridAsset *expandedWriteCursor;
+  uint32_t *expandedZeroCursor;
+  AssetMagic *expandedHeaderCursor;
+  FieldGridCell *expandedCell;
   ArenaAllocResult allocResult;
   PckCodecResult decodeResult;
   ArenaFreeResult freeResult;
@@ -120,34 +122,30 @@ PckCodecResult PckCodec_DecodeFieldGrid(PckOutputCapacityBytes destinationCapaci
       /* header dwords 0x2E/0x2F are gridWidth/gridHeight */
       cellCountOrWorldX = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
       compactReadCursor = compactFieldImageBase;
-      expandedWriteCursor = destinationGrid;
+      expandedHeaderCursor = (AssetMagic *)destinationGrid;
       for (countOrRowStartX = FIELD_GRID_HEADER_DWORDS; countOrRowStartX != 0; countOrRowStartX--) {
-        (expandedWriteCursor->common).magic = *compactReadCursor;
+        *expandedHeaderCursor = *compactReadCursor;
         compactReadCursor++;
-        expandedWriteCursor = (FieldGridAsset *)&(expandedWriteCursor->common).allocationSizeBytes;
+        expandedHeaderCursor++;
       }
-      /* expandedWriteCursor now points at cells[0]; clear all cells dword by dword */
-      expandedZeroCursor = expandedWriteCursor;
+      /* the header cursor now points at cells[0]; clear all cells dword by dword */
+      expandedCell = (FieldGridCell *)expandedHeaderCursor;
+      expandedZeroCursor = (uint32_t *)expandedHeaderCursor;
       for (countOrRowStartX = cellCountOrWorldX * FIELD_GRID_CELL_DWORDS; countOrRowStartX != 0;
           countOrRowStartX--) {
-        (expandedZeroCursor->common).magic = 0;
-        expandedZeroCursor = (FieldGridAsset *)&(expandedZeroCursor->common).allocationSizeBytes;
+        *expandedZeroCursor = 0;
+        expandedZeroCursor++;
       }
-      /* per cell: record dwords 0..3 to cell offsets 0x54, 0x48, 0x4C, 0x50 */
+      /* per cell: record dwords 0..3 to persistedAux54, terrainHeight, waterSurfaceDelta, flagsAndMaterial */
       do {
         pendingCellDword = compactReadCursor[1];
-        *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0x12) =
-             *compactReadCursor;
-        *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0xc) =
-             pendingCellDword;
+        expandedCell->persistedAux54 = *compactReadCursor;
+        expandedCell->terrainHeight = pendingCellDword;
         pendingCellDword = compactReadCursor[3];
-        *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0xe) =
-             compactReadCursor[2];
-        *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0x10) =
-             pendingCellDword;
+        expandedCell->waterSurfaceDelta = compactReadCursor[2];
+        expandedCell->flagsAndMaterial = pendingCellDword;
         compactReadCursor = compactReadCursor + 4;
-        expandedWriteCursor =
-             (FieldGridAsset *)((expandedWriteCursor->common).buildMetadata.names.sourceName + 8);
+        expandedCell++;
         cellCountOrWorldX--;
       } while (cellCountOrWorldX != 0);
       cellCountOrWorldX = 0;
@@ -279,7 +277,9 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
 
   /* 0x900 dwords: symbol table (0x100) + leaf nodes (0x400) + internal nodes (0x400) */
   workspaceClearCursor = (uint32_t *)g_PckHuffmanSymbolWorkspace256;
-  for (countOrShiftOrCodeLength = 0x900; bytesRemaining = sourceSizeBytes, sourceByteCursor = source, countOrShiftOrCodeLength != 0; countOrShiftOrCodeLength--) {
+  for (countOrShiftOrCodeLength = 0x900;
+       bytesRemaining = sourceSizeBytes, sourceByteCursor = source, countOrShiftOrCodeLength != 0;
+       countOrShiftOrCodeLength--) {
     *workspaceClearCursor = 0;
     workspaceClearCursor++;
   }
@@ -321,7 +321,7 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
   /* Join the two lightest live nodes under a new internal node until only the root still has a weight;
      a joined node's weight is cleared, so the root is the only node left with nonzero weight. */
   nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
-  while( true ) {
+  for (;;) {
     scanNode = g_PckHuffmanLeafNodeWorkspace256;
     maxCountOrWeightOrSize = 0xffffffff;
     countOrShiftOrCodeLength = PCK_HUFFMAN_NODE_COUNT;
@@ -355,9 +355,9 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
     leafOrSecondLowestNode->weight = 0;
     nextInternalNode++;
     /* Workspace exhausted: all 256 internal nodes used (original: CMP next,end; JC continue). */
-    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) goto PckCodec_EncodeHuffmanRle_ReturnCapacityError;
+    if (g_PckHuffmanInternalNodeWorkspace256 + PCK_HUFFMAN_SYMBOL_COUNT <= nextInternalNode) goto fail;
   }
-  if (destinationCapacityBytes < PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) goto PckCodec_EncodeHuffmanRle_ReturnCapacityError;
+  if (destinationCapacityBytes < PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) goto fail;
   /* Frequency table: the low byte of each scaled count. */
   countOrShiftOrCodeLength = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES;
   outputWriteCursor = (uint32_t *)(destination + PCK_HUFFMAN_FREQUENCY_TABLE_BYTES);
@@ -407,15 +407,15 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
       /* table + 0x1F, so the final AND with ~0xF rounds up and adds at least 16 bytes of slack */
       maxCountOrWeightOrSize = PCK_HUFFMAN_FREQUENCY_TABLE_BYTES + 0x1f;
       do {
-        while( true ) {
+        for (;;) {
           currentSymbolByte = *source;
-          if (((sourceSizeBytes < PCK_HUFFMAN_MIN_RUN_LENGTH) || (currentSymbolByte != source[1])) ||
-             (currentSymbolByte != source[2])) break;
+          if (sourceSizeBytes < PCK_HUFFMAN_MIN_RUN_LENGTH || currentSymbolByte != source[1] ||
+              currentSymbolByte != source[2]) break;
           /* Run token: count up to 18 equal bytes, emit flag 1 + (count - 3) in 4 bits = count*2 - 5,
              then the byte's code. */
           secondWeightOrCode = 0;
           do {
-            if ((currentSymbolByte != *source) || (0x11 < secondWeightOrCode)) break;
+            if (currentSymbolByte != *source || 0x11 < secondWeightOrCode) break;
             secondWeightOrCode++;
             source++;
             sourceSizeBytes--;
@@ -426,28 +426,27 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
           for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
               outputBitOffset = outputBitOffset - 8) {
             /* advance the dword write window by one byte */
-            outputWriteCursor = (uint32_t *)((int)outputWriteCursor + 1);
+            outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
             maxCountOrWeightOrSize++;
             destinationCapacityBytes--;
-            if (destinationCapacityBytes == 0) goto PckCodec_EncodeHuffmanRle_ReturnCapacityError;
+            if (destinationCapacityBytes == 0) goto fail;
           }
-          if (sourceSizeBytes == 0)
-          goto PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear;
+          if (sourceSizeBytes == 0) goto finish;
         }
         /* Literal token: flag bit 0, then the byte's code. */
         secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
         *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 1 & 0x1f);
         for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
             outputBitOffset = outputBitOffset - 8) {
-          outputWriteCursor = (uint32_t *)((int)outputWriteCursor + 1);
+          outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
           maxCountOrWeightOrSize++;
           destinationCapacityBytes--;
-          if (destinationCapacityBytes == 0) goto PckCodec_EncodeHuffmanRle_ReturnCapacityError;
+          if (destinationCapacityBytes == 0) goto fail;
         }
         source++;
         sourceSizeBytes--;
       } while (sourceSizeBytes != 0);
-PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear:
+finish:
       if (outputBitOffset != 0) {
         maxCountOrWeightOrSize++;
       }
@@ -456,7 +455,7 @@ PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear:
       return successResult;
     }
   }
-PckCodec_EncodeHuffmanRle_ReturnCapacityError:
+fail:
   errorResult.failed = true;
   errorResult.byteCountOrError = FATAL_ERROR_GENERAL_FAILURE;
   return errorResult;
@@ -584,7 +583,7 @@ PckCodecResult PckCodec_DecodeHuffmanRle
       destination++;
       for (inputBitOffset = nextBitOffset; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8)
       {
-        inputCursor = (uint32_t *)((int)inputCursor + 1);
+        inputCursor = (uint32_t *)((uint8_t *)inputCursor + 1);
       }
       outputSizeBytes--;
       continue;
@@ -604,7 +603,7 @@ PckCodecResult PckCodec_DecodeHuffmanRle
       inputBitOffset++;
     } while (runSymbolNode->zeroChild != NULL);
     for (; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8) {
-      inputCursor = (uint32_t *)((int)inputCursor + 1);
+      inputCursor = (uint32_t *)((uint8_t *)inputCursor + 1);
     }
     codeBitsOrRunLength = (lowWeightOrBitWindow >> 1 & 0xf) + PCK_HUFFMAN_MIN_RUN_LENGTH;
     do {

@@ -36,7 +36,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005244B0 */
-PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
+PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance (ArmyPlacementDispatchArg0 placementMode, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 placementHeading,ArmyPlacementDispatchArg3 terrainHeightQ12, Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition, ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00524570 */
 bool ArmyPlacement_TestModelTerrainAndRuntimeClearance
@@ -66,7 +66,7 @@ bool ArmyPlacement_TestGridRuntimeAndFieldBlocking
 /* 0x005281A0 */
 PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
                (uint32_t placementMode,uint32_t placementClearancePaddingQ12,uint32_t placementHeading,uint32_t terrainHeightQ12,
-               Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition,
+               Q12 worldXQ12,Q12 worldYQ12,ModelDefinition *modelDefinition,
                ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x004BE7F0 */
@@ -131,7 +131,7 @@ bool ArmyPlacementCollision_TestPointAgainstRuntimeList
 
 /* 0x00529F30 */
 bool ArmyPlacementCollision_TestCandidateAgainstRuntimeList
-          (WorldOwnerListNode100 *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
+          (WorldOwnerListNode *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x00527740 */
@@ -144,7 +144,7 @@ ArmyPlacementCollision_TestCandidateAndClearance
           (ArmyPlacementDispatchArg0 placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t placementHeading,
           ArmyPlacementDispatchArg3 terrainHeightQ12,Q12 worldXQ12,Q12 worldYQ12,
-          ModelDefinitionRuntimeSemanticView280 *modelDefinition,
+          ModelDefinition *modelDefinition,
           ArmyPlacementDispatchArg7 ownerFactionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00524650 */

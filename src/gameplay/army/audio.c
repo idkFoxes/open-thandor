@@ -38,20 +38,20 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
       return;
     }
   }
-  payloadCursor = playerRecord->snapshotPayloadB0_13AF;
+  payloadCursor = playerRecord->snapshotPayload;
   /* The asset is a texture source asset; the replaced image is subresource 0x71 of its table (entry at table
      offset + 0xE20). Its paletteIndex selects one of the 0x800-byte palettes (256 8-byte entries) from asset
      +0x200, its dataOffset locates the pixel data. */
   pixelDataOffset =
        ((GraphicsTextureSourceEntry *)
         (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.subresourceTableOffset +
-        armyGraphicsAsset))[0x71].dataOffset;
-  remainingCount = 256;
+        armyGraphicsAsset))[ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].dataOffset;
   destinationCursor = (uint32_t *)(((GraphicsTextureSourceEntry *)
                                     (((GraphicsTextureSourceAsset *)armyGraphicsAsset)->tableDescriptor.
-                                     subresourceTableOffset + armyGraphicsAsset))[0x71].paletteIndex * 0x800
-                    + 0x200 + armyGraphicsAsset);
-  do {
+                                     subresourceTableOffset + armyGraphicsAsset))
+                                   [ARMY_GRAPHICS_PLAYER_IMAGE_SUBRESOURCE].paletteIndex * ARMY_GRAPHICS_PALETTE_BYTES
+                    + ARMY_GRAPHICS_PALETTE_TABLE_OFFSET + armyGraphicsAsset);
+  for (remainingCount = 256; remainingCount != 0; remainingCount--) {
     /* reads four bytes of a three-byte entry; the fourth is replaced by the alpha */
     paletteColor = *(uint32_t *)payloadCursor;
     if ((paletteColor & 0xffffff) == 0) {
@@ -63,11 +63,9 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
     *destinationCursor = paletteColor;
     payloadCursor = payloadCursor + 3;
     destinationCursor = destinationCursor + 2;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   destinationCursor = (uint32_t *)(pixelDataOffset + armyGraphicsAsset);
-  /* 0x400 dwords = 0x1000 bytes of pixel data */
-  for (remainingCount = 0x400; remainingCount != 0; remainingCount--) {
+  for (remainingCount = ARMY_GRAPHICS_PLAYER_IMAGE_DWORDS; remainingCount != 0; remainingCount--) {
     *destinationCursor = *(uint32_t *)payloadCursor;
     payloadCursor = payloadCursor + 4;
     destinationCursor++;
@@ -91,18 +89,18 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
   uint32_t soundSlotIndex;
   SpatialSoundSlot *soundSlot;
   GraphicsFixedVec3 *worldPosition;
-  ModelRuntimeSlot *modelSlot;
+  ModelDefinition *definition;
   bool cellBitsClear;
-  
-  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+
+  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
   if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
     if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
   else {
-    soundSlotIndex = *(uint32_t *)((modelSlot->classState).reservedD4_DB + 4);
+    soundSlotIndex = definition->turningLoopSoundSlotIndexD8;
     if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
        (worldRuntime->dwordArray != NULL)) {
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
@@ -113,13 +111,13 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
                            worldRuntime);
         if (!cellBitsClear) {
           SpatialSound_UpdateDesiredPositionedGains
-                    ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                    (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                      worldPosition,soundSlot);
         }
       }
     }
   }
-  soundSlotIndex = (modelSlot->classState).classStateD0;
+  soundSlotIndex = definition->movingLoopSoundSlotIndexD0;
   if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
      (worldRuntime->dwordArray != NULL)) {
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
@@ -130,7 +128,7 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
                          worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                  (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                    worldPosition,soundSlot);
       }
     }
@@ -150,8 +148,7 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
 void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  if (((ModelDefinitionRuntimeSemanticView280 *)(armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset)->
-      placementContactKindIndex278 ==
+  if (armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->placementContactKindIndex278 ==
       ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
     ArmyRuntimeClass_UpdatePositionedSoundsVariantB
               (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView120 *)armyRuntime);
@@ -177,18 +174,18 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
   uint32_t soundSlotIndex;
   SpatialSoundSlot *soundSlot;
   GraphicsFixedVec3 *worldPosition;
-  ModelRuntimeSlot *modelSlot;
+  ModelDefinition *definition;
   bool cellBitsClear;
-  
-  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+
+  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
   if ((armyRuntime->movementControl).turnVelocityAngle16 == 0) {
-    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
     if ((armyRuntime->movementControl).movementAdvancePerTickQ12 == 0) {
       return;
     }
   }
   else {
-    soundSlotIndex = *(uint32_t *)((modelSlot->classState).reservedD4_DB + 4);
+    soundSlotIndex = definition->turningLoopSoundSlotIndexD8;
     if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
        (worldRuntime->dwordArray != NULL)) {
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
@@ -199,13 +196,13 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
                            worldRuntime);
         if (!cellBitsClear) {
           SpatialSound_UpdateDesiredPositionedGains
-                    ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                    (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                      worldPosition,soundSlot);
         }
       }
     }
   }
-  soundSlotIndex = (modelSlot->classState).classStateD0;
+  soundSlotIndex = definition->movingLoopSoundSlotIndexD0;
   if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
      (worldRuntime->dwordArray != NULL)) {
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
@@ -216,7 +213,7 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
                          worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                  (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                    worldPosition,soundSlot);
       }
     }
@@ -235,16 +232,16 @@ void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeSlot *modelSlot;
+  ModelDefinition *definition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
   GraphicsFixedVec3 *worldPosition;
   bool cellBitsClear;
   
-  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
   if ((((armyRuntime->movementStateFlags != 0) ||
        ((armyRuntime->movementControl).turnVelocityAngle16 != 0)) &&
-      (soundSlotIndex = *(uint32_t *)((modelSlot->classState).reservedD4_DB + 4), soundSlotIndex != 0)) &&
+      (soundSlotIndex = definition->turningLoopSoundSlotIndexD8, soundSlotIndex != 0)) &&
      ((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)))) {
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (slot != NULL) {
@@ -254,7 +251,7 @@ void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
                          worldPosition->x,worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                  (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                    worldPosition,slot);
       }
     }
@@ -273,17 +270,17 @@ void ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
 void ArmyRuntimeAudio_UpdateConditionalProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeSlot *modelSlot;
+  ModelDefinition *definition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
   GraphicsFixedVec3 *worldPosition;
   bool cellBitsClear;
   
-  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
-      ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
+      ((((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
         ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
-       (soundSlotIndex = modelSlot->attachments140[3].childNodeIndex0C, soundSlotIndex != 0)))) &&
+       (soundSlotIndex = definition->loopingSoundSlotIndex1AC, soundSlotIndex != 0)))) &&
      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
       (slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex], slot != NULL))
      )) {
@@ -293,7 +290,7 @@ void ArmyRuntimeAudio_UpdateConditionalProjectedSound(WorldRuntimeContext *world
                        worldPosition->x,worldRuntime);
     if (!cellBitsClear) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                  worldPosition,slot);
     }
   }
@@ -314,18 +311,18 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
 
 {
   GraphicsFixedVec3 *worldPosition;
-  ModelRuntimeSlot *modelSlot;
+  ModelDefinition *definition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *soundSlot;
   bool cellBitsClear;
   ModelRuntimeNode *modelNode;
   
   modelNode = armyRuntime->modelNodeRuntime;
-  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
-      ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
+      ((((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
         ((armyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
-       (soundSlotIndex = modelSlot->attachments140[3].childNodeIndex0C, soundSlotIndex != 0)))) &&
+       (soundSlotIndex = definition->loopingSoundSlotIndex1AC, soundSlotIndex != 0)))) &&
      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
       soundSlot != NULL)))) {
@@ -334,13 +331,13 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
                       ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
     if (!cellBitsClear) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,worldPosition,
+                (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,worldPosition,
                  soundSlot);
     }
   }
-  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
   if ((((armyRuntime->articulatedContact).fallbackPosition0Q12 != 1) &&
-      (soundSlotIndex = modelSlot[1].classLinkState.classState74,
+      (soundSlotIndex = definition->soundSlotIndex274,
       (armyRuntime->articulatedContact).fallbackPosition0Q12 != 0)) &&
      ((soundSlotIndex != 0 &&
       (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
@@ -351,7 +348,7 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
                       ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
     if (!cellBitsClear) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,worldPosition,
+                (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,worldPosition,
                  soundSlot);
     }
   }
@@ -368,14 +365,14 @@ void ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
 void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeSlot *modelSlot;
+  ModelDefinition *definition;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
   GraphicsFixedVec3 *worldPosition;
   bool cellBitsClear;
   
-  modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  soundSlotIndex = modelSlot->attachments140[3].childNodeIndex0C;
+  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
+  soundSlotIndex = definition->loopingSoundSlotIndex1AC;
   if (((worldRuntime->dwordArray != NULL) && (soundSlotIndex != 0)) &&
      (soundSlotIndex < worldRuntime->dwordArrayCount)) {
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
@@ -386,7 +383,7 @@ void ArmyRuntimeAudio_UpdateAssetProjectedSound(WorldRuntimeContext *worldRuntim
                          worldPosition->x,worldRuntime);
       if (!cellBitsClear) {
         SpatialSound_UpdateDesiredPositionedGains
-                  ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                  (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                    worldPosition,slot);
       }
     }
@@ -410,45 +407,43 @@ void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
   ModelRuntimeNode *modelNode;
   uint32_t soundSlotIndex;
   SpatialSoundSlot *soundSlot;
-  ModelRuntimeSlot *modelSlot;
+  ModelDefinition *definition;
   bool cellBitsClear;
   
   modelNode = armyRuntime->modelNodeRuntime;
   if ((((armyRuntime->runtimeFlags & 1) == 0) &&
-      ((((armyRuntime->runtimeFlags & 0x40) != 0 ||
+      ((((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0 ||
         ((armyRuntime->articulatedContact).terrainContactMode ==
          ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE)) &&
-       (soundSlotIndex = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->attachments140[3].
-                childNodeIndex0C, soundSlotIndex != 0)))) &&
+       (soundSlotIndex = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->loopingSoundSlotIndex1AC,
+        soundSlotIndex != 0)))) &&
      (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
       soundSlot != NULL)))) {
-    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
     cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
     if (!cellBitsClear) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                  &(modelNode->worldTransform).translation,soundSlot);
     }
   }
   if ((((armyRuntime->articulatedContact).lateralOffsetQ12 != 6) &&
-      (soundSlotIndex =
-            ((ModelDefinitionRuntimeSemanticView280 *)(armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset)->
-            soundSlotIndex274,
+      (soundSlotIndex = armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->soundSlotIndex274,
       (armyRuntime->articulatedContact).lateralOffsetQ12 != 0)) &&
      ((soundSlotIndex != 0 &&
       (((soundSlotIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != NULL)) &&
        (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
        soundSlot != NULL)))))) {
-    modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+    definition = (armyRuntime->modelRuntimeOrSavedOffset).modelDefinition;
     cellBitsClear = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
     if (!cellBitsClear) {
       SpatialSound_UpdateDesiredPositionedGains
-                ((modelSlot->classLinkState).classState7C,(modelSlot->classLinkState).classState78,
+                (definition->positionedSoundMaximumDistanceQ12,definition->positionedSoundGainQ15,
                  &(modelNode->worldTransform).translation,soundSlot);
     }
   }
@@ -464,7 +459,7 @@ void ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
 void ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  if ((armyRuntime->runtimeFlags & 0x40) != 0) {
+  if ((armyRuntime->runtimeFlags & ARMY_MODEL_STATE_RESEARCHING) != 0) {
     ArmyRuntime_UpdateLoopingPositionedSound(worldRuntime,armyRuntime);
   }
   return;

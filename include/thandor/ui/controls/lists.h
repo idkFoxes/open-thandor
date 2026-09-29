@@ -79,7 +79,7 @@
 #define UI_SELECTABLE_ACTIVATE_ON_ESCAPE 0x08
 #define UI_SELECTABLE_PLAY_KEYBOARD_SOUND 0x80
 
-/* Directory tree records (UiTimedListTree_BuildDirectoryRecordBlock): rowPayload04 is the row icon in the
+/* Directory tree records (UiTimedListTree_BuildDirectoryRecordBlock): parentBlockOrIcon is the row icon in the
    list's rowTextureSource (drive rows use their EngineDriveTypeCode); each label buffer is 0x200 bytes. */
 #define UI_TIMED_LIST_ICON_DIRECTORY 0x26
 #define UI_TIMED_LIST_ICON_COMPUTER 0x27
@@ -215,7 +215,7 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
 void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control);
 
 /* 0x004BA560 */
-UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *control);
+UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control);
 
 /* 0x004BADE0 */
 void UiListControl_DrawRowsAndSelection(int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control);
@@ -264,19 +264,19 @@ void UiCatalogEntryControl_NonRightRelease
 
 /* 0x004BC360 */
 void UiTimedListControl_SelectRecordAndScrollIntoView
-          (UiTimedListTreeRecord16 *selectedRecord,UiTimedListRuntimeExtendedView88 *control);
+          (UiTimedListTreeRecord *selectedRecord,UiTimedListTreeControl *control);
 
 /* 0x004BB4E0 */
 void UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control);
 
 /* 0x004BB540 */
-ListSelectionResult UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control);
+ListSelectionResult UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control);
 
 /* 0x004B9460 */
 UiScrollableContentDimensionsEdxEax8 UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control);
 
 /* 0x004BC310 */
-uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock);
+uint32_t UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord *recordBlock);
 
 /* 0x004B9170 */
 void UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control);
@@ -288,7 +288,7 @@ void UiScrollableControl_ClampOffsetsToViewport
 
 
 /* 0x0040FF70 */
-UiTimedListTreeRecord16 * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock);
+UiTimedListTreeRecord * UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord *recordBlock);
 
 /* 0x0040FFE0 */
 DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16);
@@ -298,27 +298,27 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
 
 /* 0x004104B0 */
 bool UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
-          (UiTimedListTreeRecord16 *targetRecord,UiTimedListTreeRecord16 *recordBlock);
+          (UiTimedListTreeRecord *targetRecord,UiTimedListTreeRecord *recordBlock);
 
 /* 0x00410520 */
-bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record);
+bool UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord *record);
 
 /* 0x00410670 */
 void UiTimedListControl_ToggleDirectoryRecordExpansion
-          (UiTimedListTreeRecord16 *record,UiTimedListRuntimeExtendedView88 *control);
+          (UiTimedListTreeRecord *record,UiTimedListTreeControl *control);
 
 /* 0x00410700 */
-bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record);
+bool UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord *record);
 
 /* 0x004BC1C0 */
 void UiTimedListControl_SetRecordTreeAndRecomputeLayout
-          (UiTimedListTreeRecord16 *recordTree,UiTimedListRuntimeExtendedView88 *control);
+          (UiTimedListTreeRecord *recordTree,UiTimedListTreeControl *control);
 
 /* 0x004BC2F0 */
-UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *control);
+UiTimedListTreeRecord * UiTimedListControl_GetRecordTree(UiTimedListControl *control);
 
 /* 0x004BC3F0 */
-UiTimedListTreeRecord16 *
-UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control);
+UiTimedListTreeRecord *
+UiTimedListControl_GetSelectedRecord(UiTimedListTreeControl *control);
 
 #endif /* THANDOR_UI_CONTROLS_LISTS_H */

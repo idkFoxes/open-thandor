@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/level. */
+
+/* g_InGameLoadedResourcePointers: the level loaders allocate room for 512 loaded EFF/SHT/MDL/ARM file pointers and
+   fail with FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES beyond that. */
+#define INGAME_LOADED_RESOURCE_CAPACITY 0x200
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00531080 */

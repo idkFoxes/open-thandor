@@ -48,7 +48,7 @@ static __inline uint32_t EffectTint_PackWordsUnsignedSaturate(uint64_t words)
    while the resulting tint is not fully transparent it becomes the effect tint modulated by the definition tint.
 */
 void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
-          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode)
+          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNode *modelNode)
 
 {
   PackedArgb32 effectTintArgb;
@@ -60,8 +60,8 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
 
   primaryOccupancyMask =
        TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                 (Q12_ONE,(modelNode->worldTransform).translation.y,
-                  (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+                 (Q12_ONE,modelNode->worldTransform.translation.y,
+                  modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
   modelNode->runtimeFlags =
        modelNode->runtimeFlags & ~(TERRAIN_OCCUPANCY_FLAG_PRESENT | TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE);
   effectRuntime = modelNode->effectRuntime;
@@ -73,7 +73,7 @@ void EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
   ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)modelNode);
   if ((modelNode->tintArgb & 0xff000000) != 0) {
     effectTintArgb = effectRuntime->stateTintArgb;
-    definitionTintArgb = ((effectRuntime->definitionOrSavedId).definition)->stateTintArgb;
+    definitionTintArgb = effectRuntime->definitionOrSavedId.definition->stateTintArgb;
     /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
     modulatedLanes =
          pmulhw(EffectTint_UnpackBytesShiftRight(effectTintArgb,4),
@@ -117,17 +117,10 @@ void EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime
    motion that ends on ground contact).
 */
 void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
-          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNodeClassView100 *modelNode)
+          (WorldRuntimeContext *worldRuntime,EffectModelRuntimeNode *modelNode)
 
 {
-  EffectAnimationFrameCount *framesRemainingPtr;
-  EffectShadingCountdownTicks *shadingCountdownPtr;
-  EffectPeriodicIntervalTicks *periodicCountdownPtr;
-  DefinitionReferencePresentFlag *linkedCountdownPtr;
-  uint32_t *completionCountdownPtr;
-  AngleTurn32 *rotationAngle1Ptr;
   GraphicsFixedVec3 *translationPtr;
-  GraphicsWorldCoordinateQ12 *translationAxisPtr;
   EffectRuntimeSlot *effectSlot;
   EffectAlphaFadeTicks fadeDurationTicks;
   EffectAlphaFadeTicks fadeOutDivisorTicks;
@@ -162,33 +155,32 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   remainingStepTicks = g_InGameSimulationStepTicks;
   do {
     effectSlot = modelNode->effectRuntime;
-    effectDefinition = (effectSlot->definitionOrSavedId).definition;
+    effectDefinition = effectSlot->definitionOrSavedId.definition;
     /* one step adds 1.0 (Q4) to the frame accumulator; a frame advances when it reaches the definition's
        threshold */
-    frameAgeOrTintValue = (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 + 0x10;
+    frameAgeOrTintValue = effectSlot->lifecycleOwnerAndDefinition.animationFrameAccumulatorQ4 + 0x10;
     frameAdvancedOrScratch = 0;
-    (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 = frameAgeOrTintValue;
+    effectSlot->lifecycleOwnerAndDefinition.animationFrameAccumulatorQ4 = frameAgeOrTintValue;
     if (effectDefinition->frameAdvanceThresholdQ4 <= frameAgeOrTintValue) {
-      (effectSlot->lifecycleOwnerAndDefinition).animationFrameAccumulatorQ4 =
+      effectSlot->lifecycleOwnerAndDefinition.animationFrameAccumulatorQ4 =
            frameAgeOrTintValue - effectDefinition->frameAdvanceThresholdQ4;
       frameAdvancedOrScratch = 1;
-      framesRemainingPtr = &effectSlot->animationFramesRemaining;
-      *framesRemainingPtr = *framesRemainingPtr - 1;
-      if (*framesRemainingPtr == 0) {
+      effectSlot->animationFramesRemaining--;
+      if (effectSlot->animationFramesRemaining == 0) {
         InterpolationState_SetNegatedTargetAndRescaleProgress
                   (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
                   );
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
-        (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
+        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNode);
+        effectSlot->modelNodeOrSavedOffset.modelNode = NULL;
         return;
       }
     }
     if (frameAdvancedOrScratch != 0) {
       modelNode->textureSubresourceBaseIndex++;
-      shadingCountdownPtr = &effectSlot->shadingStartCountdownTicksRemaining;
-      *shadingCountdownPtr = *shadingCountdownPtr - 1;
-      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord == NULL)) {
-        lookupResult = ModelLookupTable_ContainsPackedKey(0,4,effectDefinition->ownedNestedResource);
+      effectSlot->shadingStartCountdownTicksRemaining--;
+      if ((effectSlot->shadingStartCountdownTicksRemaining == 0) && (modelNode->shadingRecord == NULL)) {
+        lookupResult = ModelLookupTable_ContainsPackedKey
+                           (0,MODEL_POINT_CLASS_LIGHT,effectDefinition->ownedNestedResource);
         if (!lookupResult.notFound) {
           localPoint = ModelNodeRuntime_TransformLocalPointRegs
                              (lookupResult.entry,(ModelRuntimeNode *)modelNode);
@@ -200,16 +192,15 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
           modelNode->shadingRecord = shadingAllocation.record;
         }
       }
-      shadingCountdownPtr = &effectSlot->shadingStopCountdownTicksRemaining;
-      *shadingCountdownPtr = *shadingCountdownPtr - 1;
-      if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord != NULL)) {
+      effectSlot->shadingStopCountdownTicksRemaining--;
+      if ((effectSlot->shadingStopCountdownTicksRemaining == 0) && (modelNode->shadingRecord != NULL)) {
         InterpolationState_SetNegatedTargetAndRescaleProgress
                   (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
                   );
         modelNode->shadingRecord = NULL;
       }
     }
-    if ((effectDefinition->transitionPrefix).transitionKind !=
+    if (effectDefinition->transitionPrefix.transitionKind !=
         EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT) {
       frameAgeOrTintValue = effectSlot->effectAgeTicks;
       fadeOutStartTicks = (effectDefinition->animationFrameCount * effectDefinition->frameAdvanceThresholdQ4
@@ -259,36 +250,37 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
            effectDefinition->modelScaleStartQ12;
     }
     effectSlot->effectAgeTicks++;
-    periodicCountdownPtr = &effectSlot->periodicEffectCountdownTicks;
-    *periodicCountdownPtr = *periodicCountdownPtr - 1;
-    if (*periodicCountdownPtr == 0) {
+    effectSlot->periodicEffectCountdownTicks--;
+    if (effectSlot->periodicEffectCountdownTicks == 0) {
       effectSlot->periodicEffectCountdownTicks = effectDefinition->periodicEffectIntervalTicks;
-      lookupResult = ModelLookupTable_ContainsPackedKey(1,3,effectDefinition->ownedNestedResource);
+      lookupResult = ModelLookupTable_ContainsPackedKey
+                         (1,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource);
       if (!lookupResult.notFound) {
         periodicDefinition = effectDefinition->periodicEffectDefinition;
         localPoint = ModelNodeRuntime_TransformLocalPointRegs
                            (lookupResult.entry,(ModelRuntimeNode *)modelNode);
-        /* the periodic child effect always starts with rotation angle 1 at 0x4000 (a quarter turn) */
+        /* the periodic child effect always starts with rotation angle 1 at a quarter turn */
         EffectRuntimePool_CreateInstanceFromDefinition
-                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
+                  (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
+                   FIXED_ANGLE16_QUARTER_TURN,0,
                    localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,periodicDefinition,worldRuntime);
       }
     }
-    switch((effectDefinition->transitionPrefix).transitionKind) {
+    switch(effectDefinition->transitionPrefix.transitionKind) {
     case EFFECT_TRANSITION_SPAWN_LINKED_EFFECT_AFTER_COUNTDOWN:
       if (frameAdvancedOrScratch != 0) {
-        linkedCountdownPtr = &effectSlot->linkedEffectPresent;
-        *linkedCountdownPtr = *linkedCountdownPtr - 1;
-        if (*linkedCountdownPtr == 0) {
-          lookupResult = ModelLookupTable_ContainsPackedKey(0,3,effectDefinition->ownedNestedResource);
+        effectSlot->linkedEffectPresent--;
+        if (effectSlot->linkedEffectPresent == 0) {
+          lookupResult = ModelLookupTable_ContainsPackedKey
+                             (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource);
           if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
-                       (modelNode->modelPayload).worldRotationAngle2,
-                       (modelNode->modelPayload).worldRotationAngle1,
-                       (modelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
+                       modelNode->modelPayload.worldRotationAngle2,
+                       modelNode->modelPayload.worldRotationAngle1,
+                       modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
                        localPoint.xQ12,effectDefinition->linkedEffectDefinition,worldRuntime);
           }
         }
@@ -296,52 +288,50 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       break;
     case EFFECT_TRANSITION_ADVANCE_PERIODIC_EMISSION_AND_COMPLETION_ACTION:
       if (frameAdvancedOrScratch != 0) {
-        linkedCountdownPtr = &effectSlot->linkedShotPresent;
-        *linkedCountdownPtr = *linkedCountdownPtr - 1;
-        if (*linkedCountdownPtr == 0) {
-          keyIndex = (effectSlot->lifecycleOwnerAndDefinition).runtimeState14;
+        effectSlot->linkedShotPresent--;
+        if (effectSlot->linkedShotPresent == 0) {
+          keyIndex = effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex;
           effectSlot->linkedShotPresent = effectDefinition->linkedShotPresent;
-          (effectSlot->lifecycleOwnerAndDefinition).runtimeState14 =
-               (effectSlot->lifecycleOwnerAndDefinition).runtimeState14 + 1;
+          effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex =
+               effectSlot->lifecycleOwnerAndDefinition.nextShotPointIndex + 1;
           lookupResult = ModelLookupTable_ContainsPackedKey
-                             (keyIndex,2,effectDefinition->ownedNestedResource);
+                             (keyIndex,MODEL_POINT_CLASS_SHOT,effectDefinition->ownedNestedResource);
           if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             ShotRuntimePool_CreateProjectileFromDefinition
                       (0,NULL,
-                       (localPoint.zQ12 - (modelNode->worldTransform).translation.z) * 2 +
-                       (modelNode->worldTransform).translation.z,
-                       (localPoint.yQ12 - (modelNode->worldTransform).translation.y) * 2 +
-                       (modelNode->worldTransform).translation.y,
-                       (localPoint.xQ12 - (modelNode->worldTransform).translation.x) * 2 +
-                       (modelNode->worldTransform).translation.x,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
+                       (localPoint.zQ12 - modelNode->worldTransform.translation.z) * 2 +
+                       modelNode->worldTransform.translation.z,
+                       (localPoint.yQ12 - modelNode->worldTransform.translation.y) * 2 +
+                       modelNode->worldTransform.translation.y,
+                       (localPoint.xQ12 - modelNode->worldTransform.translation.x) * 2 +
+                       modelNode->worldTransform.translation.x,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
                        effectDefinition->linkedShotDefinition,worldRuntime);
           }
         }
-        linkedCountdownPtr = &effectSlot->linkedEffectPresent;
-        *linkedCountdownPtr = *linkedCountdownPtr - 1;
-        if (*linkedCountdownPtr == 0) {
-          lookupResult = ModelLookupTable_ContainsPackedKey(0,3,effectDefinition->ownedNestedResource);
+        effectSlot->linkedEffectPresent--;
+        if (effectSlot->linkedEffectPresent == 0) {
+          lookupResult = ModelLookupTable_ContainsPackedKey
+                             (0,MODEL_POINT_CLASS_EFFECT,effectDefinition->ownedNestedResource);
           if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
-                       (modelNode->modelPayload).worldRotationAngle2,
-                       (modelNode->modelPayload).worldRotationAngle1,
-                       (modelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
+                       modelNode->modelPayload.worldRotationAngle2,
+                       modelNode->modelPayload.worldRotationAngle1,
+                       modelNode->modelPayload.worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
                        localPoint.xQ12,effectDefinition->linkedEffectDefinition,worldRuntime);
           }
         }
-        completionCountdownPtr = &(effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;
-        *completionCountdownPtr = *completionCountdownPtr - 1;
-        if (*completionCountdownPtr == 0) {
+        effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.completionCountdownTicks--;
+        if (effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.completionCountdownTicks == 0) {
           pendingCompletionAction = effectSlot->completionAction;
           completionOwnerCarrier =
-               (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
+               effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
           if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) {
-EffectModelRuntimeMaintenance_TransitionType1DestroyModel:
+DestroyOwnerModel:
             if (completionOwnerCarrier != NULL) {
               ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,completionOwnerCarrier);
             }
@@ -349,30 +339,32 @@ EffectModelRuntimeMaintenance_TransitionType1DestroyModel:
           else {
             spawnArmyCompletionEntity = completionOwnerCarrier;
             if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) {
-EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
+SpawnArmyFromOwner:
               if (spawnArmyCompletionEntity != NULL) {
-                ownerClassRecord = (spawnArmyCompletionEntity->common).ownership.definitionOrClassRecord;
-                ownerModelNode = (spawnArmyCompletionEntity->common).ownership.modelNode;
-                /* frameAdvancedOrScratch now holds the owner's model definition: only class 0x12 turns into the
+                ownerClassRecord = spawnArmyCompletionEntity->common.ownership.definitionOrClassRecord;
+                ownerModelNode = spawnArmyCompletionEntity->common.ownership.modelNode;
+                /* frameAdvancedOrScratch now holds the owner's model definition: only class 18 turns into the
                    army asset named by classParameterC0. The new model keeps the owner's armour points (+0x3C) in
-                   proportion, rescaled by the two definitions' runtimeValue60 (presumably the full armour). */
+                   proportion, rescaled by the two definitions' maximumHealth60 (presumably the full armour). */
                 frameAdvancedOrScratch = *ownerClassRecord;
-                if (((ModelDefinitionRuntimeSemanticView280 *)frameAdvancedOrScratch)->runtimeClassId4C == 0x12) {
+                if (((ModelDefinition *)frameAdvancedOrScratch)->runtimeClassId4C == MODEL_RUNTIME_CLASS_18) {
                   armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
-                                     (6,(ownerModelNode->modelPayload).worldRotationAngle2,
-                                      (ownerModelNode->worldTransform).translation.y,
-                                      (ownerModelNode->worldTransform).translation.x,
-                                      (spawnArmyCompletionEntity->common).ownership.ownerIndex,
+                                     (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,
+                                      ownerModelNode->modelPayload.worldRotationAngle2,
+                                      ownerModelNode->worldTransform.translation.y,
+                                      ownerModelNode->worldTransform.translation.x,
+                                      spawnArmyCompletionEntity->common.ownership.ownerIndex,
                                       (PckArmyAssetIdCatalog)
-                                      ((ModelDefinitionRuntimeSemanticView280 *)frameAdvancedOrScratch)->classParameterC0,
+                                      ((ModelDefinition *)frameAdvancedOrScratch)->classParameterC0,
                                       worldRuntime);
                   if (!armyCreateResult.failed) {
-                    (*(int **)armyCreateResult.armyRuntimeOrError)[0xf] =
-                         (int)(((int64_t)ownerClassRecord[0xf] *
+                    /* ownerClassRecord is the owner's ModelRuntimeSlot */
+                    (*(ModelRuntimeSlot **)armyCreateResult.armyRuntimeOrError)->health =
+                         (int)(((int64_t)(int)((ModelRuntimeSlot *)ownerClassRecord)->health *
                                (int64_t)(int)(*(ModelRuntimeSlot **)armyCreateResult.armyRuntimeOrError)->
-                                              definitionOrSavedId.runtimeDefinition->runtimeValue60) /
-                              (int64_t)(int)((ModelDefinitionRuntimeSemanticView280 *)frameAdvancedOrScratch)->
-                                            runtimeValue60);
+                                              definitionOrSavedId.runtimeDefinition->maximumHealth60) /
+                              (int64_t)(int)((ModelDefinition *)frameAdvancedOrScratch)->
+                                            maximumHealth60);
                     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,spawnArmyCompletionEntity);
                   }
                 }
@@ -380,8 +372,7 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
             }
             else {
               linkedHandlerCompletionOwner = completionOwnerCarrier;
-              if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER)
-              goto EffectModelRuntimeMaintenance_TransitionType2InvokeLinkedHandler;
+              if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) goto InvokeLinkedHandler;
             }
           }
         }
@@ -389,20 +380,19 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
       break;
     case EFFECT_TRANSITION_INTEGRATE_LINEAR_MOTION_AND_SHADING_POSITION:
       scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
-                         ((modelNode->modelPayload).worldRotationAngle1,
-                          (modelNode->modelPayload).worldRotationAngle0,
+                         (modelNode->modelPayload.worldRotationAngle1,
+                          modelNode->modelPayload.worldRotationAngle0,
                           effectDefinition->movementSpeedQ12);
-      previousRotationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
+      previousRotationAngle1 = modelNode->modelPayload.worldRotationAngle1;
       activeShadingRecord = modelNode->shadingRecord;
-      translationPtr = &(modelNode->worldTransform).translation;
+      translationPtr = &modelNode->worldTransform.translation;
       translationPtr->x = translationPtr->x + scaledDirection.x;
-      translationAxisPtr = &(modelNode->worldTransform).translation.y;
-      *translationAxisPtr = *translationAxisPtr + scaledDirection.y;
-      translationAxisPtr = &(modelNode->worldTransform).translation.z;
-      *translationAxisPtr = *translationAxisPtr + scaledDirection.z;
+      modelNode->worldTransform.translation.y += scaledDirection.y;
+      modelNode->worldTransform.translation.z += scaledDirection.z;
       ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
-      /* each step moves rotation angle 1 a 64th of the way towards 0x4000 (a quarter turn) */
-      (modelNode->modelPayload).worldRotationAngle1 = (int)(previousRotationAngle1 * 0x3f + 0x4000) >> 6;
+      /* each step moves rotation angle 1 a 64th of the way towards a quarter turn */
+      modelNode->modelPayload.worldRotationAngle1 =
+           (int)(previousRotationAngle1 * 0x3f + FIXED_ANGLE16_QUARTER_TURN) >> 6;
       if (activeShadingRecord != NULL) {
         activeShadingRecord->worldXQ12 = activeShadingRecord->worldXQ12 + scaledDirection.x;
         activeShadingRecord->worldYQ12 = activeShadingRecord->worldYQ12 + scaledDirection.y;
@@ -411,22 +401,22 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
       break;
     case EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT:
       terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
-                         ((modelNode->worldTransform).translation.y,
-                          (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+                         (modelNode->worldTransform.translation.y,
+                          modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
       if (!terrainSample.failed) {
         /* Both register-returned directions are spilled to the stack in the binary; Ghidra showed
            them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. Both are unit vectors
            (0x10000000 = 1.0 in Q28); the motion elevation drops with the square of the effect's age. */
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
                   ((int)terrainSample.packedNormalAngles >> 16,terrainSample.packedNormalAngles & 0xffff,
-                   0x10000000);
+                   Q28_ONE);
         terrainNormalDirection.x = scaledDirection.x;
         terrainNormalDirection.y = scaledDirection.y;
         terrainNormalDirection.z = scaledDirection.z;
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
-                  ((modelNode->modelPayload).worldRotationAngle1 -
+                  (modelNode->modelPayload.worldRotationAngle1 -
                    effectSlot->effectAgeTicks * effectSlot->effectAgeTicks * effectDefinition->unknown58,
-                   (modelNode->modelPayload).worldRotationAngle0,0x10000000);
+                   modelNode->modelPayload.worldRotationAngle0,Q28_ONE);
         motionDirection.x = scaledDirection.x;
         motionDirection.y = scaledDirection.y;
         motionDirection.z = scaledDirection.z;
@@ -437,8 +427,8 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (effectDefinition->shadingReleaseTransitionDurationTicks,
                        modelNode->shadingRecord);
-            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
-            (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
+            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNode);
+            effectSlot->modelNodeOrSavedOffset.modelNode = NULL;
             return;
           }
           frameAgeOrTintValue = effectSlot->stateTintArgb >> 24;
@@ -450,8 +440,7 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
         }
         else {
           frameAgeOrTintValue = 0xffffffff;
-          rotationAngle1Ptr = &(modelNode->modelPayload).worldRotationAngle1;
-          *rotationAngle1Ptr = *rotationAngle1Ptr - effectSlot->effectAgeTicks * effectSlot->effectAgeTicks *
+          modelNode->modelPayload.worldRotationAngle1 -= effectSlot->effectAgeTicks * effectSlot->effectAgeTicks *
                               effectDefinition->unknown58;
         }
         effectSlot->stateTintArgb = frameAgeOrTintValue;
@@ -463,31 +452,28 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
           modelNode->tintArgb = EffectTint_PackWordsUnsignedSaturate(modulatedLanes);
         }
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
-        completionCountdownPtr = &(effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;
-        *completionCountdownPtr = *completionCountdownPtr - 1;
-        if (*completionCountdownPtr == 0) {
+        effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.completionCountdownTicks--;
+        if (effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.completionCountdownTicks == 0) {
           pendingCompletionAction = effectSlot->completionAction;
           completionOwnerCarrier =
-               (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode;
-          if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY)
-          goto EffectModelRuntimeMaintenance_TransitionType1DestroyModel;
+               effectSlot->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode;
+          if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY) goto DestroyOwnerModel;
           linkedHandlerCompletionOwner = completionOwnerCarrier;
           if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER) {
-EffectModelRuntimeMaintenance_TransitionType2InvokeLinkedHandler:
+InvokeLinkedHandler:
             if ((linkedHandlerCompletionOwner != NULL) &&
                 (0 < (int)linkedHandlerCompletionOwner->auxiliaryValue80)) {
               FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
                         (linkedHandlerCompletionOwner->terrainMaterialIndex100,
                          linkedHandlerCompletionOwner->auxiliaryValue80,
                          linkedHandlerCompletionOwner->ownerSlot0,
-                         (modelNode->worldTransform).translation.y,
-                         (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
+                         modelNode->worldTransform.translation.y,
+                         modelNode->worldTransform.translation.x,worldRuntime->fieldGrid);
             }
           }
           else {
             spawnArmyCompletionEntity = completionOwnerCarrier;
-            if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL)
-            goto EffectModelRuntimeMaintenance_TransitionType3SpawnArmy;
+            if (pendingCompletionAction == EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL) goto SpawnArmyFromOwner;
           }
         }
       }

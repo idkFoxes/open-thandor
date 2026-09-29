@@ -28,25 +28,22 @@ StatusResult ShotAsset_PrepareEntries(ShotAssetHeader *asset)
   registrationStatusCode = FATAL_ERROR_SHOT_ASSET_INVALID;
   if ((asset->entryCountHeader.common.magic == ASSET_MAGIC_SHT) &&
      (asset->entryCountHeader.common.converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    entriesRemaining = asset->entryCountHeader.entryCount;
     definition = (ShotDefinition *)(asset + 1);
-    while( true ) {
-      if (entriesRemaining == 0) {
-        /* success hands back EAX as it was: the error code preset or the last registration result */
-        registrationResult.failed = false;
-        registrationResult.valueOrError = registrationStatusCode;
-        return registrationResult;
-      }
+    for (entriesRemaining = asset->entryCountHeader.entryCount; entriesRemaining != 0; entriesRemaining--) {
       registrationResult = ShotDefinition_RegisterAndResolveReferences(definition);
       registrationStatusCode = registrationResult.valueOrError;
-      if (registrationResult.failed) break;
+      if (registrationResult.failed) goto ReturnFailure;
       definition++;
-      entriesRemaining--;
     }
+    /* success hands back EAX as it was: the error code preset or the last registration result */
+    registrationResult.failed = false;
+    registrationResult.valueOrError = registrationStatusCode;
+    return registrationResult;
   }
   else {
     Package_SetLastErrorPath((uint16_t *)asset);
   }
+ReturnFailure:
   failureResult.failed = true;
   failureResult.valueOrError = registrationStatusCode;
   return failureResult;
@@ -74,17 +71,17 @@ StatusResult ShotDefinitions_ValidateTerrainMaterialReferences(void)
   StatusResult failureResult;
 
   registryCursor = g_ShotDefinitionRegistry;
-  registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-  do {
+  for (registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
     definition = *registryCursor;
     if (definition != NULL) {
       materialIndexCursor = definition->terrainMaterialIndices31;
-      materialIndicesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT;
-      do {
+      for (materialIndicesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT; materialIndicesRemaining != 0;
+           materialIndicesRemaining--) {
         materialIndex = *materialIndexCursor;
         materialIndexCursor++;
-        if ((TERRAIN_MATERIAL_COUNT - 1 < materialIndex) ||
-           ((-1 < materialIndex && (g_TerrainMaterialTextureSets[materialIndex] == NULL)))) {
+        if (TERRAIN_MATERIAL_COUNT - 1 < materialIndex ||
+            (-1 < materialIndex && g_TerrainMaterialTextureSets[materialIndex] == NULL)) {
           g_WideNumberFormatUtf16
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                      SHOT_DEFINITION_REGISTRY_SLOT_COUNT - registrySlotsRemaining,g_PackageLastErrorPath);
@@ -92,17 +89,13 @@ StatusResult ShotDefinitions_ValidateTerrainMaterialReferences(void)
           failureResult.valueOrError = FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID;
           return failureResult;
         }
-        materialIndicesRemaining--;
-      } while (materialIndicesRemaining != 0);
+      }
     }
     registryCursor++;
-    registrySlotsRemaining--;
-    if (registrySlotsRemaining == 0) {
-      successResult.failed = false;
-      successResult.valueOrError = (uint32_t)materialIndex;
-      return successResult;
-    }
-  } while( true );
+  }
+  successResult.failed = false;
+  successResult.valueOrError = (uint32_t)materialIndex;
+  return successResult;
 }
 
 
@@ -121,8 +114,7 @@ ShotDefinitionResult ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionI
   
   registryCursor = g_ShotDefinitionRegistry;
   registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
-  while ((registeredDefinition = *registryCursor, registeredDefinition == NULL ||
-         (registeredDefinition->definitionId != definitionId))) {
+  while (registeredDefinition = *registryCursor, registeredDefinition == NULL || registeredDefinition->definitionId != definitionId) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -171,12 +163,15 @@ ShotLaunchAnglesEaxEdx8 ShotDefinition_ComputeLaunchAnglesRegs
     /* tan(elevation) = (v^2 +- sqrt(v^4 - 2*g*h*v^2 - (g*r)^2)) / (g*r) */
     launchSpeedSquared = definition->launchSpeedQ12 * definition->launchSpeedQ12;
     rangeTimesDivisor = planarLengthAngle.length * definition->ballisticDivisorQ12;
-    discriminant = (int64_t)(launchSpeedSquared + definition->ballisticDivisorQ12 * heightDelta * -2) * (int64_t)launchSpeedSquared -
-            (int64_t)rangeTimesDivisor * (int64_t)rangeTimesDivisor;
+    discriminant =
+         (int64_t)(launchSpeedSquared + definition->ballisticDivisorQ12 * heightDelta * -2) *
+         (int64_t)launchSpeedSquared -
+         (int64_t)rangeTimesDivisor * (int64_t)rangeTimesDivisor;
     if (discriminant < 0) {
       discriminant = 0; /* target out of reach */
     }
-    computedElevation = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)discriminant >> 0x20),(UInt64Half32)discriminant);
+    computedElevation =
+         FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)discriminant >> 0x20),(UInt64Half32)discriminant);
     if ((-0x1000 < heightDelta) && (heightDelta < 0x1000)) {
       computedElevation = -computedElevation;
     }
@@ -300,22 +295,23 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
   existingLookup = ShotRuntime_FindDefinitionById(definition->definitionId);
   valueOrError = existingLookup.definitionOrError;
   if (existingLookup.notFound) {
-    do {
+    for (; slotsRemainingOrIndex != 0; slotsRemainingOrIndex--) {
       if (*registrySlotCursor == NULL) {
         *registrySlotCursor = definition;
         extensionFailed = WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16);
-        if (extensionFailed) goto ShotDefinition_ReturnReferenceResolutionResult;
+        if (extensionFailed) goto ReturnFailure;
         loadResult = Package_LoadEntry(definition->resourcePathUtf16);
         valueOrError = loadResult.bufferOrError;
-        if (loadResult.failed) goto ShotDefinition_ReturnReferenceResolutionResult;
-        /* the loaded file is a sprite asset; this reads its registry id at +0xB8 */
-        existingSprite = SpriteAssetRegistry_FindById(valueOrError->targetClassImpactDamageQ12[2]);
+        if (loadResult.failed) goto ReturnFailure;
+        /* the loaded file is a sprite asset */
+        existingSprite =
+             SpriteAssetRegistry_FindById(((SpriteAssetHeader *)valueOrError)->registryHeader.registryId);
         if (existingSprite == NULL) {
           definition->ownedNestedResourcePresent++;
           definition->ownedNestedResource = valueOrError;
           spriteRegisterResult = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)valueOrError);
           valueOrError = (ShotDefinition *)spriteRegisterResult.assetOrError;
-          if (spriteRegisterResult.failed) goto ShotDefinition_ReturnReferenceResolutionResult;
+          if (spriteRegisterResult.failed) goto ReturnFailure;
         }
         else {
           definition->ownedNestedResource = existingSprite;
@@ -325,51 +321,48 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
         effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)definition->launchEffectDefinition);
         valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-        if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
+        if (effectLookup.notFound) goto ReturnFailure;
         definition->launchEffectDefinition = (EffectDefinition *)valueOrError;
         effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)definition->secondaryEffectDefinition);
         valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-        if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
+        if (effectLookup.notFound) goto ReturnFailure;
         definition->secondaryEffectDefinition = (EffectDefinition *)valueOrError;
         effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)definition->primaryEffectDefinition);
         valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-        if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
+        if (effectLookup.notFound) goto ReturnFailure;
         definition->primaryEffectDefinition = (EffectDefinition *)valueOrError;
         slotsRemainingOrIndex = 0;
-        referencesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT;
-        do {
+        for (referencesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT; referencesRemaining != 0;
+             referencesRemaining--) {
           effectLookup = EffectDefinitionRegistry_FindByIdWithError
                             ((PckEffectDefinitionIdCatalog)
                              definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex]);
           valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-          if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
+          if (effectLookup.notFound) goto ReturnFailure;
           definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex] =
                (EffectDefinition *)valueOrError;
           slotsRemainingOrIndex++;
-          referencesRemaining--;
-        } while (referencesRemaining != 0);
+        }
         slotsRemainingOrIndex = 0;
-        referencesRemaining = 8;
-        do {
+        for (referencesRemaining = SHOT_TARGET_CLASS_IMPACT_COUNT; referencesRemaining != 0;
+             referencesRemaining--) {
           effectLookup = EffectDefinitionRegistry_FindByIdWithError
                             ((PckEffectDefinitionIdCatalog)
                              definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex]);
           valueOrError = (ShotDefinition *)effectLookup.definitionOrError;
-          if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
+          if (effectLookup.notFound) goto ReturnFailure;
           definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex] =
                (EffectDefinition *)valueOrError;
           slotsRemainingOrIndex++;
-          referencesRemaining--;
-        } while (referencesRemaining != 0);
+        }
         successResult.failed = false;
         successResult.valueOrError = (uint32_t)valueOrError;
         return successResult;
       }
       registrySlotCursor++;
-      slotsRemainingOrIndex--;
-    } while (slotsRemainingOrIndex != 0);
+    }
     /* the registry capacity goes to the error text */
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,SHOT_DEFINITION_REGISTRY_SLOT_COUNT,
                             g_PackageLastErrorPath);
@@ -380,7 +373,7 @@ StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definit
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     valueOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_DUPLICATE;
   }
-ShotDefinition_ReturnReferenceResolutionResult:
+ReturnFailure:
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)valueOrError;
   return failureResult;

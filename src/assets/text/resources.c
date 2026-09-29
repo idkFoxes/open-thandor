@@ -14,7 +14,8 @@
 /* Address: 0x0041CD30.
    Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
    description and 14 further description lines reachable under the global ids the frontend uses for that
-   level: TEXT_ID_LEVEL_TITLE_BASE + title index and TEXT_ID_LEVEL_DESCRIPTION_BASE + 0x10 * title index (+1..14).
+   level: TEXT_ID_LEVEL_TITLE_BASE + title index and TEXT_ID_LEVEL_DESCRIPTION_BASE + TEXT_ID_LEVEL_DESCRIPTION_STRIDE *
+   title index (+1..14).
    CF is set when the page cannot be loaded or one of the strings is missing.
 */
 bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
@@ -38,7 +39,8 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
       failed = resolveResult.notFound;
       if (!failed) {
         lineIndex = TEXT_LEVEL_EXTRA_LINE_COUNT - 1;
-        TextResourceOverride_Register(levelTitleIndex * 0x10 + TEXT_ID_LEVEL_DESCRIPTION_BASE,resolveResult.text);
+        TextResourceOverride_Register(levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + TEXT_ID_LEVEL_DESCRIPTION_BASE,
+                                      resolveResult.text);
         /* the extra lines are registered from the last one down */
         do {
           resolveResult = TextResource_Resolve(lineIndex + TEXT_ID_LEVEL_PAGE_EXTRA_LINES);
@@ -46,7 +48,8 @@ bool TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t
             return true;
           }
           TextResourceOverride_Register
-                    (levelTitleIndex * 0x10 + (TEXT_ID_LEVEL_DESCRIPTION_BASE + 1) + lineIndex,resolveResult.text);
+                    (levelTitleIndex * TEXT_ID_LEVEL_DESCRIPTION_STRIDE + (TEXT_ID_LEVEL_DESCRIPTION_BASE + 1) + lineIndex,
+                     resolveResult.text);
           lineIndex--;
         } while (-1 < lineIndex);
         failed = false;
@@ -71,7 +74,7 @@ void FontRuntime_Init(void)
   GraphicsTextureSourceAsset **textureSourceSlot;
   wchar_t *pathUtf16;
   wchar_t *pathCursor;
-  TextResourceOverrideTable *overrideSlot;
+  uint32_t *overrideDword;
   TextureSourceLoadResult textureLoadResult;
   FatalErrorCheckResult checkedResult;
   ArenaAllocResult allocResult;
@@ -96,23 +99,22 @@ void FontRuntime_Init(void)
     } while (pathChar != L'\0');
     textureSourceSlot++;
     remainingSources--;
-    if (remainingSources == 0) {
-      allocResult = g_MemoryApi.alloc(0x4000);
-      checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
-      g_FontRuntimeBuffer = (uint8_t *)checkedResult.valueOrError;
-      allocResult = g_MemoryApi.alloc(0x8000);
-      checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
-      g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.valueOrError;
-      overrideSlot = g_TextResourceOverrides;
-      /* 0x2000 dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
-         after this fill it finds no free slot (the original does the same: OR EAX,-1 / REP STOSD). */
-      for (scanLimitOrSlotCount = 0x2000; scanLimitOrSlotCount != 0; scanLimitOrSlotCount--) {
-        overrideSlot->resourceIds[0] = TEXT_RESOURCE_ID_NONE;
-        overrideSlot = (TextResourceOverrideTable *)(overrideSlot->resourceIds + 1);
-      }
-      return;
-    }
-  } while( true );
+  } while (remainingSources != 0);
+  allocResult = g_MemoryApi.alloc(0x4000); /* 16 KiB font runtime buffer */
+  checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
+  g_FontRuntimeBuffer = (uint8_t *)checkedResult.valueOrError;
+  allocResult = g_MemoryApi.alloc(sizeof(TextResourceOverrideTable));
+  checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
+  g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.valueOrError;
+  overrideDword = g_TextResourceOverrides->resourceIds;
+  /* all dwords: resourceIds and textPointers. TextResourceOverride_Register looks for a zero id, so
+     after this fill it finds no free slot (the original does the same: OR EAX,-1 / REP STOSD). */
+  for (scanLimitOrSlotCount = sizeof(TextResourceOverrideTable) / 4; scanLimitOrSlotCount != 0;
+       scanLimitOrSlotCount--) {
+    *overrideDword = TEXT_RESOURCE_ID_NONE;
+    overrideDword++;
+  }
+  return;
 }
 
 
@@ -318,25 +320,22 @@ TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_
         countryCode = g_LocaleGetDefaultTelephoneCountryCode();
       }
       /* Select the block for the country code, else the Great Britain block, else the first block. The blocks
-         follow the 0x200-byte asset header; Ghidra types them as TextResourceAssetHeader, so the fields below
-         read as TextResourceLocaleBlockPrefix: formatVersion (+8) is its countryCode, and anchor28 + (magic -
-         0x28) is block + blockSizeBytes, the next block. */
+         (TextResourceLocaleBlockPrefix) follow the 0x200-byte asset header; block + blockSizeBytes is the next
+         block. */
       localeBlockOrError = allocation + 1;
       do {
-        if (countryCode == (localeBlockOrError->localeCountHeader).common.formatVersion) break;
+        if (countryCode == ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->countryCode) break;
         localeBlockOrError = (TextResourceAssetHeader *)
-                 ((localeBlockOrError->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 ((localeBlockOrError->localeCountHeader).common.magic - 0x28));
+                 ((uint8_t *)localeBlockOrError + ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->blockSizeBytes);
         remainingBlocks--;
       } while (remainingBlocks != 0);
       if (remainingBlocks == 0) {
         remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
         localeBlockOrError = allocation + 1;
         do {
-          if ((localeBlockOrError->localeCountHeader).common.formatVersion == LOCALE_COUNTRY_GREAT_BRITAIN) break;
+          if (((TextResourceLocaleBlockPrefix *)localeBlockOrError)->countryCode == LOCALE_COUNTRY_GREAT_BRITAIN) break;
           localeBlockOrError = (TextResourceAssetHeader *)
-                   ((localeBlockOrError->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                   ((localeBlockOrError->localeCountHeader).common.magic - 0x28));
+                   ((uint8_t *)localeBlockOrError + ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->blockSizeBytes);
           remainingBlocks--;
         } while (remainingBlocks != 0);
         if (remainingBlocks == 0) {
@@ -346,15 +345,12 @@ TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_
       g_TextResourcePageBindings[pageIndex].selectedLocaleBlock =
            (TextResourceLocaleBlockPrefix *)localeBlockOrError;
       g_TextResourcePageBindings[pageIndex].asset = allocation;
-      /* allocationSizeBytes (+4) is the block's stringCount; the string offsets (relative to the block) follow
-         the 16-byte block prefix. */
+      /* the string offsets (relative to the block) follow the 16-byte block prefix */
       stringIndex = 0;
-      for (remainingStrings = (localeBlockOrError->localeCountHeader).common.allocationSizeBytes; remainingStrings != 0;
+      for (remainingStrings = ((TextResourceLocaleBlockPrefix *)localeBlockOrError)->stringCount; remainingStrings != 0;
           remainingStrings--) {
-        textCursor = (uint16_t *)((localeBlockOrError->localeCountHeader).common.buildMetadata.
-                          assetRelativeAddressAnchor28 +
-                         *(int *)((localeBlockOrError->localeCountHeader).common.buildMetadata.
-                                  assetRelativeAddressAnchor28 + stringIndex * 4 + -0x18) + -0x28);
+        textCursor = (uint16_t *)((uint8_t *)localeBlockOrError +
+                                  ((uint32_t *)((TextResourceLocaleBlockPrefix *)localeBlockOrError + 1))[stringIndex]);
         while( true ) {
           recordStart = textCursor;
           codeUnit = *recordStart;
@@ -457,8 +453,8 @@ TextResolveResult TextResource_Resolve(TextResourceId resourceId)
 {
   TextResourceLocaleBlockPrefix *localeBlock;
   int remainingSlots;
-  TextResourceOverrideTable *scanCursor;
-  TextResourceOverrideTable *cursorAfterScan;
+  uint32_t *scanCursor;
+  uint32_t *cursorAfterScan;
   bool overrideFound;
   TextResolveResult overrideResult;
   TextResolveResult compactResult;
@@ -472,31 +468,33 @@ TextResolveResult TextResource_Resolve(TextResourceId resourceId)
     return emptyResult;
   }
   remainingSlots = TEXT_RESOURCE_OVERRIDE_CAPACITY;
-  overrideFound = g_TextResourceOverrides == (TextResourceOverrideTable *)0x0;
-  scanCursor = g_TextResourceOverrides;
+  overrideFound = g_TextResourceOverrides == NULL;
+  scanCursor = (uint32_t *)g_TextResourceOverrides;
   if (!overrideFound) {
     do {
       cursorAfterScan = scanCursor;
       if (remainingSlots == 0) break;
       remainingSlots--;
-      cursorAfterScan = (TextResourceOverrideTable *)(scanCursor->resourceIds + 1);
-      overrideFound = resourceId == scanCursor->resourceIds[0];
+      cursorAfterScan = scanCursor + 1;
+      overrideFound = resourceId == *scanCursor;
       scanCursor = cursorAfterScan;
     } while (!overrideFound);
     if (overrideFound) {
       overrideResult.notFound = false;
       /* cursorAfterScan is one past the matching id; its text pointer is TEXT_RESOURCE_OVERRIDE_CAPACITY
          dwords further, in textPointers */
-      overrideResult.text = (uint16_t *)cursorAfterScan->resourceIds[TEXT_RESOURCE_OVERRIDE_CAPACITY - 1];
+      overrideResult.text = (uint16_t *)cursorAfterScan[TEXT_RESOURCE_OVERRIDE_CAPACITY - 1];
       return overrideResult;
     }
   }
   if ((resourceId & 0xff0000) == 0) {
     /* compact id: page << 8 | 8-bit index; the string offsets follow the 16-byte block prefix */
     localeBlock = g_TextResourcePageBindings[resourceId >> 8].selectedLocaleBlock;
-    if ((localeBlock != (TextResourceLocaleBlockPrefix *)0x0) &&
+    if ((localeBlock != NULL) &&
        ((resourceId & 0xff) < localeBlock->stringCount)) {
-      compactResult.text = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xff];
+      /* the string offsets are relative to the block */
+      compactResult.text =
+           (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xff]);
       compactResult.notFound = false;
       return compactResult;
     }
@@ -504,9 +502,10 @@ TextResolveResult TextResource_Resolve(TextResourceId resourceId)
   else {
     /* extended id: page << 16 | 16-bit index */
     localeBlock = g_TextResourcePageBindings[resourceId >> 16].selectedLocaleBlock;
-    if ((localeBlock != (TextResourceLocaleBlockPrefix *)0x0) &&
+    if ((localeBlock != NULL) &&
        ((resourceId & 0xffff) < localeBlock->stringCount)) {
-      extendedResult.text = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xffff];
+      extendedResult.text =
+           (uint16_t *)((uint8_t *)localeBlock + ((uint32_t *)(localeBlock + 1))[resourceId & 0xffff]);
       extendedResult.notFound = false;
       return extendedResult;
     }

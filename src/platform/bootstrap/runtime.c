@@ -103,10 +103,10 @@ void __cdecl ProcessEntry(void)
            0x00584DE0), so a missing WinSock is never fatal: the check below always passes. */
         FatalError_ExitIfFailed(networkResult,false);
         PersistentSettings_Load();
-        displayWidth = 640;
-        displayHeight = 480;
-        bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
-        adapterIndex = PersistentSettings_Read(0,PERSISTENT_SETTING_ADAPTER_INDEX);
+        displayWidth = GAME_START_DISPLAY_WIDTH;
+        displayHeight = GAME_START_DISPLAY_HEIGHT;
+        bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
+        adapterIndex = PersistentSettings_Read(PERSISTENT_DEFAULT_ADAPTER_INDEX,PERSISTENT_SETTING_ADAPTER_INDEX);
         if (g_GraphicsAdapterCount <= adapterIndex) {
           adapterIndex = 0;
         }
@@ -138,50 +138,50 @@ StatusResult GameData_ResetDefaults(void)
   int remainingCount;
   uint32_t relationStatePattern;
   uint32_t factionBit;
-  GameFactionRuntimeImage *factionRecordCursor;
+  GameFactionRuntimeRecord *factionRecord;
   uint32_t *dwordCursor;
   uint32_t *statTableCursor;
   ArenaAllocResult allocResult;
   StatusResult status;
 
-  remainingCount = 0x40;
+  remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4;
   dwordCursor = g_GameDataAuxState.pairPressureMatrix8x8;
   for (; remainingCount != 0; remainingCount--) {
     *dwordCursor = 0;
     dwordCursor++;
   }
   /* clears the eight records (0x3A00 bytes) dword by dword, not the image tail */
-  factionRecordCursor = &g_GameFactionRuntimeImage;
-  for (remainingCount = 0xe80; remainingCount != 0; remainingCount--) {
-    factionRecordCursor->records[0].xeniteCurrentQ4 = 0;
-    factionRecordCursor = (GameFactionRuntimeImage *)&factionRecordCursor->records[0].xeniteStorageLimitQ4;
+  dwordCursor = (uint32_t *)g_GameFactionRuntimeImage.records;
+  for (remainingCount = sizeof g_GameFactionRuntimeImage.records / 4; remainingCount != 0; remainingCount--) {
+    *dwordCursor = 0;
+    dwordCursor++;
   }
-  factionRecordCursor = &g_GameFactionRuntimeImage;
-  remainingCount = 8;
+  factionRecord = g_GameFactionRuntimeImage.records;
+  remainingCount = sizeof g_GameFactionRuntimeImage.records / sizeof g_GameFactionRuntimeImage.records[0];
   factionBit = 1;
   relationStatePattern = 0x1111111f; /* one nibble per faction, rotated by one nibble per record */
   do {
-    capabilityFlagsSlot = &factionRecordCursor->records[0].capabilityFlags;
+    capabilityFlagsSlot = &factionRecord->capabilityFlags;
     *capabilityFlagsSlot = *capabilityFlagsSlot | factionBit;
-    dwordCursor = factionRecordCursor->records[0].technologyMasks256Bits;
+    dwordCursor = factionRecord->technologyMasks256Bits;
     *dwordCursor = *dwordCursor | 1;
-    capabilityFlagsSlot = &factionRecordCursor->records[0].capabilityFlags;
+    capabilityFlagsSlot = &factionRecord->capabilityFlags;
     *capabilityFlagsSlot = *capabilityFlagsSlot | 1;
-    factionRecordCursor->records[0].packedRelationStates = relationStatePattern;
-    factionRecordCursor->records[0].relationCapabilityState = 0;
-    factionRecordCursor->records[0].primaryAnchorYQ12 = -0xc000;
-    factionRecordCursor->records[0].primaryAnchorXQ12 = 0;
-    factionRecordCursor->records[0].secondaryAnchorYQ12 = -0xc000;
-    factionRecordCursor->records[0].secondaryAnchorXQ12 = 0;
-    factionRecordCursor->records[0].relationTransitionTick = 0x11;
-    factionRecordCursor->records[0].energyGenerationCapacityQ4 = 0x280; /* 40.0 */
-    factionRecordCursor->records[0].baselineEnergySupplyQ4 = 0x280; /* 40.0 */
-    factionRecordCursor->records[0].xeniteStorageLimitQ4 = 4000; /* 250.0 */
-    factionRecordCursor->records[0].tritiumStorageLimitQ4 = 4000; /* 250.0 */
-    factionRecordCursor->records[0].terrainContributionScaleQ8 = 0x100; /* 1.0 */
+    factionRecord->packedRelationStates = relationStatePattern;
+    factionRecord->relationCapabilityState = 0;
+    factionRecord->primaryAnchorYQ12 = -0xc000;
+    factionRecord->primaryAnchorXQ12 = 0;
+    factionRecord->secondaryAnchorYQ12 = -0xc000;
+    factionRecord->secondaryAnchorXQ12 = 0;
+    factionRecord->relationTransitionTick = 0x11;
+    factionRecord->energyGenerationCapacityQ4 = 0x280; /* 40.0 */
+    factionRecord->baselineEnergySupplyQ4 = 0x280; /* 40.0 */
+    factionRecord->xeniteStorageLimitQ4 = 4000; /* 250.0 */
+    factionRecord->tritiumStorageLimitQ4 = 4000; /* 250.0 */
+    factionRecord->terrainContributionScaleQ8 = 0x100; /* 1.0 */
     factionBit = factionBit * 2;
-    relationStatePattern = relationStatePattern << 4 | relationStatePattern >> 0x1c;
-    factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
+    relationStatePattern = relationStatePattern << 4 | relationStatePattern >> 28; /* rotate left by a nibble */
+    factionRecord++;
     remainingCount--;
   } while (remainingCount != 0);
   allocResult = g_MemoryApi.alloc(GAME_STAT_TABLE_BYTES);
@@ -224,7 +224,7 @@ bool GameData_LoadExternalTables(void)
   StatusResult loadStatus;
   PackageLoadResult packageEntry;
 
-  remainingCount = 0x40;
+  remainingCount = sizeof g_GameDataAuxState.pairPressureMatrix8x8 / 4;
   oldUnitBufferOrCursor = g_GameDataAuxState.pairPressureMatrix8x8;
   for (; remainingCount != 0; remainingCount--) {
     *oldUnitBufferOrCursor = 0;
@@ -337,10 +337,10 @@ DllLoadResult DynDLL_Load(char *moduleName)
 
   Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
   /* dynapi_9 is the string "LoadLibraryA": the slot still holds the name until DynAPI_Bootstrap binds it */
-  if ((g_BootstrapApiBindings[0].destination != (void **)dynapi_9) &&
+  if ((g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination != (void **)dynapi_9) &&
       (g_DynamicModuleCount < DYNAMIC_MODULE_CAPACITY))
   {
-    loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(moduleName);
+    loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(moduleName);
     moduleSlotIndex = g_DynamicModuleCount;
     if (loadedModule != NULL) {
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
@@ -377,8 +377,7 @@ uint32_t DynDLL_Unload(char *moduleName)
   modulesRemainingOrResult = g_DynamicModuleCount;
   for (; modulesRemainingOrResult != 0; modulesRemainingOrResult--) {
     if (moduleName == moduleEntryCursor->name) {
-      /* g_BootstrapApiBindings[1] is FreeLibrary */
-      modulesRemainingOrResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(moduleEntryCursor->module);
+      modulesRemainingOrResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[BOOTSTRAP_API_FREE_LIBRARY].destination)(moduleEntryCursor->module);
       if (modulesRemainingOrResult != 0) {
         return modulesRemainingOrResult;
       }
@@ -417,7 +416,7 @@ StatusResult BootstrapApi_ResolveBindingByDestination(void **destination)
          (LoadLibraryA) gets the destination argument as its single argument, and the result is stored
          into the matching binding (MOV [ESI],EDX after POP ESI). */
       resolvedProcedure =
-           (void *)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)((char *)destination);
+           (void *)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)((char *)destination);
       if (resolvedProcedure != NULL) {
         bindingCursor->destination = (void **)resolvedProcedure;
         successResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING; /* EAX keeps the code on success too */
@@ -451,7 +450,7 @@ void DynDLL_UnloadAll(void)
     if (moduleEntryCursor->module != NULL) {
       loadedModule = moduleEntryCursor->module;
       moduleEntryCursor->module = NULL;
-      ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(loadedModule);
+      ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[BOOTSTRAP_API_FREE_LIBRARY].destination)(loadedModule);
     }
     moduleEntryCursor++;
   }
@@ -500,9 +499,9 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
       if (-1 < (int)g_ActiveGraphicsAdapterIndex) {
         g_GraphicsSetDisplayMode
                   (g_ActiveGraphicsAdapterIndex,
-                   g_SoftwarePixelFormatConfig.redBitCount +
+                   (g_SoftwarePixelFormatConfig.redBitCount +
                    g_SoftwarePixelFormatConfig.greenBitCount +
-                   g_SoftwarePixelFormatConfig.blueBitCount + 0xf & 0xfffffff0,g_FramebufferHeight,
+                   g_SoftwarePixelFormatConfig.blueBitCount + 0xf) & 0xfffffff0,g_FramebufferHeight,
                    g_FramebufferWidth);
       }
       if (g_MouseDevice != NULL) {
@@ -594,11 +593,12 @@ void __cdecl Game_Run(void)
   FatalError_ExitIfFailed(fatalResult.valueOrError,introMoviesFailed);
   PersistentSettings_Load();
   /* ProcessEntry started in 640x480x16; switch only when the saved mode differs */
-  loadResultOrWidth = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
-  displayHeight = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
-  bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
-  if (((loadResultOrWidth != 640) || (displayHeight != 480)) || (bitsPerPixel != 16)) {
-    adapterIndex = PersistentSettings_Read(0,PERSISTENT_SETTING_ADAPTER_INDEX);
+  loadResultOrWidth = PersistentSettings_Read(GAME_START_DISPLAY_WIDTH,PERSISTENT_SETTING_DISPLAY_WIDTH);
+  displayHeight = PersistentSettings_Read(GAME_START_DISPLAY_HEIGHT,PERSISTENT_SETTING_DISPLAY_HEIGHT);
+  bitsPerPixel = PersistentSettings_Read(PERSISTENT_DEFAULT_BITS_PER_PIXEL,PERSISTENT_SETTING_BITS_PER_PIXEL);
+  if (loadResultOrWidth != GAME_START_DISPLAY_WIDTH || displayHeight != GAME_START_DISPLAY_HEIGHT ||
+      bitsPerPixel != PERSISTENT_DEFAULT_BITS_PER_PIXEL) {
+    adapterIndex = PersistentSettings_Read(PERSISTENT_DEFAULT_ADAPTER_INDEX,PERSISTENT_SETTING_ADAPTER_INDEX);
     if (g_GraphicsAdapterCount <= adapterIndex) {
       adapterIndex = 0;
     }
@@ -640,7 +640,7 @@ StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
   if (step.failed) {
     return step;
   }
-  return GraphicsPrimitiveQueue_AllocateGlobalPool(0xa000);
+  return GraphicsPrimitiveQueue_AllocateGlobalPool(GAME_PRIMITIVE_QUEUE_PACKET_COUNT);
 }
 
 
@@ -681,21 +681,20 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   
   /* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first */
   if ((g_MemoryApi.alloc == ArenaHeap_Alloc) &&
-     (statusOrCount = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[5].destination)
+     (statusOrCount = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_OPEN_KEY_EX_A].destination)
                         (HKEY_LOCAL_MACHINE,s_Software_Planet4_Thandor_00572e20,0,KEY_READ,
                          &g_InstallRegistryKeyHandle), statusOrCount == ERROR_SUCCESS)) {
-    statusOrCount = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[6].destination)
+    statusOrCount = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_QUERY_VALUE_EX_A].destination)
                       (g_InstallRegistryKeyHandle,&s_InstallRegistryValueNameCD,0,
                        &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
                        &g_InstallRegistryValueDataCapacityBytes);
     if ((statusOrCount == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
       Text_CopyNarrowToUtf16
-                (0x200,(uint16_t *)&g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
+                (sizeof g_InstallDirectoryScratchUtf16,g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
       WidePath_CombineDirectoryAndLeaf
-                (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,
-                 (uint16_t *)&g_InstallDirectoryScratchUtf16);
+                (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,g_InstallDirectoryScratchUtf16);
     }
-    ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[7].destination)(g_InstallRegistryKeyHandle);
+    ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[BOOTSTRAP_API_REG_CLOSE_KEY].destination)(g_InstallRegistryKeyHandle);
   }
   {
     /* open-thandor: the full-length movies from the CD (Ende*.flm, Intro2.flm) live in the
@@ -707,9 +706,9 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
     char narrow[0x100];
     int k;
     WidePath_CombineDirectoryAndLeaf
-              (localFlmPath,(uint16_t *)flmLeaf,(uint16_t *)&g_ExecutableDirectoryUtf16);
+              (localFlmPath,(uint16_t *)flmLeaf,g_ExecutableDirectoryUtf16);
     if (Thandor_DirectoryExistsW(localFlmPath)) {
-      uint16_t *directory = (uint16_t *)&g_ExecutableDirectoryUtf16;
+      uint16_t *directory = g_ExecutableDirectoryUtf16;
       for (k = 0; (k < 0xff) && (directory[k] != 0); k++) {
         g_LooseMoviePathPrefix.codeUnits[k] = directory[k];
       }
@@ -731,20 +730,20 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
       Package_Mount(g_PatchArchivePathTemplateUtf16.prefixCodeUnits);
       g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1] =
            g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1] - 1;
-    } while (0x2f < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
+    } while ('0' - 1 < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
     g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
-  } while (0x2f < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
+  } while ('0' - 1 < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
   g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x390039; /* "99" */
   do {
     do {
       LevelPackage_ValidateAndMount(g_LevelArchivePathTemplateUtf16.prefixCodeUnits);
       g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[1] =
            g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[1] - 1;
-    } while (0x2f < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
+    } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
-  } while (0x2f < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
+  } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
   status = Package_Mount((uint16_t *)u_daten_pck_00572e56);
   if (!status.failed) {
     g_DataPackageHandle = status.valueOrError;
@@ -845,19 +844,19 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
                   do {
                     openResult = g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
                     if (openResult.failed)
-                    goto Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad;
+                      goto bindDebugOverlayTexts;
                     u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + 1;
                     g_FileSystemClose((void *)openResult.handleOrError);
                     screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
-                  } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < 0x3a);
+                  } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < '9' + 1);
                   u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + 1;
-                  u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\xfff6'; /* -10 */
-                } while ((uint16_t)u_Dscreen00_pcx_00572e3a[7] < 0x3a);
+                  u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] - 10;
+                } while ((uint16_t)u_Dscreen00_pcx_00572e3a[7] < '9' + 1);
                 /* all 100 names exist: the tens digit goes back to '0' (the last seen '9' - 9) */
-                u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit + L'\xfff7';
-Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
-                /* bind placeholders 0..13 of texts 0x112..0x117 to the debug-overlay text slots */
-                resourceId = 0x112;
+                u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit - 9;
+bindDebugOverlayTexts:
+                /* bind placeholders 0..13 of the world view info texts to the debug-overlay text slots */
+                resourceId = TEXT_ID_WORLD_VIEW_INFO_FIRST;
                 do {
                   textResolveResult = TextResource_Resolve(resourceId);
                   textBuffer = textResolveResult.text;
@@ -885,12 +884,12 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                   RichTextCommandStream_PatchPayloadBySelector
                             (10,g_FrontendDebugOverlayTextSlot10Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0xb,g_FrontendDebugOverlayTextSlot11Utf16,textBuffer);
+                            (11,g_FrontendDebugOverlayTextSlot11Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0xc,g_FrontendDebugOverlayTextSlot12Utf16,textBuffer);
+                            (12,g_FrontendDebugOverlayTextSlot12Utf16,textBuffer);
                   RichTextCommandStream_PatchPayloadBySelector
-                            (0xd,g_FrontendDebugOverlayTextSlot13Utf16,textBuffer);
-                } while (resourceId < 0x118);
+                            (13,g_FrontendDebugOverlayTextSlot13Utf16,textBuffer);
+                } while (resourceId < TEXT_ID_WORLD_VIEW_INFO_LAST + 1);
                 UiActionHandlers_SetPage
                           (0x10,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
                 UiActionHandlers_SetPage
@@ -899,57 +898,57 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                           (0x12,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
                 UiActionHandlers_SetPage
                           (0x20,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
-                textPageLoadResult = TextResourcePage_Load(0xff,(uint16_t *)u_texte_neterror_str_0050f104);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x18,(uint16_t *)u_texte_help_str_00563170);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_HELP,(uint16_t *)u_texte_help_str_00563170);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x20,(uint16_t *)u_texte_hilfe_str_00545b34);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_HILFE,(uint16_t *)u_texte_hilfe_str_00545b34);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x21,(uint16_t *)u_texte_menue_str_00545ba0);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_MENUE,(uint16_t *)u_texte_menue_str_00545ba0);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x30,(uint16_t *)u_texte_techno_str_0050dec4);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_TECHNO,(uint16_t *)u_texte_techno_str_0050dec4);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x22,(uint16_t *)u_texte_level_str_00545bc0);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_LEVEL,(uint16_t *)u_texte_level_str_00545bc0);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x23,(uint16_t *)u_texte_inhalt_str_00545be0);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_INHALT,(uint16_t *)u_texte_inhalt_str_00545be0);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x24,(uint16_t *)u_texte_tastatur_str_005631b8);
+                textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_TASTATUR,(uint16_t *)u_texte_tastatur_str_005631b8);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textResolveResult = TextResource_Resolve(0x2402);
+                textResolveResult = TextResource_Resolve(TEXT_ID_MOUSE_HELP);
                 RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,textResolveResult.text);
                 /* sound effects off: every gain is 0 */
                 soundOptionsOrBufferBase =
                      PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
                 uiSoundGain = 0;
                 if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
-                  uiSoundGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN);
+                  uiSoundGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_EFFECTS_GAIN);
                 }
                 movieGain = 0;
                 g_UiSoundGainQ15 = uiSoundGain;
                 g_SoundEffectsGainQ15 = uiSoundGain;
                 if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
-                  movieGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
+                  movieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
                 }
                 alternateMovieGain = 0;
                 g_MovieDefaultAudioGainQ15 = movieGain;
                 if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
-                  alternateMovieGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
+                  alternateMovieGain = PersistentSettings_Read(PERSISTENT_DEFAULT_GAIN_Q15,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
                 }
                 g_ReverseStereoMask = 0;
                 if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_REVERSE_STEREO) != 0) {
@@ -1121,7 +1120,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       g_CoreAssetScratchSlice5 = scratchCursor + 0xa00;
                       g_CoreAssetScratchSlice6 = scratchCursor + 0xc00;
                       g_CoreAssetScratchSlice0 = scratchCursor;
-                      for (statusOrCount = 0x380; statusOrCount != 0; statusOrCount--) {
+                      for (statusOrCount = 0xe00 / 4; statusOrCount != 0; statusOrCount--) {
                         scratchCursor[0] = 0;
                         scratchCursor[1] = 0;
                         scratchCursor[2] = 0;
@@ -1295,7 +1294,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
     key = g_KeyboardReadEvent();
     if (!key.queueEmpty) break;
     cursor = g_GraphicsCursorConsumeEvent();
-    if ((!cursor.queueEmpty) && (3 < cursor.eventType)) break;
+    if (!cursor.queueEmpty && RIGHT_PRESS < cursor.eventType) break;
     if (Thandor_TickCount() - start > 10000) break;
     if (g_IntroMoviePendingTicks != 0) {
       int burst = 3;
@@ -1535,25 +1534,26 @@ bool Game_PlayIntroMovies(void)
         if (!keyEvent.queueEmpty) break;
         cursorEvent = g_GraphicsCursorConsumeEvent();
         /* event types above RIGHT_PRESS are the button releases */
-        if ((!cursorEvent.queueEmpty) && (3 < cursorEvent.eventType)) goto GameIntroMovies_StopCurrentPlayback;
+        if (!cursorEvent.queueEmpty && RIGHT_PRESS < cursorEvent.eventType) goto stopPlayback;
         if (g_IntroMoviePendingTicks != 0) {
           /* catch up at most three frames per pass */
           frameAdvanceBudget = 3;
           do {
             advanceResult = Movie_AdvanceFrame();
             frameHeightSnapshot = g_FramebufferHeight;
-            if (advanceResult.ended) goto GameIntroMovies_StopCurrentPlayback;
+            if (advanceResult.ended) goto stopPlayback;
             g_IntroMoviePendingTicks--;
           } while ((g_IntroMoviePendingTicks != 0) && (--frameAdvanceBudget != 0));
           quarterFrameHeight = g_FramebufferHeight >> 2;
           accessFailed = g_GraphicsFramebufferBeginAccess();
-          if (accessFailed) goto GameIntroMovies_StopCurrentPlayback;
+          if (accessFailed) goto stopPlayback;
           frameDimensions = Movie_GetFrameDimensions(); /* EDX:EAX = height:width */
           /* y = (H - H/4 - frameHeight) / 2 + H/8, i.e. vertically centred; the source is the movie
              returned by the first Movie_AdvanceFrame */
           g_GraphicsTextureSourceBlitSourceAlpha
                     (g_FramebufferHeight,g_FramebufferWidth,0,0,
-                     ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)(frameDimensions >> 0x20)) >> 1) + (frameHeightSnapshot >> 3),
+                     ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)(frameDimensions >> 32)) >> 1) +
+                     (frameHeightSnapshot >> 3),
                      (int)(g_FramebufferWidth - (int)frameDimensions) >> 1,0,
                      (GraphicsTextureSourceAsset *)firstFrameResult.movieOrError,g_FramebufferAccess);
           g_GraphicsFramebufferEndAccess();
@@ -1564,7 +1564,7 @@ bool Game_PlayIntroMovies(void)
       if (keyEvent.eventCode == KEYBOARD_KEY_CODE_ESCAPE) {
         u_flm_intro0_flm_00573046[9] = L'8';
       }
-GameIntroMovies_StopCurrentPlayback:
+stopPlayback:
       g_TimerUnregisterPeriodic(IntroMovie_TimerTick);
       Movie_Close();
       u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + 1;
@@ -1612,7 +1612,7 @@ StatusResult DynAPI_Bootstrap(void)
         moduleUnavailableResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING;
         return moduleUnavailableResult;
       }
-      module = ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
+      module = ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[BOOTSTRAP_API_LOAD_LIBRARY_A].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (module == NULL) {
         Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
@@ -1687,7 +1687,7 @@ CommandLineOptionResult CommandLine_FindOption(CommandLineOptionLengthBytes leng
     }
     /* REPNE SCASB to the byte after the NUL; sz_MainWindowTitle directly follows optionBuffer and so
        marks the end of the buffer */
-    bytesToBufferEnd = (int)sz_MainWindowTitle - (int)storedOption;
+    bytesToBufferEnd = sz_MainWindowTitle - storedOption;
     compareOrScanCursor = storedOption;
     do {
       storedOption = compareOrScanCursor;
@@ -1733,7 +1733,7 @@ void CommandLine_Parse(void)
       if (currentChar == '\0') {
         /* no closing quote: the path is discarded */
         g_CommandLine.executablePath[0] = '\0';
-        goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        goto copyWideArguments;
       }
       pathWriteNext = pathWriteCursor + 1;
     } while (currentChar != '"');
@@ -1746,7 +1746,7 @@ void CommandLine_Parse(void)
       currentChar = *commandLineCursor;
       *pathWriteCursor = currentChar;
       commandLineCursor++;
-      if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+      if (currentChar == '\0') goto copyWideArguments;
       pathWriteNext = pathWriteCursor + 1;
     } while (currentChar != ' ');
     *pathWriteCursor = '\0';
@@ -1768,14 +1768,14 @@ void CommandLine_Parse(void)
           *textWriteCursor = currentChar;
           commandLineCursor++;
           optionWriteNext = textWriteCursor + 1;
-          if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+          if (currentChar == '\0') goto copyWideArguments;
           if (currentChar != '"') break;
           do {
             currentChar = *commandLineCursor;
             *optionWriteNext = currentChar;
             commandLineCursor++;
             optionWriteNext++;
-            if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+            if (currentChar == '\0') goto copyWideArguments;
           } while (currentChar != '"');
         }
       } while (currentChar != ' ');
@@ -1800,7 +1800,7 @@ void CommandLine_Parse(void)
         do {
           currentChar = *commandLineCursor;
           commandLineCursor++;
-          if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+          if (currentChar == '\0') goto copyWideArguments;
         } while (currentChar != '"');
         continue;
       }
@@ -1812,7 +1812,7 @@ void CommandLine_Parse(void)
           currentChar = currentChar - ('a' - 'A');
         }
         *argumentWriteCursor = currentChar;
-        if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        if (currentChar == '\0') goto copyWideArguments;
         commandLineNext = commandLineCursor + 1;
         textWriteCursor = argumentWriteCursor + 1;
       } while (currentChar != '"');
@@ -1837,7 +1837,7 @@ void CommandLine_Parse(void)
         do {
           currentChar = *commandLineCursor;
           commandLineCursor++;
-          if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+          if (currentChar == '\0') goto copyWideArguments;
         } while (currentChar != ' ');
         continue;
       }
@@ -1852,13 +1852,13 @@ void CommandLine_Parse(void)
         currentChar = currentChar - ('a' - 'A');
       }
       *argumentWriteCursor = currentChar;
-      if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+      if (currentChar == '\0') goto copyWideArguments;
       commandLineNext = commandLineCursor + 1;
       textWriteCursor = argumentWriteCursor + 1;
     } while (currentChar != ' ');
     *argumentWriteCursor = '\0';
   }
-CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
+copyWideArguments:
   Text_CopyNarrowToUtf16
             (sizeof g_CommandLineWideArguments.argument1,g_CommandLineWideArguments.argument1,
              (uint8_t *)g_CommandLine.argument1);

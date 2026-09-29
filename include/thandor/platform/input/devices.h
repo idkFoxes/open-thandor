@@ -70,6 +70,20 @@
 #define KEYBOARD_KEY_CODE_PAGE_DOWN KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN)
 /* Entries of the g_KeyboardEvents ring; the read and write indices wrap to 0 after SIZE - 1. */
 #define KEYBOARD_EVENT_RING_SIZE 64
+/* Key code families: the high word selects the family (KEYBOARD_KEY_CODE_SPECIAL(0), _FUNCTION(0), _CHAR(0)),
+   the low word of a special key is its g_KeyboardSpecialKeyDown index */
+#define KEYBOARD_KEY_CODE_FAMILY_MASK 0xffff0000
+#define KEYBOARD_KEY_CODE_INDEX_MASK 0xffff
+/* Entries of the g_CursorInputEvents ring (DirectInputMouse_PollBufferedEvents); the write index wraps after
+   SIZE - 1 */
+#define CURSOR_INPUT_EVENT_RING_SIZE 256
+/* DirectInputMouse_Init: rates of the cursor-animation and mouse-poll timers */
+#define CURSOR_ANIMATION_TIMER_HZ 20
+#define MOUSE_POLL_TIMER_HZ 64
+/* DirectInputMouse_PollBufferedEvents: a button event's dwData has this bit set while the button is down */
+#define DIRECTINPUT_BUTTON_DOWN_BIT 0x80
+/* DirectInputMouse_PollBufferedEvents: device errors after which a poll gives up until the next tick */
+#define MOUSE_POLL_MAX_ERRORS 16
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00417280 */

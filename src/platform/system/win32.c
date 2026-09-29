@@ -108,12 +108,12 @@ static void Win32_PushCursorEvent(GraphicsCursorEventType type, uint32_t buttons
   g_MouseX = x;
   g_MouseY = y;
   g_MouseButtonMask = buttons;
-  g_CursorInputEvents[index].eventType00 = type;
-  g_CursorInputEvents[index].buttonState04 = buttons;
-  g_CursorInputEvents[index].pointerX08 = x;
-  g_CursorInputEvents[index].pointerY0C = y;
-  g_CursorInputEvents[index].wheelDelta10 = 0;
-  g_CursorInputEvents[index].clockValue14 = g_CursorInputClockValue;
+  g_CursorInputEvents[index].eventType = type;
+  g_CursorInputEvents[index].buttonState = buttons;
+  g_CursorInputEvents[index].pointerX = x;
+  g_CursorInputEvents[index].pointerY = y;
+  g_CursorInputEvents[index].wheelDelta = 0;
+  g_CursorInputEvents[index].clockValue = g_CursorInputClockValue;
   g_CursorInputWriteIndex = next;
 }
 
@@ -289,14 +289,11 @@ void Win32_PumpMessages(void)
 {
   Win32_AutoShotTick();
   Win32_ScriptTick();
-  BOOL messageAvailable;
   bool shouldTranslate;
 
-  while( true ) {
-    messageAvailable = PeekMessageA((LPMSG)&g_MainMessage,g_MainWindow,0,0,PM_REMOVE);
-    if (messageAvailable == 0) break;
-    if ((g_WindowDestroyDepth != 0) || (g_MainMessage.message == WM_QUIT))
-    goto Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest;
+  while (PeekMessageA((LPMSG)&g_MainMessage,g_MainWindow,0,0,PM_REMOVE) != 0) {
+    if (g_WindowDestroyDepth != 0 || g_MainMessage.message == WM_QUIT)
+      goto shutdown;
     shouldTranslate = Win32_ShouldTranslateMessageFlags(&g_MainMessage);
     if (shouldTranslate) {
       TranslateMessage((MSG *)&g_MainMessage);
@@ -306,7 +303,7 @@ void Win32_PumpMessages(void)
   if (g_WindowDestroyDepth == 0) {
     return;
   }
-Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest:
+shutdown:
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
   ExitProcess(0);
@@ -327,12 +324,11 @@ bool Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
 
   messageCode = message->message;
   virtualKeyCode = message->wParam;
-  if (((((((WM_KEYDOWN - 1 < messageCode) && (messageCode < WM_SYSKEYUP + 1)) && (messageCode != WM_DEADCHAR)) &&
-        ((messageCode != WM_CHAR && (virtualKeyCode != VK_BACK)))) &&
-       ((virtualKeyCode != VK_TAB && ((virtualKeyCode != VK_RETURN && (virtualKeyCode != VK_PAUSE)))))) &&
-      (virtualKeyCode != VK_ESCAPE)) &&
-     ((virtualKeyCode < VK_SPACE ||
-      ((VK_DELETE < virtualKeyCode && ((virtualKeyCode < VK_NUMPAD0 || (VK_F12 < virtualKeyCode)))))))) {
+  if (WM_KEYDOWN - 1 < messageCode && messageCode < WM_SYSKEYUP + 1 && messageCode != WM_DEADCHAR &&
+      messageCode != WM_CHAR && virtualKeyCode != VK_BACK && virtualKeyCode != VK_TAB &&
+      virtualKeyCode != VK_RETURN && virtualKeyCode != VK_PAUSE && virtualKeyCode != VK_ESCAPE &&
+      (virtualKeyCode < VK_SPACE ||
+       (VK_DELETE < virtualKeyCode && (virtualKeyCode < VK_NUMPAD0 || VK_F12 < virtualKeyCode)))) {
     return true;
   }
   return false;

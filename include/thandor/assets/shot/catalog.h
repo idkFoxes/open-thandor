@@ -17,6 +17,8 @@
 #define SHOT_DEFINITION_REGISTRY_SLOT_COUNT 256
 /* Entries of ShotDefinition.terrainMaterialIndices31 (one per terrain-material reference of a shot). */
 #define SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT 31
+/* Entries of ShotDefinition.targetClassImpactEffectDefinitions8 / targetClassImpactDamageQ12. */
+#define SHOT_TARGET_CLASS_IMPACT_COUNT 8
 /* Entries of g_TerrainMaterialTextureSets (0x005039DC): valid terrain-material indices are 0..25. */
 #ifndef TERRAIN_MATERIAL_COUNT
 #define TERRAIN_MATERIAL_COUNT 26

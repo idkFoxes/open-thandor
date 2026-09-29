@@ -19,6 +19,9 @@
    and a message older than RECENT_TEXT_HISTORY_LIFETIME calls is dropped. */
 #define RECENT_TEXT_HISTORY_SLOT_COUNT 8
 #define RECENT_TEXT_HISTORY_LIFETIME 0x100
+/* Extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h): ".pcx",
+   the 64x64 player preview pictures of PcxPreview_Load64x64PaletteAndPixels. */
+#define WIDE_PATH_EXTENSION_PCX 0x786370
 
 /* 0x0050F220 */
 void RecentTextHistory_SortAndBuildPointerList

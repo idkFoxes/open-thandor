@@ -13,7 +13,7 @@
 
 /* Submodule: world/model/hierarchy. */
 
-/* ModelRuntimeSlot.attachments140[]: the attachment points one model runtime can record
+/* ModelRuntimeSlot.attachments[]: the attachment points one model runtime can record
    (ModelNodeRuntime_CreateHierarchyRecursive drops further ones). */
 #define MODEL_RUNTIME_ATTACHMENT_CAPACITY 6
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
@@ -82,12 +82,12 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);
 /* 0x00528C20 */
 ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntimeContinuityEdi,ModelRuntimeSlot *modelRuntime,
-          MdlSerializedNodeHeader38 *definitionNode);
+          MdlSerializedNodeHeader *definitionNode);
 
 /* 0x00528E90 */
 ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
-          ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader38 *definitionNode,
+          ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x005294E0 */

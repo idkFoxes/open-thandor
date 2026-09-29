@@ -71,18 +71,18 @@ void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
                (GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004CD880 */
-void GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAddress32 meshRecord);
+void GraphicsShadingGeneratedTexture_RasterizeHardShadowMesh(ModelMeshGroupAddress32 meshRecord);
 
 /* 0x004CD930 */
-void GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *modelNode);
+void GraphicsShadingGeneratedTexture_RasterizeHardShadowHierarchy(ModelRuntimeNode *modelNode);
 
 /* 0x004CD9F0 */
 uint32_t
-GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddress32 meshRecord);
+GraphicsShadingGeneratedTexture_RasterizeSoftShadowMesh(ModelMeshGroupAddress32 meshRecord);
 
 /* 0x004CDAB0 */
 uint32_t
-GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *modelNode);
+GraphicsShadingGeneratedTexture_RasterizeSoftShadowHierarchy(ModelRuntimeNode *modelNode);
 
 /* 0x004CDB80 */
 void GraphicsShadingGeneratedTexture_AccumulateProjectedBoundsFromRecords(ModelMeshGroupAddress32 meshRecord);

@@ -16,7 +16,7 @@
 
 /* 0x005200C0 */
 void ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices
-          (ModelDefinitionRuntimeSemanticView280 *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot
+          (ModelDefinition *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot
           );
 
 /* 0x00522A90 */

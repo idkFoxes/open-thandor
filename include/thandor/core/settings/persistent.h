@@ -55,6 +55,15 @@
 #define PERSISTENT_LINK_OPTION_ROTATION_ZOOM 0x1
 #define PERSISTENT_LINK_OPTION_ROTATION_TILT 0x2
 #define PERSISTENT_LINK_OPTION_HIDE_PANEL 0x4
+/* Default values passed to PersistentSettings_Read (the settings' defaults listed above) */
+#define PERSISTENT_DEFAULT_GAIN_Q15 0x8000 /* full volume, all four gain settings */
+#define PERSISTENT_DEFAULT_SHADING_GRID_HALF_SIZE 0x20
+#define PERSISTENT_DEFAULT_SHADING_TEXTURE_DIMENSION 0x40
+#define PERSISTENT_DEFAULT_SHADING_SUBRESOURCE_COUNT 0x10
+#define PERSISTENT_DEFAULT_MODEL_LOD_DEPTH_THRESHOLD 0x10000
+#define PERSISTENT_DEFAULT_CAMERA_SCROLL_STEP 0x20
+#define PERSISTENT_DEFAULT_BITS_PER_PIXEL 16 /* ProcessEntry: colour depth of the first display mode */
+#define PERSISTENT_DEFAULT_ADAPTER_INDEX 0
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

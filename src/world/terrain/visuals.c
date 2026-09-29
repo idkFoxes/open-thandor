@@ -432,7 +432,7 @@ StatusResult TerrainVisualResources_LoadPrimary
                   pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
                 directionRecord->rateA = pathCharOrRotationRate;
-                *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
+                ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
                 pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
@@ -441,8 +441,7 @@ StatusResult TerrainVisualResources_LoadPrimary
                   pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
                 directionRecord->rateB = pathCharOrRotationRate;
-                *(short *)((int)&directionRecord->packedAngleA_low16_AngleB_high16 + 2) =
-                     (short)randomOrSuccessStatus.valueOrError;
+                ((short *)&directionRecord->packedAngles)[1] = (short)randomOrSuccessStatus.valueOrError; /* angle B */
                 directionRecord->angleAComponent0ScaledQ28 = 0;
                 directionRecord->angleAComponent1ScaledQ28 = 0;
                 directionRecord->angleBComponent0ScaledQ28 = 0;
@@ -602,7 +601,7 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
                   pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
                 directionRecord->rateA = pathCharOrRotationRate;
-                *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
+                ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
                 pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
@@ -611,8 +610,7 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
                   pathCharOrRotationRate = -pathCharOrRotationRate;
                 }
                 directionRecord->rateB = pathCharOrRotationRate;
-                *(short *)((int)&directionRecord->packedAngleA_low16_AngleB_high16 + 2) =
-                     (short)randomOrSuccessStatus.valueOrError;
+                ((short *)&directionRecord->packedAngles)[1] = (short)randomOrSuccessStatus.valueOrError; /* angle B */
                 directionRecord->angleAComponent0ScaledQ28 = 0;
                 directionRecord->angleAComponent1ScaledQ28 = 0;
                 directionRecord->angleBComponent0ScaledQ28 = 0;
@@ -1005,7 +1003,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   uint8_t visibilityFlags;
   AssetDimension textureWidth;
   AssetDimension textureHeight;
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   GameEntityRuntime *ownerEntity;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   GraphicsTextureSourceAsset *panelTextureSource;

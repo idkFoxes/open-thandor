@@ -20,18 +20,15 @@ void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableCon
 {
   UiRootNode *inGameRoot;
   bool isSelected;
-  UiNodeBase *parentCursor;
 
   /* climb to the in-game root */
-  parentCursor = (selectableControl->base).parent;
   inGameRoot = (UiRootNode *)selectableControl;
-  while (parentCursor != UI_NODE_NONE) {
+  while ((inGameRoot->base).parent != UI_NODE_NONE) {
     inGameRoot = (UiRootNode *)(inGameRoot->base).parent;
-    parentCursor = (inGameRoot->base).parent;
   }
   isSelected = (bool)UiSelectableControl_IsSelected(selectableControl);
   if (isSelected) {
-    UiSelectableGroup_SelectExclusive(7,&selectableControl->base,
+    UiSelectableGroup_SelectExclusive(TECHNOLOGY_AREA_TAB_COUNT,&selectableControl->base,
       INGAME_UI(inGameRoot,technologyAreaTab7),
       INGAME_UI(inGameRoot,technologyAreaTab6),
       INGAME_UI(inGameRoot,technologyAreaTab5),
@@ -57,7 +54,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
   uint32_t *tabStateFlags;
   ModelRuntimeSlot *selectedModelRuntime;
   GameEntityRuntime *firstSelectedEntity;
-  int technologySlotAddress;
+  ModelDefinition *slotView;
   int remainingCount;
   uint32_t areaIndex;
 
@@ -72,28 +69,27 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
   ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab5))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
   ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab6))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
   ((UiFramedTextButtonControl *)INGAME_UI(inGameRoot,technologyAreaTab7))->selectable.stateFlags &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
-  if (((selectedModelRuntime->classState).classStateEC & 0xc0U) != 0) {
+  if (((selectedModelRuntime->classState).stateFlags &
+       (ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)) != 0) {
     /* The definition lists 28 technology ids from +0x1C8, cycling through the seven areas; the one equal to
-       the entity's current technology picks the tab. technologySlotAddress walks the definition by 4 bytes,
-       so researchTechnologyIds1C4[1] seen from it is the next slot. */
-    technologySlotAddress = (int)(selectedModelRuntime->definitionOrSavedId).runtimeDefinition;
+       the entity's current technology picks the tab. slotView walks the definition by one slot (4 bytes), so
+       researchTechnologyIds1C4[1] seen from it is the current slot (indexing the slot directly changes the
+       generated code). */
+    slotView = (selectedModelRuntime->definitionOrSavedId).runtimeDefinition;
     areaIndex = 0xffffffff;
-    remainingCount = 28;
-    do {
+    for (remainingCount = TECHNOLOGY_DEFINITION_SLOT_COUNT; remainingCount != 0;
+         slotView = (ModelDefinition *)((uint32_t *)slotView + 1), remainingCount--) {
       areaIndex++;
-      if (6 < areaIndex) {
+      if (TECHNOLOGY_AREA_TAB_COUNT - 1 < areaIndex) {
         areaIndex = 0;
       }
-      if (((ModelDefinitionRuntimeSemanticView280 *)technologySlotAddress)->researchTechnologyIds1C4[1] ==
-          selectedModelRuntime->researchTechnologyId100) {
+      if (slotView->researchTechnologyIds1C4[1] == selectedModelRuntime->researchTechnologyId100) {
         tabStateFlags = (uint32_t *)&((UiFramedTextButtonControl *)
                          THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowFlagOffsets[areaIndex]))->selectable.stateFlags;
         *tabStateFlags = *tabStateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
         break;
       }
-      technologySlotAddress = technologySlotAddress + 4;
-      remainingCount--;
-    } while (remainingCount != 0);
+    }
   }
   g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
   InGameTechnologyPanel_Rebuild(inGameRoot);
@@ -113,14 +109,19 @@ void UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
 
 {
   UiNodeFlags *gridNodeFlags;
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   UiCommandRuntimeRecordPrefix *catalogRecord;
-  int32_t *offsetSlotOrTable;
+  int32_t *layoutOffset;
+  int32_t *slotOffsets;
+  UiCatalogEntryControl *slotControl;
   InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
-  uint32_t capabilityFlagsOrSlotIndex;
+  uint32_t capabilityFlags;
+  uint32_t slotIndex;
   uint32_t columnCount;
   GraphicsTextureSourceAsset *textureAsset;
-  int modelOrCounterOrOffset;
+  ModelDefinition *definition;
+  int remainingCount;
+  int panelWidth;
   uint32_t itemCount;
   int factionIndex;
   int panelHeight;
@@ -129,68 +130,62 @@ void UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
   bool checkResult;
   UiGridDimensionsEdxEax8 gridDimensions;
   ArmyBuildXeniteCostQ4 xeniteCost;
-  
+
   inGameUiGridView = (InGameRuntimeUiGridViewC3E4 *)UiNode_GetRoot(node);
   ownerNode = (inGameUiGridView->worldRuntime0A30).ownerListHead;
   /* The original loads EDX = root[+0xA80] (the local faction) before the call, which preserves it;
      the decompiler lost that load. */
   factionIndex = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
-  capabilityFlagsOrSlotIndex = SelectionInfo_CollectCapabilityFlags();
-  if (capabilityFlagsOrSlotIndex == 0) {
-    /* runtimePayload is a ModelRuntimeSlot; modelOrCounterOrOffset holds its definition */
+  capabilityFlags = SelectionInfo_CollectCapabilityFlags();
+  if (capabilityFlags == 0) {
+    /* runtimePayload is a ModelRuntimeSlot */
     for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
       if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-         (modelOrCounterOrOffset =
-               (int)(((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId).runtimeDefinition,
+         (definition = (((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId).runtimeDefinition,
          (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex ==
          factionIndex)) {
-        if (((ModelDefinitionRuntimeSemanticView280 *)modelOrCounterOrOffset)->runtimeClassId4C ==
-            MODEL_RUNTIME_CLASS_22) {
-          capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex | 8;
+        if (definition->runtimeClassId4C == MODEL_RUNTIME_CLASS_22) {
+          capabilityFlags = capabilityFlags | BUILD_CATALOG_ASSET_FLAG_CAPABILITY_8;
         }
-        else if (((ModelDefinitionRuntimeSemanticView280 *)modelOrCounterOrOffset)->runtimeClassId4C ==
-                 MODEL_RUNTIME_CLASS_13) {
-          capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex |
-               ((ModelDefinitionRuntimeSemanticView280 *)modelOrCounterOrOffset)->classParameterC4;
+        else if (definition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) {
+          capabilityFlags = capabilityFlags | definition->classParameterC4;
         }
       }
     }
   }
   recordCursor = g_UiCatalogGroup48Records;
-  for (modelOrCounterOrOffset = 48; modelOrCounterOrOffset != 0; modelOrCounterOrOffset--) {
+  for (remainingCount = BUILD_CATALOG_ENTRY_COUNT; remainingCount != 0; remainingCount--) {
     *recordCursor = NULL;
     recordCursor++;
   }
   recordCursor = g_UiCatalogGroup48Records;
   itemCount = 0;
   registryCursor = g_ArmyAssetRecordRegistry;
-  modelOrCounterOrOffset = 768;
-  do {
+  for (remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT; remainingCount != 0; registryCursor++, remainingCount--) {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
-    if ((((((catalogRecord != NULL) &&
-           ((catalogRecord->assetFlags14 & 1) != 0)) &&
-          (checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-                              (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult)
-          ) && (((catalogRecord->assetFlags14 & 0xee) != 0 &&
-                (catalogRecord->textureSource != NULL)))) &&
-        ((itemCount < 48 && ((catalogRecord->assetFlags14 & capabilityFlagsOrSlotIndex) != 0)))) &&
-       ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
-                            (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult ||
-        (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
-                            (factionIndex,capabilityFlagsOrSlotIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult)))) {
+    if (catalogRecord != NULL &&
+        (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
+        (checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+                            (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult) &&
+        (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_CAPABILITY_MASK) != 0 &&
+        catalogRecord->textureSource != NULL &&
+        itemCount < BUILD_CATALOG_ENTRY_COUNT &&
+        (catalogRecord->assetFlags14 & capabilityFlags) != 0 &&
+        ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
+                             (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult) ||
+         (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
+                             (factionIndex,capabilityFlags,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult))) {
       *recordCursor = catalogRecord;
       itemCount++;
       recordCursor++;
     }
-    registryCursor++;
-    modelOrCounterOrOffset--;
-  } while (modelOrCounterOrOffset != 0);
+  }
   gridDimensions = UiGrid_ComputeDimensionsPacked(6,itemCount);
   columnCount = (uint32_t)gridDimensions;
-  if (8 < columnCount) {
-    columnCount = 8;
+  if (BUILD_CATALOG_MAX_COLUMNS < columnCount) {
+    columnCount = BUILD_CATALOG_MAX_COLUMNS;
   }
-  modelOrCounterOrOffset = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
+  panelWidth = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
   panelHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
@@ -207,10 +202,12 @@ void UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
     (inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset = -89;
     (inGameUiGridView->catalogGroup48LayoutNode5E20).bottomOffset = -89;
   }
-  offsetSlotOrTable = &(inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset;
-  *offsetSlotOrTable = *offsetSlotOrTable - modelOrCounterOrOffset;
-  offsetSlotOrTable = &(inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset;
-  *offsetSlotOrTable = *offsetSlotOrTable - panelHeight;
+  /* reusing one pointer for both offsets keeps the original register allocation */
+  layoutOffset = &(inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset;
+  *layoutOffset = *layoutOffset - panelWidth;
+  layoutOffset = &(inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset;
+  *layoutOffset = *layoutOffset - panelHeight;
+  /* taking the flags' address in each branch keeps the original branches (a plain |= / &= becomes cmov) */
   if (itemCount == 0) {
     gridNodeFlags = &(inGameUiGridView->catalogGroup48GridNode5DB4).nodeFlags;
     *gridNodeFlags = *gridNodeFlags | UI_NODE_SUPPRESSED;
@@ -220,27 +217,26 @@ void UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
   }
   /* slot controls (UiCatalogEntryControl) sit at root + offset table entry */
-  offsetSlotOrTable = g_UiCatalogGroup48OffsetTables[columnCount];
-  capabilityFlagsOrSlotIndex = 0;
+  slotOffsets = g_UiCatalogGroup48OffsetTables[columnCount];
   recordCursor = g_UiCatalogGroup48Records;
-  do {
-    modelOrCounterOrOffset = offsetSlotOrTable[capabilityFlagsOrSlotIndex];
+  for (slotIndex = 0; slotIndex < BUILD_CATALOG_ENTRY_COUNT; ) {
+    slotControl = (UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,slotOffsets[slotIndex]);
     catalogRecord = *recordCursor;
-    if (capabilityFlagsOrSlotIndex < itemCount) {
-      ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,modelOrCounterOrOffset))->command.sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+    if (slotIndex < itemCount) {
+      slotControl->command.sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       xeniteCost = catalogRecord->buildXeniteCostQ4;
       textureAsset = catalogRecord->textureSource;
     }
     else {
-      ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,modelOrCounterOrOffset))->command.sprite.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+      slotControl->command.sprite.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
       xeniteCost = 0;
       textureAsset = NULL;
     }
-    capabilityFlagsOrSlotIndex++;
-    ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,modelOrCounterOrOffset))->command.sprite.primaryTextureSource = textureAsset;
-    ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,modelOrCounterOrOffset))->runtimeDisplayValueQ4 = xeniteCost;
+    slotIndex++;
+    slotControl->command.sprite.primaryTextureSource = textureAsset;
+    slotControl->runtimeDisplayValueQ4 = xeniteCost;
     recordCursor++;
-  } while (capabilityFlagsOrSlotIndex < 48);
+  }
   (*((inGameUiGridView->catalogGroup48GridNode5DB4).vtable)->layout)
             (&inGameUiGridView->catalogGroup48GridNode5DB4);
   return;
@@ -258,17 +254,21 @@ void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
 
 {
   UiNodeFlags *gridNodeFlags;
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   UiCommandRuntimeRecordPrefix *catalogRecord;
-  int32_t *offsetSlotOrTable;
+  int32_t *layoutOffset;
+  int32_t *slotOffsets;
+  UiCatalogEntryControl *slotControl;
   InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
   uint32_t columnCount;
-  int factionOrExtentOrOffset;
+  int factionIndex;
+  int panelWidth;
   GraphicsTextureSourceAsset *textureAsset;
   int remainingCount;
   uint32_t itemCount;
   uint32_t slotIndex;
-  int structureCountOrHeight;
+  int structureCount;
+  int panelHeight;
   UiCommandRuntimeRecordPrefix **recordCursor;
   ArmyAssetRecordPrefix **registryCursor;
   bool checkResult;
@@ -276,56 +276,55 @@ void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
   ArmyBuildXeniteCostQ4 xeniteCost;
   
   inGameUiGridView = (InGameRuntimeUiGridViewC3E4 *)UiNode_GetRoot(node);
-  factionOrExtentOrOffset = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
+  factionIndex = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
   /* count the faction's class-11 models (runtimePayload is a ModelRuntimeSlot) */
-  structureCountOrHeight = 0;
+  structureCount = 0;
   for (ownerNode = (inGameUiGridView->worldRuntime0A30).ownerListHead;
       ownerNode != NULL; ownerNode = ownerNode->nextNode) {
-    if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-        ((((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId).runtimeDefinition->runtimeClassId4C ==
-         MODEL_RUNTIME_CLASS_11)) &&
-       ((((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex ==
-        factionOrExtentOrOffset)) {
-      structureCountOrHeight++;
+    if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
+        (((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId).runtimeDefinition->runtimeClassId4C ==
+        MODEL_RUNTIME_CLASS_11 &&
+        (((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset).armyRuntime->factionIndex ==
+        factionIndex) {
+      structureCount++;
     }
   }
   recordCursor = g_UiCatalogGroup42Records;
-  for (remainingCount = 42; remainingCount != 0; remainingCount--) {
+  for (remainingCount = SPECIAL_BUILD_CATALOG_ENTRY_COUNT; remainingCount != 0; remainingCount--) {
     *recordCursor = NULL;
     recordCursor++;
   }
   recordCursor = g_UiCatalogGroup42Records;
   itemCount = 0;
   registryCursor = g_ArmyAssetRecordRegistry;
-  remainingCount = 768;
-  do {
+  for (remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT; remainingCount != 0; registryCursor++, remainingCount--) {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
-    if (((((catalogRecord != NULL) &&
-          ((catalogRecord->assetFlags14 & 1) != 0)) &&
-         ((checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-                              (factionOrExtentOrOffset,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult &&
-          (((catalogRecord->assetFlags14 & 0x10) != 0 &&
-           (catalogRecord->textureSource != NULL)))))) && (itemCount < 42)) &&
-       ((structureCountOrHeight != 0 &&
+    if (catalogRecord != NULL &&
+        (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_BUILDABLE) != 0 &&
+        (checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+                            (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult) &&
+        (catalogRecord->assetFlags14 & BUILD_CATALOG_ASSET_FLAG_SPECIAL) != 0 &&
+        catalogRecord->textureSource != NULL &&
+        itemCount < SPECIAL_BUILD_CATALOG_ENTRY_COUNT &&
+        structureCount != 0 &&
         ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
-                             (factionOrExtentOrOffset,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult ||
+                             (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult) ||
          (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
-                             (factionOrExtentOrOffset,0x10,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult)))))) {
+                             (factionIndex,BUILD_CATALOG_ASSET_FLAG_SPECIAL,(ArmyAssetRecordPrefix *)catalogRecord),
+          !checkResult))) {
       *recordCursor = catalogRecord;
       itemCount++;
       recordCursor++;
     }
-    registryCursor++;
-    remainingCount--;
-  } while (remainingCount != 0);
+  }
   gridDimensions = UiGrid_ComputeDimensionsPacked(7,itemCount);
   columnCount = (uint32_t)gridDimensions;
-  if (6 < columnCount) {
-    columnCount = 6;
+  if (SPECIAL_BUILD_CATALOG_MAX_COLUMNS < columnCount) {
+    columnCount = SPECIAL_BUILD_CATALOG_MAX_COLUMNS;
   }
-  factionOrExtentOrOffset = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
+  panelWidth = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
-  structureCountOrHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
+  panelHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
            g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCatalogGroup42ColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
@@ -340,15 +339,16 @@ void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
     (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -55;
     (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -55;
   }
-  offsetSlotOrTable = &(inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset;
-  *offsetSlotOrTable = *offsetSlotOrTable - factionOrExtentOrOffset;
-  offsetSlotOrTable = &(inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset;
-  *offsetSlotOrTable = *offsetSlotOrTable - structureCountOrHeight;
+  /* pointer forms as in UiCatalogGroup48_RebuildGrid (they keep the original code) */
+  layoutOffset = &(inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset;
+  *layoutOffset = *layoutOffset - panelWidth;
+  layoutOffset = &(inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset;
+  *layoutOffset = *layoutOffset - panelHeight;
   if (itemCount == 0) {
-    factionOrExtentOrOffset = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
+    factionIndex = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
     gridNodeFlags = &(inGameUiGridView->catalogGroup42GridNode7680).nodeFlags;
     *gridNodeFlags = *gridNodeFlags | UI_NODE_SUPPRESSED;
-    if (g_GameFactionRuntimeImage.records[factionOrExtentOrOffset].primaryArmyAssetCount == 0) {
+    if (g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount == 0) {
       gridNodeFlags = &(inGameUiGridView->commandSpriteVariantAGridNode8C4C).nodeFlags;
       *gridNodeFlags = *gridNodeFlags | UI_NODE_SUPPRESSED;
     }
@@ -364,27 +364,26 @@ void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
   }
   /* slot controls (UiCatalogEntryControl) as in UiCatalogGroup48_RebuildGrid */
-  offsetSlotOrTable = g_UiCatalogGroup42OffsetTables[columnCount];
-  slotIndex = 0;
+  slotOffsets = g_UiCatalogGroup42OffsetTables[columnCount];
   recordCursor = g_UiCatalogGroup42Records;
-  do {
-    factionOrExtentOrOffset = offsetSlotOrTable[slotIndex];
+  for (slotIndex = 0; slotIndex < SPECIAL_BUILD_CATALOG_ENTRY_COUNT; ) {
+    slotControl = (UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,slotOffsets[slotIndex]);
     catalogRecord = *recordCursor;
     if (slotIndex < itemCount) {
-      ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,factionOrExtentOrOffset))->command.sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
+      slotControl->command.sprite.selectable.base.nodeFlags &= ~UI_NODE_SUPPRESSED;
       xeniteCost = catalogRecord->buildXeniteCostQ4;
       textureAsset = catalogRecord->textureSource;
     }
     else {
-      ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,factionOrExtentOrOffset))->command.sprite.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
+      slotControl->command.sprite.selectable.base.nodeFlags |= UI_NODE_SUPPRESSED;
       xeniteCost = 0;
       textureAsset = NULL;
     }
     slotIndex++;
-    ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,factionOrExtentOrOffset))->command.sprite.primaryTextureSource = textureAsset;
-    ((UiCatalogEntryControl *)THANDOR_UI_AT(inGameUiGridView,factionOrExtentOrOffset))->runtimeDisplayValueQ4 = xeniteCost;
+    slotControl->command.sprite.primaryTextureSource = textureAsset;
+    slotControl->runtimeDisplayValueQ4 = xeniteCost;
     recordCursor++;
-  } while (slotIndex < 42);
+  }
   (*((inGameUiGridView->catalogGroup42GridNode7680).vtable)->layout)
             (&inGameUiGridView->catalogGroup42GridNode7680);
   return;
@@ -400,27 +399,23 @@ void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
 void InGameTechnologyResearch_StartSelected(void *source)
 
 {
-  int parentLink;
   GameEntityRuntime *firstSelectedEntity;
   uint32_t doubledTechnologyId;
   CommandPayloadDword04 modelOffset;
   SelectableGroupNodeResult selectedArea;
 
-  /* climb to the in-game root (-1 marks the root) */
-  parentLink = (int)((UiNodeBase *)source)->parent;
-  while (parentLink != -1) {
+  /* climb to the in-game root */
+  while (((UiNodeBase *)source)->parent != UI_NODE_NONE) {
     source = ((UiNodeBase *)source)->parent;
-    parentLink = (int)((UiNodeBase *)source)->parent;
   }
-  INGAME_UI(source,worldView)->nodeFlags =
-       INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
+  INGAME_UI(source,worldView)->nodeFlags &= ~UI_NODE_SUPPRESSED;
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(source,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != NULL) {
     modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                   g_ModelRuntimeRebaseDelta;
     doubledTechnologyId = 0;
-    selectedArea = UiSelectableGroup_NoneVisibleSelected(7,
+    selectedArea = UiSelectableGroup_NoneVisibleSelected(TECHNOLOGY_AREA_TAB_COUNT,
       INGAME_UI(source,technologyAreaTab7),
       INGAME_UI(source,technologyAreaTab6),
       INGAME_UI(source,technologyAreaTab5),
@@ -469,9 +464,11 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   uint16_t *labelText;
   PckTechnologyIdCatalog selectedTechnologyId;
   uint32_t writtenBytes;
-  UiNodeBase *resourceId;
-  int remainingCount;
-  int definitionOrEnergyCost;
+  TextResourceId descriptionTextId;
+  int slotIndex;
+  ModelDefinition *definition;
+  int nameTextId;
+  int energyCost;
   uint32_t packedEnergyColor;
   uint32_t costColor;
   int areaIndex;
@@ -481,27 +478,23 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
   TextResolveResult resolvedName;
   ArmyAssetLookupResult armyRecord;
   SelectableGroupNodeResult selectedArea;
-  uint16_t *formatBuffer;
-  uint16_t *formattedText;
-  uint16_t *stream;
-  uint16_t *source;
+  uint16_t *labelTemplate;
   UiActionId actionId;
-  UiRootNode *firstNode;
   
   previousTechnologyId = g_InGameSelectedTechnologyId;
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != NULL) {
     entityModelRuntime = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
-    definitionOrEnergyCost = (int)(entityModelRuntime->definitionOrSavedId).runtimeDefinition;
-    if (((entityModelRuntime->classState).classStateEC & 0x40U) == 0) {
+    definition = (entityModelRuntime->definitionOrSavedId).runtimeDefinition;
+    if (((entityModelRuntime->classState).stateFlags & ARMY_MODEL_STATE_RESEARCHING) == 0) {
       UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
     }
     else {
       UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
     }
-    /* window title: text 0x217C with the unit name (0x18004F + name index) patched in */
-    resolvedText = TextResource_Resolve(0x217c);
-    resolvedName = TextResource_Resolve(((ModelDefinitionRecordPrefix *)definitionOrEnergyCost)->flags + 0x18004f);
+    /* window title with the unit name patched in */
+    resolvedText = TextResource_Resolve(TEXT_ID_TECHNOLOGY_WINDOW_TITLE);
+    resolvedName = TextResource_Resolve(((ModelDefinitionRecordPrefix *)definition)->flags + TEXT_ID_MODEL_NAME_BASE);
     RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.text,resolvedText.text);
     armyRecord = ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
@@ -514,14 +507,14 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB6,&inGameRoot->base);
     UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB7,&inGameRoot->base);
     /* technology slots 28..1 (definition +0x1C8..), area tabs cycling 6..0 */
-    remainingCount = 0x1c;
-    areaIndex = 6;
+    slotIndex = TECHNOLOGY_DEFINITION_SLOT_COUNT;
+    areaIndex = TECHNOLOGY_AREA_TAB_COUNT - 1;
     do {
       isAvailable = Technology_IsAvailableForFaction
-                         (((ModelDefinitionRuntimeSemanticView280 *)definitionOrEnergyCost)->researchTechnologyIds1C4[remainingCount],
+                         (definition->researchTechnologyIds1C4[slotIndex],
                           (firstSelectedEntity->common).ownership.ownerIndex);
       if (isAvailable) {
-        technologyId = ((ModelDefinitionRuntimeSemanticView280 *)definitionOrEnergyCost)->researchTechnologyIds1C4[remainingCount];
+        technologyId = definition->researchTechnologyIds1C4[slotIndex];
         /* the area tab's icon (technologyAreaTabNIcon) shows subresource technologyId of tech.gfx */
         ((UiImagePanelControl *)
          THANDOR_UI_AT(inGameRoot,g_TechnologyPanelRowValueOffsets[areaIndex]))->
@@ -530,34 +523,33 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         /* rowFlagOffset is the area tab technologyAreaTabN; the dwords 8 and 4 bytes before it (the +0x60/+0x64
            slots of the preceding 0x68-byte text button) hold the area's text id and a text pointer */
         actionId = ((UiSelectableControl *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))->actionId;
-        ((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].nameTextResourceId = technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
-        firstNode = inGameRoot;
-        /* tab label: text 0x2181 with the technology name (payload 0) and Xenite cost (payload 1), the number
-           formatted into the text buffer at word 0xC0 */
-        resolvedText = TextResource_Resolve(0x2181);
+        ((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].nameTextResourceId =
+             technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
+        /* tab label: the technology name (payload 0) and Xenite cost (payload 1), the number formatted into the
+           label text buffer at word 0xC0; the expanded label becomes the tab's tooltip text */
+        resolvedText = TextResource_Resolve(TEXT_ID_TECHNOLOGY_AREA_TAB_LABEL);
         labelText = resolvedText.text;
-        formatBuffer = labelText;
-        formattedText = labelText;
-        stream = labelText;
-        source = labelText;
-        resolvedText = TextResource_Resolve(((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].nameTextResourceId);
+        labelTemplate = labelText;
+        resolvedText = TextResource_Resolve
+                                 (((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].
+                                  nameTextResourceId);
         RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,labelText);
         labelText = ((UiTechnologyAreaTabPrefix *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))[-1].tooltipText;
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                   (int)g_TechnologyAsset->records[((ModelDefinitionRuntimeSemanticView280 *)definitionOrEnergyCost)->researchTechnologyIds1C4[remainingCount]].
-                        xeniteCostQ4 >> 4,formatBuffer + 0xc0);
-        RichTextCommandStream_PatchPayloadBySelector(1,formattedText + 0xc0,stream);
-        RichTextCommandStream_CopyExpanded(0x180,labelText,source);
-        UiNodeList_UnsuppressActionId(actionId,&firstNode->base);
+                   (int)g_TechnologyAsset->records[definition->researchTechnologyIds1C4[slotIndex]].xeniteCostQ4 >> 4,
+                   labelTemplate + 0xc0);
+        RichTextCommandStream_PatchPayloadBySelector(1,labelTemplate + 0xc0,labelTemplate);
+        RichTextCommandStream_CopyExpanded(0x180,labelText,labelTemplate);
+        UiNodeList_UnsuppressActionId(actionId,&inGameRoot->base);
       }
       areaIndex--;
       if (areaIndex < 0) {
-        areaIndex = 6;
+        areaIndex = TECHNOLOGY_AREA_TAB_COUNT - 1;
       }
-      remainingCount--;
-    } while (remainingCount != 0);
-    selectedArea = UiSelectableGroup_NoneVisibleSelected(7,
+      slotIndex--;
+    } while (slotIndex != 0);
+    selectedArea = UiSelectableGroup_NoneVisibleSelected(TECHNOLOGY_AREA_TAB_COUNT,
       INGAME_UI(inGameRoot,technologyAreaTab7),
       INGAME_UI(inGameRoot,technologyAreaTab6),
       INGAME_UI(inGameRoot,technologyAreaTab5),
@@ -570,8 +562,9 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
                     [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
       /* the text field holds a text resource id here, resolved when drawn */
-      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)0x217f;
-      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x2180;
+      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)TEXT_ID_TECHNOLOGY_GENERAL_DESCRIPTION;
+      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId =
+           TEXT_ID_TECHNOLOGY_BUTTON_NO_AREA;
       INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = 6;
       INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = 6;
       if ((playerBlock->assignmentFlags80A4 & 0x80) == 0) {
@@ -582,27 +575,30 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
       UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
     }
     else {
-      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x217e;
+      ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId =
+           TEXT_ID_TECHNOLOGY_BUTTON_AREA_SELECTED;
       technologyAsset = g_TechnologyAsset;
       /* the selected tab's name text id; the description is the next text */
-      definitionOrEnergyCost = ((UiTechnologyAreaTabPrefix *)selectedArea.node)[-1].nameTextResourceId;
-      resourceId = (UiNodeBase *)(definitionOrEnergyCost + 1);
-      selectedTechnologyId = (definitionOrEnergyCost - (uint32_t)TECHNOLOGY_TEXT_ID_BASE) >> 1;
+      nameTextId = ((UiTechnologyAreaTabPrefix *)selectedArea.node)[-1].nameTextResourceId;
+      descriptionTextId = nameTextId + 1;
+      selectedTechnologyId = (nameTextId - (uint32_t)TECHNOLOGY_TEXT_ID_BASE) >> 1;
       xeniteCost = g_TechnologyAsset->records[selectedTechnologyId].xeniteCostQ4;
       costColor = g_RichTextColorPalette0Argb;
       if ((int)g_GameFactionRuntimeImage.records[(firstSelectedEntity->common).ownership.ownerIndex].
                xeniteCurrentQ4 < (int)xeniteCost) {
         costColor = g_RichTextInsufficientResourceColorArgb;
       }
-      definitionOrEnergyCost = (int)g_TechnologyAsset->records[selectedTechnologyId].energyCostQ4 >> 4;
+      energyCost = (int)g_TechnologyAsset->records[selectedTechnologyId].energyCostQ4 >> 4;
       g_InGameSelectedTechnologyId = selectedTechnologyId;
       writtenBytes = g_WideNumberFormatUtf16
                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int)xeniteCost >> 4,
                           g_InGameTechnologyXeniteCostTextUtf16);
-      *(uint32_t *)((int)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) = 0x8000;
+      /* behind the number: palette colour 0 again, then the terminator */
+      *(uint32_t *)((uint8_t *)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) =
+           RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_COLOR_PALETTE_0;
       g_WideNumberFormatUtf16
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionOrEnergyCost,g_InGameTechnologyEnergyCostTextUtf16);
-      packedEnergyColor = definitionOrEnergyCost << 0x10 | costColor >> 0x10;
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,energyCost,g_InGameTechnologyEnergyCostTextUtf16);
+      packedEnergyColor = energyCost << 0x10 | costColor >> 0x10;
       g_InGameTechnologyCostColorWords8[1] = (uint16_t)costColor;
       g_InGameTechnologyCostColorWords8[5] = (uint16_t)(costColor >> 0x10);
       g_InGameTechnologyCostColorWords8[0] = (uint16_t)(costColor >> 4);
@@ -615,12 +611,11 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                  (int)technologyAsset->records[selectedTechnologyId].researchDurationQ5 >> 5,
                  g_InGameTechnologyResearchTimeTextUtf16);
-      resolvedText = TextResource_Resolve((TextResourceId)resourceId);
+      resolvedText = TextResource_Resolve(descriptionTextId);
       labelText = resolvedText.text;
       RichTextCommandStream_PatchPayloadBySelector(0,&g_InGameTechnologyCostRichTextScratch,labelText);
       RichTextCommandStream_PatchPayloadBySelector(1,g_InGameTechnologyEnergyCostTextUtf16,labelText);
-      RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,labelText)
-      ;
+      RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,labelText);
       textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
                          (g_UiTextStyleNormal,labelText,
                           ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->wrapWidth);
@@ -631,7 +626,7 @@ void InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
         UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
         UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
       }
-      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)resourceId;
+      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)descriptionTextId;
     }
   }
   return;

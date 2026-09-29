@@ -54,6 +54,7 @@
 #define FRONTEND_PAGE_NETWORK_GAME 1 /* protocol, player name, host address, session list */
 #define FRONTEND_PAGE_HOST_GAME_SETUP 2
 #define FRONTEND_PAGE_HOST_LOBBY 3
+#define FRONTEND_PAGE_CLIENT_LOBBY 4 /* clientLobbyPlayerList, after the join ack */
 #define FRONTEND_PAGE_OPTIONS 5
 #define FRONTEND_PAGE_DISPLAY_SETTINGS 6 /* adapter, resolution, colour depth (graphicsSettingsButton, 0x2011) */
 #define FRONTEND_PAGE_GRAPHICS_SETTINGS 7 /* "3D": shading, polygon detail, texture quality (0x2012) */
@@ -118,6 +119,14 @@
 /* Display settings page: device name shown for an adapter without a 3D device (GRAPHICS_DEVICE_GUID_SOFTWARE,
    the software rasterizer); FrontendUiAction2011_Handler. */
 #define TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME 0x212D
+/* Menu room hover hints: hint n of a ROM action record is text id this + n (1 while a page action runs). */
+#define TEXT_ID_MENU_HINT_BASE 0x2000
+/* Network game page: the local address line, selector 0 = g_FrontendNetworkEndpointTextUtf16 (Frontend_Init). */
+#define TEXT_ID_NETWORK_ADDRESS_TEMPLATE 0x2104
+/* Chat-history notices when the player leaves a network session with Alt+Q (selector 0 = name of player block 0,
+   the host): as a client, and as the host. */
+#define TEXT_ID_NETWORK_SESSION_LEFT 0xFF02
+#define TEXT_ID_NETWORK_SESSION_CLOSED 0xFF04
 
 /* g_FrontendRuntimeFlags bit set by Frontend_Init; cleared once every player has reported ready
    (FrontendPlayerRuntime_RecordReadyAndUpdateWaitState), which ends Frontend_Init's wait loop. */
@@ -212,25 +221,25 @@ void FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 /* 0x00548910 */
 uint32_t FrontendRuntime_UpdatePointerContextAndSceneView
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
-          void *pointedModelNode,FrontendPointerSceneRuntimeView43E8 *frontendRuntime);
+          void *pointedModelNode,FrontendPointerSceneRuntimeView *frontendRuntime);
 
 /* 0x00548BE0 */
-void FrontendRuntimeCallback5C_NoOp
+void FrontendMenuRoom_PressNoOp
                (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
                uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
 
 /* 0x00548BF0 */
-void FrontendRuntimeCallback60_NoOp
+void FrontendMenuRoom_DragNoOp
                (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
                uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
 
 /* 0x00548C00 */
-void FrontendRuntimeCallback64_DispatchRecord1350
+void FrontendMenuRoom_ExecuteClickedRomAction
           (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
           FrontendCallbackArgument5 pointedModelNode,uint32_t pointerContext);
 
 /* 0x00548C70 */
-void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t pointerContext);
+void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext);
 
 /* 0x00548CB0 */
 void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
@@ -257,7 +266,7 @@ void FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callback
 void FrontendUiAction2010_Handler(UiNodeBase *sourceNode);
 
 /* 0x0054AB70 */
-void FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source);
+void FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState *source);
 
 /* 0x0054BA30 */
 void FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode);
@@ -281,20 +290,20 @@ FrontendInitResult Frontend_Init(RomRecordId initialRomRecordId);
 void Frontend_StateTick(void);
 
 /* 0x00543B70 */
-void FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState);
+void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState);
 
 /* 0x005445A0 */
-void FrontendUiAction2044_IndexedSelectionHelper
+void FrontendFactionSetup_CycleFactionColour
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x00544640 */
-void FrontendUiAction2045_IndexedSelectionHelper
+void FrontendFactionSetup_ToggleFactionActive
           (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 
 /* 0x005446A0 */
-void FrontendUiAction2046_IndexedSelectionHelper
+void FrontendFactionSetup_ChooseFaction
           (FrontendIndexedSelectionArgument playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
           FrontendFactionAssignmentIndex rowIndex);
 

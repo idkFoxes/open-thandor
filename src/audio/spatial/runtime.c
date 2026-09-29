@@ -22,13 +22,14 @@ StatusResult SpatialSoundPool_Init(void)
   bool allocationFailed;
   ArenaAllocResult allocResult;
 
-  allocResult = g_MemoryApi.alloc(0x1000);
+  allocResult = g_MemoryApi.alloc(SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot));
   allocationFailed = allocResult.failed;
   clearCursor = (SpatialSoundSlot *)allocResult.payloadOrError;
   if (!allocationFailed) {
     g_SpatialSoundSlots = clearCursor;
-    /* REP STOSD over 0x400 dwords: the cursor advances one dword (to the next field) per step */
-    for (dwordsRemaining = 0x400; dwordsRemaining != 0; dwordsRemaining--) {
+    /* REP STOSD over the whole pool: the cursor advances one dword (to the next field) per step */
+    for (dwordsRemaining = SPATIAL_SOUND_SLOT_COUNT * sizeof(SpatialSoundSlot) / 4; dwordsRemaining != 0;
+         dwordsRemaining--) {
       clearCursor->voiceSet = NULL;
       clearCursor = (SpatialSoundSlot *)&clearCursor->activeVoice;
     }
@@ -56,20 +57,21 @@ void SpatialSound_RebuildListenerTransformFromPose
   g_SpatialSoundListenerRotation.translation.y = 0;
   g_SpatialSoundListenerRotation.translation.z = 0;
   /* world-to-local: identity basis (Q28) with the translation -origin. The basis is written through the
-     raw dword globals: as g_SpatialSoundListenerWorldToLocal.basisRow* members the compiler merges the stores
+     separate dword globals (g_SpatialSoundListenerWorldToLocalBasisRC = basisRowR[C]): as
+     g_SpatialSoundListenerWorldToLocal.basisRow* members the compiler merges the stores
      into SSE stores. */
   g_SpatialSoundListenerWorldToLocal.translation.x = -originX;
   g_SpatialSoundListenerWorldToLocal.translation.y = -originY;
   g_SpatialSoundListenerWorldToLocal.translation.z = -originZ;
-  uRam0050b580 = Q28_ONE; /* basisRow0 */
-  uRam0050b584 = 0;
-  uRam0050b588 = 0;
-  uRam0050b58c = 0; /* basisRow1 */
-  uRam0050b590 = Q28_ONE;
-  uRam0050b594 = 0;
-  uRam0050b598 = 0; /* basisRow2 */
-  uRam0050b59c = 0;
-  uRam0050b5a0 = Q28_ONE;
+  g_SpatialSoundListenerWorldToLocalBasis00 = Q28_ONE;
+  g_SpatialSoundListenerWorldToLocalBasis01 = 0;
+  g_SpatialSoundListenerWorldToLocalBasis02 = 0;
+  g_SpatialSoundListenerWorldToLocalBasis10 = 0;
+  g_SpatialSoundListenerWorldToLocalBasis11 = Q28_ONE;
+  g_SpatialSoundListenerWorldToLocalBasis12 = 0;
+  g_SpatialSoundListenerWorldToLocalBasis20 = 0;
+  g_SpatialSoundListenerWorldToLocalBasis21 = 0;
+  g_SpatialSoundListenerWorldToLocalBasis22 = Q28_ONE;
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform,
              &g_SpatialSoundListenerWorldToLocal,&g_SpatialSoundListenerRotation);
@@ -311,11 +313,11 @@ void SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 {
   int slotEntriesRemaining;
   
-  slotEntriesRemaining = 4;
+  slotEntriesRemaining = sizeof(SpatialSoundSlot) / 4;
   if (slot != NULL) {
     g_SoundReleaseSampleVoiceSet(slot->voiceSet);
     for (; slotEntriesRemaining != 0; slotEntriesRemaining--) {
-      slot->voiceSet = (DirectSoundVoiceSet *)0x0;
+      slot->voiceSet = NULL;
       slot = (SpatialSoundSlot *)&slot->activeVoice;
     }
   }
@@ -333,7 +335,7 @@ void SpatialSoundSlot_ReleasePcm(SpatialSoundSlot *slot)
 {
   int slotEntriesRemaining;
   
-  slotEntriesRemaining = 4;
+  slotEntriesRemaining = sizeof(SpatialSoundSlot) / 4;
   if (slot != NULL) {
     g_SoundReleasePcmVoiceSet(slot->voiceSet);
     /* REP STOSD: the cursor advances one dword (to the next field) per step */

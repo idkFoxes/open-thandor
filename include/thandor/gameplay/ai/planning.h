@@ -98,6 +98,6 @@ bool AiFactionRuntime_TestPlanningCapacityExceeded(uint32_t additionalEnergyDema
 /* 0x0053A2A0 */
 AiCandidateScore32 AiArmyCandidate_ComputeFactionWeightedScore
           (AiArmyScoreWeights *scoreWeights,FactionRuntimeIndex factionIndex,
-          ArmyAssetRuntimeSemanticView80 *armyAssetRecord);
+          ArmyAssetRecord *armyAssetRecord);
 
 #endif /* THANDOR_GAMEPLAY_AI_PLANNING_H */

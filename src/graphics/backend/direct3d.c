@@ -60,9 +60,9 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
   uint32_t updatedAdapterCount;
   int remainingDwords;
   GraphicsAdapterRecord *newRecord;
-  GraphicsAdapterRecord *recordCursor;
-  TH_LEGACY_GUID *guidCursor;
-  D3DDEVICEDESC_DX6 *descCursor;
+  uint32_t *recordCursor;
+  uint32_t *guidCursor;
+  uint32_t *descCursor;
   ArenaAllocResult descAllocation;
   
   newAdapterIndex = g_GraphicsAdapterCount;
@@ -95,39 +95,39 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
       newRecord = g_GraphicsAdapters + newAdapterIndex;
       remainingDwords = sizeof(GraphicsAdapterRecord) / sizeof(uint32_t);
       g_GraphicsAdapterCount++;
-      recordCursor = newRecord;
+      recordCursor = (uint32_t *)newRecord;
       /* in the filtered mode the first device of an adapter reuses the adapter's record (count bumped back) */
       if ((g_GraphicsEnumerateAllDevicesFlag == 0) ||
          (filledRecord = adapterContext, (adapterContext->deviceGuid).Data1 != 0)) {
         for (; filledRecord = newRecord, updatedAdapterCount = g_GraphicsAdapterCount, remainingDwords != 0;
              remainingDwords--) {
-          (recordCursor->adapterGuid).Data1 = (adapterContext->adapterGuid).Data1;
-          adapterContext = (GraphicsAdapterRecord *)&(adapterContext->adapterGuid).Data2;
-          recordCursor = (GraphicsAdapterRecord *)&(recordCursor->adapterGuid).Data2;
+          *recordCursor = *(uint32_t *)adapterContext;
+          adapterContext = (GraphicsAdapterRecord *)((uint32_t *)adapterContext + 1);
+          recordCursor++;
         }
       }
       g_GraphicsAdapterCount = updatedAdapterCount;
-      guidCursor = &filledRecord->deviceGuid;
+      guidCursor = (uint32_t *)&filledRecord->deviceGuid;
       for (remainingDwords = sizeof(TH_LEGACY_GUID) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-        guidCursor->Data1 = deviceGuid->Data1;
-        deviceGuid = (TH_LEGACY_GUID *)&deviceGuid->Data2;
-        guidCursor = (TH_LEGACY_GUID *)&guidCursor->Data2;
+        *guidCursor = *(uint32_t *)deviceGuid;
+        deviceGuid = (TH_LEGACY_GUID *)((uint32_t *)deviceGuid + 1);
+        guidCursor++;
       }
       Text_CopyNarrowToUtf16(40,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
       filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
-      descCursor = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
+      descCursor = (uint32_t *)descAllocation.payloadOrError;
       for (remainingDwords = sizeof(D3DDEVICEDESC_DX6) / sizeof(uint32_t); remainingDwords != 0;
            remainingDwords--) {
-        descCursor->dwSize = hardwareDesc->dwSize;
-        hardwareDesc = (D3DDEVICEDESC_DX6 *)&hardwareDesc->dwFlags;
-        descCursor = (D3DDEVICEDESC_DX6 *)&descCursor->dwFlags;
+        *descCursor = *(uint32_t *)hardwareDesc;
+        hardwareDesc = (D3DDEVICEDESC_DX6 *)((uint32_t *)hardwareDesc + 1);
+        descCursor++;
       }
-      filledRecord->softwareDesc = descCursor; /* the second half of the block */
+      filledRecord->softwareDesc = (D3DDEVICEDESC_DX6 *)descCursor; /* the second half of the block */
       for (remainingDwords = sizeof(D3DDEVICEDESC_DX6) / sizeof(uint32_t); remainingDwords != 0;
            remainingDwords--) {
-        descCursor->dwSize = softwareDesc->dwSize;
-        softwareDesc = (D3DDEVICEDESC_DX6 *)&softwareDesc->dwFlags;
-        descCursor = (D3DDEVICEDESC_DX6 *)&descCursor->dwFlags;
+        *descCursor = *(uint32_t *)softwareDesc;
+        softwareDesc = (D3DDEVICEDESC_DX6 *)((uint32_t *)softwareDesc + 1);
+        descCursor++;
       }
     }
   }
@@ -155,7 +155,7 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   int highBitOrCopyCount; /* first the current alpha mask's highest bit, then the dword copy counter */
   uint32_t candidateColorMask;
   int replaceOpaqueFormat;
-  DDPIXELFORMAT *pixelFormatCursor;
+  TH_LEGACY_DWORD *pixelFormatCursor;
   TH_LEGACY_DWORD *formatDwordCursor;
 
   bitCountOrMaskDelta = (surfaceDesc->ddpfPixelFormat).dwRGBBitCount;
@@ -190,12 +190,12 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
     }
   }
   if (replaceOpaqueFormat) {
-    pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
-    formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
+    pixelFormatCursor = (TH_LEGACY_DWORD *)&surfaceDesc->ddpfPixelFormat;
+    formatDwordCursor = (TH_LEGACY_DWORD *)&g_Direct3DOpaqueTextureFormat;
     for (highBitOrCopyCount = sizeof(DDPIXELFORMAT) / sizeof(TH_LEGACY_DWORD); highBitOrCopyCount != 0;
          highBitOrCopyCount--) {
-      *formatDwordCursor = pixelFormatCursor->dwSize;
-      pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
+      *formatDwordCursor = *pixelFormatCursor;
+      pixelFormatCursor++;
       formatDwordCursor++;
     }
   }
@@ -225,12 +225,12 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
       }
     }
     if ((uint32_t)(currentAlphaLowBit - highBitOrCopyCount) < (uint32_t)(candidateAlphaLowBit - candidateAlphaHighBit)) {
-      pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
-      formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
+      pixelFormatCursor = (TH_LEGACY_DWORD *)&surfaceDesc->ddpfPixelFormat;
+      formatDwordCursor = (TH_LEGACY_DWORD *)&g_Direct3DAlphaTextureFormat;
       for (highBitOrCopyCount = sizeof(DDPIXELFORMAT) / sizeof(TH_LEGACY_DWORD); highBitOrCopyCount != 0;
            highBitOrCopyCount--) {
-        *formatDwordCursor = pixelFormatCursor->dwSize;
-        pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
+        *formatDwordCursor = *pixelFormatCursor;
+        pixelFormatCursor++;
         formatDwordCursor++;
       }
     }
@@ -349,8 +349,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet
   int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
@@ -450,12 +450,12 @@ void Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   if (g_BoundTextureHandle != 0) {
@@ -490,8 +490,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet
   int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
@@ -604,12 +604,12 @@ void Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   if (g_BoundTextureHandle != 0) {
@@ -644,8 +644,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet
   int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
@@ -758,12 +758,12 @@ void Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   if (g_BoundTextureHandle != 0) {
@@ -797,8 +797,8 @@ void Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet
   int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
@@ -911,12 +911,12 @@ void Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet
     THANDOR_FLOAT_ADD_EXPONENT_BITS(g_ImmediateTLVertices[2].rhw, 20 * DIRECT3D_FLOAT_EXPONENT_STEP);
   }
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   if (g_BoundTextureHandle != 0) {
@@ -954,8 +954,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[0].zWriteEnable;
@@ -1098,12 +1098,12 @@ void Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   texture = packetTextureEntry->texture;
@@ -1153,8 +1153,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[1].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[1].zWriteEnable;
@@ -1297,12 +1297,12 @@ void Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   texture = packetTextureEntry->texture;
@@ -1352,8 +1352,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[2].zWriteEnable;
@@ -1496,12 +1496,12 @@ void Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   texture = packetTextureEntry->texture;
@@ -1551,8 +1551,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[3].zWriteEnable;
@@ -1695,12 +1695,12 @@ void Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   texture = packetTextureEntry->texture;
@@ -1750,8 +1750,8 @@ void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
-  D3DTLVERTEX_DX6 *sourceVertexCursor;
-  D3DTLVERTEX_DX6 *destVertexCursor;
+  uint32_t *sourceVertexCursor; /* dword copy of vertex 1 into slot 3 */
+  uint32_t *destVertexCursor;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
     g_PrimitiveRenderStateCache.zWriteEnable = g_PrimitiveRenderStatePresets[4].zWriteEnable;
@@ -1894,12 +1894,12 @@ void Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
   }
   packetTextureEntry = packet->textureEntry;
   if (3 < g_ImmediateVertexCount) {
-    sourceVertexCursor = g_ImmediateTLVertices + 1;
-    destVertexCursor = g_ImmediateTLVertices + 3;
+    sourceVertexCursor = (uint32_t *)&g_ImmediateTLVertices[1];
+    destVertexCursor = (uint32_t *)&g_ImmediateTLVertices[3];
     for (remainingDwords = sizeof(D3DTLVERTEX_DX6) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
-      destVertexCursor->sx = sourceVertexCursor->sx;
-      sourceVertexCursor = (D3DTLVERTEX_DX6 *)&sourceVertexCursor->sy;
-      destVertexCursor = (D3DTLVERTEX_DX6 *)&destVertexCursor->sy;
+      *destVertexCursor = *sourceVertexCursor;
+      sourceVertexCursor++;
+      destVertexCursor++;
     }
   }
   texture = packetTextureEntry->texture;

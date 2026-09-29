@@ -53,6 +53,10 @@
 #define UI_TEXT_BOX_SUBRESOURCE_BOTTOM 0x79
 #define UI_TEXT_BOX_SUBRESOURCE_INTERIOR 0x7B
 #define UI_TEXT_BOX_SUBRESOURCE_WIDE_BACKGROUND 200
+/* Size of that unframed box; it shows only the last UI_TEXT_BOX_WIDE_MAX_LINES lines, newest first. */
+#define UI_TEXT_BOX_WIDE_WIDTH 416
+#define UI_TEXT_BOX_WIDE_HEIGHT 58
+#define UI_TEXT_BOX_WIDE_MAX_LINES 4
 
 /* 0x004B1D20 */
 void UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root);

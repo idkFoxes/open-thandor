@@ -25,7 +25,7 @@ void FrontendCommandQueue_EnqueueLocalPlayerCommand(UiActionId commandCode,Comma
   
   writeRecord = g_FrontendCommandQueueEnd;
   packedCommandAndPlayerId = commandCode << 8 | g_LocalPlayerRuntimeId;
-  if (g_FrontendCommandQueueEnd < g_FrontendCommandQueueRecords + 16) { /* the end of the record buffer */
+  if (g_FrontendCommandQueueEnd < g_FrontendCommandQueueRecords + COMMAND_QUEUE_CAPACITY) { /* the end of the record buffer */
     g_FrontendCommandQueueEnd->payloadDword04 = payloadDword04;
     writeRecord->payloadDword08 = payloadDword08;
     writeRecord->payloadDword0C = payloadDword0C;
@@ -46,9 +46,9 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
 {
   int firstRecordDwordsRemaining;
   uint32_t trailingDwordCount;
-  UiCommandQueueRecord *copySourceCursor;
-  UiCommandQueueRecord *outputRecordWriteCursor;
-  UiCommandQueueRecord *copyDestinationCursor;
+  uint32_t *copySourceCursor;
+  uint32_t *outputRecordWriteCursor;
+  uint32_t *copyDestinationCursor;
   UiCommandQueueRecord *queueEndSnapshot;
   
   queueEndSnapshot = g_FrontendCommandQueueEnd;
@@ -56,21 +56,21 @@ void FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *ou
     outputRecord->command.packedCommandAndPlayerId = 0;
     return;
   }
-  copySourceCursor = g_FrontendCommandQueueRecords;
-  outputRecordWriteCursor = &outputRecord->command;
+  copySourceCursor = (uint32_t *)g_FrontendCommandQueueRecords;
+  outputRecordWriteCursor = (uint32_t *)&outputRecord->command;
   /* dword-wise copies (REP MOVSD in the original) */
   for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
-    outputRecordWriteCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
-    copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
-    outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
+    *outputRecordWriteCursor = *copySourceCursor;
+    copySourceCursor++;
+    outputRecordWriteCursor++;
   }
-  copyDestinationCursor = g_FrontendCommandQueueRecords;
+  copyDestinationCursor = (uint32_t *)g_FrontendCommandQueueRecords;
   trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_FrontendCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount--) {
-      copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
-      copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
-      copyDestinationCursor = (UiCommandQueueRecord *)&copyDestinationCursor->payloadDword04;
+      *copyDestinationCursor = *copySourceCursor;
+      copySourceCursor++;
+      copyDestinationCursor++;
     }
   }
   g_FrontendCommandQueueEnd--;
@@ -93,7 +93,7 @@ void InGameCommandQueue_AppendLocalPlayerCommand(UiActionId commandCode,CommandP
   
   writeRecord = g_InGameCommandQueueEnd;
   packedCommandAndPlayerId = commandCode << 8 | g_LocalPlayerRuntimeId;
-  if (g_InGameCommandQueueEnd < g_InGameCommandQueueRecords + 16) { /* the end of the record buffer */
+  if (g_InGameCommandQueueEnd < g_InGameCommandQueueRecords + COMMAND_QUEUE_CAPACITY) { /* the end of the record buffer */
     g_InGameCommandQueueEnd->payloadDword04 = payloadDword04;
     writeRecord->payloadDword08 = payloadDword08;
     writeRecord->payloadDword0C = payloadDword0C;
@@ -114,31 +114,31 @@ void InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outp
 {
   int firstRecordDwordsRemaining;
   uint32_t trailingDwordCount;
-  UiCommandQueueRecord *copySourceCursor;
-  UiCommandQueueRecord *outputRecordWriteCursor;
-  UiCommandQueueRecord *copyDestinationCursor;
+  uint32_t *copySourceCursor;
+  uint32_t *outputRecordWriteCursor;
+  uint32_t *copyDestinationCursor;
   UiCommandQueueRecord *queueEndSnapshot;
   
   queueEndSnapshot = g_InGameCommandQueueEnd;
   if (g_InGameCommandQueueEnd == g_InGameCommandQueueRecords) {
-    (outputRecord->command).packedCommandAndPlayerId = 0;
+    outputRecord->command.packedCommandAndPlayerId = 0;
     return;
   }
-  copySourceCursor = g_InGameCommandQueueRecords;
-  outputRecordWriteCursor = &outputRecord->command;
+  copySourceCursor = (uint32_t *)g_InGameCommandQueueRecords;
+  outputRecordWriteCursor = (uint32_t *)&outputRecord->command;
   /* REP MOVSD of the first record (4 dwords), then of the rest of the queue onto the start */
   for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
-    outputRecordWriteCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
-    copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
-    outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
+    *outputRecordWriteCursor = *copySourceCursor;
+    copySourceCursor++;
+    outputRecordWriteCursor++;
   }
-  copyDestinationCursor = g_InGameCommandQueueRecords;
+  copyDestinationCursor = (uint32_t *)g_InGameCommandQueueRecords;
   trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_InGameCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount--) {
-      copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
-      copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
-      copyDestinationCursor = (UiCommandQueueRecord *)&copyDestinationCursor->payloadDword04;
+      *copyDestinationCursor = *copySourceCursor;
+      copySourceCursor++;
+      copyDestinationCursor++;
     }
   }
   g_InGameCommandQueueEnd--;
@@ -163,10 +163,10 @@ bool InGameCommandQueue_ContainsTripletValue(InGameCommandPayloadTripletValue32 
     nextRecord = g_InGameCommandQueueRecords;
     while (record = nextRecord, record < g_InGameCommandQueueEnd) {
       nextRecord = record + 1;
-      if ((((commandHandlerAddress - INGAME_COMMAND_CODE_BASE) * 0x100 | g_LocalPlayerRuntimeId) ==
-           record->packedCommandAndPlayerId) &&
-         (((payloadValue == record->payloadDword04 || (payloadValue == record->payloadDword08)) ||
-          (payloadValue == record->payloadDword0C)))) {
+      if (((commandHandlerAddress - INGAME_COMMAND_CODE_BASE) * 0x100 | g_LocalPlayerRuntimeId) ==
+            record->packedCommandAndPlayerId &&
+          (payloadValue == record->payloadDword04 || payloadValue == record->payloadDword08 ||
+           payloadValue == record->payloadDword0C)) {
         return true;
       }
     }

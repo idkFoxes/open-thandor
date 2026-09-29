@@ -22,16 +22,12 @@ void FrontendRomActionTable_ExecuteRecord
           RomRecordTableIndex recordIndex)
 
 {
-  /* Action entry layout (FRONTEND_ROM_ACTION_* offsets): viewed as RomAssetRecordPrefix[] (12-byte elements),
-     record[2].recordId = +0x20 page action, record[3].byteSize = +0x24 keyframe count,
-     record[3].rootNodeOffsetOrPointer = +0x28 target ROM record id, record[3].recordId = +0x2C sound index,
-     +0x40 keyframes of 0x20 bytes each (record[5]..record[7] = keyframe 0). */
-  RomAssetRecordPrefix *record;
+  FrontendRomActionEntry *entry;
   uint32_t copiedDword;
   RomRecordByteSize copiedByteSize;
   RomRecordId copiedRecordId;
   int frontendRootNode;
-  RomAssetRecordPrefix *targetRecord;
+  RomRecord *targetRecord;
   int lastKeyframeIndex;
   void *menuRoomView;
   bool visibilityLookupFailed;
@@ -40,25 +36,24 @@ void FrontendRomActionTable_ExecuteRecord
   RomRecordId targetRecordId;
 
   frontendRootNode = g_FrontendRootNode;
-  if (recordIndex < *(uint32_t *)(g_FrontendActiveRomRecordTable + FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET)) {
-    record = (RomAssetRecordPrefix *)(recordIndex * FRONTEND_ROM_ACTION_ENTRY_SIZE + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE +
-                                      g_FrontendActiveRomRecordTable);
+  if (recordIndex < ((RomRecord *)g_FrontendActiveRomRecord)->entryCount) {
+    entry = (FrontendRomActionEntry *)(recordIndex * FRONTEND_ROM_ACTION_ENTRY_SIZE +
+                                       FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE + g_FrontendActiveRomRecord);
     menuRoomView = FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
-    targetRecordId = record[3].rootNodeOffsetOrPointer;
-    pageActionOrCopiedDword = record[2].recordId;
-    if ((((((pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE) &&
-            (pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE)) &&
-           (pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_CREDITS)) && (-1 < (int)pageActionOrCopiedDword)) ||
-        ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-         SESSION_NETWORK_ROLE_LOCAL)) &&
-       ((pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE || (g_NetworkBackendInstanceCount != 0)))) {
-      if ((record[3].recordId != 0) &&
-         ((suppressActivationSound == 0 &&
-          ((DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId] != NULL)))) {
+    targetRecordId = entry->targetRecordId;
+    pageActionOrCopiedDword = entry->pageAction;
+    /* gameplay settings, quit confirmation, credits and closing are refused in network sessions, network
+       setup without a network backend */
+    if (((pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE &&
+          pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE &&
+          pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_CREDITS && -1 < (int)pageActionOrCopiedDword) ||
+         (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL) &&
+        (pageActionOrCopiedDword != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE || g_NetworkBackendInstanceCount != 0)) {
+      if (entry->activationSoundIndex != 0 && suppressActivationSound == 0 &&
+          (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[entry->activationSoundIndex] != NULL) {
         g_SoundPlayOneShot
                   (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                   (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[record[3].recordId]
-                  );
+                   (DirectSoundVoiceSet *)(&g_FrontendMenuSoundVoiceSetTable100)[entry->activationSoundIndex]);
       }
       if (targetRecordId == 0) {
         if ((int)pageActionOrCopiedDword < 0) {
@@ -72,54 +67,48 @@ void FrontendRomActionTable_ExecuteRecord
           g_FrontendPendingPageAction = pageActionOrCopiedDword;
         }
       }
-      else if ((targetRecordId != 0) && (1 < (int)record[3].byteSize)) {
-        lastKeyframeIndex = record[3].byteSize - 1;
-        /* Keyframe 0 (record[5].rootNodeOffsetOrPointer = keyframes[0]) = snapshot of the menu room camera:
-           WorldRuntimeContext.motion of menuRoomModelView, positionX/Y/Z, positionMagnitude, headingAngle,
-           pitchAngle; its timeQ12 is 0. */
+      else if (targetRecordId != 0 && 1 < (int)entry->keyframeCount) {
+        lastKeyframeIndex = entry->keyframeCount - 1;
+        /* Keyframe 0 = snapshot of the menu room camera (WorldRuntimeContext.motion of menuRoomModelView):
+           position X/Y/Z, magnitude, heading, pitch; its timeQ12 is 0. */
         pageActionOrCopiedDword =
              ((WorldRuntimeContext *)FRONTEND_UI(frontendRootNode,menuRoomModelView))->motion.positionYQ12;
-        record[5].rootNodeOffsetOrPointer =
+        entry->keyframes[0].channel0Q12 =
              ((WorldRuntimeContext *)FRONTEND_UI(frontendRootNode,menuRoomModelView))->motion.positionXQ12;
-        record[5].recordId = pageActionOrCopiedDword;
+        entry->keyframes[0].channel1Q12 = pageActionOrCopiedDword;
         copiedDword =
              ((WorldRuntimeContext *)FRONTEND_UI(frontendRootNode,menuRoomModelView))->motion.positionMagnitudeQ12;
-        record[6].byteSize =
+        entry->keyframes[0].channel2Q12 =
              ((WorldRuntimeContext *)FRONTEND_UI(frontendRootNode,menuRoomModelView))->motion.positionZQ12;
-        record[6].rootNodeOffsetOrPointer = copiedDword;
+        entry->keyframes[0].channel3Q12 = copiedDword;
         copiedByteSize =
              ((WorldRuntimeContext *)FRONTEND_UI(frontendRootNode,menuRoomModelView))->motion.pitchAngle;
-        record[6].recordId =
+        entry->keyframes[0].channel4Q12 =
              ((WorldRuntimeContext *)FRONTEND_UI(frontendRootNode,menuRoomModelView))->motion.headingAngle;
-        record[7].byteSize = copiedByteSize;
-        record[7].rootNodeOffsetOrPointer = 0;
+        entry->keyframes[0].channel5Q12 = copiedByteSize;
+        entry->keyframes[0].timeQ12 = 0;
         targetLookup = RomRegistry_FindRecordById(targetRecordId);
-        targetRecord = targetLookup.recordOrError;
+        targetRecord = (RomRecord *)targetLookup.recordOrError;
         if (!targetLookup.notFound) {
-          pageActionOrCopiedDword = record[2].recordId;
-          /* The six channels of the last keyframe become the target record's camera pose (+0x20..+0x34); its
-             timeQ12 comes from the action entry. */
-          copiedByteSize = targetRecord[3].byteSize;
-          ((FrontendRomActionEntry *)record)->keyframes[lastKeyframeIndex].channel0Q12 =
-               targetRecord[2].recordId;
-          ((FrontendRomActionEntry *)record)->keyframes[lastKeyframeIndex].channel1Q12 =
-               copiedByteSize;
-          copiedRecordId = targetRecord[3].recordId;
-          ((FrontendRomActionEntry *)record)->keyframes[lastKeyframeIndex].channel2Q12 =
-               targetRecord[3].rootNodeOffsetOrPointer;
-          ((FrontendRomActionEntry *)record)->keyframes[lastKeyframeIndex].channel3Q12 =
-               copiedRecordId;
-          copiedDword = targetRecord[4].rootNodeOffsetOrPointer;
-          ((FrontendRomActionEntry *)record)->keyframes[lastKeyframeIndex].channel4Q12 =
-               targetRecord[4].byteSize;
-          ((FrontendRomActionEntry *)record)->keyframes[lastKeyframeIndex].channel5Q12 = copiedDword;
+          pageActionOrCopiedDword = entry->pageAction;
+          /* The six channels of the last keyframe become the target record's camera pose; its timeQ12 comes
+             from the action entry. */
+          copiedByteSize = targetRecord->cameraYQ12;
+          entry->keyframes[lastKeyframeIndex].channel0Q12 = targetRecord->cameraXQ12;
+          entry->keyframes[lastKeyframeIndex].channel1Q12 = copiedByteSize;
+          copiedRecordId = targetRecord->cameraMagnitudeQ12;
+          entry->keyframes[lastKeyframeIndex].channel2Q12 = targetRecord->cameraZQ12;
+          entry->keyframes[lastKeyframeIndex].channel3Q12 = copiedRecordId;
+          copiedDword = targetRecord->cameraPitchAngle;
+          entry->keyframes[lastKeyframeIndex].channel4Q12 = targetRecord->cameraHeadingAngle;
+          entry->keyframes[lastKeyframeIndex].channel5Q12 = copiedDword;
           /* The first argument is stored as the pending transition value, i.e. the record to activate when
              the camera flight ends (see FrontendRomTransition_ProcessPendingRecord). */
-          FrontendRomTransition_InitializeFromRecord(targetRecordId,record);
+          FrontendRomTransition_InitializeFromRecord(targetRecordId,entry);
           visibilityLookupFailed =
                RomRuntime_UpdateRecordVisibilityAndDescriptors(pageActionOrCopiedDword,targetRecordId);
           if (visibilityLookupFailed) {
-            g_FrontendRomTransitionPendingCount = 0;
+            g_FrontendRomTransitionTargetRecordId = 0;
           }
         }
       }
@@ -130,45 +119,39 @@ void FrontendRomActionTable_ExecuteRecord
 
 
 /* Address: 0x00546450.
-   Ownership: assets/rom/runtime.
-   Purpose: Validates the 'rom' magic and converter version 0x00010005, then prepares recordCount variable-size
-   records beginning at +0x200. Each successful record advances by its leading byteSize. Invalid headers update the
-   package last-error path. CF and EAX status are preserved.
-   Local calls: RomAssetRecord_RegisterAndRelocate.
-   Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
+   Checks that the asset is a 'rom' of converter version 0x10005 and registers each of its variable-size
+   records (from +0x200, each advanced by its leading byteSize) with RomAssetRecord_RegisterAndRelocate. An
+   invalid header leaves "engine\zentrale.rom" in g_PackageLastErrorPath. CF set on failure, EAX the status.
 */
 StatusResult RomAsset_PrepareRecords(RomAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
-  RomAssetHeader *record;
+  RomAssetRecordPrefix *record;
   StatusResult registerResult;
   StatusResult failureResult;
-  
-  registrationStatusCode = ROM_ASSET_REGISTRATION_FAILURE_SENTINEL_0x3B;
-  if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_ROM) &&
-     ((asset->recordCountHeader).common.converterVersion == PCK_CONVERTER_ROM_00010005)) {
-    recordsRemaining = (asset->recordCountHeader).recordCount;
-    record = asset + 1;
-    while( true ) {
-      if (recordsRemaining == 0) {
-        registerResult.failed = false;
-        registerResult.valueOrError = registrationStatusCode;
-        return registerResult;
-      }
-      registerResult = RomAssetRecord_RegisterAndRelocate((RomAssetRecordPrefix *)record,asset);
+
+  /* an invalid header also fails with the registry-full code */
+  registrationStatusCode = FATAL_ERROR_ROM_REGISTRY_FULL;
+  if (asset->recordCountHeader.common.magic == ASSET_MAGIC_ROM &&
+      asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_ROM_00010005) {
+    record = (RomAssetRecordPrefix *)(asset + 1);
+    for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
+      registerResult = RomAssetRecord_RegisterAndRelocate(record,asset);
       registrationStatusCode = registerResult.valueOrError;
-      if (registerResult.failed) break;
-      record = (RomAssetHeader *)
-               ((record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-               ((record->recordCountHeader).common.magic - 0x28));
-      recordsRemaining = recordsRemaining - 1;
+      if (registerResult.failed) goto ReturnFailure;
+      /* advance by the record's leading byte size */
+      record = (RomAssetRecordPrefix *)((uint8_t *)record + record->byteSize);
     }
+    registerResult.failed = false;
+    registerResult.valueOrError = registrationStatusCode;
+    return registerResult;
   }
   else {
     Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
   }
+ReturnFailure:
   failureResult.failed = true;
   failureResult.valueOrError = registrationStatusCode;
   return failureResult;
@@ -176,12 +159,9 @@ StatusResult RomAsset_PrepareRecords(RomAssetHeader *asset)
 
 
 /* Address: 0x005466A0.
-   Ownership: assets/rom/runtime.
-   Purpose: Walks all 256 ROM registry slots, builds a runtime node tree for each populated record, stores the root
-   in the paired registry slot, and links it into the owning world list.
-   Local calls: RomRuntime_BuildNodeTreeRecursive.
-   Cross-module calls: WorldRuntime_LinkNodeIntoOwnerListD8 [world/runtime/core],
-   ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
+   Builds the runtime node tree of every registered ROM record (tinted with the record's nodeTintArgb), stores
+   its root in the registry slot, links it into its world's owner list and computes its transforms. Returns
+   true (CF) when a node allocation fails.
 */
 bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
 
@@ -192,25 +172,23 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
   RomRegistrySlot *slotCursor;
   ModelNodeCreateResult buildResult;
   
-  slotsRemaining = 0x100;
   slotCursor = g_RomRegistrySlots;
-  do {
+  for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     slotRecord = slotCursor->record;
-    if (slotRecord != (RomAssetRecordPrefix *)0x0) {
+    if (slotRecord != NULL) {
       buildResult = RomRuntime_BuildNodeTreeRecursive
-                        (slotRecord[5].rootNodeOffsetOrPointer,
-                         (RomSerializedNodeHeader34 *)slotRecord->rootNodeOffsetOrPointer,worldRuntime);
+                        (((RomRecord *)slotRecord)->nodeTintArgb,
+                         (RomSerializedNodeHeader *)slotRecord->rootNodeOffsetOrPointer,worldRuntime);
       modelNodeRuntime = buildResult.modelNode;
       if (buildResult.failed) {
         return true;
       }
       slotCursor->runtimeRootNode = (WorldRuntimeNode *)modelNodeRuntime;
-      WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)modelNodeRuntime);
+      WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode *)modelNodeRuntime);
       ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     }
     slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
-  } while (slotsRemaining != 0);
+  }
   return false;
 }
 
@@ -230,16 +208,16 @@ void FrontendRomTransition_ProcessPendingRecord(void)
   StatusResult activateResult;
 
   g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
-  /* g_FrontendRomTransitionPendingCount holds the target record id of the running flight (-1 = none to
+  /* g_FrontendRomTransitionTargetRecordId holds the target record id of the running flight (-1 = none to
      activate, 0 = no flight). */
-  pendingRecordId = g_FrontendRomTransitionPendingCount;
+  pendingRecordId = g_FrontendRomTransitionTargetRecordId;
   menuRoomView = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
-  if (g_FrontendRomTransitionPendingCount != 0) {
+  if (g_FrontendRomTransitionTargetRecordId != 0) {
     splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,
                        g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
                        menuRoomView);
-    if ((!splineStillRunning) && (g_FrontendRomTransitionPendingCount = 0, -1 < (int)pendingRecordId)) {
+    if ((!splineStillRunning) && (g_FrontendRomTransitionTargetRecordId = 0, -1 < (int)pendingRecordId)) {
       activateResult = FrontendRomTransition_ActivateRecordById(pendingRecordId,menuRoomView);
       FatalError_ExitIfFailed(activateResult.valueOrError,activateResult.failed);
     }
@@ -250,10 +228,8 @@ void FrontendRomTransition_ProcessPendingRecord(void)
 
 
 /* Address: 0x00547400.
-   Ownership: assets/rom/runtime.
-   Purpose: Walks exactly 256 ROM registry slots, releases nested resources reachable through each record root,
-   then clears both dwords of every eight-byte slot. All saved registers and EAX are preserved.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Releases the sprite asset of every node of every registered ROM record and empties all 256 registry slots.
+   All saved registers and EAX are preserved.
 */
 void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 
@@ -262,37 +238,35 @@ void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
   RomRegistrySlot *slotCursor;
   uint8_t *node;
 
-  slotsRemaining = 0x100;
   slotCursor = g_RomRegistrySlots;
-  do {
-    if ((slotCursor->record != (RomAssetRecordPrefix *)0x0) &&
-       (node = (uint8_t *)slotCursor->record->rootNodeOffsetOrPointer, node != (uint8_t *)0x0)) {
+  for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
+    if (slotCursor->record != NULL &&
+        (node = (uint8_t *)slotCursor->record->rootNodeOffsetOrPointer, node != NULL)) {
       /* Rewritten from the assembly (0x00547432-0x00547474): depth-first walk over the relocated sprite-node
-         tree (RomSerializedNodeHeader34), releasing every node's sprite asset. The original keeps
+         tree (RomSerializedNodeHeader), releasing every node's sprite asset. The original keeps
          {remaining, nextChild, node} frames on the machine stack (EBX = depth).
          The same tree is walked by RomAssetRecord_RegisterAndRelocate. */
       struct { uint8_t *node; uint32_t nextChild; uint32_t remaining; } frames[64];
       int depth = 0;
       for (;;) {
-        frames[depth].remaining = ((RomSerializedNodeHeader34 *)node)->childCount;
+        frames[depth].remaining = ((RomSerializedNodeHeader *)node)->childCount;
         frames[depth].nextChild = 0;
-        Resource_Release(((RomSerializedNodeHeader34 *)node)->spriteAssetReference.spriteAsset);
+        Resource_Release(((RomSerializedNodeHeader *)node)->spriteAssetReference.spriteAsset);
         frames[depth].node = node;
         depth++;
-        while ((frames[depth - 1].remaining == 0) && (--depth != 0)) {
+        while (frames[depth - 1].remaining == 0 && --depth != 0) {
         }
         if (depth == 0) break;
-        node = (uint8_t *)((RomSerializedNodeHeader34 *)frames[depth - 1].node)->
+        node = (uint8_t *)((RomSerializedNodeHeader *)frames[depth - 1].node)->
                childReferences[frames[depth - 1].nextChild].node;
         frames[depth - 1].nextChild++;
         frames[depth - 1].remaining--;
       }
     }
-    slotCursor->record = (RomAssetRecordPrefix *)0x0;
-    slotCursor->runtimeRootNode = (WorldRuntimeNode *)0x0;
+    slotCursor->record = NULL;
+    slotCursor->runtimeRootNode = NULL;
     slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
-  } while (slotsRemaining != 0);
+  }
 }
 
 
@@ -303,7 +277,7 @@ void FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 void FrontendRomTransition_RequestStop(void)
 
 {
-  if (g_FrontendRomTransitionPendingCount != 0) {
+  if (g_FrontendRomTransitionTargetRecordId != 0) {
     g_FrontendRomTransitionElapsedTicks = FRONTEND_ROM_TRANSITION_SKIP_TICKS;
   }
   return;
@@ -320,15 +294,13 @@ RomAssetRecordPrefix * RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue sl
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
 
-  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
-  do {
+  for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     if ((WorldRuntimeNode *)slotValue == slotCursor->runtimeRootNode) {
       return slotCursor->record;
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   return NULL;
 }
 
@@ -344,15 +316,13 @@ uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
 
-  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
-  do {
+  for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     if (record == slotCursor->record) {
       return (uint32_t)slotCursor->runtimeRootNode;
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   return 0;
 }
 
@@ -365,18 +335,17 @@ void * RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
 {
   int recordsRemaining;
 
-  recordsRemaining = *(int *)((int)recordTable + FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET);
+  recordsRemaining = ((RomRecord *)recordTable)->entryCount;
   /* the cursor starts at the header, so the entry it tests lies one header size further on */
   while( true ) {
     if (recordsRemaining == 0) {
       return NULL;
     }
-    if (recordId == *(RomRecordId *)((int)recordTable + (FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE +
-                                                          ROM_RECORD_TABLE_ENTRY_ID_OFFSET))) break;
+    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)recordTable + 1))->linkedRecordId) break;
     recordsRemaining--;
-    recordTable = (void *)((int)recordTable + FRONTEND_ROM_ACTION_ENTRY_SIZE);
+    recordTable = (uint8_t *)recordTable + FRONTEND_ROM_ACTION_ENTRY_SIZE;
   }
-  return (void *)((int)recordTable + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE);
+  return (RomRecord *)recordTable + 1;
 }
 
 
@@ -390,34 +359,27 @@ RomRecordTableIndex RomRecordTable_FindIndexById(RomRecordId recordId,void *tabl
   int recordIndex;
   int recordsRemaining;
 
-  recordsRemaining = *(int *)((int)table + FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET);
+  recordsRemaining = ((RomRecord *)table)->entryCount;
   recordIndex = 0;
   while( true ) {
     if (recordsRemaining == 0) {
       return 0xffffffff;
     }
-    if (recordId == *(RomRecordId *)((int)table + (FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE +
-                                                    ROM_RECORD_TABLE_ENTRY_ID_OFFSET))) break;
+    if (recordId == ((FrontendRomActionEntry *)((RomRecord *)table + 1))->linkedRecordId) break;
     recordIndex++;
     recordsRemaining--;
-    table = (void *)((int)table + FRONTEND_ROM_ACTION_ENTRY_SIZE);
+    table = (uint8_t *)table + FRONTEND_ROM_ACTION_ENTRY_SIZE;
   }
   return recordIndex;
 }
 
 
 /* Address: 0x005484D0.
-   Ownership: assets/rom/runtime.
-   Purpose: Finds a ROM record by ID, updates registry-node visibility and indexed descriptors against the selected
-   record masks, applies world motion parameters, and returns status through CF. Typed parameters: p0
-   recordId→RomRecordId_V308. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: RomRegistry_FindRecordById, RomRegistry_FindSlotValueByRecordId,
-   RomRuntime_ApplyIndexedDescriptor.
-   Cross-module calls: GraphicsShadingRuntime_ClearRecordTable [graphics/render/shading],
-   WorldRuntime_SetPosition60AndDistanceFromPosition80 [world/runtime/core],
-   WorldRuntime_SetMotionParameters6CThrough78Clamped [world/runtime/core], UiActionQueue_Enqueue
-   [ui/core/runtime].
+   Makes a ROM record the active menu-room location: clears the shading lights, marks the runtime nodes of the
+   records linked from its entries (ROM_NODE_FLAG_ACTION_TARGET), hides every record node except the active
+   record and those in its visibleRecordMask (whose lights are created), then moves the camera to the record's
+   pose. Afterwards the pending transition value (g_FrontendRomTransitionPageAction) is applied: negative
+   closes the view, positive becomes the pending page action. CF set when the record is not registered.
 */
 StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
 
@@ -441,44 +403,51 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
   activeRecordResult.valueOrError = recordLookup.recordOrError;
   if (!recordLookup.notFound) {
     recordCursor = activeRecordResult.valueOrError;
-    g_FrontendActiveRomRecordTable = activeRecordResult.valueOrError;
+    g_FrontendActiveRomRecord = activeRecordResult.valueOrError;
     slotCursor = g_RomRegistrySlots;
-    for (companionsRemaining = ((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[5].byteSize; g_RomRegistrySlots = slotCursor, companionsRemaining != 0;
-        companionsRemaining = companionsRemaining - 1) {
-      statusResult = RomRegistry_FindSlotValueByRecordId(recordCursor[0x2d].byteSize);
+    /* mark the records linked from the entries (recordCursor walks the entries: header + 0x200 * i) */
+    for (companionsRemaining = ((RomRecord *)activeRecordResult.valueOrError)->entryCount;
+         g_RomRegistrySlots = slotCursor, companionsRemaining != 0; companionsRemaining--) {
+      statusResult = RomRegistry_FindSlotValueByRecordId
+                               (((FrontendRomActionEntry *)((RomRecord *)recordCursor + 1))->linkedRecordId);
       if (!statusResult.failed) {
         slotNodeFlags = (uint32_t *)&((WorldRuntimeNode *)statusResult.valueOrError)->runtimeFlags;
-        *slotNodeFlags = *slotNodeFlags | 0x20;
+        *slotNodeFlags = *slotNodeFlags | ROM_NODE_FLAG_ACTION_TARGET;
       }
-      recordCursor = (RomAssetRecordPrefix *)&recordCursor[0x2a].recordId;
+      recordCursor = (RomAssetRecordPrefix *)((uint8_t *)recordCursor + FRONTEND_ROM_ACTION_ENTRY_SIZE);
       slotCursor = g_RomRegistrySlots;
     }
-    slotsRemaining = 0x100;
+    /* hide every record node, then show the active record and those in its visibleRecordMask */
+    slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
     do {
       recordCursor = slotCursor->record;
       rootNode = slotCursor->runtimeRootNode;
-      if ((recordCursor != (RomAssetRecordPrefix *)0x0) &&
-         ((nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | 0x40, activeRecordResult.valueOrError == recordCursor
-          || (((&((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[1].rootNodeOffsetOrPointer)[recordCursor->recordId >> 5] &
-              1 << ((uint8_t)recordCursor->recordId & 0x1f)) != 0)))) {
+      if (recordCursor != NULL &&
+          (nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | ROM_NODE_FLAG_HIDDEN,
+           activeRecordResult.valueOrError == recordCursor ||
+           (((RomRecord *)activeRecordResult.valueOrError)->visibleRecordMask[recordCursor->recordId >> 5] &
+            1 << ((uint8_t)recordCursor->recordId & 0x1f)) != 0)) {
         nodeFlags = &rootNode->runtimeFlags;
-        *nodeFlags = *nodeFlags & 0xffffffbf;
+        *nodeFlags = *nodeFlags & ~ROM_NODE_FLAG_HIDDEN;
         entryIndex = 0;
-        for (descriptorsRemaining = recordCursor[4].recordId; descriptorsRemaining != 0; descriptorsRemaining = descriptorsRemaining - 1) {
+        for (descriptorsRemaining = ((RomRecord *)recordCursor)->lightCount; descriptorsRemaining != 0;
+             descriptorsRemaining--) {
           RomRuntime_ApplyIndexedDescriptor(entryIndex,recordCursor);
           entryIndex = entryIndex + 1;
         }
       }
-      transitionContextValue = g_FrontendRomTransitionContextValue;
+      transitionContextValue = g_FrontendRomTransitionPageAction;
       slotCursor = slotCursor + 1;
-      slotsRemaining = slotsRemaining + -1;
+      slotsRemaining--;
     } while (slotsRemaining != 0);
     WorldRuntime_SetPosition60AndDistanceFromPosition80
-              (((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[3].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[3].byteSize,
-               ((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[2].recordId,worldRuntime);
+              (((RomRecord *)activeRecordResult.valueOrError)->cameraZQ12,
+               ((RomRecord *)activeRecordResult.valueOrError)->cameraYQ12,
+               ((RomRecord *)activeRecordResult.valueOrError)->cameraXQ12,worldRuntime);
     WorldRuntime_SetMotionParameters6CThrough78Clamped
-              (2,((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[4].rootNodeOffsetOrPointer,((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[4].byteSize,
-               ((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[3].recordId,worldRuntime);
+              (2,((RomRecord *)activeRecordResult.valueOrError)->cameraPitchAngle,
+               ((RomRecord *)activeRecordResult.valueOrError)->cameraHeadingAngle,
+               ((RomRecord *)activeRecordResult.valueOrError)->cameraMagnitudeQ12,worldRuntime);
     if (transitionContextValue != 0) {
       if ((int)transitionContextValue < 0) {
         UiActionQueue_Enqueue(0,worldRuntime);
@@ -497,14 +466,9 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
 
 
 /* Address: 0x00548600.
-   Ownership: assets/rom/runtime.
-   Purpose: Clears runtime bit 0x20 across the exact 256-slot ROM registry, resolves the requested record, clears
-   and rebuilds bit 0x40 visibility from the selected and companion record masks, and replays every indexed
-   descriptor for visible records. CF clear reports success and CF set reports lookup failure. Typed parameters: p1
-   recordId→RomRecordId_V308. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: RomRegistry_FindRecordById, RomRuntime_ApplyIndexedDescriptor.
-   Cross-module calls: GraphicsShadingRuntime_ClearRecordTable [graphics/render/shading].
+   Clears ROM_NODE_FLAG_ACTION_TARGET on every registry node, stores frontendValue as the pending transition
+   value and, when recordId is registered, shows only the target record, the active record and the records in
+   either one's visibleRecordMask, creating their lights. Returns true (CF) when recordId is not registered.
 */
 bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
 
@@ -519,42 +483,44 @@ bool RomRuntime_UpdateRecordVisibilityAndDescriptors(RomVisibilityFrontendValue 
   RomRegistrySlot *slotCursor;
   RomRecordResult recordLookup;
   
-  slotsRemaining = 0x100;
-  g_FrontendRomTransitionContextValue = frontendValue;
+  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
+  g_FrontendRomTransitionPageAction = frontendValue;
   slotCursor = g_RomRegistrySlots;
   do {
-    if (slotCursor->runtimeRootNode != (WorldRuntimeNode *)0x0) {
+    if (slotCursor->runtimeRootNode != NULL) {
       nodeFlags = &slotCursor->runtimeRootNode->runtimeFlags;
-      *nodeFlags = *nodeFlags & 0xffffffdf;
+      *nodeFlags = *nodeFlags & ~ROM_NODE_FLAG_ACTION_TARGET;
     }
     slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
   recordLookup = RomRegistry_FindRecordById(recordId);
   if (!recordLookup.notFound) {
     GraphicsShadingRuntime_ClearRecordTable();
-    slotsRemaining = 0x100;
+    /* hide every record node, then show the target and active records and those in either visibleRecordMask */
+    slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
     slotCursor = g_RomRegistrySlots;
     do {
       record = slotCursor->record;
       rootNode = slotCursor->runtimeRootNode;
-      if ((record != (RomAssetRecordPrefix *)0x0) &&
-         (((nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | 0x40, record == recordLookup.recordOrError
-           || (record == g_FrontendActiveRomRecordTable)) ||
-          (maskWordIndex = record->recordId >> 5,
-          (1 << ((uint8_t)record->recordId & 0x1f) &
-          ((&recordLookup.recordOrError[1].rootNodeOffsetOrPointer)[maskWordIndex] |
-          (&((RomAssetRecordPrefix *)(uintptr_t)g_FrontendActiveRomRecordTable)[1].rootNodeOffsetOrPointer)[maskWordIndex])) != 0)))) {
+      if (record != NULL &&
+          (nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | ROM_NODE_FLAG_HIDDEN,
+           record == recordLookup.recordOrError || record == g_FrontendActiveRomRecord ||
+           (maskWordIndex = record->recordId >> 5,
+            (1 << ((uint8_t)record->recordId & 0x1f) &
+             (((RomRecord *)recordLookup.recordOrError)->visibleRecordMask[maskWordIndex] |
+              ((RomRecord *)g_FrontendActiveRomRecord)->visibleRecordMask[maskWordIndex])) != 0))) {
         nodeFlags = &rootNode->runtimeFlags;
-        *nodeFlags = *nodeFlags & 0xffffffbf;
+        *nodeFlags = *nodeFlags & ~ROM_NODE_FLAG_HIDDEN;
         entryIndex = 0;
-        for (descriptorsRemaining = record[4].recordId; descriptorsRemaining != 0; descriptorsRemaining = descriptorsRemaining - 1) {
+        for (descriptorsRemaining = ((RomRecord *)record)->lightCount; descriptorsRemaining != 0;
+             descriptorsRemaining--) {
           RomRuntime_ApplyIndexedDescriptor(entryIndex,record);
           entryIndex = entryIndex + 1;
         }
       }
       slotCursor = slotCursor + 1;
-      slotsRemaining = slotsRemaining + -1;
+      slotsRemaining--;
     } while (slotsRemaining != 0);
     return false;
   }
@@ -581,9 +547,8 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
   SpriteRegisterResult registerResult;
   StatusResult successResult;
   
-  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
-  do {
+  for (slotsRemaining = ROM_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
     if (slotCursor->record == NULL) {
       rootNodeOffset = record->rootNodeOffsetOrPointer;
       slotCursor->record = record;
@@ -592,11 +557,9 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
         successResult.valueOrError = (uint32_t)assetBase;
         return successResult;
       }
-      record->rootNodeOffsetOrPointer =
-           (uint32_t)((assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
-                  + (record->rootNodeOffsetOrPointer - 0x28));
-      rootSerializedNode = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-               (rootNodeOffset - 0x28);
+      /* asset start + serialized offset */
+      record->rootNodeOffsetOrPointer = (uint32_t)((uint8_t *)assetBase + record->rootNodeOffsetOrPointer);
+      rootSerializedNode = (uint8_t *)assetBase + rootNodeOffset;
       /* Rewritten from the assembly (0x005463A1-0x00546436): depth-first walk over the serialized
          sprite-node tree. The original keeps {node, nextChild, remaining} frames on the machine stack
          (EBX = depth), which Ghidra could only show as unaffected ESI/EBP registers. Child offsets are
@@ -607,8 +570,9 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
         uint8_t *node = rootSerializedNode;
         for (;;) {
           /* the sprite file name (UTF-16) follows the node header */
-          WidePath_SetExtensionCode(0x727073,(uint16_t *)(((RomSerializedNodeHeader34 *)node) + 1)); /* ".spr"; never sets CF */
-          loadResult = Package_LoadEntry((uint16_t *)(((RomSerializedNodeHeader34 *)node) + 1));
+          /* never sets CF */
+          WidePath_SetExtensionCode(ASSET_MAGIC_SPR,(uint16_t *)((RomSerializedNodeHeader *)node + 1));
+          loadResult = Package_LoadEntry((uint16_t *)((RomSerializedNodeHeader *)node + 1));
           if (loadResult.failed) {
             failureResult.failed = true;
             failureResult.valueOrError = (uint32_t)loadResult.bufferOrError;
@@ -617,12 +581,13 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
           asset = loadResult.bufferOrError;
           existingSprite = SpriteAssetRegistry_FindById(((SpriteAssetHeader *)asset)->registryHeader.registryId);
           if (existingSprite != NULL) {
-            ((RomSerializedNodeHeader34 *)node)->spriteAssetReference.spriteAsset = existingSprite;
+            ((RomSerializedNodeHeader *)node)->spriteAssetReference.spriteAsset = existingSprite;
             Resource_Release(asset);
           }
           else {
-            ((RomSerializedNodeHeader34 *)node)->ownedNestedResourcePresent++; /* set only for sprites this node loaded itself */
-            ((RomSerializedNodeHeader34 *)node)->spriteAssetReference.spriteAsset = (SpriteAssetHeader *)asset;
+            /* set only for sprites this node loaded itself */
+            ((RomSerializedNodeHeader *)node)->ownedNestedResourcePresent++;
+            ((RomSerializedNodeHeader *)node)->spriteAssetReference.spriteAsset = (SpriteAssetHeader *)asset;
             registerResult = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
             if (registerResult.failed) {
               failureResult.failed = true;
@@ -632,7 +597,7 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
           }
           frames[depth].node = node;
           frames[depth].nextChild = 0;
-          frames[depth].remaining = ((RomSerializedNodeHeader34 *)node)->childCount;
+          frames[depth].remaining = ((RomSerializedNodeHeader *)node)->childCount;
           depth++;
           while (frames[depth - 1].remaining == 0) {
             depth--;
@@ -643,7 +608,7 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
             }
           }
           {
-            uint32_t *child = (uint32_t *)&((RomSerializedNodeHeader34 *)frames[depth - 1].node)->
+            uint32_t *child = (uint32_t *)&((RomSerializedNodeHeader *)frames[depth - 1].node)->
                               childReferences[frames[depth - 1].nextChild];
             *child = *child + (uint32_t)assetBase;
             frames[depth - 1].nextChild++;
@@ -654,8 +619,7 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
       }
     }
     slotCursor++;
-    slotsRemaining--;
-  } while (slotsRemaining != 0);
+  }
   Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
   failureResult.failed = true;
   failureResult.valueOrError = FATAL_ERROR_ROM_REGISTRY_FULL;
@@ -664,24 +628,21 @@ StatusResult RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,Rom
 
 
 /* Address: 0x005464C0.
-   Ownership: assets/rom/runtime.
-   Purpose: Recursively allocates and initializes one runtime node from a ROM record tree, copies transform and
-   descriptor fields, links child runtime nodes, and returns the new node in EAX. Typed parameters: p2
-   stateTintArgb→PackedArgb32. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Typed parameters: p3 romNodeRecord→RomRuntimeNodeRecordAddress32_V345, p4 worldObjectArray→WorldRuntimeContext
-   *.
-   Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core].
+   Allocates the runtime node for one serialized ROM sprite node and its children: the node takes the local
+   rotation of the serialized node, the central frontend palette and texture set, the given tint and the
+   sprite's model resource; each child is placed at the matching attachment point (packed point key class 0,
+   key index = child index) of the sprite, children without one are dropped. Returns the node in EAX, CF set
+   when no world object record is free.
 */
 ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
-          (PackedArgb32 stateTintArgb,RomSerializedNodeHeader34 *romNodeRecord,
+          (PackedArgb32 stateTintArgb,RomSerializedNodeHeader *romNodeRecord,
           WorldRuntimeContext *worldObjectArray)
 
 {
   AngleTurn32 rotationAngle0;
   AngleTurn32 rotationAngle1;
   AngleTurn32 rotationAngle2;
-  ModelResourceHitTestAndRenderView210 *spriteModelResource;
+  ModelResource *spriteModelResource;
   Q12 boundingRadius;
   uint32_t translationY;
   uint32_t translationZ;
@@ -702,22 +663,22 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
     createResult.modelNode = newNode;
     return createResult;
   }
-  (newNode->modelPayload).localTranslationXQ12 = 0;
-  (newNode->modelPayload).localTranslationYQ12 = 0;
-  (newNode->modelPayload).localTranslationZQ12 = 0;
-  (newNode->worldTransform).translation.x = 0;
-  (newNode->worldTransform).translation.y = 0;
-  (newNode->worldTransform).translation.z = 0;
+  newNode->modelPayload.localTranslationXQ12 = 0;
+  newNode->modelPayload.localTranslationYQ12 = 0;
+  newNode->modelPayload.localTranslationZQ12 = 0;
+  newNode->worldTransform.translation.x = 0;
+  newNode->worldTransform.translation.y = 0;
+  newNode->worldTransform.translation.z = 0;
   rotationAngle0 = romNodeRecord->localRotationAngle0;
   rotationAngle1 = romNodeRecord->localRotationAngle1;
   rotationAngle2 = romNodeRecord->localRotationAngle2;
-  (newNode->modelPayload).localRotationAngle0 = rotationAngle0;
-  (newNode->modelPayload).localRotationAngle1 = rotationAngle1;
-  (newNode->modelPayload).localRotationAngle2 = rotationAngle2;
-  (newNode->modelPayload).worldRotationAngle0 = rotationAngle0;
-  (newNode->modelPayload).worldRotationAngle1 = rotationAngle1;
-  (newNode->modelPayload).worldRotationAngle2 = rotationAngle2;
-  (newNode->modelPayload).meshGroupMask = 0xffffffff;
+  newNode->modelPayload.localRotationAngle0 = rotationAngle0;
+  newNode->modelPayload.localRotationAngle1 = rotationAngle1;
+  newNode->modelPayload.localRotationAngle2 = rotationAngle2;
+  newNode->modelPayload.worldRotationAngle0 = rotationAngle0;
+  newNode->modelPayload.worldRotationAngle1 = rotationAngle1;
+  newNode->modelPayload.worldRotationAngle2 = rotationAngle2;
+  newNode->modelPayload.meshGroupMask = 0xffffffff;
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
   /* four byte stores in this form: indexing the bytes changes the store order in the build */
   *(uint8_t *)&newNode->textureSubresourceBaseIndex = 0;
@@ -726,24 +687,27 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
   *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
   newNode->tintArgb = stateTintArgb;
   centralTextureSet = g_FrontendCentralTextureSet;
-  spriteModelResource = (romNodeRecord->spriteAssetReference).modelResource;
-  (newNode->modelPayload).paletteAsset = g_FrontendCentralPaletteAsset;
+  spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
+  newNode->modelPayload.paletteAsset = g_FrontendCentralPaletteAsset;
   boundingRadius = spriteModelResource->boundingRadiusQ12;
-  (newNode->modelPayload).textureSet = centralTextureSet;
+  newNode->modelPayload.textureSet = centralTextureSet;
   newNode->subtreeBoundingRadiusQ12 = boundingRadius;
-  (newNode->modelPayload).modelResource = spriteModelResource;
-  newNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
-  newNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
+  newNode->modelPayload.modelResource = spriteModelResource;
+  newNode->shadingRecord = NULL;
+  newNode->modelRuntimeLinkOrSavedOffset = NULL;
   newNode->runtimeStateA0 = (uint32_t)&spriteModelResource->firstMeshGroupRelativeOffset;
   childSlotsRemaining = romNodeRecord->childCount;
-  spriteModelResource = (romNodeRecord->spriteAssetReference).modelResource;
+  spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;
   childIndex = 0;
   newNode->childCount = childSlotsRemaining;
-  newNode->parentNode = (ModelRuntimeNode *)0x0;
+  newNode->parentNode = NULL;
   for (; childSlotsRemaining != 0; childSlotsRemaining = childSlotsRemaining - 1) {
-    lookupEntry = spriteModelResource->reserved00_AF + spriteModelResource->packedLookupTableRelativeOffset;
-    for (lookupEntriesRemaining = spriteModelResource->packedLookupTableEntryCount; lookupEntriesRemaining != 0; lookupEntriesRemaining = lookupEntriesRemaining - 1) {
-      if (((((ModelPackedPointRecord *)lookupEntry)->packedLookupKey & 0xf) == 0) && (childIndex == ((ModelPackedPointRecord *)lookupEntry)->packedLookupKey >> 4)) break;
+    /* the child's attachment point: the packed point with key class 0 and key index childIndex */
+    lookupEntry = (uint8_t *)spriteModelResource + spriteModelResource->packedLookupTableRelativeOffset;
+    for (lookupEntriesRemaining = spriteModelResource->packedLookupTableEntryCount; lookupEntriesRemaining != 0;
+         lookupEntriesRemaining--) {
+      if ((((ModelPackedPointRecord *)lookupEntry)->packedLookupKey & 0xf) == 0 &&
+          childIndex == ((ModelPackedPointRecord *)lookupEntry)->packedLookupKey >> 4) break;
       lookupEntry = lookupEntry + sizeof(ModelPackedPointRecord);
     }
     if (lookupEntriesRemaining == 0) {
@@ -762,9 +726,9 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
     resultOrChildNode->parentNode = newNode;
     translationY = ((ModelPackedPointRecord *)lookupEntry)->localPosition.y;
     translationZ = ((ModelPackedPointRecord *)lookupEntry)->localPosition.z;
-    (resultOrChildNode->modelPayload).localTranslationXQ12 = ((ModelPackedPointRecord *)lookupEntry)->localPosition.x;
-    (resultOrChildNode->modelPayload).localTranslationYQ12 = translationY;
-    (resultOrChildNode->modelPayload).localTranslationZQ12 = translationZ;
+    resultOrChildNode->modelPayload.localTranslationXQ12 = ((ModelPackedPointRecord *)lookupEntry)->localPosition.x;
+    resultOrChildNode->modelPayload.localTranslationYQ12 = translationY;
+    resultOrChildNode->modelPayload.localTranslationZQ12 = translationZ;
     childIndex = childIndex + 1;
   }
   createResult.failed = false;
@@ -774,21 +738,17 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
 
 
 /* Address: 0x005483C0.
-   Ownership: assets/rom/runtime.
-   Purpose: Publishes an exact ROM transition state: clears the result, stores the second argument as enable state,
-   copies record dword +0x24, stores record+0x40, and invokes the existing transition initializer. EAX is
-   preserved. Typed parameters: p0 transitionEnabled→FrontendBooleanState32_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: WorldMotionSpline_BuildSixChannelCurves [core/math/interpolation].
+   Starts a camera flight along the keyframes of a frontend ROM action entry: resets the elapsed ticks, stores
+   the keyframe count and keyframes and transitionEnabled (the record to activate at the end, see
+   FrontendRomTransition_ProcessPendingRecord) and builds the spline curves. EAX is preserved.
 */
-void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,RomAssetRecordPrefix *record)
+void FrontendRomTransition_InitializeFromRecord(FrontendBooleanState32 transitionEnabled,FrontendRomActionEntry *entry)
 
 {
   g_FrontendRomTransitionElapsedTicks = 0;
-  g_FrontendRomTransitionSplineKeyframeCount = record[3].byteSize;
-  g_FrontendRomTransitionPendingCount = transitionEnabled;
-  g_FrontendRomTransitionSplineKeyframes = &record[5].rootNodeOffsetOrPointer;
+  g_FrontendRomTransitionSplineKeyframeCount = entry->keyframeCount;
+  g_FrontendRomTransitionTargetRecordId = transitionEnabled;
+  g_FrontendRomTransitionSplineKeyframes = (uint32_t)entry->keyframes;
   WorldMotionSpline_BuildSixChannelCurves
             (g_FrontendRomTransitionSplineKeyframeCount,
              (WorldMotionSplineKeyframe *)g_FrontendRomTransitionSplineKeyframes);
@@ -810,8 +770,7 @@ StatusResult RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
 
   slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
-  while ((slotCursor->record == NULL ||
-         (recordId != slotCursor->record->recordId))) {
+  while (slotCursor->record == NULL || recordId != slotCursor->record->recordId) {
     slotCursor++;
     slotsRemaining--;
     if (slotsRemaining == 0) {
@@ -837,23 +796,23 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
 {
   uint32_t descriptorsRemaining;
   uint32_t *descriptorCursor;
-  PackedRgb24 *entryColorAndRadius;
+  RomRecordLight *light;
   int rootSpriteAddress;
 
-  if (entryIndex < record[4].recordId) {
+  if (entryIndex < ((RomRecord *)record)->lightCount) {
     rootSpriteAddress =
-         (int)((RomSerializedNodeHeader34 *)record->rootNodeOffsetOrPointer)->spriteAssetReference.raw;
-    entryColorAndRadius = (PackedRgb24 *)(entryIndex * 0x10 + 0x50 + (int)record);
+         (int)((RomSerializedNodeHeader *)record->rootNodeOffsetOrPointer)->spriteAssetReference.raw;
+    light = &((RomRecord *)record)->lights[entryIndex];
     descriptorCursor =
-         (uint32_t *)(rootSpriteAddress + (int)((ModelResourceHitTestAndRenderView210 *)rootSpriteAddress)->packedLookupTableRelativeOffset);
-    for (descriptorsRemaining = ((ModelResourceHitTestAndRenderView210 *)rootSpriteAddress)->packedLookupTableEntryCount;
+         (uint32_t *)(rootSpriteAddress + (int)((ModelResource *)rootSpriteAddress)->packedLookupTableRelativeOffset);
+    for (descriptorsRemaining = ((ModelResource *)rootSpriteAddress)->packedLookupTableEntryCount;
         descriptorsRemaining != 0; descriptorsRemaining--) {
       if (((*descriptorCursor & ROM_NODE_DESCRIPTOR_KIND_MASK) == ROM_NODE_DESCRIPTOR_KIND_LIGHT) &&
           (*descriptorCursor >> 4 == (entryIndex & 0xfffffff)))
       {
         /* descriptor dwords 1..3: world x, y, z (Q12) */
         GraphicsShadingRuntime_AllocateRecordRegs
-                  (0,entryColorAndRadius[1],*entryColorAndRadius,descriptorCursor[3],
+                  (0,light->radiusQ12,light->packedColorRgb,descriptorCursor[3],
                    descriptorCursor[2],descriptorCursor[1]);
         return;
       }
@@ -865,11 +824,8 @@ void RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRe
 
 
 /* Address: 0x00548740.
-   Ownership: assets/rom/runtime.
-   Purpose: Scans all 256 RomRegistrySlot records and returns the registered ROM record whose recordId matches.
-   Error 0x3C is returned with CF set on a miss. Typed parameters: p0 recordId→RomRecordId_V308. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
+   Returns the registered ROM record with this record id; FATAL_ERROR_ROM_RECORD_NOT_REGISTERED with CF set
+   when no registry slot holds one.
 */
 RomRecordResult RomRegistry_FindRecordById(RomRecordId recordId)
 
@@ -881,15 +837,14 @@ RomRecordResult RomRegistry_FindRecordById(RomRecordId recordId)
   RomRecordResult missResult;
   RomAssetRecordPrefix *candidateRecord;
   
-  slotsRemaining = 0x100;
+  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
-  while ((slotRecord = slotCursor->record, slotRecord == (RomAssetRecordPrefix *)0x0 ||
-         (recordId != slotRecord->recordId))) {
+  while (slotRecord = slotCursor->record, slotRecord == NULL || recordId != slotRecord->recordId) {
     slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotsRemaining--;
     if (slotsRemaining == 0) {
       missResult.notFound = true;
-      missResult.recordOrError = (RomAssetRecordPrefix *)0x3c;
+      missResult.recordOrError = (RomAssetRecordPrefix *)FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
       return missResult;
     }
   }

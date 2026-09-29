@@ -20,21 +20,23 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
 {
   UiAnchorFractionQ31 colorBiasQ16;
   UiAnchorFractionQ31 colorScaleQ16;
+  UiDisplaySettingsApplyButton *applyButton;
 
+  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
   /* the slider values (UiRangeSliderControl.value, +0x58) */
   colorBiasQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value;
   colorScaleQ16 = ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value;
-  if ((colorBiasQ16 != ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16) ||
-      (colorScaleQ16 != ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16)) {
-    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16 = colorBiasQ16;
-    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16 = colorScaleQ16;
+  if ((colorBiasQ16 != applyButton->selectedColorBiasQ16) ||
+      (colorScaleQ16 != applyButton->selectedColorScaleQ16)) {
+    applyButton->selectedColorBiasQ16 = colorBiasQ16;
+    applyButton->selectedColorScaleQ16 = colorScaleQ16;
     g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
-              (((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedAdapterIndex,
-               (UiNodeBase *)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedBitsPerPixel,
-               ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedHeight,
-               ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedWidth,&root->base);
-    UiRuntime_FormatSignedValues140And144(root);
+              (applyButton->selectedAdapterIndex,
+               (UiNodeBase *)applyButton->selectedBitsPerPixel,
+               applyButton->selectedHeight,
+               applyButton->selectedWidth,&root->base);
+    UiDisplaySettingsRoot_FormatColorReadouts(root);
   }
   return;
 }
@@ -51,14 +53,15 @@ void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;
+  UiDisplaySettingsApplyButton *applyButton;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
+  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            ((FrontendDisplayAdapterIndex)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedAdapterIndex,
+            ((FrontendDisplayAdapterIndex)applyButton->selectedAdapterIndex,
              (UiNodeBase *)((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,
-             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedHeight,
-             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedWidth,displaySettingsRoot)
-  ;
+             (FrontendDisplayDimensionPixels)applyButton->selectedHeight,
+             (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
   return;
 }
 
@@ -72,12 +75,15 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;
+  UiDisplaySettingsApplyButton *applyButton;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
+  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            ((FrontendDisplayAdapterIndex)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedAdapterIndex,
-             (struct UiNodeBase *)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedBitsPerPixel,
-             ((UiDisplayModeOptionPrefix *)sourceNode)[-1].resolutionHeight,((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,displaySettingsRoot);
+            ((FrontendDisplayAdapterIndex)applyButton->selectedAdapterIndex,
+             (struct UiNodeBase *)applyButton->selectedBitsPerPixel,
+             ((UiDisplayModeOptionPrefix *)sourceNode)[-1].resolutionHeight,
+             ((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,displaySettingsRoot);
   return;
 }
 
@@ -92,13 +98,15 @@ void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;
+  UiDisplaySettingsApplyButton *applyButton;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
+  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
   UiDisplayModeSelection_RefreshEnumeratedOptions
-            (((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,(struct UiNodeBase *)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedBitsPerPixel,
-             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedHeight,
-             (FrontendDisplayDimensionPixels)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->selectedWidth,displaySettingsRoot)
-  ;
+            (((UiDisplayModeOptionPrefix *)sourceNode)[-1].modeValue,
+             (struct UiNodeBase *)applyButton->selectedBitsPerPixel,
+             (FrontendDisplayDimensionPixels)applyButton->selectedHeight,
+             (FrontendDisplayDimensionPixels)applyButton->selectedWidth,displaySettingsRoot);
   return;
 }
 
@@ -120,12 +128,14 @@ void UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourc
   uint32_t bitsPerPixel;
   uint32_t modeHeight;
   uint32_t modeWidth;
+  UiFourValueDialogCountdownText *countdownText;
 
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  modeWidth = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousWidth;
-  modeHeight = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousHeight;
-  bitsPerPixel = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousBitsPerPixel;
-  adapterIndex = ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousAdapterIndex;
+  countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+  modeWidth = countdownText->previousWidth;
+  modeHeight = countdownText->previousHeight;
+  bitsPerPixel = countdownText->previousBitsPerPixel;
+  adapterIndex = countdownText->previousAdapterIndex;
   UiRootStack_Pop(root);
   g_CursorVisibilityToken--;
   UiFrame_ProcessAndPresentWithLockTransition();
@@ -175,12 +185,12 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
     return;
   }
   hitControl = (UiImageControl *)UiImageControl_HitTestOpaque(pointerY,pointerX,control);
-  /* Off the image's own pixels bit 0x200 is cleared. Over the image itself or over nothing the current
-     child only gets the synthetic drag and release; it stays activeChild (as in the original). */
-  if ((hitControl == control) ||
-     (stateFlagsField = &(control->selectable).stateFlags,
-     *stateFlagsField = *stateFlagsField & 0xfffffdff, hitControl == (UiImageControl *)UI_NODE_NONE))
-  {
+  /* Off the image's own pixels PRESSED_ON_IMAGE is cleared. Over the image itself or over nothing the
+     current child only gets the synthetic drag and release; it stays activeChild (as in the original). */
+  if (hitControl == control ||
+      (stateFlagsField = &(control->selectable).stateFlags,
+       *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE,
+       hitControl == (UiImageControl *)UI_NODE_NONE)) {
     previousActiveChild = control->activeChild;
   }
   else {
@@ -203,8 +213,10 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
     UNLOCK();
   }
   if (previousActiveChild != NULL) {
-    previousActiveChild->vtable->nonRightDrag(0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
-    previousActiveChild->vtable->nonRightRelease(0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
+    previousActiveChild->vtable->nonRightDrag
+              (0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
+    previousActiveChild->vtable->nonRightRelease
+              (0,UI_POINTER_FAR_OUTSIDE,UI_POINTER_FAR_OUTSIDE,previousActiveChild);
   }
   UiRootStack_InvalidateAll();
   return;
@@ -213,8 +225,9 @@ void UiImageControl_NonRightDrag(UiPointerWheelDelta wheelDelta,UiPixelCoordinat
 
 /* Address: 0x004BCB50.
    tick of the image control (g_UiNodeVtable_004BC570): when the right mouse button goes down (latched in
-   state bit 0x100 until it is released), an opaque child under the cursor gets a release, press and drag at
-   the current cursor position, so that it re-evaluates the pointer; state bit 0x800 is cleared then.
+   UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED until it is released), an opaque child under the cursor gets a
+   release, press and drag at the current cursor position, so that it re-evaluates the pointer;
+   UI_IMAGE_CONTROL_PRESS_STARTED is cleared then.
 */
 void UiImageControl_TickHover(UiImageControl *control)
 
@@ -226,19 +239,18 @@ void UiImageControl_TickHover(UiImageControl *control)
   UiSelectableStateFlags *hoverStateFlagsField;
 
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & 0x100) == 0) {
+    if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED) == 0) {
       if ((g_CursorButtonState & RIGHT) != 0) {
         hitControl = (UiImageControl *)
                      UiImageControl_HitTestOpaque(g_CursorOverrideY,g_CursorOverrideX,control);
         stateFlagsField = &(control->selectable).stateFlags;
-        *stateFlagsField = *stateFlagsField | 0x100;
+        *stateFlagsField = *stateFlagsField | UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
         if ((hitControl != control) && (hitControl != (UiImageControl *)UI_NODE_NONE)) {
           hitChildVtable = (hitControl->selectable).base.vtable;
           hoverStateFlagsField = &(control->selectable).stateFlags;
-          *hoverStateFlagsField = *hoverStateFlagsField & 0xfffff7ff;
+          *hoverStateFlagsField = *hoverStateFlagsField & ~UI_IMAGE_CONTROL_PRESS_STARTED;
           hitChildVtable->nonRightRelease
-                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl
-                    );
+                    (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
           /* EAX (the hovered child) and ECX (its vtable) survive the handler calls. */
           hitChildVtable->nonRightPress
                     (g_CursorWheelDelta,g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)hitControl);
@@ -249,7 +261,7 @@ void UiImageControl_TickHover(UiImageControl *control)
     }
     else if ((g_CursorButtonState & RIGHT) == 0) {
       clearStateFlagsField = &(control->selectable).stateFlags;
-      *clearStateFlagsField = *clearStateFlagsField & 0xfffffeff;
+      *clearStateFlagsField = *clearStateFlagsField & ~UI_IMAGE_CONTROL_RIGHT_BUTTON_LATCHED;
     }
   }
   return;
@@ -277,16 +289,19 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   uint32_t currentAdapterIndex;
   uint32_t pendingWidthOrCurrentHeight;
   uint32_t pendingHeightOrCurrentWidth;
+  UiDisplaySettingsApplyButton *applyButton;
 
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  pendingWidthOrCurrentHeight = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedWidth;
-  pendingHeightOrCurrentWidth = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedHeight;
-  pendingBitsPerPixel = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedBitsPerPixel;
+  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
+  pendingWidthOrCurrentHeight = applyButton->selectedWidth;
+  pendingHeightOrCurrentWidth = applyButton->selectedHeight;
+  pendingBitsPerPixel = applyButton->selectedBitsPerPixel;
   currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
             g_SoftwarePixelFormatConfig.blueBitCount;
-  pendingAdapterIndex = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedAdapterIndex;
+  pendingAdapterIndex = applyButton->selectedAdapterIndex;
   UiRootStack_Pop(root);
-  if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) || (pendingBitsPerPixel != currentBitsPerPixel)) ||
+  if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) ||
+       (pendingBitsPerPixel != currentBitsPerPixel)) ||
      (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
     g_CursorVisibilityToken--;
     UiFrame_ProcessAndPresentWithLockTransition();
@@ -297,9 +312,11 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
     currentAdapterIndex = g_ActiveGraphicsAdapterIndex;
     pendingWidthOrCurrentHeight = g_FramebufferHeight;
     pendingHeightOrCurrentWidth = g_FramebufferWidth;
-    pendingModeResult = g_GraphicsSetDisplayMode(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,pendingModeWidth);
+    pendingModeResult = g_GraphicsSetDisplayMode(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,
+                                                 pendingModeWidth);
     if (pendingModeResult.failed) {
-      restoreModeResult = g_GraphicsSetDisplayMode(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
+      restoreModeResult = g_GraphicsSetDisplayMode(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,
+                                                   pendingHeightOrCurrentWidth);
       FatalError_ExitIfFailed(restoreModeResult.valueOrError,restoreModeResult.failed);
       g_CursorVisibilityToken++;
       FatalError_ReportIfFailed(pendingModeResult.valueOrError,true);
@@ -307,7 +324,8 @@ void UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
     }
     UiRootStack_Relayout();
     g_CursorVisibilityToken++;
-    UiRuntime_OpenFourValueDialog(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
+    UiRuntime_OpenFourValueDialog(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,
+                                  pendingHeightOrCurrentWidth);
   }
   return;
 }
@@ -324,10 +342,12 @@ void UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   int32_t colorBiasQ16;
   int32_t colorScaleQ16;
   UiNodeBase *displaySettingsRoot;
+  UiDisplaySettingsApplyButton *applyButton;
 
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  colorBiasQ16 = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->originalColorBiasQ16;
-  colorScaleQ16 = ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton))->originalColorScaleQ16;
+  applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(displaySettingsRoot,applyButton);
+  colorBiasQ16 = applyButton->originalColorBiasQ16;
+  colorScaleQ16 = applyButton->originalColorScaleQ16;
   UiRootStack_Pop((UiRootNode *)sourceNode); /* the button, not the root, as in the original */
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
   return;
@@ -344,13 +364,15 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
 {
   int32_t *stepTicksField;
   int32_t *countdownField;
+  UiFourValueDialogCountdownText *countdownText;
 
-  stepTicksField = &((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->stepTicks;
+  countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+  stepTicksField = &countdownText->stepTicks;
   *stepTicksField = *stepTicksField - 1;
   if (*stepTicksField == 0) {
-    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->stepTicks =
+    countdownText->stepTicks =
          UI_DISPLAY_MODE_COUNTDOWN_STEP_TICKS;
-    countdownField = &((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdown;
+    countdownField = &countdownText->countdown;
     *countdownField = *countdownField - 1;
     if (*countdownField == 0) {
       UiActionQueue_Enqueue(UI_DISPLAY_MODE_ACTION_REVERT,root);
@@ -358,8 +380,8 @@ void UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
     else {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                 ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdown,
-                 ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdownTextUtf16);
+                 countdownText->countdown,
+                 countdownText->countdownTextUtf16);
     }
   }
   return;
@@ -402,15 +424,17 @@ void UiRangeSliderControl_DrawTrackAndThumb
                                                           g_UiWindowTextureSource);
       edgeLength = control->base.layoutHeight - textureSize.logicalHeightPixels;
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + 1,
+                (clipTop,clipLeft,clipBottom,clipRight,
+                 subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_TRACK,
                  edgeLength,textureSize.logicalHeightPixels,0,&control->base);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,edgeLength + control->base.top,control->base.left,
-                 subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + 2,
+                 subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_END_CAP,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       /* the thumb */
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + 3,
-                                                          g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize
+                (subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_THUMB,
+                 g_UiWindowTextureSource);
       rangeMax = control->maximumValue;
       clampedValue = control->value;
       if (rangeMax < control->value) {
@@ -429,13 +453,15 @@ void UiRangeSliderControl_DrawTrackAndThumb
         valueOffsetOrRange = rangeOrValueOffset - valueOffsetOrRange;
       }
       /* thumb position = offset * free track length / range, rounded */
-      scaledOffset = (uint64_t)valueOffsetOrRange * (uint64_t)(control->base.layoutHeight - textureSize.logicalHeightPixels);
+      scaledOffset =
+           (uint64_t)valueOffsetOrRange * (uint64_t)(control->base.layoutHeight - textureSize.logicalHeightPixels);
       g_GraphicsTextureSourceBlitSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,
-                 (int)(scaledOffset / rangeOrValueOffset) + (uint32_t)(rangeOrValueOffset < (uint32_t)((int)(scaledOffset % (uint64_t)rangeOrValueOffset) * 2))
-                 + control->base.top,control->base.left,subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + 3,
-                 g_UiWindowTextureSource,g_FramebufferAccess
-                );
+                 (int)(scaledOffset / rangeOrValueOffset) +
+                 (uint32_t)(rangeOrValueOffset < (uint32_t)((int)(scaledOffset % (uint64_t)rangeOrValueOffset) * 2)) +
+                 control->base.top,control->base.left,
+                 subresourceBase + UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_OFFSET + UI_RANGE_SLIDER_PIECE_THUMB,
+                 g_UiWindowTextureSource,g_FramebufferAccess);
       g_GraphicsFramebufferEndAccess();
       return;
     }
@@ -445,13 +471,15 @@ void UiRangeSliderControl_DrawTrackAndThumb
     textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase,g_UiWindowTextureSource);
     edgeLength = control->base.layoutWidth - textureSize.logicalWidthPixels;
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + 1,edgeLength,0,textureSize.logicalWidthPixels,
-               &control->base);
+              (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + UI_RANGE_SLIDER_PIECE_TRACK,edgeLength,0,
+               textureSize.logicalWidthPixels,&control->base);
     g_GraphicsTextureSourceBlitSourceAlpha
-              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,edgeLength + control->base.left,subresourceBase + 2,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,edgeLength + control->base.left,
+               subresourceBase + UI_RANGE_SLIDER_PIECE_END_CAP,
                g_UiWindowTextureSource,g_FramebufferAccess);
     /* the thumb */
-    textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + 3,g_UiWindowTextureSource);
+    textureSize = g_GraphicsTextureSourceGetLogicalSize(subresourceBase + UI_RANGE_SLIDER_PIECE_THUMB,
+                                                        g_UiWindowTextureSource);
     rangeMax = control->maximumValue;
     clampedValue = control->value;
     if (rangeMax < control->value) {
@@ -469,11 +497,14 @@ void UiRangeSliderControl_DrawTrackAndThumb
       rangeOrValueOffset = valueOffsetOrRange - rangeOrValueOffset;
     }
     /* thumb position = offset * free track length / range, rounded */
-    scaledOffset = (uint64_t)rangeOrValueOffset * (uint64_t)(control->base.layoutWidth - textureSize.logicalWidthPixels);
+    scaledOffset =
+         (uint64_t)rangeOrValueOffset * (uint64_t)(control->base.layoutWidth - textureSize.logicalWidthPixels);
     g_GraphicsTextureSourceBlitSourceAlpha
               (clipTop,clipLeft,clipBottom,clipRight,control->base.top,
-               (int)(scaledOffset / valueOffsetOrRange) + (uint32_t)(valueOffsetOrRange < (uint32_t)((int)(scaledOffset % (uint64_t)valueOffsetOrRange) * 2)) +
-               control->base.left,subresourceBase + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+               (int)(scaledOffset / valueOffsetOrRange) +
+               (uint32_t)(valueOffsetOrRange < (uint32_t)((int)(scaledOffset % (uint64_t)valueOffsetOrRange) * 2)) +
+               control->base.left,subresourceBase + UI_RANGE_SLIDER_PIECE_THUMB,g_UiWindowTextureSource,
+               g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
   return;
@@ -499,14 +530,16 @@ void UiRangeSliderControl_BeginThumbDrag
       (localY = pointerY - control->base.top, control->base.top <= pointerY)) &&
      ((localX < control->base.layoutWidth && (localY < control->base.layoutHeight)))) {
     if ((control->sliderFlags & UI_RANGE_SLIDER_VERTICAL) == 0) {
-      thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource);
+      thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_HORIZONTAL_THUMB,
+                                                        g_UiWindowTextureSource);
       if ((int)thumbSize.logicalHeightPixels <= localY) {
         return;
       }
       control->sliderFlags = control->sliderFlags | UI_RANGE_SLIDER_DRAGGING;
     }
     else {
-      thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
+      thumbSize = g_GraphicsTextureSourceGetLogicalSize(UI_RANGE_SLIDER_SUBRESOURCE_VERTICAL_THUMB,
+                                                        g_UiWindowTextureSource);
       if ((int)thumbSize.logicalWidthPixels <= localX) {
         return;
       }
@@ -525,8 +558,8 @@ void UiRangeSliderControl_BeginThumbDrag
    sound when UI_RANGE_SLIDER_CLICK_SOUND is set and the slider is not suppressed.
 */
 void UiRangeSliderControl_EndThumbDrag
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiRangeSliderControl *control)
+               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+               UiRangeSliderControl *control)
 
 {
   control->sliderFlags = control->sliderFlags & ~UI_RANGE_SLIDER_DRAGGING;
@@ -609,9 +642,10 @@ void UiImageControl_DrawClipped(UiPixelCoordinate clipTop,UiPixelCoordinate clip
 
 
 /* Address: 0x004BC6E0.
-   nonRightPress of the image control (g_UiNodeVtable_004BC570): plays the pointer sound (state bit 0x20,
-   unless bit 0x400 is set), drops the active child and the hover target, then toggles: a press on an
-   opaque pixel of an already selected image clears the press state bits (0xA03), any other press sets them.
+   nonRightPress of the image control (g_UiNodeVtable_004BC570): plays the pointer sound
+   (UI_IMAGE_CONTROL_POINTER_SOUND, unless the image is already OPEN), drops the active child and the hover
+   target, then toggles: a press on an opaque pixel of an already selected image clears
+   UI_IMAGE_CONTROL_PRESS_STATE_BITS, any other press sets them.
 */
 void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiImageControl *control)
@@ -624,9 +658,9 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
     return;
   }
-  if (((((control->selectable).stateFlags & 0x400) == 0) &&
-      (((control->selectable).stateFlags & 0x20) != 0)) && (control->pointerActivationSoundId != 0))
-  {
+  if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 &&
+      ((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
+      control->pointerActivationSoundId != 0) {
     g_SoundPlayOneShot
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
                (DirectSoundVoiceSet *)control->pointerActivationSoundId);
@@ -651,11 +685,11 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
   if (opaqueHit) {
     /* Pressing an already selected image on an opaque pixel clears its selected/armed state. */
     stateFlagsField = &(control->selectable).stateFlags;
-    *stateFlagsField = *stateFlagsField & 0xfffff5fc;
+    *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_PRESS_STATE_BITS;
   }
   else {
     pressStateFlagsField = &(control->selectable).stateFlags;
-    *pressStateFlagsField = *pressStateFlagsField | 0xa03;
+    *pressStateFlagsField = *pressStateFlagsField | UI_IMAGE_CONTROL_PRESS_STATE_BITS;
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
   return;
@@ -663,11 +697,11 @@ void UiImageControl_NonRightPress(UiPointerWheelDelta wheelDelta,UiPixelCoordina
 
 
 /* Address: 0x004BC7E0.
-   nonRightRelease of the image control (g_UiNodeVtable_004BC570). A release while state bit 0x200 is set
-   (still pressed on the image) keeps it open: bit 0x400, and the image becomes g_UiImageControlHoverTarget.
-   Otherwise an active child gets the release first, and the image stays open only if it had one and bit
-   0x400 was not yet set or bit 0x800 is set; else it closes: hover target cleared,
-   UI_IMAGE_CONTROL_HOVER_STATE_BITS cleared and the pointer sound played (bit 0x20).
+   nonRightRelease of the image control (g_UiNodeVtable_004BC570). A release while
+   UI_IMAGE_CONTROL_PRESSED_ON_IMAGE is set keeps it open: UI_IMAGE_CONTROL_OPEN, and the image becomes
+   g_UiImageControlHoverTarget. Otherwise an active child gets the release first, and the image stays open
+   only if it had one and OPEN was not yet set or PRESS_STARTED is set; else it closes: hover target
+   cleared, UI_IMAGE_CONTROL_HOVER_STATE_BITS cleared and the pointer sound played (POINTER_SOUND).
 */
 void UiImageControl_NonRightRelease
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
@@ -682,21 +716,21 @@ void UiImageControl_NonRightRelease
 
   previousActiveChild = control->activeChild;
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    preserveHover = ((control->selectable).stateFlags & 0x200) != 0;
+    preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESSED_ON_IMAGE) != 0;
     if (!preserveHover) {
       if (previousActiveChild != NULL) {
         activeChildVtable = previousActiveChild->vtable;
         control->activeChild = NULL;
         activeChildVtable->nonRightRelease(wheelDelta,pointerY,pointerX,previousActiveChild);
-        preserveHover = (((control->selectable).stateFlags & 0x400) == 0) ||
-                        (((control->selectable).stateFlags & 0x800) != 0);
+        preserveHover = ((control->selectable).stateFlags & UI_IMAGE_CONTROL_OPEN) == 0 ||
+                        ((control->selectable).stateFlags & UI_IMAGE_CONTROL_PRESS_STARTED) != 0;
       }
       if (!preserveHover) {
         g_UiImageControlHoverTarget = NULL;
         stateFlagsField = &(control->selectable).stateFlags;
         *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
-        if ((((control->selectable).stateFlags & 0x20) != 0) &&
-           (control->pointerActivationSoundId != 0)) {
+        if (((control->selectable).stateFlags & UI_IMAGE_CONTROL_POINTER_SOUND) != 0 &&
+            control->pointerActivationSoundId != 0) {
           g_SoundPlayOneShot
                     (g_UiSoundGainQ15,g_UiSoundGainQ15,
                      (DirectSoundVoiceSet *)control->pointerActivationSoundId);
@@ -705,10 +739,10 @@ void UiImageControl_NonRightRelease
     }
     if (preserveHover) {
       hoverStateFlagsField = &(control->selectable).stateFlags;
-      *hoverStateFlagsField = *hoverStateFlagsField | 0x400;
+      *hoverStateFlagsField = *hoverStateFlagsField | UI_IMAGE_CONTROL_OPEN;
       g_UiImageControlHoverTarget = control;
       hoverStateFlagsField = &(control->selectable).stateFlags;
-      *hoverStateFlagsField = *hoverStateFlagsField & 0xfffffdff;
+      *hoverStateFlagsField = *hoverStateFlagsField & ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
     }
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
@@ -718,7 +752,7 @@ void UiImageControl_NonRightRelease
 
 /* Address: 0x004BD2A0.
    Re-tints a world model (army, effect or shot) after its runtime state bits changed: the tint chosen by
-   UiNode_GetStateTintArgb from runtimeFlags 0x04/0x08/0x10 is applied to the whole hierarchy only when it
+   ModelRuntimeNode_GetStateTintArgb from runtimeFlags 0x04/0x08/0x10 is applied to the whole hierarchy only when it
    differs from the tint the model already has.
 */
 void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
@@ -726,7 +760,7 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
 {
   PackedArgb32 tintArgb;
   
-  tintArgb = UiNode_GetStateTintArgb((UiNodeBase *)modelNode);
+  tintArgb = ModelRuntimeNode_GetStateTintArgb(modelNode);
   if (tintArgb != modelNode->tintArgb) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNode);
   }
@@ -737,7 +771,7 @@ void ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
 /* Address: 0x00517E30.
    drawClipped of the transfer progress gauge (g_UiNodeVtable_00517DE0) shown while the player snapshots
    are exchanged at session start: on the host (or in a local game) the range is the outgoing byte count
-   and the value the smallest progress any client has reported (runtimeState70 of player blocks 1..n); on a
+   and the value the smallest progress any client has reported (transferProgressBytes of player blocks 1..n); on a
    client it is the received byte count and the bytes received so far. Draws nothing unless a transfer is
    running and not yet complete.
 */
@@ -766,8 +800,8 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
     control->maximumValue = minimumProgress;
     /* the clients follow the host's own block 0 */
     do {
-      if ((int)playerRecord[1].runtimeState70 < (int)minimumProgress) {
-        minimumProgress = playerRecord[1].runtimeState70;
+      if ((int)playerRecord[1].transferProgressBytes < (int)minimumProgress) {
+        minimumProgress = playerRecord[1].transferProgressBytes;
       }
       remainingPlayers--;
       playerRecord = playerRecord + 1;
@@ -807,8 +841,8 @@ void UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
 void UiDisplaySettings_OpenAndPopulateModeSelection(void)
 
 {
-  DisplayModeScratchWord adapterOption1Or4;
-  DisplayModeScratchWord adapterOption2;
+  DisplayModeScratchWord adapterOption2Or5Value;
+  DisplayModeScratchWord adapterOption3Value;
   uint32_t framebufferWidth;
   uint32_t framebufferHeight;
   UiRootFlags activeAdapterIndex;
@@ -827,16 +861,17 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
   ArenaAllocResult allocResult;
   
   if (1 < g_GraphicsDisplayModeCount) {
-    allocResult = g_MemoryApi.alloc(0xbd4); /* the dialog template's size */
+    allocResult = g_MemoryApi.alloc(sizeof(DisplaySettingsUiImage));
     root = (UiRootNode *)allocResult.payloadOrError;
     if (allocResult.failed) {
       return;
     }
-    /* REP MOVSD of the template, 0xBD4 / 4 dwords */
+    /* REP MOVSD of the template, one dword per step */
     templateCursor = (uint32_t *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
     copyCursor = (uint32_t *)root;
-    for (copyCountOrRgBits = 0x2f5; activeAdapterIndex = g_ActiveGraphicsAdapterIndex, framebufferHeight = g_FramebufferHeight,
-        framebufferWidth = g_FramebufferWidth, copyCountOrRgBits != 0; copyCountOrRgBits--) {
+    for (copyCountOrRgBits = sizeof(DisplaySettingsUiImage) / 4;
+         activeAdapterIndex = g_ActiveGraphicsAdapterIndex, framebufferHeight = g_FramebufferHeight,
+         framebufferWidth = g_FramebufferWidth, copyCountOrRgBits != 0; copyCountOrRgBits--) {
       *copyCursor = *templateCursor;
       templateCursor = templateCursor + 1;
       copyCursor = copyCursor + 1;
@@ -854,7 +889,8 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
     ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalAdapterIndex = activeAdapterIndex;
     colorBiasQ16 = g_SoftwareColorBiasQ16;
     colorScaleQ16 = g_SoftwareColorScaleQ16;
-    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16 = g_SoftwareColorBiasQ16;
+    ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,
+                                                         applyButton))->selectedColorBiasQ16 = g_SoftwareColorBiasQ16;
     ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16 = colorScaleQ16;
     ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorBiasQ16 = colorBiasQ16;
     ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorScaleQ16 = colorScaleQ16;
@@ -865,9 +901,9 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
          ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorBiasTextUtf16;
     ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
          ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorScaleTextUtf16;
-    UiRuntime_FormatSignedValues140And144(root);
-    /* handler page 2 serves the action ids 0x200.. */
-    UiActionHandlers_SetPage(2,(UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
+    UiDisplaySettingsRoot_FormatColorReadouts(root);
+    UiActionHandlers_SetPage(UI_DISPLAY_MODE_ACTION_HANDLER_PAGE,
+                             (UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
     UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
     /* distinct bit depths, ascending (the XCHG swaps of the original appear as LOCK/UNLOCK) */
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
@@ -914,10 +950,10 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
     } while (remainingModes != 0);
     /* Each option button's mode value(s) sit in the dwords just before the button (read back by the
        action callbacks as UiDisplayModeOptionPrefix.modeValue / .resolutionHeight). */
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption1))[-1].modeValue = g_UiDisplayModeDistinctValueScratch0;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption2))[-1].modeValue = g_UiDisplayModeDistinctValueScratch1;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption3))[-1].modeValue = g_UiDisplayModeDistinctValueScratch2;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,colorDepthOption4))[-1].modeValue = g_UiDisplayModeDistinctValueScratch3;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,colorDepthOption1).modeValue = g_UiDisplayModeDistinctValueScratch0;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,colorDepthOption2).modeValue = g_UiDisplayModeDistinctValueScratch1;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,colorDepthOption3).modeValue = g_UiDisplayModeDistinctValueScratch2;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,colorDepthOption4).modeValue = g_UiDisplayModeDistinctValueScratch3;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -998,25 +1034,30 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
     /* Resolution buttons: width at -8, height at -0xC. */
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption1))[-1].modeValue = g_UiDisplayModeDistinctValueScratch0 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption1))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption2))[-1].modeValue = g_UiDisplayModeDistinctValueScratch1 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption2))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption3))[-1].modeValue = g_UiDisplayModeDistinctValueScratch2 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption3))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption4))[-1].modeValue = g_UiDisplayModeDistinctValueScratch3 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption4))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption5))[-1].modeValue = g_UiDisplayModeDistinctValueScratch4 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption5))[-1].resolutionHeight = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption1).modeValue = g_UiDisplayModeDistinctValueScratch0 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,
+                                  resolutionOption1).resolutionHeight = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption2).modeValue = g_UiDisplayModeDistinctValueScratch1 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,
+                                  resolutionOption2).resolutionHeight = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption3).modeValue = g_UiDisplayModeDistinctValueScratch2 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,
+                                  resolutionOption3).resolutionHeight = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption4).modeValue = g_UiDisplayModeDistinctValueScratch3 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,
+                                  resolutionOption4).resolutionHeight = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption5).modeValue = g_UiDisplayModeDistinctValueScratch4 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,
+                                  resolutionOption5).resolutionHeight = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
     insertValueA = g_UiDisplayModeDistinctValueScratch5 & 0xffff;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption6))[-1].modeValue = g_UiDisplayModeDistinctValueScratch5 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption6))[-1].resolutionHeight = insertValueA;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption6).modeValue = g_UiDisplayModeDistinctValueScratch5 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption6).resolutionHeight = insertValueA;
     lowWordValue = g_UiDisplayModeDistinctValueScratch6 & 0xffff;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption7))[-1].modeValue = g_UiDisplayModeDistinctValueScratch6 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption7))[-1].resolutionHeight = lowWordValue;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption7).modeValue = g_UiDisplayModeDistinctValueScratch6 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption7).resolutionHeight = lowWordValue;
     lowWordValue = g_UiDisplayModeDistinctValueScratch7 & 0xffff;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption8))[-1].modeValue = g_UiDisplayModeDistinctValueScratch7 >> 16;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,resolutionOption8))[-1].resolutionHeight = lowWordValue;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption8).modeValue = g_UiDisplayModeDistinctValueScratch7 >> 16;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,resolutionOption8).resolutionHeight = lowWordValue;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -1066,23 +1107,23 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
           g_UiDisplayModeDistinctValueScratch4 = insertValueA;
         }
       }
-      adapterOption2 = g_UiDisplayModeDistinctValueScratch2;
-      adapterOption1Or4 = g_UiDisplayModeDistinctValueScratch1;
+      adapterOption3Value = g_UiDisplayModeDistinctValueScratch2;
+      adapterOption2Or5Value = g_UiDisplayModeDistinctValueScratch1;
       displayMode = displayMode + 1;
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
     /* Adapter buttons: adapter index at -8. */
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption1))[-1].modeValue = g_UiDisplayModeDistinctValueScratch0;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption2))[-1].modeValue = adapterOption1Or4;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption3))[-1].modeValue = adapterOption2;
-    adapterOption1Or4 = g_UiDisplayModeDistinctValueScratch4;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,adapterOption1).modeValue = g_UiDisplayModeDistinctValueScratch0;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,adapterOption2).modeValue = adapterOption2Or5Value;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,adapterOption3).modeValue = adapterOption3Value;
+    adapterOption2Or5Value = g_UiDisplayModeDistinctValueScratch4;
     copyCountOrRgBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption4))[-1].modeValue = g_UiDisplayModeDistinctValueScratch3;
-    ((UiDisplayModeOptionPrefix *)DISPLAY_SETTINGS_UI(root,adapterOption5))[-1].modeValue = adapterOption1Or4;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,adapterOption4).modeValue = g_UiDisplayModeDistinctValueScratch3;
+    UI_DISPLAY_MODE_OPTION_PREFIX(root,adapterOption5).modeValue = adapterOption2Or5Value;
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (g_ActiveGraphicsAdapterIndex,
-               (UiNodeBase *)(copyCountOrRgBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight
-               ,g_FramebufferWidth,(UiNodeBase *)root);
+               (UiNodeBase *)(copyCountOrRgBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight,
+               g_FramebufferWidth,(UiNodeBase *)root);
     UiRootStack_InvalidateAll();
   }
   return;
@@ -1091,8 +1132,8 @@ void UiDisplaySettings_OpenAndPopulateModeSelection(void)
 
 /* Address: 0x004BC9B0.
    Hit test of an image control: only opaque pixels of its current image count, so irregular shapes react
-   precisely. A miss clears state bit 0x200 and, in persistent activation mode, passes the test on to the
-   children. Returns the hit node or UI_NODE_NONE.
+   precisely. A miss clears UI_IMAGE_CONTROL_PRESSED_ON_IMAGE and, in persistent activation mode, passes the
+   test on to the children. Returns the hit node or UI_NODE_NONE.
 */
 UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageControl *control)
 
@@ -1103,8 +1144,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
   
   hitNode = (UiImageControl *)UI_NODE_NONE;
   if ((control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    /* state bit 0x40 selects the alternate image as the hit mask */
-    if ((control->selectable.stateFlags & 0x40) == 0) {
+    if ((control->selectable.stateFlags & UI_IMAGE_CONTROL_ALTERNATE_HIT_SHAPE) == 0) {
       opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
                         (pointerY,pointerX,control->selectable.base.top,
                          control->selectable.base.left,control->normalSubresource,
@@ -1123,7 +1163,7 @@ UiNodeBase * UiImageControl_HitTestOpaque(UiPixelCoordinate pointerY,UiPixelCoor
       }
     }
     stateFlagsField = &control->selectable.stateFlags;
-    *stateFlagsField = *stateFlagsField & 0xfffffdff;
+    *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_PRESSED_ON_IMAGE;
     hitNode = (UiImageControl *)UI_NODE_NONE;
     /* UiContainer_HitTestChildren returns the control itself when no child is hit; that only counts
        while g_UiImageControlHoverTarget is NULL */
@@ -1167,6 +1207,7 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       offsetof(DisplaySettingsUiImage,adapterOption2),offsetof(DisplaySettingsUiImage,adapterOption3),
       offsetof(DisplaySettingsUiImage,adapterOption4),offsetof(DisplaySettingsUiImage,adapterOption5)};
   uint8_t *root = (uint8_t *)displaySettingsRoot;
+  UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
   uint32_t bitsPerPixel = (uint32_t)(uintptr_t)selectedModeValue;
   void *selected = NULL;
   bool modeMissing; /* GraphicsDisplayMode_IsEnumerated returns true when the mode was not enumerated */
@@ -1233,18 +1274,18 @@ void UiDisplayModeSelection_RefreshEnumeratedOptions
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption3),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption2),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,adapterOption1));
-  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedWidth = modeWidth;
-  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedHeight = modeHeight;
-  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedBitsPerPixel = bitsPerPixel;
-  ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedAdapterIndex = adapterIndex;
-  if ((modeWidth == (uint32_t)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalWidth) &&
-      (modeHeight == (uint32_t)((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalHeight) &&
-      (bitsPerPixel == ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalBitsPerPixel) &&
-      (adapterIndex == ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalAdapterIndex) &&
-      (((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16 ==
-       ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorBiasQ16) &&
-      (((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16 ==
-       ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->originalColorScaleQ16)) {
+  applyButton->selectedWidth = modeWidth;
+  applyButton->selectedHeight = modeHeight;
+  applyButton->selectedBitsPerPixel = bitsPerPixel;
+  applyButton->selectedAdapterIndex = adapterIndex;
+  if ((modeWidth == (uint32_t)applyButton->originalWidth) &&
+      (modeHeight == (uint32_t)applyButton->originalHeight) &&
+      (bitsPerPixel == applyButton->originalBitsPerPixel) &&
+      (adapterIndex == applyButton->originalAdapterIndex) &&
+      (applyButton->selectedColorBiasQ16 ==
+       applyButton->originalColorBiasQ16) &&
+      (applyButton->selectedColorScaleQ16 ==
+       applyButton->originalColorScaleQ16)) {
     UiNodeList_SuppressActionId(UI_DISPLAY_MODE_ACTION_APPLY,displaySettingsRoot);
   }
   else {

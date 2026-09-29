@@ -16,6 +16,11 @@
 /* Size of one UTF-16 name record written by Win32FileSystem_EnumerateDirectoryOrVolumeEntries (0x100 code
    units, NUL-padded); returned to the caller as the record stride */
 #define FILESYSTEM_ENUMERATION_RECORD_BYTES 0x200
+/* The DOS volume-label file attribute (_A_VOLID); file enumeration skips such entries like directories */
+#define FILESYSTEM_ATTRIBUTE_VOLUME_LABEL 0x08
+/* Win32Path_ValidateDos83: characters of a DOS 8.3 base name and extension */
+#define DOS83_BASE_NAME_MAX_CHARS 8
+#define DOS83_EXTENSION_MAX_CHARS 3
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00575CB0 */

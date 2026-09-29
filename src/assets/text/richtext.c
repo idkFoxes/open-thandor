@@ -35,9 +35,7 @@ RichTextExtentRegs RichTextCommandStream_MeasureWrappedBlockRegs
   totalHeight = 0;
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
-  while( true ) {
-    lineResult = RichTextCommandStream_MeasureNextWrappedLine(maximumWidth);
-    if (lineResult.endOfText) break;
+  while (lineResult = RichTextCommandStream_MeasureNextWrappedLine(maximumWidth), !lineResult.endOfText) {
     totalHeight = totalHeight + lineResult.lineAdvancePixels;
   }
   blockExtent.heightPixels = totalHeight + lineResult.lineAdvancePixels;
@@ -68,10 +66,9 @@ void RichTextCommandStream_DrawWrappedBlock
   g_RichTextCurrentShadowOffset = (&g_RichTextShadowOffsetPalette0)[colorPaletteIndex];
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
-  while( true ) {
-    lineResult = RichTextCommandStream_DrawNextWrappedLine
-                      (clipTop,clipLeft,clipBottom,clipRight,maximumWidth,drawY,drawX);
-    if (lineResult.endOfText) break;
+  while (lineResult = RichTextCommandStream_DrawNextWrappedLine
+                            (clipTop,clipLeft,clipBottom,clipRight,maximumWidth,drawY,drawX),
+         !lineResult.endOfText) {
     drawY = drawY + lineResult.lineAdvancePixels;
   }
   return;
@@ -169,13 +166,13 @@ bool RichTextCommandStream_DrawSingleLine
       commandStream = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       break;
     case RICHTEXT_OP_SELECT_FONT_FIRST:
-    case 9:
-    case 10:
-    case 0xb:
-    case 0xc:
-    case 0xd:
-    case 0xe:
-    case 0xf:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 1:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 2:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 3:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 4:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 5:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 6:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 7:
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
@@ -308,7 +305,7 @@ void RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *texture
    the stream has fewer such commands. No caller and no function-pointer table entry for it was found in src/
    or src/generated/image_data.c.
 */
-bool RichTextCommandStream_FindNthCommandPayloadPair
+bool RichTextCommandStream_SetNthInlineValuePayload
           (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
           uint16_t *commandStream)
 
@@ -346,7 +343,7 @@ bool RichTextCommandStream_FindNthCommandPayloadPair
     case RICHTEXT_OP_INLINE_IMAGE:
       commandStream = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
     }
-  } while( true );
+  } while (true);
 }
 
 
@@ -401,7 +398,7 @@ void RichTextCommandStream_PatchNestedStreamPointerPayloads
    imageSubresourceValue (see RichTextCommandStream_BindTextureSource for the texture source alone). No caller
    and no function-pointer table entry for it was found in src/ or src/generated/image_data.c.
 */
-void RichTextCommandStream_PatchOpcode1APayloadPair(RichTextOpcode1APayloadValue32 imageSubresourceValue,
+void RichTextCommandStream_PatchInlineImagePayloads(RichTextOpcode1APayloadValue32 imageSubresourceValue,
           RichTextCommandPayload32 textureSourceValue,uint16_t *commandStream)
 
 {
@@ -488,7 +485,7 @@ void RichTextCommandStream_PatchInlinePayloads(RichTextInlinePayloadValue32 inli
    access also covers the low half of the payload, which the mask 0xFFFF8014 keeps. No caller and no
    function-pointer table entry for it was found in src/ or src/generated/image_data.c.
 */
-bool RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
+bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
 
 {
   uint32_t *streamCursor;
@@ -505,18 +502,18 @@ bool RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t f
       if (commandCodeUnit == 0) {
         return true;
       }
-      streamCursor = (uint32_t *)((int)commandCursor + 2);
+      streamCursor = (uint32_t *)((uint8_t *)commandCursor + 2);
     } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
     /* the cursors advance in bytes: record lengths are code units * 2 */
     switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
     case RICHTEXT_OP_LITERAL_COLOR:
-      streamCursor = (uint32_t *)((int)commandCursor + 0x12);
+      streamCursor = (uint32_t *)((uint8_t *)commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * 2);
       break;
     case RICHTEXT_OP_INLINE_VALUE_0:
     case RICHTEXT_OP_INLINE_VALUE_1:
     case RICHTEXT_OP_INLINE_VALUE_2:
       remainingCount--;
-      streamCursor = (uint32_t *)((int)commandCursor + 6);
+      streamCursor = (uint32_t *)((uint8_t *)commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2);
       if (remainingCount == 0) {
         *commandCursor = *commandCursor & 0xffff8014;
         *commandCursor = *commandCursor | flagBits;
@@ -526,7 +523,7 @@ bool RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t f
     case RICHTEXT_OP_CALL_NESTED:
     case RICHTEXT_OP_JUMP_NESTED:
     case RICHTEXT_OP_INLINE_IMAGE:
-      streamCursor = (uint32_t *)((int)commandCursor + 10);
+      streamCursor = (uint32_t *)((uint8_t *)commandCursor + RICHTEXT_RECORD_UNITS_NESTED * 2);
     }
   } while( true );
 }
@@ -538,7 +535,7 @@ bool RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t f
    such commands. No caller and no function-pointer table entry for it was found in src/ or
    src/generated/image_data.c.
 */
-RichTextCommandQueryResult RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream)
+RichTextCommandQueryResult RichTextCommandStream_QueryNthInlineValueVariant(int commandOrdinal,uint16_t *commandStream)
 
 {
   uint16_t commandCodeUnit;
@@ -557,18 +554,18 @@ RichTextCommandQueryResult RichTextCommandStream_QueryNthCommandFlags(int comman
         endResult.endOfStream = true;
         return endResult;
       }
-      commandStream = (uint16_t *)((int)commandCursor + 2);
+      commandStream = (uint16_t *)commandCursor + 1;
     } while (-1 < (short)commandCodeUnit); /* skip glyphs up to the next RICHTEXT_COMMAND_FLAG unit */
     /* the cursors advance in bytes: record lengths are code units * 2 */
     switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
     case RICHTEXT_OP_LITERAL_COLOR:
-      commandStream = (uint16_t *)((int)commandCursor + 0x12);
+      commandStream = (uint16_t *)commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       break;
     case RICHTEXT_OP_INLINE_VALUE_0:
     case RICHTEXT_OP_INLINE_VALUE_1:
     case RICHTEXT_OP_INLINE_VALUE_2:
       remainingCount--;
-      commandStream = (uint16_t *)((int)commandCursor + 6);
+      commandStream = (uint16_t *)commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
       if (remainingCount == 0) {
         foundResult.commandVariant = *commandCursor & 3;
         foundResult.endOfStream = false;
@@ -578,7 +575,7 @@ RichTextCommandQueryResult RichTextCommandStream_QueryNthCommandFlags(int comman
     case RICHTEXT_OP_CALL_NESTED:
     case RICHTEXT_OP_JUMP_NESTED:
     case RICHTEXT_OP_INLINE_IMAGE:
-      commandStream = (uint16_t *)((int)commandCursor + 10);
+      commandStream = (uint16_t *)commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
     }
   } while( true );
 }
@@ -621,9 +618,9 @@ StatusResult RichTextCommandStream_CopyToNarrow
           readCursor = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
           break;
         case RICHTEXT_OP_FIXED_SPACE:
-          remainingCapacityBytes = remainingCapacityBytes - 1;
+          remainingCapacityBytes--;
           if (remainingCapacityBytes == 0)
-          goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           *destination = ' ';
           destination++;
           readCursor = streamCursor;
@@ -632,10 +629,10 @@ StatusResult RichTextCommandStream_CopyToNarrow
           newlineCapacityUnderflow = remainingCapacityBytes < 2;
           remainingCapacityBytes = remainingCapacityBytes - 2;
           if (newlineCapacityUnderflow || remainingCapacityBytes == 0)
-          goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           destination[0] = '\r';
           destination[1] = '\n';
-          destination = destination + 2;
+          destination += 2;
           readCursor = streamCursor;
           break;
         case RICHTEXT_OP_INLINE_VALUE_0:
@@ -645,7 +642,7 @@ StatusResult RichTextCommandStream_CopyToNarrow
           break;
         case RICHTEXT_OP_CALL_NESTED:
           if (nestedDepth == RICHTEXT_NESTING_LIMIT)
-          goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           nestedReturnStack[nestedDepth++] = streamCursor;
           readCursor = *(uint16_t **)streamCursor;
           break;
@@ -659,9 +656,9 @@ StatusResult RichTextCommandStream_CopyToNarrow
       else {
         readCursor = streamCursor;
         if ((commandOrCodeUnit & 0xff00) == 0) {
-          remainingCapacityBytes = remainingCapacityBytes - 1;
+          remainingCapacityBytes--;
           if (remainingCapacityBytes == 0)
-          goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           *destination = (uint8_t)commandOrCodeUnit;
           destination++;
           readCursor = streamCursor;
@@ -677,7 +674,7 @@ StatusResult RichTextCommandStream_CopyToNarrow
     successResult.failed = false;
     return successResult;
   }
-RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
+capacityError:
   destination[-1] = 0;
   errorResult.failed = true;
   errorResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
@@ -743,7 +740,7 @@ RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes
     markupCursor = markupBytes;
     outputCursor = memory;
     insideTagOrUnderflow = false;
-RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte:
+parseNextByte:
     tokenStart = markupCursor;
     codeUnit = (uint16_t)*tokenStart;
     markupCursor = tokenStart + 1;
@@ -778,56 +775,56 @@ RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte:
     case 0x1e:
     case 0x1f:
     case 0x7f:
-      goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+      goto reportUnknownCharacter;
     case '\t':
     case '\n':
-      goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
+      goto parseNextByte;
     case '\r':
       if (insideTagOrUnderflow) {
         capacityUnderflow = remainingCapacityBytes < 2;
         remainingCapacityBytes = remainingCapacityBytes - 2;
         if (capacityUnderflow || remainingCapacityBytes == 0)
-        goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
+          goto freePrimaryBufferAndFail;
         *outputCursor = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_LINE_BREAK;
         outputCursor++;
       }
-      goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
+      goto parseNextByte;
     default:
-RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
+emitLiteralCodeUnit:
       if (insideTagOrUnderflow) {
         capacityUnderflow = remainingCapacityBytes < 2;
         remainingCapacityBytes = remainingCapacityBytes - 2;
         if (capacityUnderflow || remainingCapacityBytes == 0)
-        goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
+          goto freePrimaryBufferAndFail;
         *outputCursor = codeUnit + codeUnitBias;
         outputCursor++;
       }
-      goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
+      goto parseNextByte;
     case '#':
       markupByte = *markupCursor;
       codeUnit = (uint16_t)markupByte;
       markupCursor = tokenStart + 2;
       switch(markupByte) {
       default:
-        goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+        goto reportUnknownCharacter;
       case '\n':
       case '\r':
         /* line continuation: skip the line end */
         while (markupByte = *markupCursor, markupByte < 0x20) {
           markupCursor++;
-          if ((markupByte != '\n') && (markupByte != '\r')) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+          if ((markupByte != '\n') && (markupByte != '\r')) goto reportUnknownCharacter;
         }
         break;
       case '!':
         codeUnitBias = 0x7fc0; /* '@'..'_' become RICHTEXT_COMMAND_FLAG | 0x00..0x1F */
         break;
       case '#':
-        goto RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit;
+        goto emitLiteralCodeUnit;
       case '-':
         capacityUnderflow = remainingCapacityBytes < 2;
         remainingCapacityBytes = remainingCapacityBytes - 2;
         if (capacityUnderflow || remainingCapacityBytes == 0)
-        goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
+          goto freePrimaryBufferAndFail;
         *outputCursor = RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_SOFT_HYPHEN;
         outputCursor++;
         break;
@@ -903,7 +900,7 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                       remainingCapacityBytes = remainingCapacityBytes - spanSizeOrDwordCount;
                       if (insideTagOrUnderflow || remainingCapacityBytes == 0)
                       goto 
-                      RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError
+                      freeExpansionBufferAndFail
                       ;
                     }
                     entryIndexOrOffset--;
@@ -932,11 +929,11 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                   } while (entryEndOrIndex != 0);
                 }
               }
-RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapacityError:
+freeExpansionBufferAndFail:
               g_MemoryApi.free(stringAsset.assetOrError);
             }
           }
-RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
+freePrimaryBufferAndFail:
           tagCount = tagCount * 8;
           *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = memory;
           *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
@@ -945,7 +942,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           capacityErrorResult.assetOrError = (void *)FATAL_ERROR_GENERAL_FAILURE;
           return capacityErrorResult;
         }
-        goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+        goto reportUnknownCharacter;
       case '0':
       case '1':
       case '2':
@@ -958,23 +955,23 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
       case '9':
         /* '#ddd': three decimal digits, the key of the following tags (kept in EDX by the original) */
         if ((((*markupCursor < '0') || ('9' < *markupCursor)) || (tokenStart[3] < '0')) || ('9' < tokenStart[3])
-           ) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+           ) goto reportUnknownCharacter;
         markupCursor = tokenStart + 4;
         break;
       case '<':
-        if (insideTagOrUnderflow) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+        if (insideTagOrUnderflow) goto reportUnknownCharacter;
         tagCount++;
         insideTagOrUnderflow = true;
         break;
       case '>':
         /* ends the string: NUL terminator, padded to a dword boundary */
-        if (!insideTagOrUnderflow) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
+        if (!insideTagOrUnderflow) goto reportUnknownCharacter;
         insideTagOrUnderflow = false;
         if (((uint32_t)outputCursor & 2) == 0) {
           insideTagOrUnderflow = remainingCapacityBytes < 4;
           remainingCapacityBytes = remainingCapacityBytes - 4;
           if (insideTagOrUnderflow || remainingCapacityBytes == 0)
-          goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
+            goto freePrimaryBufferAndFail;
           outputCursor[0] = L'\0';
           outputCursor[1] = L'\0';
           outputCursor += 2;
@@ -984,7 +981,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           capacityUnderflow = remainingCapacityBytes < 2;
           remainingCapacityBytes = remainingCapacityBytes - 2;
           if (capacityUnderflow || remainingCapacityBytes == 0)
-          goto RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError;
+            goto freePrimaryBufferAndFail;
           *outputCursor = L'\0';
           outputCursor++;
         }
@@ -1055,14 +1052,14 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
         /* '#@'..'#~': code page select, following bytes are emitted + (c - '@') * 0x80 */
         codeUnitBias = codeUnit * 0x80 - 0x2000;
       }
-      goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
+      goto parseNextByte;
     }
   }
 RichTextMarkup_ParseAndBuildStringAsset_ReturnError:
   errorMessageResult.failed = true;
   errorMessageResult.assetOrError = memory;
   return errorMessageResult;
-RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
+reportUnknownCharacter:
   groupKeyOrIndex = tagCount * 8;
   *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = memory;
   *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = 0x41c5a2;
@@ -1116,7 +1113,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityUnderflow = capacityBytes < 2;
           capacityBytes = capacityBytes - 2;
           if (capacityUnderflow || capacityBytes == 0)
-          goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           *destinationCursor = commandCodeUnit & RICHTEXT_OPCODE_MASK | RICHTEXT_COMMAND_FLAG;
           destinationCursor++;
           source = nextSource;
@@ -1125,7 +1122,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityUnderflow = capacityBytes < RICHTEXT_RECORD_UNITS_LITERAL_COLOR * 2;
           capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_LITERAL_COLOR * 2;
           if (capacityUnderflow || capacityBytes == 0)
-          goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           for (wordsRemaining = RICHTEXT_RECORD_UNITS_LITERAL_COLOR; wordsRemaining != 0; wordsRemaining--) {
             *destinationCursor = *source;
             source++;
@@ -1138,7 +1135,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityUnderflow = capacityBytes < RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2;
           capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2;
           if (capacityUnderflow || capacityBytes == 0)
-          goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           for (wordsRemaining = RICHTEXT_RECORD_UNITS_INLINE_VALUE; wordsRemaining != 0; wordsRemaining--) {
             *destinationCursor = *source;
             source++;
@@ -1147,7 +1144,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           break;
         case RICHTEXT_OP_CALL_NESTED:
           if (nestedDepth == RICHTEXT_NESTING_LIMIT)
-          goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           nestedReturnStack[nestedDepth++] = nextSource;
           source = *(uint16_t **)nextSource;
           break;
@@ -1158,7 +1155,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
           capacityUnderflow = capacityBytes < RICHTEXT_RECORD_UNITS_INLINE_IMAGE * 2;
           capacityBytes = capacityBytes - RICHTEXT_RECORD_UNITS_INLINE_IMAGE * 2;
           if (capacityUnderflow || capacityBytes == 0)
-          goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
+            goto capacityError;
           for (wordsRemaining = RICHTEXT_RECORD_UNITS_INLINE_IMAGE; wordsRemaining != 0; wordsRemaining--) {
             *destinationCursor = *source;
             source++;
@@ -1170,7 +1167,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
         capacityUnderflow = capacityBytes < 2;
         capacityBytes = capacityBytes - 2;
         if (capacityUnderflow || capacityBytes == 0)
-        goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
+          goto capacityError;
         *destinationCursor = commandCodeUnit;
         destinationCursor++;
         source = nextSource;
@@ -1185,7 +1182,7 @@ RichTextCopyResult RichTextCommandStream_CopyExpanded
     successResult.overflowed = false;
     return successResult;
   }
-RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError:
+capacityError:
   destinationCursor[-1] = 0;
   errorResult.overflowed = true;
   errorResult.bytesWritten = FATAL_ERROR_GENERAL_FAILURE;
@@ -1343,13 +1340,13 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
       readCursor = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * sizeof(uint16_t);
       break;
     case RICHTEXT_OP_SELECT_FONT_FIRST:
-    case 9:
-    case 10:
-    case 0xb:
-    case 0xc:
-    case 0xd:
-    case 0xe:
-    case 0xf:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 1:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 2:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 3:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 4:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 5:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 6:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 7:
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
@@ -1363,14 +1360,14 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
       /* Soft hyphen: a wrap opportunity when the hyphen still fits. */
       glyphSize = FontGlyph_GetLogicalSizeActiveRegs('-');
       if (maximumWidth < glyphSize.width + lineWidth)
-      goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary;
+        goto commitWrapBoundary;
       wrapPoint = readCursor;
       break;
     case RICHTEXT_OP_LINE_BREAK:
       if (lineWidth <= maximumWidth) {
         wrapPoint = readCursor;
       }
-      goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary;
+      goto commitWrapBoundary;
     case RICHTEXT_OP_INLINE_IMAGE:
       /* payload: texture source pointer (code units 1-2), subresource (code units 3-4) */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
@@ -1382,7 +1379,7 @@ WrappedLineResult RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent max
       }
     }
   }
-RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
+commitWrapBoundary:
   if (wrapPoint == NULL) {
     wrapPoint = readCursor;
   }
@@ -1460,13 +1457,13 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
       scanCursor = measureCommand + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * sizeof(uint16_t);
       break;
     case RICHTEXT_OP_SELECT_FONT_FIRST:
-    case 9:
-    case 10:
-    case 0xb:
-    case 0xc:
-    case 0xd:
-    case 0xe:
-    case 0xf:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 1:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 2:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 3:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 4:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 5:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 6:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 7:
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
@@ -1479,14 +1476,14 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
     case RICHTEXT_OP_SOFT_HYPHEN:
       glyphSize = FontGlyph_GetLogicalSizeActiveRegs('-');
       if (maximumWidth < glyphSize.width + lineWidth)
-      goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
+        goto commitWrapBoundary;
       wrapPoint = scanCursor;
       break;
     case RICHTEXT_OP_LINE_BREAK:
       if (lineWidth <= maximumWidth) {
         wrapPoint = scanCursor;
       }
-      goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
+      goto commitWrapBoundary;
     case RICHTEXT_OP_INLINE_IMAGE:
       /* payload: texture source pointer (code units 1-2), subresource (code units 3-4) */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
@@ -1498,7 +1495,7 @@ WrappedLineResult RichTextCommandStream_DrawNextWrappedLine
       }
     }
   }
-RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
+commitWrapBoundary:
   g_ActiveFontIndex = savedFontIndexOrImageWidth;
   if (wrapPoint == NULL) {
     wrapPoint = scanCursor;
@@ -1565,13 +1562,13 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
       drawCursor = scanCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * sizeof(uint16_t);
       break;
     case RICHTEXT_OP_SELECT_FONT_FIRST:
-    case 9:
-    case 10:
-    case 0xb:
-    case 0xc:
-    case 0xd:
-    case 0xe:
-    case 0xf:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 1:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 2:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 3:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 4:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 5:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 6:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 7:
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
@@ -1584,11 +1581,11 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
         /* The line wraps at this soft hyphen: draw the hyphen and end the line. */
         FontGlyph_DrawVerticallyCentered
                   (clipTop,clipLeft,clipBottom,clipRight,'-',lineHeight,lineBottom,drawX);
-        goto RichTextCommandStream_DrawNextWrappedLine_EndLine;
+        goto endLine;
       }
       break;
     case RICHTEXT_OP_LINE_BREAK:
-      goto RichTextCommandStream_DrawNextWrappedLine_EndLine;
+      goto endLine;
     case RICHTEXT_OP_INLINE_IMAGE:
       /* the image sits on the line's bottom edge */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
@@ -1601,7 +1598,7 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
       drawCursor = scanCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE * sizeof(uint16_t);
     }
   }
-RichTextCommandStream_DrawNextWrappedLine_EndLine:
+endLine:
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
   moreLinesResult.endOfText = false;
   moreLinesResult.lineAdvancePixels = lineHeight;
@@ -1649,8 +1646,8 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
     default:
       if (remainingWords != 0) {
         *outputCursor = commandCodeUnit;
-        remainingWords = remainingWords - 1;
-        outputCursor = outputCursor + 1;
+        remainingWords--;
+        outputCursor++;
       }
       break;
     case RICHTEXT_OP_LITERAL_COLOR:

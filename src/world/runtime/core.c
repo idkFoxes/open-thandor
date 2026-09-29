@@ -86,56 +86,57 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   PackedArgb32 primaryColorA;
   
   levelConditions = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  cycleDurationOrPhase = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+  cycleDurationOrPhase = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
           terrainLightingCycleDurationTicks;
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
   if (cycleDurationOrPhase != 0) {
     /* phase in the cycle as a 16-bit angle; its cosine (Q28, -1..1) becomes a blend index 0..256 */
-    cycleDurationOrPhase = (g_GameFactionRuntimeImage.tail.simulationTick % cycleDurationOrPhase << 16) / cycleDurationOrPhase;
-    blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 21;
+    cycleDurationOrPhase =
+         (g_GameFactionRuntimeImage.tail.simulationTick % cycleDurationOrPhase << 16) / cycleDurationOrPhase;
+    blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
     primaryColorA =
-         ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
          terrainBaseColorArgb;
-    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             terrainRampColor124Argb;
-    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainBaseColorArgb;
-    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainRampColor124Argb;
     forwardFactors = g_SoftwareBilinearForwardFactors[blendIndexOrPrimaryValue];
     inverseFactors = g_SoftwareBilinearInverseFactors[blendIndexOrPrimaryValue];
     mixedColor0A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor0B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
     primaryColorA =
-         ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
          terrainLightingColor128Argb;
-    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             terrainRampColor12CArgb;
-    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainLightingColor128Argb;
-    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainRampColor12CArgb;
     mixedColor1A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor1B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
     primaryColorA =
-         ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
          terrainLightingColor130Argb;
-    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             terrainLightingColor134Argb;
-    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainLightingColor130Argb;
-    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainLightingColor134Argb;
     mixedColor2A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor2B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
     primaryColorA =
-         ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+         g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
          terrainLightingColor138Argb;
-    primaryColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    primaryColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             terrainLightingColor13CArgb;
-    alternateColorA = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorA = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainLightingColor138Argb;
-    alternateColorB = ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+    alternateColorB = g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
             alternateTerrainLightingColor13CArgb;
     mixedColor3A = WorldLighting_BlendColors(primaryColorA,alternateColorA,forwardFactors,inverseFactors);
     mixedColor3B = WorldLighting_BlendColors(primaryColorB,alternateColorB,forwardFactors,inverseFactors);
@@ -144,14 +145,15 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
               (mixedColor3B | 0xff000000,mixedColor3A & 0xffffff,mixedColor2B | 0xff000000,
                mixedColor2A & 0xffffff,
                mixedColor1B |
-               ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
+               g_InGameLevelRuntimeGlobalBlock.conditionStorage->levelImage.runtimeTail2E0.
                terrainRampColor12CArgb & 0xff000000,
                mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
     /* Low 16 bits of the pairs: triangular blend over the phase byte (0x80 = half cycle); the value that
        would lie below the other one gets 0x10000 added, so the blend runs forward through the 16-bit wrap.
        High 16 bits: the same cosine weight as the colours. */
     phaseByteOrAlternateSize = cycleDurationOrPhase >> 8;
-    blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
+    blendIndexOrPrimaryValue =
+         (uint32_t)(uint16_t)levelConditions->levelImage.runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
     alternateOriginOrBlendWeight = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
                            alternatePackedFieldRegionOriginYHigh16XLow16;
     if (phaseByteOrAlternateSize < 0x80) {
@@ -168,7 +170,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
       primaryOriginXWeighted = blendIndexOrPrimaryValue * (phaseByteOrAlternateSize - 0x80);
       alternateOriginXWeighted = alternateOriginOrBlendWeight * (0x80 - (phaseByteOrAlternateSize - 0x80));
     }
-    alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 21;
+    alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + (uint32_t)Q28_ONE >> 21;
     inverseBlendWeight = 0x100 - alternateOriginOrBlendWeight;
     blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
                            packedFieldRegionHeightHigh16WidthLow16;
@@ -189,20 +191,18 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
       primaryWidthWeighted = blendIndexOrPrimaryValue * (cycleDurationOrPhase - 0x80);
       alternateWidthWeighted = phaseByteOrAlternateSize * (0x80 - (cycleDurationOrPhase - 0x80));
     }
+    /* ((uint16_t *)&pair)[1]: the high 16 bits of a packed pair */
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-              ((int)((uint32_t)*(uint16_t *)
-                            ((int)&(levelConditions->levelImage).runtimeTail2E0.
-                                   alternatePackedFieldRegionHeightHigh16WidthLow16 + 2) * inverseBlendWeight +
-                    (uint32_t)*(uint16_t *)
-                           ((int)&(levelConditions->levelImage).runtimeTail2E0.
-                                  packedFieldRegionHeightHigh16WidthLow16 + 2) * (0x100 - inverseBlendWeight))
-               >> 8,(uint32_t)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
-               (int)((uint32_t)*(uint16_t *)
-                            ((int)&(levelConditions->levelImage).runtimeTail2E0.
-                                   alternatePackedFieldRegionOriginYHigh16XLow16 + 2) * inverseBlendWeight +
-                    *(uint16_t *)
-                     ((int)&(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16
-                     + 2) * alternateOriginOrBlendWeight) >> 8,(uint32_t)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
+              ((int)((uint32_t)((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+                                 alternatePackedFieldRegionHeightHigh16WidthLow16)[1] * inverseBlendWeight +
+                     (uint32_t)((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+                                 packedFieldRegionHeightHigh16WidthLow16)[1] * (0x100 - inverseBlendWeight)) >> 8,
+               (uint32_t)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
+               (int)((uint32_t)((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+                                 alternatePackedFieldRegionOriginYHigh16XLow16)[1] * inverseBlendWeight +
+                     ((uint16_t *)&levelConditions->levelImage.runtimeTail2E0.
+                       packedFieldRegionOriginYHigh16XLow16)[1] * alternateOriginOrBlendWeight) >> 8,
+               (uint32_t)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
   }
 }
 
@@ -217,15 +217,15 @@ void WorldRuntime_SetPosition60AndDistanceFromPosition80
 {
   uint32_t targetDistanceQ12;
   
-  (runtime->motion).positionXQ12 = positionX;
-  (runtime->motion).positionYQ12 = positionY;
-  (runtime->motion).positionZQ12 = positionZ;
+  runtime->motion.positionXQ12 = positionX;
+  runtime->motion.positionYQ12 = positionY;
+  runtime->motion.positionZQ12 = positionZ;
   targetDistanceQ12 =
-       FixedMath_Length3(positionZ - (runtime->motion).targetPositionZQ12,
-                         positionY - (runtime->motion).targetPositionYQ12,
-                         positionX - (runtime->motion).targetPositionXQ12);
-  (runtime->motion).targetDistanceQ12 = targetDistanceQ12;
-  (runtime->motion).committedDistanceQ12 = targetDistanceQ12;
+       FixedMath_Length3(positionZ - runtime->motion.targetPositionZQ12,
+                         positionY - runtime->motion.targetPositionYQ12,
+                         positionX - runtime->motion.targetPositionXQ12);
+  runtime->motion.targetDistanceQ12 = targetDistanceQ12;
+  runtime->motion.committedDistanceQ12 = targetDistanceQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
   return;
 }
@@ -243,27 +243,27 @@ void WorldRuntime_SetMotionParameters6CThrough78Clamped
 {
   if ((runtime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)(runtime->motion).maximumPitchAngle < (int)pitchAngle) {
-      pitchAngle = (runtime->motion).maximumPitchAngle;
+      pitchAngle = runtime->motion.maximumPitchAngle;
     }
     else if ((int)pitchAngle < (int)(runtime->motion).minimumPitchAngle) {
-      pitchAngle = (runtime->motion).minimumPitchAngle;
+      pitchAngle = runtime->motion.minimumPitchAngle;
     }
   }
-  if ((int)magnitude < 0x400) {
-    magnitude = 0x400;
+  if ((int)magnitude < WORLD_MOTION_MINIMUM_MAGNITUDE_Q12) {
+    magnitude = WORLD_MOTION_MINIMUM_MAGNITUDE_Q12;
   }
-  if ((int)pitchAngle < 0x4001) {
-    if ((int)pitchAngle < -0x4000) {
-      pitchAngle = 0xffffc000; /* -0x4000 */
+  if ((int)pitchAngle < FIXED_ANGLE16_QUARTER_TURN + 1) {
+    if ((int)pitchAngle < -FIXED_ANGLE16_QUARTER_TURN) {
+      pitchAngle = -FIXED_ANGLE16_QUARTER_TURN;
     }
   }
   else {
-    pitchAngle = 0x4000;
+    pitchAngle = FIXED_ANGLE16_QUARTER_TURN;
   }
-  (runtime->motion).positionMagnitudeQ12 = magnitude;
-  (runtime->motion).headingAngle = headingAngle & 0xffff;
-  (runtime->motion).pitchAngle = pitchAngle;
-  (runtime->motion).motionValue78 = value78;
+  runtime->motion.positionMagnitudeQ12 = magnitude;
+  runtime->motion.headingAngle = headingAngle & 0xffff;
+  runtime->motion.pitchAngle = pitchAngle;
+  runtime->motion.motionValue78 = value78;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
   return;
 }
@@ -281,17 +281,18 @@ void WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
 {
   FixedDirection directionOffset;
 
-  (runtime->motion).targetPositionXQ12 = originX;
-  (runtime->motion).targetPositionYQ12 = originY;
-  (runtime->motion).targetPositionZQ12 = originZ;
-  (runtime->motion).pitchAngle = pitchAngle;
-  (runtime->motion).headingAngle = headingAngle;
-  (runtime->motion).targetDistanceQ12 = distance;
-  (runtime->motion).committedDistanceQ12 = distance;
-  directionOffset = FixedMath_DirectionFromAnglesScaledRegs(-pitchAngle,headingAngle ^ 0x8000,distance);
-  (runtime->motion).positionXQ12 = directionOffset.x + (runtime->motion).targetPositionXQ12;
-  (runtime->motion).positionYQ12 = directionOffset.y + (runtime->motion).targetPositionYQ12;
-  (runtime->motion).positionZQ12 = directionOffset.z + (runtime->motion).targetPositionZQ12;
+  runtime->motion.targetPositionXQ12 = originX;
+  runtime->motion.targetPositionYQ12 = originY;
+  runtime->motion.targetPositionZQ12 = originZ;
+  runtime->motion.pitchAngle = pitchAngle;
+  runtime->motion.headingAngle = headingAngle;
+  runtime->motion.targetDistanceQ12 = distance;
+  runtime->motion.committedDistanceQ12 = distance;
+  directionOffset =
+       FixedMath_DirectionFromAnglesScaledRegs(-pitchAngle,headingAngle ^ FIXED_ANGLE16_HALF_TURN,distance);
+  runtime->motion.positionXQ12 = directionOffset.x + runtime->motion.targetPositionXQ12;
+  runtime->motion.positionYQ12 = directionOffset.y + runtime->motion.targetPositionYQ12;
+  runtime->motion.positionZQ12 = directionOffset.z + runtime->motion.targetPositionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
   return;
 }
@@ -310,19 +311,19 @@ void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRunti
   Q12 snapshotPositionZQ12;
   UQ12 snapshotDistanceQ12;
   
-  snapshotPositionYQ12 = (worldRuntime->snapshot).positionYQ12;
-  snapshotPositionZQ12 = (worldRuntime->snapshot).positionZQ12;
-  (worldRuntime->motion).positionXQ12 = (worldRuntime->snapshot).positionXQ12;
-  (worldRuntime->motion).positionYQ12 = snapshotPositionYQ12;
-  (worldRuntime->motion).positionZQ12 = snapshotPositionZQ12;
-  snapshotHeadingAngle = (worldRuntime->snapshot).headingAngle;
-  snapshotPitchAngle = (worldRuntime->snapshot).pitchAngle;
-  snapshotDistanceQ12 = (worldRuntime->snapshot).distanceQ12;
-  (worldRuntime->motion).positionMagnitudeQ12 = (worldRuntime->snapshot).magnitudeQ12;
-  (worldRuntime->motion).headingAngle = snapshotHeadingAngle;
-  (worldRuntime->motion).pitchAngle = snapshotPitchAngle;
-  (worldRuntime->motion).targetDistanceQ12 = snapshotDistanceQ12;
-  (worldRuntime->motion).committedDistanceQ12 = snapshotDistanceQ12;
+  snapshotPositionYQ12 = worldRuntime->snapshot.positionYQ12;
+  snapshotPositionZQ12 = worldRuntime->snapshot.positionZQ12;
+  worldRuntime->motion.positionXQ12 = worldRuntime->snapshot.positionXQ12;
+  worldRuntime->motion.positionYQ12 = snapshotPositionYQ12;
+  worldRuntime->motion.positionZQ12 = snapshotPositionZQ12;
+  snapshotHeadingAngle = worldRuntime->snapshot.headingAngle;
+  snapshotPitchAngle = worldRuntime->snapshot.pitchAngle;
+  snapshotDistanceQ12 = worldRuntime->snapshot.distanceQ12;
+  worldRuntime->motion.positionMagnitudeQ12 = worldRuntime->snapshot.magnitudeQ12;
+  worldRuntime->motion.headingAngle = snapshotHeadingAngle;
+  worldRuntime->motion.pitchAngle = snapshotPitchAngle;
+  worldRuntime->motion.targetDistanceQ12 = snapshotDistanceQ12;
+  worldRuntime->motion.committedDistanceQ12 = snapshotDistanceQ12;
   WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
   return;
 }
@@ -335,7 +336,7 @@ void WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRunti
 void WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world)
 
 {
-  if ((asset->common).magic == ASSET_MAGIC_FLD) {
+  if (asset->common.magic == ASSET_MAGIC_FLD) {
     world->fieldGrid = asset;
     FieldGrid_RecomputeInteriorTriangleNormalAngles(asset);
     WorldRuntime_ClearFieldGridDirtyFlag(world);
@@ -358,16 +359,17 @@ void WorldRuntime_AdjustFieldOriginWrappedClamped
 {
   FieldGridDimensionCells auxiliaryElevationAngle;
 
-  auxiliaryElevationAngle = deltaElevationAngle + (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionHeight;
-  if (-0x1000 < auxiliaryElevationAngle) {
-    auxiliaryElevationAngle = -0x1000;
+  auxiliaryElevationAngle =
+       deltaElevationAngle + g_InGameRuntimeRoot->worldRuntime0A30.fieldRegion.regionHeight;
+  if (WORLD_AUXILIARY_ELEVATION_MAXIMUM < auxiliaryElevationAngle) {
+    auxiliaryElevationAngle = WORLD_AUXILIARY_ELEVATION_MAXIMUM;
   }
-  if (auxiliaryElevationAngle < -0x4000) {
-    auxiliaryElevationAngle = -0x4000;
+  if (auxiliaryElevationAngle < WORLD_AUXILIARY_ELEVATION_MINIMUM) {
+    auxiliaryElevationAngle = WORLD_AUXILIARY_ELEVATION_MINIMUM;
   }
   WorldRuntime_RecomputeFieldRegionNormalsAndLighting
             (auxiliaryElevationAngle,
-             deltaAzimuthAngle + (g_InGameRuntimeRoot->worldRuntime0A30).fieldRegion.regionWidth & 0xffff,
+             deltaAzimuthAngle + g_InGameRuntimeRoot->worldRuntime0A30.fieldRegion.regionWidth & 0xffff,
              g_InGameRuntimeRoot->fieldRegionOriginWorldYQ12_0BAC,
              g_InGameRuntimeRoot->fieldRegionOriginWorldXQ12_0BA8,
              &g_InGameRuntimeRoot->worldRuntime0A30);
@@ -441,7 +443,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
    (inclusive, in either corner order).
 */
 bool WorldRuntimeNode_IsPositionInsideBounds
-          (WorldOwnerListNode100 *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl)
+          (WorldOwnerListNode *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl)
 
 {
   int boundsSecondX;
@@ -458,7 +460,8 @@ bool WorldRuntimeNode_IsPositionInsideBounds
             (&g_GraphicsProjectionScratchVec3,(GraphicsFixedVec3 *)&runtimeNode->worldXQ12,
              &g_ViewProjectionMatrixFixed);
   projectedPositionPair =
-       THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8, Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3));
+       THANDOR_BITCAST(GraphicsProjectedPointPair, GraphicsProjectedPointEdxEax8,
+                       Graphics_ProjectViewPoint(&g_GraphicsProjectionScratchVec3));
   boundsMinX = boundsControl->extendedCoordinate160;
   boundsSecondX = boundsControl->extendedCoordinate168;
   boundsMinY = boundsControl->extendedCoordinate164;
@@ -476,8 +479,8 @@ bool WorldRuntimeNode_IsPositionInsideBounds
     boundsMaxY = boundsMinY;
     boundsMinY = boundsSecondY;
   }
-  if ((((boundsMinX <= projectedScreenX) && (projectedScreenX <= boundsMaxX)) && (boundsMinY <= projectedScreenY)) &&
-     (projectedScreenY <= boundsMaxY)) {
+  if (boundsMinX <= projectedScreenX && projectedScreenX <= boundsMaxX && boundsMinY <= projectedScreenY &&
+      projectedScreenY <= boundsMaxY) {
     return true;
   }
   return false;
@@ -497,18 +500,18 @@ void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime
   AngleTurn32 snapshotHeadingAngle;
   AngleTurn32 snapshotPitchAngle;
   
-  snapshotPositionYQ12 = (worldRuntime->motion).positionYQ12;
-  snapshotPositionZQ12 = (worldRuntime->motion).positionZQ12;
-  (worldRuntime->snapshot).positionXQ12 = (worldRuntime->motion).positionXQ12;
-  (worldRuntime->snapshot).positionYQ12 = snapshotPositionYQ12;
-  (worldRuntime->snapshot).positionZQ12 = snapshotPositionZQ12;
-  snapshotHeadingAngle = (worldRuntime->motion).headingAngle;
-  snapshotPitchAngle = (worldRuntime->motion).pitchAngle;
-  snapshotDistanceQ12 = (worldRuntime->motion).committedDistanceQ12;
-  (worldRuntime->snapshot).magnitudeQ12 = (worldRuntime->motion).positionMagnitudeQ12;
-  (worldRuntime->snapshot).headingAngle = snapshotHeadingAngle;
-  (worldRuntime->snapshot).pitchAngle = snapshotPitchAngle;
-  (worldRuntime->snapshot).distanceQ12 = snapshotDistanceQ12;
+  snapshotPositionYQ12 = worldRuntime->motion.positionYQ12;
+  snapshotPositionZQ12 = worldRuntime->motion.positionZQ12;
+  worldRuntime->snapshot.positionXQ12 = worldRuntime->motion.positionXQ12;
+  worldRuntime->snapshot.positionYQ12 = snapshotPositionYQ12;
+  worldRuntime->snapshot.positionZQ12 = snapshotPositionZQ12;
+  snapshotHeadingAngle = worldRuntime->motion.headingAngle;
+  snapshotPitchAngle = worldRuntime->motion.pitchAngle;
+  snapshotDistanceQ12 = worldRuntime->motion.committedDistanceQ12;
+  worldRuntime->snapshot.magnitudeQ12 = worldRuntime->motion.positionMagnitudeQ12;
+  worldRuntime->snapshot.headingAngle = snapshotHeadingAngle;
+  worldRuntime->snapshot.pitchAngle = snapshotPitchAngle;
+  worldRuntime->snapshot.distanceQ12 = snapshotDistanceQ12;
   return;
 }
 
@@ -522,13 +525,13 @@ void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime
 void WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
 
 {
-  if ((((worldRuntime->motion).positionXQ12 == (worldRuntime->snapshot).positionXQ12) &&
-      ((worldRuntime->motion).positionYQ12 == (worldRuntime->snapshot).positionYQ12)) &&
-     ((worldRuntime->motion).positionZQ12 == (worldRuntime->snapshot).positionZQ12)) {
-    if ((((worldRuntime->motion).positionMagnitudeQ12 == (worldRuntime->snapshot).magnitudeQ12) &&
-        ((worldRuntime->motion).headingAngle == (worldRuntime->snapshot).headingAngle)) &&
-       (((worldRuntime->motion).pitchAngle == (worldRuntime->snapshot).pitchAngle &&
-        ((worldRuntime->motion).targetDistanceQ12 == (worldRuntime->snapshot).distanceQ12)))) {
+  if (((worldRuntime->motion.positionXQ12 == worldRuntime->snapshot.positionXQ12) &&
+      (worldRuntime->motion.positionYQ12 == worldRuntime->snapshot.positionYQ12)) &&
+     (worldRuntime->motion.positionZQ12 == worldRuntime->snapshot.positionZQ12)) {
+    if (((worldRuntime->motion.positionMagnitudeQ12 == worldRuntime->snapshot.magnitudeQ12) &&
+        (worldRuntime->motion.headingAngle == worldRuntime->snapshot.headingAngle)) &&
+       ((worldRuntime->motion.pitchAngle == worldRuntime->snapshot.pitchAngle &&
+        (worldRuntime->motion.targetDistanceQ12 == worldRuntime->snapshot.distanceQ12)))) {
       return;
     }
   }
@@ -543,7 +546,7 @@ void WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
 void WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContext *world)
 
 {
-  (world->motion).committedDistanceQ12 = (world->motion).targetDistanceQ12;
+  world->motion.committedDistanceQ12 = world->motion.targetDistanceQ12;
   return;
 }
 
@@ -618,9 +621,9 @@ WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
 {
   WorldVector0EaxEcxEdx12 positionVector;
 
-  positionVector.xQ12= (world->motion).positionXQ12;
-  positionVector.yQ12 = (world->motion).positionYQ12;
-  positionVector.zQ12 = (world->motion).positionZQ12;
+  positionVector.xQ12= world->motion.positionXQ12;
+  positionVector.yQ12 = world->motion.positionYQ12;
+  positionVector.zQ12 = world->motion.positionZQ12;
   return positionVector;
 }
 
@@ -634,9 +637,9 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
 {
   WorldVector1EaxEcxEdx12 motionVector;
 
-  motionVector.magnitudeQ12= (world->motion).positionMagnitudeQ12;
-  motionVector.headingAngle = (world->motion).headingAngle;
-  motionVector.pitchAngle = (world->motion).pitchAngle;
+  motionVector.magnitudeQ12= world->motion.positionMagnitudeQ12;
+  motionVector.headingAngle = world->motion.headingAngle;
+  motionVector.pitchAngle = world->motion.pitchAngle;
   return motionVector;
 }
 
@@ -740,12 +743,12 @@ WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *
       exhaustedResult.recordOrError = (WorldObjectRecord *)FATAL_ERROR_GENERAL_FAILURE;
       return exhaustedResult;
     }
-    if (((recordCursor->common).allocationFlags & WORLD_OBJECT_RECORD_ALLOCATED) == 0) break;
+    if ((recordCursor->common.allocationFlags & WORLD_OBJECT_RECORD_ALLOCATED) == 0) break;
     recordCursor = recordCursor + 1;
     recordsRemaining--;
   }
-  (recordCursor->common).allocationFlags = WORLD_OBJECT_RECORD_ALLOCATED;
-  (recordCursor->common).ownerWorld = worldRuntime;
+  recordCursor->common.allocationFlags = WORLD_OBJECT_RECORD_ALLOCATED;
+  recordCursor->common.ownerWorld = worldRuntime;
   allocatedResult.failed = false;
   allocatedResult.recordOrError = recordCursor;
   return allocatedResult;
@@ -756,11 +759,11 @@ WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *
    Marks node as linked and puts it at the head of its world's owner list (head at +0xD8; the head is
    swapped with XCHG, the neighbour links are then set without a lock).
 */
-void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
+void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode *node)
 
 {
-  WorldOwnerListNode100 **ownerListHeadLink;
-  WorldOwnerListNode100 *previousHeadNode;
+  WorldOwnerListNode **ownerListHeadLink;
+  WorldOwnerListNode *previousHeadNode;
   WorldRuntimeContext *ownerWorld;
 
   ownerWorld = node->ownerWorld;
@@ -783,11 +786,11 @@ void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
    Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
    of its runtime flags, the linked mark included.
 */
-void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node)
+void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode *node)
 
 {
-  WorldOwnerListNode100 *previousNode;
-  WorldOwnerListNode100 *nextNode;
+  WorldOwnerListNode *previousNode;
+  WorldOwnerListNode *nextNode;
 
   if ((node->runtimeFlags & WORLD_OWNER_NODE_LINKED) != 0) {
     previousNode = node->previousNode;
@@ -815,7 +818,7 @@ void WorldRuntime_ForEachNodeInOwnerListD8(void *callbackContext,WorldRuntimeNod
           WorldRuntimeContext *world)
 
 {
-  WorldOwnerListNode100 *node;
+  WorldOwnerListNode *node;
 
   for (node = world->ownerListHead; node != NULL; node = node->nextNode) {
     callback(callbackContext,node);
@@ -826,7 +829,7 @@ void WorldRuntime_ForEachNodeInOwnerListD8(void *callbackContext,WorldRuntimeNod
 
 /* Address: 0x0050EC80.
    Pre-serializer provider of the light.hex save segment (called by
-   InGameUiAction1210_ResourceRegistrationHelper): returns the shading runtime records (EAX) and their byte
+   InGameSaveGame_WritePackage): returns the shading runtime records (EAX) and their byte
    size 0x4000 (EDX), and inverts serializationToggleDword of record 0 so the saved image carries the
    inverted value; RuntimeHexSegment_ToggleLightImageFlag inverts it back after saving.
 */
@@ -854,7 +857,7 @@ void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
 
 /* Address: 0x0050ECB0.
    Pre-serializer provider of the field.hex save segment (called by
-   InGameUiAction1210_ResourceRegistrationHelper): returns the attached field grid (+0x54) and its whole
+   InGameSaveGame_WritePackage): returns the attached field grid (+0x54) and its whole
    allocation size (asset +0x04), so the field image is saved as one block. The original returns the image
    in EAX and the size in EDX.
 */
@@ -868,7 +871,7 @@ RuntimeHexSegment_GetFieldImageRegs(InGameFieldImageSaveContext58 *fieldImageCon
 }
 
 /* Address: 0x0050ECD0.
-   Post-serializer hook of the field.hex save segment (called by InGameUiAction1210_ResourceRegistrationHelper):
+   Post-serializer hook of the field.hex save segment (called by InGameSaveGame_WritePackage):
    does nothing; the field image needs no restoring after saving. The caller keeps the serializer flags.
 */
 void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldImageContext)
@@ -883,33 +886,36 @@ void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldI
    node: its hierarchy's targets and two fields of the entity linked at payload dword 2; for an effect node:
    its target at +0x1C.
 */
-void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode100 *node)
+void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode *node)
 
 {
-  int *modelRuntime;
-  int linkedRuntimeStateAddress;
-  
+  ModelRuntimeSlot *modelRuntime;
+  ArmyRuntimeSlot *ownerArmy;
+
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     modelRuntime = node->runtimePayload;
-    ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,modelRuntime);
-    /* the entity that owns the model (payload dword 2) */
-    linkedRuntimeStateAddress = modelRuntime[2];
-    if (releasedObject== (void *)((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->runtimeState98) {
-      ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->runtimeState98 = 0;
+    ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,(int *)modelRuntime);
+    /* the army that owns the model */
+    ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+    if (releasedObject== (void *)ownerArmy->runtimeState98) {
+      ownerArmy->runtimeState98 = 0;
     }
-    /* the command target is only a live reference while bit 0 of the command mode is set; bits 0, 2 and 3 are
-       cleared with it */
-    if (((((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandModeFlags & 1) != 0) &&
-       (releasedObject == ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandTargetArmyRuntime)) {
-      ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandTargetArmyRuntime = NULL;
-      ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandModeFlags =
-           ((ArmyRuntimeSlot *)linkedRuntimeStateAddress)->commandModeFlags & 0xfffffff2;
+    /* the command target is only a live reference while ARMY_COMMAND_MODE_TARGET_ARMY is set; it is cleared
+       together with the INTERRUPTED and AI_COMBAT_TARGET bits */
+    if ((ownerArmy->commandModeFlags & ARMY_COMMAND_MODE_TARGET_ARMY) != 0 &&
+        releasedObject == ownerArmy->commandTargetArmyRuntime) {
+      ownerArmy->commandTargetArmyRuntime = NULL;
+      ownerArmy->commandModeFlags =
+           ownerArmy->commandModeFlags &
+           ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_INTERRUPTED | ARMY_COMMAND_MODE_AI_COMBAT_TARGET);
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) &&
           (releasedObject ==
-           ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode)) {
-    ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = NULL;
+           ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.
+           modelNode)) {
+    ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
+         NULL;
   }
   return;
 }
@@ -928,35 +934,37 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
   TerrainClassOverlayCallback *overlayCallback;
   int modelOverlayBase;
   ModelDefinitionRecordPrefix *definitionRecord;
-  WorldOwnerListNode100 *ownerNode;
+  WorldOwnerListNode *ownerNode;
   ModelDefinitionResult definitionLookup;
   uint32_t overlayExtent;
   
   if (sourceRuntime != NULL) {
     definitionLookup = ModelDefinitionRegistry_FindByIdWithError
-                      (((AiLinkedDefinitionListView *)((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->
+                      (((AiLinkedDefinitionListView *)
+                        ((ArmyAssetRecordPrefix *)sourceRuntime)->rootNodeOffsetOrPointer)->
                        definitionIds[0]);
     definitionRecord = definitionLookup.modelDefinition;
     if (!definitionLookup.notFound) {
       overlayExtent = 0xffffffff;
       ownerNode = worldRuntime->ownerListHead;
-      overlayBaseOffset = ((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->placementFlags1A8;
+      overlayBaseOffset = ((ModelDefinition *)definitionRecord)->placementFlags1A8;
       if (ownerNode != NULL) {
-        if (((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->runtimeClassId4C == 0xe) {
+        if (((ModelDefinition *)definitionRecord)->runtimeClassId4C == MODEL_RUNTIME_CLASS_14) {
           overlayExtent =
-               0x800 << ((uint8_t)((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->classParameterC0 & 0x1f);
+               0x800 << ((uint8_t)((ModelDefinition *)definitionRecord)->classParameterC0 & 0x1f);
         }
         overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
-                 [((ModelDefinitionRuntimeSemanticView280 *)definitionRecord)->placementContactKindIndex278];
+                 [((ModelDefinition *)definitionRecord)->placementContactKindIndex278];
         do {
-          if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-              (worldRuntime->activeFactionRuntimeIndex ==
-               ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex)) &&
-             (modelOverlayBase =
-                   ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.runtimeDefinition->supportRadius19C,
-             modelOverlayBase != 0)) {
-            overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,ownerNode->worldXQ12,
-                      worldRuntime->fieldGrid);
+          if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
+              worldRuntime->activeFactionRuntimeIndex ==
+              ((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime->
+              factionIndex &&
+              (modelOverlayBase = ((ModelRuntimeSlot *)ownerNode->runtimePayload)->definitionOrSavedId.
+                                  runtimeDefinition->supportRadius19C,
+               modelOverlayBase != 0)) {
+            overlayCallback(overlayExtent,-1,modelOverlayBase + overlayBaseOffset,ownerNode->worldYQ12,
+                            ownerNode->worldXQ12,worldRuntime->fieldGrid);
           }
           ownerNode = ownerNode->nextNode;
         } while (ownerNode != NULL);
@@ -1054,30 +1062,32 @@ void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRun
    (detachedObject = that model runtime): every effect (+0x1C), shot (+0x14) or entity (+0xF0, and +0x60 for
    definition class 0x15) that still points at it gets the pointer cleared, so nothing keeps a dangling reference.
 */
-void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject,WorldOwnerListNode100 *node)
+void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject,WorldOwnerListNode *node)
 
 {
-  int *entityRuntimeWords;
+  ModelRuntimeSlot *modelRuntime;
 
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
     if (detachedObject ==
         ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode) {
-      ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode = NULL;
+      ((EffectRuntimeSlot *)node->runtimePayload)->lifecycleOwnerAndDefinition.ownerAndDefinition.owner.modelNode =
+           NULL;
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-    /* word 0 is the definition (class index at +0x4C), word 0x3C = +0xF0, word 0x18 = +0x60 */
-    entityRuntimeWords = node->runtimePayload;
-    if (detachedObject == (void *)entityRuntimeWords[0x3c]) {
-      entityRuntimeWords[0x3c] = 0;
+    /* the linked army (+0xF0) and, for an aircraft, the linked base model runtime (+0x60) */
+    modelRuntime = node->runtimePayload;
+    if (detachedObject == modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime) {
+      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = NULL;
     }
-    if ((((ModelRuntimeSlot *)entityRuntimeWords)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0x15) &&
-       (detachedObject == (void *)entityRuntimeWords[0x18])) {
-      entityRuntimeWords[0x18] = 0;
+    if (modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT &&
+        detachedObject == modelRuntime->classLinkState.modelLinkOrState60.modelRuntime) {
+      modelRuntime->classLinkState.modelLinkOrState60.modelRuntime = NULL;
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
-          (detachedObject == ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeStatePointer)) {
+          (detachedObject ==
+           ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeStatePointer)) {
     ((ShotRuntimeSlot *)node->runtimePayload)->runtimeStateOrSavedOffset.runtimeState = 0;
   }
   return;
@@ -1090,20 +1100,21 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
    31 (linked into the owner list) and 30 and zeroes one back-reference field of their runtime payload (+0x10 for
    shots, +4 for effects).
 */
-void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode100 *node)
+void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode *node)
 
 {
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     ArmyRuntime_DestroyInstanceAndRefreshUi
               (shutdownContext,
-               (GameEntityRuntime *)((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
+               (GameEntityRuntime *)
+               ((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) {
-    node->runtimeFlags = node->runtimeFlags & 0x3fffffff;
+    node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | 0x40000000);
     ((ShotRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
-    node->runtimeFlags = node->runtimeFlags & 0x3fffffff;
+    node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | 0x40000000);
     ((EffectRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
   return;
@@ -1131,16 +1142,16 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) == 0) {
     rayLengthOrOffsetY = worldRuntime->maximumCameraDistanceQ12 << 2;
     raycastResult = FieldGrid_RaycastTerrainSurfaceDistance
-                      ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
-                       (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
-                       (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
+                      (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthOrOffsetY,
+                       worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
+                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid);
     hitDistanceQ12 = raycastResult.distanceQ12;
     if (raycastResult.hit) {
       /* terrain hit: a nearer secondary-surface hit wins */
       secondaryRaycastResult = FieldGrid_RaycastSecondarySurfaceDistance
-                        ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
-                         (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
-                         (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
+                        (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,rayLengthOrOffsetY,
+                         worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
+                         worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid);
       if ((secondaryRaycastResult.hit) && (secondaryRaycastResult.distanceQ12 < (int)hitDistanceQ12)) {
         hitDistanceQ12 = secondaryRaycastResult.distanceQ12;
       }
@@ -1148,35 +1159,36 @@ void WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext
   }
   else {
     raycastResult = FieldGrid_RaycastSecondarySurfaceDistance
-                      ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,
+                      (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,
                        worldRuntime->maximumCameraDistanceQ12 << 2,
-                       (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
-                       (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
+                       worldRuntime->motion.positionZQ12,worldRuntime->motion.positionYQ12,
+                       worldRuntime->motion.positionXQ12,worldRuntime->fieldGrid);
     hitDistanceQ12 = raycastResult.distanceQ12;
   }
   if (!raycastResult.hit) {
     /* no hit: intersect the view ray with the ground plane z = 0 */
-    currentPitchAngle = (worldRuntime->motion).pitchAngle;
+    currentPitchAngle = worldRuntime->motion.pitchAngle;
     groundOffsetXY = FixedMath_SinCosScaled
-                      ((worldRuntime->motion).headingAngle,
+                      (worldRuntime->motion.headingAngle,
                        (FixedMathScale32)
                        (((int64_t)(worldRuntime->motion).positionZQ12 *
                         (int64_t)g_FixedCosQ28[-currentPitchAngle]) / (int64_t)g_FixedSinQ28[-currentPitchAngle]));
     rayLengthOrOffsetY = (int)(groundOffsetXY >> 0x20);
-    (worldRuntime->motion).targetPositionXQ12 = (int)groundOffsetXY + (worldRuntime->motion).positionXQ12;
-    (worldRuntime->motion).targetPositionYQ12 = rayLengthOrOffsetY + (worldRuntime->motion).positionYQ12;
-    (worldRuntime->motion).targetPositionZQ12 = 0;
-    endpointDistanceQ12 = FixedMath_Length3((worldRuntime->motion).positionZQ12,rayLengthOrOffsetY,(int)groundOffsetXY);
-    (worldRuntime->motion).targetDistanceQ12 = endpointDistanceQ12;
+    worldRuntime->motion.targetPositionXQ12 = (int)groundOffsetXY + worldRuntime->motion.positionXQ12;
+    worldRuntime->motion.targetPositionYQ12 = rayLengthOrOffsetY + worldRuntime->motion.positionYQ12;
+    worldRuntime->motion.targetPositionZQ12 = 0;
+    endpointDistanceQ12 =
+         FixedMath_Length3(worldRuntime->motion.positionZQ12,rayLengthOrOffsetY,(int)groundOffsetXY);
+    worldRuntime->motion.targetDistanceQ12 = endpointDistanceQ12;
     WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
     return;
   }
-  (worldRuntime->motion).targetDistanceQ12 = hitDistanceQ12;
+  worldRuntime->motion.targetDistanceQ12 = hitDistanceQ12;
   endpointOffset = FixedMath_DirectionFromAnglesScaledRegs
-                    ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,hitDistanceQ12);
-  (worldRuntime->motion).targetPositionXQ12 = endpointOffset.x + (worldRuntime->motion).positionXQ12;
-  (worldRuntime->motion).targetPositionYQ12 = endpointOffset.y + (worldRuntime->motion).positionYQ12;
-  (worldRuntime->motion).targetPositionZQ12 = endpointOffset.z + (worldRuntime->motion).positionZQ12;
+                    (worldRuntime->motion.pitchAngle,worldRuntime->motion.headingAngle,hitDistanceQ12);
+  worldRuntime->motion.targetPositionXQ12 = endpointOffset.x + worldRuntime->motion.positionXQ12;
+  worldRuntime->motion.targetPositionYQ12 = endpointOffset.y + worldRuntime->motion.positionYQ12;
+  worldRuntime->motion.targetPositionZQ12 = endpointOffset.z + worldRuntime->motion.positionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }
@@ -1193,14 +1205,14 @@ void WorldRuntime_SetTerrainLightingConfiguration(PackedArgb32 lightingColor13CA
           )
 
 {
-  (worldRuntime->lighting).color130Argb = lightingColor130Argb;
-  (worldRuntime->lighting).color134Argb = lightingColor134Argb;
-  (worldRuntime->lighting).color128Argb = lightingColor128Argb;
-  (worldRuntime->lighting).color138Argb = lightingColor138Argb;
-  (worldRuntime->lighting).color13CArgb = lightingColor13CArgb;
-  (worldRuntime->lighting).baseColorArgb = baseColorArgb;
-  (worldRuntime->lighting).rampColorArgb = rampColor124Argb;
-  (worldRuntime->lighting).color12CArgb = rampColor12CArgb;
+  worldRuntime->lighting.color130Argb = lightingColor130Argb;
+  worldRuntime->lighting.color134Argb = lightingColor134Argb;
+  worldRuntime->lighting.color128Argb = lightingColor128Argb;
+  worldRuntime->lighting.color138Argb = lightingColor138Argb;
+  worldRuntime->lighting.color13CArgb = lightingColor13CArgb;
+  worldRuntime->lighting.baseColorArgb = baseColorArgb;
+  worldRuntime->lighting.rampColorArgb = rampColor124Argb;
+  worldRuntime->lighting.color12CArgb = rampColor12CArgb;
   TerrainLighting_BuildColorRampAndSetBaseColor(rampColor12CArgb,rampColor124Argb,baseColorArgb);
   return;
 }
@@ -1220,15 +1232,15 @@ void WorldRuntime_RecomputeFieldRegionNormalsAndLighting
 {
   /* worldRuntime is the world embedded in the in-game root; the light angles are stored in the root fields
      named fieldRegionOriginWorldXQ12_0BA8 (azimuth) and fieldRegionOriginWorldYQ12_0BAC (elevation) */
-  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->fieldRegionOriginWorldXQ12_0BA8 =
-       lightAzimuthAngle;
-  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->fieldRegionOriginWorldYQ12_0BAC =
-       lightElevationAngle;
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->
+       fieldRegionOriginWorldXQ12_0BA8 = lightAzimuthAngle;
+  THANDOR_CONTAINER_OF(worldRuntime, InGameRuntimeRootImageC3E4, worldRuntime0A30)->
+       fieldRegionOriginWorldYQ12_0BAC = lightElevationAngle;
   FieldGrid_RecomputeInteriorTriangleNormalAngles(worldRuntime->fieldGrid);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (lightElevationAngle,lightAzimuthAngle,worldRuntime->fieldGrid);
-  (worldRuntime->fieldRegion).regionWidth = auxiliaryAzimuthAngle;
-  (worldRuntime->fieldRegion).regionHeight = auxiliaryElevationAngle;
+  worldRuntime->fieldRegion.regionWidth = auxiliaryAzimuthAngle;
+  worldRuntime->fieldRegion.regionHeight = auxiliaryElevationAngle;
   return;
 }
 

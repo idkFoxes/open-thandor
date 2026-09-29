@@ -18,7 +18,7 @@
 void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi);
 
 /* 0x005474A0 */
-void FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root);
+void FrontendTeardown_SaveStatusTextAndHostAddress(UiRootNode *root);
 
 /* 0x0054C7D0 */
 void FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *hostAddressEdit);

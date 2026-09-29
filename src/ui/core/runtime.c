@@ -56,18 +56,20 @@ int UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root)
    root +0xBB4 for the bias, +0x5C = root +0xB94 for the scale). Called when the dialog opens and by
    UiDisplaySettingsRoot_RefreshModeSelection.
 */
-void UiRuntime_FormatSignedValues140And144(void *root)
+void UiDisplaySettingsRoot_FormatColorReadouts(void *root)
 
 {
+  UiDisplaySettingsApplyButton *applyButton = (UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton);
+  UiDisplaySettingsValueReadout *readout =
+       (UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText);
+
   /* fractionalDigits 3, integerDigitLimit 10; the denominators are 64.0 and 1.0 in Q16 */
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,64 << 16,
-             ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorBiasQ16,
-             ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorBiasTextUtf16);
+            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,64 << 16,applyButton->selectedColorBiasQ16,
+             readout->colorBiasTextUtf16);
   g_WideNumberFormatUtf16
-            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,1 << 16,
-             ((UiDisplaySettingsApplyButton *)DISPLAY_SETTINGS_UI(root,applyButton))->selectedColorScaleQ16,
-             ((UiDisplaySettingsValueReadout *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->colorScaleTextUtf16);
+            (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,1 << 16,applyButton->selectedColorScaleQ16,
+             readout->colorScaleTextUtf16);
   return;
 }
 
@@ -87,35 +89,31 @@ void UiRuntime_OpenFourValueDialog(UiPixelCoordinate previousAdapterIndex,UiPixe
   UiRootNode *root;
   int remainingDwords;
   uint32_t *templateCursor;
-  UiRootNode *copyCursor;
+  uint32_t *copyCursor;
   ArenaAllocResult allocResult;
   TextResolveResult resolvedText;
+  UiFourValueDialogCountdownText *countdownText;
 
-  allocResult = g_MemoryApi.alloc(0x1a4);
+  allocResult = g_MemoryApi.alloc(sizeof(g_UiFourValueDialogTemplateImage));
   root = (UiRootNode *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     /* REP MOVSD of the 0x1A4-byte template, one dword per step */
     templateCursor = g_UiFourValueDialogTemplateImage;
-    copyCursor = root;
-    for (remainingDwords = 0x1a4 / 4; remainingDwords != 0; remainingDwords--) {
-      (copyCursor->base).nextSibling = (UiNodeBase *)*templateCursor;
+    copyCursor = (uint32_t *)root;
+    countdownText = (UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText);
+    for (remainingDwords = sizeof(g_UiFourValueDialogTemplateImage) / 4; remainingDwords != 0; remainingDwords--) {
+      *copyCursor = *templateCursor;
       templateCursor++;
-      copyCursor = (UiRootNode *)&(copyCursor->base).firstChild;
+      copyCursor++;
     }
-    countdownNumberBuffer =
-         ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdownTextUtf16;
-    resolvedText = TextResource_Resolve(0x109);
+    countdownNumberBuffer = countdownText->countdownTextUtf16;
+    resolvedText = TextResource_Resolve(TEXT_ID_DISPLAY_MODE_KEEP_COUNTDOWN);
     RichTextCommandStream_PatchPayloadBySelector(0,countdownNumberBuffer,resolvedText.text);
-    g_WideNumberFormatUtf16
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-               ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->countdown,
-               countdownNumberBuffer);
-    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousWidth = previousWidth;
-    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousHeight = previousHeight;
-    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousBitsPerPixel =
-         previousBitsPerPixel;
-    ((UiFourValueDialogCountdownText *)FOUR_VALUE_DIALOG_UI(root,countdownMessageText))->previousAdapterIndex =
-         previousAdapterIndex;
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,countdownText->countdown,countdownNumberBuffer);
+    countdownText->previousWidth = previousWidth;
+    countdownText->previousHeight = previousHeight;
+    countdownText->previousBitsPerPixel = previousBitsPerPixel;
+    countdownText->previousAdapterIndex = previousAdapterIndex;
     UiRootStack_Push(&g_UiFourValueDialogRootCallbacks,root);
     UiRootStack_InvalidateAll();
     return;
@@ -144,7 +142,7 @@ RecordRingDiscardResult UiRuntimeRecordRing_DiscardOldest(void)
     nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
     discardedResult.payloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
     discardedResult.endpointOrReadIndex =
-         g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeAuxiliaryBuffer8000;
+         g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeRecordEndpointSlots;
     g_UiRuntimeRecordReadIndex = nextReadIndex;
     if (UI_RUNTIME_RECORD_RING_LAST_INDEX < nextReadIndex) {
       g_UiRuntimeRecordReadIndex = 0;
@@ -257,19 +255,20 @@ void UiRuntime_Initialize(void)
   g_UiRuntimeInitializationCount++;
   FontRuntime_Init();
   UiWindowResources_Init();
-  allocResult = g_MemoryApi.alloc(0x600); /* 64 dirty rectangles of 0x18 bytes */
+  allocResult = g_MemoryApi.alloc(UI_DIRTY_RECT_CAPACITY * sizeof(UiDirtyRectEntry));
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedResult.valueOrError;
-  allocResult = g_MemoryApi.alloc(0x80); /* 16 queued actions of 8 bytes */
+  allocResult = g_MemoryApi.alloc(UI_ACTION_QUEUE_BYTES); /* 16 queued actions of 8 bytes */
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiActionQueueEntries = (UiActionQueueEntry *)checkedResult.valueOrError;
   /* from here on FatalError_ReportIfFailed shows errors in an in-game dialog */
   ErrorRuntime_InstallUiHandlerAndAllocateState();
   g_TimerRegisterPeriodic(125,UiTransferMailbox_ServiceAndRetransmitTimer);
-  allocResult = g_MemoryApi.alloc(0x8000); /* 256 auxiliary records of 0x80 bytes, parallel to the ring */
+  /* the sender-endpoint slots, parallel to the ring */
+  allocResult = g_MemoryApi.alloc(UI_RUNTIME_RECORD_RING_CAPACITY * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE);
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
-  g_UiRuntimeAuxiliaryBuffer8000 = checkedResult.valueOrError;
-  allocResult = g_MemoryApi.alloc(0x10000); /* ring of 256 records of 0x100 bytes */
+  g_UiRuntimeRecordEndpointSlots = checkedResult.valueOrError;
+  allocResult = g_MemoryApi.alloc(UI_RUNTIME_RECORD_RING_CAPACITY * sizeof(UiRuntimeRecord));
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedResult.valueOrError;
   allocResult = g_MemoryApi.alloc(0x1000);
@@ -296,11 +295,11 @@ void UiRuntime_Shutdown(void)
   if (g_UiRuntimeInitializationCount != 0) {
     g_TimerUnregisterPeriodic(UiTransferMailbox_ServiceAndRetransmitTimer);
     g_MemoryApi.free(g_UiRuntimeRecordRing);
-    g_MemoryApi.free(g_UiRuntimeAuxiliaryBuffer8000);
+    g_MemoryApi.free(g_UiRuntimeRecordEndpointSlots);
     g_MemoryApi.free(g_UiTransferDataBuffer);
     g_MemoryApi.free(g_UiTransferEndpointBuffer);
     g_UiRuntimeRecordRing = NULL;
-    g_UiRuntimeAuxiliaryBuffer8000 = NULL;
+    g_UiRuntimeRecordEndpointSlots = NULL;
     g_UiTransferDataBuffer = NULL;
     g_UiTransferEndpointBuffer = NULL;
     g_MemoryApi.free(g_UiDirtyRectEntries);
@@ -344,7 +343,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
   queueHead = g_UiActionQueueEntries;
   while (g_UiActionQueueUsedBytes != 0) {
     actionSource = queueHead->source;
-    g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - 8; /* one entry */
+    g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - sizeof(UiActionQueueEntry);
     actionHandler = (void (*)(void *))
                     g_UiActionHandlerPages[(uint32_t)queueHead->actionId >> 8]->handlers
                     [(uint32_t)queueHead->actionId & 0xff];
@@ -438,8 +437,8 @@ void UiNode_DefaultRightRelease(UiPointerWheelDelta wheelDelta,UiPixelCoordinate
    UI node classes: ignores it. Installed statically in 25 UiNodeVtable tables in image_data.c.
 */
 void UiNode_DefaultNonRightDrag
-               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+               (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+               UiNodeBase *control)
 
 {
   return;
@@ -569,7 +568,7 @@ void UiActionQueue_Enqueue(UiActionId actionId,void *source)
     if (actionId != UI_ACTION_NONE) {
       destinationEntry->actionId = actionId;
       destinationEntry->source = source;
-      g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes + 8; /* one entry */
+      g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes + sizeof(UiActionQueueEntry);
     }
   }
   return;
@@ -577,11 +576,11 @@ void UiActionQueue_Enqueue(UiActionId actionId,void *source)
 
 
 /* Address: 0x004BD160.
-   Tint of a world model from its terrain-derived runtimeFlags (despite the name, both callers pass a
-   ModelRuntimeNode): 0x04 -> opaque white (unchanged colours), else without 0x08 -> 0 (black), with 0x08 and
-   0x10 -> 0x00FFFFFF, with 0x08 only -> opaque grey 0x878787.
+   Tint of a world model (both callers pass a ModelRuntimeNode) from its terrain-derived runtimeFlags: 0x04 ->
+   opaque white (unchanged colours), else without 0x08 -> 0 (black), with 0x08 and 0x10 -> 0x00FFFFFF, with
+   0x08 only -> opaque grey 0x878787.
 */
-PackedArgb32 UiNode_GetStateTintArgb(UiNodeBase *node)
+PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node)
 
 {
   PackedArgb32 tintArgb;
@@ -589,7 +588,7 @@ PackedArgb32 UiNode_GetStateTintArgb(UiNodeBase *node)
 
   /* each test leaves the tint of its branch in tintArgb, as the original loads EAX before every TEST */
   tintArgb = 0xffffffff;
-  stateFlags = ((ModelRuntimeNode *)node)->runtimeFlags;
+  stateFlags = node->runtimeFlags;
   if ((((stateFlags & 4) == 0) && (tintArgb = 0, (stateFlags & 8) != 0)) &&
      (tintArgb = 0xffffff, (stateFlags & 0x10) == 0)) {
     tintArgb = 0xff878787;

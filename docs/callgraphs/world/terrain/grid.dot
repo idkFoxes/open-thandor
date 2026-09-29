@@ -11,9 +11,9 @@ digraph thandor {
   "FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors" [label="0x005090E0\nFieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf"];
   "FieldGrid_ApplyLocalCellUpdate" [label="0x005618A0\nFieldGrid_ApplyLocalCellUpdate"];
   "FieldGrid_ApplyEncodedCellUpdate" [label="0x00562390\nFieldGrid_ApplyEncodedCellUpdate"];
-  "FieldGrid_ApplyMaskDFFFFFFF" [label="0x005623D0\nFieldGrid_ApplyMaskDFFFFFFF"];
-  "FieldGrid_ApplyMaskBFFFFFFF" [label="0x00562410\nFieldGrid_ApplyMaskBFFFFFFF"];
-  "FieldGrid_ApplyCallerMask" [label="0x00562450\nFieldGrid_ApplyCallerMask"];
+  "FieldGrid_SetCellFluidReceiverExcluded" [label="0x005623D0\nFieldGrid_SetCellFluidReceiverExcluded"];
+  "FieldGrid_SetCellFluidSourceExcluded" [label="0x00562410\nFieldGrid_SetCellFluidSourceExcluded"];
+  "FieldGrid_SetCellResourceSupportFlag" [label="0x00562450\nFieldGrid_SetCellResourceSupportFlag"];
   "FieldGrid_GetNearestTerrainPoint" [label="0x004FEA80\nFieldGrid_GetNearestTerrainPoint"];
   "FieldGrid_GetNearestTopSurfacePoint" [label="0x004FEB10\nFieldGrid_GetNearestTopSurfacePoint"];
   "FieldGrid_GetNearestWaterDelta" [label="0x004FEBA0\nFieldGrid_GetNearestWaterDelta"];
@@ -79,9 +79,9 @@ digraph thandor {
   "FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors" -> "FieldGrid_WorldToGridQ12";
   "FieldGrid_ApplyLocalCellUpdate" -> "FieldGrid_ApplySingleCellTransition";
   "FieldGrid_ApplyEncodedCellUpdate" -> "FieldGrid_ApplyEncodedUpdateCore";
-  "FieldGrid_ApplyMaskDFFFFFFF" -> "FieldGrid_ApplyMaskedRegionCore";
-  "FieldGrid_ApplyMaskBFFFFFFF" -> "FieldGrid_ApplyMaskedRegionCore";
-  "FieldGrid_ApplyCallerMask" -> "FieldGrid_ApplyMaskedRegionCore";
+  "FieldGrid_SetCellFluidReceiverExcluded" -> "FieldGrid_ApplyMaskedRegionCore";
+  "FieldGrid_SetCellFluidSourceExcluded" -> "FieldGrid_ApplyMaskedRegionCore";
+  "FieldGrid_SetCellResourceSupportFlag" -> "FieldGrid_ApplyMaskedRegionCore";
   "FieldGrid_ApplyEncodedUpdateCore" -> "FieldGridCell_RecomputeTriangleNormalAngles";
   "FieldGrid_ApplyEncodedUpdateCore" -> "FieldGridCell_ComputeDirectionalLightColor";
 }

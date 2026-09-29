@@ -34,7 +34,7 @@ digraph thandor {
   "UiScrollableControl_EndSecondaryScrollInteraction" [label="0x004B8BC0\nUiScrollableControl_EndSecondaryScrollInteraction"];
   "UiScrollableControl_HitTestContentAndScrollbars" [label="0x004B9000\nUiScrollableControl_HitTestContentAndScrollbars"];
   "UiPointerList_GetRowSlotsVariantA" [label="0x004BA4E0\nUiPointerList_GetRowSlotsVariantA"];
-  "UiPointerList_GetSelectedIndexVariantA" [label="0x004BA560\nUiPointerList_GetSelectedIndexVariantACf"];
+  "UiPointerList_GetSelectedIndex" [label="0x004BA560\nUiPointerList_GetSelectedIndexVariantACf"];
   "UiListControl_DrawRowsAndSelection" [label="0x004BADE0\nUiListControl_DrawRowsAndSelection"];
   "UiListControl_TickActivationPulse" [label="0x004BB310\nUiListControl_TickActivationPulse"];
   "UiListControl_UnsuppressIfActionId" [label="0x004BB350\nUiListControl_UnsuppressIfActionId"];
@@ -50,7 +50,7 @@ digraph thandor {
   "UiCatalogEntryControl_NonRightRelease" [label="0x00516C50\nUiCatalogEntryControl_NonRightRelease"];
   "UiTimedListControl_SelectRecordAndScrollIntoView" [label="0x004BC360\nUiTimedListControl_SelectRecordAndScrollIntoView"];
   "UiPointerList_SelectIndexVariantB" [label="0x004BB4E0\nUiPointerList_SelectIndexVariantB"];
-  "UiPointerList_GetSelectedIndexVariantB" [label="0x004BB540\nUiPointerList_GetSelectedIndexVariantBCf"];
+  "UiPointerList_GetSelectedIndexAndConfirmed" [label="0x004BB540\nUiPointerList_GetSelectedIndexVariantBCf"];
   "UiScrollableControl_QueryContentSizeRegs" [label="0x004B9460\nUiScrollableControl_QueryContentSizeRegs"];
   "UiTimedListTree_CountRecordArrayAndNestedChildren" [label="0x004BC310\nUiTimedListTree_CountRecordArrayAndNestedChildren"];
   "UiScrollableControl_RefreshChildAndScrollThumbs" [label="0x004B9170\nUiScrollableControl_RefreshChildAndScrollThumbs"];
@@ -60,7 +60,7 @@ digraph thandor {
   "UiTimedListControl_HandleKeyboardNavigation" -> "UiScrollableControl_ClampOffsetsToViewport";
   "UiListControl_HandleKeyboardNavigation" -> "UiScrollableControl_QueryContentSizeRegs";
   "UiListControl_HandleKeyboardNavigation" -> "UiScrollableControl_ClampOffsetsToViewport";
-  "UiPointerList_RefreshSelectionAndQueueAction" -> "UiPointerList_GetSelectedIndexVariantB";
+  "UiPointerList_RefreshSelectionAndQueueAction" -> "UiPointerList_GetSelectedIndexAndConfirmed";
   "UiPointerList_RefreshSelectionAndQueueAction" -> "UiPointerList_SelectIndexVariantB";
   "UiScrollableControl_BeginPrimaryScrollInteraction" -> "UiScrollableControl_RefreshChildAndScrollThumbs";
   "UiScrollableControl_EndPrimaryScrollInteraction" -> "UiScrollableControl_RefreshChildAndScrollThumbs";

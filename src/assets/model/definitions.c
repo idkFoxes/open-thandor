@@ -25,9 +25,8 @@ ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
   bool technologyLocked;
   ModelDefinitionResult lookupResult;
 
-  linkedSlotsRemaining = 8;
   selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-  do {
+  for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
     /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
     linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
@@ -40,8 +39,7 @@ ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
       }
     }
     linkedDefinitionList = linkedDefinitionList + 4;
-    linkedSlotsRemaining--;
-  } while (linkedSlotsRemaining != 0);
+  }
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(selectedDefinitionId);
   lookupResult.notFound = false; /* the original ends with CLC after the lookup */
   return lookupResult;
@@ -51,14 +49,14 @@ ModelDefinitionResult ModelDefinition_SelectFactionUnlockedLinkedDefinition
 /* Recursive part of ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology: unlocks the technology of the
    linked definition the faction can select at this node (linked ids at +0x20), then does the same for every
    child (child count +0x08, children +0x0C + 4*i). */
-static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
+static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
 {
   uint32_t childIndex;
   ModelDefinition_UnlockLinkedTechnologyForFaction
             (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
                                     (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node));
-  for (childIndex = 0; childIndex < ((ArmyModelTreeNode *)node)->childCount; childIndex++) {
-    ModelDefinitionHierarchy_UnlockFrom(factionIndex,(uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex]);
+  for (childIndex = 0; childIndex < node->childCount; childIndex++) {
+    ModelDefinitionHierarchy_UnlockFrom(factionIndex,node->children[childIndex]);
   }
 }
 
@@ -74,24 +72,24 @@ void ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  ModelDefinitionHierarchy_UnlockFrom(factionIndex,(uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+  ModelDefinitionHierarchy_UnlockFrom(
+       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
 /* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true (CF set) as soon as
    this node's definition id (+0x20) or one in its subtree (child count +0x08, children +0x0C + 4*i) names a
    technology the faction has not unlocked yet. */
-static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,uint8_t *node)
+static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,ArmyModelTreeNode *node)
 {
   uint32_t childIndex;
   /* true from this check means the technology is still locked */
   if (ModelDefinition_IsFactionTechnologyUnlocked
-                (technologyMasks,((ArmyModelTreeNode *)node)->linkedDefinitionIds[0])) {
+                (technologyMasks,node->linkedDefinitionIds[0])) {
     return true;
   }
-  for (childIndex = 0; childIndex < ((ArmyModelTreeNode *)node)->childCount; childIndex++) {
-    if (ModelDefinitionHierarchy_AnyTechnologyFrom
-                  (technologyMasks,(uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex])) {
+  for (childIndex = 0; childIndex < node->childCount; childIndex++) {
+    if (ModelDefinitionHierarchy_AnyTechnologyFrom(technologyMasks,node->children[childIndex])) {
       return true;
     }
   }
@@ -112,7 +110,7 @@ bool ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
   return ModelDefinitionHierarchy_AnyTechnologyFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                    (uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+                    (ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
@@ -126,29 +124,26 @@ StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset)
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
-  ModelDefinitionResolvePhaseView280 *definition;
+  ModelDefinitionResolveView *definition;
   StatusResult registrationResult;
   StatusResult failureResult;
 
   registrationStatusCode = FATAL_ERROR_MODEL_ASSET_INVALID;
-  if ((asset->recordCountHeader.common.magic == ASSET_MAGIC_MDL) &&
-     (asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_MDL_0008000A)) {
-    recordsRemaining = asset->recordCountHeader.recordCount;
-    definition = (ModelDefinitionResolvePhaseView280 *)(asset + 1);
-    while( true ) {
-      if (recordsRemaining == 0) {
-        registrationResult.failed = false;
-        registrationResult.valueOrError = registrationStatusCode;
-        return registrationResult;
-      }
+  if (asset->recordCountHeader.common.magic == ASSET_MAGIC_MDL &&
+      asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_MDL_0008000A) {
+    definition = (ModelDefinitionResolveView *)(asset + 1);
+    for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
       registrationResult = ModelDefinition_RegisterAndResolveReferences(definition,asset);
       registrationStatusCode = registrationResult.valueOrError;
-      if (registrationResult.failed) break;
+      if (registrationResult.failed) goto ReturnFailure;
       /* advance by the record's leading byte size */
-      definition = (ModelDefinitionResolvePhaseView280 *)((uint8_t *)definition + definition->byteSize);
-      recordsRemaining--;
+      definition = (ModelDefinitionResolveView *)((uint8_t *)definition + definition->byteSize);
     }
+    registrationResult.failed = false;
+    registrationResult.valueOrError = registrationStatusCode;
+    return registrationResult;
   }
+ReturnFailure:
   failureResult.failed = true;
   failureResult.valueOrError = registrationStatusCode;
   return failureResult;
@@ -165,7 +160,7 @@ StatusResult ModelAsset_PrepareRecords(ModelAssetHeader *asset)
 ModelLookupPayloadResult
 ModelLookupTable_FindPackedKeyEntryRegs
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResourceHitTestAndRenderView210 *modelDefinition)
+          ModelResource *modelDefinition)
 
 {
   int entriesRemaining;
@@ -174,25 +169,23 @@ ModelLookupTable_FindPackedKeyEntryRegs
 
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   packedKeyEntryCursor =
-       (uint32_t *)(modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
-  while( true ) {
-    if (entriesRemaining == 0) {
-      /* not found: EAX, ECX and EDX zero, CF set (the decompiled 13-byte constant was cut to
-         64 bits and lost the CF byte) */
-      payloadResult.payload4 = 0;
-      payloadResult.payload8 = 0;
-      payloadResult.payload12 = 0;
-      payloadResult.notFound = true;
+       (uint32_t *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
+  for (; entriesRemaining != 0; entriesRemaining--) {
+    if ((keyClass | keyIndex << 4) == *packedKeyEntryCursor) {
+      payloadResult.notFound = false;
+      payloadResult.payload4 = packedKeyEntryCursor[1];
+      payloadResult.payload8 = packedKeyEntryCursor[2];
+      payloadResult.payload12 = packedKeyEntryCursor[3];
       return payloadResult;
     }
-    if ((keyClass | keyIndex << 4) == *packedKeyEntryCursor) break;
     packedKeyEntryCursor = packedKeyEntryCursor + 4; /* next 0x10-byte entry */
-    entriesRemaining--;
   }
-  payloadResult.notFound = false;
-  payloadResult.payload4 = packedKeyEntryCursor[1];
-  payloadResult.payload8 = packedKeyEntryCursor[2];
-  payloadResult.payload12 = packedKeyEntryCursor[3];
+  /* not found: EAX, ECX and EDX zero, CF set (the decompiled 13-byte constant was cut to
+     64 bits and lost the CF byte) */
+  payloadResult.payload4 = 0;
+  payloadResult.payload8 = 0;
+  payloadResult.payload12 = 0;
+  payloadResult.notFound = true;
   return payloadResult;
 }
 
@@ -203,7 +196,7 @@ ModelLookupTable_FindPackedKeyEntryRegs
    and EAX points just past the table.
 */
 ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
-          ModelResourceHitTestAndRenderView210 *modelDefinition)
+          ModelResource *modelDefinition)
 
 {
   ModelPackedPointRecord *entryCursor;
@@ -213,21 +206,18 @@ ModelLookupEntryResult ModelLookupTable_ContainsPackedKey(ModelLookupKeyIndex ke
 
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   entryCursor =
-       (ModelPackedPointRecord *)
-       (modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
-  while( true ) {
-    if (entriesRemaining == 0) {
-      notFoundResult.notFound = true;
-      notFoundResult.entry = entryCursor;
-      return notFoundResult;
+       (ModelPackedPointRecord *)((uint8_t *)modelDefinition + modelDefinition->packedLookupTableRelativeOffset);
+  for (; entriesRemaining != 0; entriesRemaining--) {
+    if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) {
+      foundResult.notFound = false;
+      foundResult.entry = entryCursor;
+      return foundResult;
     }
-    if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) break;
     entryCursor++;
-    entriesRemaining--;
   }
-  foundResult.notFound = false;
-  foundResult.entry = entryCursor;
-  return foundResult;
+  notFoundResult.notFound = true;
+  notFoundResult.entry = entryCursor;
+  return notFoundResult;
 }
 
 
@@ -288,18 +278,21 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
   directionDotOrCrossY = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
   distanceOrCrossX = g_ModelRaycastMaximumDistance;
   if (directionDotOrCrossY != 0) {
-    scaledHighOrEdge1X = (int)((uint64_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY)
-                  >> 0x20);
-    distanceOrCrossX = (uint32_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY);
+    scaledHighOrEdge1X =
+         (int)((uint64_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY) >> 0x20);
+    distanceOrCrossX =
+         (uint32_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY);
     halfOffsetOrEdge1Y = (int)offsetHighOrCrossZ >> 1;
     if ((int64_t)planeOffsetDot < 0) {
-      if (((int)offsetHighOrCrossZ < scaledHighOrEdge1X) ||
-         ((halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY && (distanceOrCrossX = (uint32_t)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY))))
-      goto ModelMesh_IntersectTriangleRayDistance_ReturnMiss;
+      if ((int)offsetHighOrCrossZ < scaledHighOrEdge1X ||
+          (halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY &&
+           (distanceOrCrossX = (uint32_t)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY)))
+        goto ReturnMiss;
     }
-    else if ((scaledHighOrEdge1X < (int)offsetHighOrCrossZ) ||
-            (((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y && (distanceOrCrossX = (uint32_t)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y))))
-    goto ModelMesh_IntersectTriangleRayDistance_ReturnMiss;
+    else if (scaledHighOrEdge1X < (int)offsetHighOrCrossZ ||
+             ((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y &&
+              (distanceOrCrossX = (uint32_t)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y)))
+      goto ReturnMiss;
     hitResult.distanceQ12 =
          (int)((int64_t)planeOffsetDot / (int64_t)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
     vertexA = triangle->vertex0;
@@ -333,12 +326,15 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
     distanceOrCrossX = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
     productScratch = (int64_t)normalZ * (int64_t)scaledHighOrEdge1X - (int64_t)normalX * (int64_t)edge1Z;
     directionDotOrCrossY = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
-    productScratch = (int64_t)normalX * (int64_t)halfOffsetOrEdge1Y - (int64_t)normalY * (int64_t)scaledHighOrEdge1X;
+    productScratch =
+         (int64_t)normalX * (int64_t)halfOffsetOrEdge1Y - (int64_t)normalY * (int64_t)scaledHighOrEdge1X;
     offsetHighOrCrossZ = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
-    productScratch = (int64_t)hitRelativeY * (int64_t)(int)directionDotOrCrossY + (int64_t)hitRelativeX * (int64_t)(int)distanceOrCrossX +
-            (int64_t)hitRelativeZ * (int64_t)(int)offsetHighOrCrossZ;
-    edge2Dot = (int64_t)negVertex0YOrEdge2Y * (int64_t)(int)directionDotOrCrossY + (int64_t)(int)distanceOrCrossX * (int64_t)negVertex0XOrEdge2X +
-             (int64_t)negVertex0ZOrEdge2Z * (int64_t)(int)offsetHighOrCrossZ;
+    productScratch = (int64_t)hitRelativeY * (int64_t)(int)directionDotOrCrossY +
+                     (int64_t)hitRelativeX * (int64_t)(int)distanceOrCrossX +
+                     (int64_t)hitRelativeZ * (int64_t)(int)offsetHighOrCrossZ;
+    edge2Dot = (int64_t)negVertex0YOrEdge2Y * (int64_t)(int)directionDotOrCrossY +
+               (int64_t)(int)distanceOrCrossX * (int64_t)negVertex0XOrEdge2X +
+               (int64_t)negVertex0ZOrEdge2Z * (int64_t)(int)offsetHighOrCrossZ;
     scaledHighOrEdge1X = (int)((uint64_t)edge2Dot >> 0x20);
     hitCrossXOrEdge2HitDot = (int64_t)normalY * (int64_t)hitRelativeZ - (int64_t)normalZ * (int64_t)hitRelativeY;
     hitCrossY = (int64_t)normalZ * (int64_t)hitRelativeX - (int64_t)normalX * (int64_t)hitRelativeZ;
@@ -346,7 +342,8 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
     hitCrossXOrEdge2HitDot = (int64_t)negVertex0YOrEdge2Y *
              (int64_t)(int)((int)((uint64_t)hitCrossY >> 0x20) << 4 | (uint32_t)hitCrossY >> 0x1c) +
              (int64_t)negVertex0XOrEdge2X *
-             (int64_t)(int)((int)((uint64_t)hitCrossXOrEdge2HitDot >> 0x20) << 4 | (uint32_t)hitCrossXOrEdge2HitDot >> 0x1c) +
+             (int64_t)(int)((int)((uint64_t)hitCrossXOrEdge2HitDot >> 0x20) << 4 |
+                            (uint32_t)hitCrossXOrEdge2HitDot >> 0x1c) +
              (int64_t)negVertex0ZOrEdge2Z *
              (int64_t)(int)((int)((uint64_t)hitCrossZ >> 0x20) << 4 | (uint32_t)hitCrossZ >> 0x1c);
     distanceOrCrossX = (uint32_t)hitCrossXOrEdge2HitDot;
@@ -354,8 +351,8 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
     if (edge2Dot < 0) {
       hitFound = ((hitCrossXOrEdge2HitDot < 0) && (productScratch < 0)) &&
          (distanceOrCrossX = (uint32_t)(hitCrossXOrEdge2HitDot + productScratch),
-         (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) - (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)
-              ) < 0);
+         (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) -
+               (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)) < 0);
     }
     else {
       hitFound = ((-1 < hitCrossXOrEdge2HitDot) && (-1 < productScratch)) &&
@@ -368,7 +365,7 @@ MeshRayTriangleResult ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangl
       return hitResult;
     }
   }
-ModelMesh_IntersectTriangleRayDistance_ReturnMiss:
+ReturnMiss:
   missResult.hit = false;
   missResult.distanceQ12 = distanceOrCrossX;
   return missResult;
@@ -381,35 +378,34 @@ ModelMesh_IntersectTriangleRayDistance_ReturnMiss:
    record. On a miss the id is formatted into g_PackageLastErrorPath and FATAL_ERROR_MODEL_DEFINITION_MISSING
    is returned with CF set.
 */
-BuildMetricResult
-ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog definitionId)
+BuildCostsResult
+ModelDefinitionRegistry_FindBuildCostsById(PckModelDefinitionIdCatalog definitionId)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;
   int registrySlotsRemaining;
   ModelDefinitionRecordPrefix **registryCursor;
-  BuildMetricResult missResult;
-  BuildMetricResult foundResult;
+  BuildCostsResult missResult;
+  BuildCostsResult foundResult;
 
   registryCursor = g_ModelDefinitionRegistry;
-  registrySlotsRemaining = 768;
-  while ((registeredDefinition = *registryCursor, registeredDefinition == NULL ||
-         (definitionId != registeredDefinition->definitionId))) {
+  registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
+  while (registeredDefinition = *registryCursor, registeredDefinition == NULL || definitionId != registeredDefinition->definitionId) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
-      missResult.metric1 = definitionId;
-      missResult.metric0 = FATAL_ERROR_MODEL_DEFINITION_MISSING;
-      missResult.metric2 = 0;
+      missResult.buildTicks = definitionId;
+      missResult.energyLoadQ4OrError = FATAL_ERROR_MODEL_DEFINITION_MISSING;
+      missResult.xeniteCostQ4 = 0;
       missResult.notFound = true;
       return missResult;
     }
   }
-  foundResult.metric1 = ((ModelDefinitionRuntimeSemanticView280 *)registeredDefinition)->buildMetric180;
-  foundResult.metric0 = (uint32_t)((ModelDefinitionRuntimeSemanticView280 *)registeredDefinition)->buildMetricTuple188;
-  foundResult.metric2 = ((ModelDefinitionRuntimeSemanticView280 *)registeredDefinition)->xeniteValueQ4_184;
+  foundResult.buildTicks = ((ModelDefinition *)registeredDefinition)->buildTicks180;
+  foundResult.energyLoadQ4OrError = ((ModelDefinition *)registeredDefinition)->energyLoadQ4_188;
+  foundResult.xeniteCostQ4 = ((ModelDefinition *)registeredDefinition)->xeniteValueQ4_184;
   foundResult.notFound = false;
   return foundResult;
 }
@@ -428,10 +424,10 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
   ModelDefinitionRecordPrefix *candidateDefinition;
 
   registryCursor = g_ModelDefinitionRegistry;
-  registrySlotsRemaining = 768;
+  registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
   while ((candidateDefinition = *registryCursor,
          candidateDefinition == NULL ||
-         (runtimeClassId != ((ModelDefinitionRuntimeSemanticView280 *)candidateDefinition)->requiredTechnologyBit1C0))) {
+         (runtimeClassId != ((ModelDefinition *)candidateDefinition)->requiredTechnologyBit1C0))) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -455,9 +451,8 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
   PckModelDefinitionIdCatalog selectedDefinitionId;
   bool technologyLocked;
 
-  linkedSlotsRemaining = 8;
   selectedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
-  do {
+  for (linkedSlotsRemaining = MODEL_LINKED_DEFINITION_COUNT; linkedSlotsRemaining != 0; linkedSlotsRemaining--) {
     /* the list cursor advances by one id, so linkedDefinitionIds[0] is the current slot */
     linkedDefinitionId = ((ArmyModelTreeNode *)linkedDefinitionList)->linkedDefinitionIds[0];
     if (linkedDefinitionId != 0) {
@@ -470,8 +465,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
       }
     }
     linkedDefinitionList = linkedDefinitionList + 4;
-    linkedSlotsRemaining--;
-  } while (linkedSlotsRemaining != 0);
+  }
   return selectedDefinitionId;
 }
 
@@ -479,7 +473,7 @@ PckModelDefinitionIdCatalog ModelDefinition_SelectFactionUnlockedLinkedId
 /* Serialized model node tree: flags +0x04 (low nibble 0 = has a sprite), sprite path +0x38, sprite
    asset +0x30, owned-copy count +0x34, child count +0x14, child offsets +0x18 + 4*i (relative to the
    asset, relocated in place). Loads or reuses each node's sprite; true (CF) with *error on failure. */
-static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,uint8_t *asset,uint32_t *error)
+static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader *node,uint8_t *asset,uint32_t *error)
 {
   uint32_t childIndex;
   if ((node->nodeFlags & 0xf) == 0) {
@@ -489,7 +483,7 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
     /* ".spr". The original tests its CF (JC at 0x005286C6), but WidePath_SetExtensionCode always
        returns with CLC (0x0040F314), so that branch is dead. The error exit at 0x00528677 only drops the
        walk's stack frames before MOV ESP,EBP; returning up the recursion is equivalent. */
-    WidePath_SetExtensionCode(0x727073,spritePath);
+    WidePath_SetExtensionCode(ASSET_MAGIC_SPR,spritePath);
     loaded = Package_LoadEntry(spritePath);
     if (loaded.failed) {
       *error = (uint32_t)loaded.bufferOrError;
@@ -501,7 +495,7 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
       /* first use of this sprite: the node owns the loaded copy and registers it */
       SpriteRegisterResult relocated;
       node->ownedNestedResourcePresent++;
-      (node->spriteAssetReference).spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
+      node->spriteAssetReference.spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
       relocated = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
       if (relocated.failed) {
         *error = (uint32_t)relocated.assetOrError;
@@ -510,7 +504,7 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
     }
     else {
       /* already registered by another model: share it and drop the fresh copy */
-      (node->spriteAssetReference).spriteAsset = registered;
+      node->spriteAssetReference.spriteAsset = registered;
       Resource_Release(loaded.bufferOrError);
     }
   }
@@ -518,7 +512,7 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
     /* relocate the child offset to a pointer in place */
     node->childSerializedOffsets[childIndex] = node->childSerializedOffsets[childIndex] + (int)(uintptr_t)asset;
     if (ModelDefinition_ResolveNodeSprites
-                  ((MdlSerializedNodeHeader38 *)(uintptr_t)node->childSerializedOffsets[childIndex],asset,error)) {
+                  ((MdlSerializedNodeHeader *)(uintptr_t)node->childSerializedOffsets[childIndex],asset,error)) {
       return true;
     }
   }
@@ -533,19 +527,19 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
    registry or any failed load/lookup returns its error code with CF set.
 */
 StatusResult ModelDefinition_RegisterAndResolveReferences
-          (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset)
+          (ModelDefinitionResolveView *definition,ModelAssetHeader *asset)
 
 {
   uint32_t nodeOffsetOrGridClass;
   uint32_t secondaryThreshold;
   uint32_t resolverStatusOrSentinel;
-  ShotDefinition *resolvedShotDefinition2C;
-  EffectDefinition *resolvedEffectDefinition80ToB8;
-  ShotDefinition *resolvedShotDefinition168;
-  EffectDefinition *resolvedEffectDefinitionTail;
+  ShotDefinition *resolvedShot;
+  EffectDefinition *resolvedEffect;
+  ShotDefinition *resolvedEmitterShot;
+  EffectDefinition *resolvedEmitterEffect;
   int slotsRemainingOrClassIndex;
   ModelDefinitionRecordPrefix **registrySlotCursor;
-  MdlSerializedNodeHeader38 *serializedNodeCursor;
+  MdlSerializedNodeHeader *serializedNodeCursor;
   ModelDefinitionResult existingLookup;
   StatusResult failureResult;
   ShotDefinitionResult shotLookup;
@@ -560,7 +554,7 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     resolverStatusOrSentinel = FATAL_ERROR_MODEL_ID_DUPLICATE;
-    goto ModelDefinition_ReturnReferenceResolutionResult;
+    goto ReturnFailure;
   }
   while (*registrySlotCursor != NULL) {
     registrySlotCursor++;
@@ -570,179 +564,136 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,MODEL_DEFINITION_REGISTRY_SLOT_COUNT,g_PackageLastErrorPath);
       resolverStatusOrSentinel = FATAL_ERROR_MODEL_REGISTRY_FULL;
-      goto ModelDefinition_ReturnReferenceResolutionResult;
+      goto ReturnFailure;
     }
   }
   nodeOffsetOrGridClass = definition->serializedNodeOffsetOrPointer64;
   *registrySlotCursor = (ModelDefinitionRecordPrefix *)definition;
   if (nodeOffsetOrGridClass != 0) {
+    /* asset start + serialized offset */
     definition->serializedNodeOffsetOrPointer64 =
-         (uint32_t)((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                (definition->serializedNodeOffsetOrPointer64 - 0x28));
-    serializedNodeCursor =
-         (MdlSerializedNodeHeader38 *)
-         ((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-         (nodeOffsetOrGridClass - 0x28));
+         (uint32_t)((uint8_t *)asset + definition->serializedNodeOffsetOrPointer64);
+    serializedNodeCursor = (MdlSerializedNodeHeader *)((uint8_t *)asset + nodeOffsetOrGridClass);
     /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
        {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
     if (ModelDefinition_ResolveNodeSprites(serializedNodeCursor,(uint8_t *)asset,&resolverStatusOrSentinel)) {
-      goto ModelDefinition_ReturnReferenceResolutionResult;
+      goto ReturnFailure;
     }
   }
   shotLookup = ShotDefinitionRegistry_FindByIdWithError
                      ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference2C);
-  resolvedShotDefinition2C = shotLookup.definitionOrError;
-  resolverStatusOrSentinel = (uint32_t)resolvedShotDefinition2C;
-  if (!shotLookup.notFound) {
-    definition->shotDefinitionReference2C = resolvedShotDefinition2C;
-    effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                       ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference80);
-    resolvedEffectDefinition80ToB8 = effectLookup.definitionOrError;
-    resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinition80ToB8;
-    if (!effectLookup.notFound) {
-      definition->effectDefinitionReference80 = resolvedEffectDefinition80ToB8;
-      effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                         ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference88);
-      resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-      if (!effectLookup.notFound) {
-        definition->effectDefinitionReference88 = (EffectDefinition *)resolverStatusOrSentinel;
-        effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                           ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference90);
-        resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-        if (!effectLookup.notFound) {
-          definition->effectDefinitionReference90 = (EffectDefinition *)resolverStatusOrSentinel;
-          effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                             ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference98)
-          ;
-          resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-          if (!effectLookup.notFound) {
-            definition->effectDefinitionReference98 = (EffectDefinition *)resolverStatusOrSentinel;
-            effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                               ((PckEffectDefinitionIdCatalog)
-                                definition->effectDefinitionReferenceA0);
-            resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-            if (!effectLookup.notFound) {
-              definition->effectDefinitionReferenceA0 = (EffectDefinition *)resolverStatusOrSentinel
-              ;
-              effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                                 ((PckEffectDefinitionIdCatalog)
-                                  definition->effectDefinitionReferenceA8);
-              resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-              if (!effectLookup.notFound) {
-                definition->effectDefinitionReferenceA8 =
-                     (EffectDefinition *)resolverStatusOrSentinel;
-                effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                                   ((PckEffectDefinitionIdCatalog)
-                                    definition->effectDefinitionReferenceB0);
-                resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                if (!effectLookup.notFound) {
-                  definition->effectDefinitionReferenceB0 =
-                       (EffectDefinition *)resolverStatusOrSentinel;
-                  effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                                     ((PckEffectDefinitionIdCatalog)
-                                      definition->effectDefinitionReferenceB8);
-                  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                  if (!effectLookup.notFound) {
-                    definition->effectDefinitionReferenceB8 =
-                         (EffectDefinition *)resolverStatusOrSentinel;
-                    /* -1: the definition has no shot at +0x168 */
-                    if (definition->shotDefinitionReference168 != (ShotDefinition *)0xffffffff) {
-                      shotLookup = ShotDefinitionRegistry_FindByIdWithError
-                                         ((PckShotDefinitionIdCatalog)
-                                          definition->shotDefinitionReference168);
-                      resolvedShotDefinition168 = shotLookup.definitionOrError;
-                      resolverStatusOrSentinel = (uint32_t)resolvedShotDefinition168;
-                      if (shotLookup.notFound) goto ModelDefinition_ReturnReferenceResolutionResult;
-                      definition->shotDefinitionReference168 = resolvedShotDefinition168;
-                    }
-                    effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                                       ((PckEffectDefinitionIdCatalog)
-                                        definition->effectDefinitionReference174);
-                    resolvedEffectDefinitionTail = effectLookup.definitionOrError;
-                    resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinitionTail;
-                    if (!effectLookup.notFound) {
-                      definition->effectDefinitionReference174 = resolvedEffectDefinitionTail;
-                      effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                                         ((PckEffectDefinitionIdCatalog)
-                                          definition->effectDefinitionReference58);
-                      resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                      if (!effectLookup.notFound) {
-                        definition->effectDefinitionReference58 =
-                             (EffectDefinition *)resolverStatusOrSentinel;
-                        effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                                           ((PckEffectDefinitionIdCatalog)
-                                            definition->effectDefinitionReference190);
-                        resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                        if (!effectLookup.notFound) {
-                          definition->effectDefinitionReference190 =
-                               (EffectDefinition *)resolverStatusOrSentinel;
-                          effectLookup = EffectDefinitionRegistry_FindByIdWithError
-                                             ((PckEffectDefinitionIdCatalog)
-                                              definition->effectDefinitionReference254);
-                          resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                          if (!effectLookup.notFound) {
-                            definition->effectDefinitionReference254 =
-                                 (EffectDefinition *)resolverStatusOrSentinel;
-                            /* negative grid classes keep the serialized values; the contact kind at +0x278
-                               selects which grid tables the class at +0x264 indexes (kind 4 from class 1,
-                               the fallback tables from class 4) */
-                            nodeOffsetOrGridClass = definition->gridClassification264;
-                            if (-1 < (int)definition->gridClassification260) {
-                              resolverStatusOrSentinel =
-                                   (&g_GridInfluenceRadiusOffset0)
-                                   [definition->gridClassification260];
-                              definition->placementRadiusOrClearanceDC = resolverStatusOrSentinel;
-                              definition->gridDerivedRuntimeValue1A0 = resolverStatusOrSentinel;
-                            }
-                            if (-1 < (int)nodeOffsetOrGridClass) {
-                              if (definition->placementContactKindIndex278 == 1) {
-                                resolverStatusOrSentinel =
-                                     (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[nodeOffsetOrGridClass];
-                                nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)
-                                        [nodeOffsetOrGridClass];
-                                ((ModelDefinitionRuntimeSemanticView280 *)definition)->classParameterCC =
-                                     resolverStatusOrSentinel;
-                                definition->runtimeValue24 = nodeOffsetOrGridClass;
-                              }
-                              else if (definition->placementContactKindIndex278 == 4) {
-                                resolverStatusOrSentinel =
-                                     *(uint32_t *)(&g_ModelTraversalClass4SecondaryThresholdTable3 +
-                                               (nodeOffsetOrGridClass - 1) * 4);
-                                definition->runtimeValue24 =
-                                     (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)
-                                     [nodeOffsetOrGridClass - 1];
-                                definition->runtimeValue268 = resolverStatusOrSentinel;
-                              }
-                              else {
-                                slotsRemainingOrClassIndex = nodeOffsetOrGridClass - 4;
-                                resolverStatusOrSentinel =
-                                     (&g_GridTerrainClassBit28MinWaterSurfaceDelta)[slotsRemainingOrClassIndex];
-                                nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)
-                                        [slotsRemainingOrClassIndex];
-                                secondaryThreshold = *(uint32_t *)(&g_ModelTraversalFallbackSecondaryThresholdTable3
-                                                  + slotsRemainingOrClassIndex * 4);
-                                definition->runtimeValue198 = resolverStatusOrSentinel;
-                                definition->runtimeValue24 = nodeOffsetOrGridClass;
-                                definition->runtimeValue268 = secondaryThreshold;
-                              }
-                            }
-                            successResult.failed = false;
-                            successResult.valueOrError = resolverStatusOrSentinel;
-                            return successResult;
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+  resolvedShot = shotLookup.definitionOrError;
+  resolverStatusOrSentinel = (uint32_t)resolvedShot;
+  if (shotLookup.notFound) goto ReturnFailure;
+  definition->shotDefinitionReference2C = resolvedShot;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference80);
+  resolvedEffect = effectLookup.definitionOrError;
+  resolverStatusOrSentinel = (uint32_t)resolvedEffect;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference80 = resolvedEffect;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference88);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference88 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference90);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference90 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference98);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference98 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceA0);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReferenceA0 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceA8);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReferenceA8 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceB0);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReferenceB0 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReferenceB8);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReferenceB8 = (EffectDefinition *)resolverStatusOrSentinel;
+  /* -1: the definition has no shot at +0x168 */
+  if (definition->shotDefinitionReference168 != (ShotDefinition *)0xffffffff) {
+    shotLookup = ShotDefinitionRegistry_FindByIdWithError
+                       ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference168);
+    resolvedEmitterShot = shotLookup.definitionOrError;
+    resolverStatusOrSentinel = (uint32_t)resolvedEmitterShot;
+    if (shotLookup.notFound) goto ReturnFailure;
+    definition->shotDefinitionReference168 = resolvedEmitterShot;
+  }
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference174);
+  resolvedEmitterEffect = effectLookup.definitionOrError;
+  resolverStatusOrSentinel = (uint32_t)resolvedEmitterEffect;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference174 = resolvedEmitterEffect;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference58);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference58 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference190);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference190 = (EffectDefinition *)resolverStatusOrSentinel;
+  effectLookup = EffectDefinitionRegistry_FindByIdWithError
+                     ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference254);
+  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
+  if (effectLookup.notFound) goto ReturnFailure;
+  definition->effectDefinitionReference254 = (EffectDefinition *)resolverStatusOrSentinel;
+  /* negative grid classes keep the serialized values; the contact kind at +0x278 selects which grid tables
+     the class at +0x264 indexes (kind 4 from class 1, the fallback tables from class 4) */
+  nodeOffsetOrGridClass = definition->gridClassification264;
+  if (-1 < (int)definition->gridClassification260) {
+    resolverStatusOrSentinel = (&g_GridInfluenceRadiusOffset0)[definition->gridClassification260];
+    definition->placementRadiusOrClearanceDC = resolverStatusOrSentinel;
+    definition->gridDerivedRuntimeValue1A0 = resolverStatusOrSentinel;
+  }
+  if (-1 < (int)nodeOffsetOrGridClass) {
+    if (definition->placementContactKindIndex278 == 1) {
+      resolverStatusOrSentinel = (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[nodeOffsetOrGridClass];
+      nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[nodeOffsetOrGridClass];
+      ((ModelDefinition *)definition)->classParameterCC = resolverStatusOrSentinel;
+      definition->runtimeValue24 = nodeOffsetOrGridClass;
+    }
+    else if (definition->placementContactKindIndex278 == 4) {
+      resolverStatusOrSentinel =
+           ((uint32_t *)&g_ModelTraversalClass4SecondaryThresholdTable3)[nodeOffsetOrGridClass - 1];
+      definition->runtimeValue24 =
+           (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)[nodeOffsetOrGridClass - 1];
+      definition->runtimeValue268 = resolverStatusOrSentinel;
+    }
+    else {
+      slotsRemainingOrClassIndex = nodeOffsetOrGridClass - 4;
+      resolverStatusOrSentinel = (&g_GridTerrainClassBit28MinWaterSurfaceDelta)[slotsRemainingOrClassIndex];
+      nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[slotsRemainingOrClassIndex];
+      secondaryThreshold =
+           ((uint32_t *)&g_ModelTraversalFallbackSecondaryThresholdTable3)[slotsRemainingOrClassIndex];
+      definition->runtimeValue198 = resolverStatusOrSentinel;
+      definition->runtimeValue24 = nodeOffsetOrGridClass;
+      definition->runtimeValue268 = secondaryThreshold;
     }
   }
-ModelDefinition_ReturnReferenceResolutionResult:
+  successResult.failed = false;
+  successResult.valueOrError = resolverStatusOrSentinel;
+  return successResult;
+ReturnFailure:
   failureResult.failed = true;
   failureResult.valueOrError = resolverStatusOrSentinel;
   return failureResult;
@@ -762,7 +713,7 @@ void ModelDefinition_UnlockLinkedTechnologyForFaction
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if (!lookupResult.notFound) {
     Technology_UnlockForFaction
-              (0,0,((ModelDefinitionRuntimeSemanticView280 *)lookupResult.modelDefinition)->researchTechnologyIds1C4[0],factionIndex);
+              (0,0,((ModelDefinition *)lookupResult.modelDefinition)->researchTechnologyIds1C4[0],factionIndex);
   }
 }
 
@@ -781,7 +732,7 @@ bool ModelDefinition_IsFactionTechnologyUnlocked
 
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if ((!lookupResult.notFound) &&
-     (technologyBitIndex = ((ModelDefinitionRuntimeSemanticView280 *)lookupResult.modelDefinition)->requiredTechnologyBit1C0,
+     (technologyBitIndex = ((ModelDefinition *)lookupResult.modelDefinition)->requiredTechnologyBit1C0,
      (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 0x1f)) != 0)) {
     return false;
   }
@@ -803,9 +754,8 @@ ModelDefinitionResult ModelDefinitionRegistry_FindByIdWithError(PckModelDefiniti
   ModelDefinitionResult foundResult;
 
   registryCursor = g_ModelDefinitionRegistry;
-  registrySlotsRemaining = 768;
-  while ((registeredDefinition = *registryCursor, registeredDefinition == NULL ||
-         (registeredDefinition->definitionId != definitionId))) {
+  registrySlotsRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
+  while (registeredDefinition = *registryCursor, registeredDefinition == NULL || registeredDefinition->definitionId != definitionId) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {

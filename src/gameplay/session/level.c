@@ -46,7 +46,8 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
     }
     WidePath_SetExtensionCode(0x6d6c66,(uint16_t *)path); /* "flm" */
     g_WideNumberFormatUtf16
-              (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,movieNumber,(uint16_t *)(u_flm_ende0000_flm_0050df06 + 8)); /* the "0000" */
+              (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,movieNumber,
+               (uint16_t *)(u_flm_ende0000_flm_0050df06 + 8)); /* the "0000" */
     sourcePathCursor = g_LevelEndingMovieSourcePath;
     for (; remainingDwordCount != 0; remainingDwordCount--) {
       *(uint32_t *)sourcePathCursor = *(uint32_t *)currentLevelPath;
@@ -128,11 +129,12 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
   uint32_t relationFactionIndex;
   uint32_t currentSourceIndex;
   uint32_t targetBitOrSavedIndex;
-  LevelAssetRuntimeImagePrefix370 *copySourceCursor;
+  uint32_t *copySourceCursor;
   uint8_t *assetPath;
-  uint16_t *pathOrPlacementCursor;
+  uint16_t *assetPathCursor;
+  LevelInitialArmyPlacementRecord20 *placementCursor;
   uint32_t *soundSlotCursor;
-  WorldOwnerListNode100 *ownerListNode;
+  WorldOwnerListNode *ownerListNode;
   uint32_t regionOriginOrRelationMask;
   ArenaAllocResult allocResult;
   PackageLoadResult loadEntryResult;
@@ -161,7 +163,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
   ArmyAssetRecordPrefix *nextClass0BArmyDefinition;
   WorldRuntimeContext *soundLoopWorldRuntime;
   
-  allocResult = g_MemoryApi.alloc(0x800);
+  allocResult = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * 4);
   loadedResourcePointerArray = (void **)allocResult.payloadOrError;
   resultOrPointer = loadedResourcePointerArray;
   if (!allocResult.failed) {
@@ -177,16 +179,12 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
       resultOrPointer = (void *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         /* copy the level prefix (LEV +0xDC bytes) dword by dword into the condition storage */
-        copySourceCursor = levelImage;
+        copySourceCursor = (uint32_t *)levelImage;
         g_InGameLevelRuntimeGlobalBlock.conditionStorage = resultOrPointer;
         for (countOrPackedValue = countOrPackedValue >> 2; countOrPackedValue != 0; countOrPackedValue--) {
-          (((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.magic
-               = (copySourceCursor->header).common.magic;
-          copySourceCursor = (LevelAssetRuntimeImagePrefix370 *)&(copySourceCursor->header).common.allocationSizeBytes
-          ;
-          resultOrPointer =
-               &(((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.
-                allocationSizeBytes;
+          *(uint32_t *)resultOrPointer = *copySourceCursor;
+          copySourceCursor++;
+          resultOrPointer = (uint32_t *)resultOrPointer + 1;
         }
         g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
         g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
@@ -304,129 +302,97 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                (levelImage->header).resourceTables.armyAssetPathCount;
           g_MoviePlaybackBaseFrameGroup = 0;
           g_MoviePlaybackScheduleCounter = 0;
-          pathOrPlacementCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+          assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
                             + ((levelImage->header).resourceTables.effectAssetPathTableOffset - 0x28
                               ));
-          for (remainingRecordCount = (levelImage->header).resourceTables.effectAssetPathCount; remainingRecordCount != 0;
+          for (remainingRecordCount = (levelImage->header).resourceTables.effectAssetPathCount;
+                 remainingRecordCount != 0;
               remainingRecordCount--) {
-            WidePath_SetExtensionCode(0x666665,pathOrPlacementCursor); /* "eff" */
+            WidePath_SetExtensionCode(0x666665,assetPathCursor); /* "eff" */
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (0x1ff < g_InGameLoadedResourcePointerCount)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-            ;
-            loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
+            if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
+            loadEntryResult = Package_LoadEntry(assetPathCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
-            if (loadEntryResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (loadEntryResult.failed) goto load_failed;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount++;
             loadedResourcePointerArray++;
             statusResult = EffectAsset_PrepareEntries(resultOrPointer);
             resultOrPointer = (void *)statusResult.valueOrError;
-            if (statusResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (statusResult.failed) goto load_failed;
             MoviePlayback_AdvanceScheduledFrameAndTick();
-            pathOrPlacementCursor = pathOrPlacementCursor + 0x20; /* next 0x40-byte path record */
+            assetPathCursor = assetPathCursor + 0x20; /* next 0x40-byte path record */
           }
-          pathOrPlacementCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
+          assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28
                             + ((levelImage->header).resourceTables.shotAssetPathTableOffset - 0x28))
           ;
-          for (remainingRecordCount = (levelImage->header).resourceTables.shotAssetPathCount; remainingRecordCount != 0;
+          for (remainingRecordCount = (levelImage->header).resourceTables.shotAssetPathCount;
+                 remainingRecordCount != 0;
               remainingRecordCount--) {
-            WidePath_SetExtensionCode(0x746873,pathOrPlacementCursor); /* "sht" */
+            WidePath_SetExtensionCode(0x746873,assetPathCursor); /* "sht" */
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (0x1ff < g_InGameLoadedResourcePointerCount)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-            ;
-            loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
+            if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
+            loadEntryResult = Package_LoadEntry(assetPathCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
-            if (loadEntryResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (loadEntryResult.failed) goto load_failed;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount++;
             loadedResourcePointerArray++;
             statusResult = ShotAsset_PrepareEntries(resultOrPointer);
             resultOrPointer = (void *)statusResult.valueOrError;
-            if (statusResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (statusResult.failed) goto load_failed;
             MoviePlayback_AdvanceScheduledFrameAndTick();
-            pathOrPlacementCursor = pathOrPlacementCursor + 0x20; /* next 0x40-byte path record */
+            assetPathCursor = assetPathCursor + 0x20; /* next 0x40-byte path record */
           }
           statusResult = EffectDefinitions_ResolveCrossReferences();
           resultOrPointer = (void *)statusResult.valueOrError;
           if (!statusResult.failed) {
-            pathOrPlacementCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
+            assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
                                assetRelativeAddressAnchor28 +
                               ((levelImage->header).resourceTables.modelAssetPathTableOffset - 0x28)
                               );
-            for (remainingRecordCount = (levelImage->header).resourceTables.modelAssetPathCount; remainingRecordCount != 0;
+            for (remainingRecordCount = (levelImage->header).resourceTables.modelAssetPathCount;
+                 remainingRecordCount != 0;
                 remainingRecordCount--) {
-              WidePath_SetExtensionCode(0x6c646d,pathOrPlacementCursor); /* "mdl" */
+              WidePath_SetExtensionCode(0x6c646d,assetPathCursor); /* "mdl" */
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-              if (0x1ff < g_InGameLoadedResourcePointerCount)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-              ;
-              loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
+              if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
+              loadEntryResult = Package_LoadEntry(assetPathCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
-              if (loadEntryResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (loadEntryResult.failed) goto load_failed;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount++;
               loadedResourcePointerArray++;
               statusResult = ModelAsset_PrepareRecords(resultOrPointer);
               resultOrPointer = (void *)statusResult.valueOrError;
-              if (statusResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (statusResult.failed) goto load_failed;
               MoviePlayback_AdvanceScheduledFrameAndTick();
-              pathOrPlacementCursor = pathOrPlacementCursor + 0x20; /* next 0x40-byte path record */
+              assetPathCursor = assetPathCursor + 0x20; /* next 0x40-byte path record */
             }
-            pathOrPlacementCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
+            assetPathCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
                                assetRelativeAddressAnchor28 +
                               ((levelImage->header).resourceTables.armyAssetPathTableOffset - 0x28))
             ;
-            for (remainingRecordCount = (levelImage->header).resourceTables.armyAssetPathCount; remainingRecordCount != 0;
+            for (remainingRecordCount = (levelImage->header).resourceTables.armyAssetPathCount;
+                 remainingRecordCount != 0;
                 remainingRecordCount--) {
-              WidePath_SetExtensionCode(0x6d7261,pathOrPlacementCursor); /* "arm" */
+              WidePath_SetExtensionCode(0x6d7261,assetPathCursor); /* "arm" */
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-              if (0x1ff < g_InGameLoadedResourcePointerCount)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-              ;
-              loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
+              if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
+              loadEntryResult = Package_LoadEntry(assetPathCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
-              if (loadEntryResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (loadEntryResult.failed) goto load_failed;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount++;
               loadedResourcePointerArray++;
               statusResult = ArmyAsset_PrepareRecords(resultOrPointer);
               resultOrPointer = (void *)statusResult.valueOrError;
-              if (statusResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (statusResult.failed) goto load_failed;
               MoviePlayback_AdvanceScheduledFrameAndTick();
-              pathOrPlacementCursor = pathOrPlacementCursor + 0x20; /* next 0x40-byte path record */
+              assetPathCursor = assetPathCursor + 0x20; /* next 0x40-byte path record */
             }
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (g_InGameLoadedResourcePointerCount < 0x200) {
+            if (g_InGameLoadedResourcePointerCount < INGAME_LOADED_RESOURCE_CAPACITY) {
               g_MoviePlaybackBaseFrameGroup = 1;
               g_MoviePlaybackScheduleCounter = 0;
               g_MoviePlaybackScheduleSpan = 0x10000;
@@ -455,9 +421,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                   if (!statusResult.failed) {
                     /* The decompiler lost these two locals; the original reads them from the level header
                        (+0xC0 army and +0xC8 effect texture base paths). */
-                    armyTextureBasePath = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                    armyTextureBasePath =
+                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
                                       ((levelImage->header).pathOffsets.armyTextureBasePathOffset - 0x28));
-                    effectTextureBasePath = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                    effectTextureBasePath =
+                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
                                       ((levelImage->header).pathOffsets.effectTextureBasePathOffset - 0x28));
                     armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath);
                     resultOrPointer = (void *)armyInitResult.errorOrValue;
@@ -495,7 +463,8 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                              from the tail */
                           counterOrClassId = worldRuntime->activeFactionRuntimeIndex;
                           MoviePlayback_AdvanceScheduledFrameAndTick();
-                          playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[counterOrClassId - 1];
+                          playerSlotByteOffset =
+                               g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[counterOrClassId - 1];
                           WorldRuntime_AttachFieldGridAsset
                                     ((FieldGridAsset *)
                                      (levelImage->header).pathOffsets.levelPathOffset,worldRuntime);
@@ -520,33 +489,28 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                           flagsOrRelationMask = (levelImage->runtimeTail2E0).
                                    packedFieldRegionHeightHigh16WidthLow16;
                           WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-                                    ((int)flagsOrRelationMask >> 0x10,flagsOrRelationMask & 0xffff,(int)regionOriginOrRelationMask >> 0x10,
+                                    ((int)flagsOrRelationMask >> 0x10,flagsOrRelationMask & 0xffff,
+                                     (int)regionOriginOrRelationMask >> 0x10,
                                      countOrPackedValue & 0xffff,worldRuntime);
                           /* initial army placements (0x20-byte records at LEV +[0xDC]) */
                           remainingRecordCount = (levelImage->header).initialArmyPlacementRecordCount;
-                          pathOrPlacementCursor = (uint16_t *)((levelImage->header).common.buildMetadata.
-                                             assetRelativeAddressAnchor28 +
-                                            ((levelImage->header).resourceTables.
-                                             runtimePrefixByteSizeAndInitialArmyPlacementOffset -
-                                            0x28));
+                          placementCursor = (LevelInitialArmyPlacementRecord20 *)
+                                            ((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                                             ((levelImage->header).resourceTables.
+                                              runtimePrefixByteSizeAndInitialArmyPlacementOffset - 0x28));
                           MoviePlayback_AdvanceScheduledFrameAndTick();
                           for (; remainingRecordCount != 0; remainingRecordCount--) {
-                            if (g_GameFactionRuntimeImage.tail.factionLifecycleStates
-                                [((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->factionIndex] ==
+                            if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[placementCursor->factionIndex] ==
                                 FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
                               armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
-                                                 (6,((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->orientationAngle,
-                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->worldXQ12,
-                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->worldYQ12,
-                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->factionIndex,
-                                                  ((LevelInitialArmyPlacementRecord20 *)pathOrPlacementCursor)->armyAssetId,worldRuntime);
+                                                 (ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION | ARMY_CREATE_UNLOCK_TECHNOLOGY,
+                                                  placementCursor->orientationAngle,placementCursor->worldXQ12,
+                                                  placementCursor->worldYQ12,placementCursor->factionIndex,
+                                                  placementCursor->armyAssetId,worldRuntime);
                               resultOrPointer = (void *)armyCreateResult.armyRuntimeOrError;
-                              if (armyCreateResult.failed)
-                              goto 
-                              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
-                              ;
+                              if (armyCreateResult.failed) goto load_failed;
                             }
-                            pathOrPlacementCursor = pathOrPlacementCursor + 0x10; /* 0x20 bytes */
+                            placementCursor++;
                           }
                           MoviePlayback_AdvanceScheduledFrameAndTick();
                           WorldRuntime_ForEachNodeInOwnerListD8
@@ -564,8 +528,8 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                           /* spatial sound slots: cleared, then filled from the level's sound directory, listed
                              from the sound package or, failing that, from disk */
                           soundSlotCursor = worldRuntime->dwordArray;
-                          for (remainingSoundSlotCount = worldRuntime->dwordArrayCount; remainingSoundSlotCount != 0; remainingSoundSlotCount--)
-                          {
+                          for (remainingSoundSlotCount = worldRuntime->dwordArrayCount; remainingSoundSlotCount != 0;
+                              remainingSoundSlotCount--) {
                             *soundSlotCursor = 0;
                             soundSlotCursor++;
                           }
@@ -765,7 +729,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                        structure: the last registered army assets (army flag +0x14 bit 0) whose
                                        model class is 0x0B, 0x0E without / with the model's +0xC0 value, and 0x10 */
                                     armyRegistryCursor = g_ArmyAssetRecordRegistry;
-                                    counterOrClassId = 0x300;
+                                    counterOrClassId = ARMY_ASSET_REGISTRY_SLOT_COUNT;
                                     class0BArmyDefinition = NULL;
                                     class0ENoExtraArmyDefinition = NULL;
                                     class0EArmyDefinition = NULL; /* this and class10ArmyDefinition are uninitialized in the original */
@@ -776,20 +740,23 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                       nextClass0EArmyDefinition = class0EArmyDefinition;
                                       nextClass0BArmyDefinition = class0BArmyDefinition;
                                       if ((registryArmyDefinition != NULL) &&
-                                         ((((ArmyAssetRuntimeSemanticView80 *)registryArmyDefinition)->flags14 &
+                                         ((((ArmyAssetRecord *)registryArmyDefinition)->flags &
                                           1) != 0)) {
                                         modelLookupResult = ModelDefinitionRegistry_FindByIdWithError
                                                            (((ArmyModelTreeNode *)registryArmyDefinition->
                                                              rootNodeOffsetOrPointer)->linkedDefinitionIds[0]);
-                                        modelFlagsOrSoundIndex = ((ModelDefinitionRuntimeSemanticView280 *)modelLookupResult.modelDefinition)->
+                                        modelFlagsOrSoundIndex =
+                                             ((ModelDefinition *)modelLookupResult.modelDefinition)->
                                                                  runtimeClassId4C;
                                         nextClass0BArmyDefinition = registryArmyDefinition;
                                         if (((modelFlagsOrSoundIndex != 0xb) &&
                                             ((nextClass10ArmyDefinition = registryArmyDefinition,
-                                             nextClass0BArmyDefinition = class0BArmyDefinition, modelFlagsOrSoundIndex != 0x10 &&
-                                             (nextClass10ArmyDefinition = class10ArmyDefinition, modelFlagsOrSoundIndex == 0xe)))) &&
+                                             nextClass0BArmyDefinition = class0BArmyDefinition,
+                                                  modelFlagsOrSoundIndex != 0x10 &&
+                                             (nextClass10ArmyDefinition = class10ArmyDefinition,
+                                              modelFlagsOrSoundIndex == 0xe)))) &&
                                            (nextClass0EArmyDefinition = registryArmyDefinition,
-                                           ((ModelDefinitionRuntimeSemanticView280 *)modelLookupResult.modelDefinition)->
+                                           ((ModelDefinition *)modelLookupResult.modelDefinition)->
                                            classParameterC0 == 0)) {
                                           nextClass0EArmyDefinition = class0EArmyDefinition;
                                           class0ENoExtraArmyDefinition = registryArmyDefinition;
@@ -867,11 +834,15 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         targetBitOrSavedIndex = sourceBitOrIndex;
                                         targetIndexOrBit = relationFactionIndex;
                                         if ((flagsOrRelationMask & sourceBitOrIndex) != 0) {
-                                          while (targetIndexOrBit = targetIndexOrBit + 1, countOrPackedValue = relationFactionIndex, targetIndexOrBit < 8) {
+                                          while (targetIndexOrBit = targetIndexOrBit + 1, countOrPackedValue =
+                                                 relationFactionIndex,
+                                                 targetIndexOrBit < 8) {
                                             targetBitOrSavedIndex = targetBitOrSavedIndex * 2;
                                             if ((flagsOrRelationMask & targetBitOrSavedIndex) != 0) {
                                               GameFactionRuntime_ApplyPairwiseRelationTransition
-                                                        (0x20,0x20,4,4,targetIndexOrBit,relationFactionIndex);
+                                                        (0x20,0x20,FACTION_RELATION_STATE_FRIENDLY,
+                                                         FACTION_RELATION_STATE_FRIENDLY,targetIndexOrBit,
+                                                         relationFactionIndex);
                                             }
                                           }
                                         }
@@ -890,11 +861,15 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                                         targetIndexOrBit = flagsOrRelationMask;
                                         relationFactionIndex = sourceBitOrIndex;
                                         if ((regionOriginOrRelationMask & flagsOrRelationMask) != 0) {
-                                          while (relationFactionIndex = relationFactionIndex + 1, countOrPackedValue = sourceBitOrIndex, relationFactionIndex < 8) {
+                                          while (relationFactionIndex = relationFactionIndex + 1, countOrPackedValue =
+                                                 sourceBitOrIndex,
+                                                 relationFactionIndex < 8) {
                                             targetIndexOrBit = targetIndexOrBit * 2;
                                             if ((regionOriginOrRelationMask & targetIndexOrBit) != 0) {
                                               GameFactionRuntime_ApplyPairwiseRelationTransition
-                                                        (0x20,0x20,8,8,relationFactionIndex,sourceBitOrIndex);
+                                                        (0x20,0x20,FACTION_RELATION_STATE_ALLIED,
+                                                         FACTION_RELATION_STATE_ALLIED,relationFactionIndex,
+                                                         sourceBitOrIndex);
                                             }
                                           }
                                         }
@@ -962,7 +937,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
       }
     }
   }
-InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus:
+load_failed:
   failureResult.failed = true;
   failureResult.errorOrValue = (uint32_t)resultOrPointer;
   return failureResult;
@@ -1000,7 +975,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
   uint32_t packedRegionValue;
   int factionIndexOrOriginY;
   FieldGridDimensionCells gridHeight;
-  FrontendLoadedLevelRuntimeImage370 *copySourceCursor;
+  uint32_t *copySourceCursor;
   uint8_t *assetPath;
   uint16_t *pathTableCursor;
   uint32_t *soundSlotCursor;
@@ -1021,7 +996,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
   uint16_t *soundDirectoryPathCursor;
   WorldRuntimeContext *soundLoopWorldRuntime;
   
-  allocResult = g_MemoryApi.alloc(0x800);
+  allocResult = g_MemoryApi.alloc(INGAME_LOADED_RESOURCE_CAPACITY * 4);
   loadedResourcePointerArray = (void **)allocResult.payloadOrError;
   resultOrPointer = loadedResourcePointerArray;
   if (!allocResult.failed) {
@@ -1037,16 +1012,12 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
       resultOrPointer = (void *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         /* copy the level prefix (LEV +0xDC bytes) dword by dword into the condition storage */
-        copySourceCursor = levelImage;
+        copySourceCursor = (uint32_t *)levelImage;
         g_InGameLevelRuntimeGlobalBlock.conditionStorage = resultOrPointer;
         for (countOrPackedValue = countOrPackedValue >> 2; countOrPackedValue != 0; countOrPackedValue--) {
-          (((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.magic
-               = (copySourceCursor->header).common.magic;
-          copySourceCursor = (FrontendLoadedLevelRuntimeImage370 *)
-                    &(copySourceCursor->header).common.allocationSizeBytes;
-          resultOrPointer =
-               &(((InGameLevelConditionStorageView800 *)resultOrPointer)->levelImage).header.common.
-                allocationSizeBytes;
+          *(uint32_t *)resultOrPointer = *copySourceCursor;
+          copySourceCursor++;
+          resultOrPointer = (uint32_t *)resultOrPointer + 1;
         }
         g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
         g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
@@ -1077,25 +1048,16 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
               remainingPathCount--) {
             WidePath_SetExtensionCode(0x666665,pathTableCursor); /* "eff" */
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (0x1ff < g_InGameLoadedResourcePointerCount)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
             loadEntryResult = Package_LoadEntry(pathTableCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
-            if (loadEntryResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (loadEntryResult.failed) goto load_failed;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount++;
             loadedResourcePointerArray++;
             statusResult = EffectAsset_PrepareEntries(resultOrPointer);
             resultOrPointer = (void *)statusResult.valueOrError;
-            if (statusResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (statusResult.failed) goto load_failed;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathTableCursor = pathTableCursor + 0x20; /* next 0x40-byte path record */
           }
@@ -1106,25 +1068,16 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
               remainingPathCount--) {
             WidePath_SetExtensionCode(0x746873,pathTableCursor); /* "sht" */
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (0x1ff < g_InGameLoadedResourcePointerCount)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
             loadEntryResult = Package_LoadEntry(pathTableCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
-            if (loadEntryResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (loadEntryResult.failed) goto load_failed;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount++;
             loadedResourcePointerArray++;
             statusResult = ShotAsset_PrepareEntries(resultOrPointer);
             resultOrPointer = (void *)statusResult.valueOrError;
-            if (statusResult.failed)
-            goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-            ;
+            if (statusResult.failed) goto load_failed;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathTableCursor = pathTableCursor + 0x20; /* next 0x40-byte path record */
           }
@@ -1139,25 +1092,16 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                 remainingPathCount--) {
               WidePath_SetExtensionCode(0x6c646d,pathTableCursor); /* "mdl" */
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-              if (0x1ff < g_InGameLoadedResourcePointerCount)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
               loadEntryResult = Package_LoadEntry(pathTableCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
-              if (loadEntryResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (loadEntryResult.failed) goto load_failed;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount++;
               loadedResourcePointerArray++;
               statusResult = ModelAsset_PrepareRecords(resultOrPointer);
               resultOrPointer = (void *)statusResult.valueOrError;
-              if (statusResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (statusResult.failed) goto load_failed;
               MoviePlayback_AdvanceScheduledFrameAndTick();
               pathTableCursor = pathTableCursor + 0x20; /* next 0x40-byte path record */
             }
@@ -1169,30 +1113,21 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                 remainingPathCount--) {
               WidePath_SetExtensionCode(0x6d7261,pathTableCursor); /* "arm" */
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-              if (0x1ff < g_InGameLoadedResourcePointerCount)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
               loadEntryResult = Package_LoadEntry(pathTableCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
-              if (loadEntryResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (loadEntryResult.failed) goto load_failed;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount++;
               loadedResourcePointerArray++;
               statusResult = ArmyAsset_PrepareRecords(resultOrPointer);
               resultOrPointer = (void *)statusResult.valueOrError;
-              if (statusResult.failed)
-              goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
-              ;
+              if (statusResult.failed) goto load_failed;
               MoviePlayback_AdvanceScheduledFrameAndTick();
               pathTableCursor = pathTableCursor + 0x20; /* next 0x40-byte path record */
             }
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
-            if (g_InGameLoadedResourcePointerCount < 0x200) {
+            if (g_InGameLoadedResourcePointerCount < INGAME_LOADED_RESOURCE_CAPACITY) {
               g_MoviePlaybackBaseFrameGroup = 1;
               g_MoviePlaybackScheduleCounter = 0;
               g_MoviePlaybackScheduleSpan = 0x10000;
@@ -1221,9 +1156,11 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                   if (!statusResult.failed) {
                     /* The decompiler lost these two locals; the original reads them from the level header
                        (+0xC0 army and +0xC8 effect texture base paths). */
-                    armyTextureBasePath = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                    armyTextureBasePath =
+                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
                                       ((levelImage->header).pathState.armyTextureBasePathOffset - 0x28));
-                    effectTextureBasePath = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
+                    effectTextureBasePath =
+                         (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
                                       ((levelImage->header).pathState.effectTextureBasePathOffset - 0x28));
                     armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,armyTextureBasePath);
                     resultOrPointer = (void *)armyInitResult.errorOrValue;
@@ -1262,8 +1199,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                              from the tail */
                           factionIndexOrOriginY = worldRuntime->activeFactionRuntimeIndex;
                           MoviePlayback_AdvanceScheduledFrameAndTick();
-                          playerSlotByteOffset = g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[factionIndexOrOriginY - 1]
-                          ;
+                          playerSlotByteOffset =
+                               g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[factionIndexOrOriginY - 1];
                           WorldRuntime_AttachFieldGridAsset
                                     ((FieldGridAsset *)
                                      (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid
@@ -1293,7 +1230,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                           soundLoopWorldRuntime = worldRuntime;
                           MoviePlayback_AdvanceScheduledFrameAndTick();
                           WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-                                    ((int)packedRegionValue >> 0x10,packedRegionValue & 0xffff,factionIndexOrOriginY,countOrPackedValue,soundLoopWorldRuntime);
+                                    ((int)packedRegionValue >> 0x10,packedRegionValue & 0xffff,factionIndexOrOriginY,
+                                     countOrPackedValue,soundLoopWorldRuntime);
                           /* the saved runtime pools, loaded over the freshly initialised ones and rebased */
                           statusResult = Package_LoadEntryIntoBuffer
                                              (worldRuntime->objectCount * 0x100,
@@ -1338,7 +1276,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                       /* spatial sound slots: cleared, then filled from the level's sound
                                          directory, listed from the sound package or, failing that, from disk */
                                       soundSlotCursor = worldRuntime->dwordArray;
-                                      for (remainingSoundSlotCount = worldRuntime->dwordArrayCount; remainingSoundSlotCount != 0;
+                                      for (remainingSoundSlotCount =
+                                           worldRuntime->dwordArrayCount; remainingSoundSlotCount != 0;
                                           remainingSoundSlotCount--) {
                                         *soundSlotCursor = 0;
                                         soundSlotCursor++;
@@ -1416,7 +1355,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1437,7 +1377,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1458,7 +1399,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1479,7 +1421,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_level00_sam_0050df6c);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1500,7 +1443,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1521,7 +1465,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1542,7 +1487,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1563,7 +1509,8 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                                                      0xb));
                                                   resourceLoadResult = Resource_Load((uint16_t *)
                                                   u_sound_music00_sam_0050df90);
-                                                  loadedSampleAsset = (SoundSampleAsset *)resourceLoadResult.bufferOrError;
+                                                  loadedSampleAsset =
+                                                       (SoundSampleAsset *)resourceLoadResult.bufferOrError;
                                                   sampleOrVoiceSet = loadedSampleAsset;
                                                   if (!resourceLoadResult.failed) {
                                                     voiceSetResult = g_SoundCreateSampleVoiceSet(loadedSampleAsset);
@@ -1641,7 +1588,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
       }
     }
   }
-InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus:
+load_failed:
   failureResult.failed = true;
   failureResult.errorOrValue = (uint32_t)resultOrPointer;
   return failureResult;
@@ -1659,27 +1606,23 @@ void InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldR
 {
   void **loadedResourceCursor;
   InGameLoadedResourcePointerCount remainingResourceCount;
-  uint32_t *slotLoopGuard;
-  uint32_t *remainingSlotCount;
+  uint32_t remainingSlotCount;
   uint32_t *soundSlotCursor;
-  void **resourcePointerCursor;
   
   EffectRuntime_ShutdownGraphicsResources();
   ShotRuntime_ShutdownGraphicsResources();
   ModelRuntimePool_ShutdownAndReleaseDefinitions();
   ArmyRuntime_ShutdownPoolAndGraphics();
   TerrainVisualResources_Shutdown();
-  remainingSlotCount = (uint32_t *)worldRuntime->dwordArrayCount;
+  remainingSlotCount = worldRuntime->dwordArrayCount;
   soundSlotCursor = worldRuntime->dwordArray;
   /* the original loops only when both the slot count and the slot array are non-zero */
-  slotLoopGuard = soundSlotCursor;
-  if (remainingSlotCount != (uint32_t *)0x0) {
-    while (slotLoopGuard != (uint32_t *)0x0) {
+  if (remainingSlotCount != 0 && soundSlotCursor != NULL) {
+    do {
       SpatialSoundSlot_ReleaseSample((SpatialSoundSlot *)*soundSlotCursor);
       soundSlotCursor++;
-      remainingSlotCount = (uint32_t *)((int)remainingSlotCount + -1);
-      slotLoopGuard = remainingSlotCount;
-    }
+      remainingSlotCount--;
+    } while (remainingSlotCount != 0);
   }
   g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSet0);
   g_SoundReleaseSampleVoiceSet(g_InGameLevelEffectVoiceSet1);
@@ -1721,7 +1664,7 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
 {
   int placementOffsetOrModelRuntime;
   FactionRuntimeIndex activeFactionIndex;
-  WorldOwnerListNode100 *ownerListNode;
+  WorldOwnerListNode *ownerListNode;
   AngleTurn32 modelRotationAngle;
   uint8_t *levelImageBytes;
   LevelAssetRuntimeImagePrefix370 *levelImage;
@@ -1729,7 +1672,7 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
   uint32_t bookmarkMagnitude;
   uint32_t bookmarkPackedHeadingPitch;
   uint32_t statusOrFieldValue;
-  LevelPlacedModelRecord20 *placementRecordCursor;
+  LevelInitialArmyPlacementRecord20 *placementRecordCursor;
   StatusResult statusResult;
 
   statusResult = Package_LoadEntryIntoBuffer(PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
@@ -1751,7 +1694,7 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
     /* the loader adds 7 to this value for faction 7's class/mode, yet the editor stores the index of the
        faction it plays here */
     levelImage->playerSlots[6].aiClassOrMode = activeFactionIndex;
-    placementRecordCursor = (LevelPlacedModelRecord20 *)(levelImageBytes + placementOffsetOrModelRuntime);
+    placementRecordCursor = (LevelInitialArmyPlacementRecord20 *)(levelImageBytes + placementOffsetOrModelRuntime);
     for (ownerListNode = (saveWorldView->worldRuntime).ownerListHead;
         ownerListNode != NULL; ownerListNode = ownerListNode->nextNode) {
       if (ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
@@ -1759,14 +1702,15 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
         levelImage->header.common.allocationSizeBytes = levelImage->header.common.allocationSizeBytes + 0x20;
         placementOffsetOrModelRuntime =
              (int)((ModelRuntimeSlot *)ownerListNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
-        /* the record field names are Ghidra's: +0x08/+0x0C hold the node's world X/Y */
-        placementRecordCursor->meshGroupMask = ownerListNode->worldXQ12;
+        /* +0x08 receives the node's world X and +0x0C its world Y, the reverse of the placement record's field
+           names (which follow the parameters the loader passes them to, ArmyRuntime_CreateInstanceFromAsset) */
+        placementRecordCursor->worldYQ12 = ownerListNode->worldXQ12;
         statusOrFieldValue = ((ArmyRuntimeSlot *)placementOffsetOrModelRuntime)->armyAssetId;
-        placementRecordCursor->modelRuntimeField0C = ((ArmyRuntimeSlot *)placementOffsetOrModelRuntime)->factionIndex;
-        placementRecordCursor->modelRuntimeFieldA0 = statusOrFieldValue;
+        placementRecordCursor->factionIndex = ((ArmyRuntimeSlot *)placementOffsetOrModelRuntime)->factionIndex;
+        placementRecordCursor->armyAssetId = statusOrFieldValue;
         modelRotationAngle = ownerListNode->modelLocalRotationAngle2;
-        placementRecordCursor->nodePayloadField0C = ownerListNode->worldYQ12;
-        placementRecordCursor->worldRotationAngle2 = modelRotationAngle;
+        placementRecordCursor->worldXQ12 = ownerListNode->worldYQ12;
+        placementRecordCursor->orientationAngle = modelRotationAngle;
         placementRecordCursor->reserved14_1F[0] = 0;
         placementRecordCursor->reserved14_1F[1] = 0;
         placementRecordCursor->reserved14_1F[2] = 0;
@@ -1855,7 +1799,8 @@ StatusResult InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSav
                       (levelImage->header.common.allocationSizeBytes,levelImageBytes,g_LevelEndingMovieSourcePath);
     statusOrFieldValue = statusResult.valueOrError;
     if (!statusResult.failed) {
-      return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(StatusResult, uint64_t, statusResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      return THANDOR_BITCAST(uint64_t, StatusResult,
+                             ((THANDOR_BITCAST(StatusResult, uint64_t, statusResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   statusResult.failed = true;

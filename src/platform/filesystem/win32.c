@@ -46,8 +46,7 @@ EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
   recordBuffer = (uint8_t *)largestBlock.allocationOrError;
   if (!largestBlock.failed) {
     enumerationResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                       (enumerationMode,reserved,capacityBytesOrError,recordBuffer,pathOrVolumeText)
-    ;
+                       (enumerationMode,reserved,capacityBytesOrError,recordBuffer,pathOrVolumeText);
     foundEntryCount = enumerationResult.entryCount;
     recordSizeBytes = enumerationResult.recordSizeBytes;
     tableOrError = (uint8_t *)recordSizeBytes;
@@ -87,13 +86,13 @@ EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
                 stringCursor = stringCursor + 2;
                 capacityFlag = capacityBytesOrError < 2; /* the block is exhausted */
                 capacityBytesOrError = capacityBytesOrError - 2;
-                if (capacityFlag || capacityBytesOrError == 0) goto FileSystem_BuildEnumerationStringTable_FreeOnOverflow;
+                if (capacityFlag || capacityBytesOrError == 0) goto freeTable;
               } while (codeUnit != 0);
               tablePointerSlot = tablePointerSlot + 4;
               sourceRecord = sourceRecord + recordSizeBytes;
               remainingEntries--;
               if (remainingEntries == 0) {
-                g_MemoryApi.shrinkInPlace((int)stringCursor - (int)tableOrError,tableOrError);
+                g_MemoryApi.shrinkInPlace(stringCursor - tableOrError,tableOrError);
                 g_MemoryApi.free(recordBuffer);
                 successResult.entryCountOrScratch = foundEntryCount;
                 successResult.tableOrError = (uint32_t)tableOrError;
@@ -102,7 +101,7 @@ EnumerationStringTableResult FileSystem_BuildEnumerationStringTable
               }
             } while( true );
           }
-FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
+freeTable:
           /* the original returns free's EAX here, not an error code */
           freeResult = g_MemoryApi.free(tableOrError);
           tableOrError = (uint8_t *)freeResult.valueOrError;
@@ -148,7 +147,7 @@ uint32_t __cdecl FileSystem_Init(void)
   Text_CopyNarrowToUtf16(sizeof g_PackageLastErrorPath,g_PackageLastErrorPath,g_Win32PathScratchA);
   /* the leaf (the executable name) lands in the path scratch buffer, which is reused as UTF-16 */
   WidePath_SplitParentAndLeaf
-            ((uint16_t *)g_Win32PathScratchA,(uint16_t *)&g_ExecutableDirectoryUtf16,g_PackageLastErrorPath);
+            ((uint16_t *)g_Win32PathScratchA,g_ExecutableDirectoryUtf16,g_PackageLastErrorPath);
   g_FileSystemOpen = Win32File_Open;
   g_FileSystemClose = Win32File_Close;
   g_FileSystemReadExact = Win32File_ReadExact;
@@ -180,7 +179,7 @@ uint32_t __cdecl FileSystem_Init(void)
                                      (LPDWORD)&g_FileSystemInitComputerNameCapacityOrConfigCursor);
   if (gotComputerName != 0) {
     labelCursor = g_DefaultComputerLabelUtf16;
-    for (clearCount = 0x10; clearCount != 0; clearCount--) {
+    for (clearCount = sizeof g_DefaultComputerLabelUtf16 / 4; clearCount != 0; clearCount--) {
       labelCursor[0] = 0;
       labelCursor[1] = 0;
       labelCursor += 2;
@@ -196,11 +195,11 @@ uint32_t __cdecl FileSystem_Init(void)
   configFile = (void *)openResult.handleOrError;
   if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,u_THANDOR_cfg_0040e23d,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openResult = Win32File_Open(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+              (g_FileSystemCombinedPathScratchUtf16,u_THANDOR_cfg_0040e23d,
+               g_ExecutableDirectoryUtf16);
+    openResult = Win32File_Open(0,g_FileSystemCombinedPathScratchUtf16);
     configFile = (void *)openResult.handleOrError;
-    if (openResult.failed) goto FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage;
+    if (openResult.failed) goto mountEnginePackage;
   }
   sizeResult = Win32File_GetSize(configFile);
   configBytesLeft = sizeResult.sizeOrError;
@@ -242,7 +241,7 @@ uint32_t __cdecl FileSystem_Init(void)
     }
   }
   Win32File_Close(configFile);
-FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
+mountEnginePackage:
   Win32File_GetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
   mountResult = Package_MountLowPriority(u_engine_pck_0040e255);
   if (!mountResult.failed) {
@@ -277,7 +276,7 @@ StatusResult Win32File_GetLastWriteDosDate(uint16_t *path)
       /* FAT date into the high word, FAT time into the low word of the scratch dword */
       FileTimeToDosDateTime
                 ((FILETIME *)&g_Win32FileLastWriteTimeScratch,
-                 (LPWORD)((int)&g_Win32FileCreationTimeOrDosDateScratch + 2),
+                 (LPWORD)&g_Win32FileCreationTimeOrDosDateScratch + 1,
                  (LPWORD)&g_Win32FileCreationTimeOrDosDateScratch);
       successResult.failed = false;
       successResult.valueOrError = g_Win32FileCreationTimeOrDosDateScratch;
@@ -407,9 +406,9 @@ FileLoadResult FileSystem_LoadWholeFile(uint16_t *pathUtf16)
   
   /* first try the path relative to the executable directory */
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
-  openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+            (g_FileSystemCombinedPathScratchUtf16,pathUtf16,
+             g_ExecutableDirectoryUtf16);
+  openResult = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16);
   handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     openResult = g_FileSystemOpen(0,pathUtf16);
@@ -430,7 +429,8 @@ FileLoadResult FileSystem_LoadWholeFile(uint16_t *pathUtf16)
       byteCountOrError = (void *)FATAL_ERROR_OUT_OF_MEMORY;
     }
     else {
-      readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,handle);
+      readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,
+                                         handle);
       byteCountOrError = (void *)readResult.valueOrError;
       if (!readResult.failed) {
         g_FileSystemClose(handle);
@@ -464,9 +464,9 @@ FileLoadResult FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16)
   
   /* first try the path relative to the executable directory */
   WidePath_CombineDirectoryAndLeaf
-            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
-             (uint16_t *)&g_ExecutableDirectoryUtf16);
-  openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+            (g_FileSystemCombinedPathScratchUtf16,pathUtf16,
+             g_ExecutableDirectoryUtf16);
+  openResult = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16);
   handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     openResult = g_FileSystemOpen(0,pathUtf16);
@@ -487,7 +487,8 @@ FileLoadResult FileSystem_LoadWholeFileAlternatePath(uint16_t *pathUtf16)
       byteCountOrError = (void *)FATAL_ERROR_OUT_OF_MEMORY;
     }
     else {
-      readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,handle);
+      readResult = g_FileSystemReadExact((FileIoByteCount)byteCountOrError,(void *)allocResult.payloadOrError,
+                                         handle);
       byteCountOrError = (void *)readResult.valueOrError;
       if (!readResult.failed) {
         g_FileSystemClose(handle);
@@ -806,7 +807,7 @@ DriveLetterEnumerationEaxEcx8 Win32Drive_EnumerateLetters(uint8_t *lettersOut)
 
   logicalDriveMask = GetLogicalDrives();
   enumeratedDriveCount = 0;
-  driveLettersRemaining = 26;
+  driveLettersRemaining = 'Z' - 'A' + 1;
   currentDriveLetter = 'A';
   do {
     if ((logicalDriveMask & 1) != 0) {
@@ -871,7 +872,7 @@ bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathA
   }
   else {
     /* base name: up to 8 characters, ended by '-', '.', '\' or the terminator */
-    charsRemaining = 8;
+    charsRemaining = DOS83_BASE_NAME_MAX_CHARS;
     do {
       pathChar = *pathAnsi;
       if (pathChar == 0) break;
@@ -912,10 +913,10 @@ bool Win32Path_ValidateDos83(FileSystemDos83ValidationFlags flags,uint8_t *pathA
       pathAnsi++;
       charsRemaining--;
     } while (charsRemaining != 0);
-    if (charsRemaining != 8) {
+    if (charsRemaining != DOS83_BASE_NAME_MAX_CHARS) {
       /* optional extension: '.' and up to 3 characters */
       pathChar = *pathAnsi;
-      charsRemaining = 3;
+      charsRemaining = DOS83_EXTENSION_MAX_CHARS;
       if (pathChar != 0) {
         if (pathChar == '.') {
           do {
@@ -1031,7 +1032,8 @@ DirectoryEnumerationResult Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   }
   else {
     Package_SetLastErrorPath((uint16_t *)pathOrVolumeText);
-    RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratchA,g_Win32PathScratchA,(uint16_t *)pathOrVolumeText);
+    RichTextCommandStream_CopyToNarrow(sizeof g_Win32PathScratchA,g_Win32PathScratchA,
+                                       (uint16_t *)pathOrVolumeText);
     /* the WIN32_FIND_DATAA lands in the file-time scratch block (dwFileAttributes first) */
     findHandle = FindFirstFileA((LPCSTR)g_Win32PathScratchA,
                                 (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
@@ -1044,16 +1046,17 @@ DirectoryEnumerationResult Win32FileSystem_EnumerateDirectoryOrVolumeEntries
     recordCount = 0;
     destination = (uint16_t *)outputRecords;
     do {
-      /* files: neither directory nor volume label (0x08); directories: not "." or ".." */
+      /* files: neither directory nor volume label; directories: not "." or ".." */
       if ((mode == FILESYSTEM_ENUMERATE_FILES) ?
-          ((g_Win32FileCreationTimeOrDosDateScratch & (FILE_ATTRIBUTE_DIRECTORY | 0x08)) == 0) :
+          ((g_Win32FileCreationTimeOrDosDateScratch & (FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_ATTRIBUTE_VOLUME_LABEL)) == 0) :
           ((mode == FILESYSTEM_ENUMERATE_DIRECTORIES) &&
            ((g_Win32FileCreationTimeOrDosDateScratch & FILE_ATTRIBUTE_DIRECTORY) != 0) &&
            ((g_Win32FindDataFileNameA != '.') ||
             ((g_Win32FindDataFileNameSecondCharA != '\0') &&
              ((g_Win32FindDataFileNameSecondCharA != '.') || (g_Win32FindDataFileNameThirdCharA != '\0')))))) {
         if (FILESYSTEM_ENUMERATION_RECORD_BYTES - 1 < outputCapacityBytes) {
-          Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,destination,(uint8_t *)&g_Win32FindDataFileNameA);
+          Text_CopyNarrowToUtf16(FILESYSTEM_ENUMERATION_RECORD_BYTES,destination,
+                                 (uint8_t *)&g_Win32FindDataFileNameA);
           destination = destination + FILESYSTEM_ENUMERATION_RECORD_BYTES / 2;
           recordCount++;
           outputCapacityBytes = outputCapacityBytes - FILESYSTEM_ENUMERATION_RECORD_BYTES;
@@ -1077,21 +1080,24 @@ DirectoryEnumerationResult Win32FileSystem_EnumerateDirectoryOrVolumeEntries
           if (!compareFlags.less && !compareFlags.equal) {
             copySource = rightRecordDwords;
             copyDestination = (uint32_t *)g_Win32PathScratchA;
-            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
+            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0;
+                 dwordsRemaining--) {
               *copyDestination = *copySource;
               copySource++;
               copyDestination++;
             }
             copySource = leftRecordDwords;
             copyDestination = rightRecordDwords;
-            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
+            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0;
+                 dwordsRemaining--) {
               *copyDestination = *copySource;
               copySource++;
               copyDestination++;
             }
             copySource = (uint32_t *)g_Win32PathScratchA;
             copyDestination = leftRecordDwords;
-            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
+            for (dwordsRemaining = FILESYSTEM_ENUMERATION_RECORD_BYTES / 4; dwordsRemaining != 0;
+                 dwordsRemaining--) {
               *copyDestination = *copySource;
               copySource++;
               copyDestination++;
@@ -1170,9 +1176,9 @@ StatusResult Win32File_GetCurrentDirectory(uint16_t *destination)
   DWORD narrowPathLength;
   StatusResult copyResult;
 
-  narrowPathLength = GetCurrentDirectoryA(0xff,(LPSTR)g_Win32PathScratchA);
+  narrowPathLength = GetCurrentDirectoryA(sizeof g_Win32PathScratchA - 1,(LPSTR)g_Win32PathScratchA);
   if (narrowPathLength != 0) {
-    copyResult = Text_CopyNarrowToUtf16(0x200,destination,g_Win32PathScratchA);
+    copyResult = Text_CopyNarrowToUtf16(WIDE_PATH_MAX_CODE_UNITS * sizeof(uint16_t),destination,g_Win32PathScratchA);
     /* the copy's EAX with CF cleared */
     return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(StatusResult, uint64_t, copyResult) & 0xFFFFFFFFFFull) & 0xffffffff));
   }

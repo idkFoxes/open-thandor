@@ -22,7 +22,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckA
   ArmyAssetIdSearchResult searchResult;
   ArmyAssetIdSearchResult normalizedResult;
   
-  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
+  idAbsent = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId);
   searchResult.notFound = idAbsent;
   searchResult.armyAssetId = recordId;
   if (idAbsent) {
@@ -50,14 +50,14 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAss
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId + 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId--;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -82,14 +82,14 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAs
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId - 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId++;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -111,7 +111,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped
   ArmyAssetIdSearchResult searchResult;
   
   for (;;) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(recordId);
     if (broaderAbsent) break;
     recordId--;
     if ((int)recordId < 0) {
@@ -121,7 +121,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId);
     if (!searchResult.notFound) break;
     recordId--;
     if ((int)recordId < 0) {
@@ -145,7 +145,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmy
   ArmyAssetIdSearchResult searchResult;
   ArmyAssetIdSearchResult normalizedResult;
   
-  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
+  idAbsent = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId);
   searchResult.notFound = idAbsent;
   searchResult.armyAssetId = recordId;
   if (idAbsent) {
@@ -173,14 +173,14 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetI
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId + 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId--;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -205,14 +205,14 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAsset
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId - 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId++;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -234,7 +234,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(Ar
   ArmyAssetIdSearchResult searchResult;
   
   for (;;) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(recordId);
     if (broaderAbsent) break;
     recordId--;
     if ((int)recordId < 0) {
@@ -244,7 +244,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(Ar
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId);
     if (!searchResult.notFound) break;
     recordId--;
     if ((int)recordId < 0) {
@@ -267,35 +267,28 @@ StatusResult ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
-  ArmyAssetHeader *record;
+  ArmyAssetRecord *record;
   StatusResult registrationStatus;
   StatusResult failureStatus;
 
   registrationStatusCode = FATAL_ERROR_ARMY_ASSET_INVALID;
-  if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_ARM) &&
-     ((asset->recordCountHeader).common.converterVersion == PCK_CONVERTER_ARM_00020008)) {
-    recordsRemaining = (asset->recordCountHeader).recordCount;
-    record = asset + 1;
-    while( true ) {
-      if (recordsRemaining == 0) {
-        registrationStatus.failed = false;
-        registrationStatus.valueOrError = registrationStatusCode;
-        return registrationStatus;
-      }
-      registrationStatus = ArmyAssetRecord_RegisterAndRelocate((ArmyAssetRuntimeSemanticView80 *)record,asset);
+  if (asset->recordCountHeader.common.magic == ASSET_MAGIC_ARM &&
+      asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_ARM_00020008) {
+    record = (ArmyAssetRecord *)(asset + 1);
+    for (recordsRemaining = asset->recordCountHeader.recordCount; recordsRemaining != 0; recordsRemaining--) {
+      registrationStatus = ArmyAssetRecord_RegisterAndRelocate(record,asset);
       registrationStatusCode = registrationStatus.valueOrError;
-      if (registrationStatus.failed) break;
-      /* record += its byte size: the anchor array at +0x28 decays to record + 0x28, and the dword at +0
-         (typed as the magic here) is the record's byte size */
-      record = (ArmyAssetHeader *)
-               ((int)(record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-               ((record->recordCountHeader).common.magic - 0x28));
-      recordsRemaining = recordsRemaining - 1;
+      if (registrationStatus.failed) goto ReturnFailure;
+      record = (ArmyAssetRecord *)((uint8_t *)record + record->byteSize);
     }
+    registrationStatus.failed = false;
+    registrationStatus.valueOrError = registrationStatusCode;
+    return registrationStatus;
   }
   else {
     Package_SetLastErrorPath((uint16_t *)asset);
   }
+ReturnFailure:
   failureStatus.failed = true;
   failureStatus.valueOrError = registrationStatusCode;
   return failureStatus;
@@ -315,8 +308,7 @@ bool ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
   registryLookup = ArmyAssetRegistry_FindById(recordId);
   missingOrDisabled = registryLookup.notFound;
   if (!missingOrDisabled) {
-    /* flags bit 0 = enabled */
-    missingOrDisabled = (((ArmyAssetRuntimeSemanticView80 *)registryLookup.recordOrError)->flags14 & 1) == 0;
+    missingOrDisabled = (((ArmyAssetRecord *)registryLookup.recordOrError)->flags & ARMY_ASSET_FLAG_ENABLED) == 0;
   }
   return missingOrDisabled;
 }
@@ -332,35 +324,28 @@ bool ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
-  ArmyAssetRecordPrefix *linkedAsset;
+  ArmyAssetRecord *linkedAsset;
   int linksRemaining;
   bool technologyLocked;
   ArmyAssetLookupResult registryLookup;
 
-  /* armyAssetRecord walks the link list in 4-byte steps, so its linkedArmyAssetIds30[0] is the current
-     link; on the linked asset flags14 bit 0 = enabled */
-  linksRemaining = ARMY_ASSET_LINKED_ID_COUNT;
-  do {
-    if (((ArmyAssetRuntimeSemanticView80 *)armyAssetRecord)->linkedArmyAssetIds30[0] != 0) {
-      registryLookup = ArmyAssetRegistry_FindById(((ArmyAssetRuntimeSemanticView80 *)armyAssetRecord)->linkedArmyAssetIds30[0]);
-      linkedAsset = registryLookup.recordOrError;
-      if ((!registryLookup.notFound) && ((((ArmyAssetRuntimeSemanticView80 *)linkedAsset)->flags14 & 1) != 0)) {
+  /* armyAssetRecord walks the link list in 4-byte steps, so its linkedArmyAssetIds[0] is the current link */
+  for (linksRemaining = ARMY_ASSET_LINKED_ID_COUNT; linksRemaining != 0; linksRemaining--) {
+    if (((ArmyAssetRecord *)armyAssetRecord)->linkedArmyAssetIds[0] != 0) {
+      registryLookup = ArmyAssetRegistry_FindById(((ArmyAssetRecord *)armyAssetRecord)->linkedArmyAssetIds[0]);
+      linkedAsset = (ArmyAssetRecord *)registryLookup.recordOrError;
+      if (!registryLookup.notFound && (linkedAsset->flags & ARMY_ASSET_FLAG_ENABLED) != 0) {
         technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                           (factionIndex,(ModelDefinitionHierarchyNodeAddress32)linkedAsset);
-        if ((!technologyLocked) &&
-           ((((ArmyAssetRuntimeSemanticView80 *)linkedAsset)->selectionDetailValue1C != 0 &&
-            ((((ArmyAssetRuntimeSemanticView80 *)linkedAsset)->flags14 & requiredDefinitionFlags) != 0)
-            ))) {
+        if (!technologyLocked && linkedAsset->selectionDetailValue != 0 &&
+            (linkedAsset->flags & requiredDefinitionFlags) != 0) {
           return true;
         }
       }
     }
     armyAssetRecord = (ArmyAssetRecordPrefix *)((uint32_t *)armyAssetRecord + 1); /* next link id */
-    linksRemaining--;
-    if (linksRemaining == 0) {
-      return false;
-    }
-  } while( true );
+  }
+  return false;
 }
 
 
@@ -377,19 +362,18 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
   uint32_t resolvedTexture;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyAssetRecordPrefix *registeredRecord;
+  ArmyAssetRecord *registeredRecord;
 
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  do {
-    registeredRecord = *registryCursor;
+  for (registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; registrySlotsRemaining != 0;
+       registrySlotsRemaining--) {
+    registeredRecord = (ArmyAssetRecord *)*registryCursor;
     if (registeredRecord != NULL) {
-      g_MemoryApi.free((void *)((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20);
-      ((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20 = 0;
+      g_MemoryApi.free((void *)registeredRecord->previewTexture);
+      registeredRecord->previewTexture = 0;
     }
     registryCursor++;
-    registrySlotsRemaining--;
-  } while (registrySlotsRemaining != 0);
+  }
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
   ((UiImagePanelControl *)INGAME_UI(uiRootAddress,unitPlacementPreviewImage))->textureSource =
        (GraphicsTextureSourceAsset *)resolvedTexture;
@@ -402,16 +386,16 @@ void ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t uiRoo
 
 /* Armour of one model-tree node (dword +0x60 of the definition the faction has unlocked for it) plus that of
    all its children (count at +0x08, pointers from +0x0C). */
-static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
+static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
 {
   ModelDefinitionResult selected;
   uint32_t armourSum;
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  armourSum = ((ModelDefinitionRuntimeSemanticView280 *)selected.modelDefinition)->runtimeValue60;
-  for (childIndex = 0; childIndex < ((ArmyModelTreeNode *)node)->childCount; childIndex++) {
-    uint8_t *child = (uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex];
+  armourSum = ((ModelDefinition *)selected.modelDefinition)->maximumHealth60;
+  for (childIndex = 0; childIndex < node->childCount; childIndex++) {
+    ArmyModelTreeNode *child = node->children[childIndex];
     if (child != NULL) {
       armourSum = armourSum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
     }
@@ -430,13 +414,14 @@ uint32_t ArmyAssetHierarchy_SumFactionUnlockedArmour
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  return ArmyAssetHierarchy_SumArmourFrom(factionIndex,(uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+  return ArmyAssetHierarchy_SumArmourFrom(
+       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
 /* Displayed energy (Q4 dword +0x18C) of the definition the faction has unlocked for one model-tree node, plus
    that of its children when the definition's flags (+0x68) have bit 0x80 set. */
-static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
+static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,ArmyModelTreeNode *node)
 {
   ModelDefinitionResult selected;
   EnergyDemandQ4 energySum;
@@ -444,13 +429,14 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
   uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  energySum = ((ModelDefinitionRuntimeSemanticView280 *)selected.modelDefinition)->runtimeValue18C;
-  childCount = ((ArmyModelTreeNode *)node)->childCount;
-  if ((((ModelDefinitionRuntimeSemanticView280 *)selected.modelDefinition)->runtimeValue68 & 0x80) == 0) {
-    childCount = 0; /* only definitions with flag 0x80 contribute their children */
+  energySum = ((ModelDefinition *)selected.modelDefinition)->energyLoadQ4_18C;
+  childCount = node->childCount;
+  if ((((ModelDefinition *)selected.modelDefinition)->runtimeValue68 &
+       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) == 0) {
+    childCount = 0; /* only definitions with this flag contribute their children */
   }
   for (childIndex = 0; childIndex < childCount; childIndex++) {
-    energySum = energySum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,(uint8_t *)((ArmyModelTreeNode *)node)->children[childIndex]);
+    energySum = energySum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,node->children[childIndex]);
   }
   return energySum;
 }
@@ -466,7 +452,8 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  return ArmyAssetHierarchy_SumEnergyFrom(factionIndex,(uint8_t *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
+  return ArmyAssetHierarchy_SumEnergyFrom(
+       factionIndex,(ArmyModelTreeNode *)((ArmyAssetRecordPrefix *)(uintptr_t)definitionNode)->rootNodeOffsetOrPointer);
 }
 
 
@@ -484,12 +471,12 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(Arm
   ArmyAssetIdSearchResult searchResult;
   
   while( true ) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoUnitWithId(recordId);
     if (broaderAbsent) break;
     recordId++;
   }
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableUnitWithId(recordId);
     if (!searchResult.notFound) break;
     recordId++;
     if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
@@ -514,12 +501,12 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAs
   ArmyAssetIdSearchResult searchResult;
   
   while( true ) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasNoObjectWithId(recordId);
     if (broaderAbsent) break;
     recordId++;
   }
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasNoPlaceableObjectWithId(recordId);
     if (!searchResult.notFound) break;
     recordId++;
     if (ARMY_ASSET_EDITOR_ID_LIMIT - 1 < recordId) {
@@ -532,31 +519,31 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAs
 
 
 /* Relocates one node of an army record's model tree and all of its children (offsets 0x0C + 4*i,
-   count at +0x08) against assetBase, adding each node's model-definition build metrics (looked up by
+   count at +0x08) against assetBase, adding each node's model-definition build costs (looked up by
    the id at +0x20) to the record. Returns the last lookup error, or 0. */
 static uint32_t ArmyAssetRecord_RelocateModelTree
-          (ArmyAssetRuntimeSemanticView80 *record,uint8_t *assetBase,uint8_t *node)
+          (ArmyAssetRecord *record,uint8_t *assetBase,ArmyModelTreeNode *node)
 {
-  BuildMetricResult metrics;
+  BuildCostsResult costs;
   uint32_t childCount;
   uint32_t childIndex;
   uint32_t error = 0;
   uint32_t childError;
 
-  metrics = ModelDefinitionRegistry_FindBuildMetricTupleById(((ArmyModelTreeNode *)node)->linkedDefinitionIds[0]);
-  if (metrics.notFound) {
-    error = (uint32_t)metrics.metric0;
+  costs = ModelDefinitionRegistry_FindBuildCostsById(node->linkedDefinitionIds[0]);
+  if (costs.notFound) {
+    error = costs.energyLoadQ4OrError;
   }
   else {
-    record->relocationPointerOrOffset2C = record->relocationPointerOrOffset2C + (uint32_t)metrics.metric0;
-    record->relocationValue24 = record->relocationValue24 + metrics.metric1;
-    record->relocationValue28 = record->relocationValue28 + metrics.metric2;
+    record->energyLoadQ4 = record->energyLoadQ4 + costs.energyLoadQ4OrError;
+    record->buildTicks = record->buildTicks + costs.buildTicks;
+    record->xeniteCostQ4 = record->xeniteCostQ4 + costs.xeniteCostQ4;
   }
-  childCount = ((ArmyModelTreeNode *)node)->childCount;
+  childCount = node->childCount;
   for (childIndex = 0; childIndex < childCount; childIndex++) {
-    uint8_t **child = (uint8_t **)&((ArmyModelTreeNode *)node)->children[childIndex];
-    *child = *child + (uintptr_t)assetBase;
-    childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,*child);
+    /* serialized offset from assetBase -> pointer */
+    node->children[childIndex] = (ArmyModelTreeNode *)((uint8_t *)node->children[childIndex] + (uintptr_t)assetBase);
+    childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,node->children[childIndex]);
     if (childError != 0) {
       error = childError;
     }
@@ -567,10 +554,10 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
 /* Address: 0x0051B4A0.
    Registers a loaded army record: rejects an id that is already registered (FATAL_ERROR_ARMY_ID_DUPLICATE), puts
    the record into the first free slot of the 768-slot army registry (FATAL_ERROR_ARMY_REGISTRY_FULL when none is
-   left), turns its model-tree offsets into pointers against assetBase and adds the build metrics of every node's
+   left), turns its model-tree offsets into pointers against assetBase and adds the build costs of every node's
    model definition to the record. CF set on failure with the error code in EAX.
 */
-StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
+StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHeader *assetBase)
 
 {
   /* Rewritten from the assembly (0x0051B4A0-0x0051B5D8): the model tree walk kept its recursion on
@@ -596,7 +583,7 @@ StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRuntimeSemanticView80 
       if (record->rootNodeOffsetOrPointer != 0) {
         record->rootNodeOffsetOrPointer = record->rootNodeOffsetOrPointer + (uint32_t)(uintptr_t)assetBase;
         error = ArmyAssetRecord_RelocateModelTree
-                          (record,(uint8_t *)assetBase,(uint8_t *)(uintptr_t)record->rootNodeOffsetOrPointer);
+                          (record,(uint8_t *)assetBase,(ArmyModelTreeNode *)(uintptr_t)record->rootNodeOffsetOrPointer);
       }
       status.failed = error != 0;
       status.valueOrError = error;
@@ -613,7 +600,7 @@ StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRuntimeSemanticView80 
 
 /* Address: 0x00571D90.
    Returns the preview texture of a registered army asset for the editor's placement panels. The texture is
-   cached in the record (previewTexture20); on the first request it is rendered in the unit-placement
+   cached in the record (previewTexture); on the first request it is rendered in the unit-placement
    owner faction's colours (faction 0 for ids from 400 up). Returns 0 for an unknown id or a failed render.
    Called directly by the in-game keyboard dispatch handlers (g_InGameKeyboardDispatchRecords),
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState and
@@ -622,7 +609,7 @@ StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRuntimeSemanticView80 
 uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId)
 
 {
-  ArmyAssetRecordPrefix *registeredRecord;
+  ArmyAssetRecord *registeredRecord;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
   ArmyPreviewTextureResult renderResult;
@@ -630,15 +617,15 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
 
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while ((registeredRecord = *registryCursor, registeredRecord == NULL ||
-         (armyAssetRegistryId != registeredRecord->registryId))) {
+  while (registeredRecord = (ArmyAssetRecord *)*registryCursor,
+         registeredRecord == NULL || armyAssetRegistryId != registeredRecord->registryId) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       return 0;
     }
   }
-  if (((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20 == 0) {
+  if (registeredRecord->previewTexture == 0) {
     factionIndex = g_UiCommandModeGOwnerFactionIndex;
     if (ARMY_ASSET_NEUTRAL_PREVIEW_FIRST_ID - 1 < armyAssetRegistryId) {
       factionIndex = 0;
@@ -650,10 +637,10 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
     if (renderResult.failed) {
       return 0;
     }
-    ((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20 = (uint32_t)renderResult.previewTexture;
+    registeredRecord->previewTexture = (uint32_t)renderResult.previewTexture;
     return (uint32_t)renderResult.previewTexture;
   }
-  return ((ArmyAssetRuntimeSemanticView80 *)registeredRecord)->previewTexture20;
+  return registeredRecord->previewTexture;
 }
 
 
@@ -672,8 +659,7 @@ ArmyAssetLookupResult ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryI
 
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while ((matchedRecord = *registryCursor, matchedRecord == NULL ||
-         (matchedRecord->registryId != registryId))) {
+  while (matchedRecord = *registryCursor, matchedRecord == NULL || matchedRecord->registryId != registryId) {
     registryCursor = registryCursor + 1;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -696,18 +682,18 @@ ArmyAssetLookupResult ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryI
    with the wrong flags. Predicate of the editor's unit-placement id searches
    (FindNext/FindPrevious/Step*Flag0100Without0200).
 */
-uint8_t ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasNoUnitWithId(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyAssetRecordPrefix *candidateAsset;
+  ArmyAssetRecord *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (((candidateAsset = *registryCursor, candidateAsset == NULL ||
-          (recordId != candidateAsset->registryId)) ||
-         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
+  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
+         candidateAsset == NULL || recordId != candidateAsset->registryId ||
+         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -723,18 +709,18 @@ uint8_t ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
    flags dword (+0x14) set; 1 (CF set) otherwise. Predicate of the editor's object-placement id searches
    (FindNext/FindPrevious/Step*Flags0100And0200).
 */
-uint8_t ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasNoObjectWithId(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyAssetRecordPrefix *candidateAsset;
+  ArmyAssetRecord *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while (((candidateAsset = *registryCursor, candidateAsset == NULL ||
-          (recordId != candidateAsset->registryId)) ||
-         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
+  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
+         candidateAsset == NULL || recordId != candidateAsset->registryId ||
+         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -750,19 +736,19 @@ uint8_t ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId)
    0x0100 set and 0x0200 clear); 1 (CF set) otherwise. The id test of the editor's unit-placement list
    (NormalizeIdFor/FindNext/FindPrevious/Step*Flag0100Without0200).
 */
-uint8_t ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasNoPlaceableUnitWithId(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyAssetRecordPrefix *candidateAsset;
+  ArmyAssetRecord *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while ((((candidateAsset = *registryCursor, candidateAsset == NULL ||
-           (recordId != candidateAsset->registryId)) ||
-          ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
-         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0))) {
+  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
+         candidateAsset == NULL || recordId != candidateAsset->registryId ||
+         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0 ||
+         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) != 0) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
@@ -778,19 +764,19 @@ uint8_t ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
    with 0x0100 and 0x0200 set); 1 (CF set) otherwise. The id test of the editor's object-placement list
    (NormalizeIdFor/FindNext/FindPrevious/Step*Flags0100And0200).
 */
-uint8_t ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId)
+uint8_t ArmyAssetRegistry_HasNoPlaceableObjectWithId(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyAssetRecordPrefix *candidateAsset;
+  ArmyAssetRecord *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
   registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
-  while ((((candidateAsset = *registryCursor, candidateAsset == NULL ||
-           (recordId != candidateAsset->registryId)) ||
-          ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0)) ||
-         ((((ArmyAssetRuntimeSemanticView80 *)candidateAsset)->flags14 & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0))) {
+  while (candidateAsset = (ArmyAssetRecord *)*registryCursor,
+         candidateAsset == NULL || recordId != candidateAsset->registryId ||
+         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_PLACEABLE) == 0 ||
+         (candidateAsset->flags & ARMY_ASSET_FLAG_EDITOR_OBJECT) == 0) {
     registryCursor++;
     registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {

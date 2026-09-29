@@ -31,16 +31,56 @@
 #define ARMY_COMMAND_MODE_INTERRUPTED 0x4     /* a target command was cancelled; commandGeneration re-stamped */
 #define ARMY_COMMAND_MODE_AI_COMBAT_TARGET 0x8 /* target picked by the AI combat target selection: target-following
                                                   moves are clamped (ArmyRuntime_StartClampedMoveCommand) */
-/* Army model runtime classStateEC (+0xEC) bits set and tested by the class update callbacks
+/* Army model runtime stateFlags (+0xEC) bits set and tested by the class update callbacks
    (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, the production slots 11/13/22) */
+#define ARMY_MODEL_STATE_SWITCHED_OFF 0x1         /* powered down: no Energy demand, health decays to 3/4 */
 #define ARMY_MODEL_STATE_DISMANTLING 0x10         /* being recycled: health drains, Xenite (+0x184 >> 5) is refunded */
 #define ARMY_MODEL_STATE_DESTRUCTION_STARTED 0x20 /* destruction effect spawned; skips the attachment channel ticks */
 #define ARMY_MODEL_STATE_RESEARCHING 0x40         /* technology research in progress (+0x100 record) */
 #define ARMY_MODEL_STATE_RESEARCH_UNPAID 0x80     /* research queued, Xenite not yet paid */
 #define ARMY_MODEL_STATE_PRODUCING 0x100          /* a queued secondary army asset is being built */
+#define ARMY_MODEL_STATE_DISMANTLED 0x200         /* dismantling finished (toggled together with DISMANTLING) */
+#define ARMY_MODEL_STATE_NO_REGENERATION 0x400    /* health does not regenerate */
+#define ARMY_MODEL_STATE_RALLY_POINT_SET 0x800    /* class 13: the exit point (+0x78/+0x7C) was set by the player */
+/* SWITCHED_OFF | DESTROYED: the model does nothing this tick */
+#define ARMY_MODEL_STATE_INACTIVE_MASK (ARMY_MODEL_STATE_SWITCHED_OFF | ARMY_RUNTIME_FLAG_DESTROYED)
+/* INACTIVE_MASK | RESEARCHING | RESEARCH_UNPAID: a production class may start a new build */
+#define ARMY_MODEL_STATE_BUILD_BLOCKING_MASK \
+          (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)
+/* Aircraft (class 21) state at model runtime +0xB8 (ArmyRuntimeClassUpdateSlot21_DispatchByClassId) */
+#define ARMY_AIRCRAFT_STATE_NO_PAD 0       /* no home pad left: stays where it is */
+#define ARMY_AIRCRAFT_STATE_PARKED 1       /* parked on the home pad */
+#define ARMY_AIRCRAFT_STATE_LANDING 2      /* landing arc back onto the pad */
+#define ARMY_AIRCRAFT_STATE_TAKING_OFF 3   /* take-off arc, then off the map */
+#define ARMY_AIRCRAFT_STATE_APPROACH 4     /* off the map: lines up behind the attack point */
+#define ARMY_AIRCRAFT_STATE_ATTACK_RUN 5   /* flies over the attack point, dropping its effects */
+#define ARMY_AIRCRAFT_STATE_RETURNING 6    /* off the map again: lines up for the landing arc */
+/* Aircraft pad (class 22) hangar state at model runtime +0xB0
+   (ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode) */
+#define ARMY_PAD_HANGAR_IDLE 0
+#define ARMY_PAD_HANGAR_OPENING 1          /* hatch texture scrolls open */
+#define ARMY_PAD_HANGAR_LIFTING 2          /* platform (child 0) moves up */
+#define ARMY_PAD_HANGAR_READY 3            /* platform up: a parked aircraft takes off */
+#define ARMY_PAD_HANGAR_LOWERING 4
+#define ARMY_PAD_HANGAR_CLOSING 5
+#define ARMY_PAD_HANGAR_CLOSED 6           /* back to idle on the next update */
+/* Production state at model runtime +0xB8 of the unit factory (class 13) and production class 11 (0/1 only) */
+#define ARMY_FACTORY_STATE_IDLE 0
+#define ARMY_FACTORY_STATE_BUILDING 1
+#define ARMY_FACTORY_STATE_OPENING 2       /* door opens, then the new army is sent to the exit point */
+#define ARMY_FACTORY_STATE_WAITING_EXIT 3  /* until the new army no longer links back to the factory */
+#define ARMY_FACTORY_STATE_CLOSING 4
+/* primaryTextureOffsetV of a fully open door or hatch (texture V offset, 0 = closed) */
+#define ARMY_DOOR_TEXTURE_OPEN_V 0x80000
 /* Parking position of an aircraft that has flown off the map (ArmyRuntimeClassUpdateSlot21_DispatchByClassId) */
 #define ARMY_AIRCRAFT_OFF_MAP_X_Q12 (-0x100000)
 #define ARMY_AIRCRAFT_OFF_MAP_Y_Q12 0x100000
+/* ArmyAssetRecord.flags bits that select the production class able to build a queued secondary asset */
+#define ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD 0x8 /* class-22 aircraft pad */
+#define ARMY_ASSET_FLAG_BUILT_BY_CLASS11 0x10     /* production class 11 */
+/* impact damage of a model crushed by a structure placed over it or run over by a vehicle
+   (ArmyRuntime_ClassCommandHandlerGroupA, ArmyRuntime_HandleCollisionPartner) */
+#define ARMY_CRUSH_IMPACT_DAMAGE 0x100000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */
@@ -70,11 +110,11 @@ void ArmyRuntimeMaintenance_InitializeOccupancyAndStateTint
 
 /* 0x0051D280 */
 void ArmyRuntimeMaintenance_DispatchClassMethodDRecursive
-          (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
+          (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *ownerNode);
 
 /* 0x0051D2A0 */
 void ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
-          (WorldRuntimeContext *worldRuntime,WorldOwnerListNode100 *ownerNode);
+          (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *ownerNode);
 
 /* 0x0051D6B0 */
 ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath);
@@ -84,7 +124,7 @@ void ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy (WorldRuntimeContext
 
 /* 0x00531130 */
 void ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
-          (WorldRuntimeContext *armyContext,WorldOwnerListNode100 *node);
+          (WorldRuntimeContext *armyContext,WorldOwnerListNode *node);
 
 /* 0x0051C3B0 */
 void ArmyRuntime_SetNonzeroActionVector
@@ -105,7 +145,7 @@ ArmyRuntime_ResolveShotAimPoint
 
 /* 0x0051D170 */
 void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
-          (WorldRuntimeContext *worldRuntime,WorldOwnerListNode100 *node);
+          (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *node);
 
 /* 0x0051D310 */
 bool ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime);
@@ -135,7 +175,7 @@ void ArmyRuntimeClass_UpdatePositionedSoundsVariantA (WorldRuntimeContext *world
 void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00523E70 */
-void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProjectileView200 *modelRuntime, WorldOwnerListNode100 *candidateNode);
+void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProjectileView200 *modelRuntime, WorldOwnerListNode *candidateNode);
 
 /* 0x00523FC0 */
 void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedTargetProjectileView200 *modelRuntime);
@@ -160,7 +200,7 @@ bool ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
-          MdlSerializedNodeHeader38 *definitionNode,WorldRuntimeContext *worldRuntime);
+          MdlSerializedNodeHeader *definitionNode,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529B50 */
 void ArmyRuntime_UpdateActivationMetricAndPlayStartSound

@@ -26,6 +26,9 @@
 #define DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER 100
 #define DIRECTSOUND_VOICE_STAGE_LOCK 101
 #define DIRECTSOUND_VOICE_STAGE_FILL 102
+/* Memory_ZeroDwords size used for WaveFormat_PCM_22050_Stereo16: the packed 18-byte WAVEFORMATEX and the two
+   bytes behind it */
+#define DIRECTSOUND_WAVE_FORMAT_CLEAR_BYTES 0x14
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00583410 */

@@ -41,10 +41,9 @@ SpriteAssetHeader * SpriteAssetRegistry_FindById(SpriteAssetId registryId)
 {
   SpriteAssetHeader *spriteAssetCursor;
 
-  for (spriteAssetCursor = g_SpriteAssetRegistryHead;
-      (spriteAssetCursor != NULL &&
-      (registryId != (spriteAssetCursor->registryHeader).registryId));
-      spriteAssetCursor = (spriteAssetCursor->registryHeader).previousRegistryAsset) {
+  spriteAssetCursor = g_SpriteAssetRegistryHead;
+  while (spriteAssetCursor != NULL && registryId != spriteAssetCursor->registryHeader.registryId) {
+    spriteAssetCursor = spriteAssetCursor->registryHeader.previousRegistryAsset;
   }
   return spriteAssetCursor;
 }
@@ -61,60 +60,49 @@ SpriteRegisterResult SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *
 {
   AssetAllocationSizeBytes relocationBlocksRemaining;
   int pointerRecordsRemaining;
-  SprGroupRelocationHeader20 *groupRelocationCursor;
-  SprRelocationBlockHeader20 *relocationBlockCursor;
-  SprPointerRelocationRecord40 *pointerRelocationCursor;
+  SprGroupRelocationHeader *groupRelocationCursor;
+  SprRelocationBlockHeader *relocationBlockCursor;
+  SprPointerRelocationRecord *pointerRelocationCursor;
   SpriteRegisterResult successResult;
   SpriteRegisterResult errorResult;
   AssetRecordCount groupsRemaining;
   SpriteAssetHeader *previousRegistryHead;
 
   previousRegistryHead = g_SpriteAssetRegistryHead;
-  if (((asset->registryHeader).common.magic == ASSET_MAGIC_SPR) &&
-     ((asset->registryHeader).common.converterVersion == PCK_CONVERTER_SPR_00020007)) {
+  if ((asset->registryHeader.common.magic == ASSET_MAGIC_SPR) &&
+     (asset->registryHeader.common.converterVersion == PCK_CONVERTER_SPR_00020007)) {
     g_SpriteAssetRegistryHead = asset;
-    (asset->registryHeader).previousRegistryAsset = previousRegistryHead;
-    groupRelocationCursor = (SprGroupRelocationHeader20 *)(asset + 1);
-    if ((asset->registryHeader).groupCount != 0) {
-      groupsRemaining = (asset->registryHeader).groupCount;
-      do {
-        relocationBlocksRemaining = groupRelocationCursor->relocationBlockCount;
-        if (relocationBlocksRemaining != 0) {
-          relocationBlockCursor = (SprRelocationBlockHeader20 *)(groupRelocationCursor + 1);
-          do {
-            /* the pointer records follow the block header and its fixed 0x40-byte records */
-            pointerRelocationCursor =
-                 (SprPointerRelocationRecord40 *)
-                 (relocationBlockCursor + relocationBlockCursor->fixedRecordCount40 * 2 + 1);
-            for (pointerRecordsRemaining = relocationBlockCursor->pointerRelocationCount;
-                pointerRecordsRemaining != 0; pointerRecordsRemaining--)
-            {
-              pointerRelocationCursor->pointerOrSerializedOffset00 =
-                   (uint32_t)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
-                          + (pointerRelocationCursor->pointerOrSerializedOffset00 - 0x28));
-              pointerRelocationCursor->pointerOrSerializedOffset0C =
-                   (uint32_t)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
-                          + (pointerRelocationCursor->pointerOrSerializedOffset0C - 0x28));
-              pointerRelocationCursor->pointerOrSerializedOffset18 =
-                   (uint32_t)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
-                          + (pointerRelocationCursor->pointerOrSerializedOffset18 - 0x28));
-              pointerRelocationCursor++;
-            }
-            /* advance by the block's leading byte size (reserved10_1F lies at +0x10) */
-            relocationBlockCursor =
-                 (SprRelocationBlockHeader20 *)
-                 (relocationBlockCursor->reserved10_1F +
-                 (relocationBlockCursor->blockByteSize - 0x10));
-            relocationBlocksRemaining--;
-          } while (relocationBlocksRemaining != 0);
-        }
-        /* advance by the group's leading byte size (reserved08_1F lies at +0x08) */
-        groupRelocationCursor =
-             (SprGroupRelocationHeader20 *)
-             (groupRelocationCursor->reserved08_1F +
-             (groupRelocationCursor->nextGroupByteOffset - 8));
-        groupsRemaining--;
-      } while (groupsRemaining != 0);
+    asset->registryHeader.previousRegistryAsset = previousRegistryHead;
+    groupRelocationCursor = (SprGroupRelocationHeader *)(asset + 1);
+    for (groupsRemaining = asset->registryHeader.groupCount; groupsRemaining != 0; groupsRemaining--) {
+      relocationBlocksRemaining = groupRelocationCursor->relocationBlockCount;
+      if (relocationBlocksRemaining != 0) {
+        relocationBlockCursor = (SprRelocationBlockHeader *)(groupRelocationCursor + 1);
+        do {
+          /* the pointer records follow the block header and its fixed records (both 0x40 bytes) */
+          pointerRelocationCursor = (SprPointerRelocationRecord *)(relocationBlockCursor + 1) +
+                                    relocationBlockCursor->fixedRecordCount;
+          for (pointerRecordsRemaining = relocationBlockCursor->pointerRelocationCount;
+              pointerRecordsRemaining != 0; pointerRecordsRemaining--)
+          {
+            /* asset start + serialized offset */
+            pointerRelocationCursor->pointerOrSerializedOffset00 =
+                 (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset00);
+            pointerRelocationCursor->pointerOrSerializedOffset0C =
+                 (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset0C);
+            pointerRelocationCursor->pointerOrSerializedOffset18 =
+                 (uint32_t)((uint8_t *)asset + pointerRelocationCursor->pointerOrSerializedOffset18);
+            pointerRelocationCursor++;
+          }
+          /* advance by the block's leading byte size */
+          relocationBlockCursor = (SprRelocationBlockHeader *)
+               ((uint8_t *)relocationBlockCursor + relocationBlockCursor->blockByteSize);
+          relocationBlocksRemaining--;
+        } while (relocationBlocksRemaining != 0);
+      }
+      /* advance by the group's leading byte size */
+      groupRelocationCursor = (SprGroupRelocationHeader *)
+           ((uint8_t *)groupRelocationCursor + groupRelocationCursor->nextGroupByteOffset);
     }
     successResult.failed = false;
     successResult.assetOrError = asset;
@@ -139,31 +127,31 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
   int blocksRemaining;
   int recordsRemaining;
   SpriteAssetHeader *sourceCursor;
-  int *blockCursor; /* SprRelocationBlockHeader20 */
-  int *groupCursor; /* SprGroupRelocationHeader20 */
+  SprRelocationBlockHeader *blockCursor;
+  SprGroupRelocationHeader *groupCursor;
   AssetMagic *destinationCursor;
   int *recordCursor; /* 0x40-byte records (0x10 dwords) behind the block header */
   int groupsRemaining;
-  
+
   sourceCursor = relocatedSourceImage;
   destinationCursor = serializedDestination;
   /* REP MOVSD of the whole asset; each step advances sourceCursor by one dword */
-  for (copyDwordsRemaining = (relocatedSourceImage->registryHeader).common.allocationSizeBytes >> 2; copyDwordsRemaining != 0;
-      copyDwordsRemaining--) {
-    *destinationCursor = (sourceCursor->registryHeader).common.magic;
-    sourceCursor = (SpriteAssetHeader *)&(sourceCursor->registryHeader).common.allocationSizeBytes;
+  for (copyDwordsRemaining = relocatedSourceImage->registryHeader.common.allocationSizeBytes >> 2;
+       copyDwordsRemaining != 0; copyDwordsRemaining--) {
+    *destinationCursor = sourceCursor->registryHeader.common.magic;
+    sourceCursor = (SpriteAssetHeader *)&sourceCursor->registryHeader.common.allocationSizeBytes;
     destinationCursor++;
   }
   /* the groups follow the SpriteAssetHeader */
-  groupCursor = (int *)((SpriteAssetHeader *)serializedDestination + 1);
+  groupCursor = (SprGroupRelocationHeader *)((SpriteAssetHeader *)serializedDestination + 1);
   groupsRemaining = ((SpriteAssetHeader *)serializedDestination)->registryHeader.groupCount;
   /* unlike the relocation, every count is assumed to be non-zero (a zero count would wrap around) */
   do {
-    blocksRemaining = groupCursor[1]; /* relocationBlockCount */
-    blockCursor = groupCursor + 8;
+    blocksRemaining = groupCursor->relocationBlockCount;
+    blockCursor = (SprRelocationBlockHeader *)(groupCursor + 1);
     do {
-      recordsRemaining = blockCursor[2]; /* fixedRecordCount40 */
-      recordCursor = blockCursor + 8;
+      recordsRemaining = blockCursor->fixedRecordCount;
+      recordCursor = (int *)(blockCursor + 1);
       do {
         recordCursor[0xc] = 0;
         recordCursor[0xd] = 0;
@@ -173,7 +161,7 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
         recordCursor = recordCursor + 0x10;
         recordsRemaining--;
       } while (recordsRemaining != 0);
-      recordsRemaining = blockCursor[3]; /* pointerRelocationCount */
+      recordsRemaining = blockCursor->pointerRelocationCount;
       do {
         /* pointerOrSerializedOffset00/0C/18 */
         *recordCursor = *recordCursor - (int)relocatedSourceImage;
@@ -182,10 +170,10 @@ void SpriteAsset_CopyAndDerelocateImage(void *serializedDestination,SpriteAssetH
         recordCursor = recordCursor + 0x10;
         recordsRemaining--;
       } while (recordsRemaining != 0);
-      blockCursor = (int *)((int)blockCursor + *blockCursor); /* blockByteSize */
+      blockCursor = (SprRelocationBlockHeader *)((uint8_t *)blockCursor + blockCursor->blockByteSize);
       blocksRemaining--;
     } while (blocksRemaining != 0);
-    groupCursor = (int *)((int)groupCursor + *groupCursor); /* nextGroupByteOffset */
+    groupCursor = (SprGroupRelocationHeader *)((uint8_t *)groupCursor + groupCursor->nextGroupByteOffset);
     groupsRemaining--;
   } while (groupsRemaining != 0);
   return;

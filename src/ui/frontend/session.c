@@ -38,13 +38,13 @@ void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
 void FrontendSessionAction_CloseMovieAndReturnToMainPage(UiNodeBase *source)
 
 {
-  int parentNodeAddress;
+  UiNodeBase *parentNode;
 
   /* climb to the frontend root */
-  parentNodeAddress = (int)source->parent;
-  while ((UiNodeBase *)parentNodeAddress != UI_NODE_NONE) {
+  parentNode = source->parent;
+  while (parentNode != UI_NODE_NONE) {
     source = source->parent;
-    parentNodeAddress = (int)source->parent;
+    parentNode = source->parent;
   }
   Movie_Close();
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(source,frontendViewModeStack));
@@ -88,7 +88,7 @@ void FrontendSessionAction_ApplySpeedOrToggleReady(void *source)
   /* the client branch repeats the network test although a client is always networked */
   else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
            SESSION_NETWORK_ROLE_LOCAL) {
-    FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08(g_LocalPlayerRuntimeId,0,0,0);
+    FrontendPlayerRuntime_MarkBriefingReadyAndUpdateBeginButton(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_BRIEFING_READY,0,0,0);
@@ -149,12 +149,12 @@ void FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *sour
   recordsRemaining = 8;
   playerRecordCursor = g_FrontendPlayerRuntimeBlocks;
   do {
-    (playerRecordCursor->factionAssignment).roleStateFlags = 0;
-    playerRecordCursor->runtimeState64 = 0;
-    playerRecordCursor = playerRecordCursor + 1;
-    recordsRemaining = recordsRemaining - 1;
+    playerRecordCursor->factionAssignment.roleStateFlags = 0;
+    playerRecordCursor->colourCycleFlags = 0;
+    playerRecordCursor++;
+    recordsRemaining--;
   } while (recordsRemaining != 0);
-  g_FrontendHostSnapshotTransferCountdown = 4;
+  g_FrontendHostSnapshotTransferCountdown = FRONTEND_SNAPSHOT_REQUEST_RETRY_TICKS;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,1);
@@ -223,16 +223,16 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
             (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   UiTransferMailbox_RandomizeSequenceToken();
-  UiTransfer_SendPacketType10000Value2931();
+  UiTransfer_SendDiscoveryProbe();
   firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_LocalPlayerRuntimeId = 0;
   localPlayerRecord = g_FrontendPlayerRuntimeBlocks;
-  (localPlayerRecord->playerName).textUtf16[0] = 0;
-  (localPlayerRecord->playerName).textUtf16[1] = 0;
+  localPlayerRecord->playerName.textUtf16[0] = 0;
+  localPlayerRecord->playerName.textUtf16[1] = 0;
   firstPlayerRecord->playerRuntimeId = 0;
-  (firstPlayerRecord->factionAssignment).roleStateFlags = 0;
-  firstPlayerRecord->runtimeState64 = 0;
+  firstPlayerRecord->factionAssignment.roleStateFlags = 0;
+  firstPlayerRecord->colourCycleFlags = 0;
   firstPlayerRecord->snapshotTransferFlags = 0;
   return;
 }
@@ -244,7 +244,7 @@ void FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
    whose expiry ran out by compacting the 0xB0-byte records in place, rebuilds the row pointers,
    keeps the selection on the same session (row 0 when the selected one went away) and refreshes the list.
 */
-void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView5650 *frontendRuntime)
+void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRuntimeView *frontendRuntime)
 
 {
   UiTransferPayloadByteCount *expiryTicks;
@@ -260,26 +260,26 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
   uint32_t *sourceDwordCursor;
   uint32_t *destinationDwordCursor;
   
-  rowSlotCursor = (frontendRuntime->sessionDiscoveryList).rowSlots;
+  rowSlotCursor = frontendRuntime->sessionDiscoveryList.rowSlots;
   sourceRecord = g_FrontendSessionDiscoveryRecords;
   destinationRecord = g_FrontendSessionDiscoveryRecords;
   rowPointerCursor = g_FrontendSessionListRows;
   /* the record field typed payloadByteCount holds the session's expiry ticks */
-  for (rowsRemaining = (frontendRuntime->sessionDiscoveryList).rowCount; rowsRemaining != 0; rowsRemaining = rowsRemaining - 1) {
-    expiryTicks = &(sourceRecord->advertisement).payloadByteCount;
+  for (rowsRemaining = frontendRuntime->sessionDiscoveryList.rowCount; rowsRemaining != 0; rowsRemaining--) {
+    expiryTicks = &sourceRecord->advertisement.payloadByteCount;
     *expiryTicks = *expiryTicks - 1;
     destinationDwordCursor = (uint32_t *)destinationRecord;
     if (*expiryTicks == 0) {
       sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
-      rowCountField = &(frontendRuntime->sessionDiscoveryList).rowCount;
+      rowCountField = &frontendRuntime->sessionDiscoveryList.rowCount;
       *rowCountField = *rowCountField - 1;
-      currentSelectedSlot = (frontendRuntime->sessionDiscoveryList).selectedRowSlot;
+      currentSelectedSlot = frontendRuntime->sessionDiscoveryList.selectedRowSlot;
       if (rowSlotCursor == currentSelectedSlot) {
-        (frontendRuntime->sessionDiscoveryList).selectedRowSlot =
-             (frontendRuntime->sessionDiscoveryList).rowSlots;
+        frontendRuntime->sessionDiscoveryList.selectedRowSlot =
+             frontendRuntime->sessionDiscoveryList.rowSlots;
       }
       else if (rowSlotCursor <= currentSelectedSlot) {
-        selectedSlotField = &(frontendRuntime->sessionDiscoveryList).selectedRowSlot;
+        selectedSlotField = &frontendRuntime->sessionDiscoveryList.selectedRowSlot;
         *selectedSlotField = *selectedSlotField - 1;
       }
     }
@@ -287,19 +287,19 @@ void FrontendSessionList_DecrementExpiryAndCompactRows(FrontendNetworkListsRunti
       sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
       *rowPointerCursor = destinationRecord;
       destinationDwordCursor = (uint32_t *)(destinationRecord + 1);
-      rowPointerCursor = rowPointerCursor + 1;
+      rowPointerCursor++;
       if (destinationDwordCursor != sourceDwordCursor) {
         sourceDwordCursor = (uint32_t *)sourceRecord;
         destinationDwordCursor = (uint32_t *)destinationRecord;
         for (dwordsRemaining = sizeof(FrontendSessionDiscoveryRecordB0) / sizeof(uint32_t); dwordsRemaining != 0;
-            dwordsRemaining = dwordsRemaining - 1) {
+            dwordsRemaining--) {
           *destinationDwordCursor = *sourceDwordCursor;
-          sourceDwordCursor = sourceDwordCursor + 1;
-          destinationDwordCursor = destinationDwordCursor + 1;
+          sourceDwordCursor++;
+          destinationDwordCursor++;
         }
       }
     }
-    rowSlotCursor = rowSlotCursor + 1;
+    rowSlotCursor++;
     sourceRecord = (FrontendSessionDiscoveryRecordB0 *)sourceDwordCursor;
     destinationRecord = (FrontendSessionDiscoveryRecordB0 *)destinationDwordCursor;
   }
@@ -328,8 +328,7 @@ void FrontendSession_PeriodicTick(void)
     return;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    if (g_InGameNetworkTickCountdown != 0)
-    goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
+    if (g_InGameNetworkTickCountdown != 0) goto unlock;
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
@@ -337,7 +336,7 @@ void FrontendSession_PeriodicTick(void)
       }
       else if ((g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2 ==
                g_SessionNetworkTickInterval) {
-        while( true ) {
+        for (;;) {
           ringRecord = UiRuntimeRecordRing_DiscardOldest();
           if (ringRecord.empty) break;
           FrontendTransfer_HostHandleCommandSubmitOrWaitAck
@@ -348,7 +347,7 @@ void FrontendSession_PeriodicTick(void)
         if (callResult) {
           /* not every peer has synced yet: retry on the next timer tick */
           g_InGameNetworkTickCountdown = 1;
-          goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
+          goto unlock;
         }
       }
     }
@@ -357,7 +356,7 @@ void FrontendSession_PeriodicTick(void)
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
       /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
-      if (!callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
+      if (!callResult) goto unlock;
       do {
         ringRecord = UiRuntimeRecordRing_DiscardOldest();
         if (ringRecord.empty) break;
@@ -366,10 +365,9 @@ void FrontendSession_PeriodicTick(void)
                            (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
-      if (callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
+      if (callResult) goto unlock;
     }
-    else if (g_InGameNetworkTickCountdown != 0)
-    goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
+    else if (g_InGameNetworkTickCountdown != 0) goto unlock;
     g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
   }
   g_SessionNetworkTickCounter++;
@@ -377,7 +375,7 @@ void FrontendSession_PeriodicTick(void)
      (inGameRoot->activeEndMovieRuntime022C != NULL)) {
     g_EndMoviePendingTicks++;
   }
-FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
+unlock:
   g_SpinLockRelease(&g_InGameStateTickSpinLock);
   return;
 }
@@ -392,7 +390,7 @@ FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
    players start at block 1, and the 0x10007 packets go out in reverse drop order (the ids are pushed on the
    stack while scanning and popped one per packet).
 */
-void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
+void FrontendHostSession_TickPeerTimeoutsAndDropPlayers(void)
 
 {
   FrontendPlayerRuntimeBlockCount recipientsRemaining;
@@ -428,9 +426,9 @@ void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
       }
       if (expired) {
         /* drop: only the source cursors advance */
-        g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
+        g_FrontendPlayerRuntimeBlockCount--;
         removedPlayerIds[removedCount] = sourcePlayer->playerRuntimeId;
-        removedCount = removedCount + 1;
+        removedCount++;
       }
       else {
         /* keep: move the player block and its command record down over the gap (REP MOVSD) */
@@ -438,11 +436,11 @@ void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
           *destinationPlayer = *sourcePlayer;
           *destinationCommandRecord = *sourceCommandRecord;
         }
-        destinationPlayer = destinationPlayer + 1;
-        destinationCommandRecord = destinationCommandRecord + 1;
+        destinationPlayer++;
+        destinationCommandRecord++;
       }
-      sourcePlayer = sourcePlayer + 1;
-      sourceCommandRecord = sourceCommandRecord + 1;
+      sourcePlayer++;
+      sourceCommandRecord++;
       playersRemaining--;
     } while (playersRemaining != 0);
   }
@@ -456,7 +454,7 @@ void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
       recipientsRemaining = g_FrontendPlayerRuntimeBlockCount;
       while (recipientsRemaining = recipientsRemaining - 1, recipientsRemaining != 0) {
         UiTransfer_StagePacketAndSend(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
-        endpoint = endpoint + sizeof(FrontendPlayerRuntimeRecord) / sizeof(UiTransferEndpointDescriptor);
+        endpoint = endpoint + FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE;
       }
       removedCount--;
     } while (removedCount != 0);
@@ -472,7 +470,7 @@ void FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
    pending ready vote is submitted if some player has not voted yet, and the local player becomes the only
    player, with id 0.
 */
-void FrontendHostSession_TickShutdownOrReadyConsensus(void)
+void FrontendClientSession_TickHostTimeout(void)
 
 {
   PlayerRuntimeId previousLocalPlayerId;
@@ -495,7 +493,7 @@ void FrontendHostSession_TickShutdownOrReadyConsensus(void)
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     do {
-      if ((playerRecord->factionAssignment).readyOrWaitState == 0) {
+      if (playerRecord->factionAssignment.readyOrWaitState == 0) {
         /* always true here, the role was cleared above */
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -508,12 +506,12 @@ void FrontendHostSession_TickShutdownOrReadyConsensus(void)
         g_FrontendPlayerRuntimeBlockCount = 1;
         /* XCHG: the timer thread reads the id (InGameCommandQueue_AppendLocalPlayerCommand) */
         previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
-        (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = 0;
+        inGameRoot->worldRuntime0A30.selection.activePlayerRuntimeId = 0;
         g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
-        (playerRecord->playerName).textUtf16[0] = 0;
-        (playerRecord->playerName).textUtf16[1] = 0;
+        playerRecord->playerName.textUtf16[0] = 0;
+        playerRecord->playerName.textUtf16[1] = 0;
         playerRecord->playerRuntimeId = 0;
-        (playerRecord->factionAssignment).roleStateFlags = 0;
+        playerRecord->factionAssignment.roleStateFlags = 0;
         return;
       }
       playerRecord++;
@@ -521,12 +519,12 @@ void FrontendHostSession_TickShutdownOrReadyConsensus(void)
     } while (playersRemaining != 0);
     g_FrontendPlayerRuntimeBlockCount = 1;
     previousLocalPlayerId = THANDOR_ATOMIC_EXCHANGE(&g_LocalPlayerRuntimeId,0);
-    (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = 0;
+    inGameRoot->worldRuntime0A30.selection.activePlayerRuntimeId = 0;
     g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerRuntimeBlockPointers[previousLocalPlayerId];
-    (firstPlayerRecord->playerName).textUtf16[0] = 0;
-    (firstPlayerRecord->playerName).textUtf16[1] = 0;
+    firstPlayerRecord->playerName.textUtf16[0] = 0;
+    firstPlayerRecord->playerName.textUtf16[1] = 0;
     firstPlayerRecord->playerRuntimeId = 0;
-    (firstPlayerRecord->factionAssignment).roleStateFlags = 0;
+    firstPlayerRecord->factionAssignment.roleStateFlags = 0;
   }
   return;
 }

@@ -24,7 +24,7 @@ ResourceLoadResult Resource_Load(uint16_t *path);
 void Resource_Release(void *resourceBuffer);
 
 /* 0x0050E890 */
-ResourceRegistrationImagePair ResourceRegistration_SelectDomainPair (ResourceRegistrationRuntimeImageSerializedScalarViewDC *runtimeImage);
+ResourceRegistrationImagePair ResourceRegistration_SelectDomainPair (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
 
 /* 0x00513020 */
 ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void);

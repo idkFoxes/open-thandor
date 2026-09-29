@@ -21,6 +21,8 @@
 /* GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices marks an entry unused by setting the low three
    bits of its blue, green and red bytes (the colours only use the upper five bits of each channel). */
 #define GRAPHICS_PALETTE_ENTRY_UNUSED_MARK 0x70707
+/* Entries of g_GraphicsPaletteBankSlots (used-colour count per bank); the optimiser handles at most this many banks */
+#define GRAPHICS_PALETTE_BANK_SLOT_CAPACITY 0x200
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004AE520 */
@@ -55,20 +57,20 @@ PaletteTextureSourceResult GraphicsPaletteTextureSource_CombineAssetsAndRebaseOf
 /* 0x004AE3F0 */
 void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
           (GraphicsPaletteIndex sourcePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
-          GraphicsTextureSourceHeaderViewBC *textureSource);
+          GraphicsTextureSourceHeaderView *textureSource);
 
 /* 0x004AE2E0 */
 void GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
           (uint32_t oldColorIndex,uint32_t newColorIndex,GraphicsPaletteIndex paletteBank,
-          GraphicsTextureSourceHeaderViewBC *textureSource);
+          GraphicsTextureSourceHeaderView *textureSource);
 
 /* 0x004AE370 */
 uint32_t GraphicsPaletteTextureSource_CountCombinedUsedColors
           (GraphicsPaletteIndex candidatePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
-          GraphicsTextureSourceHeaderViewBC *textureSource);
+          GraphicsTextureSourceHeaderView *textureSource);
 
 /* 0x004AE230 */
 void GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
-          (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderViewBC *textureSource);
+          (GraphicsPaletteIndex paletteIndex,GraphicsTextureSourceHeaderView *textureSource);
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_PALETTE_H */

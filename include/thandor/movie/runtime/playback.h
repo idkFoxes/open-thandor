@@ -35,6 +35,9 @@
 #define MOVIE_TOKEN_SKIP_SHORT 0x19 /* 1 byte: skip 1..8 blocks */
 #define MOVIE_TOKEN_SKIP_MEDIUM 0x1A /* 2 bytes: skip 9..0x808 blocks */
 #define MOVIE_TOKEN_SKIP_LONG 0x1B /* 4 bytes: skip 0x809 or more blocks */
+/* Largest run of kept blocks the short and the medium skip token encode */
+#define MOVIE_SKIP_SHORT_MAX_BLOCKS 8
+#define MOVIE_SKIP_MEDIUM_MAX_BLOCKS 0x808
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004A8040 */

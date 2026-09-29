@@ -232,7 +232,8 @@ static __inline uint16_t Raster_Pack16(const int channel[RASTER_LANE_COUNT])
 /* Packs four channel bytes into a 32-bit pixel (blue in the low byte, PACKUSWB + MOVD). */
 static __inline uint32_t Raster_Pack32(const int channel[RASTER_LANE_COUNT])
 {
-    return (uint32_t)channel[0] | ((uint32_t)channel[1] << 8) | ((uint32_t)channel[2] << 16) | ((uint32_t)channel[3] << 24);
+    return (uint32_t)channel[0] | ((uint32_t)channel[1] << 8) | ((uint32_t)channel[2] << 16) |
+           ((uint32_t)channel[3] << 24);
 }
 
 /* Lanes >> shift, saturated to bytes (PSRAW + PACKUSWB). */
@@ -525,7 +526,8 @@ static __inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, 
     texture->uMask = ((1u << (entry->widthLog2 & 31)) - 1) << 12;
     texture->vMask = ((1u << (entry->heightLog2 & 31)) - 1) << 12;
     texture->texels = asset + source->dataOffset;
-    texture->palette = paletteIndex < 0 ? NULL : asset + 0x200 + (uint32_t)paletteIndex * 0x800;
+    texture->palette =
+        paletteIndex < 0 ? NULL : asset + GFX_ASSET_HEADER_SIZE + (uint32_t)paletteIndex * GFX_PALETTE_BANK_SIZE;
 }
 
 /* The ARGB texel at (u, v), both wrapped to the texture (nearest texel, no filtering). */
@@ -786,7 +788,7 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
     }
     else if ((uint32_t)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
         region->texelBytes = 1;
-        region->palette = asset + 0x200 + (uint32_t)entry->paletteIndex * 0x800;
+        region->palette = asset + GFX_ASSET_HEADER_SIZE + (uint32_t)entry->paletteIndex * GFX_PALETTE_BANK_SIZE;
     }
     else {
         return 0;
@@ -928,7 +930,7 @@ static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAss
     }
     else if ((uint32_t)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
         image->texelBytes = 1;
-        image->palette = asset + 0x200 + (uint32_t)entry->paletteIndex * 0x800;
+        image->palette = asset + GFX_ASSET_HEADER_SIZE + (uint32_t)entry->paletteIndex * GFX_PALETTE_BANK_SIZE;
     }
     else {
         return 0;

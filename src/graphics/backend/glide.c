@@ -32,6 +32,27 @@ static __inline uint64_t Glide_PackWordLanes(uint32_t lane3,uint32_t lane2,uint3
          (uint64_t)(uint16_t)lane0;
 }
 
+/* PADDW of two lane sets (each lane truncated to 16 bits), packed back into one qword. */
+#define GLIDE_ADD_WORD_LANES(lanesA,lanesB) \
+  Glide_PackWordLanes((short)((lanesA) >> 0x30) + (short)((lanesB) >> 0x30), \
+                      (short)((lanesA) >> 0x20) + (short)((lanesB) >> 0x20), \
+                      (short)((lanesA) >> 0x10) + (short)((lanesB) >> 0x10), \
+                      (short)(lanesA) + (short)(lanesB))
+
+/* PMULLW of a native pixel broadcast into all lanes (and masked with GLIDE_PACKED_PIXEL_MASKS) by the channel
+   unpack scales, then PSRLW 2: the destination colour as word lanes (lane3 zero, lane0 blue). */
+#define GLIDE_UNPACK_NATIVE_LANES(lanes) \
+  Glide_PackWordLanes((uint16_t)((short)((lanes) >> 0x30) * g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2, \
+                      (uint16_t)((short)((lanes) >> 0x20) * g_SoftwarePixelMmxConstants.unpackScales.red) >> 2, \
+                      (uint16_t)((short)((lanes) >> 0x10) * g_SoftwarePixelMmxConstants.unpackScales.green) >> 2, \
+                      (uint16_t)((short)(lanes) * g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2)
+
+/* The MMX mask constants as qwords. */
+#define GLIDE_QUANTIZE_MASKS \
+  THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12)
+#define GLIDE_PACKED_PIXEL_MASKS \
+  THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks)
+
 /* PUNPCKLBW mm,mm + PSRLW shift of an ARGB8888 pixel: one byte-duplicated, shifted word lane per channel
    (lane3 = alpha, lane0 = blue). */
 static __inline uint64_t Glide_UnpackArgbToWordLanes(uint32_t argb,int shift)
@@ -39,6 +60,32 @@ static __inline uint64_t Glide_UnpackArgbToWordLanes(uint32_t argb,int shift)
   return Glide_PackWordLanes(GLIDE_DUP_BYTE(argb >> 0x18) >> shift,GLIDE_DUP_BYTE(argb >> 0x10) >> shift,
                              GLIDE_DUP_BYTE(argb >> 8) >> shift,GLIDE_DUP_BYTE(argb) >> shift);
 }
+
+/* 'gfx' texture source access (layout: GFX_* in graphics/resources/texture.h). The original addresses the
+   asset through buildMetadata.assetRelativeAddressAnchor28, GFX_ASSET_ANCHOR28_OFFSET bytes into it; these
+   macros keep that addressing and name the field instead of the biased offset. */
+/* Asset-relative offset of the subresource record of subresourceIndex. */
+#define GLIDE_RECORD_OFFSET(asset,subresourceIndex) \
+  ((subresourceIndex) * GFX_SUBRESOURCE_RECORD_SIZE + ((asset)->tableDescriptor).subresourceTableOffset)
+/* Field GFX_SUBRESOURCE_<field> of the subresource record at asset-relative recordOffset. */
+#define GLIDE_RECORD_INT(asset,recordOffset,field) \
+  (*(int *)((asset)->common.buildMetadata.assetRelativeAddressAnchor28 + (recordOffset) + \
+            (GFX_SUBRESOURCE_##field - GFX_ASSET_ANCHOR28_OFFSET)))
+#define GLIDE_RECORD_UINT(asset,recordOffset,field) \
+  (*(uint32_t *)((asset)->common.buildMetadata.assetRelativeAddressAnchor28 + (recordOffset) + \
+                 (GFX_SUBRESOURCE_##field - GFX_ASSET_ANCHOR28_OFFSET)))
+/* Address of the byte at an asset-relative offset (a record's GFX_SUBRESOURCE_PIXEL_OFFSET). */
+#define GLIDE_ASSET_BYTES(asset,offset) \
+  ((asset)->common.buildMetadata.assetRelativeAddressAnchor28 + (offset) - GFX_ASSET_ANCHOR28_OFFSET)
+/* Palette entry `index` of palette bank `bank`: 8 bytes at asset + GFX_ASSET_HEADER_SIZE +
+   bank * GFX_PALETTE_BANK_SIZE + index * 8 (asset[bank * 4 + 1], the asset struct being 0x200 bytes), holding
+   the ARGB8888 colour and then the native framebuffer pixel. */
+#define GLIDE_PALETTE_ARGB(asset,bank,index) \
+  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 + (index) * 8 - \
+                 GFX_ASSET_ANCHOR28_OFFSET))
+#define GLIDE_PALETTE_NATIVE(asset,bank,index) \
+  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 + (index) * 8 + \
+                 (4 - GFX_ASSET_ANCHOR28_OFFSET)))
 
 /* Address: 0x005801B0.
    Glide backend of texture-set creation: gives every subresource of the set's source asset a fresh
@@ -150,14 +197,14 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
   uint32_t refreshRateHz;
   uint32_t resolutionKeyOrBestHz; /* first height:width as one dword, then the best refresh rate found */
   uint32_t sstIndexOrSizeOrCount; /* board index, then the resolution list size, then the TMU loop counter */
-  void *resolutionList;
+  GrResolution *resolutionList;
   GraphicsTextureMemoryAddress tmuAddress;
   uint32_t remainingResolutions;
   int slotsRemaining;
   GraphicsTextureResidentTmuIndex tmuIndex;
   uint32_t selectedRefreshRateCode;
   GlideImportBinding *binding;
-  void *resolutionCursor;
+  GrResolution *resolutionCursor;
   GraphicsTextureResource **textureSlotCursor;
   DllLoadResult glideDll;
   DynApiResolveResult resolveResult;
@@ -178,14 +225,14 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
       ((resolutionQueryCode = GR_RESOLUTION_1024x768, resolutionKeyOrBestHz == ((768 << 16) | 1024) ||
        (resolutionQueryCode = GR_RESOLUTION_1280x1024, resolutionKeyOrBestHz == ((1024 << 16) | 1280))))) ||
      (resolutionQueryCode = GR_RESOLUTION_1600x1200, resolutionKeyOrBestHz == ((1200 << 16) | 1600))) {
-    glideDll = DynDLL_Load(dynapi_5);
+    glideDll = DynDLL_Load(sz_GLIDE3X);
     if (!glideDll.failed) {
       g_GlideRuntimeActiveCount++;
       binding = g_GlideImportBindings;
       do {
         resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
         if (resolveResult.failed) {
-          DynDLL_Unload(dynapi_5);
+          DynDLL_Unload(sz_GLIDE3X);
           g_GlideRuntimeActiveCount = 0;
           return true;
         }
@@ -200,20 +247,21 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
       sstIndexOrSizeOrCount = g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,NULL);
       if (0xf < (int)sstIndexOrSizeOrCount) {
         resolutionAlloc = g_MemoryApi.alloc(sstIndexOrSizeOrCount);
-        resolutionList = (void *)resolutionAlloc.payloadOrError;
+        resolutionList = (GrResolution *)resolutionAlloc.payloadOrError;
         if (!resolutionAlloc.failed) {
-          remainingResolutions = sstIndexOrSizeOrCount >> 4; /* 16-byte GrResolution entries */
+          remainingResolutions = sstIndexOrSizeOrCount / sizeof(GrResolution);
           g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,resolutionList);
           resolutionKeyOrBestHz = 0;
           resolutionCursor = resolutionList;
           do {
-            /* GrResolution.refresh; codes beyond GR_REFRESH_120Hz (8) are ignored */
-            refreshRateCode = *(uint32_t *)((int)resolutionCursor + 4);
-            if ((refreshRateCode < 9) && (refreshRateHz = *(uint32_t *)(refreshRateCode * 4 + THANDOR_ADDR(g_GlideRefreshRatesHz,0)), resolutionKeyOrBestHz <= refreshRateHz)) {
+            /* codes beyond GR_REFRESH_120Hz (8) are ignored */
+            refreshRateCode = resolutionCursor->refresh;
+            if ((refreshRateCode < 9) && (refreshRateHz = g_GlideRefreshRatesHz[refreshRateCode],
+                                          resolutionKeyOrBestHz <= refreshRateHz)) {
               resolutionKeyOrBestHz = refreshRateHz;
               selectedRefreshRateCode = refreshRateCode;
             }
-            resolutionCursor = (void *)((int)resolutionCursor + 0x10);
+            resolutionCursor++;
             remainingResolutions = remainingResolutions - 1;
           } while (remainingResolutions != 0);
           g_MemoryApi.free(resolutionList);
@@ -221,7 +269,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
           g_GlideWindowContextHandle =
                g_GrSstWinOpen((uint32_t)g_MainWindow,resolutionQueryCode,selectedRefreshRateCode,
                               GR_COLORFORMAT_ARGB,GR_ORIGIN_UPPER_LEFT,2,1);
-          tmuCountOutput = &g_GraphicsAdapters[adapterIndex].reserved74;
+          tmuCountOutput = &g_GraphicsAdapters[adapterIndex].glideTmuCount;
           if (g_GlideWindowContextHandle != 0) {
             g_GrGet(GR_NUM_TMU,sizeof *tmuCountOutput,tmuCountOutput);
             g_GlideTmuCount = *tmuCountOutput;
@@ -329,7 +377,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
         }
       }
       g_GrGlideShutdown(); /* grGlideShutdown(void); Ghidra passed a stale register */
-      DynDLL_Unload(dynapi_5);
+      DynDLL_Unload(sz_GLIDE3X);
       g_GlideRuntimeActiveCount = 0;
     }
   }
@@ -378,7 +426,6 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
           GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
   GraphicsTextureSetEntry *packetTextureEntry;
   uint32_t textureHeightLog2;
   GraphicsTextureResource *texture;
@@ -477,19 +524,13 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
           maxDimensionLog2 = textureHeightLog2;
         }
         coordinateShift = (char)maxDimensionLog2 - (char)widthLog2OrFlags;
-        textureCoordinate = &currentPacket->vertices[0].textureU;
-        *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
-        textureCoordinate = &currentPacket->vertices[1].textureU;
-        *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
-        textureCoordinate = &currentPacket->vertices[2].textureU;
-        *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+        currentPacket->vertices[0].textureU = currentPacket->vertices[0].textureU >> (coordinateShift & 0x1f);
+        currentPacket->vertices[1].textureU = currentPacket->vertices[1].textureU >> (coordinateShift & 0x1f);
+        currentPacket->vertices[2].textureU = currentPacket->vertices[2].textureU >> (coordinateShift & 0x1f);
         coordinateShift = (char)maxDimensionLog2 - (char)textureHeightLog2;
-        textureCoordinate = &currentPacket->vertices[0].textureV;
-        *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
-        textureCoordinate = &currentPacket->vertices[1].textureV;
-        *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
-        textureCoordinate = &currentPacket->vertices[2].textureV;
-        *textureCoordinate = *textureCoordinate >> (coordinateShift & 0x1f);
+        currentPacket->vertices[0].textureV = currentPacket->vertices[0].textureV >> (coordinateShift & 0x1f);
+        currentPacket->vertices[1].textureV = currentPacket->vertices[1].textureV >> (coordinateShift & 0x1f);
+        currentPacket->vertices[2].textureV = currentPacket->vertices[2].textureV >> (coordinateShift & 0x1f);
       }
       g_GlideVertex0ReciprocalDepth = Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[0].depth));
       g_GlideVertex1ReciprocalDepth = Glide_FloatBits((float)(1.0 / (double)currentPacket->vertices[1].depth));
@@ -595,7 +636,8 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
         g_GrAlphaBlendFunction(GR_BLEND_SRC_ALPHA,GR_BLEND_ONE_MINUS_SRC_ALPHA,GR_BLEND_ONE,GR_BLEND_ZERO);
         g_GlideBlendModeState = 0;
       }
-      if ((widthLog2OrFlags == GRAPHICS_PRIMITIVE_BLEND_ADDITIVE) || (widthLog2OrFlags == GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT)) {
+      if ((widthLog2OrFlags == GRAPHICS_PRIMITIVE_BLEND_ADDITIVE) ||
+          (widthLog2OrFlags == GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT)) {
         if (g_GlideDepthWriteEnabledState != 0) {
           g_GrDepthMask(FXFALSE);
           g_GlideDepthWriteEnabledState = 0;
@@ -620,7 +662,8 @@ void Glide3_DrawPrimitiveQueue(int32_t clipMaxY,int32_t clipMaxX,int32_t clipMin
    releases its Glide data and frees it, then frees the set metadata and returns the source asset it owned
    (NULL for a NULL set). The generic wrapper passes the set in EBX and on the stack; the EBX copy is used.
 */
-GraphicsTextureSourceAsset * Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,GraphicsTextureSet *set)
+GraphicsTextureSourceAsset * Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,
+          GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *texture;
@@ -717,11 +760,11 @@ StatusResult Glide3_InitAndEnumerate(void)
   uint8_t *boardName;
   uint8_t *driverDescription;
   uint32_t querySizeOrAdapterIndex;
-  int *output;
+  GrResolution *resolutionList;
   FrontendDisplayDimensionPixels modeWidth;
   uint32_t remainingResolutions;
   FrontendDisplayDimensionPixels modeHeight;
-  int *resolutionCursor;
+  GrResolution *resolutionCursor;
   GlideImportBinding *binding;
   GraphicsAdapterRecord *adapter;
   GraphicsDisplayMode *displayMode;
@@ -732,7 +775,7 @@ StatusResult Glide3_InitAndEnumerate(void)
   int remainingBoards;
   StatusResult result;
   
-  glideDll = DynDLL_Load(dynapi_5);
+  glideDll = DynDLL_Load(sz_GLIDE3X);
   if (glideDll.failed) {
     result.valueOrError = (uint32_t)glideDll.moduleOrError;
     result.failed = true;
@@ -742,7 +785,7 @@ StatusResult Glide3_InitAndEnumerate(void)
   do {
     resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
     if (resolveResult.failed) {
-      DynDLL_Unload(dynapi_5);
+      DynDLL_Unload(sz_GLIDE3X);
       result.valueOrError = (uint32_t)resolveResult.procedureOrError;
       result.failed = true;
       return result;
@@ -768,15 +811,15 @@ StatusResult Glide3_InitAndEnumerate(void)
       querySizeOrAdapterIndex = g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,NULL);
       if (querySizeOrAdapterIndex != 0) {
         resolutionAlloc = g_MemoryApi.alloc(querySizeOrAdapterIndex);
-        output = (int *)resolutionAlloc.payloadOrError;
+        resolutionList = (GrResolution *)resolutionAlloc.payloadOrError;
         if (!resolutionAlloc.failed) {
-          remainingResolutions = querySizeOrAdapterIndex >> 4; /* 16-byte GrResolution entries */
-          g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,output);
+          remainingResolutions = querySizeOrAdapterIndex / sizeof(GrResolution);
+          g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,resolutionList);
           displayMode = g_GraphicsDisplayModes + g_GraphicsDisplayModeCount;
-          resolutionCursor = output;
+          resolutionCursor = resolutionList;
           do {
             if (GRAPHICS_DISPLAY_MODE_CAPACITY - 1 < g_GraphicsDisplayModeCount) break;
-            switch (*resolutionCursor) {
+            switch (resolutionCursor->resolution) {
             case GR_RESOLUTION_640x480:
               modeWidth = 640;
               modeHeight = 480;
@@ -816,10 +859,10 @@ StatusResult Glide3_InitAndEnumerate(void)
               g_GraphicsDisplayModeCount++;
               displayMode = displayMode + 1;
             }
-            resolutionCursor = resolutionCursor + 4;
+            resolutionCursor++;
             remainingResolutions = remainingResolutions - 1;
           } while (remainingResolutions != 0);
-          g_MemoryApi.free(output);
+          g_MemoryApi.free(resolutionList);
         }
       }
       g_GrGlideShutdown();
@@ -828,7 +871,7 @@ StatusResult Glide3_InitAndEnumerate(void)
       remainingBoards--;
     } while (remainingBoards != 0);
   }
-  DynDLL_Unload(dynapi_5);
+  DynDLL_Unload(sz_GLIDE3X);
   result.valueOrError = 0;
   result.failed = false;
   return result;
@@ -933,7 +976,7 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
   uint32_t strideOrTimestamp;
   int pixelCountOrRemaining;
   uint16_t *sourcePixelCursor;
-  GraphicsCapturedTextureSourceAsset *clearCursor;
+  uint32_t *clearCursor;
   uint32_t *argbCursor;
   FramebufferCaptureResult captureResult;
   uint32_t buffer;
@@ -942,17 +985,18 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
   uint16_t *rgb565Staging;
 
   pixelCountOrRemaining = captureWidth * captureHeight;
-  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult, g_MemoryApi.alloc(pixelCountOrRemaining * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET));
+  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult,
+                                  g_MemoryApi.alloc(pixelCountOrRemaining * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET));
   capturedAsset = captureResult.capture;
   if (!captureResult.failed) {
     /* the RGB565 read-back goes into the upper half of the pixel area and is widened in place, front to back */
     rgb565Staging = (uint16_t *)((int)capturedAsset->argb8888Pixels + pixelCountOrRemaining * 2);
     strideOrTimestamp = captureWidth * 2;
     /* dword clear of the header (0x88 dwords = GRAPHICS_CAPTURE_PIXELS_OFFSET) and of the pixel dwords */
-    clearCursor = capturedAsset;
+    clearCursor = (uint32_t *)capturedAsset;
     for (pixelCountOrRemaining = pixelCountOrRemaining + 0x88; pixelCountOrRemaining != 0; pixelCountOrRemaining--) {
-      (clearCursor->common).magic = 0;
-      clearCursor = (GraphicsCapturedTextureSourceAsset *)&(clearCursor->common).allocationSizeBytes;
+      *clearCursor = 0;
+      clearCursor++;
     }
     buffer = GR_BUFFER_BACKBUFFER;
     width = captureWidth;
@@ -1038,16 +1082,13 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
   
   asset = texture->sourceAsset;
   destinationCursor = (texture->glideInfo).data;
-  /* the subresource's 0x20-byte source entry, read through assetRelativeAddressAnchor28 (asset + 0x28), hence
-     the 0x28 bias: +0x08 palette bank (negative: direct ARGB8888 pixels), +0x0C pixel data offset (from the
-     asset), +0x18/+0x1C width/height */
-  subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-  sourceWidth = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10);
-  remainingRows = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc);
-  paletteBank = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x20);
-  sourceCursor = (asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-           *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x1c) -
-           0x28;
+  /* the subresource's source record: palette bank (negative: direct ARGB8888 pixels), pixel data offset,
+     stored width/height */
+  subresourceRecordOffset = GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
+  sourceWidth = GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_WIDTH);
+  remainingRows = GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_HEIGHT);
+  paletteBank = GLIDE_RECORD_INT(asset,subresourceRecordOffset,PALETTE_INDEX);
+  sourceCursor = GLIDE_ASSET_BYTES(asset,GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_OFFSET));
   remainingColumns = sourceWidth;
   if (paletteBank < 0) {
     if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
@@ -1091,8 +1132,7 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
     if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
-          sourceArgb = *(uint32_t *)(asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28
-                           + (uint32_t)*sourceCursor * 8 - 0x28);
+          sourceArgb = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)*sourceCursor);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3) << 0x1b) >> 0x16) |
                             (uint16_t)(((sourceArgb >> 10) << 0x1a) >> 0x10)) >> 5 |
@@ -1108,8 +1148,7 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
     else {
       do {
         do {
-          sourceArgb = *(uint32_t *)(asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28
-                           + (uint32_t)*sourceCursor * 8 - 0x28);
+          sourceArgb = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)*sourceCursor);
           /* ARGB8888 -> ARGB4444: the top four bits of each channel (the original's SHR/SHRD chain) */
           *destinationCursor = (uint16_t)((uint16_t)((uint16_t)(((sourceArgb >> 4) << 0x1c) >> 0x14) |
                                      (uint16_t)(((sourceArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
@@ -1158,18 +1197,15 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
 
   asset = texture->sourceAsset;
   destinationCursor = (texture->glideInfo).data;
-  /* the subresource's 0x20-byte source entry, read through assetRelativeAddressAnchor28 (asset + 0x28), hence
-     the 0x28 bias: +0x08 palette bank (negative: direct ARGB8888 pixels), +0x0C pixel data offset (from the
-     asset), +0x18/+0x1C width/height */
-  subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-  paletteBank = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x20);
+  /* the subresource's source record: palette bank (negative: direct ARGB8888 pixels), pixel data offset,
+     stored width/height */
+  subresourceRecordOffset = GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
+  paletteBank = GLIDE_RECORD_INT(asset,subresourceRecordOffset,PALETTE_INDEX);
   sourceCursor = (AssetProducerSourceNames *)
-            ((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-            *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x1c) -
-            0x28);
-  destinationWidth = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10) >>
+            (GLIDE_ASSET_BYTES(asset,GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_OFFSET)));
+  destinationWidth = GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_WIDTH) >>
           1;
-  remainingRows = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc)
+  remainingRows = GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_HEIGHT)
               >> 1;
   remainingColumns = destinationWidth;
   if (paletteBank < 0) {
@@ -1244,18 +1280,13 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
     if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
-          upperLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[0] * 8 - 0x28);
-          upperRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1) * 8 - 0x28);
-          lowerLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth] * 8 - 0x28);
-          lowerRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 - 0x28);
+          upperLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)sourceCursor->producerName[0]);
+          upperRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                                (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1));
+          lowerLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                               (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth]);
+          lowerRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                                (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1));
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1282,18 +1313,13 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
     else {
       do {
         do {
-          upperLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[0] * 8 - 0x28);
-          upperRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1) * 8 - 0x28);
-          lowerLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth] * 8 - 0x28);
-          lowerRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 - 0x28);
+          upperLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)sourceCursor->producerName[0]);
+          upperRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                                (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + 1));
+          lowerLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                               (uint32_t)(uint8_t)sourceCursor->producerName[destinationWidth]);
+          lowerRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                                (uint32_t)*(uint8_t *)((int)sourceCursor->producerName + destinationWidth * 2 + 1));
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1356,17 +1382,14 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
   
   asset = texture->sourceAsset;
   destinationCursor = (texture->glideInfo).data;
-  /* the subresource's 0x20-byte source entry, read through assetRelativeAddressAnchor28 (asset + 0x28), hence
-     the 0x28 bias: +0x08 palette bank (negative: direct ARGB8888 pixels), +0x0C pixel data offset (from the
-     asset), +0x18/+0x1C width/height */
-  subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-  paletteBank = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x20);
-  sourceCursor = (uint16_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                    *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            subresourceRecordOffset - 0x1c) - 0x28);
-  destinationWidth = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10) >>
+  /* the subresource's source record: palette bank (negative: direct ARGB8888 pixels), pixel data offset,
+     stored width/height */
+  subresourceRecordOffset = GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
+  paletteBank = GLIDE_RECORD_INT(asset,subresourceRecordOffset,PALETTE_INDEX);
+  sourceCursor = (uint16_t *)(GLIDE_ASSET_BYTES(asset,GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_OFFSET)));
+  destinationWidth = GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_WIDTH) >>
           2;
-  remainingRows = *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc)
+  remainingRows = GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_HEIGHT)
               >> 2;
   remainingColumns = destinationWidth;
   if (paletteBank < 0) {
@@ -1439,18 +1462,11 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
     if ((texture->glideInfo).format == GR_TEXFMT_RGB_565) {
       do {
         do {
-          upperLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)*sourceCursor * 8 - 0x28);
-          upperRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[1] * 8 - 0x28);
-          lowerLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4] * 8 - 0x28);
-          lowerRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1] * 8 - 0x28);
+          upperLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)*sourceCursor);
+          upperRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)sourceCursor[1]);
+          lowerLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)sourceCursor[destinationWidth * 4]);
+          lowerRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                                (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1]);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1476,18 +1492,11 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
     else {
       do {
         do {
-          upperLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)*sourceCursor * 8 - 0x28);
-          upperRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[1] * 8 - 0x28);
-          lowerLeftSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4] * 8 - 0x28);
-          lowerRightSample = *(uint32_t *)
-                   (asset[paletteBank * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                   (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1] * 8 - 0x28);
+          upperLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)*sourceCursor);
+          upperRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)sourceCursor[1]);
+          lowerLeftSample = GLIDE_PALETTE_ARGB(asset,paletteBank,(uint32_t)(uint8_t)sourceCursor[destinationWidth * 4]);
+          lowerRightSample = GLIDE_PALETTE_ARGB(asset,paletteBank,
+                                                (uint32_t)(uint8_t)sourceCursor[destinationWidth * 4 + 1]);
           blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
                                                            lowerRightSample,0);
           greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
@@ -1536,10 +1545,10 @@ void GraphicsGlide3_FillTextureDataConstant0FFF(GraphicsTextureResource *texture
   
   asset = texture->sourceAsset;
   glideDataCursor = (texture->glideInfo).data;
-  subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
+  subresourceRecordOffset = GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
   /* width and height of the source entry (see Glide3_TextureUpload_1x) */
-  sourceWidth = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0x10);
-  remainingRows = *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 + subresourceRecordOffset - 0xc);
+  sourceWidth = GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_WIDTH);
+  remainingRows = GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_HEIGHT);
   remainingColumns = sourceWidth;
   do {
     do {
@@ -1574,18 +1583,14 @@ void GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *tex
   asset = texture->sourceAsset;
   glideDataCursor = (texture->glideInfo).data;
   subresourceRecordOffset =
-       texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
+       GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
   sourcePairCursor =
        (uint16_t *)
-       ((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-       *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-               subresourceRecordOffset - 0x1c) - 0x28);
+       (GLIDE_ASSET_BYTES(asset,GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_OFFSET)));
   downsampledWidth =
-       *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset - 0x10) >> 1;
+       GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_WIDTH) >> 1;
   remainingRows =
-       *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset - 0xc) >> 1;
+       GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_HEIGHT) >> 1;
   remainingColumns = downsampledWidth;
   do {
     do {
@@ -1628,17 +1633,13 @@ void GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextu
   asset = texture->sourceAsset;
   glideDataCursor = (texture->glideInfo).data;
   subresourceRecordOffset =
-       texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
+       GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
   sourceByteCursor =
-       (asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-       *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-               subresourceRecordOffset - 0x1c) - 0x28;
+       GLIDE_ASSET_BYTES(asset,GLIDE_RECORD_INT(asset,subresourceRecordOffset,PIXEL_OFFSET));
   downsampledWidth =
-       *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset - 0x10) >> 1;
+       GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_WIDTH) >> 1;
   remainingRows =
-       *(uint32_t *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                subresourceRecordOffset - 0xc) >> 1;
+       GLIDE_RECORD_UINT(asset,subresourceRecordOffset,PIXEL_HEIGHT) >> 1;
   remainingColumns = downsampledWidth;
   do {
     do {
@@ -1663,11 +1664,9 @@ void GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextu
    SoftwareTextureSource_*16 blit (docs/software_raster.md, "Asset layout" and "Common structure"), which it calls
    for any framebuffer other than the locked Glide back buffer g_DisplayFramebufferAccess. Blends read the
    destination pixel at destination + g_GlideSecondBufferOffset (the LFB read lock) and write it at the
-   destination. The source entry fields are read relative to assetRelativeAddressAnchor28 (asset + 0x28) at
-   entry offset - 0x28: -0x20 paletteIndex, -0x1C dataOffset, -0x18/-0x14 originX/Y, -0x10/-0xC
-   pixelWidth/Height. Palette entry dwords are addressed as sourceAsset[bank * 4 + 1] (0x200-byte asset
-   structs, i.e. asset + 0x200 + bank * 0x800) + anchor offset + texel * 8 - 0x28 (+0 ARGB) or - 0x24 (+4 native
-   pixel with alpha). */
+   destination. The source record fields and palette entries are read with the GLIDE_RECORD_* and
+   GLIDE_PALETTE_* macros (top of this file): GLIDE_PALETTE_ARGB is the entry's ARGB8888 colour,
+   GLIDE_PALETTE_NATIVE its +4 dword (native pixel with alpha). */
 
 /* Address: 0x00581150.
    Source-alpha blit of one subresource at (drawX, drawY) into the Glide back buffer: alpha 0 is skipped, alpha
@@ -1705,17 +1704,12 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      recordOffsetOrRowSkip = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      leftOrRemainingColumns = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x18);
-      clippedTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x20)
-          == -1) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      recordOffsetOrRowSkip = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
+      leftOrRemainingColumns = drawX + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X);
+      clippedTop = drawY + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y);
+      if (GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) == -1) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -1743,19 +1737,15 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceArgbCursor = (uint32_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceArgbCursor = (uint32_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * widthOrPaletteIndex * 4 +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) * 4 +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
@@ -1764,29 +1754,18 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
               if (0xffffff < sourceArgb) {
                 if (sourceArgb < 0xff000000) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                  destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                           GLIDE_PACKED_PIXEL_MASKS;
                   weightedSourceDirect =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                   weightedDestinationDirect =
-                       pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                  (uint16_t)((short)destinationLanes *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                       pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                   packedPairDirect =
-                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
-                                                   (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
-                                                   (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
-                                                   (short)weightedDestinationDirect + (short)weightedSourceDirect) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                       pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
+                               GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairDirect >> 8) +
@@ -1796,9 +1775,9 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgb & 0xff] +
                        (short)*(uint32_t *)
-                               ((int)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
+                               ((uint8_t *)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
                        (short)*(uint32_t *)
-                               ((int)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
+                               ((uint8_t *)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
                 }
               }
               sourceArgbCursor++;
@@ -1813,12 +1792,10 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
           return false;
         }
       }
-      else if (*(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRowSkip + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      else if (GLIDE_RECORD_UINT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) <
+               (sourceAsset->tableDescriptor).paletteBankCount) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -1846,55 +1823,37 @@ bool Glide3_TextureSource_BlitSourceAlpha(GraphicsScreenCoordinate clipMaxY,Grap
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x20);
-          indexedSourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX);
+          indexedSourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceIndexCursor = (uint8_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceIndexCursor = (uint8_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * indexedSourceWidth +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
             do {
-              sourceArgb = *(uint32_t *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x24);
+              sourceArgb = GLIDE_PALETTE_NATIVE(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
               if (0xffffff < sourceArgb) {
                 if (sourceArgb < 0xff000000) {
-                  sourceArgb = *(uint32_t *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
-                                    assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x28);
+                  sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                  destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                           GLIDE_PACKED_PIXEL_MASKS;
                   weightedSourcePalette =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                   weightedDestinationPalette =
-                       pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                  (uint16_t)((short)destinationLanes *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                       pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                   packedPairPalette =
-                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) + (short)(weightedSourcePalette >> 0x30),
-                                                   (short)(weightedDestinationPalette >> 0x20) + (short)(weightedSourcePalette >> 0x20),
-                                                   (short)(weightedDestinationPalette >> 0x10) + (short)(weightedSourcePalette >> 0x10),
-                                                   (short)weightedDestinationPalette + (short)weightedSourcePalette) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                       pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
+                               GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairPalette >> 8) +
@@ -1962,17 +1921,12 @@ bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,Gr
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      recordOffsetOrRowSkip = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      leftOrRemainingColumns = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x18);
-      clippedTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x20)
-          == -1) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      recordOffsetOrRowSkip = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
+      leftOrRemainingColumns = drawX + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X);
+      clippedTop = drawY + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y);
+      if (GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) == -1) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -2000,19 +1954,15 @@ bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,Gr
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceArgbCursor = (uint32_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceArgbCursor = (uint32_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * widthOrPaletteIndex * 4 +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) * 4 +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
@@ -2020,29 +1970,18 @@ bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,Gr
               sourceArgb = *sourceArgbCursor;
               if (0xffffff < sourceArgb) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
-                         THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                         GLIDE_PACKED_PIXEL_MASKS;
                 weightedSourceDirect =
                      pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
                             g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                 weightedDestinationDirect =
-                     pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                (uint16_t)((short)destinationLanes *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                     pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                             g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                 packedPairDirect =
-                     pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
-                                                 (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
-                                                 (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
-                                                 (short)weightedDestinationDirect + (short)weightedSourceDirect) &
-                             THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                     pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
+                             GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairDirect >> 8) +
@@ -2060,12 +1999,10 @@ bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,Gr
           return false;
         }
       }
-      else if (*(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRowSkip + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      else if (GLIDE_RECORD_UINT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) <
+               (sourceAsset->tableDescriptor).paletteBankCount) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -2093,52 +2030,35 @@ bool Glide3_TextureSource_BlitHalfSourceRgb(GraphicsScreenCoordinate clipMaxY,Gr
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x20);
-          indexedSourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX);
+          indexedSourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceIndexCursor = (uint8_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceIndexCursor = (uint8_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * indexedSourceWidth +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
             do {
-              sourceArgb = *(uint32_t *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x28);
+              sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
               if (0xffffff < sourceArgb) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
-                         THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                         GLIDE_PACKED_PIXEL_MASKS;
                 weightedSourcePalette =
                      pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
                             g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                 weightedDestinationPalette =
-                     pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                (uint16_t)((short)destinationLanes *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                     pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                             g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                 packedPairPalette =
-                     pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) + (short)(weightedSourcePalette >> 0x30),
-                                                 (short)(weightedDestinationPalette >> 0x20) + (short)(weightedSourcePalette >> 0x20),
-                                                 (short)(weightedDestinationPalette >> 0x10) + (short)(weightedSourcePalette >> 0x10),
-                                                 (short)weightedDestinationPalette + (short)weightedSourcePalette) &
-                             THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                     pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
+                             GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)((uint64_t)packedPairPalette >> 8) +
@@ -2241,25 +2161,20 @@ void Glide3_TextureSource_StretchDirectColorBilinear
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
          (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) &&
-        (recordOffsetOrSourceStride = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset,
+        (recordOffsetOrSourceStride = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex),
         g_DisplayFramebufferAccess.bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT)) &&
-       (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + recordOffsetOrSourceStride + -0x20)
-        == -1)) {
+       (GLIDE_RECORD_INT(sourceAsset,recordOffsetOrSourceStride,PALETTE_INDEX) == -1)) {
       destinationCursor = g_DisplayFramebufferAccess.pixels +
                 (destinationY * g_DisplayFramebufferAccess.width + destinationX) * 2;
-      widthMinusOneOrRemainingPairs = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                       recordOffsetOrSourceStride + -0x10) - 1;
+      widthMinusOneOrRemainingPairs = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrSourceStride,PIXEL_WIDTH) - 1;
       /* MUL (unsigned 64-bit product) then DIV. */
       sourceStepX = (int)((uint64_t)widthMinusOneOrRemainingPairs * 0x100 / (uint64_t)(destinationWidth - 1));
-      sourceHeightMinusOne = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                       recordOffsetOrSourceStride + -0xc) - 1;
+      sourceHeightMinusOne = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrSourceStride,PIXEL_HEIGHT) - 1;
       destinationHeightMinusOne = destinationHeight - 1;
       /* asset + dataOffset */
-      sourcePixels = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrSourceStride + -0x1c) + -0x28;
-      recordOffsetOrSourceStride = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                      recordOffsetOrSourceStride + -0x10) * 4;
+      sourcePixels = GLIDE_ASSET_BYTES(sourceAsset,
+                                       GLIDE_RECORD_INT(sourceAsset,recordOffsetOrSourceStride,PIXEL_OFFSET));
+      recordOffsetOrSourceStride = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrSourceStride,PIXEL_WIDTH) * 4;
       sourceXFixed = 0;
       sourceYFixed = 0;
       sourceRowCursor = sourcePixels;
@@ -2294,16 +2209,10 @@ void Glide3_TextureSource_StretchDirectColorBilinear
                pmulhw(Glide_UnpackArgbToWordLanes(firstLowerRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
           firstUpperRowWeighted =
-               pmulhw(Glide_PackWordLanes((short)(firstUpperLeftWeighted >> 0x30) + (short)(firstUpperRightWeighted >> 0x30),
-                                          (short)(firstUpperLeftWeighted >> 0x20) + (short)(firstUpperRightWeighted >> 0x20),
-                                          (short)(firstUpperLeftWeighted >> 0x10) + (short)(firstUpperRightWeighted >> 0x10),
-                                          (short)firstUpperLeftWeighted + (short)firstUpperRightWeighted),
+               pmulhw(GLIDE_ADD_WORD_LANES(firstUpperLeftWeighted,firstUpperRightWeighted),
                       g_SoftwareBilinearInverseFactors[fractionY]);
           firstLowerRowWeighted =
-               pmulhw(Glide_PackWordLanes((short)(firstLowerLeftWeighted >> 0x30) + (short)(firstLowerRightWeighted >> 0x30),
-                                          (short)(firstLowerLeftWeighted >> 0x20) + (short)(firstLowerRightWeighted >> 0x20),
-                                          (short)(firstLowerLeftWeighted >> 0x10) + (short)(firstLowerRightWeighted >> 0x10),
-                                          (short)firstLowerLeftWeighted + (short)firstLowerRightWeighted),
+               pmulhw(GLIDE_ADD_WORD_LANES(firstLowerLeftWeighted,firstLowerRightWeighted),
                       g_SoftwareBilinearForwardFactors[fractionY]);
           columnOrFractionX = sourceXFixed + sourceStepX & 0xff;
           secondUpperLeftWeighted =
@@ -2319,16 +2228,10 @@ void Glide3_TextureSource_StretchDirectColorBilinear
                pmulhw(Glide_UnpackArgbToWordLanes(secondLowerRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
           secondUpperRowWeighted =
-               pmulhw(Glide_PackWordLanes((short)(secondUpperLeftWeighted >> 0x30) + (short)(secondUpperRightWeighted >> 0x30),
-                                          (short)(secondUpperLeftWeighted >> 0x20) + (short)(secondUpperRightWeighted >> 0x20),
-                                          (short)(secondUpperLeftWeighted >> 0x10) + (short)(secondUpperRightWeighted >> 0x10),
-                                          (short)secondUpperLeftWeighted + (short)secondUpperRightWeighted),
+               pmulhw(GLIDE_ADD_WORD_LANES(secondUpperLeftWeighted,secondUpperRightWeighted),
                       g_SoftwareBilinearInverseFactors[fractionY]);
           secondLowerRowWeighted =
-               pmulhw(Glide_PackWordLanes((short)(secondLowerLeftWeighted >> 0x30) + (short)(secondLowerRightWeighted >> 0x30),
-                                          (short)(secondLowerLeftWeighted >> 0x20) + (short)(secondLowerRightWeighted >> 0x20),
-                                          (short)(secondLowerLeftWeighted >> 0x10) + (short)(secondLowerRightWeighted >> 0x10),
-                                          (short)secondLowerLeftWeighted + (short)secondLowerRightWeighted),
+               pmulhw(GLIDE_ADD_WORD_LANES(secondLowerLeftWeighted,secondLowerRightWeighted),
                       g_SoftwareBilinearForwardFactors[fractionY]);
           firstLane0 = (uint16_t)((short)firstUpperRowWeighted + (short)firstLowerRowWeighted) >> 2;
           firstLane1 = (uint16_t)((short)(firstUpperRowWeighted >> 0x10) + (short)(firstLowerRowWeighted >> 0x10)) >> 2;
@@ -2355,10 +2258,10 @@ void Glide3_TextureSource_StretchDirectColorBilinear
                                                          GLIDE_DUP_BYTE(secondClampedLane1),
                                                          GLIDE_DUP_BYTE(secondClampedLane0)),4);
           firstPackedPair =
-               pmaddwd(firstShiftedLanes & THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+               pmaddwd(firstShiftedLanes & GLIDE_QUANTIZE_MASKS,
                        g_SoftwarePixelMmxConstants.packWeights);
           secondPackedPair =
-               pmaddwd(secondShiftedLanes & THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+               pmaddwd(secondShiftedLanes & GLIDE_QUANTIZE_MASKS,
                        g_SoftwarePixelMmxConstants.packWeights);
           /* Two RGB565 pixels at once: the second one in the high word. */
           *(uint32_t *)destinationCursor =
@@ -2431,11 +2334,9 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      recordOffsetOrRemainingColumns = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      startX = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRemainingColumns + -0x18) * integerScale;
-      drawY = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRemainingColumns + -0x14) * integerScale;
+      recordOffsetOrRemainingColumns = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
+      startX = drawX + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,ORIGIN_X) * integerScale;
+      drawY = drawY + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,ORIGIN_Y) * integerScale;
       if (clipMinX < 0) {
         clipMinX = 0;
       }
@@ -2445,22 +2346,18 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
       if ((int)g_DisplayFramebufferAccess.width < clipMaxX) {
         clipMaxX = g_DisplayFramebufferAccess.width;
       }
-      paletteIndexOrSourceArgb = *(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                       recordOffsetOrRemainingColumns + -0x20);
+      paletteIndexOrSourceArgb = GLIDE_RECORD_UINT(sourceAsset,recordOffsetOrRemainingColumns,PALETTE_INDEX);
       if ((int)g_DisplayFramebufferAccess.height < clipMaxY) {
         clipMaxY = g_DisplayFramebufferAccess.height;
       }
       if ((int)paletteIndexOrSourceArgb < 0) {
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRemainingColumns + -0x10);
-        remainingSourceRows = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            recordOffsetOrRemainingColumns + -0xc);
+        sourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,PIXEL_WIDTH);
+        remainingSourceRows = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,PIXEL_HEIGHT);
         destinationRow = g_DisplayFramebufferAccess.pixels +
                   (g_DisplayFramebufferAccess.width * drawY + startX) * 2;
         framebufferPitch = g_DisplayFramebufferAccess.width * 2;
-        sourceRow = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRemainingColumns + -0x1c) + -0x28;
+        sourceRow = GLIDE_ASSET_BYTES(sourceAsset,
+                                      GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,PIXEL_OFFSET));
         remainingRowRepeats = integerScale;
         do {
           do {
@@ -2478,32 +2375,18 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
                       framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                      destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                       destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                              framebufferPixel) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                               GLIDE_PACKED_PIXEL_MASKS;
                       weightedSourceDirect =
                            pmulhw(Glide_UnpackArgbToWordLanes(paletteIndexOrSourceArgb,2),
                                   g_SoftwareBlendAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
                       weightedDestinationDirect =
-                           pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                      (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                      (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                      (uint16_t)((short)destinationLanes *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                           pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                                   g_SoftwareBlendInverseAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
                       packedPairDirect =
-                           pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) +
-                                                       (short)(weightedSourceDirect >> 0x30),
-                                                       (short)(weightedDestinationDirect >> 0x20) +
-                                                       (short)(weightedSourceDirect >> 0x20),
-                                                       (short)(weightedDestinationDirect >> 0x10) +
-                                                       (short)(weightedSourceDirect >> 0x10),
-                                                       (short)weightedDestinationDirect + (short)weightedSourceDirect) &
-                                   THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                           pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
+                                   GLIDE_QUANTIZE_MASKS,
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
                            (short)(packedPairDirect >> 8) +
@@ -2517,9 +2400,9 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                 else {
                   packedBlue = g_SoftwarePixelPackTables->blue[paletteIndexOrSourceArgb & 0xff];
                   packedGreen = *(uint32_t *)
-                           ((int)g_SoftwarePixelPackTables->green + ((paletteIndexOrSourceArgb & 0xff00) >> 6));
+                           ((uint8_t *)g_SoftwarePixelPackTables->green + ((paletteIndexOrSourceArgb & 0xff00) >> 6));
                   packedRed = *(uint32_t *)
-                           ((int)g_SoftwarePixelPackTables->red + ((paletteIndexOrSourceArgb & 0xff0000) >> 0xe));
+                           ((uint8_t *)g_SoftwarePixelPackTables->red + ((paletteIndexOrSourceArgb & 0xff0000) >> 0xe));
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
                       *(short *)destinationCursor = (short)packedBlue + (short)packedGreen + (short)packedRed;
@@ -2544,16 +2427,13 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
         return;
       }
       if (paletteIndexOrSourceArgb < (sourceAsset->tableDescriptor).paletteBankCount) {
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRemainingColumns + -0x10);
-        remainingSourceRows = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            recordOffsetOrRemainingColumns + -0xc);
+        sourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,PIXEL_WIDTH);
+        remainingSourceRows = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,PIXEL_HEIGHT);
         destinationRow = g_DisplayFramebufferAccess.pixels +
                   (g_DisplayFramebufferAccess.width * drawY + startX) * 2;
         framebufferPitch = g_DisplayFramebufferAccess.width * 2;
-        sourceRow = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRemainingColumns + -0x1c) + -0x28;
+        sourceRow = GLIDE_ASSET_BYTES(sourceAsset,
+                                      GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRemainingColumns,PIXEL_OFFSET));
         remainingRowRepeats = integerScale;
         do {
           do {
@@ -2562,44 +2442,28 @@ void Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                drawY < clipMaxY)) {
               do {
                 remainingColumnRepeats = integerScale;
-                paletteArgb = *(uint32_t *)(sourceAsset[paletteIndexOrSourceArgb * 4 + 1].common.buildMetadata.
-                                  assetRelativeAddressAnchor28 + (uint32_t)*sourceCursor * 8 + -0x24);
+                paletteArgb = GLIDE_PALETTE_NATIVE(sourceAsset,paletteIndexOrSourceArgb,(uint32_t)*sourceCursor);
                 if (paletteArgb < 0x1000000) {
                   destinationX = destinationX + integerScale;
                   destinationCursor = destinationCursor + integerScale * 2;
                 }
                 else if (paletteArgb < 0xff000000) {
-                  paletteArgb = *(uint32_t *)(sourceAsset[paletteIndexOrSourceArgb * 4 + 1].common.buildMetadata.
-                                    assetRelativeAddressAnchor28 + (uint32_t)*sourceCursor * 8 + -0x28);
+                  paletteArgb = GLIDE_PALETTE_ARGB(sourceAsset,paletteIndexOrSourceArgb,(uint32_t)*sourceCursor);
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
                       framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                      destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                       destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                              framebufferPixel) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                               GLIDE_PACKED_PIXEL_MASKS;
                       weightedSourcePalette =
                            pmulhw(Glide_UnpackArgbToWordLanes(paletteArgb,2),
                                   g_SoftwareBlendAlphaFactors[paletteArgb >> 0x18]);
                       weightedDestinationPalette =
-                           pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                      (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                      (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                      (uint16_t)((short)destinationLanes *
-                                                              g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                           pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                                   g_SoftwareBlendInverseAlphaFactors[paletteArgb >> 0x18]);
                       packedPairPalette =
-                           pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) +
-                                                       (short)(weightedSourcePalette >> 0x30),
-                                                       (short)(weightedDestinationPalette >> 0x20) +
-                                                       (short)(weightedSourcePalette >> 0x20),
-                                                       (short)(weightedDestinationPalette >> 0x10) +
-                                                       (short)(weightedSourcePalette >> 0x10),
-                                                       (short)weightedDestinationPalette + (short)weightedSourcePalette) &
-                                   THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                           pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
+                                   GLIDE_QUANTIZE_MASKS,
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
                            (short)(packedPairPalette >> 8) +
@@ -2682,17 +2546,12 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      recordOffsetOrRowSkip = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      leftOrRemainingColumns = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x18);
-      clippedTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x20)
-          == -1) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      recordOffsetOrRowSkip = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
+      leftOrRemainingColumns = drawX + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X);
+      clippedTop = drawY + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y);
+      if (GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) == -1) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -2720,19 +2579,15 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          sourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceArgbCursor = (uint32_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceArgbCursor = (uint32_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * sourceWidth * 4 +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) * 4 +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
@@ -2741,29 +2596,18 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
               if (0xffffff < sourceArgb) {
                 if (sourceArgb < 0xff000000) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                  destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                           GLIDE_PACKED_PIXEL_MASKS;
                   weightedSourceDirect =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                   weightedDestinationDirect =
-                       pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                  (uint16_t)((short)destinationLanes *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                       pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                   packedPairDirect =
-                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
-                                                   (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
-                                                   (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
-                                                   (short)weightedDestinationDirect + (short)weightedSourceDirect) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                       pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
+                               GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairDirect >> 8) +
@@ -2773,9 +2617,9 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgb & 0xff] +
                        (short)*(uint32_t *)
-                               ((int)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
+                               ((uint8_t *)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
                        (short)*(uint32_t *)
-                               ((int)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
+                               ((uint8_t *)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
                 }
               }
               sourceArgbCursor++;
@@ -2790,12 +2634,10 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
           return;
         }
       }
-      else if (*(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRowSkip + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      else if (GLIDE_RECORD_UINT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) <
+               (sourceAsset->tableDescriptor).paletteBankCount) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -2823,57 +2665,37 @@ void Glide3_TextureSource_BlitSourceAlphaPaletteBank
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          sourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceIndexCursor = (uint8_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceIndexCursor = (uint8_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * sourceWidth +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           if (paletteBankIndex < (sourceAsset->tableDescriptor).paletteBankCount) {
             do {
               do {
-                sourceArgb = *(uint32_t *)(sourceAsset[paletteBankIndex * 4 + 1].common.buildMetadata.
-                                  assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x24);
+                sourceArgb = GLIDE_PALETTE_NATIVE(sourceAsset,paletteBankIndex,(uint32_t)*sourceIndexCursor);
                 if (0xffffff < sourceArgb) {
                   if (sourceArgb < 0xff000000) {
-                    sourceArgb = *(uint32_t *)(sourceAsset[paletteBankIndex * 4 + 1].common.buildMetadata.
-                                      assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x28);
+                    sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,paletteBankIndex,(uint32_t)*sourceIndexCursor);
                     framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                    destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                     destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                            framebufferPixel) &
-                             THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                             GLIDE_PACKED_PIXEL_MASKS;
                     weightedSourcePalette =
                          pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                                 g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                     weightedDestinationPalette =
-                         pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                            g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                    (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                            g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                    (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                            g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                    (uint16_t)((short)destinationLanes *
-                                                            g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                         pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                                 g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                     packedPairPalette =
-                         pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) +
-                                                     (short)(weightedSourcePalette >> 0x30),
-                                                     (short)(weightedDestinationPalette >> 0x20) +
-                                                     (short)(weightedSourcePalette >> 0x20),
-                                                     (short)(weightedDestinationPalette >> 0x10) +
-                                                     (short)(weightedSourcePalette >> 0x10),
-                                                     (short)weightedDestinationPalette + (short)weightedSourcePalette) &
-                                 THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                         pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
+                                 GLIDE_QUANTIZE_MASKS,
                                  g_SoftwarePixelMmxConstants.packWeights);
                     *(short *)destinationCursor =
                          (short)(packedPairPalette >> 8) +
@@ -2939,17 +2761,12 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      recordOffsetOrRowSkip = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      leftOrRemainingColumns = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x18);
-      clippedTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x20)
-          == -1) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      recordOffsetOrRowSkip = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
+      leftOrRemainingColumns = drawX + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X);
+      clippedTop = drawY + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y);
+      if (GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) == -1) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -2977,19 +2794,15 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceArgbCursor = (uint32_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceArgbCursor = (uint32_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * widthOrPaletteIndex * 4 +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) * 4 +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
@@ -2997,10 +2810,9 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
               sourceArgb = *sourceArgbCursor;
               if ((sourceArgb & 0xffffff) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
-                         THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                         GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumDirect =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3016,7 +2828,7 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
                                                  (uint16_t)(saturatedSumDirect >> 0x20) >> 4,
                                                  (uint16_t)(saturatedSumDirect >> 0x10) >> 4,
                                                  (uint16_t)saturatedSumDirect >> 4) &
-                             THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                             GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairDirect >> 8) +
@@ -3034,12 +2846,10 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
           return false;
         }
       }
-      else if (*(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRowSkip + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      else if (GLIDE_RECORD_UINT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) <
+               (sourceAsset->tableDescriptor).paletteBankCount) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -3067,33 +2877,26 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x20);
-          indexedSourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX);
+          indexedSourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceIndexCursor = (uint8_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceIndexCursor = (uint8_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * indexedSourceWidth +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
             do {
-              sourceArgb = *(uint32_t *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x28);
+              sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
               if ((sourceArgb & 0xffffff) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
-                         THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                         GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumPalette =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3109,7 +2912,7 @@ bool Glide3_TextureSource_BlitSaturatedAddRgb(GraphicsScreenCoordinate clipMaxY,
                                                  (uint16_t)(saturatedSumPalette >> 0x20) >> 4,
                                                  (uint16_t)(saturatedSumPalette >> 0x10) >> 4,
                                                  (uint16_t)saturatedSumPalette >> 4) &
-                             THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                             GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairPalette >> 8) +
@@ -3169,17 +2972,12 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      recordOffsetOrRowSkip = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      leftOrRemainingColumns = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x18);
-      clippedTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x20)
-          == -1) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                 recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      recordOffsetOrRowSkip = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
+      leftOrRemainingColumns = drawX + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X);
+      clippedTop = drawY + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y);
+      if (GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) == -1) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -3207,19 +3005,15 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceArgbCursor = (uint32_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceArgbCursor = (uint32_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * widthOrPaletteIndex * 4 +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) * 4 +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
@@ -3227,10 +3021,9 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
               sourceArgb = *sourceArgbCursor;
               if ((sourceArgb & 0xffffff) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
-                         THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                         GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumDirect =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3246,7 +3039,7 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
                                                  (uint16_t)(saturatedSumDirect >> 0x20) >> 4,
                                                  (uint16_t)(saturatedSumDirect >> 0x10) >> 4,
                                                  (uint16_t)saturatedSumDirect >> 4) &
-                             THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                             GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairDirect >> 8) +
@@ -3264,12 +3057,10 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
           return false;
         }
       }
-      else if (*(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRowSkip + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                 recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                recordOffsetOrRowSkip + -0xc);
+      else if (GLIDE_RECORD_UINT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) <
+               (sourceAsset->tableDescriptor).paletteBankCount) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -3297,33 +3088,26 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x20);
-          indexedSourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX);
+          indexedSourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceIndexCursor = (uint8_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceIndexCursor = (uint8_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * indexedSourceWidth +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
             do {
-              sourceArgb = *(uint32_t *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x28);
+              sourceArgb = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
               if ((sourceArgb & 0xffffff) != 0) {
                 framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
-                         THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                         GLIDE_PACKED_PIXEL_MASKS;
                 saturatedSumPalette =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
@@ -3339,7 +3123,7 @@ bool Glide3_TextureSource_BlitHalfRgbSaturatedAdd(GraphicsScreenCoordinate clipM
                                                  (uint16_t)(saturatedSumPalette >> 0x20) >> 4,
                                                  (uint16_t)(saturatedSumPalette >> 0x10) >> 4,
                                                  (uint16_t)saturatedSumPalette >> 4) &
-                             THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                             GLIDE_QUANTIZE_MASKS,
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
                      (short)(packedPairPalette >> 8) +
@@ -3415,17 +3199,12 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
     modulationRed = (modulationArgb8888 & 0xff0000) >> 0x10;
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-      recordOffsetOrRowSkip = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-      leftOrRemainingColumns = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              recordOffsetOrRowSkip + -0x18);
-      clippedTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                               recordOffsetOrRowSkip + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x20)
-          == -1) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                 recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28
-                                  + recordOffsetOrRowSkip + -0xc);
+      recordOffsetOrRowSkip = GLIDE_RECORD_OFFSET(sourceAsset,subresourceIndex);
+      leftOrRemainingColumns = drawX + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X);
+      clippedTop = drawY + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y);
+      if (GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) == -1) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -3453,19 +3232,15 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceArgbCursor = (uint32_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                                assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceArgbCursor = (uint32_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * widthOrPaletteIndex * 4 +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) * 4 +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
@@ -3481,10 +3256,9 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
               if (0xffffff < modulatedArgb) {
                 if (modulatedArgb < 0xff000000) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                  destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                           GLIDE_PACKED_PIXEL_MASKS;
                   alphaProductOrAlpha = alphaProductOrAlpha >> 8;
                   /* Lane bytes are the modulated channels alphaProductHigh >> 8, redProduct >> 8,
                      greenProduct >> 8 and blueProduct >> 8, i.e. bytes 3..0 of modulatedArgb. */
@@ -3492,21 +3266,11 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
                        pmulhw(Glide_UnpackArgbToWordLanes(modulatedArgb,2),
                               g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
                   weightedDestinationDirect =
-                       pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                  (uint16_t)((short)destinationLanes *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                       pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                               g_SoftwareBlendInverseAlphaFactors[alphaProductOrAlpha]);
                   packedPairDirect =
-                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
-                                                   (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
-                                                   (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
-                                                   (short)weightedDestinationDirect + (short)weightedSourceDirect) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                       pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationDirect,weightedSourceDirect) &
+                               GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairDirect >> 8) +
@@ -3515,8 +3279,8 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
                 else {
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgbOrBlue] +
-                       (short)*(uint32_t *)((int)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
-                       + (short)*(uint32_t *)((int)g_SoftwarePixelPackTables->red + (redProduct >> 6))
+                       (short)*(uint32_t *)((uint8_t *)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
+                       + (short)*(uint32_t *)((uint8_t *)g_SoftwarePixelPackTables->red + (redProduct >> 6))
                   ;
                 }
               }
@@ -3532,12 +3296,10 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
           return false;
         }
       }
-      else if (*(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        recordOffsetOrRowSkip + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        clippedRight = leftOrRemainingColumns + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                 recordOffsetOrRowSkip + -0x10);
-        clippedBottom = clippedTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28
-                                  + recordOffsetOrRowSkip + -0xc);
+      else if (GLIDE_RECORD_UINT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX) <
+               (sourceAsset->tableDescriptor).paletteBankCount) {
+        clippedRight = leftOrRemainingColumns + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
+        clippedBottom = clippedTop + GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_HEIGHT);
         if (leftOrRemainingColumns < 0) {
           leftOrRemainingColumns = 0;
         }
@@ -3565,27 +3327,21 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
         clippedWidth = clippedRight - leftOrRemainingColumns;
         if ((clippedWidth != 0 && leftOrRemainingColumns <= (int)clippedRight) &&
            (clipMinY = clippedBottom - clippedTop, clipMinY != 0 && clippedTop <= (int)clippedBottom)) {
-          widthOrPaletteIndex = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x20);
-          indexedSourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          recordOffsetOrRowSkip + -0x10);
+          widthOrPaletteIndex = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PALETTE_INDEX);
+          indexedSourceWidth = GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_WIDTH);
           destinationCursor = g_DisplayFramebufferAccess.pixels +
                     (g_DisplayFramebufferAccess.width * clippedTop + leftOrRemainingColumns) * 2;
-          sourceIndexCursor = (uint8_t *)((int)sourceAsset +
-                            ((clippedTop - *(int *)((sourceAsset->common).buildMetadata.
-                                                assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x14)) -
+          sourceIndexCursor = (uint8_t *)((uint8_t *)sourceAsset +
+                            ((clippedTop - GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_Y)) -
                             drawY) * indexedSourceWidth +
                             ((leftOrRemainingColumns - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + recordOffsetOrRowSkip + -0x1c));
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,ORIGIN_X)) +
+                            GLIDE_RECORD_INT(sourceAsset,recordOffsetOrRowSkip,PIXEL_OFFSET));
           recordOffsetOrRowSkip = g_DisplayFramebufferAccess.width - clippedWidth;
           leftOrRemainingColumns = clippedWidth;
           do {
             do {
-              sourceArgbOrBlue = *(uint32_t *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint32_t)*sourceIndexCursor * 8 + -0x28);
+              sourceArgbOrBlue = GLIDE_PALETTE_ARGB(sourceAsset,widthOrPaletteIndex,(uint32_t)*sourceIndexCursor);
               blueProduct = (sourceArgbOrBlue & 0xff) * (modulationArgb8888 & 0xff);
               alphaProductOrAlpha = (sourceArgbOrBlue >> 0x18) * (modulationArgb8888 >> 0x18);
               greenProduct = ((sourceArgbOrBlue & 0xff00) >> 8) * modulationGreen & 0xff00;
@@ -3596,30 +3352,19 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
               if (0xffffff < modulatedArgb) {
                 if (modulatedArgb < 0xff000000) {
                   framebufferPixel = *(uint16_t *)(destinationCursor + g_GlideSecondBufferOffset);
-                  destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                           GLIDE_PACKED_PIXEL_MASKS;
                   alphaProductOrAlpha = alphaProductOrAlpha >> 8;
                   weightedSourcePalette =
                        pmulhw(Glide_UnpackArgbToWordLanes(modulatedArgb,2),
                               g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
                   weightedDestinationPalette =
-                       pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                                  (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                                  (uint16_t)((short)destinationLanes *
-                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                       pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                               g_SoftwareBlendInverseAlphaFactors[alphaProductOrAlpha]);
                   packedPairPalette =
-                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) + (short)(weightedSourcePalette >> 0x30),
-                                                   (short)(weightedDestinationPalette >> 0x20) + (short)(weightedSourcePalette >> 0x20),
-                                                   (short)(weightedDestinationPalette >> 0x10) + (short)(weightedSourcePalette >> 0x10),
-                                                   (short)weightedDestinationPalette + (short)weightedSourcePalette) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                       pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestinationPalette,weightedSourcePalette) &
+                               GLIDE_QUANTIZE_MASKS,
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
                        (short)(packedPairPalette >> 8) +
@@ -3628,8 +3373,8 @@ bool Glide3_TextureSource_BlitModulatedSourceAlpha(GraphicsScreenCoordinate clip
                 else {
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgbOrBlue] +
-                       (short)*(uint32_t *)((int)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
-                       + (short)*(uint32_t *)((int)g_SoftwarePixelPackTables->red + (redProduct >> 6))
+                       (short)*(uint32_t *)((uint8_t *)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
+                       + (short)*(uint32_t *)((uint8_t *)g_SoftwarePixelPackTables->red + (redProduct >> 6))
                   ;
                 }
               }
@@ -3717,8 +3462,8 @@ void Glide3_Framebuffer_FillRectArgb(GraphicsScreenCoordinate clipMaxY,GraphicsS
       /* native 16-bit pixel in the low word, source alpha in the top byte; the green/red lookups are
          byte offsets (channel * 4) into the pack tables */
       fillColor = g_SoftwarePixelPackTables->blue[argb8888 & 0xff] + (argb8888 & 0xff000000) +
-              *(int *)((int)g_SoftwarePixelPackTables->green + ((argb8888 & 0xff00) >> 6)) +
-              *(int *)((int)g_SoftwarePixelPackTables->red + ((argb8888 & 0xff0000) >> 0xe));
+              *(int *)((uint8_t *)g_SoftwarePixelPackTables->green + ((argb8888 & 0xff00) >> 6)) +
+              *(int *)((uint8_t *)g_SoftwarePixelPackTables->red + ((argb8888 & 0xff0000) >> 0xe));
       if (0xffffff < fillColor) { /* alpha != 0 */
         remainingColumns = clippedWidth;
         if (fillColor < 0xff000000) { /* alpha 1..254: blend */
@@ -3729,28 +3474,18 @@ void Glide3_Framebuffer_FillRectArgb(GraphicsScreenCoordinate clipMaxY,GraphicsS
               secondBufferBackOffset = -g_GlideSecondBufferOffset;
               destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                      framebufferPixel) &
-                      THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
+                      GLIDE_PACKED_PIXEL_MASKS;
               /* original quirk (MOVD MM1,EAX at 0x00582E57): the source lanes are the bytes of the packed
                  native pixel in fillColor, not the argb8888 channels */
               weightedSource =
                    pmulhw(Glide_UnpackArgbToWordLanes(fillColor,2),
                           g_SoftwareBlendAlphaFactors[fillColor >> 0x18]);
               weightedDestination =
-                   pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
-                                                      g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                              (uint16_t)((short)(destinationLanes >> 0x20) *
-                                                      g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
-                                              (uint16_t)((short)(destinationLanes >> 0x10) *
-                                                      g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
-                                              (uint16_t)((short)destinationLanes *
-                                                      g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
+                   pmulhw(GLIDE_UNPACK_NATIVE_LANES(destinationLanes),
                           g_SoftwareBlendInverseAlphaFactors[fillColor >> 0x18]);
               packedChannelPairs =
-                   pmaddwd(Glide_PackWordLanes((short)(weightedDestination >> 0x30) + (short)(weightedSource >> 0x30),
-                                               (short)(weightedDestination >> 0x20) + (short)(weightedSource >> 0x20),
-                                               (short)(weightedDestination >> 0x10) + (short)(weightedSource >> 0x10),
-                                               (short)weightedDestination + (short)weightedSource) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
+                   pmaddwd(GLIDE_ADD_WORD_LANES(weightedDestination,weightedSource) &
+                           GLIDE_QUANTIZE_MASKS,
                            g_SoftwarePixelMmxConstants.packWeights);
               *(short *)(destinationCursor + secondBufferBackOffset) =
                    (short)(packedChannelPairs >> 8) +
@@ -3816,7 +3551,7 @@ void Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel
     cursorHotspotX = frameRecord->hotspotX;
     cursorHotspotY = frameRecord->hotspotY;
     cursorSubresource = frameRecord->activeSubresourceIndex;
-    if ((g_CursorButtonState & 7) == 0) { /* none of the three mouse buttons is down */
+    if ((g_CursorButtonState & LEFT_MIDDLE_RIGHT) == 0) { /* none of the three mouse buttons is down */
       cursorSubresource = frameRecord->idleSubresourceIndex;
     }
     accessFailed = Glide3_Framebuffer_BeginAccess();
@@ -3855,7 +3590,7 @@ void Glide3_Shutdown(void)
     } while (textureSlotsRemaining != 0);
     g_GrSstWinClose(g_GlideWindowContextHandle);
     g_GrGlideShutdown();
-    DynDLL_Unload(dynapi_5);
+    DynDLL_Unload(sz_GLIDE3X);
     g_GlideRuntimeActiveCount = 0;
   }
   return;
@@ -3921,6 +3656,11 @@ void Glide3_Framebuffer_EndAccess(void)
 }
 
 
+/* TMU bytes of a texture: pixelWidth * pixelHeight * 2 bytes, divided by 4 per downsample step. */
+#define GLIDE_TMU_BYTES(asset,recordOffset,downsampleShift) \
+  ((uint32_t)(GLIDE_RECORD_INT(asset,recordOffset,PIXEL_WIDTH) * GLIDE_RECORD_INT(asset,recordOffset,PIXEL_HEIGHT) * \
+              2) >> ((char)(downsampleShift) * 2 & 0x1fU))
+
 /* Address: 0x0057FF50.
    Makes a texture resident in TMU memory before it is drawn. The resident textures form a list ordered by TMU
    and address that is searched like a ring, starting at the most recently placed texture
@@ -3953,34 +3693,25 @@ void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
         texture->residentAddress = placementAddress;
         g_GlideResidentTextureTail = texture;
         g_GlideResidentTextureHead = texture;
-        goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
+        goto download;
       }
       if (residentCursor->residentNext == NULL) {
-        /* TMU bytes of a texture: pixelWidth * pixelHeight (source entry +0x18/+0x1C, addressed from
-           assetRelativeAddressAnchor28 = asset + 0x28) * 2 bytes, divided by 4 per downsample step */
         asset = residentCursor->sourceAsset;
-        subresourceRecordOffset = residentCursor->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
+        subresourceRecordOffset = GLIDE_RECORD_OFFSET(asset,residentCursor->subresourceIndex);
         tmuIndex = residentCursor->residentTmuIndex;
         tailFreeBytes = g_GlideTmuMaxAddress[tmuIndex] -
-                (((uint32_t)(*(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                 subresourceRecordOffset + -0x10) *
-                         *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                 subresourceRecordOffset + -0xc) * 2) >>
-                 ((char)residentCursor->downsampleShift * 2 & 0x1fU)) + residentCursor->residentAddress);
+                (GLIDE_TMU_BYTES(asset,subresourceRecordOffset,residentCursor->downsampleShift) +
+                 residentCursor->residentAddress);
         asset = texture->sourceAsset;
-        subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
-        if ((uint32_t)(*(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                           subresourceRecordOffset + -0x10) *
-                   *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                           subresourceRecordOffset + -0xc) * 2) >> ((char)texture->downsampleShift * 2 & 0x1fU) <
-            tailFreeBytes) {
+        subresourceRecordOffset = GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
+        if (GLIDE_TMU_BYTES(asset,subresourceRecordOffset,texture->downsampleShift) < tailFreeBytes) {
           residentCursor->residentNext = texture;
           placementAddress = g_GlideTmuMaxAddress[tmuIndex];
           texture->residentTmuIndex = tmuIndex;
           texture->residentAddress = placementAddress - tailFreeBytes;
           texture->residentNext = NULL;
           g_GlideResidentTextureTail = texture;
-          goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
+          goto download;
         }
         tmuIndex++;
         nextResident = g_GlideResidentTextureHead; /* no next TMU: continue the round at the list head */
@@ -3991,22 +3722,19 @@ void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
           texture->residentAddress = placementAddress;
           texture->residentNext = NULL;
           g_GlideResidentTextureTail = texture;
-          goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
+          goto download;
         }
       }
       else {
         asset = texture->sourceAsset;
-        subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
+        subresourceRecordOffset = GLIDE_RECORD_OFFSET(asset,texture->subresourceIndex);
         nextResident = residentCursor->residentNext;
         tmuIndex = residentCursor->residentTmuIndex;
         /* original quirk: the fit is checked against the cursor's own slot (next address - cursor address),
            but the texture is placed at the next texture's address */
         if ((tmuIndex == nextResident->residentTmuIndex) &&
-           ((uint32_t)(*(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                           subresourceRecordOffset + -0x10) *
-                   *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                           subresourceRecordOffset + -0xc) * 2) >> ((char)texture->downsampleShift * 2 & 0x1fU)
-            <= nextResident->residentAddress - residentCursor->residentAddress)) {
+           (GLIDE_TMU_BYTES(asset,subresourceRecordOffset,texture->downsampleShift) <=
+            nextResident->residentAddress - residentCursor->residentAddress)) {
           reclaimedAddress = nextResident->residentAddress;
           followingResident = nextResident->residentNext;
           residentCursor->residentNext = texture;
@@ -4017,16 +3745,17 @@ void Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
           nextResident->residentNext = NULL;
           nextResident->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
           nextResident->residentAddress = 0;
-          goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
+          goto download;
         }
       }
       residentCursor = nextResident;
     } while (residentCursor != g_GlideResidentTextureTail);
   }
   return;
-Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
+download:
   g_GlideBoundTexture = NULL;
-  g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,&texture->glideInfo);
+  g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,
+                        &texture->glideInfo);
   return;
 }
 
@@ -4081,7 +3810,8 @@ void Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   }
   (texture->glideInfo).format = GR_TEXFMT_ARGB_4444;
   shift = texture->downsampleShift;
-  if ((texturePixelFormat == (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0)) || (texturePixelFormat == (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0))) {
+  if ((texturePixelFormat == &g_Direct3DOpaqueTextureFormat) ||
+      (texturePixelFormat == &g_Direct3DSelectedOpaqueTextureFormat)) {
     (texture->glideInfo).format = GR_TEXFMT_RGB_565;
   }
   (texture->glideInfo).smallLodLog2 = (texture->glideInfo).smallLodLog2 - shift;
@@ -4106,9 +3836,9 @@ void Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
 
 /* Address: 0x0057FE80.
    Frees the Glide side of a texture resource: unlinks it from the resident list (moving the placement cursor
-   g_GlideResidentTextureTail to its predecessor, or successor for the head, and dropping it as the bound texture), marks it not resident and
-   frees its upload buffer. The TMU memory simply becomes free for Glide3_TextureResource_EnsureResident. EAX is
-   preserved (the texture pointer).
+   g_GlideResidentTextureTail to its predecessor, or successor for the head, and dropping it as the bound
+   texture), marks it not resident and frees its upload buffer. The TMU memory simply becomes free for
+   Glide3_TextureResource_EnsureResident. EAX is preserved (the texture pointer).
 */
 void Glide3_TextureResource_Release(GraphicsTextureResource *texture)
 

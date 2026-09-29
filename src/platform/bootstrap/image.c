@@ -334,7 +334,7 @@ int Thandor_MapOriginalImage(void)
     dos = (IMAGE_DOS_HEADER *)data;
     nt = (IMAGE_NT_HEADERS32 *)(data + dos->e_lfanew);
     if (dos->e_magic != IMAGE_DOS_SIGNATURE || nt->Signature != IMAGE_NT_SIGNATURE ||
-        nt->OptionalHeader.ImageBase != 0x400000) {
+        nt->OptionalHeader.ImageBase != ORIGINAL_IMAGE_BASE) {
         return fail(ORIGINAL_IMAGE_NAME " is not the expected thandor.exe image.");
     }
 

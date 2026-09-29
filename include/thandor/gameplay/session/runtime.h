@@ -21,6 +21,20 @@
 /* Command code (InGameCommandQueue_AppendLocalPlayerCommand) with which a player reports its level as loaded;
    single player calls its handler FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus directly. */
 #define INGAME_COMMAND_PLAYER_READY 0x550
+/* Command codes the hotkeys queue in network games (InGameHotkeys_DispatchCommandByFlags); a local game calls the
+   handler directly. */
+#define INGAME_COMMAND_TOGGLE_PAUSE 0x370 /* InGameCommand_TogglePauseRequest */
+#define INGAME_COMMAND_ADJUST_GAME_SPEED 0x3F0 /* InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks */
+/* Level script (InGameLevelConditionStorageView800.schedule): 64 condition records of 16 bytes and 16 end
+   triggers of 8 bytes, evaluated by InGameConditionRuntime_UpdateScheduledRecords. */
+#define INGAME_SCHEDULED_CONDITION_COUNT 64
+#define INGAME_END_CONDITION_TRIGGER_COUNT 16
+/* Tokens of a BOOLEAN_POSTFIX_EXPRESSION condition (the bytes after its kind byte); any other byte pushes the
+   satisfied bit of the condition with that index onto the bit stack. */
+#define INGAME_CONDITION_TOKEN_END 0xFC
+#define INGAME_CONDITION_TOKEN_NOT 0xFD
+#define INGAME_CONDITION_TOKEN_AND 0xFE
+#define INGAME_CONDITION_TOKEN_OR 0xFF
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00564F70 */

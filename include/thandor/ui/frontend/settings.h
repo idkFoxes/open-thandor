@@ -31,7 +31,7 @@ typedef struct FrontendTextureQualityGroup {
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00549250 */
-void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *frontendRootPage);
+void FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView *frontendRootPage);
 
 /* 0x0054BA90 */
 void FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton);
@@ -73,7 +73,7 @@ void FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control);
 void FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot);
 
 /* 0x0054B740 */
-void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageState167C *source);
+void FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageState *source);
 
 /* 0x0054B8D0 */
 void FrontendAudioSettings_OpenAndSynchronize(FrontendPersistentSettingsPageSourceNodePtr settingsSourceNode);
@@ -119,13 +119,13 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control);
 
 /* 0x0054D250 */
 void FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
-          (FrontendNetworkSettingsControlView250 *networkSettings);
+          (FrontendNetworkSettingsControlView *networkSettings);
 
 /* 0x00549620 */
 void FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot);
 
 /* 0x0054CD20 */
-bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView250 *networkSettings);
+bool FrontendNetworkSettings_PublishSelectedPlayerDescriptor(FrontendNetworkSettingsControlView *networkSettings);
 
 /* 0x0054B160 */
 void FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot);

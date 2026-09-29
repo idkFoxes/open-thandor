@@ -63,9 +63,9 @@ void PersistentSettings_Load(void)
   fileHandle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
-               (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+              (g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
+               g_ExecutableDirectoryUtf16);
+    openResult = g_FileSystemOpen(0,g_FileSystemCombinedPathScratchUtf16);
     if (openResult.failed) {
       g_MemoryApi.free(image);
       return;
@@ -74,7 +74,7 @@ void PersistentSettings_Load(void)
        file handle (MOV EBX,EAX at 0x00402B90), not the handle from this open. Kept as is. */
     pathCopyResult = RichTextCommandStream_CopyExpanded
                       (sizeof g_PersistentSettings.path,g_PersistentSettings.path,
-                       (uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+                       g_FileSystemCombinedPathScratchUtf16);
     fileHandle = (void *)pathCopyResult.bytesWritten;
   }
   sizeResult = g_FileSystemGetSize(fileHandle);

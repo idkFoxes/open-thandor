@@ -8,7 +8,7 @@
 #include <thandor/world/model/hierarchy.h>
 #include <thandor/thandor.h>
 
-static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node);
+static void ModelRuntimeHierarchy_ApplyFlags418From(ModelRuntimeSlot *node);
 
 /* Implementation ownership: world/model/hierarchy. */
 
@@ -33,19 +33,19 @@ void ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntim
   colorIntensity = 255;
   alphaIntensity = 255;
   flagsOrPreviousTint = modelNodeRuntime->runtimeFlags;
-  if ((flagsOrPreviousTint & 4) == 0) {
+  if ((flagsOrPreviousTint & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) {
     colorIntensity = 0;
     alphaIntensity = 0;
-    if ((flagsOrPreviousTint & 8) != 0) {
+    if ((flagsOrPreviousTint & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0) {
       colorIntensity = 255;
       alphaIntensity = 0;
-      if ((flagsOrPreviousTint & 0x10) == 0) {
+      if ((flagsOrPreviousTint & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
         colorIntensity = 0x87;
         alphaIntensity = 255;
       }
     }
   }
-  if ((flagsOrPreviousTint & 0x1000) != 0) {
+  if ((flagsOrPreviousTint & MODEL_NODE_FLAG_FORCE_TRANSPARENT) != 0) {
     alphaIntensity = 0;
   }
   flagsOrPreviousTint = modelNodeRuntime->tintArgb;
@@ -84,7 +84,8 @@ void ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRunti
 
 /* Address: 0x0051D870.
    Gives a model node and all its descendants the palette and texture set. Only
-   called by itself in the executable; the faction code uses ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB.
+   called by itself in the executable; the faction code uses
+   ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB.
 */
 void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,ModelRuntimeNode *node)
@@ -93,13 +94,13 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
   uint32_t childrenRemaining;
 
   if (node != NULL) {
-    (node->modelPayload).textureSet = textureSet;
-    (node->modelPayload).paletteAsset = paletteAsset;
+    node->modelPayload.textureSet = textureSet;
+    node->modelPayload.paletteAsset = paletteAsset;
     for (childrenRemaining = node->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
       ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
                 (paletteAsset,textureSet,node->childNodes[0]);
       /* the original steps the node pointer by 4 bytes, so childNodes[0] walks through all children */
-      node = (ModelRuntimeNode *)&(node->common).nextNode;
+      node = (ModelRuntimeNode *)((uint32_t *)node + 1);
     }
   }
   return;
@@ -124,16 +125,16 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariants(FactionRuntimeIndex fa
 void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNode)
 
 {
-  ModelResourceHitTestAndRenderView210 *resourceView;
+  ModelResource *resourceView;
   uint32_t childrenRemaining;
   int vertexCountOrChildIndex;
   GraphicsFixedVec3 *point;
   uint8_t *geometryRecord;
   ModelPackedGeometryRecordCount geometryRecordsRemaining;
   
-  resourceView = (modelNode->modelPayload).modelResource;
+  resourceView = modelNode->modelPayload.modelResource;
   if (resourceView->meshGroupCount != 0) {
-    geometryRecord = resourceView[1].reserved00_AF + 0x10;
+    geometryRecord = (uint8_t *)(resourceView + 1) + 0x10;
     /* geometry record: +0x00 byte size of the record, +0x08 vertex count, +0x20 vertices (0x40 bytes each) */
     for (geometryRecordsRemaining = resourceView->packedGeometryRecordCount; geometryRecordsRemaining != 0;
         geometryRecordsRemaining--) {
@@ -161,7 +162,7 @@ void ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *mod
         else if (g_ModelBoundsMaximumZ < g_ModelBoundsTransformedPointZ) {
           g_ModelBoundsMaximumZ = g_ModelBoundsTransformedPointZ;
         }
-        point = (GraphicsFixedVec3 *)&point[5].y; /* + 0x40 bytes: the next vertex */
+        point = (GraphicsFixedVec3 *)((uint8_t *)point + 0x40); /* the next vertex */
       }
       geometryRecord = geometryRecord + *(int *)geometryRecord;
     }
@@ -189,16 +190,16 @@ void ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime
   FixedVectorEaxEcxEdx12 viewRelativeVector;
 
   viewRelativeVector = FixedTransform_ApplyEulerRotationToVectorRegs
-                    ((modelNodeRuntime->worldTransform).translation.z - g_ViewOriginFixed.z,
-                     (modelNodeRuntime->worldTransform).translation.y - g_ViewOriginFixed.y,
-                     (modelNodeRuntime->worldTransform).translation.x - g_ViewOriginFixed.x,0,
-                     (modelNodeRuntime->modelPayload).worldRotationAngle1,
-                     (modelNodeRuntime->modelPayload).worldRotationAngle0 - FIXED_ANGLE16_HALF_TURN);
+                    (modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z,
+                     modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y,
+                     modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x,0,
+                     modelNodeRuntime->modelPayload.worldRotationAngle1,
+                     modelNodeRuntime->modelPayload.worldRotationAngle0 - FIXED_ANGLE16_HALF_TURN);
   viewFacingAngle16 = FixedMath_Atan2Angle16(viewRelativeVector.yQ12,viewRelativeVector.xQ12);
   FixedTransform_BuildRotationBasis
             (&modelNodeRuntime->worldTransform,viewFacingAngle16 + FIXED_ANGLE16_QUARTER_TURN & 0xffff,
-             (modelNodeRuntime->modelPayload).worldRotationAngle1,
-             (modelNodeRuntime->modelPayload).worldRotationAngle0);
+             modelNodeRuntime->modelPayload.worldRotationAngle1,
+             modelNodeRuntime->modelPayload.worldRotationAngle0);
   return;
 }
 
@@ -215,9 +216,9 @@ void ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
   FixedVectorAngles viewAngles;
 
   viewAngles = FixedMath_VectorToAngles3Regs
-                    ((modelNodeRuntime->worldTransform).translation.z - g_ViewOriginFixed.z,
-                     (modelNodeRuntime->worldTransform).translation.y - g_ViewOriginFixed.y,
-                     (modelNodeRuntime->worldTransform).translation.x - g_ViewOriginFixed.x);
+                    (modelNodeRuntime->worldTransform.translation.z - g_ViewOriginFixed.z,
+                     modelNodeRuntime->worldTransform.translation.y - g_ViewOriginFixed.y,
+                     modelNodeRuntime->worldTransform.translation.x - g_ViewOriginFixed.x);
   angle0 = viewAngles.azimuthAngle + FIXED_ANGLE16_HALF_TURN & 0xffff;
   FixedTransform_BuildRotationBasis(&modelNodeRuntime->worldTransform,angle0,-viewAngles.elevationAngle,angle0);
   return;
@@ -254,7 +255,7 @@ void ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNode
       }
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    childSlotCursor = (ModelRuntimeNode *)&childSlotCursor->common.nextNode;
+    childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
   }
   modelNodeRuntime->subtreeBoundingRadiusQ12 = maximumRadius;
   return;
@@ -324,16 +325,16 @@ ModelRelativeDirectionAnglesEaxEdx8 ModelNodeRuntime_ComputeRelativeDirectionAng
   FixedVectorEaxEcxEdx12 rotatedDirection;
   ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
 
-  negatedAngle2 = -(modelNodeRuntime->modelPayload).worldRotationAngle2;
+  negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
   rotatedDirection = FixedTransform_RotateDirectionScaledRegs
                     (Q12_ONE,elevationAngle,azimuthAngle,negatedAngle2 & 0xffff,
-                     (modelNodeRuntime->modelPayload).worldRotationAngle1,
-                     (modelNodeRuntime->modelPayload).worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
+                     modelNodeRuntime->modelPayload.worldRotationAngle1,
+                     modelNodeRuntime->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
                      negatedAngle2 & 0xffff)
   ;
   directionAngles = FixedMath_VectorToAngles3Regs(rotatedDirection.zQ12,rotatedDirection.yQ12,rotatedDirection.xQ12);
   relativeAngles.relativeYawAngle =
-       directionAngles.azimuthAngle + (modelNodeRuntime->modelPayload).localRotationAngle2 & 0xffff;
+       directionAngles.azimuthAngle + modelNodeRuntime->modelPayload.localRotationAngle2 & 0xffff;
   relativeAngles.relativePitchAngle = directionAngles.elevationAngle;
   return relativeAngles;
 }
@@ -351,7 +352,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           FrontendModelPointerContextRuntimeState118 *context)
 
 {
-  ModelResourceHitTestAndRenderView210 *resourceView;
+  ModelResource *resourceView;
   GraphicsWorldCoordinateQ12 boundsX1;
   ModelRuntimeNode *childNode;
   ModelHitTestResult missResult;
@@ -364,7 +365,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
   ModelHitTestResult boundsCenterHit;
   ModelHitTestResult hitOrChildResult;
   
-  resourceView = (modelNode->modelPayload).modelResource;
+  resourceView = modelNode->modelPayload.modelResource;
   transformA = &modelNode->worldTransform;
   if ((resourceView->boundingRadiusQ12 != 0) &&
      ((resourceView->hitTestFlags20C & MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST) == 0)) {
@@ -540,23 +541,23 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
       if ((context->contextFlags & 0x80000) != 0) {
         boundsCenterHit.distanceQ12 =
              FixedMath_Length3(((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12 >> 1) +
-                               (modelNode->worldTransform).translation.z) -
+                               modelNode->worldTransform.translation.z) -
                                context->hitReferenceWorldZQ12,
                                ((resourceView->localBoundsY0Q12 + resourceView->localBoundsY1Q12 >> 1) +
-                               (modelNode->worldTransform).translation.y) -
+                               modelNode->worldTransform.translation.y) -
                                context->hitReferenceWorldYQ12,
                                ((resourceView->localBoundsX0Q12 + resourceView->localBoundsX1Q12 >> 1) +
-                               (modelNode->worldTransform).translation.x) -
+                               modelNode->worldTransform.translation.x) -
                                context->hitReferenceWorldXQ12);
         boundsCenterHit.missed = false;
         return boundsCenterHit;
       }
       hitOrChildResult.distanceQ12 =
-           FixedMath_Length3((modelNode->worldTransform).translation.z -
+           FixedMath_Length3(modelNode->worldTransform.translation.z -
                              context->hitReferenceWorldZQ12,
-                             (modelNode->worldTransform).translation.y -
+                             modelNode->worldTransform.translation.y -
                              context->hitReferenceWorldYQ12,
-                             (modelNode->worldTransform).translation.x -
+                             modelNode->worldTransform.translation.x -
                              context->hitReferenceWorldXQ12);
       hitOrChildResult.missed = false;
       return hitOrChildResult;
@@ -587,7 +588,8 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
 
 /* Address: 0x0050B1D0.
    Ray test of a model hierarchy against the ray in g_ModelRaycastOriginX/Y/Z and
-   g_ModelRaycastWorldDirectionX/Y/ZQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's bounding sphere within
+   g_ModelRaycastWorldDirectionX/Y/ZQ28 (ModelRuntime_RaycastCandidateListNearest): when the ray passes the node's
+   bounding sphere within
    g_ModelRaycastMaximumDistance, it is moved into the node's frame and tested against every triangle of the
    node's mesh group, then the children are tested. Returns the nearest distance and node (hit, CF set), or
    MODEL_RAYCAST_NO_HIT_DISTANCE.
@@ -596,7 +598,7 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
 
 {
   GraphicsFixedVec3 **triangleCountField;
-  ModelResourceHitTestAndRenderView210 *resourceView;
+  ModelResource *resourceView;
   int64_t projectionOrDiscriminant;
   int64_t projectedDistanceWide;
   uint32_t negatedAngle2;
@@ -616,20 +618,23 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
   ModelRaycastResult childOrNearestHit;
   ModelRaycastResult missResult;
   
-  deltaXOrNodeY = (modelNodeRuntime->worldTransform).translation.x - g_ModelRaycastOriginX;
-  deltaYOrNodeZ = (modelNodeRuntime->worldTransform).translation.y - g_ModelRaycastOriginY;
-  deltaZ = (modelNodeRuntime->worldTransform).translation.z - g_ModelRaycastOriginZ;
+  deltaXOrNodeY = modelNodeRuntime->worldTransform.translation.x - g_ModelRaycastOriginX;
+  deltaYOrNodeZ = modelNodeRuntime->worldTransform.translation.y - g_ModelRaycastOriginY;
+  deltaZ = modelNodeRuntime->worldTransform.translation.z - g_ModelRaycastOriginZ;
   radiusNodeXOrNearest = modelNodeRuntime->subtreeBoundingRadiusQ12;
   projectionOrDiscriminant = (int64_t)deltaYOrNodeZ * (int64_t)(int)g_ModelRaycastWorldDirectionYQ28 +
           (int64_t)deltaXOrNodeY * (int64_t)(int)g_ModelRaycastWorldDirectionXQ28 +
           (int64_t)deltaZ * (int64_t)(int)g_ModelRaycastWorldDirectionZQ28;
-  edxCarrier.scratchSigned = (int)((uint64_t)projectionOrDiscriminant >> 0x20) << 4 | (uint32_t)projectionOrDiscriminant >> 0x1c;
+  edxCarrier.scratchSigned =
+       (int)((uint64_t)projectionOrDiscriminant >> 0x20) << 4 | (uint32_t)projectionOrDiscriminant >> 0x1c;
   if ((-radiusNodeXOrNearest <= edxCarrier.scratchSigned) &&
      (edxCarrier.scratchSigned < g_ModelRaycastMaximumDistance + radiusNodeXOrNearest)) {
     projectionOrDiscriminant = (int64_t)edxCarrier.scratchSigned;
     projectedDistanceWide = (int64_t)edxCarrier.scratchSigned;
     edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaXOrNodeY * (int64_t)deltaXOrNodeY) >> 0x20);
-    projectionOrDiscriminant = ((int64_t)radiusNodeXOrNearest * (int64_t)radiusNodeXOrNearest + projectionOrDiscriminant * projectedDistanceWide) -
+    projectionOrDiscriminant =
+         ((int64_t)radiusNodeXOrNearest * (int64_t)radiusNodeXOrNearest +
+          projectionOrDiscriminant * projectedDistanceWide) -
             (int64_t)deltaXOrNodeY * (int64_t)deltaXOrNodeY;
     if (-1 < projectionOrDiscriminant) {
       edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaYOrNodeZ * (int64_t)deltaYOrNodeZ) >> 0x20);
@@ -638,22 +643,24 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
          (edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaZ * (int64_t)deltaZ) >> 0x20)
          , -1 < (int)(((int)((uint64_t)projectionOrDiscriminant >> 0x20) - edxCarrier.scratchSigned) -
                      (uint32_t)((uint32_t)projectionOrDiscriminant < (uint32_t)((int64_t)deltaZ * (int64_t)deltaZ))))) {
-        negatedAngle2 = -(modelNodeRuntime->modelPayload).worldRotationAngle2;
+        negatedAngle2 = -modelNodeRuntime->modelPayload.worldRotationAngle2;
         FixedTransform_BuildRotationBasis
                   (&g_GraphicsTransformScratchMatrix3x4,negatedAngle2 & 0xffff,
-                   (modelNodeRuntime->modelPayload).worldRotationAngle1,
-                   (modelNodeRuntime->modelPayload).worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
+                   modelNodeRuntime->modelPayload.worldRotationAngle1,
+                   modelNodeRuntime->modelPayload.worldRotationAngle0 + FIXED_ANGLE16_HALF_TURN +
                    negatedAngle2 & 0xffff);
-        resourceView = (modelNodeRuntime->modelPayload).modelResource;
+        resourceView = modelNodeRuntime->modelPayload.modelResource;
         g_GraphicsTransformScratchMatrix3x4.translation.x = 0;
         g_GraphicsTransformScratchMatrix3x4.translation.y = 0;
         g_GraphicsTransformScratchMatrix3x4.translation.z = 0;
         meshGroupCursor = &resourceView->firstMeshGroupRelativeOffset;
-        radiusNodeXOrNearest = (modelNodeRuntime->worldTransform).translation.x;
-        deltaXOrNodeY = (modelNodeRuntime->worldTransform).translation.y;
+        radiusNodeXOrNearest = modelNodeRuntime->worldTransform.translation.x;
+        deltaXOrNodeY = modelNodeRuntime->worldTransform.translation.y;
         meshGroupsRemaining = resourceView->meshGroupCount;
-        deltaYOrNodeZ = (modelNodeRuntime->worldTransform).translation.z;
-        if ((*(int *)resourceView->reservedEC_1FF == 0) || (meshGroupsRemaining = meshGroupsRemaining - 1, meshGroupsRemaining != 0)) {
+        deltaYOrNodeZ = modelNodeRuntime->worldTransform.translation.z;
+        /* the mesh group to test: the last one, or the one before it when the model has a shadow mesh group */
+        if (resourceView->shadowMeshGroupOffset == 0 ||
+            (meshGroupsRemaining = meshGroupsRemaining - 1, meshGroupsRemaining != 0)) {
           while (meshGroupsRemaining = meshGroupsRemaining - 1, meshGroupsRemaining != 0) {
             meshGroupCursor = (ModelMeshGroupRelativeOffset *)((int)meshGroupCursor + *meshGroupCursor);
           }
@@ -674,7 +681,7 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
                    &g_GraphicsTransformScratchMatrix3x4);
         triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
         radiusNodeXOrNearest = MODEL_RAYCAST_NO_HIT_DISTANCE;
-        for (meshRecordsRemaining = meshGroupCursor[1]; meshRecordsRemaining != 0; meshRecordsRemaining = meshRecordsRemaining - 1) {
+        for (meshRecordsRemaining = meshGroupCursor[1]; meshRecordsRemaining != 0; meshRecordsRemaining--) {
           triangleCountField = &triangle->vertex1;
           triangle = (ModelRaycastTriangleDescriptor *)
                      (triangle[*(int *)(triangle->reservedVertex0Metadata04_0B + 4)].
@@ -690,7 +697,7 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
         }
         edxCarrier.nearestModelNode = NULL;
         nearestModelNode = modelNodeRuntime;
-        for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
+        for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
           if (modelNodeRuntime->childNodes[childrenRemaining - 1] != NULL) {
             childOrNearestHit = ModelNodeRuntime_RaycastHierarchyNearest
                                (modelNodeRuntime->childNodes[childrenRemaining - 1]);
@@ -786,7 +793,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
                 (paletteAsset,textureSet,modelNode->childNodes[0]);
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    modelNode = (ModelRuntimeNode *)&modelNode->common.nextNode;
+    modelNode = (ModelRuntimeNode *)((uint32_t *)modelNode + 1);
   }
   return;
 }
@@ -803,13 +810,16 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
   int childrenRemaining;
   
   if (modelRuntime != NULL) {
-    childrenRemaining = modelRuntime[3];
-    if ((((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == 0xd) &&
-       (targetRuntimeId == modelRuntime[0x1b])) {
-      modelRuntime[0x1b] = 0;
+    childrenRemaining = ((ModelRuntimeSlot *)modelRuntime)->attachmentCount;
+    if (((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C ==
+        MODEL_RUNTIME_CLASS_13 &&
+        targetRuntimeId == ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState6C.classState) {
+      ((ModelRuntimeSlot *)modelRuntime)->classLinkState.armyLinkOrState6C.classState = 0;
     }
     for (; childrenRemaining != 0; childrenRemaining--) {
-      ModelRuntimeHierarchy_ClearMatchingTargetRecursive(targetRuntimeId,(int *)modelRuntime[0x50]);
+      ModelRuntimeHierarchy_ClearMatchingTargetRecursive
+                (targetRuntimeId,
+                 (int *)((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset);
       modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
     }
   }
@@ -826,7 +836,7 @@ void ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(WorldRuntimeContext 
 {
   /* Rewritten from the assembly (0x0051C100-0x0051C162). */
   (void)contextArg;
-  ModelRuntimeHierarchy_ApplyFlags418From((uint8_t *)(uintptr_t)*modelRuntime);
+  ModelRuntimeHierarchy_ApplyFlags418From((ModelRuntimeSlot *)(uintptr_t)*modelRuntime);
 }
 
 
@@ -836,13 +846,13 @@ void ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(WorldRuntimeContext 
 */
 /* Model runtime nodes keep their child count at +0x0C and child pointers at +0x140 + 32*i (null
    slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
-static int ModelRuntimeHierarchy_SumArmourFrom(uint8_t *node)
+static int ModelRuntimeHierarchy_SumArmourFrom(ModelRuntimeSlot *node)
 {
-  int sum = ((ModelRuntimeSlot *)node)->definitionValue60_3C;
-  int childCount = ((ModelRuntimeSlot *)node)->attachmentCount0C;
+  int sum = node->health;
+  int childCount = node->attachmentCount;
   int i;
   for (i = 0; i < childCount; i++) {
-    uint8_t *child = (uint8_t *)((ModelRuntimeSlot *)node)->attachments140[i].childModelRuntimeOrSavedOffset00;
+    ModelRuntimeSlot *child = node->attachments[i].childModelRuntimeOrSavedOffset;
     if (child != NULL) {
       sum = sum + ModelRuntimeHierarchy_SumArmourFrom(child);
     }
@@ -852,16 +862,16 @@ static int ModelRuntimeHierarchy_SumArmourFrom(uint8_t *node)
 
 /* Body of ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive: ORs 0x418 into the runtime flags (+0xEC) of
    node unless flag 0x08 is already set, then recurses into the non-NULL children (same layout as above). */
-static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node)
+static void ModelRuntimeHierarchy_ApplyFlags418From(ModelRuntimeSlot *node)
 {
   int childCount;
   int childIndex;
-  if ((((ModelRuntimeSlot *)node)->classState.classStateEC & 8) == 0) {
-    ((ModelRuntimeSlot *)node)->classState.classStateEC = ((ModelRuntimeSlot *)node)->classState.classStateEC | 0x418;
+  if ((node->classState.stateFlags & 8) == 0) {
+    node->classState.stateFlags = node->classState.stateFlags | 0x418;
   }
-  childCount = ((ModelRuntimeSlot *)node)->attachmentCount0C;
+  childCount = node->attachmentCount;
   for (childIndex = 0; childIndex < childCount; childIndex++) {
-    uint8_t *child = (uint8_t *)((ModelRuntimeSlot *)node)->attachments140[childIndex].childModelRuntimeOrSavedOffset00;
+    ModelRuntimeSlot *child = node->attachments[childIndex].childModelRuntimeOrSavedOffset;
     if (child != NULL) {
       ModelRuntimeHierarchy_ApplyFlags418From(child);
     }
@@ -872,7 +882,7 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 
 {
   /* Rewritten from the assembly (0x0051C1F0-0x0051C23F). */
-  return ModelRuntimeHierarchy_SumArmourFrom((uint8_t *)(uintptr_t)*modelRuntimeRoot);
+  return ModelRuntimeHierarchy_SumArmourFrom((ModelRuntimeSlot *)(uintptr_t)*modelRuntimeRoot);
 }
 
 
@@ -880,12 +890,12 @@ int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
    Collects the attachment points of a runtime model from its serialized MDL definition node (nodes whose
    nodeFlags low nibble is not 0 return NULL and are not walked). Per child slot the first transform record of
    kind 0 or 1 naming that slot is searched in the definition's sprite asset; after recursing into the child
-   definition, a NULL result from there stores the record in the next of the six attachments140[] entries.
+   definition, a NULL result from there stores the record in the next of the six attachments[] entries.
    Returns the caller's EDI (modelRuntimeContinuityEdi) otherwise.
 */
 ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           (ModelRuntimeSlot *modelRuntimeContinuityEdi,ModelRuntimeSlot *modelRuntime,
-          MdlSerializedNodeHeader38 *definitionNode)
+          MdlSerializedNodeHeader *definitionNode)
 
 {
   uint32_t attachmentSlot;
@@ -907,9 +917,9 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
     attachmentTransformCursor =
          (ModelAttachmentTransformRecord *)
          (definitionAssetBase +
-         ((ModelResourceHitTestAndRenderView210 *)definitionAssetBase)->packedLookupTableRelativeOffset);
+         ((ModelResource *)definitionAssetBase)->packedLookupTableRelativeOffset);
     for (transformRecordsRemaining =
-             ((ModelResourceHitTestAndRenderView210 *)definitionAssetBase)->packedLookupTableEntryCount;
+             ((ModelResource *)definitionAssetBase)->packedLookupTableEntryCount;
         transformRecordsRemaining != 0;
         transformRecordsRemaining--) {
       /* packedKindAndSelector: kind in bits 0..3, child slot index above */
@@ -919,12 +929,12 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
         THANDOR_PART(uint32_t, recursiveCollectionResult, 0) =
              ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                        (modelRuntimeContinuityEdi,modelRuntime,
-                        (MdlSerializedNodeHeader38 *)
+                        (MdlSerializedNodeHeader *)
                         definitionNode->childSerializedOffsets[childIndex]);
         if (((ModelRuntimeSlot *)recursiveCollectionResult == NULL) &&
-           (attachmentSlot = modelRuntime->attachmentCount0C, attachmentSlot < 6)) {
-          modelRuntime->attachmentCount0C++;
-          modelRuntime->attachments140[attachmentSlot].sourceTransform04 = attachmentTransformCursor;
+           (attachmentSlot = modelRuntime->attachmentCount, attachmentSlot < 6)) {
+          modelRuntime->attachmentCount++;
+          modelRuntime->attachments[attachmentSlot].sourceTransform = attachmentTransformCursor;
         }
         break;
       }
@@ -949,14 +959,14 @@ ModelRuntimeSlot * ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
 */
 ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
-          ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader38 *definitionNode,
+          ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader *definitionNode,
           WorldRuntimeContext *worldRuntime)
 
 {
   AngleTurn32 rotationAngleA;
   AngleTurn32 rotationAngleB;
   ArmyRuntimeSlot *ownerArmy;
-  ModelResourceHitTestAndRenderView210 *resourceView;
+  ModelResource *resourceView;
   Q12 radiusOrTranslationY;
   Q12 translationZ;
   SerializedRelativeByteOffset childDefinitionOffset;
@@ -985,17 +995,17 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
     return failureResult;
   }
   newNode->ownerClassId = WORLD_OWNER_RUNTIME_MODEL;
-  (newNode->modelPayload).localTranslationXQ12 = 0;
-  (newNode->modelPayload).localTranslationYQ12 = 0;
-  (newNode->modelPayload).localTranslationZQ12 = 0;
+  newNode->modelPayload.localTranslationXQ12 = 0;
+  newNode->modelPayload.localTranslationYQ12 = 0;
+  newNode->modelPayload.localTranslationZQ12 = 0;
   rotationAngleA = definitionNode->localRotationAngle1;
   rotationAngleB = definitionNode->localRotationAngle2;
-  (newNode->modelPayload).localRotationAngle0 = definitionNode->localRotationAngle0;
-  (newNode->modelPayload).localRotationAngle1 = rotationAngleA;
-  (newNode->modelPayload).localRotationAngle2 = rotationAngleB;
-  (newNode->modelPayload).meshGroupMask = 0xffffffff;
-  ownerArmy = (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
-  (newNode->runtimePayload).modelRuntime = modelRuntime;
+  newNode->modelPayload.localRotationAngle0 = definitionNode->localRotationAngle0;
+  newNode->modelPayload.localRotationAngle1 = rotationAngleA;
+  newNode->modelPayload.localRotationAngle2 = rotationAngleB;
+  newNode->modelPayload.meshGroupMask = 0xffffffff;
+  ownerArmy = modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+  newNode->runtimePayload.modelRuntime = modelRuntime;
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
   /* 0x20: the army belongs to a faction other than 0 */
   if (ownerArmy->factionIndex != 0) {
@@ -1005,43 +1015,44 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
   *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
   *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
-  definitionOrChildrenRemaining = (modelRuntime->definitionOrSavedId).savedIdOrOffset;
+  definitionOrChildrenRemaining = modelRuntime->definitionOrSavedId.savedIdOrOffset;
   newNode->tintArgb = 0xffffffff;
   /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
-  if ((((ModelDefinitionRuntimeSemanticView280 *)definitionOrChildrenRemaining)->runtimeValue68 & 0x10) != 0) {
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->runtimeValue68 & 0x10) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x10;
   }
-  if ((((ModelDefinitionRuntimeSemanticView280 *)definitionOrChildrenRemaining)->runtimeValue68 & 0x20) != 0) {
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->runtimeValue68 & 0x20) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x200;
   }
-  if ((((ModelDefinitionRuntimeSemanticView280 *)definitionOrChildrenRemaining)->runtimeValue68 & 0x40) == 0) {
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->runtimeValue68 & 0x40) == 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x100;
   }
-  resourceView = (definitionNode->spriteAssetReference).modelResource;
-  (newNode->modelPayload).paletteAsset = paletteAsset;
+  resourceView = definitionNode->spriteAssetReference.modelResource;
+  newNode->modelPayload.paletteAsset = paletteAsset;
   radiusOrTranslationY = resourceView->boundingRadiusQ12;
-  (newNode->modelPayload).textureSet = textureSet;
+  newNode->modelPayload.textureSet = textureSet;
   newNode->subtreeBoundingRadiusQ12 = radiusOrTranslationY;
-  (newNode->modelPayload).modelResource = resourceView;
+  newNode->modelPayload.modelResource = resourceView;
   newNode->shadingRecord = NULL;
   newNode->modelRuntimeLinkOrSavedOffset = NULL;
   newNode->renderDepthBiasOrState = 0;
   definitionOrChildrenRemaining = definitionNode->childCount;
-  resourceView = (definitionNode->spriteAssetReference).modelResource;
+  resourceView = definitionNode->spriteAssetReference.modelResource;
   childIndex = 0;
   newNode->childCount = definitionOrChildrenRemaining;
   newNode->parentNode = NULL;
   for (; definitionOrChildrenRemaining != 0; definitionOrChildrenRemaining--) {
     attachmentTransform = (ModelAttachmentTransformRecord *)
-              (resourceView->reserved00_AF + resourceView->packedLookupTableRelativeOffset);
+              ((uint8_t *)resourceView + resourceView->packedLookupTableRelativeOffset);
     /* the first transform record of kind 0 or 1 whose selector (bits 4..31) is this child slot */
     for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0;
         transformRecordsRemaining--) {
       attachmentKindOrSlot = attachmentTransform->packedKindAndSelector & 0xf;
-      if (((attachmentKindOrSlot == 0) || (attachmentKindOrSlot == 1)) && (childIndex == attachmentTransform->packedKindAndSelector >> 4)) {
+      if ((attachmentKindOrSlot == 0 || attachmentKindOrSlot == 1) &&
+          childIndex == attachmentTransform->packedKindAndSelector >> 4) {
         childResult = ModelNodeRuntime_CreateHierarchyRecursive
                            (paletteAsset,textureSet,modelRuntime,
-                            (MdlSerializedNodeHeader38 *)
+                            (MdlSerializedNodeHeader *)
                             definitionNode->childSerializedOffsets[childIndex],worldRuntime);
         childOrFailedNode = childResult.modelNode;
         if (childResult.failed) {
@@ -1052,29 +1063,29 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
         newNode->childNodes[childIndex] = childOrFailedNode;
         if (childOrFailedNode == NULL) {
           /* an attachment point: record where the child model will hang */
-          attachmentKindOrSlot = modelRuntime->attachmentCount0C;
+          attachmentKindOrSlot = modelRuntime->attachmentCount;
           if (attachmentKindOrSlot < MODEL_RUNTIME_ATTACHMENT_CAPACITY) {
-            modelRuntime->attachmentCount0C++;
-            modelRuntime->attachments140[attachmentKindOrSlot].sourceTransform04 = attachmentTransform;
-            modelRuntime->attachments140[attachmentKindOrSlot].childNodeIndex0C = childIndex;
-            modelRuntime->attachments140[attachmentKindOrSlot].parentModelNodeOrSavedOffset08 = newNode;
+            modelRuntime->attachmentCount++;
+            modelRuntime->attachments[attachmentKindOrSlot].sourceTransform = attachmentTransform;
+            modelRuntime->attachments[attachmentKindOrSlot].childNodeIndex = childIndex;
+            modelRuntime->attachments[attachmentKindOrSlot].parentModelNodeOrSavedOffset = newNode;
             childDefinitionOffset = definitionNode->childSerializedOffsets[childIndex];
-            modelRuntime->attachments140[attachmentKindOrSlot].childModelRuntimeOrSavedOffset00 = NULL;
-            rotationAngleA = ((MdlSerializedNodeHeader38 *)childDefinitionOffset)->localRotationAngle0;
-            rotationAngleB = ((MdlSerializedNodeHeader38 *)childDefinitionOffset)->localRotationAngle1;
-            modelRuntime->attachments140[attachmentKindOrSlot].childLocalRotationAngle2 =
-                 ((MdlSerializedNodeHeader38 *)childDefinitionOffset)->localRotationAngle2;
-            modelRuntime->attachments140[attachmentKindOrSlot].childLocalRotationAngle1 = rotationAngleB;
-            modelRuntime->attachments140[attachmentKindOrSlot].childLocalRotationAngle0 = rotationAngleA;
+            modelRuntime->attachments[attachmentKindOrSlot].childModelRuntimeOrSavedOffset = NULL;
+            rotationAngleA = ((MdlSerializedNodeHeader *)childDefinitionOffset)->localRotationAngle0;
+            rotationAngleB = ((MdlSerializedNodeHeader *)childDefinitionOffset)->localRotationAngle1;
+            modelRuntime->attachments[attachmentKindOrSlot].childLocalRotationAngle2 =
+                 ((MdlSerializedNodeHeader *)childDefinitionOffset)->localRotationAngle2;
+            modelRuntime->attachments[attachmentKindOrSlot].childLocalRotationAngle1 = rotationAngleB;
+            modelRuntime->attachments[attachmentKindOrSlot].childLocalRotationAngle0 = rotationAngleA;
           }
         }
         else {
           childOrFailedNode->parentNode = newNode;
           radiusOrTranslationY = attachmentTransform->localTranslationYQ12;
           translationZ = attachmentTransform->localTranslationZQ12;
-          (childOrFailedNode->modelPayload).localTranslationXQ12 = attachmentTransform->localTranslationXQ12;
-          (childOrFailedNode->modelPayload).localTranslationYQ12 = radiusOrTranslationY;
-          (childOrFailedNode->modelPayload).localTranslationZQ12 = translationZ;
+          childOrFailedNode->modelPayload.localTranslationXQ12 = attachmentTransform->localTranslationXQ12;
+          childOrFailedNode->modelPayload.localTranslationYQ12 = radiusOrTranslationY;
+          childOrFailedNode->modelPayload.localTranslationZQ12 = translationZ;
         }
         break;
       }
@@ -1109,7 +1120,7 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
       ModelRuntimeNode_ReleaseRecursiveAndDetachParent(childSlotCursor->childNodes[0]);
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    childSlotCursor = (ModelRuntimeNode *)&(childSlotCursor->common).nextNode;
+    childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
   }
   childSlotCursor = node->parentNode;
   if (childSlotCursor != NULL) {
@@ -1117,10 +1128,10 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
       if (childSlotCursor->childNodes[0] == node) {
         childSlotCursor->childNodes[0] = NULL;
       }
-      childSlotCursor = (ModelRuntimeNode *)&(childSlotCursor->common).nextNode;
+      childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
     }
   }
-  WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)node);
+  WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)node);
   return;
 }
 
@@ -1135,7 +1146,6 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
 void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 
 {
-  int *categoryDamageSlot;
   int linkedRuntime;
   ShotDefinition *definition;
   uint32_t metricValue;
@@ -1144,45 +1154,49 @@ void ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   int definitionArmyOrRemaining;
   
   definitionArmyOrRemaining = *modelRuntime;
-  armyOrCategoryIndex = modelRuntime[2];
-  linkedRuntime = modelRuntime[1];
-  /* flag 1 at +0xEC selects the definition's alternative value at +0x1A4 */
-  if ((modelRuntime[0x3b] & 1U) == 0) {
-    metricValue = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue48;
+  armyOrCategoryIndex = (int)((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+  linkedRuntime = (int)((ModelRuntimeSlot *)modelRuntime)->rootModelNodeOrSavedOffset.modelNode;
+  /* a switched-off model counts with the definition's alternative value at +0x1A4 */
+  if ((((ModelRuntimeSlot *)modelRuntime)->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
+    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue48;
   }
   else {
-    metricValue = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue1A4;
+    metricValue = ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue1A4;
   }
-  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 < ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue27C) {
-    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue27C;
+  if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 <
+      ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue27C) {
+    ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState90 =
+         ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue27C;
   }
   if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState44 < metricValue) {
     ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState44 = metricValue;
   }
   metricValue = (((ModelRuntimeNode *)linkedRuntime)->worldTransform.translation.z -
                 ((ArmyRuntimeSlot *)armyOrCategoryIndex)->modelNodeRuntime->worldTransform.translation.z) +
-                ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue70;
+                ((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue70;
   if (((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState48 < metricValue) {
     ((ArmyRuntimeSlot *)armyOrCategoryIndex)->runtimeState48 = metricValue;
   }
   /* the model's shot definition, used when runtimeValue30 is non-zero */
-  definition = ((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->shotDefinitionReference2C.definition;
-  if (((ModelDefinitionRuntimeSemanticView280 *)definitionArmyOrRemaining)->runtimeValue30 != 0) {
+  definition = ((ModelDefinition *)definitionArmyOrRemaining)->shotDefinitionReference2C.definition;
+  if (((ModelDefinition *)definitionArmyOrRemaining)->runtimeValue30 != 0) {
     selectionRange = ShotDefinition_ComputeSelectionRange(definition);
-    definitionArmyOrRemaining = modelRuntime[2];
+    definitionArmyOrRemaining = (int)((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime;
     armyOrCategoryIndex = 7;
-    if ((int)((ArmyRuntimeSlot *)definitionArmyOrRemaining)->runtimeState4C < (int)selectionRange) {
-      ((ArmyRuntimeSlot *)definitionArmyOrRemaining)->runtimeState4C = selectionRange;
+    if ((int)((ArmyRuntimeSlot *)definitionArmyOrRemaining)->weaponRangeQ12 < (int)selectionRange) {
+      ((ArmyRuntimeSlot *)definitionArmyOrRemaining)->weaponRangeQ12 = selectionRange;
     }
     do {
-      categoryDamageSlot = &((ArmyRuntimeSlot *)definitionArmyOrRemaining)->targetClassCounters100[armyOrCategoryIndex];
-      *categoryDamageSlot = *categoryDamageSlot + definition->targetClassImpactDamageQ12[armyOrCategoryIndex];
+      ((ArmyRuntimeSlot *)definitionArmyOrRemaining)->targetClassShotDamage[armyOrCategoryIndex] +=
+           definition->targetClassImpactDamageQ12[armyOrCategoryIndex];
       armyOrCategoryIndex--;
     } while (-1 < armyOrCategoryIndex);
   }
-  for (definitionArmyOrRemaining = modelRuntime[3]; definitionArmyOrRemaining != 0; definitionArmyOrRemaining--) {
-    if ((int *)modelRuntime[0x50] != NULL) {
-      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics((int *)modelRuntime[0x50]);
+  for (definitionArmyOrRemaining = ((ModelRuntimeSlot *)modelRuntime)->attachmentCount;
+       definitionArmyOrRemaining != 0; definitionArmyOrRemaining--) {
+    if (((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset != NULL) {
+      ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics
+                ((int *)((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset);
     }
     modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
   }
@@ -1206,34 +1220,34 @@ ModelRuntimeScaleRatioRegisterPairQ12 ModelRuntimeHierarchy_ComputeScaleRatioQ12
   int scaleSampleCount;
   ModelRuntimeScaleRatioRegisterPairQ12 childScaleRatioPairQ12;
 
-  accumulatedHierarchyScaleQ12 = 0x1000;
+  accumulatedHierarchyScaleQ12 = Q12_ONE;
   scaleSampleCount = 1;
   attachmentDescriptorCursor = modelRuntime;
-  for (attachmentsRemaining = modelRuntime->attachmentCount0C; attachmentsRemaining != 0;
+  for (attachmentsRemaining = modelRuntime->attachmentCount; attachmentsRemaining != 0;
       attachmentsRemaining--) {
-    childModelRuntime = attachmentDescriptorCursor->attachments140[0].childModelRuntimeOrSavedOffset00;
+    childModelRuntime = attachmentDescriptorCursor->attachments[0].childModelRuntimeOrSavedOffset;
     if (childModelRuntime != NULL) {
       childScaleRatioPairQ12 = ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(childModelRuntime);
       accumulatedHierarchyScaleQ12 = accumulatedHierarchyScaleQ12 + (int)childScaleRatioPairQ12;
       scaleSampleCount++;
     }
-    /* steps the cursor by one 0x20-byte attachments140[] entry */
+    /* steps the cursor by one 0x20-byte attachments[] entry */
     attachmentDescriptorCursor =
          (ModelRuntimeSlot *)((uint8_t *)attachmentDescriptorCursor + sizeof(ModelRuntimeAttachmentDescriptor));
   }
   /* EAX = the scale ratio, EDX = 0x1000 */
-  return (uint64_t)0x1000 << 32 |
-         (uint64_t)(uint32_t)(int)(((int64_t)(int)modelRuntime->definitionValue60_3C *
+  return (uint64_t)Q12_ONE << 32 |
+         (uint64_t)(uint32_t)(int)(((int64_t)(int)modelRuntime->health *
                              (int64_t)accumulatedHierarchyScaleQ12) /
                             (int64_t)
                             (scaleSampleCount *
-                            (int)modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeValue60));
+                            (int)modelRuntime->definitionOrSavedId.runtimeDefinition->maximumHealth60));
 }
 
 
 /* Address: 0x0052A6F0.
    Energy demand of a model and its directly attached models (value +0xF4): EDX returns the total, EAX only
-   the part of models not switched off (classStateEC bit 0). Attached models count only when the definition
+   the part of models not switched off (stateFlags bit 0). Attached models count only when the definition
    has flag 0x80 at +0x68; the walk is one level deep, not recursive.
 */
 ModelRuntimeActiveTotalMetricRegisterPair
@@ -1246,23 +1260,24 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
   ModelRuntimeSlot *currentChildModelRuntime;
   uint32_t childMetric;
   
-  totalMetric = (modelRuntime->classState).definitionDerivedValueF4;
-  attachmentsRemaining = modelRuntime->attachmentCount0C;
+  totalMetric = modelRuntime->classState.energyLoadQ4;
+  attachmentsRemaining = modelRuntime->attachmentCount;
   activeMetricTotal = 0;
-  if (((modelRuntime->classState).classStateEC & 1) == 0) {
+  if ((modelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
     activeMetricTotal = totalMetric;
   }
-  if (((modelRuntime->definitionOrSavedId).runtimeDefinition->runtimeValue68 & 0x80) != 0) {
+  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->runtimeValue68 &
+       MODEL_DEFINITION_FLAG_COUNT_ATTACHED_ENERGY) != 0) {
     for (; attachmentsRemaining != 0; attachmentsRemaining--) {
-      currentChildModelRuntime = modelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
+      currentChildModelRuntime = modelRuntime->attachments[0].childModelRuntimeOrSavedOffset;
       if (currentChildModelRuntime != NULL) {
-        childMetric = (currentChildModelRuntime->classState).definitionDerivedValueF4;
-        if (((currentChildModelRuntime->classState).classStateEC & 1) == 0) {
+        childMetric = currentChildModelRuntime->classState.energyLoadQ4;
+        if ((currentChildModelRuntime->classState.stateFlags & ARMY_MODEL_STATE_SWITCHED_OFF) == 0) {
           activeMetricTotal = activeMetricTotal + childMetric;
         }
         totalMetric = totalMetric + childMetric;
       }
-      /* steps the cursor by one 0x20-byte attachments140[] entry */
+      /* steps the cursor by one 0x20-byte attachments[] entry */
       modelRuntime = (ModelRuntimeSlot *)((uint8_t *)modelRuntime + sizeof(ModelRuntimeAttachmentDescriptor));
     }
   }
@@ -1293,7 +1308,7 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
   AimSmoothResult smoothResult;
   AimSmoothResult settledResult;
   
-  yawAngle = (modelNodeRuntime->modelPayload).localRotationAngle2;
+  yawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
   aimDefinition = smoothingState->modelDefinition;
   yawDelta = targetYawAngle16 - yawAngle & 0xffff;
   yawStep = smoothingState->yawTurnVelocityAngle16 * g_InGameSimulationStepTicks;
@@ -1335,19 +1350,20 @@ AimSmoothResult ModelNodeRuntime_SmoothYawTowardTarget
   }
   if (snapToTarget) {
     /* the target is reached within this step */
-    currentYawAngle = (modelNodeRuntime->modelPayload).localRotationAngle2;
+    currentYawAngle = modelNodeRuntime->modelPayload.localRotationAngle2;
     smoothingState->yawTurnVelocityAngle16 = 0;
     smoothResult.value = targetYawAngle16;
     if (targetYawAngle16 != currentYawAngle) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-      (modelNodeRuntime->modelPayload).localRotationAngle2 = targetYawAngle16;
+      modelNodeRuntime->modelPayload.localRotationAngle2 = targetYawAngle16;
     }
   }
   else {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-    (modelNodeRuntime->modelPayload).localRotationAngle2 = yawAngle & 0xffff;
+    modelNodeRuntime->modelPayload.localRotationAngle2 = yawAngle & 0xffff;
     smoothResult.value = (yawAngle & 0xffff) - targetYawAngle16 & 0xffff;
-    if ((0x3ff < smoothResult.value) && (smoothResult.value < 0xfc01)) {
+    if (MODEL_AIM_TOLERANCE_ANGLE16 < smoothResult.value &&
+        smoothResult.value < FIXED_ANGLE16_FULL_TURN - MODEL_AIM_TOLERANCE_ANGLE16) {
       smoothResult.outsideTolerance = true; /* still outside the aim tolerance */
       return smoothResult;
     }
@@ -1377,7 +1393,7 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
   AimSmoothResult clampedTargetResult;
   AimSmoothResult settledResult;
   
-  pitchAngle = (modelNodeRuntime->modelPayload).localRotationAngle1;
+  pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
   aimDefinition = smoothingState->modelDefinition;
   clampedTargetResult.value = targetPitchAngle16;
   if ((int)aimDefinition->maximumPitchAngle28 < (int)targetPitchAngle16) {
@@ -1425,19 +1441,20 @@ AimSmoothResult ModelNodeRuntime_SmoothPitchTowardTarget
   }
   if (!snapToTarget) {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-    (modelNodeRuntime->modelPayload).localRotationAngle1 = pitchAngle;
+    modelNodeRuntime->modelPayload.localRotationAngle1 = pitchAngle;
     clampedTargetResult.value = pitchAngle - clampedTargetResult.value & 0xffff;
-    if ((0x3ff < clampedTargetResult.value) && (clampedTargetResult.value < 0xfc01)) {
+    if (MODEL_AIM_TOLERANCE_ANGLE16 < clampedTargetResult.value &&
+        clampedTargetResult.value < FIXED_ANGLE16_FULL_TURN - MODEL_AIM_TOLERANCE_ANGLE16) {
       clampedTargetResult.outsideTolerance = true; /* still outside the aim tolerance */
       return clampedTargetResult;
     }
   }
   else {
-    pitchAngle = (modelNodeRuntime->modelPayload).localRotationAngle1;
+    pitchAngle = modelNodeRuntime->modelPayload.localRotationAngle1;
     smoothingState->pitchTurnVelocityAngle16 = 0;
     if (clampedTargetResult.value != pitchAngle) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-      (modelNodeRuntime->modelPayload).localRotationAngle1 = clampedTargetResult.value;
+      modelNodeRuntime->modelPayload.localRotationAngle1 = clampedTargetResult.value;
     }
   }
   settledResult.outsideTolerance = false;
@@ -1462,7 +1479,7 @@ void ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode 
       ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNode->childNodes[0]);
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
-    modelNode = (ModelRuntimeNode *)&(modelNode->common).nextNode;
+    modelNode = (ModelRuntimeNode *)((uint32_t *)modelNode + 1);
   }
   return;
 }
@@ -1485,9 +1502,9 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
   if (modelNodeRuntime->parentNode == NULL) {
     FixedTransform_BuildRotationBasis
               (&modelNodeRuntime->worldTransform,
-               (modelNodeRuntime->modelPayload).worldRotationAngle2,
-               (modelNodeRuntime->modelPayload).worldRotationAngle1,
-               (modelNodeRuntime->modelPayload).worldRotationAngle0);
+               modelNodeRuntime->modelPayload.worldRotationAngle2,
+               modelNodeRuntime->modelPayload.worldRotationAngle1,
+               modelNodeRuntime->modelPayload.worldRotationAngle0);
   }
   if (modelNodeRuntime->childCount != 0) {
     do {
@@ -1497,20 +1514,20 @@ void ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNod
         /* the scratch matrix plus the translation globals form the child's local transform */
         FixedTransform_BuildRotationBasis
                   ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
-                   (currentChild->modelPayload).localRotationAngle2,
-                   (currentChild->modelPayload).localRotationAngle1,
-                   (currentChild->modelPayload).localRotationAngle0);
-        g_ModelTransformTranslationX = (currentChild->modelPayload).localTranslationXQ12;
-        g_ModelTransformTranslationY = (currentChild->modelPayload).localTranslationYQ12;
-        g_ModelTransformTranslationZ = (currentChild->modelPayload).localTranslationZQ12;
+                   currentChild->modelPayload.localRotationAngle2,
+                   currentChild->modelPayload.localRotationAngle1,
+                   currentChild->modelPayload.localRotationAngle0);
+        g_ModelTransformTranslationX = currentChild->modelPayload.localTranslationXQ12;
+        g_ModelTransformTranslationY = currentChild->modelPayload.localTranslationYQ12;
+        g_ModelTransformTranslationZ = currentChild->modelPayload.localTranslationZQ12;
         FixedTransform_Compose
                   (&currentChild->worldTransform,
                    (GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
                    &modelNodeRuntime->worldTransform);
         childEulerAngles = FixedTransform_ExtractEulerAnglesRegs(&currentChild->worldTransform);
-        (currentChild->modelPayload).worldRotationAngle2 = childEulerAngles.eaxAngle;
-        (currentChild->modelPayload).worldRotationAngle0 = childEulerAngles.ecxAngle;
-        (currentChild->modelPayload).worldRotationAngle1 = childEulerAngles.edxAngle;
+        currentChild->modelPayload.worldRotationAngle2 = childEulerAngles.eaxAngle;
+        currentChild->modelPayload.worldRotationAngle0 = childEulerAngles.ecxAngle;
+        currentChild->modelPayload.worldRotationAngle1 = childEulerAngles.edxAngle;
         g_ModelTransformTranslationX = 0;
         g_ModelTransformTranslationY = 0;
         g_ModelTransformTranslationZ = 0;
@@ -1539,14 +1556,13 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
   bool variantLocked;
   ModelDefinitionResult lookupResult;
 
-  /* modelRuntime: [0] definition, [2] army runtime, [3] child count, [0xF] armour points,
-     [0x50 + 8 * i] child i */
+  /* modelRuntime is a ModelRuntimeSlot; [0] its definition */
   variantCursorOrRemaining = *modelRuntime;
-  variantsRemaining = 6;
+  variantsRemaining = MODEL_TECHNOLOGY_VARIANT_COUNT;
   do {
     /* the cursor steps 4 bytes per variant, so element 0 is the current variant */
     modelDefinitionId =
-         ((ModelDefinitionRuntimeSemanticView280 *)variantCursorOrRemaining)->variantModelDefinitionIds238[0];
+         ((ModelDefinition *)variantCursorOrRemaining)->variantModelDefinitionIds238[0];
     /* ModelDefinition_IsFactionTechnologyUnlocked returns true (CF set) when the variant is NOT unlocked */
     if ((modelDefinitionId != 0) &&
        (variantLocked = ModelDefinition_IsFactionTechnologyUnlocked
@@ -1556,22 +1572,24 @@ void ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive(FactionRuntim
       lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
       variantCursorOrRemaining = *modelRuntime;
       *modelRuntime = (int)lookupResult.modelDefinition;
-      modelRuntime[0xf] =
-           (int)(((int64_t)modelRuntime[0xf] *
-                 (int64_t)(int)((ModelDefinitionRuntimeSemanticView280 *)lookupResult.modelDefinition)->runtimeValue60) /
-                (int64_t)(int)((ModelDefinitionRuntimeSemanticView280 *)variantCursorOrRemaining)->runtimeValue60);
-      ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)modelRuntime[2]);
+      ((ModelRuntimeSlot *)modelRuntime)->health =
+           (int)(((int64_t)(int)((ModelRuntimeSlot *)modelRuntime)->health *
+                 (int64_t)(int)((ModelDefinition *)lookupResult.modelDefinition)->maximumHealth60) /
+                (int64_t)(int)((ModelDefinition *)variantCursorOrRemaining)->maximumHealth60);
+      ArmyRuntime_RebuildDerivedSelectionMetrics
+                (((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
       break;
     }
     variantCursorOrRemaining = variantCursorOrRemaining + 4;
     variantsRemaining--;
   } while (variantsRemaining != 0);
-  for (variantCursorOrRemaining = modelRuntime[3]; variantCursorOrRemaining != 0; variantCursorOrRemaining--) {
-    if ((int *)modelRuntime[0x50] != NULL) {
+  for (variantCursorOrRemaining = ((ModelRuntimeSlot *)modelRuntime)->attachmentCount;
+       variantCursorOrRemaining != 0; variantCursorOrRemaining--) {
+    if (((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset != NULL) {
       ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-                (factionIndex,(int *)modelRuntime[0x50]);
+                (factionIndex,(int *)((ModelRuntimeSlot *)modelRuntime)->attachments[0].childModelRuntimeOrSavedOffset);
     }
-    modelRuntime = modelRuntime + 8;
+    modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
   }
   return;
 }

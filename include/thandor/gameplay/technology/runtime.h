@@ -18,6 +18,8 @@
    stores the technology in +0x100 and sets RESEARCH_ASSIGNED, and does nothing while either bit is set. */
 #define ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING 0x40
 #define ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED 0x80
+/* tech.tec holds 256 technology records; a faction's unlock mask has one bit per record (8 dwords). */
+#define TECHNOLOGY_RECORD_COUNT 256
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005139C0 */
