@@ -359,8 +359,8 @@ class Unrepresentable(Exception):
 
 numeric_ranges = []   # (address, size) of integer and text fields written by scalar_init
 
-def scalar_init(t, addr, typed_pointers):
-    """Initializer for one scalar of type t at addr; pointers go through typed_pointers."""
+def scalar_init(t, addr, typed_pointers, name=None):
+    """Initializer for one scalar of type t (field name) at addr; pointers go through typed_pointers."""
     r = resolve_type(t)
     if '*' in r or '(' in r:
         value = dword_at(addr)
@@ -395,7 +395,62 @@ def scalar_init(t, addr, typed_pointers):
         return '0'
     if value in funcs or value in anchors:
         raise Unrepresentable('address-like value in an integer field')
-    return ('0x%X' % value) + ('ull' if size == 8 else '')
+    return number_literal(value, size, t, r, name)
+
+# ---- number style: the form that shows what a value means
+SIGNED = {'char', 'short', 'int', 'sdword', 'long', 'longlong', 'long long', 'int8_t', 'int16_t', 'int32_t',
+          'int64_t'}
+# field names whose unsigned values are counts, sizes, coordinates or percentages (decimal) or bit patterns (hex)
+DECIMAL_NAME = re.compile(r'(?i)(^num[A-Z0-9_]|count|size|width|height|length|len$|index|number|percent|ticks|delay|time|speed|'
+                          r'rate|radius|distance|range|level|score|weight|cost|limit|capacity|amount|step|columns?|'
+                          r'rows?|^[xyz]$|[a-z][XYZ]$|^[xyz][A-Z]|left|right|top|bottom)')
+HEX_NAME = re.compile(r'(?i)(flag|mask|colou?r|argb|rgb|bits|magic|key|code|hash|seed|pattern|state|lane)')
+ENUM_MEMBERS = {}     # enum tag -> {value: member name}
+for m in re.finditer(r'^typedef enum (\w*)\s*\{(.*?)^\}\s*(\w+);', _types_text, re.M | re.S):
+    tag = m.group(1) or m.group(3)
+    enum_members, next_value = {}, 0
+    for item in re.sub(r'/\*.*?\*/|//[^\n]*', '', m.group(2), flags=re.S).split(','):
+        item = item.strip()
+        if not item:
+            continue
+        name_value = item.split('=')
+        try:
+            next_value = int(name_value[1].strip(), 0) if len(name_value) > 1 else next_value
+        except ValueError:
+            break
+        enum_members.setdefault(next_value & 0xFFFFFFFF, name_value[0].strip())
+        next_value += 1
+    ENUM_MEMBERS[tag] = enum_members
+Q_TYPE = re.compile(r'^Q(\d+)$')
+
+def number_literal(value, size, declared, resolved, name):
+    """value (the unsigned bytes) as a C literal of the field's type: enum member names, signed and counted
+    values in decimal, flags, masks and colours in hex, fixed-point values with their real value."""
+    bits = 8 * size
+    if resolved.startswith('enum '):
+        member = ENUM_MEMBERS.get(resolved.split()[1], {}).get(value)
+        if member is not None:
+            return member
+    q = Q_TYPE.match(declared.strip())
+    signed = resolved in SIGNED or resolved.startswith('enum ') or bool(q)
+    if signed and value >> (bits - 1):
+        value -= 1 << bits
+    field = name or ''
+    if resolved == 'char' and 0x20 <= value < 0x7F:
+        return "'\\''" if value == 0x27 else "'\\\\'" if value == 0x5C else "'%c'" % value
+    if q:
+        return '%d /* %s */' % (value, ('%.6f' % (value / float(1 << int(q.group(1))))).rstrip('0').rstrip('.'))
+    if size == 8:
+        return ('%dll' % value) if signed else ('0x%Xull' % value)
+    if signed:
+        if HEX_NAME.search(field) and not DECIMAL_NAME.search(field):
+            return '-0x%X' % -value if value < 0 else '0x%X' % value
+        return '%d' % value
+    if HEX_NAME.search(field) and not DECIMAL_NAME.search(field):
+        return '0x%X' % value
+    if DECIMAL_NAME.search(field) or size < 4 or value < 0x10000:
+        return '%d%s' % (value, 'u' if value > 0x7FFFFFFF else '')
+    return '0x%X' % value
 
 def type_size(t):
     r = resolve_type(t)
@@ -429,10 +484,10 @@ def array_string(element, addr, count, width):
         return None
     return c_string_literal(chars, width == 2)
 
-def value_init(t, addr, typed_pointers, depth=0):
+def value_init(t, addr, typed_pointers, depth=0, name=None):
     r = resolve_type(t)
     if '*' in r or '(' in r:
-        return scalar_init(t, addr, typed_pointers)
+        return scalar_init(t, addr, typed_pointers, name)
     struct_name = r.split()[1] if r.startswith('struct ') else (r if r in type_layouts else None)
     if struct_name is not None:
         layout = type_layouts.get(struct_name)
@@ -463,19 +518,19 @@ def value_init(t, addr, typed_pointers, depth=0):
                 if text_literal is not None:
                     parts.append('.%s = %s' % (field['name'], text_literal))
                     continue
-                items = [value_init(element, addr + field['offset'] + i * width, typed_pointers, depth + 1)
-                         for i in range(count)]
+                items = [value_init(element, addr + field['offset'] + i * width, typed_pointers, depth + 1,
+                                    field['name']) for i in range(count)]
                 while items and items[-1] in ('0', '{0}'):
                     items.pop()
                 if items:
                     text = ', '.join(items)
-                    if len(text) > 100 and any('(void *)' in item for item in items):
-                        # tables of function pointers: one entry per line, with its index
-                        text = '\n' + ',\n'.join('            /* %2d */ %s' % (i, item)
-                                                 for i, item in enumerate(items)) + '\n        '
+                    if len(text) > 100:
+                        # long arrays: pointer and struct tables one entry per line, numbers in rows, with the
+                        # index of the first entry of each line
+                        text = '\n' + table_rows(items, '            ') + '\n        '
                     parts.append('.%s = {%s}' % (field['name'], text))
             else:
-                item = value_init(element, addr + field['offset'], typed_pointers, depth + 1)
+                item = value_init(element, addr + field['offset'], typed_pointers, depth + 1, field['name'])
                 if item not in ('0', '{0}'):
                     parts.append('.%s = %s' % (field['name'], item))
         if any(byte_at(addr + x) for x in range(layout['size']) if not covered[x]):
@@ -499,7 +554,18 @@ def value_init(t, addr, typed_pointers, depth=0):
             type_layouts['__union_view'] = {'size': size, 'fields': [first]}
             return value_init('__union_view', addr, typed_pointers, depth)
         raise Unrepresentable(t)
-    return scalar_init(t, addr, typed_pointers)
+    return scalar_init(t, addr, typed_pointers, name)
+
+def table_rows(items, indent):
+    """Array items one per line (pointers, structs, commented values) or in rows of numbers, each line
+    starting with the index of its first item."""
+    single = any('(void *)' in i or '{' in i or '/*' in i or '&' in i for i in items)
+    per_line = 1 if single else (16 if max(len(i) for i in items) <= 4 else 8)
+    width = len(str(len(items) - 1))
+    lines = []
+    for k in range(0, len(items), per_line):
+        lines.append('%s/* %*d */ %s' % (indent, width, k, ', '.join(items[k:k + per_line])))
+    return ',\n'.join(lines)
 
 def nested_init(items, dims, depth):
     """Braced initializer of a multi-dimensional array, innermost rows on one line."""
@@ -548,7 +614,7 @@ def typed_member(start, end, name, member):
             return None
         typed_pointers = []
         del numeric_ranges[:]
-        items = [value_init(element, start + i * width, typed_pointers) for i in range(count)]
+        items = [value_init(element, start + i * width, typed_pointers, 0, name) for i in range(count)]
     except (Unrepresentable, RecursionError):
         return None
     # every pointer the dword grid would convert must also be a pointer field here; otherwise
@@ -570,9 +636,9 @@ def typed_member(start, end, name, member):
         while items and items[-1] in ('0', '{0}'):
             items.pop()
         init = '{%s}' % ', '.join(items) if items else '{0}'
-        if len(init) > 100 and any('&' in item or '(void *)' in item for item in items):
-            # pointer tables: one entry per line
-            init = '{\n        %s}' % ',\n        '.join(items)
+        if len(init) > 100:
+            # long tables: pointer and struct entries one per line, numbers in rows, each line with its index
+            init = '{\n%s}' % table_rows(items, '        ')
         text_literal = array_string(element, start, count, width)
         if text_literal is not None and not typed_pointers:
             init = text_literal
@@ -596,6 +662,10 @@ UI_TEMPLATES = {'g_InGameRuntimeDefaultImageTemplate': ('InGameUiImage', 'INGAME
                 'g_FatalErrorUiRootTemplateImage': ('FatalErrorUiImage', 'FATAL_ERROR_UI')}
 # node names: tools/data/ui_node_names.json, {image type: {"0xOFFSET": {"name": ..., "note": ...,
 # optional "prefix": a UI_NODE_PREFIX_TYPES type}}}
+# short descriptions of data objects for their comment in image_data.c: tools/data/object_notes.json,
+# {object name: description}
+_notes_path = os.path.join(common.REPO, 'tools', 'data', 'object_notes.json')
+OBJECT_NOTES = json.load(open(_notes_path, encoding='utf-8')) if os.path.exists(_notes_path) else {}
 _names_path = os.path.join(common.REPO, 'tools', 'data', 'ui_node_names.json')
 UI_NODE_NAMES = json.load(open(_names_path, encoding='utf-8')) if os.path.exists(_names_path) else {}
 ui_template_types = []   # typedefs for include/thandor/generated/ui_templates.h
@@ -751,12 +821,18 @@ typed_count = 0
 inventory = []      # (start, end, name, kind) of every member, for tools/data/image_data_report.py
 
 def note(start, end, name, kind):
+    # untyped bytes that are only code alignment filler (0x90 NOP, 0xCC INT3) are padding, not data
+    if kind in ('rest', 'gap', 'raw') and all(byte_at(x) in (0, 0x90, 0xCC) for x in range(start, end)) and \
+            any(byte_at(x) for x in range(start, end)):
+        kind = 'padding'
     inventory.append((start, end, name or '', kind))
 for k, (a, b) in enumerate(blocks):
     decls = []
     inits = []
     for start, end, member, name in members[k]:
         comment = '/* %08X %s */' % (start, name if name else 'gap')
+        if name in OBJECT_NOTES:
+            comment = '/* %08X %s: %s */' % (start, name, OBJECT_NOTES[name])
         if name and ('_SwitchTable_' in name or name.startswith('switchdata') or is_jump_table(name, start, end)):
             comment = '/* %08X %s: jump table of the original code, not used by the C code */' % (start, name)
         owner = containing_object(start)
@@ -808,7 +884,7 @@ for k, (a, b) in enumerate(blocks):
             inits.append('    %s, %s' % (init, comment))
             element_type = macros.get(name, label_types.get(name, ('',)))[0].strip()
             note(start, typed_end, name,
-                 'typed-generic' if re.match(r'^(?:uint32_t|dword|uint|undefined\d?)\s*[\*(]',
+                 'typed-generic' if re.match(r'^(?:dword|uint|undefined\d?)\s*[\*(]',
                                              element_type) else 'typed')
             if typed_end < end:
                 rest_count, rest_tail = divmod(end - typed_end, 4)

@@ -870,7 +870,7 @@ bool ArmyPlacementCollision_TestPointAgainstRuntimeList
                            ownerNode->modelDepthBinMaskNear);
         if (((hit) &&
             ((((placementFilterFlags & ARMY_PLACEMENT_MODE_STRUCTURES_ONLY) == 0 ||
-              (*(int *)(&g_ArmyRuntimeDepthBinClassByModelClass + modelClassId * 4) == ARMY_DEPTH_BIN_CLASS_STRUCTURE)) &&
+              (g_ArmyRuntimeDepthBinClassByModelClass[modelClassId] == ARMY_DEPTH_BIN_CLASS_STRUCTURE)) &&
              (modelClassId != MODEL_RUNTIME_CLASS_00)))) && (modelClassId != MODEL_RUNTIME_CLASS_12)) {
           hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                             (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload);

@@ -3010,7 +3010,7 @@ static void SoftwareTexture_BuildIntensityLut(void)
 static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sourceWidth, uint32_t xFixed,
                                                 short upperWeight, short lowerWeight)
 {
-    const short *weights = (const short *)(&g_SoftwareBilinearPackedInterpolationWeights256 + (xFixed & 0xff) * 8);
+    const short *weights = g_SoftwareBilinearPackedInterpolationWeights256[xFixed & 0xff];
     const uint8_t *upper = row + (xFixed >> 8);
     const uint8_t *lower = upper + sourceWidth;
     uint32_t upperSum = (uint32_t)(((upper[0] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[0] + ((upper[1] * COLOR_CHANNEL_TO_WORD_LANE) >> 2) * weights[1]);

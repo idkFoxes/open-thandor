@@ -2339,7 +2339,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         *entryCursor = (uint32_t)runtimeOrStatCursor;
         entryCursor[1] = valueOrFactionIndex;
         valueOrFactionIndex = runtimeOrStatCursor[61];
-        entryCursor[3] = *(uint32_t *)(&g_FactionEnergyAllocationPriorityByModelClass + counterOrValue * 4);
+        entryCursor[3] = g_FactionEnergyAllocationPriorityByModelClass[counterOrValue];
         entryCursor[2] = valueOrFactionIndex;
         entryCountOrValue++;
         entryCursor = entryCursor + 4;
@@ -2354,7 +2354,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             *entryCursor = (uint32_t)attachedRuntime;
             entryCursor[1] = valueOrFactionIndex;
             valueOrFactionIndex = attachedRuntime[61];
-            entryCursor[3] = *(uint32_t *)(&g_FactionEnergyAllocationPriorityByModelClass + cellCountOrValue * 4);
+            entryCursor[3] = g_FactionEnergyAllocationPriorityByModelClass[cellCountOrValue];
             entryCursor[2] = valueOrFactionIndex;
             entryCountOrValue++;
             entryCursor = entryCursor + 4;

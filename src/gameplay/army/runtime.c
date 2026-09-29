@@ -2865,18 +2865,18 @@ ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
           /* PUNPCKLBW mm,mm; PSRLW mm,4: each pixel byte b becomes the 16-bit lane (b * 0x101) >> 4. */
           mm0PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopLeft),
-                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopLeft >> 24]);
+                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelTopLeft >> 24]);
           mm1PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopRight),
-                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopRight >> 24]);
+                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelTopRight >> 24]);
           mm2PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomLeft),
-                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomLeft >> 24]);
+                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelBottomLeft >> 24]);
           mm3PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomRight),
-                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomRight >> 24]);
+                      g_ArmyPreviewAlphaPremultiplyMmxLut256[pixelBottomRight >> 24]);
           alphaReciprocal =
-               ((uint64_t *)&g_ArmyPreviewAverageAlphaReciprocalMmxLut256)
+               g_ArmyPreviewAverageAlphaReciprocalMmxLut256
                [(pixelTopLeft >> 24) + (pixelTopRight >> 24) + (pixelBottomLeft >> 24) +
                 (pixelBottomRight >> 24) >> 2];
           topLeftAlphaOrSum0 = ((short)mm0PackedValue0 + (short)mm1PackedValue0 +
@@ -3939,8 +3939,8 @@ ScanAssetRegistry:
           ;
           ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
           armyRuntime->depthBinClass =
-               *(ModelRuntimeClassId *)
-                (&g_ArmyRuntimeDepthBinClassByModelClass + ((ModelDefinition *)remainingOrDefinition)->runtimeClassId * 4);
+               (ModelRuntimeClassId)
+                g_ArmyRuntimeDepthBinClassByModelClass[((ModelDefinition *)remainingOrDefinition)->runtimeClassId];
           ModelNodeRuntime_UpdateDepthBinMasks
                     (((ModelDefinition *)remainingOrDefinition)->footprintRadius,modelNodeRuntime);
           ArmyRuntime_InitializeTerrainOccupancyFlags(worldRuntime,armyRuntime);

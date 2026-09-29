@@ -17,6 +17,10 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
    (table n maps round-key nibble n and data nibble to a 4-bit output, stored as dwords). */
 #define g_UiTransferCipherSubstitution (*(uint32_t (*)[8][16][16])THANDOR_IMAGE(0x00405160))
 
+/* ---- platform/system/time_locale: function-pointer slot statically holding
+   Locale_MapTelephoneCountryCodeToRegionTagPacked (no code reference to the slot found). */
+#define g_LocaleMapTelephoneCountryCodeToRegionTagPacked (*(LocaleRegionTagPacked (**)(LocaleTelephoneCountryCode))THANDOR_IMAGE(0x004027b0))
+
 /* ---- core/math/fixed: the quarter turn of the sine table before angle 0 (sin of -16384..-1 in
    Q28), directly followed by g_FixedSinQ28 and g_FixedCosQ28; signed angle lookups reach it. */
 #define g_FixedSinBeforeZeroQ28 (*(int32_t (*)[16384])THANDOR_IMAGE(0x004246a0))
@@ -58,6 +62,12 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 #define g_GraphicsDirectionInverseTransform (*(GraphicsFixedMatrix3x4 *)THANDOR_IMAGE(0x004bcf20))
 #define g_GraphicsDirectionWorld (*(GraphicsFixedVec3 *)THANDOR_IMAGE(0x004bcf50))
 #define g_GraphicsDirectionLocal (*(GraphicsFixedVec3 *)THANDOR_IMAGE(0x004bcf5c))
+
+/* ---- graphics/render/model: entries -136..-1 of g_ModelDistanceAttenuationMmx. ModelRender_ComputeVertexIntensity-
+   DefaultPath indexes that table with the signed light-facing dot >> 21, so negative dots read these rows: a ramp
+   rising by 0x80 per step from 0x007F (index -1) to 0x3F7F, then 0x3FFF (-128..-136); alpha lane 0x4000. The
+   8 bytes 0x004cad58..0x004cad5f before it are 0x90 filler. */
+#define g_ModelDistanceAttenuationMmxNegativeRows (*(SoftwareBgraWordLanes (*)[136])THANDOR_IMAGE(0x004cad60))
 
 /* ---- graphics/render/model: MMX distance attenuation per (distance >> 21), up to the lighting
    multiplier table that follows it. */
@@ -108,7 +118,22 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 /* ---- graphics/backend/glide: refresh rates offered for Glide modes. */
 #define g_GlideRefreshRatesHz (*(uint32_t (*)[9])THANDOR_IMAGE(0x0057ecf0))
 
-/* ---- network/backend/fallback_udp: option value 1 for setsockopt/ioctlsocket, "IP=" option. */
+/* ---- graphics/backend/glide: pointers to the three GrVertex records g_GlideVertex0/1/2 (from
+   g_GlideVertex0ScreenX); no code reads the list (Glide3_DrawPrimitiveQueue pushes the vertex addresses
+   directly), the name is historical. */
+#define g_GlideTextureRefreshHandlers (*(void *(*)[3])THANDOR_IMAGE(0x0057ed48))
+/* ---- graphics/backend/glide: a GrTexInfo {smallLodLog2 8, largeLodLog2 8 (256), aspect 0 (1:1),
+   format 0xC (GR_TEXFMT_ARGB_4444), data NULL} after the vertex records; no code references it by
+   address. */
+#define g_GlideTextureInfo256Argb4444 (*(GlideTextureInfo *)THANDOR_IMAGE(0x0057edb4))
+
+/* ---- platform/filesystem/win32: "\\.\X:" device path of the unreachable IOCTL_STORAGE_CHECK_VERIFY
+   probe in Win32Drive_CheckMediaReady (drive letter at index 4); 9 bytes of NOP fill follow up to
+   FileSystem_Init. */
+#define g_Win32DriveDevicePathA (*(char (*)[7])THANDOR_IMAGE(0x00575ca0))
+
+/* ---- network/backend/fallback_udp: nonzero option value (0xFFFFFFFF) for setsockopt/ioctlsocket,
+   "IP=" option. */
 #define g_NetworkFallbackSocketOptionOn (*(uint32_t *)THANDOR_IMAGE(0x00583ef6))
 #define s_CommandLineOptionIp (*(char (*)[4])THANDOR_IMAGE(0x00584078))
 
@@ -154,5 +179,34 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
    the original (see Win32MainMessageStorage). */
 #define g_MainMessage (g_MainMessageStorage.message)
 #define g_MainWindowClass (g_MainMessageStorage.overlay.windowClass)
+
+/* ---- unreferenced original data (no code reference found; kept as data). */
+/* value after g_TerrainAuxHeightMinimum (0x2000, Q12 2.0), followed by 0x90 fill up to 0x00503b10 */
+#define g_TerrainUnreferencedValue00503B04 (*(int32_t *)THANDOR_IMAGE(0x00503b04))
+/* file patterns after u_save___sve_0050d9c8: L"level\\*.lev" and L"level\\*.cgn" */
+#define g_UnreferencedLevelPatternUtf16 (*(uint16_t (*)[12])THANDOR_IMAGE(0x0050d9de))
+#define g_UnreferencedCampaignPatternUtf16 (*(uint16_t (*)[12])THANDOR_IMAGE(0x0050d9f6))
+/* L"army0000.gfx" and "ARMY" after g_AiCommandGenerationRetainedTarget, followed by 0x90 fill up to
+   0x0051b3c0 */
+#define g_UnreferencedArmyTexturePathUtf16 (*(uint16_t (*)[13])THANDOR_IMAGE(0x0051b394))
+#define g_UnreferencedArmyTag (*(char (*)[5])THANDOR_IMAGE(0x0051b3ae))
+
+/* ---- assets/text/richtext: colour palette entry 4 (green). The packed text style selects the palette
+   entry with 3 bits and indexes the colours from g_RichTextColorPalette0Argb, so entry 4 is this one and
+   entry 5 is g_RichTextInsufficientResourceColorArgb; no code names entry 4 directly. */
+#define g_RichTextColorPalette4Argb (*(PackedArgb32 *)THANDOR_IMAGE(0x0041a760))
+
+/* ---- graphics/backend/software, graphics/resources/texture: function-pointer slots of the software
+   backend's hook table (statically holding the software implementations). */
+#define g_SoftwareFramebufferDestroy (*(SoftwareFramebufferDestroyProc * *)THANDOR_IMAGE(0x004a8edc))
+#define g_GraphicsTextureSourceBlitTiledSaturatedAddRgb (*(GraphicsTextureSourceTiledSaturatedAddRgbProc * *)THANDOR_IMAGE(0x004a8f20))
+#define g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd (*(GraphicsTextureSourceTiledSaturatedAddRgbProc * *)THANDOR_IMAGE(0x004a8f28))
+#define g_GraphicsTextureSourceDecomposeSubresourceRegionsCf (*(GraphicsTextureSourceDecomposeSubresourceProc * *)THANDOR_IMAGE(0x004a8f2c))
+#define g_GraphicsFramebufferCopyRegionToOrigin (*(GraphicsFramebufferCopyRegionToOriginProc * *)THANDOR_IMAGE(0x004a8f34))
+#define g_GraphicsFramebufferCopyOriginToRegion (*(GraphicsFramebufferCopyOriginToRegionProc * *)THANDOR_IMAGE(0x004a8f38))
+
+/* ---- graphics: L"Software" behind the hook table (followed by two NOP padding bytes before the code at
+   0x004A8F80); no code or data reference to it found. */
+#define g_UnreferencedSoftwareTextUtf16 (*(uint16_t (*)[9])THANDOR_IMAGE(0x004a8f6c))
 
 #endif /* THANDOR_DATA_RECOVERED_H */

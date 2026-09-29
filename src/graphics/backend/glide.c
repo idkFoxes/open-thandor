@@ -237,7 +237,7 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
       THANDOR_PART(uint16_t, sstIndexOrSizeOrCount, 0) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
       THANDOR_PART(uint16_t, sstIndexOrSizeOrCount, 2) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
       g_GrSstSelect(sstIndexOrSizeOrCount);
-      g_GlideSelectedResolutionQuery = resolutionQueryCode;
+      g_GlideSelectedResolutionQuery.resolution = resolutionQueryCode;
       sstIndexOrSizeOrCount = g_GrQueryResolutions(&g_GlideSelectedResolutionQuery,NULL);
       if (15 < (int)sstIndexOrSizeOrCount) {
         resolutionAlloc = g_MemoryApi.alloc(sstIndexOrSizeOrCount);

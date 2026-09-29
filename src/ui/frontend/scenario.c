@@ -202,9 +202,9 @@ void FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   RichTextCommandStream_PatchPayloadBySelector(0,briefingText.text,templateText.text);
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,loadedLevel->header.titleTextResourceIndex,
-             (uint16_t *)&g_FrontendMissionBriefingLevelDigitsUtf16);
-  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
-  movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
+             g_FrontendMissionBriefingLevelDigitsUtf16);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLM,g_FrontendMissionBriefingMoviePathUtf16);
+  movieOpen = Movie_Open(MOVIE_OPEN_PACKAGE_ONLY,g_FrontendMissionBriefingMoviePathUtf16);
   if (movieOpen.failed) {
     ((UiImageActionControl *)FRONTEND_UI(frontendRoot,briefingImage))->textureSource = NULL;
   }

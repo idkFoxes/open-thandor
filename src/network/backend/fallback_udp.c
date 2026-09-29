@@ -211,7 +211,7 @@ NetworkOpenBindResult NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder 
     winsockResultOrError = g_WinSock_bind(socketResult.valueOrError,&g_NetworkFallbackBindEndpoint,sizeof(WinSockAddress));
     socketToClose = socketResult.valueOrError;
     if (winsockResultOrError == 0) {
-      /* g_NetworkFallbackSocketOptionOn holds 1: enable SO_BROADCAST and non-blocking mode */
+      /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
       winsockResultOrError = g_WinSock_setsockopt(socketResult.valueOrError,SOL_SOCKET,SO_BROADCAST,
                                                   (uint8_t *)&g_NetworkFallbackSocketOptionOn,4);
       if (winsockResultOrError == 0) {
@@ -469,7 +469,7 @@ StatusResult NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
     }
     winsockResultOrError = g_Ws2_32_bind(socketHandle,&g_NetworkBackendBindAddress.ipv4,socketOrAddressLength);
     if (winsockResultOrError == 0) {
-      /* g_NetworkFallbackSocketOptionOn holds 1: enable SO_BROADCAST and non-blocking mode */
+      /* g_NetworkFallbackSocketOptionOn holds a nonzero value (0xFFFFFFFF): enable SO_BROADCAST and non-blocking mode */
       winsockResultOrError = g_Ws2_32_setsockopt(socketHandle,SOL_SOCKET,SO_BROADCAST,(uint8_t *)&g_NetworkFallbackSocketOptionOn,4);
       if (winsockResultOrError == 0) {
         winsockResultOrError = g_Ws2_32_WSAIoctl

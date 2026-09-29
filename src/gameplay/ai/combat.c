@@ -315,7 +315,7 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
         radialClearanceQ12 =
              FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)clearanceSquaredOrWeight >> 32),
                                  (UInt64Half32)clearanceSquaredOrWeight);
-        clearanceSquaredOrWeight = (int64_t)(int)g_AiCombatTargetRadialClearanceWeight;
+        clearanceSquaredOrWeight = (int64_t)g_AiCombatTargetRadialClearanceWeight;
         sourceRadiusQ12 = sourceArmyRuntime->weaponRangeQ12;
         candidateDefinition = (((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                 definitionOrSavedId).runtimeDefinition;
@@ -349,11 +349,11 @@ AiCandidateScore32 AiCombatTarget_EvaluateCandidateScore
             candidateScore =
                  (int)(((int)radialClearanceQ12 * clearanceSquaredOrWeight) / (int64_t)(int)sourceRadiusQ12) +
                 classBaseScore +
-                 (int)(((int64_t)(int)g_AiCombatTargetSourceCounterCountWeight * (int64_t)reachDeltaOrSourceCounter) /
+                 (int)(((int64_t)g_AiCombatTargetSourceCounterCountWeight * (int64_t)reachDeltaOrSourceCounter) /
                       (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4)) +
-                 (int)(((int64_t)(int)g_AiCombatTargetCandidateCounterCountWeight * (int64_t)deltaXOrCandidateCounter) /
+                 (int)(((int64_t)g_AiCombatTargetCandidateCounterCountWeight * (int64_t)deltaXOrCandidateCounter) /
                       (int64_t)(int)THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4)) +
-                 (int)(((int64_t)(int)g_AiCombatTargetScaleDeficitWeight *
+                 (int)(((int64_t)g_AiCombatTargetScaleDeficitWeight *
                        (int64_t)
                        (int)(THANDOR_PART(uint32_t, hierarchyScaleRatioPairQ12, 4) -
                             (uint32_t)hierarchyScaleRatioPairQ12)) /

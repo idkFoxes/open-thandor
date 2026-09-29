@@ -661,7 +661,7 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
     }
     else if (definition->placementContactKindIndex == 4) {
       resolverStatusOrSentinel =
-           ((uint32_t *)&g_ModelTraversalClass4SecondaryThresholdTable3)[nodeOffsetOrGridClass - 1];
+           g_ModelTraversalClass4SecondaryThresholdTable3[nodeOffsetOrGridClass - 1];
       definition->runtimeValue24 =
            (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)[nodeOffsetOrGridClass - 1];
       definition->traversalSecondaryThreshold = resolverStatusOrSentinel;
@@ -671,7 +671,7 @@ StatusResult ModelDefinition_RegisterAndResolveReferences
       resolverStatusOrSentinel = (&g_GridTerrainClassBit28MinWaterSurfaceDelta)[slotsRemainingOrClassIndex];
       nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)[slotsRemainingOrClassIndex];
       secondaryThreshold =
-           ((uint32_t *)&g_ModelTraversalFallbackSecondaryThresholdTable3)[slotsRemainingOrClassIndex];
+           g_ModelTraversalFallbackSecondaryThresholdTable3[slotsRemainingOrClassIndex];
       definition->waterDamageThreshold = resolverStatusOrSentinel;
       definition->runtimeValue24 = nodeOffsetOrGridClass;
       definition->traversalSecondaryThreshold = secondaryThreshold;

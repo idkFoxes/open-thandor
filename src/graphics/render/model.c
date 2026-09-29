@@ -781,8 +781,7 @@ ModelRender_ComputeVertexIntensityScaledPath
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
   directionalLanes =
        pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
-              *(uint64_t *)
-               (&g_ModelLightingScaleMmxMultiplierTable + (lightFacingDotQ12 / lightingScaleQ12 >> 9) * 8));
+              *(uint64_t *)&g_ModelLightingScaleMmxMultiplierTable[lightFacingDotQ12 / lightingScaleQ12 >> 9]);
   shadingRecord = g_GraphicsShadingNearbyRecords;
   accumulatedLanes =
        pmulhw(ModelLighting_AddWordsMmx(directionalLanes,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),

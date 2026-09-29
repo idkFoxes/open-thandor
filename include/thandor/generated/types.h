@@ -1165,6 +1165,8 @@ typedef void GraphicsTextureSourceTiledSaturatedAddRgbProc(int32_t clipMaxY, int
 typedef void GraphicsTextureSourceStretchDirectColorBilinearProc(uint32_t destinationHeight, uint32_t destinationWidth, int32_t destinationY, int32_t destinationX, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t integerScale, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
 typedef void GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t clipMaxY, int32_t clipMaxX, int32_t clipMinY, int32_t clipMinX, int32_t drawY, int32_t drawX, uint32_t paletteBankIndex, uint32_t subresourceIndex, GraphicsTextureSourceAsset * sourceAsset, SoftwareFramebufferAccess * framebuffer);
+typedef void SoftwareFramebufferDestroyProc(SoftwareFramebufferAccess * framebuffer);
+typedef TextureSourceDecomposeResult GraphicsTextureSourceDecomposeSubresourceProc(uint32_t entryIndex, GraphicsTextureSourceAsset * sourceAsset);
 typedef SampleVoiceSetResult SoundCreateSampleVoiceSetProc(SoundSampleAsset * sampleAsset);
 typedef PcmVoiceSetResult SoundCreatePcmVoiceSetProc(uint32_t bufferByteCount, uint32_t sampleRateHz, uint32_t bitsPerSample, uint32_t channelCount, void * pcmData);
 typedef SoundPlayResult SoundPlayVoiceProc(uint32_t leftChannelGainQ15, uint32_t rightChannelGainQ15, DirectSoundVoiceSet * voiceSet);
@@ -10204,6 +10206,17 @@ struct GlideLfbInfo {
     uint32_t strideBytes;
     uint32_t writeMode;
     uint32_t origin;
+};
+
+/* glide.h GrResolution: one 16-byte entry of the list grQueryResolutions writes (Glide3_InitAndEnumerate,
+   GraphicsGlide3_ApplyDisplayModeAndInitializeResources); also the query template passed to it, where
+   GR_QUERY_ANY (0xFFFFFFFF) matches any value. */
+typedef struct GrResolution GrResolution;
+struct GrResolution {
+    int32_t resolution; /* GR_RESOLUTION_* */
+    uint32_t refresh; /* GR_REFRESH_*: 0 = 60 Hz .. 8 = 120 Hz (g_GlideRefreshRatesHz) */
+    int32_t numColorBuffers;
+    int32_t numAuxBuffers;
 };
 
 struct PcxRgb24 {

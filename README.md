@@ -15,7 +15,8 @@ movies) come from an installation.
 | | | |
 |---|---|---|
 | Functions reimplemented in C | `████████████████████` | **100 %** (2,068 / 2,068) |
-| Original data compiled in, verified byte for byte | `████████████████████` | **100 %** (885,420 bytes, 2,393 pointers) |
+| Original data compiled in, verified byte for byte, still laid out like the original executable | `████████████████████` | **100 %** (885,420 bytes, 2,393 pointers) |
+| Original data typed and named (bytes with content) | `████████████████████` | **99.9 %** (171,500 / 171,692) |
 | Functions with a header comment (what, why, who calls it) | `████████████████████` | **100 %** |
 | Functions without raw memory offsets | `████████████████████` | **100 %** |
 | Functions without placeholder names | `████████████████████` | **100 %** |
@@ -30,7 +31,10 @@ without original addresses, the values of `#define`s (that is where they get the
 four or more set bits such as `0xff`, `0x3fffffff`, `0xffff0000`: they read best as hex; 331 of them) and the
 sample codec's MMX tables, whose offsets are genuine table positions. The 2 left are occupancy and production
 bits whose meaning is not known yet. The goto count is the next stage: restructuring
-changes the machine code and is checked by behaviour tests instead of the byte comparison.
+changes the machine code and is checked by behaviour tests instead of the byte comparison. The data share comes from
+[`tools/data/image_data_report.py`](tools/data/image_data_report.py): of the bytes that hold content (not zero storage, not the
+tables computed at startup), the part written with a real type and named fields, as text, as a UI template or as a
+jump table; the rest are code fragments between data and 16 bytes nobody uses.
 
 ### What works
 

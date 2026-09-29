@@ -14,9 +14,9 @@
    g_UiTransferChunkPacketSequenceToken / g_UiTransferChunkPayload. The packed type is written byte by byte:
    0x31,0,1,0 = FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST, 0x30,0,8,0 = FRONTEND_PACKET_80030_MAILBOX_CHUNK.
    g_UiTransferRoundKeys16Tail is not a string: Ghidra read the bytes "mohTG sakere!!!e" as text, but they are
-   round keys 12..15 of g_UiTransferRoundKeys16 (0x004AE9A8, UI_TRANSFER_CIPHER_ROUND_COUNT dwords). The packet
-   header is the first byte behind the key table, 4 dwords past that symbol. */
-#define UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES (g_UiTransferRoundKeys16Tail + 4 * sizeof(uint32_t))
+   round keys 12..15 of the UI_TRANSFER_CIPHER_ROUND_COUNT keys starting at g_UiTransferRoundKeys16 (keys
+   0..11, 0x004AE9A8). The packet header is the first byte behind the key table, right after the tail. */
+#define UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES ((uint8_t *)(g_UiTransferRoundKeys16Tail + 4))
 
 /* Address: 0x004AEB10.
    Network receive timer (125 Hz, so one tick is 8 ms). Drains the UDP socket into the record ring: each
@@ -76,7 +76,7 @@ receiveNextRecord:
                         (uint8_t *)ringRecord);
     if (!receiveResult.failed) {
       UiTransfer_DecryptPacketBlocks
-                ((uint32_t *)&g_UiTransferRoundKeys16,ringRecord,256,ringRecord);
+                (g_UiTransferRoundKeys16,ringRecord,256,ringRecord);
       LOCK();
       checksumField = &ringRecord->packetHeader.xorChecksum;
       checksum = *checksumField;
@@ -1499,25 +1499,26 @@ void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks
         roundKeyNibble7 = roundKeys16 + roundIndex;
         roundIndex++;
         /* one nibble per table: table n, row = key nibble n, column = input nibble n */
-        rightState =(((((((*(int *)(&g_RandomPrimaryNibbleMixTable0 +
+        /* byte offsets into the uint32_t[16][16] tables: row = key nibble * 64, column = input nibble * 4 */
+        rightState =(((((((*(int *)((uint8_t *)g_RandomPrimaryNibbleMixTable0 +
                                     (roundInputHalf & 0xf) * 4 + (*roundKeyNibble0 & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES) << 4 |
-                           *(uint32_t *)(&g_RandomPrimaryNibbleMixTable1 +
+                           *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable1 +
                                     ((roundInputHalf & 0xf0) >> 4) * 4 + (*roundKeyNibble1 & 0xf0) * 4)) << 4
-                          | *(uint32_t *)(&g_RandomPrimaryNibbleMixTable2 +
+                          | *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable2 +
                                      ((roundInputHalf & 0xf00) >> 8) * 4 + ((*roundKeyNibble2 & 0xf00) >> 2))
-                          ) << 4 | *(uint32_t *)(&g_RandomPrimaryNibbleMixTable3 +
+                          ) << 4 | *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable3 +
                                             ((roundInputHalf & 0xf000) >> 12) * 4 +
                                             ((*roundKeyNibble3 & 0xf000) >> 6))) << 4 |
-                        *(uint32_t *)(&g_RandomPrimaryNibbleMixTable4 +
+                        *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable4 +
                                  ((roundInputHalf & 0xf0000) >> 16) * 4 +
                                  ((*roundKeyNibble4 & 0xf0000) >> 10))) << 4 |
-                       *(uint32_t *)(&g_RandomPrimaryNibbleMixTable5 +
+                       *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable5 +
                                 ((roundInputHalf & 0xf00000) >> 20) * 4 +
                                 ((*roundKeyNibble5 & 0xf00000) >> 14))) << 4 |
-                      *(uint32_t *)(&g_RandomPrimaryNibbleMixTable6 +
+                      *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable6 +
                                ((roundInputHalf & 0xf000000) >> 24) * 4 +
                                ((*roundKeyNibble6 & 0xf000000) >> 18))) << 4 |
-                     *(uint32_t *)(&g_RandomPrimaryNibbleMixTable7 +
+                     *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable7 +
                               (roundInputHalf >> 28) * 4 + ((*roundKeyNibble7 & 0xf0000000) >> 22))) ^
                      leftState;
         roundInputHalf = leftState;
@@ -1708,7 +1709,7 @@ bool UiTransfer_StagePacketAndSend(UiTransferEndpointDescriptor *endpoint,UiTran
   } while (nextBytesRemaining != 0 && moreBytes);
   packet->xorChecksum = checksum;
   UiTransfer_EncryptPacketBlocks
-            ((uint32_t *)&g_UiTransferRoundKeys16,outputBlocks,byteCount,
+            (g_UiTransferRoundKeys16,outputBlocks,byteCount,
              &packet->packedTypeAndUnitCount);
   /* endpointBufferBase points 8 bytes into the endpoint ring, so "- 8" is the endpoint slot itself */
   endpointDestinationDwordCursor = (uint32_t *)(endpointBufferBase + endpointOffset + -8);

@@ -232,7 +232,7 @@ uint32_t __cdecl FileSystem_Init(void)
             *configCursor = 0;
           }
           else {
-            *configCursor = (&g_FileSystemConfigCharacterNormalizationMap)[configByte];
+            *configCursor = g_FileSystemConfigCharacterNormalizationMap[configByte];
           }
           configCursor++;
           configBytesLeft--;
@@ -775,9 +775,9 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
   int freeBytes;
   int totalBytes;
 
-  g_Win32DriveRootPathScratchA = (uint8_t)driveLetter; /* "X:\" root path scratch */
+  g_Win32DriveRootPathScratchA[0] = (char)driveLetter; /* "X:\" root path scratch */
   gotDiskSpace =
-       GetDiskFreeSpaceA(&g_Win32DriveRootPathScratchA,(LPDWORD)&g_Win32DiskSectorsPerClusterScratch
+       GetDiskFreeSpaceA(g_Win32DriveRootPathScratchA,(LPDWORD)&g_Win32DiskSectorsPerClusterScratch
                          ,(LPDWORD)&g_Win32DiskBytesPerSectorScratch,
                          (LPDWORD)&g_Win32DiskFreeClustersScratch,
                          (LPDWORD)&g_Win32DiskTotalClustersScratch);
@@ -1010,9 +1010,9 @@ DirectoryEnumerationResult Win32FileSystem_EnumerateDirectoryOrVolumeEntries
   int passesRemaining;
 
   if (mode == FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
-    g_Win32DriveRootPathScratchA = *pathOrVolumeText; /* the drive letter of the "X:\" root path scratch */
+    g_Win32DriveRootPathScratchA[0] = *pathOrVolumeText; /* the drive letter of the "X:\" root path scratch */
     apiSucceeded = GetVolumeInformationA
-                      ((LPCSTR)&g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratchA,128,
+                      (g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratchA,128,
                        NULL,NULL,NULL,NULL,0);
     if (apiSucceeded == 0) {
       enumerationResult.recordSizeBytes = FILESYSTEM_ENUMERATION_RECORD_BYTES;
@@ -1223,8 +1223,8 @@ EngineDriveTypeCode Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLette
 {
   UINT win32DriveType;
 
-  g_Win32DriveRootPathScratchA = (uint8_t)driveLetter; /* "X:\" root path scratch */
-  win32DriveType = GetDriveTypeA(&g_Win32DriveRootPathScratchA);
+  g_Win32DriveRootPathScratchA[0] = (char)driveLetter; /* "X:\" root path scratch */
+  win32DriveType = GetDriveTypeA(g_Win32DriveRootPathScratchA);
   if (win32DriveType == DRIVE_REMOVABLE) {
     return ENGINE_DRIVE_REMOVABLE;
   }
