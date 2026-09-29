@@ -238,7 +238,7 @@ void TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   /* the eight category maxima follow the reciprocal table directly */
   categoryReciprocalCursor = g_TechnologyCategoryMaximumReciprocalQ24Table8;
   for (remainingCount = 8; remainingCount != 0; remainingCount--) {
-    *categoryReciprocalCursor = 0x1000000u / categoryReciprocalCursor[8];
+    *categoryReciprocalCursor = TECHNOLOGY_RECIPROCAL_Q24_ONE / categoryReciprocalCursor[8];
     categoryReciprocalCursor++;
   }
   /* clear both category masks (2 x 8 dwords) */

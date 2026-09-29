@@ -225,10 +225,10 @@ AdvanceWaypoint:
           if ((stepSteerOrWorldX < (ModelRuntimeNode *)(FIXED_ANGLE16_EIGHTH_TURN + 1)) ||
              ((ModelRuntimeNode *)(FIXED_ANGLE16_FULL_TURN - FIXED_ANGLE16_EIGHTH_TURN - 1) < stepSteerOrWorldX)) {
 UpdateTerrainContact:
-            /* 0xffa0 also clears the stored turn angle in the upper 16 bits */
+            /* the keep mask also clears the stored turn angle in the upper 16 bits */
             if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & ARMY_ARTICULATED_STEP_LEFT_LAST) == 0) {
               contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
-              *contactStateFlags = *contactStateFlags & 0xffa0;
+              *contactStateFlags = *contactStateFlags & ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK;
               contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
               *contactStateFlags = *contactStateFlags |
                    (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_LEFT_LAST | ARMY_ARTICULATED_STEP_LEFT);
@@ -238,7 +238,7 @@ UpdateTerrainContact:
             }
             else {
               contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
-              *contactStateFlags = *contactStateFlags & 0xffa0;
+              *contactStateFlags = *contactStateFlags & ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK;
               contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
               *contactStateFlags = *contactStateFlags |
                    (ARMY_ARTICULATED_STEP_WALK | ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_RIGHT);
@@ -1150,11 +1150,11 @@ void ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
       secondChildOrRootNode = rootNode->childNodes[1];
       thirdChildNode = rootNode->childNodes[2];
       childRotationAngle = &(rootNode->childNodes[0]->modelPayload).localRotationAngle1;
-      *childRotationAngle = *childRotationAngle + 0x2aa;
+      *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
       childRotationAngle = &(secondChildOrRootNode->modelPayload).localRotationAngle1;
-      *childRotationAngle = *childRotationAngle + 0x2aa;
+      *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
       childRotationAngle = &(thirdChildNode->modelPayload).localRotationAngle1;
-      *childRotationAngle = *childRotationAngle + 0x2aa;
+      *childRotationAngle = *childRotationAngle + ARMY_SPIN_CHILD_STEP_ANGLE16;
     }
     waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
@@ -1470,11 +1470,11 @@ void ArmyRuntime_StartMoveCommandWithAuxiliaryValues
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
   movementRuntime->movementStateFlags =
        movementRuntime->movementStateFlags |
-       (ARMY_MOVEMENT_ROUTED | 0x40 | ARMY_MOVEMENT_WAYPOINTS_QUEUED | ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ACTIVE);
+       (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_WAYPOINTS_QUEUED | ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ACTIVE);
   movementRuntime->movementStateFlags =
        movementRuntime->movementStateFlags &
        ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
-  movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~0x10u;
+  movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
   movementRuntime->queuedWaypointCount = 1;
   resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                     (targetWorldYQ12,targetWorldXQ12,movementRuntime->entityRuntime,worldRuntime);
@@ -1644,12 +1644,12 @@ void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
     if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
       movementRuntime->movementStateFlags =
-           movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | 0x40 | ARMY_MOVEMENT_ACTIVE);
+           movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_ACTIVE);
       movementRuntime->movementStateFlags =
            movementRuntime->movementStateFlags &
            ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED |
              ARMY_MOVEMENT_WAYPOINTS_QUEUED);
-      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & 0xffffffef;
+      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                         (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
       (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -1690,10 +1690,10 @@ void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,A
     if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
       movementRuntime->movementStateFlags =
-           movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | 0x40 | ARMY_MOVEMENT_ACTIVE);
+           movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_ACTIVE);
       movementRuntime->movementStateFlags =
            movementRuntime->movementStateFlags & ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
-      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & 0xffffffef;
+      movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                         (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
       (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -2471,7 +2471,7 @@ void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyM
     }
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags &
-         ~(ARMY_MOVEMENT_MIRROR_TARGET | 0x40 | ARMY_MOVEMENT_ROUTE_POINT_REACHED | ARMY_MOVEMENT_WAYPOINTS_QUEUED);
+         ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_ROUTE_POINT_REACHED | ARMY_MOVEMENT_WAYPOINTS_QUEUED);
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags |
          (ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ACTIVE);
@@ -2511,7 +2511,7 @@ void ArmyRuntime_StartDirectMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMo
          movementRuntime->movementStateFlags | (ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ACTIVE);
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags &
-         ~(0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED);
+         ~(ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED);
     resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                       (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
     (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -2741,7 +2741,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   /* body heading = start heading + (end - start) * (left progress + right progress) */
   walkerRuntime = (modelNodeRuntime->runtimePayload).armyRuntime;
   (modelNodeRuntime->modelPayload).worldRotationAngle2 =
-       (((int)((walkerRuntime->classState64 - walkerRuntime->classState60) * 0x10000) >> 16) *
+       (((int)((walkerRuntime->classState64 - walkerRuntime->classState60) * ARMY_ANGLE16_SIGN_EXTEND_SCALE) >> 16) *
         (walkerRuntime->runtimeStateA8 + (walkerRuntime->articulatedContact).terrainContactMode) >> Q12_SHIFT) +
        walkerRuntime->classState60 & FIXED_ANGLE16_MASK;
   /* raise both feet by the foot model's height offset; the root goes midway between them at hip height */
@@ -2814,11 +2814,11 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   rightLengthOrAngle = leftXOrAngle + FIXED_ANGLE16_HALF_TURN & FIXED_ANGLE16_MASK;
   (leftNode->modelPayload).localRotationAngle2 = leftYawOffset & FIXED_ANGLE16_MASK;
   (rightNode->modelPayload).localRotationAngle2 = rightLengthOrAngle;
-  rightLengthOrAngle = (rootHeading - 0x4000) + rightLengthOrAngle & FIXED_ANGLE16_MASK;
+  rightLengthOrAngle = (rootHeading - FIXED_ANGLE16_QUARTER_TURN) + rightLengthOrAngle & FIXED_ANGLE16_MASK;
   scale = (((modelNodeRuntime->runtimePayload).armyRuntime)->articulatedContact).
           contactRadiusOrLinkedSlotMask.contactRadiusQ12;
   contactOffset = FixedMath_SinCosScaled
-                     (rootHeading + 0x4000 + (leftYawOffset & FIXED_ANGLE16_MASK) & FIXED_ANGLE16_MASK,
+                     (rootHeading + FIXED_ANGLE16_QUARTER_TURN + (leftYawOffset & FIXED_ANGLE16_MASK) & FIXED_ANGLE16_MASK,
                       (((modelNodeRuntime->runtimePayload).armyRuntime)->articulatedContact).
                       contactRadiusOrLinkedSlotMask.contactRadiusQ12);
   leftXOrAngle = leftContactX + (int)contactOffset;
@@ -2906,7 +2906,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   leftBlendAngleEcx = leftBlendAngles.elevationAngle;
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (((leftHeading - leftPreviousHeading) * 0x10000 >> 16) * leftBlendQ12 >> Q12_SHIFT) + leftHeadingBase & FIXED_ANGLE16_MASK,leftBlendAngleEcx,leftBlendAngleEdx
+             (((leftHeading - leftPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * leftBlendQ12 >> Q12_SHIFT) + leftHeadingBase & FIXED_ANGLE16_MASK,leftBlendAngleEcx,leftBlendAngleEdx
             );
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
@@ -2929,7 +2929,7 @@ void ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   rightBlendAngleEcx = rightBlendAngles.elevationAngle;
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
-             (((inverseBlendOrRightHeading - rightPreviousHeading) * 0x10000 >> 16) * rightBlendQ12 >> Q12_SHIFT) + rightHeadingBase & FIXED_ANGLE16_MASK,rightBlendAngleEcx,
+             (((inverseBlendOrRightHeading - rightPreviousHeading) * ARMY_ANGLE16_SIGN_EXTEND_SCALE >> 16) * rightBlendQ12 >> Q12_SHIFT) + rightHeadingBase & FIXED_ANGLE16_MASK,rightBlendAngleEcx,
              rightBlendAngleEdx);
   FixedTransform_Compose
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixComposedScratch,
@@ -3194,7 +3194,7 @@ void ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     pointXOrSegment = armyRuntime->articulatedCoordinateOrState9C;
     footYOrZ = armyRuntime->runtimeStateA4;
     contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
-    *contactStateFlags = *contactStateFlags | signedSteeringAngle * 0x8000;
+    *contactStateFlags = *contactStateFlags | signedSteeringAngle * ARMY_ARTICULATED_STEP_HALF_TURN_SCALE;
     movementDefinition = armyRuntime->definitionOrAsset;
     footXOrLength = FixedMath_Length3(footYOrZ - armyRuntime->runtimeState8C,
                               pointXOrSegment - armyRuntime->definitionClassValue84,
@@ -3278,11 +3278,11 @@ void ArmyRuntime_AppendWaypointOrStartMove
       movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | ARMY_MOVEMENT_WAYPOINTS_QUEUED;
     }
     waypointCount = movementRuntime->queuedWaypointCount;
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 0x40;
+    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | ARMY_MOVEMENT_ORDERED;
     if (waypointCount < ARMY_MOVEMENT_WAYPOINT_CAPACITY) {
       waypointCount = waypointCount + 1;
     }
-    movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & 0xfffffbef;
+    movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & ~(uint32_t)(ARMY_COMMAND_MODE_UNUSED_400 | ARMY_COMMAND_MODE_SELECTION_ORDER);
     movementRuntime->queuedWaypoints[waypointCount - 1].worldXQ12 = targetWorldX;
     movementRuntime->queuedWaypoints[waypointCount - 1].worldYQ12 = targetWorldY;
     movementRuntime->queuedWaypointCount = waypointCount;
@@ -3335,7 +3335,7 @@ void ArmyRuntime_StartMoveCommandWithFallbackWaypoints
       }
     }
     movementRuntime->movementStateFlags =
-         movementRuntime->movementStateFlags | (0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ACTIVE);
+         movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ACTIVE);
     resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                       (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
     (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -3380,7 +3380,7 @@ void ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *mov
   }
   movementRuntime->movementStateFlags =
        movementRuntime->movementStateFlags &
-       ~(ARMY_MOVEMENT_DIRECT | 0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
+       ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
   return;
 }
 
@@ -3409,7 +3409,7 @@ void ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *move
   }
   movementRuntime->movementStateFlags =
        movementRuntime->movementStateFlags &
-       ~(ARMY_MOVEMENT_DIRECT | 0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
+       ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED);
   return;
 }
 
@@ -3535,7 +3535,7 @@ MovementStepResult ArmyRuntime_UpdateMovementAndWaypoints
       (exceededDistance = distanceY, distanceY < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1)) {
     movementRuntime->movementStateFlags =
          movementRuntime->movementStateFlags &
-         ~(ARMY_MOVEMENT_DIRECT | 0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED |
+         ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ORDERED | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ROUTE_POINT_REACHED |ARMY_MOVEMENT_WAYPOINTS_QUEUED |
            ARMY_MOVEMENT_ACTIVE);
     currentWorldX = (modelNode->worldTransform).translation.x;
     currentWorldY = (modelNode->worldTransform).translation.y;

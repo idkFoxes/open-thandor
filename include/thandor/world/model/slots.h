@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/model/slots. */
+
+/* ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming: value of the class words +0x68..+0x74 that
+   hold no coordinate yet (INT32_MIN bit pattern, never a real world coordinate) */
+#define MODEL_CLASS_STATE_UNSET_COORDINATE 0x80000000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005200C0 */

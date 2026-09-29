@@ -43,7 +43,7 @@
 - `0x00505240` **[`FieldGrid_SetOccupancyMaskByteBit0AllCells`](../../../../src/world/terrain/grid.c#L2552)**
 - `0x00505290` **[`FieldGrid_ClearOccupancyMaskByteBit0AllCells`](../../../../src/world/terrain/grid.c#L2583)**
 - `0x00507580` **[`TerrainGrid_TestProjectedCellMaskBits01`](../../../../src/world/terrain/grid.c#L2614)**
-- `0x005092A0` **[`FieldGrid_ClearUnresolvedFlagInAllCells`](../../../../src/world/terrain/grid.c#L2647)**
+- `0x005092A0` **[`FieldGrid_ClearDebugMarkInAllCells`](../../../../src/world/terrain/grid.c#L2647)**
 - `0x005092E0` **[`FieldGrid_SetAllCellOverlayColors`](../../../../src/world/terrain/grid.c#L2667)**
 - `0x00532B60` **[`FieldGrid_SaveAssetImageFromRuntimeState`](../../../../src/world/terrain/grid.c#L2689)** — cross: [`FileSystem_WriteBufferToPath`](../../../../src/platform/filesystem/win32.c#L289) → [`platform/filesystem/win32`](../../platform/filesystem/win32.md)
 - `0x00561050` **[`FieldGrid_ClearPlayerScratchPlane`](../../../../src/world/terrain/grid.c#L2761)**

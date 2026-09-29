@@ -824,7 +824,7 @@ void SelectionOverlay_DrawResourceCellMarkers
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x4000 and g_UiCommandRuntimeFlags
    bit 0x40 are set and a field grid is attached.
 */
-void SelectionOverlay_DrawUnresolvedCellMarkers
+void SelectionOverlay_DrawDebugMarkedCellMarkers
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid)
 

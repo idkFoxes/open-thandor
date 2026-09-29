@@ -22,6 +22,9 @@
 #define TERRAIN_OCCUPANCY_FLAG_PRESENT 0x04
 #define TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE 0x08
 #define TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED 0x10 /* set on shots and effects */
+/* Rounding bias added to a Q12 radius before dividing by FIELD_GRID_WORLD_COLUMN_STEP_X (just under half a Q12
+   unit, not half the cell step) */
+#define TERRAIN_OCCUPANCY_RADIUS_ROUND_Q12 0x7ffU
 
 /* 0x00507460 */
 void TerrainOccupancyBit2_MarkAroundWorldPoint(FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,

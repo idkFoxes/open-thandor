@@ -1700,7 +1700,7 @@ void SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **s
     {
       ArmyRuntime_ResetMovementStateFromModel((ArmyRuntimeSlot *)currentEntity);
       ((ArmyRuntimeSlot *)currentEntity)->commandModeFlags =
-           ((ArmyRuntimeSlot *)currentEntity)->commandModeFlags & 0xffffffef;
+           ((ArmyRuntimeSlot *)currentEntity)->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
       ((ArmyRuntimeSlot *)currentEntity)->movementStateFlags =
            ((ArmyRuntimeSlot *)currentEntity)->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
       entryModelRuntime = ((ArmyRuntimeSlot *)currentEntity)->modelRuntimeOrSavedOffset.modelRuntime;
@@ -2626,7 +2626,8 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
       if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
         runtimeState->assignedTargetArmyRuntime = (uint32_t)targetArmyRuntime;
-        runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
+        runtimeState->commandModeFlags = runtimeState->commandModeFlags |
+                                       (ARMY_COMMAND_MODE_SELECTION_ORDER | ARMY_COMMAND_MODE_INTERRUPTED);
         runtimeState->movementStateFlags = runtimeState->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
       }
     }
@@ -2657,7 +2658,8 @@ void SelectionPointerArray_ApplyTargetPositionCommand
       stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
-        runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
+        runtimeState->commandModeFlags = runtimeState->commandModeFlags |
+                                       (ARMY_COMMAND_MODE_SELECTION_ORDER | ARMY_COMMAND_MODE_INTERRUPTED);
         runtimeState->movementStateFlags = runtimeState->movementStateFlags & ~ARMY_MOVEMENT_ROUTED;
         runtimeState->commandGeneration = runtimeState->commandGeneration << 2;
       }
@@ -2684,10 +2686,10 @@ void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries)
   do {
     entityRuntime = *selectionEntries;
     if ((entityRuntime != NULL) &&
-       (((entityRuntime->common).commandFlags & 2) == 0)) {
+       (((entityRuntime->common).commandFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
       GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(entityRuntime);
       commandFlagsPtr = &(entityRuntime->common).commandFlags;
-      *commandFlagsPtr = *commandFlagsPtr & 0xfffffdff;
+      *commandFlagsPtr = *commandFlagsPtr & ~(uint32_t)ARMY_MOVEMENT_ROUTED;
     }
     selectionEntries = selectionEntries + 1;
     entriesRemaining--;
@@ -2712,7 +2714,7 @@ void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries)
        ((((ArmyRuntimeSlot *)armyRuntime)->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0)) {
       ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration((ArmyRuntimeSlot *)armyRuntime);
       ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags =
-           ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags & 0xffffffef;
+           ((ArmyRuntimeSlot *)armyRuntime)->commandModeFlags & ~(uint32_t)ARMY_COMMAND_MODE_SELECTION_ORDER;
     }
     selectionEntries = selectionEntries + 1;
     entriesRemaining--;
@@ -2931,13 +2933,13 @@ void SelectionPointerArray_SetAircraftPadTargets
       do {
         markerSourceId = padRuntime->completedSecondaryArmyAssetIds[markerSlotIndex];
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot0) {
-          packedMarkerMatches = packedMarkerMatches + 1;
+          packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(0);
         }
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot1) {
-          packedMarkerMatches = packedMarkerMatches + 0x100;
+          packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(1);
         }
         if (markerSourceId == g_ArmyLinkedChildAssetIdSlot2) {
-          packedMarkerMatches = packedMarkerMatches + 0x10000;
+          packedMarkerMatches = packedMarkerMatches + SELECTION_PACKED_LANE_ONE(2);
         }
         markerSlotIndex--;
       } while (-1 < markerSlotIndex);

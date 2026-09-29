@@ -109,7 +109,7 @@ OffscreenRenderResult GraphicsOffscreen_RenderModelListToTextureSource
     zeroCursorOrDepthBuffer = (int32_t *)depthAllocation.payloadOrError;
     if (!depthAllocation.failed) {
       depthCursor = zeroCursorOrDepthBuffer;
-      for (assetBytesOrPixelsLeft = outputHeight * outputWidth & 0x3fffffff; savedDepthEpoch = g_SoftwareDepthEpoch,
+      for (assetBytesOrPixelsLeft = outputHeight * outputWidth & DWORD_COUNT_MASK; savedDepthEpoch = g_SoftwareDepthEpoch,
           savedDepthBuffer = g_SoftwareDepthBuffer, assetBytesOrPixelsLeft != 0; assetBytesOrPixelsLeft--) {
         *depthCursor = -1;
         depthCursor++;

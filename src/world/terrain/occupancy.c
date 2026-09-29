@@ -116,7 +116,7 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 
   if (fieldGrid != NULL) {
     /* cells per ray, rounded; the original divides by 0x901, not by the cell size 0x900 */
-    radiusStepsOrGridWidth = (neighborhoodRadiusQ12 + 0x7ffU) / FIELD_GRID_WORLD_COLUMN_STEP_X;
+    radiusStepsOrGridWidth = (neighborhoodRadiusQ12 + TERRAIN_OCCUPANCY_RADIUS_ROUND_Q12) / FIELD_GRID_WORLD_COLUMN_STEP_X;
     if (radiusStepsOrGridWidth == 0) {
       runStepCount = 2;
     }
@@ -194,11 +194,11 @@ uint32_t TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
         persistentOnlyBytes = TerrainOccupancy_Pcmpeqb((uint64_t)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
         persistentOnlySums =
              pmaddwd(persistentOnlyBytes & g_TerrainOccupancyMmxPackedScale0280,
-                     g_TerrainOccupancyMmxPackedWeights02_20);
+                     g_TerrainOccupancyMmxPersistentWeights);
         currentPresenceSums =
              pmaddwd((TerrainOccupancy_Pcmpeqb(0,combinedMask) ^
                       g_TerrainOccupancyMmxAllBitsMask ^ persistentOnlyBytes) &
-                     g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxPackedWeights04_40);
+                     g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxCurrentWeights);
         return (int)((uint64_t)currentPresenceSums >> 32) + (int)((uint64_t)persistentOnlySums >> 32)
                | (uint32_t)((int)currentPresenceSums + (int)persistentOnlySums) >> 8;
       }

@@ -82,7 +82,7 @@ void FontRuntime_Init(void)
   pathUtf16 = u_engine_font_gfx_0041b030;
   textureSourceSlot = g_FontTextureSources;
   remainingSources = 2;
-  scanLimitOrSlotCount = 0x21; /* REPNE SCASW limit (0x42 >> 1 code units), shared by both path scans */
+  scanLimitOrSlotCount = FONT_TEXTURE_PATHS_SCAN_UNITS;
   do {
     textureLoadResult = g_GraphicsTextureSourceLoadPackageAsset((uint16_t *)pathUtf16);
     checkedResult = FatalError_ExitIfFailed((uint32_t)textureLoadResult.textureSource,textureLoadResult.failed);
@@ -100,7 +100,7 @@ void FontRuntime_Init(void)
     textureSourceSlot++;
     remainingSources--;
   } while (remainingSources != 0);
-  allocResult = g_MemoryApi.alloc(0x4000); /* 16 KiB font runtime buffer */
+  allocResult = g_MemoryApi.alloc(RICHTEXT_RUNTIME_BUFFER_UNITS * sizeof(uint16_t)); /* 16 KiB */
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_FontRuntimeBuffer = (uint8_t *)checkedResult.valueOrError;
   allocResult = g_MemoryApi.alloc(sizeof(TextResourceOverrideTable));
@@ -374,10 +374,10 @@ TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_
             case RICHTEXT_OP_JUMP_NESTED:
               packedHighDigits = *(uint32_t *)textCursor;
               *(uint32_t *)(recordStart + 3) =
-                   (*(uint32_t *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
+                   (*(uint32_t *)(recordStart + 3) >> 16 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
               *(void **)textCursor = &g_MissingTextResourceFallbackStream;
               *(uint32_t *)(recordStart + 3) =
-                   *(int *)(recordStart + 3) + (packedHighDigits >> 0x10 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
+                   *(int *)(recordStart + 3) + (packedHighDigits >> 16 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
               textCursor = recordStart + RICHTEXT_RECORD_UNITS_NESTED;
               break;
             case RICHTEXT_OP_INLINE_IMAGE:
@@ -385,10 +385,10 @@ TextPageLoadResult TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_
                  0x0041CC3E MOV [ESI],0). */
               packedHighDigits = *(uint32_t *)textCursor;
               *(uint32_t *)(recordStart + 3) =
-                   (*(uint32_t *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
+                   (*(uint32_t *)(recordStart + 3) >> 16 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
               *(uint32_t *)textCursor = 0;
               *(uint32_t *)(recordStart + 3) =
-                   *(int *)(recordStart + 3) + (packedHighDigits >> 0x10 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
+                   *(int *)(recordStart + 3) + (packedHighDigits >> 16 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
               textCursor = recordStart + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
             }
           }

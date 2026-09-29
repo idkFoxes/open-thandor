@@ -18,7 +18,7 @@ static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
   }
   return lanes.q;
 }
@@ -566,7 +566,7 @@ HandleNearestArmyHitAndTerminateProjectile:
                targetAngles.elevationAngle - modelNodeRuntime->modelPayload.worldRotationAngle1;
           workingValue = shotDefinition->guidanceTurnLimitAngle16;
           headingTurnDeltaAngle16 =
-               (int)((targetAngles.azimuthAngle - modelNodeRuntime->modelPayload.worldRotationAngle0) * 0x10000)
+               (int)((targetAngles.azimuthAngle - modelNodeRuntime->modelPayload.worldRotationAngle0) * FIXED_ANGLE16_FULL_TURN)
                >> 16; /* wrapped to a signed 16-bit turn */
           if (workingValue < elevationTurnDeltaAngle16) {
             elevationTurnDeltaAngle16 = workingValue;

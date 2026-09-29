@@ -37,6 +37,7 @@
 #define FIELD_CELL_OCCUPANCY_PRESENCE_BITS 0xf9   /* bits that count as "faction present" (1 and 2 excluded) */
 #define FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS 0x79 /* the presence bits without the persistent bit 7
                                                            (FieldGrid_ClassifyCellFlagsToRuntimeByte, minimap) */
+#define FIELD_CELL_OCCUPANCY_EXPLORED_BITS 0xf8   /* bits 3..7: the faction has explored the cell (exploration score) */
 /* a byte mask moved into the faction slot's byte of the 64-bit occupancyMask */
 #define FIELD_CELL_OCCUPANCY_SLOT_MASK(bits,factionSlot) ((uint64_t)(bits) << ((factionSlot) * 8))
 /* the faction slot's occupancy byte of a cell (an lvalue) */
@@ -83,6 +84,17 @@
 /* occupancy bit 1, set within an army's radius by TerrainOccupancyBit2_MarkAroundWorldPoint (the "Bit2" in the
    TerrainOccupancyBit2_* names is the mask value 2) */
 #define FIELD_CELL_OCCUPANCY_BIT1 0x02
+/* Two FieldGridCells in bytes: the byte-addressed reverse water relaxation passes step two rows (upper
+   neighbour row to lower neighbour row) as rowLength * this, and back over the two border cells at a row end. */
+#define FIELD_GRID_TWO_CELLS_BYTES (2 * sizeof(FieldGridCell))
+/* Z of the unnormalised cell normal (FieldGridCell_RecomputeTriangleNormalAngles), 3 * 2048^2: the sum of the
+   squared X offsets of the six lattice neighbours for a cell spacing of 2048 world units, so a plane's X/Y tilt
+   sums come out against it roughly to scale (the real spacing is 2305, FIELD_GRID_WORLD_COLUMN_STEP_X). */
+#define FIELD_GRID_NORMAL_Z_COMPONENT 0xc00000
+/* Height-drag brush falloff (FieldGrid_ProcessHorizontalSpan/VerticalSpan): the decompiled 64-bit
+   distance * FIXED_ANGLE16_HALF_TURN keeps bits 0..48 of the sign-extended distance and shifts them right by 17
+   to get the product's high dword (a plain 64-bit multiply compiles differently). */
+#define FIELD_GRID_ANGLE_PRODUCT_HIGH_BITS_MASK 0x1ffffffffffffU
 
 /* 0x00505930 */
 void FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
@@ -230,7 +242,7 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
 bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x005092A0 */
-void FieldGrid_ClearUnresolvedFlagInAllCells(FieldGridAsset *fieldGrid);
+void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid);
 
 /* 0x005092E0 */
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);

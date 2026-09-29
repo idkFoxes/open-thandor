@@ -10,11 +10,13 @@
 
 /* Implementation ownership: network/protocol/transfer. */
 
-/* Header bytes of the mailbox chunk packet at 0x004AE9E8 (behind a 0x10-byte string of the image); its payload
-   follows as g_UiTransferChunkPacketSequenceToken / g_UiTransferChunkPayload. The packed type is written byte
-   by byte: 0x31,0,1,0 = FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST, 0x30,0,8,0 =
-   FRONTEND_PACKET_80030_MAILBOX_CHUNK. */
-#define UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES (s_mohTG_sakere___e_004ae9d8 + 0x10)
+/* Header bytes of the mailbox chunk packet at 0x004AE9E8; its payload follows as
+   g_UiTransferChunkPacketSequenceToken / g_UiTransferChunkPayload. The packed type is written byte by byte:
+   0x31,0,1,0 = FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST, 0x30,0,8,0 = FRONTEND_PACKET_80030_MAILBOX_CHUNK.
+   g_UiTransferRoundKeys16Tail is not a string: Ghidra read the bytes "mohTG sakere!!!e" as text, but they are
+   round keys 12..15 of g_UiTransferRoundKeys16 (0x004AE9A8, UI_TRANSFER_CIPHER_ROUND_COUNT dwords). The packet
+   header is the first byte behind the key table, 4 dwords past that symbol. */
+#define UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES (g_UiTransferRoundKeys16Tail + 4 * sizeof(uint32_t))
 
 /* Address: 0x004AEB10.
    Network receive timer (125 Hz, so one tick is 8 ms). Drains the UDP socket into the record ring: each
@@ -137,7 +139,7 @@ receiveNextRecord:
                        g_UiTransferMailbox.receivedByteCount -
                        g_UiTransferMailbox.receivedRemainingBytes;
                   /* chunk packet header = FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST: type 0x31, 1 unit */
-                  UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[0] = 0x31;
+                  UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[0] = UI_TRANSFER_CHUNK_REQUEST_TYPE_BYTE;
                   UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[1] = 0;
                   UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[2] = 1;
                   UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[3] = 0;
@@ -170,7 +172,7 @@ receiveNextRecord:
             g_UiTransferMailboxTransferByteCount = g_UiTransferMailbox.outgoingByteCount;
             playerRecord->transferProgressBytes = playerRecord->transferProgressBytes + g_UiTransferMailboxChunkOffset;
             /* chunk packet header = FRONTEND_PACKET_80030_MAILBOX_CHUNK: type 0x30, 8 units (0x100 bytes) */
-            UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[0] = 0x30;
+            UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[0] = UI_TRANSFER_CHUNK_TYPE_BYTE;
             UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[1] = 0;
             UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[2] = 8;
             UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[3] = 0;
@@ -196,11 +198,11 @@ receiveNextRecord:
         else if (ringRecord->packetHeader.packedTypeAndUnitCount == FRONTEND_PACKET_10032_PING) {
           /* ping: echo the sender's tick count back as 0x10033 */
           g_UiTransferMailboxReplyPacket10033EchoedTick = *(uint32_t *)ringRecord->payload;
-          g_UiTransferMailboxReplyPacket10033 = 0x10033;
+          g_UiTransferPingEchoPacket = FRONTEND_PACKET_10033_PING_ECHO;
           g_UiTransferMailboxReplyPacket10033SequenceToken = g_UiTransferSequenceToken;
           UiTransfer_StagePacketAndSend
                     ((UiTransferEndpointDescriptor *)senderEndpointSlot,
-                     (UiTransferPacketHeader *)&g_UiTransferMailboxReplyPacket10033);
+                     (UiTransferPacketHeader *)&g_UiTransferPingEchoPacket);
         }
         else if (ringRecord->packetHeader.packedTypeAndUnitCount == FRONTEND_PACKET_10033_PING_ECHO) {
           /* ping answer: store the round trip in ticks and "<ticks * 4>ms" (half the round trip) as text */
@@ -248,7 +250,7 @@ receiveNextRecord:
       g_UiTransferMailbox.receiveRetryTicks = UI_TRANSFER_CHUNK_RETRY_TICKS;
       g_UiTransferMailboxChunkOffset =
            g_UiTransferMailbox.receivedByteCount - g_UiTransferMailbox.receivedRemainingBytes;
-      UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[0] = 0x31;
+      UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[0] = UI_TRANSFER_CHUNK_REQUEST_TYPE_BYTE;
       UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[1] = 0;
       UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[2] = 1;
       UI_TRANSFER_CHUNK_PACKET_HEADER_BYTES[3] = 0;
@@ -520,7 +522,7 @@ bool FrontendTransfer_HandleGameplayCommandAndRosterPackets
     g_FrontendPacket8000ABuffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_8000A_SNAPSHOT_CHUNK;
     /* 0xE8-byte chunks; the last one at 0x1220 has 0xE0 bytes (the preview is 0x1300 bytes) */
     copyCount = 58;
-    if (g_FrontendPacket8000ABuffer.snapshotChunkOffset == 0x1220) {
+    if (g_FrontendPacket8000ABuffer.snapshotChunkOffset == FRONTEND_SNAPSHOT_LAST_CHUNK_OFFSET) {
       copyCount = 56;
     }
     for (; copyCount != 0; copyCount--) {
@@ -920,24 +922,31 @@ void FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(FrontendRootRu
     g_FrontendPacket40008Buffer.pendingSessionPlayerCount = g_FrontendPendingSessionPlayerCount;
     g_FrontendHostPublishRoundRobinCounter++;
     selectedIndexOrPackedCommand = roundRobinOrTextLength % playerOrCommandCount;
-    /* the selected player's record fields, addressed from the record-1 endpoint in 0x10-byte steps */
+    /* the selected player's record fields, addressed from the record-1 endpoint in 0x10-byte steps: the unit at
+       heartbeatExpiryTicks gives playerRuntimeId (+4) and playerName (+8), the one at transferProgressBytes
+       capabilityLabelUtf16 (+8), and pingRoundTripTicks is read directly */
     g_FrontendPacket40008Buffer.selectedPlayerRuntimeId =
-         peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x13e].ipv4AddressNetworkOrder;
+         peerEndpointCursor[(selectedIndexOrPackedCommand - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+             FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks)].ipv4AddressNetworkOrder;
     g_FrontendPacket40008Buffer.selectedStatusCode0 =
-         *(FrontendStatusCode *)peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x138].zeroPadding;
+         *(FrontendStatusCode *)peerEndpointCursor[(selectedIndexOrPackedCommand - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+             FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes)].zeroPadding;
     g_FrontendPacket40008Buffer.selectedStatusCode1 =
-         *(FrontendStatusCode *)(peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x138].zeroPadding + 4);
+         *(FrontendStatusCode *)(peerEndpointCursor[(selectedIndexOrPackedCommand - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+             FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(transferProgressBytes)].zeroPadding + 4);
     g_FrontendPacket40008Buffer.selectedPlayerIndex = selectedIndexOrPackedCommand;
     g_FrontendPacket40008Buffer.playerCount = playerOrCommandCount;
     endpoint = peerEndpointCursor;
     roundRobinOrTextLength = g_WideNumberFormatUtf16
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
-                       peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x136].addressHeader.packedFamilyAndPort << 2,
+                       peerEndpointCursor[(selectedIndexOrPackedCommand - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+             FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(pingRoundTripTicks)].addressHeader.packedFamilyAndPort << 2,
                        g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16);
     *(uint32_t *)((uint8_t *)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + roundRobinOrTextLength) =
-         0x73006d; /* L"ms" */
+         ('s' << 16 | 'm'); /* L"ms" */
     *(uint16_t *)((uint8_t *)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + roundRobinOrTextLength + 4) = 0;
-    descriptorSourceCursor = peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x13e].zeroPadding;
+    descriptorSourceCursor = peerEndpointCursor[(selectedIndexOrPackedCommand - 1) * FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE +
+             FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(heartbeatExpiryTicks)].zeroPadding;
     descriptorDestinationCursor = g_FrontendPacket40008Buffer.playerDescriptorPayload;
     for (dwordCount = 10; dwordCount != 0; dwordCount--) {
       *descriptorDestinationCursor = *(uint32_t *)descriptorSourceCursor;
@@ -1491,7 +1500,7 @@ void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks
         roundIndex++;
         /* one nibble per table: table n, row = key nibble n, column = input nibble n */
         rightState =(((((((*(int *)(&g_RandomPrimaryNibbleMixTable0 +
-                                    (roundInputHalf & 0xf) * 4 + (*roundKeyNibble0 & 0xf) * 0x40) << 4 |
+                                    (roundInputHalf & 0xf) * 4 + (*roundKeyNibble0 & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES) << 4 |
                            *(uint32_t *)(&g_RandomPrimaryNibbleMixTable1 +
                                     ((roundInputHalf & 0xf0) >> 4) * 4 + (*roundKeyNibble1 & 0xf0) * 4)) << 4
                           | *(uint32_t *)(&g_RandomPrimaryNibbleMixTable2 +
@@ -1552,21 +1561,21 @@ void UiTransfer_DecryptPacketBlocks
       do {
         savedHalf = leftHalf;
         rightHalf = rightHalf ^ savedHalf;
-        leftHalf = ((((((*(int *)(((roundKeys16[roundIndex] & 0xf0000000) >> 22) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1c00) +
+        leftHalf = ((((((*(int *)(((roundKeys16[roundIndex] & 0xf0000000) >> 22) + THANDOR_ADDR(g_UiTransferCipherSubstitution,7 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                               (rightHalf & 0xf) * 4) << 4 |
-                     *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000000) >> 18) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1800) +
+                     *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000000) >> 18) + THANDOR_ADDR(g_UiTransferCipherSubstitution,6 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                               ((rightHalf & 0xf0) >> 4) * 4)) << 4 |
-                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00000) >> 14) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1400) +
+                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00000) >> 14) + THANDOR_ADDR(g_UiTransferCipherSubstitution,5 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                              ((rightHalf & 0xf00) >> 8) * 4)) << 4 |
-                   *(uint32_t *)(((roundKeys16[roundIndex] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x1000) +
+                   *(uint32_t *)(((roundKeys16[roundIndex] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferCipherSubstitution,4 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                             ((rightHalf & 0xf000) >> 12) * 4)) << 4 |
-                  *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0xc00) +
+                  *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferCipherSubstitution,3 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                            ((rightHalf & 0xf0000) >> 16) * 4)) << 4 |
-                 *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x800) +
+                 *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferCipherSubstitution,2 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                           ((rightHalf & 0xf00000) >> 20) * 4)) << 4 |
-                *(uint32_t *)((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x400) +
+                *(uint32_t *)((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferCipherSubstitution,1 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                          ((rightHalf & 0xf000000) >> 24) * 4)) << 4 |
-                *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * 0x40 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0) + (rightHalf >> 28) * 4);
+                *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES + THANDOR_ADDR(g_UiTransferCipherSubstitution,0) + (rightHalf >> 28) * 4);
         roundIndex--;
         rightHalf = savedHalf;
       } while (-1 < roundIndex);

@@ -1310,7 +1310,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
   columnLimitOrRadius = routeEntityRuntime->modelDefinition->footprintRadius;
   {
     /* Rewritten from the assembly (0x00536BB0-0x00536C89). The segment from the entity to the
-       target is split in halves until each piece spans at most 0x240 on both axes (or 64 pieces
+       target is split in halves until each piece spans at most one scratch column (0x240) on both axes (or 64 pieces
        are pending); the low-distance influence bands are stamped at the end of each piece. The
        original keeps the pending pieces as pushed frames on the machine stack, processing the
        half towards the target first; the decompiled version lost that stack and used the
@@ -1331,7 +1331,7 @@ WorldPositionXY EntityPathing_UpdateRouteSegment
       if (deltaY < 0) {
         deltaY = -deltaY;
       }
-      if (pending >= 64 || (deltaX <= 0x240 && deltaY <= 0x240)) {
+      if (pending >= 64 || (deltaX <= GRID_SCRATCH_COLUMN_WORLD_X && deltaY <= GRID_SCRATCH_COLUMN_WORLD_X)) {
         GridInfluence_SetLowDistanceBandsAroundWorldPoint
                   (columnLimitOrRadius,pieces[top].endY,pieces[top].endX);
         pending--;
@@ -1536,7 +1536,7 @@ GridPathRegion_MarkUnreachableFromCell
   recursionResult = GridPathRegion_MarkUnreachableRecursive
                     (g_GridScratchWidth << 3,g_GridScratchPrimary + rowBaseIndex + column,INT32_MAX
                      ,(rowBaseIndex + column) * 8);
-  markedCellIndex = THANDOR_BITCAST(GridPathBestUnreachableCell, uint64_t, recursionResult) >> 3 & 0x1fffffff;
+  markedCellIndex = THANDOR_BITCAST(GridPathBestUnreachableCell, uint64_t, recursionResult) >> 3 & (UINT32_MAX >> 3);
   markedCell.selectedRow = (FieldGridCellCoordinate)(markedCellIndex / g_GridScratchWidth);
   markedCell.selectedColumn = (FieldGridCellCoordinate)(markedCellIndex % (uint64_t)g_GridScratchWidth);
   return markedCell;

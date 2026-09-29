@@ -374,10 +374,10 @@ bool UiPathTextEditControl_HandleKeyboardAndValidate(UiKeyboardStateMask keyboar
      sign). Of these, only the backslash passes the path character filter below. */
   isAltGrCharacter =
        (((keyCode == '@') ||
-        ((((keyCode == '|' || (keyCode == '~')) || (keyCode == 0xb2)) ||
-         ((keyCode == 0xb3 || (keyCode == '{')))))) || (keyCode == '[')) ||
+        ((((keyCode == '|' || (keyCode == '~')) || (keyCode == CP1252_SUPERSCRIPT_TWO)) ||
+         ((keyCode == CP1252_SUPERSCRIPT_THREE || (keyCode == '{')))))) || (keyCode == '[')) ||
        (((keyCode == ']' || (keyCode == '}')) ||
-        ((keyCode == '\\' || ((keyCode == 0xb5 || (keyCode == 0x80)))))));
+        ((keyCode == '\\' || ((keyCode == CP1252_MICRO_SIGN || (keyCode == CP1252_EURO_SIGN)))))));
   /* Letters typed with Ctrl or Alt are shortcuts, not text. */
   if (!isAltGrCharacter &&
       ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0 ||
@@ -779,10 +779,10 @@ bool UiRequiredTextEditControl_HandleKeyboardAndValidate
      checks. */
   isAltGrCharacter =
        (((keyCode == '@') ||
-        ((((keyCode == '|' || (keyCode == '~')) || (keyCode == 0xb2)) ||
-         ((keyCode == 0xb3 || (keyCode == '{')))))) || (keyCode == '[')) ||
+        ((((keyCode == '|' || (keyCode == '~')) || (keyCode == CP1252_SUPERSCRIPT_TWO)) ||
+         ((keyCode == CP1252_SUPERSCRIPT_THREE || (keyCode == '{')))))) || (keyCode == '[')) ||
        (((keyCode == ']' || (keyCode == '}')) ||
-        ((keyCode == '\\' || ((keyCode == 0xb5 || (keyCode == 0x80)))))));
+        ((keyCode == '\\' || ((keyCode == CP1252_MICRO_SIGN || (keyCode == CP1252_EURO_SIGN)))))));
   /* Letters typed with Ctrl or Alt are shortcuts, not text. */
   if (!isAltGrCharacter &&
       ((keyboardStateMask & KEYBOARD_STATE_ALT) != 0 ||
@@ -4044,8 +4044,8 @@ void UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
       /* NOTE: faithful to the original (BSR; AND 0x1c; ROR; SHR 2): the leading nonzero hex digit
          is dropped, and a value below 0x10 gives a digit count of 0, which the DEC/JNZ loop wraps
          (runaway write). */
-      rotateShift = (int8_t)(highBitOrDigitsLeft & 0x1c);
-      highBitOrDigitsLeft = (highBitOrDigitsLeft & 0x1c) >> 2;
+      rotateShift = (int8_t)(highBitOrDigitsLeft & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK);
+      highBitOrDigitsLeft = (highBitOrDigitsLeft & UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK) >> 2;
       remainingValue = remainingValue >> rotateShift | remainingValue << 32 - rotateShift;
       do {
         digitCodeUnit = (remainingValue >> 28) + '0';

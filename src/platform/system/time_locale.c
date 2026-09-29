@@ -499,7 +499,7 @@ uint32_t Locale_GetDefaultTelephoneCountryCode(void)
   uint32_t telephoneCountryCode;
 
   userLocaleId = GetUserDefaultLCID();
-  primaryLanguageId = userLocaleId & 0x1ff; /* PRIMARYLANGID would mask 0x3ff */
+  primaryLanguageId = userLocaleId & LOCALE_PRIMARY_LANGUAGE_MASK;
   if (primaryLanguageId == LANG_ENGLISH) {
     telephoneCountryCode = LOCALE_COUNTRY_GREAT_BRITAIN;
   }

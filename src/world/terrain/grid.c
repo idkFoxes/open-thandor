@@ -6,6 +6,7 @@
  */
 
 #include <thandor/world/terrain/grid.h>
+#include <thandor/world/terrain/visuals.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
@@ -1846,7 +1847,7 @@ void FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
   Q12 cellWorldYQ12;
   uint32_t phaseSeedBitWidth;
 
-  phaseSeedBitWidth = *(uint32_t *)((uint8_t *)g_TerrainSurfacePacketTablePayload - 0x20);
+  phaseSeedBitWidth = *(uint32_t *)((uint8_t *)g_TerrainSurfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES);
   rowsRemaining = fieldGrid->gridHeight;
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   cellsPerRow = fieldGrid->gridWidth;
@@ -2538,7 +2539,7 @@ bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRu
    Clears the debug mark (FIELD_CELL_DEBUG_MARKED, bit 15) in every cell of the grid. No caller
    found in src/ or the image tables, and no code in the game sets the mark.
 */
-void FieldGrid_ClearUnresolvedFlagInAllCells(FieldGridAsset *fieldGrid)
+void FieldGrid_ClearDebugMarkInAllCells(FieldGridAsset *fieldGrid)
 
 {
   int cellsRemaining;
@@ -2919,17 +2920,18 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
   rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
   rowStartCellAddress =
-       (int)fieldGrid + rowLength * -0x80 + (rowLength * fieldGrid->gridHeight + -1) * 0x80 + 0x200;
+       (int)fieldGrid + rowLength * -(int)sizeof(FieldGridCell) +
+       (rowLength * fieldGrid->gridHeight + -1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
   do {
     columnsRemaining = rowLength - 2;
     centerCellAddress = rowStartCellAddress;
     do {
-      centerCellAddress = centerCellAddress - 0x80;
+      centerCellAddress = centerCellAddress - (int)sizeof(FieldGridCell);
       if ((-1 < ((FieldGridCell *)centerCellAddress)->waterSurfaceDelta) &&
          (((uint32_t)((FieldGridCell *)centerCellAddress)->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
         sourceSurfaceHeightQ12 =
              ((FieldGridCell *)centerCellAddress)->waterSurfaceDelta + ((FieldGridCell *)centerCellAddress)->terrainHeight;
-        upperCellAddress = centerCellAddress + rowLength * -0x80;
+        upperCellAddress = centerCellAddress + rowLength * -(int)sizeof(FieldGridCell);
         if (((uint32_t)((FieldGridCell *)upperCellAddress)->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           neighborWaterDelta = &((FieldGridCell *)upperCellAddress)->waterSurfaceDelta;
           *neighborWaterDelta =
@@ -2941,16 +2943,16 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
                ((FieldGridCell *)upperCellAddress)[1].waterSurfaceDelta -
                ((((FieldGridCell *)upperCellAddress)[1].waterSurfaceDelta + ((FieldGridCell *)upperCellAddress)[1].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint32_t *)(upperCellAddress + 0x50 + rowLength * 0x100) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
-          lowerNeighborWaterDelta = (int *)(upperCellAddress + 0x4c + rowLength * 0x100);
-          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperCellAddress + 0x4c + rowLength * 0x100) +
-                               *(int *)(upperCellAddress + 0x48 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >> 3
+        if ((*(uint32_t *)(upperCellAddress + offsetof(FieldGridCell,flagsAndMaterial) + rowLength * FIELD_GRID_TWO_CELLS_BYTES) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperCellAddress + offsetof(FieldGridCell,waterSurfaceDelta) + rowLength * FIELD_GRID_TWO_CELLS_BYTES);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperCellAddress + offsetof(FieldGridCell,waterSurfaceDelta) + rowLength * FIELD_GRID_TWO_CELLS_BYTES) +
+                               *(int *)(upperCellAddress + offsetof(FieldGridCell,terrainHeight) + rowLength * FIELD_GRID_TWO_CELLS_BYTES)) - sourceSurfaceHeightQ12 >> 3
                               );
         }
-        if ((((FieldGridCell *)(upperCellAddress + rowLength * 0x100))[-1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
-          lowerNeighborWaterDelta = &((FieldGridCell *)(upperCellAddress + rowLength * 0x100))[-1].waterSurfaceDelta;
-          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((((FieldGridCell *)(upperCellAddress + rowLength * 0x100))[-1].waterSurfaceDelta +
-                               ((FieldGridCell *)(upperCellAddress + rowLength * 0x100))[-1].terrainHeight) - sourceSurfaceHeightQ12 >>
+        if ((((FieldGridCell *)(upperCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          lowerNeighborWaterDelta = &((FieldGridCell *)(upperCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].waterSurfaceDelta;
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((((FieldGridCell *)(upperCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].waterSurfaceDelta +
+                               ((FieldGridCell *)(upperCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].terrainHeight) - sourceSurfaceHeightQ12 >>
                               3);
         }
         centerCellAddress = upperCellAddress + rowLength * sizeof(FieldGridCell);
@@ -2969,7 +2971,7 @@ void TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGr
       }
       columnsRemaining--;
     } while (columnsRemaining != 0);
-    rowStartCellAddress = centerCellAddress + -0x100;
+    rowStartCellAddress = centerCellAddress + -(int)FIELD_GRID_TWO_CELLS_BYTES;
     rowsRemaining--;
   } while (rowsRemaining != 0);
   return;
@@ -3081,47 +3083,48 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
   rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
   sourceCellAddress =
-       (int)fieldGrid + rowLength * -0x80 + (rowLength * fieldGrid->gridHeight + -1) * 0x80 + 0x200;
+       (int)fieldGrid + rowLength * -(int)sizeof(FieldGridCell) +
+       (rowLength * fieldGrid->gridHeight + -1) * sizeof(FieldGridCell) + offsetof(FieldGridAsset,cells);
   do {
     columnsRemaining = rowLength - 2;
     cellAfterSourceAddress = sourceCellAddress;
     do {
-      cellAfterSourceAddress = cellAfterSourceAddress + -0x80;
-      if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)->flagsAndMaterial & 0x40000000) == 0) {
+      cellAfterSourceAddress = cellAfterSourceAddress + -(int)sizeof(FieldGridCell);
+      if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)->flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0) {
         sourceSurfaceHeightQ12 =
              ((FieldGridCell *)cellAfterSourceAddress)->waterSurfaceDelta + ((FieldGridCell *)cellAfterSourceAddress)->terrainHeight;
-        upperRowCellAddress = cellAfterSourceAddress + rowLength * -0x80;
-        if (((uint32_t)((FieldGridCell *)upperRowCellAddress)->flagsAndMaterial & 0x20000000) == 0) {
+        upperRowCellAddress = cellAfterSourceAddress + rowLength * -(int)sizeof(FieldGridCell);
+        if (((uint32_t)((FieldGridCell *)upperRowCellAddress)->flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           neighborWaterDelta = &((FieldGridCell *)upperRowCellAddress)->waterSurfaceDelta;
           *neighborWaterDelta =
                *neighborWaterDelta -
                ((((FieldGridCell *)upperRowCellAddress)->waterSurfaceDelta + ((FieldGridCell *)upperRowCellAddress)->terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if (((uint32_t)((FieldGridCell *)upperRowCellAddress)[1].flagsAndMaterial & 0x20000000) == 0) {
+        if (((uint32_t)((FieldGridCell *)upperRowCellAddress)[1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           ((FieldGridCell *)upperRowCellAddress)[1].waterSurfaceDelta =
                ((FieldGridCell *)upperRowCellAddress)[1].waterSurfaceDelta -
                ((((FieldGridCell *)upperRowCellAddress)[1].waterSurfaceDelta + ((FieldGridCell *)upperRowCellAddress)[1].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint32_t *)(upperRowCellAddress + 0x50 + rowLength * 0x100) & 0x20000000) == 0) {
-          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + 0x4c + rowLength * 0x100);
-          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + 0x4c + rowLength * 0x100) +
-                               *(int *)(upperRowCellAddress + 0x48 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >> 3
+        if ((*(uint32_t *)(upperRowCellAddress + offsetof(FieldGridCell,flagsAndMaterial) + rowLength * FIELD_GRID_TWO_CELLS_BYTES) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + offsetof(FieldGridCell,waterSurfaceDelta) + rowLength * FIELD_GRID_TWO_CELLS_BYTES);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + offsetof(FieldGridCell,waterSurfaceDelta) + rowLength * FIELD_GRID_TWO_CELLS_BYTES) +
+                               *(int *)(upperRowCellAddress + offsetof(FieldGridCell,terrainHeight) + rowLength * FIELD_GRID_TWO_CELLS_BYTES)) - sourceSurfaceHeightQ12 >> 3
                               );
         }
-        if ((((FieldGridCell *)(upperRowCellAddress + rowLength * 0x100))[-1].flagsAndMaterial & 0x20000000) == 0) {
-          lowerNeighborWaterDelta = &((FieldGridCell *)(upperRowCellAddress + rowLength * 0x100))[-1].waterSurfaceDelta;
-          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((((FieldGridCell *)(upperRowCellAddress + rowLength * 0x100))[-1].waterSurfaceDelta +
-                               ((FieldGridCell *)(upperRowCellAddress + rowLength * 0x100))[-1].terrainHeight) - sourceSurfaceHeightQ12 >>
+        if ((((FieldGridCell *)(upperRowCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          lowerNeighborWaterDelta = &((FieldGridCell *)(upperRowCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].waterSurfaceDelta;
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((((FieldGridCell *)(upperRowCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].waterSurfaceDelta +
+                               ((FieldGridCell *)(upperRowCellAddress + rowLength * FIELD_GRID_TWO_CELLS_BYTES))[-1].terrainHeight) - sourceSurfaceHeightQ12 >>
                               3);
         }
         cellAfterSourceAddress = upperRowCellAddress + rowLength * sizeof(FieldGridCell);
-        if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)[-1].flagsAndMaterial & 0x20000000) == 0) {
+        if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)[-1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           ((FieldGridCell *)cellAfterSourceAddress)[-1].waterSurfaceDelta =
                ((FieldGridCell *)cellAfterSourceAddress)[-1].waterSurfaceDelta -
                ((((FieldGridCell *)cellAfterSourceAddress)[-1].waterSurfaceDelta + ((FieldGridCell *)cellAfterSourceAddress)[-1].terrainHeight
                 ) - sourceSurfaceHeightQ12 >> 3);
         }
-        if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)[1].flagsAndMaterial & 0x20000000) == 0) {
+        if (((uint32_t)((FieldGridCell *)cellAfterSourceAddress)[1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
           ((FieldGridCell *)cellAfterSourceAddress)[1].waterSurfaceDelta =
                ((FieldGridCell *)cellAfterSourceAddress)[1].waterSurfaceDelta -
                ((((FieldGridCell *)cellAfterSourceAddress)[1].waterSurfaceDelta + ((FieldGridCell *)cellAfterSourceAddress)[1].terrainHeight) -
@@ -3131,7 +3134,7 @@ void TerrainGrid_RelaxNeighborHeightsReverse(FieldGridAsset *fieldGrid)
       columnsRemaining = columnsRemaining + -1;
       cellAfterSourceAddress = cellAfterSourceAddress;
     } while (columnsRemaining != 0);
-    sourceCellAddress = cellAfterSourceAddress + -0x100;
+    sourceCellAddress = cellAfterSourceAddress + -(int)FIELD_GRID_TWO_CELLS_BYTES;
     rowsRemaining = rowsRemaining + -1;
   } while (rowsRemaining != 0);
   return;
@@ -3217,7 +3220,7 @@ void FieldGrid_ProcessHorizontalSpan(Q12 sourceRowQ12,Q12 sourceColumnQ12,FieldG
           falloffProduct = (int64_t)
                   (g_FixedCosQ28
                    [(int)((int64_t)
-                          ((((int64_t)(int)cellDistance & 0x1ffffffffffffU) >> 17) << 32 |
+                          ((((int64_t)(int)cellDistance & FIELD_GRID_ANGLE_PRODUCT_HIGH_BITS_MASK) >> 17) << 32 |
                           (int64_t)(int)cellDistance * FIXED_ANGLE16_HALF_TURN & 0xffffffffU) / (int64_t)(int)(spanRadiusQ12 + 1))
                    ] + Q28_ONE) * (int64_t)heightDifference;
           blendedHeight = (FIXED_PRODUCT_SHR(falloffProduct, Q28_SHIFT + 1)) + *accumulatorCursor;
@@ -3321,7 +3324,7 @@ void FieldGrid_ProcessVerticalSpan(FieldGridHeightDeltaUnits heightDeltaUnits,Fi
           falloffProduct = (int64_t)
                   (g_FixedCosQ28
                    [(int)((int64_t)
-                          ((((int64_t)(int)cellDistance & 0x1ffffffffffffU) >> 17) << 32 |
+                          ((((int64_t)(int)cellDistance & FIELD_GRID_ANGLE_PRODUCT_HIGH_BITS_MASK) >> 17) << 32 |
                           (int64_t)(int)cellDistance * FIXED_ANGLE16_HALF_TURN & 0xffffffffU) / (int64_t)(int)(spanRadiusQ12 + 1))
                    ] + Q28_ONE) * (int64_t)targetOffset;
           maxRowOrBlendedValue = (FIXED_PRODUCT_SHR(falloffProduct, Q28_SHIFT + 1)) + *accumulatorCursor;
@@ -3484,7 +3487,7 @@ void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStri
   neighborDeltaD = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)[-1].terrainHeight - cell->terrainHeight;
   neighborDeltaE = FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)[1].terrainHeight - cell->terrainHeight;
   normalAngles = FixedMath_VectorToAngles3Regs
-                    (0xc00000,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
+                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
                                     cell->worldY) * neighborDeltaA) - (cell[1].worldY - cell->worldY) * rightDeltaOrNegativeStride
                                  ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,-rowStrideBytes)->worldY - cell->worldY)
                                      * neighborDeltaB) - (cell[-1].worldY - cell->worldY) * neighborDeltaC) -
@@ -3514,7 +3517,7 @@ void FieldGridCell_RecomputeTriangleNormalAngles(FieldGridRowStrideBytes rowStri
   neighborDeltaF = ((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rightDeltaOrNegativeStride)[1].terrainHeight + FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rightDeltaOrNegativeStride)[1].waterSurfaceDelta) -
           cell->terrainHeight) - cell->waterSurfaceDelta;
   normalAngles = FixedMath_VectorToAngles3Regs
-                    (0xc00000,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
+                    (FIELD_GRID_NORMAL_Z_COMPONENT,((((-((FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rowStrideBytes)->worldY -
                                     cell->worldY) * neighborDeltaB) - (cell[1].worldY - cell->worldY) * neighborDeltaA
                                  ) - (FIELD_GRID_CELL_AT_BYTE_OFFSET(cell,rightDeltaOrNegativeStride)->worldY - cell->worldY) * neighborDeltaC) -
                                (cell[-1].worldY - cell->worldY) * neighborDeltaD) -

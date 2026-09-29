@@ -73,8 +73,8 @@ void GridInfluence_AddHighDistanceBands(GameEntityRuntime *entityRuntime)
   if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
     worldXQ12 = (modelNode->worldTransform).translation.x;
     worldYQ12 = (modelNode->worldTransform).translation.y;
-    *(Q12 *)((int)linkedRuntime + 0x68) = worldXQ12;
-    *(Q12 *)((int)linkedRuntime + 0x6c) = worldYQ12;
+    ((ModelRuntimeSlot *)linkedRuntime)->classLinkState.classState68 = worldXQ12;
+    ((ModelRuntimeSlot *)linkedRuntime)->classLinkState.armyLinkOrState.classState = worldYQ12;
     GridInfluence_SetHighDistanceBandsAroundWorldPoint
               (((ModelDefinition *)entityDefinition)->footprintRadius,worldYQ12,worldXQ12);
   }
@@ -97,7 +97,8 @@ void GridInfluence_RemoveHighDistanceBands(GameEntityRuntime *entityRuntime)
   if (((ModelDefinition *)entityDefinition)->footprintRadius != 0) {
     GridInfluence_ClearHighDistanceBandsAroundWorldPoint
               (((ModelDefinition *)entityDefinition)->footprintRadius,
-               *(Q12 *)((int)linkedRuntime + 0x6c),*(Q12 *)((int)linkedRuntime + 0x68));
+               (Q12)((ModelRuntimeSlot *)linkedRuntime)->classLinkState.armyLinkOrState.classState,
+               (Q12)((ModelRuntimeSlot *)linkedRuntime)->classLinkState.classState68);
   }
 }
 

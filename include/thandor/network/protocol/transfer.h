@@ -51,6 +51,16 @@
 #define UI_TRANSFER_CHUNK_RETRY_TICKS 4
 /* Every accepted chunk packet extends the peer's timeout by 0x40 timer ticks (512 ms). */
 #define UI_TRANSFER_CHUNK_TIMEOUT_EXTENSION_TICKS 0x40
+/* Byte 0 of the chunk packet header, which is written byte by byte: the low byte of the packet type (byte 1 is
+   the zero high byte, bytes 2..3 the unit count: 1 for the request, 8 for the chunk). */
+#define UI_TRANSFER_CHUNK_REQUEST_TYPE_BYTE ((uint8_t)FRONTEND_PACKET_10031_MAILBOX_CHUNK_REQUEST) /* 0x31 */
+#define UI_TRANSFER_CHUNK_TYPE_BYTE ((uint8_t)FRONTEND_PACKET_80030_MAILBOX_CHUNK)                /* 0x30 */
+/* Packet cipher (UiTransfer_EncryptPacketBlocks / UiTransfer_DecryptPacketBlocks): 16 rounds with one 32-bit
+   key each (g_UiTransferRoundKeys16, 0x004AE9A8..0x004AE9E7). Each round looks up every nibble in its own
+   16x16 dword table (row = key nibble, column = data nibble); table n handles nibble n. */
+#define UI_TRANSFER_CIPHER_ROUND_COUNT 16
+#define UI_TRANSFER_CIPHER_ROW_BYTES 0x40    /* 16 dword entries */
+#define UI_TRANSFER_CIPHER_TABLE_BYTES 0x400 /* 16 rows */
 /* Lobby timeout: reload value of g_SessionTransferTimeoutTicks on a client (join ack, host session packet) and
    the heartbeat value of the 0x10006 packet. */
 #define FRONTEND_LOBBY_TIMEOUT_TICKS 0x40
@@ -58,6 +68,11 @@
 #define FRONTEND_SESSION_LIST_CAPACITY 0x20
 /* Step from one player record's endpoint to the next one's in UiTransferEndpointDescriptor units (0x13B). */
 #define FRONTEND_PLAYER_RECORD_ENDPOINT_STRIDE (sizeof(FrontendPlayerRuntimeRecord) / sizeof(UiTransferEndpointDescriptor))
+/* Position of a (16-byte aligned) FrontendPlayerRuntimeRecord field relative to the record's endpoint, in
+   UiTransferEndpointDescriptor units: the original reads record fields through an endpoint cursor. */
+#define FRONTEND_PLAYER_RECORD_ENDPOINT_UNITS_TO(field) \
+  (((int)offsetof(FrontendPlayerRuntimeRecord,field) - (int)offsetof(FrontendPlayerRuntimeRecord,endpoint)) / \
+   (int)sizeof(UiTransferEndpointDescriptor))
 /* protocolMagic of the 0x10000 discovery probe (UiTransfer_SendDiscoveryProbe); a host answers only
    probes carrying it. */
 #define FRONTEND_PROTOCOL_MAGIC 0x2931

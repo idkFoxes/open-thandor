@@ -287,7 +287,7 @@ void FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
     output->z = 0;
   }
   else {
-    reciprocalLengthScaleQ32 = (int)(0x100000000 / (uint64_t)inputLengthQ12);
+    reciprocalLengthScaleQ32 = (int)(Q32_ONE / (uint64_t)inputLengthQ12);
     /* SHLD EDX,EAX,28: bits 4..35 of each product */
     normalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->x;
     output->x = FIXED_PRODUCT_SHR(normalizedComponentProduct,4);
@@ -1173,12 +1173,13 @@ uint32_t FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComp
   if (denominatorOrRatio * 2 != 0) {
     denominatorOrRatio = (int)((int64_t)((uint64_t)reducedAngleNumerator << 32) / (int64_t)(denominatorOrRatio * 2));
     doubledYOrRatioSquared = FIXED_MUL_HIGH(denominatorOrRatio,denominatorOrRatio);
-    /* atan(t) in angle units ~ t * (c1 + t^2 * (c3 + t^2 * c5)); 0x517D = 20861 = 2 * 65536 / (2 * pi) */
+    /* atan(t) in angle units (FIXED_ATAN_ANGLE16_C*) */
     angle16Result =
          octantBaseAngle16 +
          FIXED_MUL_HIGH(denominatorOrRatio,
                         FIXED_MUL_HIGH(doubledYOrRatioSquared,
-                                       FIXED_MUL_HIGH(doubledYOrRatioSquared,0x104c2) - 0x6ca6) + 0x517d);
+                                       FIXED_MUL_HIGH(doubledYOrRatioSquared,FIXED_ATAN_ANGLE16_C5) - FIXED_ATAN_ANGLE16_C3) +
+                        FIXED_ATAN_ANGLE16_C1);
   }
   return angle16Result;
 }
@@ -1203,12 +1204,12 @@ uint32_t FixedMath_SqrtQ12Approx(uint32_t inputValue)
     }
   }
   if (inputValue != 0) {
-    normalizeShift = (28U - highestBitOrNormalized) & 0x1e; /* even, so the root can shift back by half */
+    normalizeShift = (28U - highestBitOrNormalized) & FIXED_SQRT_EVEN_SHIFT_MASK; /* even, so the root can shift back by half */
     highestBitOrNormalized = inputValue << (int8_t)normalizeShift;
     return (FIXED_MUL_HIGH(highestBitOrNormalized,
                            FIXED_MUL_HIGH(highestBitOrNormalized,
-                                          FIXED_MUL_HIGH(highestBitOrNormalized,0x25ed098) - 0x1c71c71) +
-                           0xb1c71c) + 0x66b75U) >> (int8_t)(normalizeShift >> 1);
+                                          FIXED_MUL_HIGH(highestBitOrNormalized,FIXED_SQRT_POLY_C3) - FIXED_SQRT_POLY_C2) +
+                           FIXED_SQRT_POLY_C1) + FIXED_SQRT_POLY_C0) >> (int8_t)(normalizeShift >> 1);
   }
   return 0;
 }

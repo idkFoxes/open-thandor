@@ -64,6 +64,10 @@
 #define UI_SCROLL_CURSOR_FRAME_PAN 1
 #define UI_SCROLL_CURSOR_FRAME_PAN_VERTICAL 4
 #define UI_SCROLL_CURSOR_FRAME_PAN_HORIZONTAL 5
+/* scrollStateFlags bits 4..7: the bar positions a control allows (the bar bits shifted left by 4), read by
+   UiScrollableControl layout */
+#define UI_SCROLL_ALLOWED_HORIZONTAL_BARS 0x30
+#define UI_SCROLL_ALLOWED_VERTICAL_BARS 0xC0
 
 /* UiListControl.listStateFlags / UiTimedListControl.listStateAndDelay: bits 24..31 count down the frames until
    a deferred list action is queued (tick callbacks). */
@@ -84,6 +88,8 @@
 #define UI_TIMED_LIST_ICON_DIRECTORY 0x26
 #define UI_TIMED_LIST_ICON_COMPUTER 0x27
 #define UI_TIMED_LIST_LABEL_BYTES 0x200
+/* ASCII letter compare ignoring case: clears bit 5 (0x20) of the XOR of two code units */
+#define UI_TIMED_LIST_CASE_FOLD_MASK 0xdf
 
 /* UiCatalogEntryControl_DrawClipped: packed text styles of the overlays (price, count, percentage); the alert
    colour marks an unaffordable price or a flagged army. MEASURE is only used to measure the text. */

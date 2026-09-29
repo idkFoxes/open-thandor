@@ -198,7 +198,7 @@ backendOpened:
         findOptionResult = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
         secondaryCommandLineOptionBytes = findOptionResult.option;
         if (!findOptionResult.notFound) {
-          remainingOrRootNode = 0x7fffff;
+          remainingOrRootNode = FRONTEND_CLIENT_OPTION_SCAN_LIMIT;
           optionTextCursor = secondaryCommandLineOptionBytes + 8;
           for (;;) {
             optionChar = *optionTextCursor;

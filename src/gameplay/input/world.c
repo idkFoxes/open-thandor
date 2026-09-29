@@ -267,16 +267,16 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
       return GRAPHICS_CURSOR_FRAME_ARROW;
     }
     if (candidateNode == NULL) {
-      return 0x19;
+      return WORLD_CURSOR_TARGET;
     }
     testResult = GameFactionRuntime_TestCapabilityBitClear
                       ((entry->common).ownership.ownerIndex,ownerIndex);
     if (testResult) {
-      return 0x19;
+      return WORLD_CURSOR_TARGET;
     }
     testResult = SelectionInfo_FindEntry(entry);
     if (testResult) {
-      return 0x1a;
+      return WORLD_CURSOR_TARGET_REJECTED;
     }
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
@@ -286,13 +286,13 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   testResult = GameFactionRuntime_TestCapabilityBitClear
                     ((entry->common).ownership.ownerIndex,ownerIndex);
   if (testResult) {
-    return 0x1a;
+    return WORLD_CURSOR_TARGET_REJECTED;
   }
   scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix *)entry);
   if ((int)scaleRatio != (int)(scaleRatio >> 32)) {
     testResult = SelectionInfo_FindEntry(entry);
     if (testResult) {
-      return 0x19;
+      return WORLD_CURSOR_TARGET;
     }
     return GRAPHICS_CURSOR_FRAME_ARROW;
   }
@@ -320,7 +320,7 @@ void InGameWorldInput_BeginPointerCapture
        0) &&
      (inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags & ~WORLD_RUNTIME_FLAG_REPLACE_SELECTION,
      ((inGameRuntime->interaction).nodeFlags & 8) == 0)) {
-    if (((inGameRuntime->interaction).nodeFlags & 0x80) != 0) {
+    if (((inGameRuntime->interaction).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) {
       /* makes the release replace the selection instead of selecting a single army */
       inGameRuntime->runtimeFlags = inGameRuntime->runtimeFlags | WORLD_RUNTIME_FLAG_REPLACE_SELECTION;
     }
@@ -444,7 +444,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
               if (((runtimeNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
                   ((runtimeNode->runtimeFlags & 2) != 0)) &&
                  ((entry = *(GameEntityRuntime **)((int)runtimeNode->runtimePayload + 8),
-                  (runtimeNode->runtimeFlags & 0x20) != 0 &&
+                  (runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) != 0 &&
                   (countOrOwnerOrDelta == (entry->common).ownership.ownerIndex)))) {
                 payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
                 testResult = WorldRuntimeNode_IsPositionInsideBounds

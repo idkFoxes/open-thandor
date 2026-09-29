@@ -289,7 +289,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
         effectLinkPresent = effectDefinition->linkedEffectPresent;
         shotLinkPresent = effectDefinition->linkedShotPresent;
         effectModelNode->modelPayload.meshGroupMask = UINT32_MAX; /* all mesh groups */
-        effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | (MODEL_RUNTIME_FLAG_APPLY_SCALE | 0x1);
+        effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | (MODEL_RUNTIME_FLAG_APPLY_SCALE | MODEL_NODE_FLAG_TRANSFORM_DIRTY);
         effectModelNode->textureSubresourceBaseIndex = 0;
         effectModelNode->modelRuntimeLinkOrSavedOffset = NULL;
         effectModelNode->parentNode = NULL;

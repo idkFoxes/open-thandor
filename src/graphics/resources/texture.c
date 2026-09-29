@@ -750,7 +750,7 @@ TextureSourceDecomposeResult GraphicsTextureSource_DecomposeSubresourceRegions
           scanCursor = (uint32_t *)((int)decomposedAsset.assetOrError + freeBytesAfterPacked + GFX_ASSET_HEADER_SIZE);
           matchedOrEdgeTransparent = scanCursor == NULL;
           rowCursor = scanCursor;
-          for (pixelCountOrCounter = pixelCountOrCounter & 0x3fffffff; pixelCountOrCounter != 0; pixelCountOrCounter--) {
+          for (pixelCountOrCounter = pixelCountOrCounter & DWORD_COUNT_MASK; pixelCountOrCounter != 0; pixelCountOrCounter--) {
             *rowCursor = *(uint32_t *)entryOrByteCursor;
             entryOrByteCursor = entryOrByteCursor + 4;
             rowCursor++;

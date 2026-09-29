@@ -201,8 +201,9 @@ void Thandor_TestAidClientOriginOnScreen(void *window, int *x, int *y)
 }
 #endif
 
-#define ORIGINAL_IMAGE_BASE 0x400000u
-#define ORIGINAL_IMAGE_SIZE 0x192000u
+/* Crash log: raw stack words below REBUILT_IMAGE_BASE + this are symbolized as code addresses (upper bound
+   of the rebuilt executable's image) */
+#define CRASH_LOG_REBUILT_IMAGE_SPAN 0x400000u
 #define CHILD_MARKER "OPEN_THANDOR_IMAGE_RESERVED"
 
 /*
@@ -289,8 +290,8 @@ static void poison_original_code(unsigned char *image)
     count = size / 4;
     for (i = 0; i < count; i++) {
         unsigned offset = starts[i] - ORIGINAL_IMAGE_BASE;
-        if (offset >= 0x1000 && offset < ORIGINAL_IMAGE_SIZE && !keep[offset]) {
-            image[offset] = 0xCC;
+        if (offset >= ORIGINAL_TEXT_RVA && offset < ORIGINAL_IMAGE_SIZE && !keep[offset]) {
+            image[offset] = X86_OPCODE_INT3;
             poisoned++;
         }
     }
@@ -378,7 +379,7 @@ int Thandor_MapOriginalImage(void)
     for (i = 0; i + 4 <= nt->OptionalHeader.SizeOfImage; i += 4) {
         unsigned value = *(unsigned *)(image + i);
         void *function;
-        if (value >= 0x401000 && value < 0x58C000 && (function = find_function(value)) != NULL) {
+        if (value >= ORIGINAL_TEXT_START && value < ORIGINAL_TEXT_END && (function = find_function(value)) != NULL) {
             *(void **)(image + i) = function;
             redirected++;
         }
@@ -389,12 +390,12 @@ int Thandor_MapOriginalImage(void)
     for (i = 0; i < g_ThandorFunctionMapCount; i++) {
         unsigned char *entry = (unsigned char *)(uintptr_t)g_ThandorFunctionMap[i].originalAddress;
         int displacement = (int)((uintptr_t)g_ThandorFunctionMap[i].function - ((uintptr_t)entry + 5));
-        entry[0] = 0xE9;
+        entry[0] = X86_OPCODE_JMP_REL32;
         memcpy(entry + 1, &displacement, 4);
     }
     {
         DWORD previous;
-        VirtualProtect(image + 0x1000, 0x18B000, PAGE_EXECUTE_READWRITE, &previous);
+        VirtualProtect(image + ORIGINAL_TEXT_RVA, ORIGINAL_TEXT_SIZE, PAGE_EXECUTE_READWRITE, &previous);
     }
     poison_original_code(image);
     HeapFree(GetProcessHeap(), 0, data);
@@ -613,7 +614,7 @@ static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
         const DWORD *stack = (const DWORD *)(uintptr_t)context.Esp;
         int i;
         for (i = 0; i < 96 && Thandor_IsReadable(stack + i, 4); i++) {
-            if (stack[i] >= 0x10001000u && stack[i] < 0x10400000u) {
+            if (stack[i] >= REBUILT_IMAGE_CODE_START && stack[i] < REBUILT_IMAGE_BASE + CRASH_LOG_REBUILT_IMAGE_SPAN) {
                 fprintf(out, "  [esp+%03X] %s\n", i * 4,
                         Thandor_SymbolName((const void *)(uintptr_t)stack[i]));
             }

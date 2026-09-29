@@ -21,6 +21,7 @@
 #define PACKAGE_MOUNT_SLOT_COUNT 0x400 /* g_PackageMountSlots */
 #define PACKAGE_DIRECTORY_BYTES 0x80000 /* entry-header array allocated per mount (0x400 headers) */
 #define PCK_ENTRY_HEADER_BYTES 0x200 /* sizeof(PckEntryHeader); the archive header has the same size */
+#define PACKAGE_DWORD_ALIGN_MASK 0xFFFFFFFCU /* ~3: (byteCount + 3) & mask rounds up to whole dwords */
 #define PCK_ENTRY_PATH_UNITS 0xF6 /* UTF-16 code units of PckEntryHeader.path, terminator included */
 /* Byte offsets into g_PackageScratchBuffer while Package_UpsertEntry/Package_DeleteEntry rewrite an archive:
    the archive header is read to offset 0, the entry header being appended follows it. */

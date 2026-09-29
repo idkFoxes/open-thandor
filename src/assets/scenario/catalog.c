@@ -555,9 +555,10 @@ void ScenarioCatalog_Rebuild(void)
       recordCopyCursor = (ScenarioCatalogRecord *)(recordCopyCursor->identifier + 2);
     }
     Resource_Release((uint32_t *)loadedResource.bufferOrError);
-    /* level00.dat .. level99.dat: the two digit code units are packed as one dword, 0x300030 = "00"; the
-       units digit counts '0'..'9', then subtracting 0x9FFFF resets it to '0' and increments the tens digit. */
-    g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
+    /* level00.dat .. level99.dat: the two digit code units are packed as one dword (UTF16_DIGIT_PAIR); the
+       units digit counts '0'..'9', then subtracting UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP resets it to '0' and
+       increments the tens digit. */
+    g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('0','0');
     do {
       loadedResource = Resource_Load(g_ScenarioLevelDataPathTemplateUtf16.prefixCodeUnits);
       if (!loadedResource.failed) {
@@ -568,7 +569,7 @@ void ScenarioCatalog_Rebuild(void)
       g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1]++;
     } while ((g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[1] < '9' + 1) ||
             (g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits =
-                  g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits - 0x9ffff,
+                  g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.packedDigits - UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP,
             g_ScenarioLevelDataPathTemplateUtf16.decimalDigits.codeUnits[0] < '9' + 1));
     do {
       catalog->campaignRecordsOffset = catalog->campaignRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
@@ -593,7 +594,7 @@ void ScenarioCatalog_Rebuild(void)
     }
     Resource_Release((uint32_t *)loadedResource.bufferOrError);
     /* campagne00.dat .. campagne99.dat, counted like the level files above */
-    g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
+    g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('0','0');
     do {
       loadedResource = Resource_Load(g_ScenarioCampaignDataPathTemplateUtf16.prefixCodeUnits);
       if (!loadedResource.failed) {
@@ -604,7 +605,7 @@ void ScenarioCatalog_Rebuild(void)
       g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1]++;
     } while ((g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[1] < '9' + 1) ||
             (g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits =
-                  g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits - 0x9ffff,
+                  g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.packedDigits - UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP,
             g_ScenarioCampaignDataPathTemplateUtf16.decimalDigits.codeUnits[0] < '9' + 1));
     do {
       catalog->saveRecordsOffset = catalog->saveRecordsOffset + SCENARIO_CATALOG_RECORD_STRIDE;
@@ -1509,7 +1510,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
              (uint16_t *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
                      [selectedRowIndex],
              (uint16_t *)u_level_0050daac);
-  WidePath_SetExtensionCode(0x76656c /* "lev" */,&g_FrontendScenarioPathScratchUtf16);
+  WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_LEV,&g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
   ((FrontendModelPointerContext *)FRONTEND_UI(rootOrRemaining,menuRoomModelView))->contextFlags =
        ((FrontendModelPointerContext *)FRONTEND_UI(rootOrRemaining,menuRoomModelView))->contextFlags &

@@ -14,7 +14,7 @@
 /* Submodule: gameplay/army/movement. */
 
 /* ArmyRuntimeSlot/ArmyMovementRuntime.movementStateFlags bits, as set and tested by the move-command starters
-   and ArmyRuntime_UpdateMovementAndWaypoints. Bit 0x40 is not named yet. */
+   and ArmyRuntime_UpdateMovementAndWaypoints. */
 #define ARMY_MOVEMENT_ACTIVE 0x1            /* a move target is set (movementWorld*Q12 / fallbackPosition) */
 #define ARMY_MOVEMENT_LOCKED 0x2            /* new move orders are appended to the waypoint queue, not started */
 #define ARMY_MOVEMENT_STATIONARY 0x4        /* set by the ground/articulated class updates at the start of a tick,
@@ -24,7 +24,9 @@
                                                   the next ArmyRuntime_UpdateMovementAndWaypoints advances */
 #define ARMY_MOVEMENT_TARGET_FOLLOWING 0x20 /* started by ArmyRuntimeCommand_UpdateTargetFollowingState; a new
                                                command resets the move first */
-#define ARMY_MOVEMENT_DIRECT 0x80           /* ArmyRuntime_StartDirectMoveCommand: orders are never queued */
+#define ARMY_MOVEMENT_ORDERED 0x40          /* set by the routed, queued and waypoint move starters, cleared by the
+                                               direct/clamped starters and the resets; never tested by the game */
+#define ARMY_MOVEMENT_DIRECT 0x80          /* ArmyRuntime_StartDirectMoveCommand: orders are never queued */
 #define ARMY_MOVEMENT_SPECIAL_BEHAVIOR 0x100 /* class 18: AiUnitBehavior_UpdatePioneerVehicle runs each tick */
 #define ARMY_MOVEMENT_ROUTED 0x200          /* routed move command: kept by the reset/target-following paths */
 #define ARMY_MOVEMENT_MIRROR_TARGET 0x400   /* ArmyRuntime_SetPendingMoveTarget also sets movementTargetWorld*Q12 */
@@ -51,6 +53,13 @@
 #define ARMY_ARTICULATED_STEP_WALK 0x20         /* walking step towards the route point */
 #define ARMY_ARTICULATED_STEP_CLOSE 0x40        /* closing step: the feet are brought side by side again */
 #define ARMY_ARTICULATED_STEP_OBSTRUCTED 0x80   /* the foot target was blocked; a second block cancels the step */
+/* a new walking step keeps only WALK, OBSTRUCTED and bits 8-15; the foot, turn and close bits and the stored
+   turn angle are cleared (0xffa0) */
+#define ARMY_ARTICULATED_STEP_NEW_WALK_KEEP_MASK \
+          (0xffff & ~(ARMY_ARTICULATED_STEP_LEFT | ARMY_ARTICULATED_STEP_RIGHT | ARMY_ARTICULATED_STEP_LEFT_LAST | \
+                      ARMY_ARTICULATED_STEP_RIGHT_LAST | ARMY_ARTICULATED_STEP_TURN | ARMY_ARTICULATED_STEP_CLOSE))
+/* turn angle16 * this = half the turn angle in the upper 16 bits of the step state */
+#define ARMY_ARTICULATED_STEP_HALF_TURN_SCALE 0x8000
 /* step progress runs from 0 to 1.0 (Q12); the step ends once it exceeds 0xFFF */
 #define ARMY_ARTICULATED_STEP_PROGRESS_END_Q12 0x1000
 /* Articulated walker step choice (ArmyRuntimeClass_UpdateArticulatedWalker), angles relative to the heading
@@ -74,6 +83,12 @@
 #define ARMY_GLIDER_BANK_STEP_ANGLE16 0x100
 #define ARMY_GLIDER_BANK_RECOVER_ANGLE16 0x40
 #define ARMY_GLIDER_BANK_TURN_LIMIT_ANGLE16 0x400
+/* ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation: the three child parts spin by this angle16 per tick
+   (about 1/96 turn) while behaviour bit 0 is set */
+#define ARMY_SPIN_CHILD_STEP_ANGLE16 0x2aa
+/* angle16 difference * this >> 16 sign-extends it to the shortest signed turn (-0x8000..0x7fff); the
+   multiplication form is kept because a shift compiles differently */
+#define ARMY_ANGLE16_SIGN_EXTEND_SCALE 0x10000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00520F60 */

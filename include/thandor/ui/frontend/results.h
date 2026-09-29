@@ -45,6 +45,14 @@
    ticks. */
 #define RESULTS_STAT_SAMPLE_BYTES 0x38
 #define RESULTS_STAT_SAMPLE_TICK_SHIFT 7
+/* Faction colour text (TEXT_ID_FACTION_NAME_BASE + colorIndex) read by FrontendResultsTable_DrawColumnSequenceByType:
+   code units 1..8 are four digit pairs (blue, green, red, alpha), high digit first; the low nibble of each code
+   unit is the digit value. */
+#define FACTION_COLOUR_TEXT_DIGIT_MASK 0xf
+/* one digit pair as the top byte (bits 24..31) of a dword; >> 24 gives the byte, >> 22 its offset in a table of
+   dwords */
+#define FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(highUnit, lowUnit) \
+          (((uint8_t)(lowUnit) & FACTION_COLOUR_TEXT_DIGIT_MASK) << 24 | (uint32_t)(uint8_t)(highUnit) << 28)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00517020 */

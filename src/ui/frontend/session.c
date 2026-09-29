@@ -548,9 +548,9 @@ void FrontendSession_ApplyGameSpeedAndReturnToMainPage
 
   frontendRootAddress = g_FrontendRootNode;
   Movie_Close();
-  /* percent * 0x28F5C >> 16 = percent * 256 / 100 */
+  /* percent * 256 / 100 */
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint32_t)(((UiRangeSliderControl *)FRONTEND_UI(frontendRootAddress,gameSpeedSlider))->value * 0x28f5c) >> 16;
+       (uint32_t)(((UiRangeSliderControl *)FRONTEND_UI(frontendRootAddress,gameSpeedSlider))->value * FRONTEND_GAME_SPEED_PERCENT_TO_Q8_Q16) >> 16;
   displayFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
   *displayFlags = *displayFlags | 8;
   FrontendSession_ReturnToMainPage(playerRuntimeId,0,0,romActionIndex);

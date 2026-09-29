@@ -90,7 +90,7 @@ void SelectionOverlay_DrawResourceCellMarkers
           UiPixelCoordinate clipLeft,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid);
 
 /* 0x0052FA20 */
-void SelectionOverlay_DrawUnresolvedCellMarkers
+void SelectionOverlay_DrawDebugMarkedCellMarkers
           (UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
           UiPixelCoordinate clipLeft,FieldGridAsset *fieldGrid);
 

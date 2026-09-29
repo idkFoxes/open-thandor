@@ -379,14 +379,6 @@ bool GraphicsGlide3_ApplyDisplayModeAndInitializeResources
 }
 
 
-/* Screen coordinates of a primitive packet are 12-bit fixed point; Glide3_DrawPrimitiveQueue clamps them to
-   +-2032 pixels before converting them to float. */
-#define GLIDE_SCREEN_COORDINATE_LIMIT 0x7f0000
-/* Added to the bit pattern of a nonzero float these change its exponent: -12 (divide by 4096, the fixed-point
-   scale) and +30 (multiply by 2^30). */
-#define GLIDE_FLOAT_BITS_DIVIDE_BY_4096 0xfa000000
-#define GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30 0xf000000
-
 /* The g_GlideVertex* records are floats stored in uint32_t globals: FSTP float ptr writes the bit pattern,
    CMP/ADD/SUB dword ptr then work on that pattern, FMUL float ptr reads it back as a float. */
 /* Not an original function: the bit pattern of a float (the FSTP float ptr store). */
@@ -1032,8 +1024,8 @@ FramebufferCaptureResult Glide3_Framebuffer_CaptureRegion
       /* RGB565 -> ARGB8888 with alpha 0xff; each channel's top bits are repeated into its low bits (the
          original's SHLD chain) */
       rgb565Pixel = *sourcePixelCursor;
-      *argbCursor = (((((rgb565Pixel >> 11 | 0x1fe0) << 3 | (uint32_t)(rgb565Pixel >> 13)) << 6 | (rgb565Pixel & 0x7ff) >> 5
-                  ) << 2 | (rgb565Pixel & 0x7ff) >> 9) << 5 | rgb565Pixel & RGB565_BLUE_MASK) << 3 | (rgb565Pixel & RGB565_BLUE_MASK) >> 2;
+      *argbCursor = (((((rgb565Pixel >> 11 | GLIDE_CAPTURE_ALPHA_ABOVE_RED5) << 3 | (uint32_t)(rgb565Pixel >> 13)) << 6 | (rgb565Pixel & (RGB565_GREEN_MASK | RGB565_BLUE_MASK)) >> 5
+                  ) << 2 | (rgb565Pixel & (RGB565_GREEN_MASK | RGB565_BLUE_MASK)) >> 9) << 5 | rgb565Pixel & RGB565_BLUE_MASK) << 3 | (rgb565Pixel & RGB565_BLUE_MASK) >> 2;
       sourcePixelCursor++;
       argbCursor++;
       pixelCountOrRemaining--;
@@ -1090,7 +1082,7 @@ void Glide3_TextureUpload_1x(GraphicsTextureResource *texture)
         do {
           sourceArgb = *(uint32_t *)sourceCursor;
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3 & 0x1f) << 21) >> 16) |
+          *destinationCursor = (uint16_t)((uint16_t)(((sourceArgb >> 3 & RGB565_BLUE_MASK) << 21) >> 16) |
                             (uint16_t)(((sourceArgb >> 10) << 26) >> 16)) >> 5 |
                     (uint16_t)(((sourceArgb >> 19) << 27) >> 16);
           sourceCursor = sourceCursor + 4;
@@ -1220,7 +1212,7 @@ void Glide3_TextureUpload_2x(GraphicsTextureResource *texture)
           averagedRgb = (uint32_t)clampedRedOrAlpha << 16 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 21) >> 16) |
+          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & RGB565_BLUE_MASK) << 21) >> 16) |
                              (uint16_t)(((uint32_t)(averagedRgb >> 10) << 26) >> 16)) >> 5 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 27) >> 16);
           sourceCursor = (AssetProducerSourceNames *)((int)sourceCursor->producerName + 8);
@@ -1404,7 +1396,7 @@ void Glide3_TextureUpload_4x(GraphicsTextureResource *texture)
           averagedRgb = (uint32_t)clampedRedOrAlpha << 16 | (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
                         (uint32_t)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           /* ARGB8888 -> RGB565: red 15..11, green 10..5, blue 4..0 (the original's SHR/SHRD chain) */
-          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & 0x1f) << 21) >> 16) |
+          *destinationCursor = (uint16_t)((uint16_t)(((averagedRgb >> 3 & RGB565_BLUE_MASK) << 21) >> 16) |
                              (uint16_t)(((uint32_t)(averagedRgb >> 10) << 26) >> 16)) >> 5 |
                      (uint16_t)(((uint32_t)(clampedRedOrAlpha >> 3) << 27) >> 16);
           sourceCursor = sourceCursor + 8;

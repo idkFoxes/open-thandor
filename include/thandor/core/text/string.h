@@ -12,6 +12,9 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/text/string. */
+
+/* ASCII/UTF-16 letter case bit: 'A' | this = 'a' (Utf16String_CompareAsciiCaseInsensitiveFlags) */
+#define TEXT_ASCII_LOWER_CASE_BIT 0x20
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00402D50 */

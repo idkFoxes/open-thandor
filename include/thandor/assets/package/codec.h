@@ -19,6 +19,8 @@
 #define PCK_HUFFMAN_FREQUENCY_TABLE_BYTES 0x100 /* stored frequency table in front of the bitstream */
 #define PCK_HUFFMAN_NODE_COUNT 0x200            /* leaves + internal nodes scanned per tree-building step */
 #define PCK_HUFFMAN_MIN_RUN_LENGTH 3            /* shortest run encoded as a run token (runs are 3..18) */
+#define PCK_HUFFMAN_WORKSPACE_DWORDS 0x900      /* symbol table (0x100) + leaf nodes (0x400) + internal nodes (0x400) */
+#define PCK_HUFFMAN_CODE_LENGTH_SHIFT 24        /* after code assignment: frequencyCount = code bits | length << 24 */
 /* PCK compression method 2 (PckCodec_EncodeFieldGrid / PckCodec_DecodeFieldGrid): a 0x10-byte prefix whose
    first dword is the size of the compact image, then the compact image packed with method 0. The compact image
    is the FieldGridAsset header followed by one 0x10-byte record per cell: persistedAux54, terrainHeight,

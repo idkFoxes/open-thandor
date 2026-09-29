@@ -895,7 +895,7 @@ bindDebugOverlayTexts:
                           (UI_ACTION_PAGE_INGAME,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
                 UiActionHandlers_SetPage
                           (UI_ACTION_PAGE_INGAME_COMMAND_MODE,
-                           (UiActionHandlerPage *)&g_InGameUiCommandModeActionHandlers30);
+                           (UiActionHandlerPage *)&g_InGameUiActionHandlersPage11);
                 UiActionHandlers_SetPage
                           (UI_ACTION_PAGE_INGAME_MENU,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
                 UiActionHandlers_SetPage

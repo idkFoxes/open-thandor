@@ -396,14 +396,16 @@ loadSelectedLevel:
         ((ScenarioLevelBundleHeader *)transferSourceBytes)->fieldGridDecodedBytes = fieldGridAllocationSize;
         encodeCursorOrSize = (uint8_t *)((ScenarioLevelBundleHeader *)transferSourceBytes + 1);
         savedFieldGrid = sourceGrid;
+        /* capacity: the scratch buffer minus 24 bytes, the size of the campaign bundle header
+           (ScenarioCampaignBundleHeader), although this header has 16 */
         encodeResult = PckCodec_EncodeHuffmanRle
-                           (0x7fffe8,encodeCursorOrSize,loadedLevelAsset->header.common.allocationSizeBytes,
+                           (PACKAGE_SCRATCH_BUFFER_BYTES - 24,encodeCursorOrSize,loadedLevelAsset->header.common.allocationSizeBytes,
                             (uint8_t *)loadedLevelAsset);
         checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
         errorOrByteCount = checkedResult.valueOrError;
         ((ScenarioLevelBundleHeader *)transferSourceBytes)->levelEncodedBytes = errorOrByteCount;
         encodeResult = PckCodec_EncodeFieldGrid
-                           (0x7fffe8 - errorOrByteCount,encodeCursorOrSize + errorOrByteCount,
+                           (PACKAGE_SCRATCH_BUFFER_BYTES - 24 - errorOrByteCount,encodeCursorOrSize + errorOrByteCount,
                             sourceGrid->common.allocationSizeBytes,sourceGrid);
         checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
         ((ScenarioLevelBundleHeader *)transferSourceBytes)->fieldGridEncodedBytes = checkedResult.valueOrError;
@@ -896,8 +898,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
     overlayClipBottom = (UiPixelCoordinate)(uintptr_t)renderHierarchyProc;
     for (modelNode = control->candidateModelListHead; modelNode != NULL;
         modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-      if ((((modelNode->runtimeFlags & 0x40) == 0) && ((modelNode->runtimeFlags & 0x200) != 0)) &&
-         (modelNode->runtimeFlags = modelNode->runtimeFlags & 0xfffffffd,
+      if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN) != 0)) &&
+         (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
          (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
         renderHierarchyProc(modelNode);
       }
@@ -939,7 +941,7 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
       if (modelNode != NULL) {
         GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes();
         do {
-          if ((((modelNode->runtimeFlags & 0x40) == 0) && ((modelNode->runtimeFlags & 0x100) != 0)) &&
+          if ((((modelNode->runtimeFlags & MODEL_NODE_FLAG_HIDDEN) == 0) && ((modelNode->runtimeFlags & MODEL_NODE_FLAG_SHADING_PASS) != 0)) &&
              ((modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
             GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                       (modelNode,(GeneratedTextureRenderContextView *)control);
@@ -972,8 +974,8 @@ void FrontendModelPointerContext_RenderWorldViewQueuesClipped
       }
       for (modelNode = control->candidateModelListHead; modelNode != NULL;
           modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-        if (((modelNode->runtimeFlags & 0x240) == 0) &&
-           (modelNode->runtimeFlags = modelNode->runtimeFlags & 0xfffffffd,
+        if (((modelNode->runtimeFlags & (MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN | MODEL_NODE_FLAG_HIDDEN)) == 0) &&
+           (modelNode->runtimeFlags = modelNode->runtimeFlags & ~MODEL_NODE_FLAG_RENDERED,
            (modelNode->tintArgb & ARGB8888_ALPHA_MASK) != 0)) {
           renderHierarchyProc(modelNode);
         }
@@ -1011,7 +1013,7 @@ endScene:
     g_SelectionPanelBlitOpaque = g_GraphicsTextureSourceBlitHalfSourceRgb;
     g_SelectionPanelBlitClipped = g_GraphicsTextureSourceBlitTiledHalfSourceRgb;
   }
-  if ((g_UiCommandRuntimeFlags & 0x8000) == 0) {
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS) == 0) {
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS) != 0) &&
         (SelectionOverlay_RenderSelectedArmyMetrics
                    (overlayClipBottom,overlayClipRight,overlayClipTop,
@@ -1059,8 +1061,8 @@ endScene:
                  control->fieldGrid);
     }
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL))
-       && ((g_UiCommandRuntimeFlags & 0x40) != 0)) {
-      SelectionOverlay_DrawUnresolvedCellMarkers
+       && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS) != 0)) {
+      SelectionOverlay_DrawDebugMarkedCellMarkers
                 (overlayClipBottom,overlayClipRight,overlayClipTop,
                  overlayClipLeft,control->fieldGrid);
     }
@@ -2339,13 +2341,13 @@ void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode)
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
   adapterIndex = 0;
   controlOffsetFromParent = (int)sourceNode - (int)sourceNode->parent;
-  if ((((controlOffsetFromParent != 0x54) &&
+  if ((((controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption1)) &&
        (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-        adapterIndex = 1, controlOffsetFromParent != 0xbc)) &&
+        adapterIndex = 1, controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption2))) &&
       (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-       adapterIndex = 2, controlOffsetFromParent != 0x124)) &&
+       adapterIndex = 2, controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption3))) &&
      (g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-      adapterIndex = 3, controlOffsetFromParent != 0x18c)) {
+      adapterIndex = 3, controlOffsetFromParent != FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(displayAdapterOption4))) {
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
     adapterIndex = 4;
   }
@@ -3552,9 +3554,9 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   bestHitMetric = WORLD_POINTER_NO_HIT;
   for (modelNode = context->candidateModelListHead; modelNode != NULL;
       modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
-    if ((modelNode->runtimeFlags & 2) != 0 && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
-        ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_MODEL_WITHOUT_RUNTIME_FLAG_20) != 0 ||
-         (modelNode->runtimeFlags & 0x20) != 0)) {
+    if ((modelNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) != 0 && modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL &&
+        ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_NON_FACTION_MODELS) != 0 ||
+         (modelNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) != 0)) {
       hitTestResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                         (pointerY,pointerX,modelNode,context);
       if (hitTestResult.missed) continue;

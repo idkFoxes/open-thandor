@@ -67,10 +67,10 @@ void ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   Q12 grandchildLocalYQ12;
 
   definitionValue0C = ((ModelDefinition *)modelDefinition)->movementSpeed;
-  modelRuntimeSlot->classLinkState.classState68 = 0x80000000;
-  modelRuntimeSlot->classLinkState.armyLinkOrState.classState = 0x80000000;
-  modelRuntimeSlot->classLinkState.classState70 = 0x80000000;
-  modelRuntimeSlot->classLinkState.classState74 = 0x80000000;
+  modelRuntimeSlot->classLinkState.classState68 = MODEL_CLASS_STATE_UNSET_COORDINATE;
+  modelRuntimeSlot->classLinkState.armyLinkOrState.classState = MODEL_CLASS_STATE_UNSET_COORDINATE;
+  modelRuntimeSlot->classLinkState.classState70 = MODEL_CLASS_STATE_UNSET_COORDINATE;
+  modelRuntimeSlot->classLinkState.classState74 = MODEL_CLASS_STATE_UNSET_COORDINATE;
   modelRuntimeSlot->classState.classStateA8 = 0;
   modelRuntimeSlot->classState.classStateAC = 0;
   modelRuntimeSlot->classState.behaviorState = 0;

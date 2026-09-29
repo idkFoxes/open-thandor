@@ -16,6 +16,11 @@
 /* ModelRuntimeSlot.attachments[]: the attachment points one model runtime can record
    (ModelNodeRuntime_CreateHierarchyRecursive drops further ones). */
 #define MODEL_RUNTIME_ATTACHMENT_CAPACITY 6
+/* ModelRuntimeNode_HitTestProjectedBoundsAndChildren: bit i of the clipped-corner mask stands for bounds corner i
+   (x from bit 0, y from bit 1, z from bit 2 of i); a face triangle is tested only when none of its corners is set. */
+#define MODEL_BOUNDS_CORNER_BIT(corner) (1 << (corner))
+#define MODEL_BOUNDS_TRIANGLE_CORNERS(a,b,c) \
+  (MODEL_BOUNDS_CORNER_BIT(a) | MODEL_BOUNDS_CORNER_BIT(b) | MODEL_BOUNDS_CORNER_BIT(c))
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BD1F0 */

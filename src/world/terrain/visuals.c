@@ -20,7 +20,7 @@ static __inline uint64_t TerrainColor_UnpackBytesShiftRight(uint32_t value,int s
   int lane;
 
   for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
   }
   return lanes.q;
 }
@@ -161,7 +161,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
   }
   clampInputValue = 0;
   lookupWriteCursor = (uint8_t *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
-  lookupRowsRemaining = 0x40;
+  lookupRowsRemaining = 64; /* row pairs */
   g_TerrainByteClampLookup = lookupWriteCursor;
   /* rows 0x00..0x7F in pairs: even rows fade to NONE, odd rows to FULL */
   do {
@@ -267,7 +267,7 @@ StatusResult TerrainByteClampLookup_Initialize(void)
     lookupInputValue = (uint32_t)nextInputByte;
   } while (nextInputByte != 0);
   /* rows 0x83..0xFF (125): FULL */
-  finalRowsRemaining = 0x7d;
+  finalRowsRemaining = 125;
   lookupInputValue = 0;
   do {
     if (lookupInputValue < 256) {
@@ -422,8 +422,9 @@ StatusResult TerrainVisualResources_LoadPrimary
               directionRecord = g_TerrainDirectionRecordTable256;
               do {
                 randomValue = Random_NextPrimary();
-                directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
+                directionRecord->scaleA = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
+                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
                 randomValue = Random_NextPrimary();
                 if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -431,8 +432,9 @@ StatusResult TerrainVisualResources_LoadPrimary
                 directionRecord->rateA = pathCharOrRotationRate;
                 ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
                 randomValue = Random_NextPrimary();
-                directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
+                directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
+                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
                 randomOrSuccessStatus.valueOrError = Random_NextPrimary();
                 if ((int)randomOrSuccessStatus.valueOrError < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -591,8 +593,9 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
               directionRecord = g_TerrainDirectionRecordTable256;
               do {
                 randomValue = Random_NextPrimary();
-                directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
+                directionRecord->scaleA = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
+                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
                 randomValue = Random_NextPrimary();
                 if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -600,8 +603,9 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
                 directionRecord->rateA = pathCharOrRotationRate;
                 ((short *)&directionRecord->packedAngles)[0] = (short)randomValue; /* angle A */
                 randomValue = Random_NextPrimary();
-                directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
+                directionRecord->scaleB = (randomValue & TERRAIN_DIRECTION_SCALE_RANDOM_MASK) + TERRAIN_DIRECTION_SCALE_MIN;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & TERRAIN_DIRECTION_RATE_RANDOM_MASK) +
+                                         TERRAIN_DIRECTION_RATE_MIN_ANGLE16;
                 randomOrSuccessStatus.valueOrError = Random_NextPrimary();
                 if ((int)randomOrSuccessStatus.valueOrError < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -774,8 +778,8 @@ void TerrainLighting_AdjustDirectionAndRecomputeField
   Q12 lightElevationAngle;
 
   lightElevationAngle = deltaElevationAngle + g_InGameRuntimeRoot->lightElevationAngle;
-  if (-0x1000 < lightElevationAngle) {
-    lightElevationAngle = -0x1000;
+  if (-TERRAIN_LIGHT_ELEVATION_MIN_TILT_ANGLE16 < lightElevationAngle) {
+    lightElevationAngle = -TERRAIN_LIGHT_ELEVATION_MIN_TILT_ANGLE16;
   }
   if (lightElevationAngle < -FIXED_ANGLE16_QUARTER_TURN) {
     lightElevationAngle = -FIXED_ANGLE16_QUARTER_TURN;
@@ -821,15 +825,15 @@ void TerrainCompositeTexture_FillPlane1(void)
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-        materialColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK)].argb8888;
+        materialColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK)].argb8888;
         if (lightingLevelIndex < 0) {
-          lightingLevelIndex = 0x70;
+          lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
         }
-        else if (lightingLevelIndex < 0x60) {
-          lightingLevelIndex = lightingLevelIndex + 0x70;
+        else if (lightingLevelIndex < TERRAIN_MINIMAP_HEIGHT_LEVELS) {
+          lightingLevelIndex = lightingLevelIndex + TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
         }
         else {
-          lightingLevelIndex = 0xcf;
+          lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
         }
         /* PUNPCKLBW/PSRLW 3, PMULHW by the lighting level, PACKUSWB */
         mm0PackedValue0 =
@@ -841,15 +845,15 @@ void TerrainCompositeTexture_FillPlane1(void)
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
         waterColorArgb = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
         if (lightingLevelIndex < 0) {
-          if (lightingLevelIndex < -0x3f) {
-            lightingLevelIndex = 0x80;
+          if (lightingLevelIndex < -(TERRAIN_MINIMAP_WATER_DEPTH_LEVELS - 1)) {
+            lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_FIRST;
           }
           else {
-            lightingLevelIndex = lightingLevelIndex + 0xc0;
+            lightingLevelIndex = lightingLevelIndex + (TERRAIN_MINIMAP_WATER_LIGHT_FIRST + TERRAIN_MINIMAP_WATER_DEPTH_LEVELS);
           }
         }
         else {
-          lightingLevelIndex = 0xbf;
+          lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_LAST;
         }
         mm0PackedValue1 =
              pmulhw(TerrainColor_UnpackBytesShiftRight(waterColorArgb,3),
@@ -904,15 +908,15 @@ void TerrainCompositeTexture_FillPlane2(void)
       if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
         if ((fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT) == 0) {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-          soilColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + 0x40].argb8888;
+          soilColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_SOIL].argb8888;
           if (lightingLevelIndex < 0) {
-            lightingLevelIndex = 0x70;
+            lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
           }
-          else if (lightingLevelIndex < 0x60) {
-            lightingLevelIndex = lightingLevelIndex + 0x70;
+          else if (lightingLevelIndex < TERRAIN_MINIMAP_HEIGHT_LEVELS) {
+            lightingLevelIndex = lightingLevelIndex + TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
           }
           else {
-            lightingLevelIndex = 0xcf;
+            lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
           }
           mm0PackedValue3 =
                pmulhw(TerrainColor_UnpackBytesShiftRight(soilColorArgb,3),
@@ -921,15 +925,15 @@ void TerrainCompositeTexture_FillPlane2(void)
         }
         else {
           lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-          tritiumColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + 0x42].argb8888;
+          tritiumColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_TRITIUM].argb8888;
           if (lightingLevelIndex < 0) {
-            lightingLevelIndex = 0x70;
+            lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
           }
-          else if (lightingLevelIndex < 0x60) {
-            lightingLevelIndex = lightingLevelIndex + 0x70;
+          else if (lightingLevelIndex < TERRAIN_MINIMAP_HEIGHT_LEVELS) {
+            lightingLevelIndex = lightingLevelIndex + TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
           }
           else {
-            lightingLevelIndex = 0xcf;
+            lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
           }
           mm0PackedValue2 =
                pmulhw(TerrainColor_UnpackBytesShiftRight(tritiumColorArgb,3),
@@ -939,15 +943,15 @@ void TerrainCompositeTexture_FillPlane2(void)
       }
       else {
         lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
-        xeniteColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * 0x100 + 0x41].argb8888;
+        xeniteColorArgb = ((GraphicsPaletteTextureSourceAsset *)panelTextureSource)->paletteEntries[panelSubresourceIndex * GRAPHICS_PALETTE_BANK_ENTRIES + TERRAIN_MINIMAP_PANEL_COLOR_XENITE].argb8888;
         if (lightingLevelIndex < 0) {
-          lightingLevelIndex = 0x70;
+          lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
         }
-        else if (lightingLevelIndex < 0x60) {
-          lightingLevelIndex = lightingLevelIndex + 0x70;
+        else if (lightingLevelIndex < TERRAIN_MINIMAP_HEIGHT_LEVELS) {
+          lightingLevelIndex = lightingLevelIndex + TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST;
         }
         else {
-          lightingLevelIndex = 0xcf;
+          lightingLevelIndex = TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST;
         }
         mm0PackedValue0 =
              pmulhw(TerrainColor_UnpackBytesShiftRight(xeniteColorArgb,3),
@@ -958,15 +962,15 @@ void TerrainCompositeTexture_FillPlane2(void)
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
         waterColorArgb = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
         if (lightingLevelIndex < 0) {
-          if (lightingLevelIndex < -0x3f) {
-            lightingLevelIndex = 0x80;
+          if (lightingLevelIndex < -(TERRAIN_MINIMAP_WATER_DEPTH_LEVELS - 1)) {
+            lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_FIRST;
           }
           else {
-            lightingLevelIndex = lightingLevelIndex + 0xc0;
+            lightingLevelIndex = lightingLevelIndex + (TERRAIN_MINIMAP_WATER_LIGHT_FIRST + TERRAIN_MINIMAP_WATER_DEPTH_LEVELS);
           }
         }
         else {
-          lightingLevelIndex = 0xbf;
+          lightingLevelIndex = TERRAIN_MINIMAP_WATER_LIGHT_LAST;
         }
         existingPixelArgb = *(uint32_t *)planePixelCursor;
         mm0PackedValue1 =
@@ -1018,7 +1022,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   FieldGridCoordinates gridCoordinates;
   
   inGameRoot = g_InGameRuntimeRoot;
-  if ((g_InGameRuntimeRoot->minimapResourceButtonStateFlags & 2) == 0) {
+  if ((g_InGameRuntimeRoot->minimapResourceButtonStateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
     assetOffset = g_TerrainCompositeTexture->sourceEntries[1].dataOffset;
   }
   else {
@@ -1071,7 +1075,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
           if (!isSelected) {
             colorVariant = 0;
           }
-          pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[0x20 + ((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
+          pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
           if (ownerNode->modelTintArgb < ARGB8888_ALPHA_MASK) {
             pixelArgb = (pixelArgb & TERRAIN_ARGB_HALVE_MASK) +
                     (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & TERRAIN_ARGB_HALVE_MASK) >> 1;

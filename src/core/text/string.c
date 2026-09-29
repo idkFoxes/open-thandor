@@ -172,12 +172,12 @@ TextCompareResult Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightTe
     if ('A' - 1 < leftCodeUnit) {
       if (leftCodeUnit < 'Z' + 1) {
         if ('a' - 1 < rightCodeUnit && rightCodeUnit < 'z' + 1) {
-          leftCodeUnit = leftCodeUnit | 0x20; /* to lower case */
+          leftCodeUnit = leftCodeUnit | TEXT_ASCII_LOWER_CASE_BIT;
         }
       }
       else if ('a' - 1 < leftCodeUnit && rightCodeUnit < 'z' + 1 && 'A' - 1 < rightCodeUnit &&
                rightCodeUnit < 'Z' + 1) {
-        rightCodeUnit = rightCodeUnit | 0x20;
+        rightCodeUnit = rightCodeUnit | TEXT_ASCII_LOWER_CASE_BIT;
       }
     }
   } while (leftCodeUnit == rightCodeUnit);

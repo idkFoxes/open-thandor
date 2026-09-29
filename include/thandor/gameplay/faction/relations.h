@@ -29,9 +29,22 @@
 /* GameFactionRuntimeRecord.packedRelationStates: one relation-state nibble per faction; the nibble bits of
    state (e.g. FACTION_RELATION_STATE_ALLIED) at the given faction */
 #define FACTION_RELATION_PACKED(state,factionIndex) ((uint32_t)(state) << ((factionIndex) * 4))
+#define FACTION_RELATION_STATE_MASK 0xf /* one relation-state nibble, after shifting it down */
 /* GameData_ResetDefaults: packedRelationStates of faction 0 (own nibble 0xF, state 1 toward the seven others);
    each following record gets it rotated left by one nibble, so the 0xF sits at the record's own faction. */
 #define FACTION_RELATION_DEFAULT_PATTERN 0x1111111f
+/* FactionActiveMask bit of a faction (bit n = faction n) */
+#define FACTION_MASK_BIT(factionIndex) (1 << (factionIndex))
+/* Random relation drift (GameFactionRelations_MaybeAdvancePairState*): the pair advances when Random & mask
+   equals FACTION_RELATION_DRIFT_MATCH; the mask depends on the state tier and whether the pair has pressure */
+#define FACTION_RELATION_DRIFT_MATCH 85
+#define FACTION_RELATION_DRIFT_RARE_IDLE_MASK 0x17F       /* states outside 3/6/10, no pressure: 1 in 256 */
+#define FACTION_RELATION_DRIFT_RARE_PRESSURE_MASK 0x3FF   /* states outside 3/6/10, pressure: 1 in 1024 */
+#define FACTION_RELATION_DRIFT_COMMON_IDLE_MASK 0x7F      /* states 3/6/10, no pressure: 1 in 128 */
+#define FACTION_RELATION_DRIFT_COMMON_PRESSURE_MASK 0x1FF /* states 3/6/10, pressure: 1 in 512 */
+/* GameFactionRelations_MaybeResetPairState: resets when (Random & mask) == match, 1 in 4 */
+#define FACTION_RELATION_RESET_RANDOM_MASK 0x180
+#define FACTION_RELATION_RESET_RANDOM_MATCH 0x80
 
 /* 0x0053C010 */
 void GameFactionRelations_UpdateAllPairsForFaction

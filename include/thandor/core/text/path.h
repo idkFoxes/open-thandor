@@ -32,6 +32,8 @@
    of '0' - 1 becomes '9'. */
 #define UTF16_DIGIT_PAIR(tens,ones) ((ones) << 16 | (tens))
 #define UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP ((10 << 16) - 1)
+/* Two UTF-16 code units read as one little-endian dword (first in the low half), e.g. for comparing a name */
+#define UTF16_CHAR_PAIR(first,second) ((second) << 16 | (first))
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

@@ -320,7 +320,7 @@ void InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedT
       shadingRecord->radiusTransitionElapsedTicks = shadingRecord->radiusTransitionElapsedTicks + elapsedTicks;
       shadingRecord->squaredRadiusQ24 = (int64_t)currentRadius * (int64_t)currentRadius;
       if (durationTicks < 0) {
-        if ((uint32_t)shadingRecord->radiusTransitionElapsedTicks < 0x80000000) { /* elapsed >= 0 */
+        if ((uint32_t)shadingRecord->radiusTransitionElapsedTicks < INTERPOLATION_SIGN_BIT) { /* elapsed >= 0 */
           /* fade-out finished: free the light */
           shadingRecord->squaredRadiusQ24 = 0;
           shadingRecord->targetRadiusQ12 = 0;
@@ -533,7 +533,7 @@ void CubicSpline_ForwardEliminateColumn
   targetElement = rowCursor + columnIndex;
   columnCursor = matrix32x32 + columnIndex;
   reducedValue = *targetElement;
-  if (lastPriorIndex < 0x80000000) { /* signed lastPriorIndex >= 0; -1 on the first row means no terms */
+  if (lastPriorIndex < INTERPOLATION_SIGN_BIT) { /* signed lastPriorIndex >= 0; -1 on the first row means no terms */
     do {
       reducedValue = reducedValue - *rowCursor * *columnCursor;
       priorIndex++;

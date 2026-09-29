@@ -163,8 +163,8 @@ bool ArmyPlacement_ValidateAssetAtPointAndCellCorners
      accepted in ECX (x) / EDX (y) - the input point, or the first free snapped cell corner - which the
      decompiler dropped. Callers read it from g_ArmyPlacementValidatedWorldX/YQ12. */
   /* corner order as in the original: (0,0), (+0x240,0), (+0x240,+0x240), (0,+0x240) */
-  static const int cornerDx[4] = {0,0x240,0x240,0};
-  static const int cornerDy[4] = {0,0,0x240,0x240};
+  static const int cornerDx[4] = {0,ARMY_PLACEMENT_CORNER_OFFSET_Q12,ARMY_PLACEMENT_CORNER_OFFSET_Q12,0};
+  static const int cornerDy[4] = {0,0,ARMY_PLACEMENT_CORNER_OFFSET_Q12,ARMY_PLACEMENT_CORNER_OFFSET_Q12};
   PlacementDispatchResult dispatched;
   int corner;
 
@@ -841,7 +841,7 @@ PlacementDispatchResult ArmyPlacement_DispatchAssetAtFieldPoint(ArmyPlacementMod
    Tests whether a circle of queryRadiusQ12 at a candidate point hits any army in the world's owner list:
    depth-bin overlap first, then the exact circle test; armies of runtime class 0 and 12 never block, class-13
    armies also block when the point comes near their (1,5) anchor point. With
-   ARMY_PLACEMENT_MODE_DEPTH_CLASS_90_ONLY in the mode only armies of depth-bin class 0x90 count. Returns CF:
+   ARMY_PLACEMENT_MODE_STRUCTURES_ONLY in the mode only armies of depth-bin class 0x90 count. Returns CF:
    true = hit.
    Called directly by ArmyPlacementCollision_TestCandidateAndClearance and
    ArmyPlacementCandidate_TestOffsetClearance.
@@ -869,8 +869,8 @@ bool ArmyPlacementCollision_TestPointAgainstRuntimeList
                           (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
                            ownerNode->modelDepthBinMaskNear);
         if (((hit) &&
-            ((((placementFilterFlags & ARMY_PLACEMENT_MODE_DEPTH_CLASS_90_ONLY) == 0 ||
-              (*(int *)(&g_ArmyRuntimeDepthBinClassByModelClass + modelClassId * 4) == 0x90)) &&
+            ((((placementFilterFlags & ARMY_PLACEMENT_MODE_STRUCTURES_ONLY) == 0 ||
+              (*(int *)(&g_ArmyRuntimeDepthBinClassByModelClass + modelClassId * 4) == ARMY_DEPTH_BIN_CLASS_STRUCTURE)) &&
              (modelClassId != MODEL_RUNTIME_CLASS_00)))) && (modelClassId != MODEL_RUNTIME_CLASS_12)) {
           hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                             (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload);
@@ -1159,7 +1159,7 @@ ArmyPlacementCollision_TestCandidateAndClearance
           } while (ownerNode != NULL);
           /* no supporting model in reach (the distance is still the INT64_MAX start value) */
           if (((placementMode & ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE) == 0) ||
-              (0x7ffffffeffffffff < nearestDistanceSquared))
+              (ARMY_PLACEMENT_NO_SUPPORT_DISTANCE_SQUARED < nearestDistanceSquared))
           goto Reject;
           /* EAX: free distance between the candidate's margin and the nearest supporter's radius */
           nearestDistanceQ12 = FixedMath_UInt64Sqrt(nearestDistanceHigh,nearestDistanceLow);

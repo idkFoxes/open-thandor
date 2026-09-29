@@ -173,14 +173,14 @@ void FrontendResultsTable_DrawColumnSequenceByType(int clipBottom,int clipRight,
     do {
       resolvedText = TextResource_Resolve(factionRecord->colorIndex + TEXT_ID_FACTION_NAME_BASE);
       colourResource = resolvedText.text;
-      *columnTypeOrColorCursor = (((uint8_t)colourResource[8] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[7] << 0x1c) +
+      /* alpha stays in the top byte; red and green index their tables by byte offset, blue by entry */
+      *columnTypeOrColorCursor = FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(colourResource[7],colourResource[8]) +
                 *(int *)((int)g_SoftwarePixelPackTables->red +
-                        ((((uint8_t)colourResource[6] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[5] << 0x1c) >> 0x16))
+                        (FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(colourResource[5],colourResource[6]) >> 22))
                 + *(int *)((int)g_SoftwarePixelPackTables->green +
-                          ((((uint8_t)colourResource[4] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[3] << 0x1c) >> 0x16
-                          )) +
+                          (FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(colourResource[3],colourResource[4]) >> 22)) +
                 g_SoftwarePixelPackTables->blue
-                [(((uint8_t)colourResource[2] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[1] << 0x1c) >> 0x18];
+                [FACTION_COLOUR_TEXT_PAIR_TOP_BYTE(colourResource[1],colourResource[2]) >> 24];
       statTableImage = g_GameStatTableImage;
       framebufferAccess = g_FramebufferAccess;
       factionRecord++;

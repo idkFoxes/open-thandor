@@ -589,8 +589,9 @@ PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node)
   /* each test leaves the tint of its branch in tintArgb, as the original loads EAX before every TEST */
   tintArgb = UI_MODEL_TINT_OPAQUE_WHITE;
   stateFlags = node->runtimeFlags;
-  if ((((stateFlags & 4) == 0) && (tintArgb = 0, (stateFlags & 8) != 0)) &&
-     (tintArgb = UI_MODEL_TINT_TRANSPARENT_WHITE, (stateFlags & 0x10) == 0)) {
+  if ((((stateFlags & TERRAIN_OCCUPANCY_FLAG_PRESENT) == 0) &&
+      (tintArgb = 0, (stateFlags & TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE) != 0)) &&
+     (tintArgb = UI_MODEL_TINT_TRANSPARENT_WHITE, (stateFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0)) {
     tintArgb = UI_MODEL_TINT_OPAQUE_GREY;
   }
   return tintArgb;

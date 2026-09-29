@@ -18,16 +18,18 @@ movies) come from an installation.
 | Original data compiled in, verified byte for byte | `████████████████████` | **100 %** (885,420 bytes, 2,393 pointers) |
 | Functions with a header comment (what, why, who calls it) | `████████████████████` | **100 %** |
 | Functions without raw memory offsets | `████████████████████` | **100 %** |
-| Functions without placeholder names | `████████████████████` | **99.8 %** |
+| Functions without placeholder names | `████████████████████` | **100 %** |
 | Functions without `goto` / `while (true)` | `██████████████████░░` | **91.7 %** |
-| Functions that pass all readability checks | `██████████████████░░` | **91.6 %** (1,894) |
-| Magic hex numbers named (constants, fixed-point shifts) | `██████████████████░░` | **91 %** (5,173 → 453 left) |
+| Functions that pass all readability checks | `██████████████████░░` | **91.7 %** (1,897) |
+| Magic hex numbers named (constants, fixed-point shifts) | `████████████████████` | **99.9 %** (5,182 → 2 left) |
 
 The readability numbers come from [`tools/readability_report.py`](tools/readability_report.py). What it counts:
-a placeholder is an identifier such as `reserved28_2F`, `unknown…` or `arg0` (the graphics term "opaque" is not
-one); a raw offset is `*(T *)(p + 0x..)` or `(int)&x` address arithmetic. Hex numbers are counted in code only,
-without original addresses, bit masks (`0xff`, `0xffff0000`, … read best as hex; 340 of them) and the sample
-codec's MMX tables, whose offsets are genuine table positions. The goto count is the next stage: restructuring
+a placeholder is an identifier such as `reserved28_2F`, `unknown…` or `arg0` (the graphics term "opaque" and
+string symbols named after their text are not); a raw offset is `*(T *)(p + 0x..)` or `(int)&x` address arithmetic. Hex numbers are counted in code only,
+without original addresses, the values of `#define`s (that is where they get their name), bit masks (one run of
+four or more set bits such as `0xff`, `0x3fffffff`, `0xffff0000`: they read best as hex; 331 of them) and the
+sample codec's MMX tables, whose offsets are genuine table positions. The 2 left are occupancy and production
+bits whose meaning is not known yet. The goto count is the next stage: restructuring
 changes the machine code and is checked by behaviour tests instead of the byte comparison.
 
 ### What works

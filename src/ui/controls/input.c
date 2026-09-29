@@ -860,7 +860,7 @@ static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shif
   lanes = 0;
   for (lane = 0; lane < 4; lane++) {
     lanes = lanes |
-            (uint64_t)(uint16_t)((uint16_t)(((pixel >> (lane * 8)) & 0xff) * 0x101) >> shift) << (lane * 16);
+            (uint64_t)(uint16_t)((uint16_t)(((pixel >> (lane * 8)) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift) << (lane * 16);
   }
   return lanes;
 }

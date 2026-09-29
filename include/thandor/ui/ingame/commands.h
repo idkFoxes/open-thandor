@@ -94,6 +94,11 @@
 /* g_UiCommandRuntimeFlags bit hiding the world view status texts (UiCommandVisibility*Text_DrawWhenAllowed); no
    writer with a constant mask, so it can only come from command 0x310 */
 #define UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_TEXTS 0x200
+/* g_UiCommandRuntimeFlags bits of the world view overlays (FrontendModelPointerContext_RenderWorldViewQueuesClipped);
+   no writer with a constant mask, so they can only come from command 0x310 */
+#define UI_COMMAND_RUNTIME_FLAG_HIDE_WORLD_OVERLAYS 0x8000 /* skips every selection overlay of the world view */
+#define UI_COMMAND_RUNTIME_FLAG_DRAW_DEBUG_CELL_MARKERS 0x40 /* debug overlay
+                                                                     SelectionOverlay_DrawDebugMarkedCellMarkers */
 /* labelFlags bits of those world view status texts */
 #define UI_WORLD_TEXT_PAUSED_ONLY 0x800 /* drawn only while the game is paused */
 #define UI_WORLD_TEXT_SHIFT_BY_STEP_TICKS 0x1000 /* needs g_InGameSimulationStepTicks > 1; text shifted by ticks - 2

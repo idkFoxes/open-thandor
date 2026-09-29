@@ -3481,8 +3481,9 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
              (uint16_t *)(candidateFactionIndex + TEXT_ID_PLAYER_NUMBER_BASE);
         relationState = g_GameFactionRuntimeImage.records
                         [((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex]
-                        .packedRelationStates >> ((uint8_t)(candidateFactionIndex << 2) & 0x1f) & 0xf;
-        /* Ghidra's rendering of the SHL/SHR pair around the shift: the index itself is unchanged */
+                        .packedRelationStates >> ((uint8_t)(candidateFactionIndex << 2) & SHIFT_COUNT_MASK) &
+                        FACTION_RELATION_STATE_MASK;
+        /* the SHL/SHR pair around the nibble shift, rendered as a mask: the index itself is unchanged */
         candidateFactionIndex = candidateFactionIndex & 0x3fffffff;
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
              (uint16_t *)(relationState + TEXT_ID_DIPLOMATIC_RELATION_BASE);
@@ -3583,7 +3584,7 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
           class70Sum = class70Sum + armyDefinition->definitionClassValue70;
           weightedClass78Sum = weightedClass78Sum + registryWeight * armyDefinition->definitionClassValue78;
           modelRuntimeOrBonus = 50;
-          if ((armyDefinition->flags & 0x10) == 0) {
+          if ((armyDefinition->flags & ARMY_ASSET_FLAG_BUILT_BY_CLASS11) == 0) {
             modelRuntimeOrBonus = 0;
           }
           class74Sum = class74Sum + armyDefinition->definitionClassValue74;
@@ -3632,9 +3633,9 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   isSelected = (bool)UiSelectableControl_IsSelected((UiSelectableControl *)source);
   if (!isSelected) {
     UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_NONE,&uiRoot->gameWindowPageStack);
-    /* interaction flag 8: a window blocks the world input (0xfffffff7 = ~8) */
+    /* UI_NODE_SUPPRESSED on the world view: a window blocks the world input */
     interactionFlagsField = &(uiRoot->worldRuntime).interaction.nodeFlags;
-    *interactionFlagsField = *interactionFlagsField & 0xfffffff7;
+    *interactionFlagsField = *interactionFlagsField & ~UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW) == 0) {
@@ -3651,7 +3652,7 @@ void InGameMissionHelpPage_Toggle(UiNodeBase *source)
   }
   UiSelectableControl_SetSelected(0,&uiRoot->inGameMenuButton);
   interactionFlagsField = &(uiRoot->worldRuntime).interaction.nodeFlags;
-  *interactionFlagsField = *interactionFlagsField | 8;
+  *interactionFlagsField = *interactionFlagsField | UI_NODE_SUPPRESSED;
   UiKeyboardFocus_ReleaseNode((UiNodeBase *)&uiRoot->worldRuntime);
   UiPageStack_SetActiveIndex(INGAME_WINDOW_PAGE_MISSION_HELP,&uiRoot->gameWindowPageStack);
   (uiRoot->missionBriefingPanel).textResourceId =
@@ -4439,7 +4440,7 @@ void InGameUiCommand_BeginInteractionByMode
       }
       /* region g_UiCommandModeF owns cell flag FIELD_CELL_XENITE_SUPPORT << region; bit 31 makes the drag remove it again */
       if ((mapFieldGrid->cells[cellY * mapFieldGrid->gridWidth + cellX].flagsAndMaterial &
-          FIELD_CELL_XENITE_SUPPORT << ((uint8_t)g_UiCommandModeF & 0x1f)) != 0) {
+          FIELD_CELL_XENITE_SUPPORT << ((uint8_t)g_UiCommandModeF & SHIFT_COUNT_MASK)) != 0) {
         g_UiCommandCallerMaskHighBit = INGAME_REGION_MASK_REMOVE;
         return;
       }
@@ -4521,9 +4522,9 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
       return;
     }
     do {
-      if ((((runtimeNode->runtimeFlags & 2) != 0) &&
+      if ((((runtimeNode->runtimeFlags & MODEL_NODE_FLAG_RENDERED) != 0) &&
           (entry = *(GameEntityRuntime **)((int)runtimeNode->runtimePayload + 8),
-          (runtimeNode->runtimeFlags & 0x20) != 0)) &&
+          (runtimeNode->runtimeFlags & MODEL_NODE_FLAG_FACTION_OWNED) != 0)) &&
          (workValue == (entry->common).ownership.ownerIndex)) {
         payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
         conditionResult = WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,mapControl);

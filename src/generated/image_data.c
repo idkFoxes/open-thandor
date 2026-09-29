@@ -1087,8 +1087,8 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
     0xF9F9F9F9F9F9F9F9ull, /* 0041F698 g_TerrainOccupancyMmxClearBits1And2Mask */
     0xFFFFFFFFFFFFFFFFull, /* 0041F6A0 g_TerrainOccupancyMmxAllBitsMask */
     0x280028002800280ull, /* 0041F6A8 g_TerrainOccupancyMmxPackedScale0280 */
-    0x20000200200002ull, /* 0041F6B0 g_TerrainOccupancyMmxPackedWeights02_20 */
-    0x40000400400004ull, /* 0041F6B8 g_TerrainOccupancyMmxPackedWeights04_40 */
+    0x20000200200002ull, /* 0041F6B0 g_TerrainOccupancyMmxPersistentWeights */
+    0x40000400400004ull, /* 0041F6B8 g_TerrainOccupancyMmxCurrentWeights */
     0x8080808080808080ull, /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
     0x707070707070707ull, /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
     {
@@ -1629,7 +1629,7 @@ ImageData_004AE95C g_ImageData_004AE95C = {
         0xDF012345, 0x1013579B, 0x31765432, 0xCEFDB975, 0x2302468A, 0x202357BD, 0x32ECA864, 0x3C32DB75,
         0x780F1E2D, 0xF04B5A69, 0xB4C3D2E1},
     {0xA5, 0x96, 0x87},
-    {0x6D}, /* 004AE9D8 s_mohTG_sakere___e_004ae9d8 */
+    {0x6D}, /* 004AE9D8 g_UiTransferRoundKeys16Tail */
     {
         0x4754686F, 0x6B617320, 0x21657265},
     {0x21, 0x21, 0x65},
@@ -1639,7 +1639,7 @@ ImageData_004AE95C g_ImageData_004AE95C = {
     0, /* 004AE9F8 g_UiTransferMailboxChunkOffset */
     0, /* 004AE9FC g_UiTransferMailboxTransferByteCount */
     {0}, /* 004AEA00 g_UiTransferChunkPayload */
-    0, /* 004AEAE8 g_UiTransferMailboxReplyPacket10033 */
+    0, /* 004AEAE8 g_UiTransferPingEchoPacket */
     0, /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
     {0},
     0, /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
@@ -10754,7 +10754,7 @@ ImageData_00562498 g_ImageData_00562498 = {
             /* 38 */ (void *)InGameCommandState_SelectAndPropagateBinaryMode,
             /* 39 */ (void *)InGameQuitMenu_RestartMission
         }},
-    /* 00562540 g_InGameUiCommandModeActionHandlers30 */
+    /* 00562540 g_InGameUiActionHandlersPage11 */
     {
         .handlers = {
             /*  0 */ (void *)InGameCommandModeG_Select0,

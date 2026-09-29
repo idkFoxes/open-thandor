@@ -10,7 +10,7 @@ digraph thandor {
   "SelectionOverlay_DrawGridVertexMarkers" [label="0x0052F680\nSelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices"];
   "SelectionOverlay_DrawFluidExclusionMarkers" [label="0x0052F780\nSelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags"];
   "SelectionOverlay_DrawResourceCellMarkers" [label="0x0052F8C0\nSelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800"];
-  "SelectionOverlay_DrawUnresolvedCellMarkers" [label="0x0052FA20\nSelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000"];
+  "SelectionOverlay_DrawDebugMarkedCellMarkers" [label="0x0052FA20\nSelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000"];
   "SelectionMarkerCoordinates_ApplyType3" [label="0x00560020\nSelectionMarkerCoordinates_ApplyType3"];
   "SelectionMarkerCoordinates_ApplyType4" [label="0x00560050\nSelectionMarkerCoordinates_ApplyType4"];
   "SelectionMarkerCoordinates_ApplyType5" [label="0x00560080\nSelectionMarkerCoordinates_ApplyType5"];

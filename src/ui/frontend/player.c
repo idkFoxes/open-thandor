@@ -1127,11 +1127,11 @@ void FrontendPlayerTextCommand_PublishConditionalRichText
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((((playerBlock->chatRecipientMaskAndWriteOffset &
-        1 << ((char)(g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex + 8U & 0x1f))
+        1 << ((char)(g_InGameRuntimeRoot->worldRuntime).activeFactionRuntimeIndex + 8U & SHIFT_COUNT_MASK))
         != 0) ||
       ((playerBlock->chatRecipientMaskAndWriteOffset &
        1 << ((char)(g_InGameRuntimeRoot->worldRuntime).selection.activePlayerRuntimeId + 16U &
-            0x1f)) != 0)) &&
+            SHIFT_COUNT_MASK)) != 0)) &&
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
     /* +0x80C0: the 0x30 staged bytes, widened into a 0x60-byte buffer */

@@ -18,6 +18,13 @@
 #define INGAME_LOADED_RESOURCE_CAPACITY 0x200
 /* WidePath records of the EFF/SHT/MDL/ARM path tables: 32 UTF-16 code units each */
 #define LEVEL_ASSET_PATH_RECORD_UNITS 32
+/* g_MoviePlaybackScheduleSpan of a loading stage without a known step count: so many ticks per 8 frames that
+   the loading movie stays in the stage's frame group (MoviePlayback_AdvanceScheduledFrameAndTick) */
+#define LEVEL_LOAD_MOVIE_SPAN_HOLD 0x10000
+/* LevelAsset_PrepareEndingMoviePath: UTF-16 characters 4 and 5 of the movie path select the end movie number */
+#define LEVEL_ENDING_MOVIE_NAME_W_UUML UTF16_CHAR_PAIR('w',0xFC) /* "w" + U+00FC, end movie 2 */
+#define LEVEL_ENDING_MOVIE_NAME_EI UTF16_CHAR_PAIR('e','i')      /* end movie 3 */
+#define LEVEL_ENDING_MOVIE_NAME_LA UTF16_CHAR_PAIR('l','a')      /* end movie 4 */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00531080 */

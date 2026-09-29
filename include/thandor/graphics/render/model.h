@@ -25,6 +25,8 @@
 /* Model triangle renderFlags (triangle record +0x34), read by ModelRender_SubmitTriangle*,
    ModelRender_PrepareProjectedVertex* */
 #define MODEL_TRIANGLE_PALETTE_BANK_MASK 0x1FF /* material colour: index into the node's palette asset */
+/* The palette bank mask ModelRender_SubmitTriangleAlternatePath uses: keeps bits 16..31 too */
+#define MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK 0xffff01ff
 #define MODEL_TRIANGLE_UNLIT 0x200 /* vertices take the node tint instead of lighting */
 #define MODEL_TRIANGLE_DOUBLE_SIDED 0x400 /* drawn without the back-face test */
 #define MODEL_TRIANGLE_LIGHTING_SCALED 0x800 /* lit by ModelRender_ComputeVertexIntensityScaledPath */

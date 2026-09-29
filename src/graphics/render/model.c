@@ -586,7 +586,7 @@ void ModelRender_SubmitTriangleAlternatePath(GraphicsTriangleInput *triangle,Mod
               nodePaletteAsset = (modelNode->modelPayload).paletteAsset;
               /* the original masks with 0xFFFF01FF here (0x1FF in ModelRender_SubmitTriangle) */
               if ((nodePaletteAsset != NULL) &&
-                 (subresourceOrPaletteBank = triangle->renderFlags & 0xffff01ff,
+                 (subresourceOrPaletteBank = triangle->renderFlags & MODEL_TRIANGLE_PALETTE_BANK_WIDE_MASK,
                   subresourceOrPaletteBank < nodePaletteAsset->paletteBankCount)) {
                 GraphicsPrimitiveQueue_SetMaterial
                           (nodePaletteAsset->paletteEntries[subresourceOrPaletteBank].alternateModulationColorArgb,

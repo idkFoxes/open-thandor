@@ -56,56 +56,56 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[0] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 1;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(0);
     }
     remainingTicks = modelRuntime->attachmentReloadTicks + 1;
     *remainingTicks = *remainingTicks - stepTicks;
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[1] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 2;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(1);
     }
     remainingTicks = modelRuntime->attachmentReloadTicks + 2;
     *remainingTicks = *remainingTicks - stepTicks;
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[2] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 4;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(2);
     }
     remainingTicks = modelRuntime->attachmentReloadTicks + 3;
     *remainingTicks = *remainingTicks - stepTicks;
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[3] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 8;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(3);
     }
     remainingTicks = modelRuntime->attachmentReloadTicks + 4;
     *remainingTicks = *remainingTicks - stepTicks;
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[4] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 0x10;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(4);
     }
     remainingTicks = modelRuntime->attachmentReloadTicks + 5;
     *remainingTicks = *remainingTicks - stepTicks;
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[5] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 0x20;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(5);
     }
     remainingTicks = modelRuntime->attachmentReloadTicks + 6;
     *remainingTicks = *remainingTicks - stepTicks;
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[6] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 0x40;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(6);
     }
     remainingTicks = modelRuntime->attachmentReloadTicks + 7;
     *remainingTicks = *remainingTicks - stepTicks;
     if ((int)*remainingTicks < 0) {
       modelRuntime->attachmentReloadTicks[7] = 0;
       nodeMeshMask = &(currentNode->modelPayload).meshGroupMask;
-      *nodeMeshMask = *nodeMeshMask | 0x80;
+      *nodeMeshMask = *nodeMeshMask | ARMY_WEAPON_ATTACHMENT_MESH_BIT(7);
     }
     remainingTicks = &modelRuntime->sharedInterShotTicks;
     *remainingTicks = *remainingTicks - stepTicks;
@@ -577,7 +577,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
     }
   }
   /* range check: distance to the target minus half its radius (+0xDC of its class record) against
-     speed * (lifetime - 2/3 of the ramp ticks - 1); -0xAAA / 0x1000 = -2/3 in Q12 */
+     speed * (lifetime - 2/3 of the ramp ticks - 1); ARMY_SHOT_RAMP_RANGE_FACTOR_Q12 is -2/3 in Q12 */
   ownOrTargetEntity = (modelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime->common).commandTarget.targetEntity;
   if (ownOrTargetEntity != NULL) {
     angleOrDistance = (int)(angleOrDistance * 2 -
@@ -586,7 +586,7 @@ bool ArmyWeaponRuntime_TestTargetLineOfFire(Q12 targetWorldZQ12,Q12 targetWorldY
                  ) >> 1;
   }
   if (shotDefinition->launchSpeedQ12 *
-      (((int)shotDefinition->trajectoryRampDurationTicks * -0xaaa >> Q12_SHIFT) +
+      (((int)shotDefinition->trajectoryRampDurationTicks * ARMY_SHOT_RAMP_RANGE_FACTOR_Q12 >> Q12_SHIFT) +
        (int)shotDefinition->projectileLifetimeTicks - 1) < (int)angleOrDistance) {
     return true;
   }
@@ -721,7 +721,7 @@ void ArmyRuntime_EmitDamageThresholdEffect(WorldRuntimeContext *worldRuntime,Mod
   randomValue = g_RandomGeneratorState.next();
   EffectRuntimePool_CreateInstanceFromDefinition
             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference, 0),randomBits >> 16,
-             (randomValue & 0x1fff) + 0x1fff,randomOffset,pointZQ12,pointYQ12,randomOrPointX,effectDefinition,
+             (randomValue & (FIXED_ANGLE16_EIGHTH_TURN - 1)) + (FIXED_ANGLE16_EIGHTH_TURN - 1),randomOffset,pointZQ12,pointYQ12,randomOrPointX,effectDefinition,
              worldRuntime);
   return;
 }

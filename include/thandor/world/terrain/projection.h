@@ -56,6 +56,15 @@
 #define TERRAIN_SOIL_PACKET_MATERIAL_BYTES 0x800
 #define TERRAIN_VERTEX_VARIANT_OFFSET_MASK 0x700 /* projectionFlags bits 8..10: variant row offset (0x100 each) */
 #define TERRAIN_SURFACE_PACKET_BYTES 0x20
+/* renderFlags of the queued material blend packets: translucent, and a sort layer bit (28 or 29,
+   GRAPHICS_PRIMITIVE_SORT_KEY_FLAG_BITS) that lowers the sort key so they are drawn after the plain triangle;
+   the second blend packet of a three-material triangle uses the higher layer */
+#define TERRAIN_BLEND_PACKET_SORT_LAYER_1 0x10000000
+#define TERRAIN_BLEND_PACKET_SORT_LAYER_2 0x20000000
+#define TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS \
+  (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_1)
+#define TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS \
+  (GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT | TERRAIN_BLEND_PACKET_SORT_LAYER_2)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00506CD0 */

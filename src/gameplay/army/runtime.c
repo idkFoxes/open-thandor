@@ -941,7 +941,7 @@ void ArmyRuntimeClass_UpdateUnitFactory
                   notificationMovieId = createdDefinition->nextBuiltNotificationMovieId;
                 }
                 InGameNotificationQueue_InsertPriorityRecord
-                          (ARMY_CREATED,0,stateValue,nodeHeading + 0x8800U & FIXED_ANGLE16_MASK,
+                          (ARMY_CREATED,0,stateValue,nodeHeading + ARMY_FACTORY_NOTIFICATION_HEADING_OFFSET_ANGLE16 & FIXED_ANGLE16_MASK,
                            createdNode->worldTransform.translation.y,
                            createdNode->worldTransform.translation.x,2,notificationMovieId);
               }
@@ -1139,7 +1139,7 @@ void ArmyRuntimeClass_UpdateStructureFactory
                 notificationMovieId = linkedModelDefinition->nextBuiltNotificationMovieId;
               }
               InGameNotificationQueue_InsertPriorityRecord
-                        (ARMY_CREATED,0,candidateValue,headingAngle + 0x1800 & FIXED_ANGLE16_MASK,
+                        (ARMY_CREATED,0,candidateValue,headingAngle + ARMY_PRODUCTION_NOTIFICATION_HEADING_OFFSET_ANGLE16 & FIXED_ANGLE16_MASK,
                          (rootNode->worldTransform).translation.y,
                          (rootNode->worldTransform).translation.x,3,notificationMovieId);
             }
@@ -1259,7 +1259,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Mod
     } while (scanNode != NULL);
   }
   scanNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
-  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags & 0x20) == 0) {
+  if ((modelRuntime->definitionOrSavedId.runtimeDefinition->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) == 0) {
     FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
               (modelRuntime->definitionOrSavedId.runtimeDefinition->footprintRadius,
                (scanNode->worldTransform).translation.z,(scanNode->worldTransform).translation.y
@@ -1523,7 +1523,7 @@ ArmyRuntimeInitResult ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,u
     do {
       armyAsset = *registryCursor;
       if ((armyAsset != NULL) &&
-         ((armyAsset[1].selectionDetailTemplateVariantIndex & 0xfe) != 0)) {
+         ((armyAsset[1].selectionDetailTemplateVariantIndex & ARMY_ASSET_FLAG_PRODUCTION_MASK) != 0)) {
         previewResult = ArmyRuntime_RenderPreviewTexture
                            (g_InGamePanelTextureSubresource34Height,
                             g_InGamePanelTextureSubresource34Width,
@@ -2750,7 +2750,7 @@ void ArmyRuntime_HandleCollisionPartner(ModelRuntimeSlot *currentModelRuntime,Q1
 */
 /* One 16-bit MMX lane per pixel byte: PUNPCKLBW mm,mm duplicates each byte into a word, PSRLW 4 scales it. */
 #define ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, byteIndex) \
-  ((uint64_t)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * 0x101u >> 4) << ((byteIndex) * 16))
+  ((uint64_t)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * ARMY_PREVIEW_BYTE_TO_WORD_REPEAT >> 4) << ((byteIndex) * 16))
 #define ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixel) \
   (ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) | \
    ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0))
@@ -2830,13 +2830,13 @@ ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
     /* camera centred on the bounds in Y and Z, backed off by four times the larger span in X */
     g_ArmyPreviewViewOriginYQ12 = boundsSpanY + g_ModelBoundsMinimumY * 2 >> 1;
     g_ArmyPreviewViewOriginZQ12 = boundsSpanZ + g_ModelBoundsMinimumZ * 2 >> 1;
-    g_ArmyPreviewAuxiliaryOrientation0 = 0x6000;
-    g_ArmyPreviewAuxiliaryOrientation1 = 0xffffe667;
+    g_ArmyPreviewAuxiliaryOrientation0 = ARMY_PREVIEW_AUXILIARY_ORIENTATION0_ANGLE16;
+    g_ArmyPreviewAuxiliaryOrientation1 = ARMY_PREVIEW_AUXILIARY_ORIENTATION1_ANGLE16;
     g_ArmyPreviewViewOriginXQ12 = g_ModelBoundsMaximumX + maxBoundsSpan * 4;
-    g_ArmyPreviewPrimaryColorArgb = 0xffc0c0c0;
-    g_ArmyPreviewSecondaryColorArgb = 0xff606060;
+    g_ArmyPreviewPrimaryColorArgb = ARMY_PREVIEW_PRIMARY_COLOR_ARGB;
+    g_ArmyPreviewSecondaryColorArgb = ARMY_PREVIEW_SECONDARY_COLOR_ARGB;
     g_ArmyPreviewProjectionScaleQ12 = Q12_ONE / 2;
-    g_ArmyPreviewViewAngle0 = 0xffff8000;
+    g_ArmyPreviewViewAngle0 = ARMY_PREVIEW_VIEW_ANGLE0;
     g_ArmyPreviewViewAngle1 = 0;
     g_ArmyPreviewProjectionShift = 4;
     g_ArmyPreviewModelNodePointer = (uint32_t)rootNodeOrSize;
@@ -3348,7 +3348,7 @@ void ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint(FactionRuntimeIndex facti
         capabilityClear = GameFactionRuntime_TestCapabilityBitClear(capabilityBitIndex,factionIndex);
         if (((capabilityClear) &&
             ((((uint8_t *)&fieldGrid->cells[gridWidthCells * cellRow + cellColumn].occupancyMask)[capabilityBitIndex] &
-             0x10) != 0)) &&
+             ARMY_DEPTH_BIN_STRUCTURE_BIT) != 0)) &&
            (16 < g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick)) {
           g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick = 0;
           g_SoundPlayOneShot

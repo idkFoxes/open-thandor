@@ -306,7 +306,7 @@ MovieOpenResult Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
     packageEntry = Package_FindEntryAcrossMounts(path);
     if ((!packageEntry.notFound) &&
        (seekResult = g_FileSystemSeek
-                           (FILESYSTEM_SEEK_BEGIN,((PckEntryHeader *)packageEntry.entry)->runtimePayloadOffset + 0x200,
+                           (FILESYSTEM_SEEK_BEGIN,((PckEntryHeader *)packageEntry.entry)->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,
                             (void *)packageEntry.fileHandle), !seekResult.failed)) {
       isSharedPackageHandle++;
       handle = (void *)packageEntry.fileHandle;
@@ -2162,7 +2162,7 @@ uint32_t MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 uint32_t MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
 
 {
-  return (((rgb888 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 8 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 16 & ARGB8888_CHANNEL_MASK)) * 0x5555 + (1 << 18)) >> 19;
+  return (((rgb888 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 8 & ARGB8888_CHANNEL_MASK) + (rgb888 >> 16 & ARGB8888_CHANNEL_MASK)) * MOVIE_LUMA_THIRD_Q16 + (1 << 18)) >> 19;
 }
 
 

@@ -19,6 +19,8 @@
 #define TIMER_WINMM_ID_AT(byteOffset) (*(WinMmTimerId *)((uint8_t *)g_TimerSystemState.winmmTimerIds + (byteOffset)))
 /* Locale_Init: output capacity passed for every locale string (8 UTF-16 units, half of each 16-unit field) */
 #define LOCALE_STRING_COPY_CAPACITY_BYTES 0x10
+/* Primary language bits the original keeps from GetUserDefaultLCID (9 bits; PRIMARYLANGID keeps 10, 0x3ff) */
+#define LOCALE_PRIMARY_LANGUAGE_MASK 0x1ff
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005867B0 */

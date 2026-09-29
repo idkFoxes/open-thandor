@@ -58,6 +58,20 @@
 
 /* High 32 bits of the signed 64-bit product a * b (the EDX of a one-operand IMUL) */
 #define FIXED_MUL_HIGH(a, b) ((int)((uint64_t)((int64_t)(a) * (int64_t)(b)) >> 32))
+/* 2^32 (a 64-bit constant): 1.0 in Q32, the dividend of FixedVec3_NormalizeQ28's reciprocal length */
+#define Q32_ONE 0x100000000
+/* FixedMath_Atan2Angle16: odd polynomial atan(t) ~ t * (C1 - t^2 * (C3 - t^2 * C5)) in angle16 units, each
+   step a FIXED_MUL_HIGH; C1 = 20861 = 2 * 65536 / (2 * pi) */
+#define FIXED_ATAN_ANGLE16_C1 0x517d
+#define FIXED_ATAN_ANGLE16_C3 0x6ca6
+#define FIXED_ATAN_ANGLE16_C5 0x104c2
+/* FixedMath_SqrtQ12Approx: the normalizing shift is even (a mask over bits 1..4), and the cubic in the
+   normalized input is ((C3 * x - C2) * x + C1) * x + C0, each product a FIXED_MUL_HIGH */
+#define FIXED_SQRT_EVEN_SHIFT_MASK 0x1e
+#define FIXED_SQRT_POLY_C3 0x25ed098
+#define FIXED_SQRT_POLY_C2 0x1c71c71
+#define FIXED_SQRT_POLY_C1 0xb1c71c
+#define FIXED_SQRT_POLY_C0 0x66b75U
 /* FixedMath_UInt64Sqrt of a 64-bit sum of squares, passed as its high and low halves */
 #define FIXED_UINT64_SQRT(value) \
   FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)(value) >> 32),(UInt64Half32)(value))

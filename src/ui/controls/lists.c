@@ -1273,7 +1273,7 @@ DirectoryRecordBlockResult UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *p
           result.recordBlockOrError = (uint32_t *)largestBlock.allocationOrError;
           if (!largestBlock.failed) {
             scanRemaining = directoryEntryCount + 1;
-            scanCursor = (uint32_t *)0x14;
+            scanCursor = (uint32_t *)FATAL_ERROR_GENERAL_FAILURE; /* returned when the records do not fit */
             remainingBytes =
                  (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -(int)sizeof(UiTimedListTreeRecord));
             if ((uint32_t)(scanRemaining * sizeof(UiTimedListTreeRecord)) <= largestBlock.blockSizeOrSentinel &&
@@ -1417,7 +1417,7 @@ DirectoryHierarchyResult UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selec
   recordsRemaining = levelBlock->countOrLabelText;
   firstCodeUnit = g_UiTimedListHierarchyPathScratch.codeUnits[0];
   recordCursor = levelBlock + 1;
-  while (((firstCodeUnit ^ *(uint16_t *)recordCursor->countOrLabelText) & 0xdf) != 0) {
+  while (((firstCodeUnit ^ *(uint16_t *)recordCursor->countOrLabelText) & UI_TIMED_LIST_CASE_FOLD_MASK) != 0) {
     recordCursor++;
     recordsRemaining--;
     if (recordsRemaining == 0) {
@@ -2485,9 +2485,9 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
          ~(UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
            UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP));
     /* a vertical bar narrows the view: maybe a horizontal bar is needed now, and vice versa. The masks
-       0xffffffcf/0xffffff3f (as in the original) are practically always nonzero; 0x30/0xC0, the "allowed"
-       bits, were probably meant. The mask above filters disallowed bars again anyway. */
-    if (((control->scrollStateFlags & 0xffffffcf) != 0) &&
+       ~UI_SCROLL_ALLOWED_* (0xffffffcf/0xffffff3f, as in the original) are practically always nonzero; the
+       allowed bits themselves were probably meant. The mask above filters disallowed bars again anyway. */
+    if (((control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
@@ -2498,7 +2498,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
       }
     }
-    if (((control->scrollStateFlags & 0xffffff3f) != 0) &&
+    if (((control->scrollStateFlags & ~UI_SCROLL_ALLOWED_VERTICAL_BARS) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0)) {
       textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,
@@ -2506,7 +2506,7 @@ void UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *contr
       if ((int)(verticalExtent - textureSize.logicalHeightPixels) < 0) {
         if (((control->scrollStateFlags &
              (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) == 0) &&
-           ((control->scrollStateFlags & 0xffffffcf) != 0)) {
+           ((control->scrollStateFlags & ~UI_SCROLL_ALLOWED_HORIZONTAL_BARS) != 0)) {
           textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,
                                                               g_UiWindowTextureSource);
           if ((int)(horizontalExtent - textureSize.logicalWidthPixels) < 0) {

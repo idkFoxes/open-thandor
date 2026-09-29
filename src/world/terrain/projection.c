@@ -20,7 +20,7 @@ static __inline uint64_t TerrainProjection_UnpackBytesShiftRight(uint32_t value,
   int lane;
 
   for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
   }
   return lanes.q;
 }
@@ -1824,7 +1824,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
             if (!queuedPacket.noPacket) {
               packetRenderFlags = &(queuedPacket.packet)->renderFlags;
-              *packetRenderFlags = *packetRenderFlags | 0x10020000;
+              *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
             }
           }
         }
@@ -1836,7 +1836,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
           if (!queuedPacket.noPacket) {
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
-            *packetRenderFlags = *packetRenderFlags | 0x10020000;
+            *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
           }
         }
         else if (materialOffset1 == yOrTableIndexC) {
@@ -1847,7 +1847,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
           if (!queuedPacket.noPacket) {
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
-            *packetRenderFlags = *packetRenderFlags | 0x10020000;
+            *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
           }
         }
         else {
@@ -1858,7 +1858,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
           if (!queuedPacket.noPacket) {
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
-            *packetRenderFlags = *packetRenderFlags | 0x10020000;
+            *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_FIRST_LAYER_FLAGS;
             queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
                                ((uint32_t *)((uint8_t *)soilPacketTable +yOrTableIndexB + 5 * TERRAIN_SURFACE_PACKET_BYTES),vertex2Color,vertex1Color,vertex0Color,
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
@@ -1866,7 +1866,7 @@ void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
             if (!queuedPacket.noPacket) {
               packetRenderFlags = &(queuedPacket.packet)->renderFlags;
-              *packetRenderFlags = *packetRenderFlags | 0x20020000;
+              *packetRenderFlags = *packetRenderFlags | TERRAIN_BLEND_PACKET_SECOND_LAYER_FLAGS;
             }
           }
         }

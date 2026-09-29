@@ -19,7 +19,7 @@ static __inline uint64_t WorldLighting_UnpackBytesShiftRight(uint32_t value,int 
   int lane;
 
   for (lane = 0; lane < 4; lane++) {
-    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * COLOR_CHANNEL_TO_WORD_LANE) >> shift);
   }
   return lanes.q;
 }
@@ -149,7 +149,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
                terrainSecondaryColorArgb & 0xff000000,
                mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
     /* Low 16 bits of the pairs: triangular blend over the phase byte (0x80 = half cycle); the value that
-       would lie below the other one gets 0x10000 added, so the blend runs forward through the 16-bit wrap.
+       would lie below the other one gets WORLD_LIGHTING_PACKED_HALF_WRAP added, so the blend runs forward through the 16-bit wrap.
        High 16 bits: the same cosine weight as the colours. */
     phaseByteOrAlternateSize = cycleDurationOrPhase >> 8;
     blendIndexOrPrimaryValue =
@@ -158,14 +158,14 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
                            alternatePackedFieldRegionOriginYHigh16XLow16;
     if (phaseByteOrAlternateSize < 128) {
       if (alternateOriginOrBlendWeight < blendIndexOrPrimaryValue) {
-        alternateOriginOrBlendWeight = alternateOriginOrBlendWeight + 0x10000;
+        alternateOriginOrBlendWeight = alternateOriginOrBlendWeight + WORLD_LIGHTING_PACKED_HALF_WRAP;
       }
       alternateOriginXWeighted = alternateOriginOrBlendWeight * phaseByteOrAlternateSize;
       primaryOriginXWeighted = blendIndexOrPrimaryValue * (128 - phaseByteOrAlternateSize);
     }
     else {
       if (blendIndexOrPrimaryValue < alternateOriginOrBlendWeight) {
-        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + 0x10000;
+        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
       }
       primaryOriginXWeighted = blendIndexOrPrimaryValue * (phaseByteOrAlternateSize - 128);
       alternateOriginXWeighted = alternateOriginOrBlendWeight * (128 - (phaseByteOrAlternateSize - 128));
@@ -179,14 +179,14 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
                            alternatePackedFieldRegionHeightHigh16WidthLow16;
     if (cycleDurationOrPhase < 128) {
       if (phaseByteOrAlternateSize < blendIndexOrPrimaryValue) {
-        phaseByteOrAlternateSize = phaseByteOrAlternateSize + 0x10000;
+        phaseByteOrAlternateSize = phaseByteOrAlternateSize + WORLD_LIGHTING_PACKED_HALF_WRAP;
       }
       alternateWidthWeighted = phaseByteOrAlternateSize * cycleDurationOrPhase;
       primaryWidthWeighted = blendIndexOrPrimaryValue * (128 - cycleDurationOrPhase);
     }
     else {
       if (blendIndexOrPrimaryValue < phaseByteOrAlternateSize) {
-        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + 0x10000;
+        blendIndexOrPrimaryValue = blendIndexOrPrimaryValue + WORLD_LIGHTING_PACKED_HALF_WRAP;
       }
       primaryWidthWeighted = blendIndexOrPrimaryValue * (cycleDurationOrPhase - 128);
       alternateWidthWeighted = phaseByteOrAlternateSize * (128 - (cycleDurationOrPhase - 128));
@@ -839,7 +839,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl RuntimeHexSegment_GetLightImageAndTog
   g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
        ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
   /* EDX:EAX = byte size 0x4000, shading runtime records */
-  return ((uint64_t)0x4000 << 32) | (uint32_t)(uintptr_t)g_GraphicsShadingRuntimeRecords;
+  return ((uint64_t)sizeof(g_GraphicsShadingRuntimeRecords) << 32) | (uint32_t)(uintptr_t)g_GraphicsShadingRuntimeRecords;
 }
 
 /* Address: 0x0050ECA0.
@@ -1097,7 +1097,7 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
 /* Address: 0x00565110.
    WorldRuntime_ForEachOwnerListNode callback used when an in-game session shuts down, before the level
    resources are destroyed: destroys the army of every model node; for shot and effect nodes it clears flag bits
-   31 (linked into the owner list) and 30 and zeroes one back-reference field of their runtime payload (+0x10 for
+   31 (linked into the owner list) and 30 (record allocated) and zeroes one back-reference field of their runtime payload (+0x10 for
    shots, +4 for effects).
 */
 void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutdownContext,WorldOwnerListNode *node)
@@ -1110,11 +1110,11 @@ void WorldRuntimeNode_ReleaseShutdownBindingsCallback(WorldRuntimeContext *shutd
                ((ModelRuntimeSlot *)node->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime);
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) {
-    node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | 0x40000000);
+    node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | WORLD_OBJECT_RECORD_ALLOCATED);
     ((ShotRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
-    node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | 0x40000000);
+    node->runtimeFlags = node->runtimeFlags & ~(WORLD_OWNER_NODE_LINKED | WORLD_OBJECT_RECORD_ALLOCATED);
     ((EffectRuntimeSlot *)node->runtimePayload)->modelNodeOrSavedOffset.savedIdOrOffset = 0;
   }
   return;

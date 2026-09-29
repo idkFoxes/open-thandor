@@ -20,6 +20,10 @@
 #define WORLD_CURSOR_FOREIGN_ARMY 0x16 /* candidate belongs to another faction */
 #define WORLD_CURSOR_MOVE 0x17 /* ground under the pointer is a valid position command target */
 #define WORLD_CURSOR_NO_TARGET 0x18 /* position command not possible (off the field or rejected) */
+/* the selection can act on the pointed army or point (same frame as EDITOR_CURSOR_DELETE_TARGET) */
+#define WORLD_CURSOR_TARGET 0x19
+/* the pointed army is not a target of the selection (same frame as EDITOR_CURSOR_DELETE_NONE) */
+#define WORLD_CURSOR_TARGET_REJECTED 0x1A
 #define WORLD_CURSOR_PLACEMENT_BLOCKED 0x2D /* the pending army asset cannot be placed here */
 #define WORLD_CURSOR_PLACEMENT_VALID 0x2E /* the pending army asset can be placed here */
 /* WorldRuntimeContext.runtimeFlags bit set once a captured pointer moved far enough to start a drag selection. */

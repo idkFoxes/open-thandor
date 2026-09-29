@@ -93,6 +93,10 @@
 #define FRONTEND_ACTION_COLOR_DEPTH_OPTION1 0x201E /* displayColorDepthOption1..4: 0x201E..0x2021 */
 #define FRONTEND_ACTION_RESOLUTION_OPTION1 0x2022 /* displayResolutionOption1..10: 0x2022..0x202B */
 #define FRONTEND_ACTION_ADAPTER_OPTION1 0x202C /* displayAdapterOption1..5: 0x202C..0x2030 */
+/* byte offset of an adapter choice (displayAdapterOption1..5) from its parent displayAdapterGroup, as
+   FrontendDisplaySettingsAction_SelectAdapter identifies the pressed button */
+#define FRONTEND_ADAPTER_OPTION_OFFSET_IN_GROUP(option) \
+          ((int)(offsetof(FrontendUiImage,option) - offsetof(FrontendUiImage,displayAdapterGroup)))
 #define FRONTEND_ACTION_APPLY_DISPLAY_MODE 0x2031 /* FrontendDisplaySettings_ApplyMode */
 /* g_FrontendNetworkState, dispatched by Frontend_StateTick (values 3..5 are set by network/protocol/transfer). */
 #define FRONTEND_NETWORK_STATE_IDLE 0

@@ -53,6 +53,9 @@
 #define WORLD_MOTION_MINIMUM_MAGNITUDE_Q12 0x400
 /* Height returned by the WorldRuntime_Interpolate*HeightOrSentinel functions when no field grid is attached. */
 #define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
+/* WorldLightingRuntime_UpdateInterpolatedTerrainLighting: one wrap of a 16-bit half of a packed field-region
+   pair, added to the lower endpoint so the blend runs forward through the wrap */
+#define WORLD_LIGHTING_PACKED_HALF_WRAP 0x10000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00532FA0 */

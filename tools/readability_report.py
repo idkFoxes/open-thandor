@@ -27,9 +27,14 @@ RAW_EXEMPT = ("sam.c",)
 
 
 def is_mask(digits):
-    """0xff, 0xffff, 0xffffffff, 0xff00, 0xfffffff0, ...: a contiguous run of f nibbles, zeros around it. Such
-    masks read best as hex and are not counted as unnamed numbers."""
-    return re.fullmatch(r"0*f+0*", digits.lower()) is not None
+    """0xff, 0xffff, 0x3fffffff, 0xff00, 0xfffffff0, ...: one contiguous run of at least four set bits. Such
+    masks read best as hex and are not counted as unnamed numbers; single flags (0x20) and short runs (0x30) are."""
+    value = int(digits, 16)
+    if value == 0:
+        return False
+    while value & 1 == 0:
+        value >>= 1
+    return value & (value + 1) == 0 and value >= 0xf
 FLOW = re.compile(r"while\( true \)|\bgoto\b")
 
 
@@ -53,7 +58,8 @@ def main():
     for path, name, header, body in functions():
         documented = len([l for l in header.splitlines()[1:] if l.strip()]) >= 1
         typed = path.endswith(RAW_EXEMPT) or not RAW.search(body)
-        named = not PLACEHOLDER.search(body)
+        # string-literal symbols (u_/s_<text>_<address>) are named after their text, e.g. "unknown character"
+        named = not PLACEHOLDER.search(re.sub(r"\b[us]_\w+_[0-9a-f]{8}\b", " ", body))
         structured = not FLOW.search(body)
         rows.append((path, name, documented, typed, named, structured))
     total = len(rows)
@@ -70,6 +76,8 @@ def main():
         if "generated" in path.parts or path.name.startswith("selftest") or path.name in RAW_EXEMPT:
             continue
         code = re.sub(r"/\*.*?\*/|//[^\n]*", " ", path.read_text(encoding="utf-8", errors="replace"), flags=re.S)
+        # the value of a #define is where a number gets its name
+        code = re.sub(r"^\s*#\s*define\s+\w+[^\n]*", " ", code, flags=re.M)
         for h in re.findall(r"\b0x([0-9a-fA-F]+)", code):
             if len(h) >= 6 and 0x400000 <= int(h, 16) < 0x700000:
                 continue

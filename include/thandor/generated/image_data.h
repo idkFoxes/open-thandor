@@ -515,8 +515,8 @@ typedef struct ImageData_0041DE7C {
     uint64_t at_g_TerrainOccupancyMmxClearBits1And2Mask; /* 0041F698 g_TerrainOccupancyMmxClearBits1And2Mask */
     uint64_t at_g_TerrainOccupancyMmxAllBitsMask; /* 0041F6A0 g_TerrainOccupancyMmxAllBitsMask */
     uint64_t at_g_TerrainOccupancyMmxPackedScale0280; /* 0041F6A8 g_TerrainOccupancyMmxPackedScale0280 */
-    uint64_t at_g_TerrainOccupancyMmxPackedWeights02_20; /* 0041F6B0 g_TerrainOccupancyMmxPackedWeights02_20 */
-    uint64_t at_g_TerrainOccupancyMmxPackedWeights04_40; /* 0041F6B8 g_TerrainOccupancyMmxPackedWeights04_40 */
+    uint64_t at_g_TerrainOccupancyMmxPersistentWeights; /* 0041F6B0 g_TerrainOccupancyMmxPersistentWeights */
+    uint64_t at_g_TerrainOccupancyMmxCurrentWeights; /* 0041F6B8 g_TerrainOccupancyMmxCurrentWeights */
     uint64_t at_g_FieldGridOccupancyMmxHighBitMask; /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
     uint64_t at_g_GraphicsShadingMmxPacked3BitPerByteMask; /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
     uint32_t at_g_GraphicsShadingMmxPacked3BitPerByteMask_rest[4]; /* beyond the declared type */
@@ -732,16 +732,16 @@ typedef struct ImageData_004AE95C {
     uint8_t at_g_UiTransferRoundKeys16; /* 004AE9A8 g_UiTransferRoundKeys16 */
     uint32_t at_g_UiTransferRoundKeys16_rest[11]; /* beyond the declared type */
     uint8_t at_g_UiTransferRoundKeys16_rest_tail[3];
-    char at_s_mohTG_sakere___e_004ae9d8[1]; /* 004AE9D8 s_mohTG_sakere___e_004ae9d8 */
-    uint32_t at_s_mohTG_sakere___e_004ae9d8_rest[3]; /* beyond the declared type */
-    uint8_t at_s_mohTG_sakere___e_004ae9d8_rest_tail[3];
+    char at_g_UiTransferRoundKeys16Tail[1]; /* 004AE9D8 g_UiTransferRoundKeys16Tail */
+    uint32_t at_g_UiTransferRoundKeys16Tail_rest[3]; /* beyond the declared type */
+    uint8_t at_g_UiTransferRoundKeys16Tail_rest_tail[3];
     uint32_t at_s__004ae9d8_0x10[1]; /* 004AE9E8 s__004ae9d8+0x10 */
     uint32_t at_g_UiTransferChunkPacketSequenceToken; /* 004AE9EC g_UiTransferChunkPacketSequenceToken */
     uint32_t at_g_UiTransferChunkPacketSequenceToken_rest[2]; /* beyond the declared type */
     UiTransferMailboxByteOffset at_g_UiTransferMailboxChunkOffset; /* 004AE9F8 g_UiTransferMailboxChunkOffset */
     UiTransferMailboxByteCount at_g_UiTransferMailboxTransferByteCount; /* 004AE9FC g_UiTransferMailboxTransferByteCount */
     uint32_t at_g_UiTransferChunkPayload[58]; /* 004AEA00 g_UiTransferChunkPayload */
-    uint32_t at_g_UiTransferMailboxReplyPacket10033; /* 004AEAE8 g_UiTransferMailboxReplyPacket10033 */
+    uint32_t at_g_UiTransferPingEchoPacket; /* 004AEAE8 g_UiTransferPingEchoPacket */
     uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken; /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
     uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken_rest[2]; /* beyond the declared type */
     uint32_t at_g_UiTransferMailboxReplyPacket10033EchoedTick; /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
@@ -2371,7 +2371,7 @@ typedef struct ImageData_00562498 {
     uint32_t at_InGameCommandHandlerCodeRegionEnd_rest[1]; /* beyond the declared type */
     uint8_t at_InGameCommandHandlerCodeRegionEnd_rest_tail[2];
     InGameUiActionHandlerPage10Prefix40 at_g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
-    InGameUiCommandModeActionHandlerPage11 at_g_InGameUiCommandModeActionHandlers30; /* 00562540 g_InGameUiCommandModeActionHandlers30 */
+    InGameUiCommandModeActionHandlerPage11 at_g_InGameUiActionHandlersPage11; /* 00562540 g_InGameUiActionHandlersPage11 */
     InGameUiActionHandlerPage12Prefix28 at_g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
     int32_t at_g_UiAction100AControlOffsets[8]; /* 00562628 g_UiAction100AControlOffsets */
     uint32_t at_g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
@@ -3868,8 +3868,8 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0041f698 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxClearBits1And2Mask)
 #define THANDOR_IMAGE_0x0041f6a0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxAllBitsMask)
 #define THANDOR_IMAGE_0x0041f6a8 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxPackedScale0280)
-#define THANDOR_IMAGE_0x0041f6b0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxPackedWeights02_20)
-#define THANDOR_IMAGE_0x0041f6b8 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxPackedWeights04_40)
+#define THANDOR_IMAGE_0x0041f6b0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxPersistentWeights)
+#define THANDOR_IMAGE_0x0041f6b8 ((uintptr_t)&g_ImageData_0041DE7C.at_g_TerrainOccupancyMmxCurrentWeights)
 #define THANDOR_IMAGE_0x0041f6c0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_FieldGridOccupancyMmxHighBitMask)
 #define THANDOR_IMAGE_0x0041f6c8 ((uintptr_t)&g_ImageData_0041DE7C.at_g_GraphicsShadingMmxPacked3BitPerByteMask)
 #define THANDOR_IMAGE_0x0041f6e0 ((uintptr_t)&g_ImageData_0041DE7C.at_g_SoftwarePixelMmxConstants)
@@ -4018,12 +4018,12 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004ae98c ((uintptr_t)&g_ImageData_004AE95C.at_g_UiRuntimeRecordRingLock)
 #define THANDOR_IMAGE_0x004ae990 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailbox)
 #define THANDOR_IMAGE_0x004ae9a8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferRoundKeys16)
-#define THANDOR_IMAGE_0x004ae9d8 ((uintptr_t)&g_ImageData_004AE95C.at_s_mohTG_sakere___e_004ae9d8)
+#define THANDOR_IMAGE_0x004ae9d8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferRoundKeys16Tail)
 #define THANDOR_IMAGE_0x004ae9ec ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferChunkPacketSequenceToken)
 #define THANDOR_IMAGE_0x004ae9f8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxChunkOffset)
 #define THANDOR_IMAGE_0x004ae9fc ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxTransferByteCount)
 #define THANDOR_IMAGE_0x004aea00 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferChunkPayload)
-#define THANDOR_IMAGE_0x004aeae8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxReplyPacket10033)
+#define THANDOR_IMAGE_0x004aeae8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferPingEchoPacket)
 #define THANDOR_IMAGE_0x004aeaec ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxReplyPacket10033SequenceToken)
 #define THANDOR_IMAGE_0x004aeaf8 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxReplyPacket10033EchoedTick)
 #define THANDOR_IMAGE_0x004aeb08 ((uintptr_t)&g_ImageData_004AE95C.at_g_UiTransferMailboxTickCounter)
@@ -4702,7 +4702,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0055f128 ((uintptr_t)&g_ImageData_0055EFB0.at_g_InGameSelectionRemoveTripletDwordCount)
 #define THANDOR_IMAGE_0x00562499 ((uintptr_t)&g_ImageData_00562498.at_InGameCommandHandlerCodeRegionEnd)
 #define THANDOR_IMAGE_0x005624a0 ((uintptr_t)&g_ImageData_00562498.at_g_InGameUiActionHandlersPage10)
-#define THANDOR_IMAGE_0x00562540 ((uintptr_t)&g_ImageData_00562498.at_g_InGameUiCommandModeActionHandlers30)
+#define THANDOR_IMAGE_0x00562540 ((uintptr_t)&g_ImageData_00562498.at_g_InGameUiActionHandlersPage11)
 #define THANDOR_IMAGE_0x005625b8 ((uintptr_t)&g_ImageData_00562498.at_g_InGameUiActionHandlersPage12)
 #define THANDOR_IMAGE_0x00562628 ((uintptr_t)&g_ImageData_00562498.at_g_UiAction100AControlOffsets)
 #define THANDOR_IMAGE_0x00562648 ((uintptr_t)&g_ImageData_00562498.at_g_UiCatalogGroup48ColumnCount)

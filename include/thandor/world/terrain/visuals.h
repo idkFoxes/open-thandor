@@ -42,6 +42,32 @@
 /* (argb & mask) >> 1 halves all four 8-bit channels at once (each channel's low bit cleared first); two
    halved pixels added give their average (TerrainCompositeTexture_RebuildPlane0) */
 #define TERRAIN_ARGB_HALVE_MASK 0xfefefefe
+/* Random animation of the 256 terrain direction records (TerrainVisualResources_Load*): scale (sin/cos
+   amplitude) MIN + (random & MASK), rotation rate +-(MIN + (random & MASK)) 16-bit angle units per step. */
+#define TERRAIN_DIRECTION_SCALE_MIN 0x80
+#define TERRAIN_DIRECTION_SCALE_RANDOM_MASK 0x1f
+#define TERRAIN_DIRECTION_RATE_MIN_ANGLE16 0x200
+#define TERRAIN_DIRECTION_RATE_RANDOM_MASK 0x7f
+/* TerrainLighting_AdjustDirectionAndRecomputeField: the light elevation stays at least this far (1/16 turn)
+   below the horizon; the other limit is -FIXED_ANGLE16_QUARTER_TURN (straight down). */
+#define TERRAIN_LIGHT_ELEVATION_MIN_TILT_ANGLE16 0x1000
+/* Minimap planes (TerrainCompositeTexture_FillPlane1/2): g_PackedLightingLookupTable levels. Dry cells use
+   HEIGHT_LIGHT_FIRST + (terrainHeight >> 7) clamped to HEIGHT_LEVELS steps; water uses
+   WATER_LIGHT_FIRST + WATER_DEPTH_LEVELS - (waterSurfaceDelta >> 5), clamped to WATER_DEPTH_LEVELS steps. */
+#define TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST 0x70
+#define TERRAIN_MINIMAP_HEIGHT_LEVELS 0x60
+#define TERRAIN_MINIMAP_HEIGHT_LIGHT_LAST \
+          (TERRAIN_MINIMAP_HEIGHT_LIGHT_FIRST + TERRAIN_MINIMAP_HEIGHT_LEVELS - 1) /* 0xCF */
+#define TERRAIN_MINIMAP_WATER_LIGHT_FIRST 0x80 /* deepest water */
+#define TERRAIN_MINIMAP_WATER_DEPTH_LEVELS 0x40
+#define TERRAIN_MINIMAP_WATER_LIGHT_LAST \
+          (TERRAIN_MINIMAP_WATER_LIGHT_FIRST + TERRAIN_MINIMAP_WATER_DEPTH_LEVELS - 1) /* 0xBF, shallowest */
+/* Entries of the in-game panel palette bank (panel subresource 36) used for the minimap */
+#define TERRAIN_MINIMAP_PANEL_COLOR_SOIL 0x40
+#define TERRAIN_MINIMAP_PANEL_COLOR_XENITE 0x41
+#define TERRAIN_MINIMAP_PANEL_COLOR_TRITIUM 0x42
+/* faction dots, + colorIndex (0 = unselected); RebuildPlane0 adds the panel paletteIndex * 4, not * bank size */
+#define TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST 0x20
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

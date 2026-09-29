@@ -15,6 +15,9 @@
 
 /* Entries of a SelectionPointerArray32 / SelectionInfoEntitySlots (empty entries are NULL). */
 #define SELECTION_ENTRY_CAPACITY 32
+/* One count in byte lane laneByte of a packed per-byte counter (SelectionPointerArray_SetAircraftPadTargets: lane 0
+   bits 0-7, lane 1 bits 8-15, lane 2 bits 16-23) */
+#define SELECTION_PACKED_LANE_ONE(laneByte) (1 << ((laneByte) * 8))
 
 /* Selection/info panel layout (g_SelectionPanelData, loaded from select.dat or info.dat by
    SelectionInfoPanel_InitResources): a dword header followed by 16-byte cell records. The offsets below are

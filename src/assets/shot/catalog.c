@@ -217,9 +217,9 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
     selectionRangeQ12 = definition->mode2SelectionRangeQ12;
   }
   else {
-    /* -0xAAA / 0x1000 = -2/3 in Q12: lifetime - 2/3 of the ramp duration */
+    /* lifetime - 2/3 of the ramp duration (-2/3 in Q12 = -0xAAA) */
     selectionRangeQ12 =
-         (((int)(definition->trajectoryRampDurationTicks * -0xaaa) >> Q12_SHIFT) +
+         (((int)(definition->trajectoryRampDurationTicks * -(Q12_ONE * 2 / 3)) >> Q12_SHIFT) +
          definition->projectileLifetimeTicks) * definition->launchSpeedQ12;
   }
   return selectionRangeQ12;

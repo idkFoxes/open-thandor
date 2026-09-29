@@ -344,7 +344,7 @@ ModelRelativeDirectionAngles ModelNodeRuntime_ComputeRelativeDirectionAngle
    Pointer hit test of a model hierarchy (FrontendModelPointerContext_FindBestEligibleModelHitTarget): projects the
    eight corners of the node's local bounding box and tests the pointer against the twelve triangles of its faces
    (faces with a corner behind the near plane are skipped). On a hit returns the distance from the context's
-   reference point to the node (to the box centre with context flag 0x80000); otherwise the children are tested
+   reference point to the node (to the box centre with HIT_DISTANCE_TO_BOUNDS_CENTER); otherwise the children are tested
    in order. missed is set (CF) when nothing was hit.
 */
 ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
@@ -392,7 +392,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
                &g_GraphicsTransformScratchMatrix3x4);
     if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | 2;
+      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(1);
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
@@ -405,7 +405,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
                &g_GraphicsTransformScratchMatrix3x4);
     if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | 4;
+      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(2);
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
@@ -417,7 +417,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
                &g_GraphicsTransformScratchMatrix3x4);
     if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | 8;
+      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(3);
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
@@ -431,7 +431,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
                &g_GraphicsTransformScratchMatrix3x4);
     if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | 0x10;
+      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(4);
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
@@ -443,7 +443,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
                &g_GraphicsTransformScratchMatrix3x4);
     if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | 0x20;
+      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(5);
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
@@ -457,7 +457,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
                &g_GraphicsTransformScratchMatrix3x4);
     if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | 0x40;
+      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(6);
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
@@ -470,7 +470,7 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
               (&g_GraphicsTransformOutputScratchVec3,&g_GraphicsTransformInputScratchVec3,
                &g_GraphicsTransformScratchMatrix3x4);
     if (g_GraphicsTransformOutputScratchVec3.z < (int)g_ProjectionScaleFixed) {
-      clippedCornerMask = clippedCornerMask | 0x80;
+      clippedCornerMask = clippedCornerMask | MODEL_BOUNDS_CORNER_BIT(7);
     }
     else {
       projectedCorner = Graphics_ProjectViewPoint(&g_GraphicsTransformOutputScratchVec3);
@@ -478,67 +478,67 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
       g_ModelProjectedBoundsCornerScratch8[7].y = projectedCorner.projectedY >> Q12_SHIFT;
       g_ModelProjectedBoundsCornerScratch8[7].x = (GraphicsProjectedCoordinate)transformA;
     }
-    if (((((((clippedCornerMask & 7) == 0) &&
+    if (((((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,1,0)) == 0) &&
            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                g_ModelProjectedBoundsCornerScratch8 + 1,
                                g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
-          (((clippedCornerMask & 0xe) == 0 &&
+          (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,1,3)) == 0 &&
            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                g_ModelProjectedBoundsCornerScratch8 + 1,
                                g_ModelProjectedBoundsCornerScratch8 + 3), cornerVisibleOrHit)))) ||
-         (((clippedCornerMask & 0x70) == 0 &&
+         (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(6,5,4)) == 0 &&
           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 5,
                               g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))) ||
-        (((((clippedCornerMask & 0xe0) == 0 &&
+        (((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(6,5,7)) == 0 &&
            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 6,
                                g_ModelProjectedBoundsCornerScratch8 + 5,
                                g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)) ||
-          ((((clippedCornerMask & 0x15) == 0 &&
+          ((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,4,0)) == 0 &&
             (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                                (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                 g_ModelProjectedBoundsCornerScratch8 + 4,
                                 g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
-           (((clippedCornerMask & 0x54) == 0 &&
+           (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(2,6,4)) == 0 &&
             (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                                (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                 g_ModelProjectedBoundsCornerScratch8 + 6,
                                 g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))))) ||
-         ((((clippedCornerMask & 0x2a) == 0 &&
+         ((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,5,1)) == 0 &&
            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                                g_ModelProjectedBoundsCornerScratch8 + 5,
                                g_ModelProjectedBoundsCornerScratch8 + 1), cornerVisibleOrHit)) ||
-          (((clippedCornerMask & 0xa8) == 0 &&
+          (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,7,5)) == 0 &&
            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                                g_ModelProjectedBoundsCornerScratch8 + 7,
                                g_ModelProjectedBoundsCornerScratch8 + 5), cornerVisibleOrHit)))))))) ||
-       (((((clippedCornerMask & 0x13) == 0 &&
+       (((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(4,1,0)) == 0 &&
           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 4,
                               g_ModelProjectedBoundsCornerScratch8 + 1,
                               g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
-         (((clippedCornerMask & 0x32) == 0 &&
+         (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(1,5,4)) == 0 &&
           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 1,
                               g_ModelProjectedBoundsCornerScratch8 + 5,
                               g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))) ||
-        ((((clippedCornerMask & 0x4c) == 0 &&
+        ((((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,6,2)) == 0 &&
           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                               g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 2), cornerVisibleOrHit)) ||
-         (((clippedCornerMask & 0xc8) == 0 &&
+         (((clippedCornerMask & MODEL_BOUNDS_TRIANGLE_CORNERS(3,6,7)) == 0 &&
           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                               g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)))))))) {
-      if ((context->contextFlags & 0x80000) != 0) {
+      if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_HIT_DISTANCE_TO_BOUNDS_CENTER) != 0) {
         boundsCenterHit.distanceQ12 =
              FixedMath_Length3(((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12 >> 1) +
                                modelNode->worldTransform.translation.z) -
@@ -868,7 +868,7 @@ static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
   int childCount;
   int childIndex;
   if ((node->classState.stateFlags & ARMY_RUNTIME_FLAG_DESTROYED) == 0) {
-    node->classState.stateFlags = node->classState.stateFlags | 0x418;
+    node->classState.stateFlags = node->classState.stateFlags | (ARMY_MODEL_STATE_NO_REGENERATION | ARMY_MODEL_STATE_DISMANTLING | ARMY_RUNTIME_FLAG_DESTROYED);
   }
   childCount = node->attachmentCount;
   for (childIndex = 0; childIndex < childCount; childIndex++) {
@@ -1010,7 +1010,7 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
   /* 0x20: the army belongs to a faction other than 0 */
   if (ownerArmy->factionIndex != 0) {
-    newNode->runtimeFlags = newNode->runtimeFlags | 0x20;
+    newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_FACTION_OWNED;
   }
   /* the four bytes of textureSubresourceBaseIndex are cleared one by one */
   ((uint8_t *)&newNode->textureSubresourceBaseIndex)[0] = 0;
@@ -1020,14 +1020,14 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   definitionOrChildrenRemaining = modelRuntime->definitionOrSavedId.savedIdOrOffset;
   newNode->tintArgb = 0xffffffff;
   /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & 0x10) != 0) {
-    newNode->runtimeFlags = newNode->runtimeFlags | 0x10;
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & MODEL_DEFINITION_FLAG_NOT_REMEMBERED) != 0) {
+    newNode->runtimeFlags = newNode->runtimeFlags | TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED;
   }
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & 0x20) != 0) {
-    newNode->runtimeFlags = newNode->runtimeFlags | 0x200;
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & MODEL_DEFINITION_FLAG_DRAW_BEFORE_TERRAIN) != 0) {
+    newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_DRAW_BEFORE_TERRAIN;
   }
-  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & 0x40) == 0) {
-    newNode->runtimeFlags = newNode->runtimeFlags | 0x100;
+  if ((((ModelDefinition *)definitionOrChildrenRemaining)->modelFlags & MODEL_DEFINITION_FLAG_NO_SHADING_PASS) == 0) {
+    newNode->runtimeFlags = newNode->runtimeFlags | MODEL_NODE_FLAG_SHADING_PASS;
   }
   resourceView = definitionNode->spriteAssetReference.modelResource;
   newNode->modelPayload.paletteAsset = paletteAsset;

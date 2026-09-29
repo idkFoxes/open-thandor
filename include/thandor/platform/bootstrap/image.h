@@ -17,6 +17,20 @@ anything else runs and redirects code pointers stored in it to the recovered C f
 The original machine code is mapped non-executable and never runs.
 */
 
+/* Layout of the original thandor.exe image (PE header values) */
+#define ORIGINAL_IMAGE_BASE 0x400000u  /* ImageBase */
+#define ORIGINAL_IMAGE_SIZE 0x192000u  /* SizeOfImage */
+#define ORIGINAL_TEXT_START 0x401000u  /* its single RWX .text section (code and data) */
+#define ORIGINAL_TEXT_END 0x58C000u    /* end of the original machine code */
+#define ORIGINAL_TEXT_RVA (ORIGINAL_TEXT_START - ORIGINAL_IMAGE_BASE)
+#define ORIGINAL_TEXT_SIZE (ORIGINAL_TEXT_END - ORIGINAL_TEXT_START)
+/* The rebuilt executable is linked at this fixed base (/BASE in CMakeLists.txt); its code starts one page in */
+#define REBUILT_IMAGE_BASE 0x10000000u
+#define REBUILT_IMAGE_CODE_START (REBUILT_IMAGE_BASE + 0x1000u)
+/* x86 opcodes written into the mapped original code */
+#define X86_OPCODE_INT3 0xCC       /* breakpoint */
+#define X86_OPCODE_JMP_REL32 0xE9  /* jmp rel32, 5 bytes */
+
 typedef struct ThandorFunctionMapEntry {
     unsigned originalAddress;
     void *function;

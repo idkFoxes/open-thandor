@@ -112,6 +112,14 @@
 #define UI_ADAPTER_TEXT_BUTTON_SINGLE_NUMBER 0x80
 #define UI_ADAPTER_TEXT_BUTTON_ADAPTER_NAME 0x800
 #define TEXT_ID_PRIMARY_DISPLAY_ADAPTER 0x111
+/* Windows-1252 key codes typed with AltGr on a German keyboard (the text edits' keyboard handlers accept them
+   without the Ctrl/Alt shortcut check). */
+#define CP1252_SUPERSCRIPT_TWO 0xb2
+#define CP1252_SUPERSCRIPT_THREE 0xb3
+#define CP1252_MICRO_SIGN 0xb5
+#define CP1252_EURO_SIGN 0x80
+/* UiNumericTextEdit hexadecimal output: a bit index 0..31 rounded down to the lowest bit of its hex digit */
+#define UI_NUMERIC_TEXT_HEX_DIGIT_BIT_MASK 0x1c
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004B0200 */

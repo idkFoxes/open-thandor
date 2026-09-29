@@ -304,7 +304,8 @@ void TerrainEditBuffer_CommitFlagsAndMaterialDeltas
   remainingCount = fieldGridAsset->gridWidth * fieldGridAsset->gridHeight;
   /* The original ORs 1 into the dword 0x14C bytes before the field grid asset (OR [ESI-0x14C],1) instead of
      its runtimeStateFlags at +0xB4, so the surface is not marked dirty here; kept as in the original. */
-  *(uint32_t *)((uint8_t *)fieldGridAsset - 0x14c) = *(uint32_t *)((uint8_t *)fieldGridAsset - 0x14c) | 1;
+  *(uint32_t *)((uint8_t *)fieldGridAsset - TERRAIN_EDIT_STRAY_DIRTY_FLAG_BACK_OFFSET) =
+       *(uint32_t *)((uint8_t *)fieldGridAsset - TERRAIN_EDIT_STRAY_DIRTY_FLAG_BACK_OFFSET) | 1;
   fieldCell = fieldGridAsset->cells;
   do {
     fieldCell->flagsAndMaterial = fieldCell->flagsAndMaterial + *materialDeltaCursor;

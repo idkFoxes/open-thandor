@@ -14,6 +14,10 @@
 /* Submodule: ui/frontend/network. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* -CLIENT="host address": characters scanned for the closing quote (effectively unbounded; the scan stops at
+   the terminator or a control character first). */
+#define FRONTEND_CLIENT_OPTION_SCAN_LIMIT 0x7FFFFF
+
 /* 0x0054C260 */
 void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi);
 

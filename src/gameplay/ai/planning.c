@@ -1033,13 +1033,13 @@ bool AiPurchaseCandidate_HasEligibleProducer(AiCandidateWorkspaceEntry *candidat
       workspaceEntry = g_AiWorkspace00Structures;
       if ((countOrClassMask & ARMY_ASSET_FLAG_BUILT_BY_CLASS11) == 0) {
         if ((countOrClassMask & ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD) == 0) {
-          remainingGuard = countOrClassMask & 0xee;
+          remainingGuard = countOrClassMask & ARMY_ASSET_FLAGS_BUILT_BY_FACTORY;
           while (remainingGuard != 0) {
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
             if (((entitySlot != NULL) && (((ModelDefinition *)*entitySlot)->runtimeClassId ==
                                           MODEL_RUNTIME_CLASS_13)) &&
                (((entitySlot[59] & ARMY_MODEL_STATE_BUILD_BLOCKING_MASK) == 0 &&
-                (((((ModelDefinition *)*entitySlot)->classParameterC4 & countOrClassMask & 0xee) != 0 &&
+                (((((ModelDefinition *)*entitySlot)->classParameterC4 & countOrClassMask & ARMY_ASSET_FLAGS_BUILT_BY_FACTORY) != 0 &&
                   (entitySlot[46] == 0)))))) {
               return false;
             }
@@ -1390,7 +1390,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
     if (!conditionMet) {
       selectedToken = ARM_0302_BUILDING_MDL0300;
       /* the original rotates (ROR 5); a shift gives the same low 14 bits for the at most three steps used */
-      remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
+      remainingCellsOrTieBits = randomizedTieBits & AI_STRATEGIC_TIE_BREAK_MASK;
       randomizedTieBits = randomizedTieBits >> 5;
       bestCandidateScore =
            freeBits28To30Percent * g_AiStrategicClassTerrainWeights[0][0] +
@@ -1405,7 +1405,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
     existingClassCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0303_BUILDING_MDL0316);
     if (!conditionMet) {
-      remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
+      remainingCellsOrTieBits = randomizedTieBits & AI_STRATEGIC_TIE_BREAK_MASK;
       randomizedTieBits = randomizedTieBits >> 5;
       candidateScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[1][0] +
               freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[1][1] +
@@ -1421,7 +1421,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
     existingClassCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0304_BUILDING_MDL0324);
     if (!conditionMet) {
-      remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
+      remainingCellsOrTieBits = randomizedTieBits & AI_STRATEGIC_TIE_BREAK_MASK;
       randomizedTieBits = randomizedTieBits >> 5;
       candidateScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[2][0] +
               freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[2][1] +
@@ -1439,7 +1439,7 @@ AiStrategicClassSelection AiStrategicClass_SelectTerrainSuitedBuilding
     if (!conditionMet) {
       freeBits25To27PercentOrScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[3][0] +
               freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[3][1] +
-              freeBit24Percent * g_AiStrategicClassTerrainWeights[3][2] + (randomizedTieBits & 0x3fff);
+              freeBit24Percent * g_AiStrategicClassTerrainWeights[3][2] + (randomizedTieBits & AI_STRATEGIC_TIE_BREAK_MASK);
       if (bestCandidateScore < freeBits25To27PercentOrScore) {
         selectedToken = ARM_0305_BUILDING_MDL0317;
         bestCandidateScore = freeBits25To27PercentOrScore;
@@ -1527,10 +1527,10 @@ AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
   randomBits = g_RandomGeneratorState.next();
   class141Score = ((pressure2For141 + 1) * class141Coefficient0OrExistingCount + (pressure3For141 + 1) *
                    class141Coefficient1 + (pressure4For141 + 1) * class141Coefficient2) / pressureSumPlusOne +
-           (randomBits & 0x7f);
+           (randomBits & AI_STRATEGIC_SCORE_JITTER_MASK);
   class142Score = ((pressure2For142 + 1) * class142Coefficient0 + (pressure3For142 + 1) * class142Coefficient1 +
                    (pressure4For142 + 1) * class142Coefficient2) / pressureSumPlusOne +
-           (randomBits >> 19 & 0x7f);
+           (randomBits >> 19 & AI_STRATEGIC_SCORE_JITTER_MASK);
   bestScore = 0;
   class141Coefficient0OrExistingCount = 3;
   selectedToken = 0;
@@ -1559,7 +1559,7 @@ AiStrategicClassSelection AiStrategicClass_SelectPressureWeightedBuilding
     if ((!conditionMet) &&
        (bestScore < ((pressure2For143 + 1) * class143Coefficient0 + (pressure3For143 + 1) * class143Coefficient1 +
                      (pressure4For143 + 1) * class143Coefficient2) / pressureSumPlusOne +
-                 (randomBits >> 7 & 0x7f))) {
+                 (randomBits >> 7 & AI_STRATEGIC_SCORE_JITTER_MASK))) {
       selectedToken = ARM_0323_BUILDING_MDL0328;
     }
   }

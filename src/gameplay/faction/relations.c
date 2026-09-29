@@ -138,7 +138,7 @@ FactionActiveMask GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIn
   uint32_t currentFactionBit;
 
   blocFactionMask = 0;
-  currentFactionBit = 0x80;
+  currentFactionBit = FACTION_MASK_BIT(7);
   factionIndex = 7;
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] ==
@@ -181,7 +181,7 @@ bool GameFactionRelations_EvaluateTransitionRules
 
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   actualActiveMask = 0;
-  currentFactionBit = 0x80;
+  currentFactionBit = FACTION_MASK_BIT(7);
   remainingCount = 7; /* doubles as the faction index 7..1 */
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[remainingCount] ==
@@ -343,18 +343,18 @@ void GameFactionRelations_MaybeAdvancePairStateRare
   randomValue = g_RandomGeneratorState.next();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (pairPressure == 0) {
-    maskedRandom = randomValue & 0x17f;
+    maskedRandom = randomValue & FACTION_RELATION_DRIFT_RARE_IDLE_MASK;
   }
   else {
     if (31 < pairPressure) {
       return;
     }
-    maskedRandom = randomValue & 0x3ff;
+    maskedRandom = randomValue & FACTION_RELATION_DRIFT_RARE_PRESSURE_MASK;
     if (randomValue >> 28 <= pairPressure) {
       return;
     }
   }
-  if (maskedRandom == 85) {
+  if (maskedRandom == FACTION_RELATION_DRIFT_MATCH) {
     GameFactionRuntime_AdvancePairwiseRelationState
               (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
@@ -378,18 +378,18 @@ void GameFactionRelations_MaybeAdvancePairStateCommon
   randomValue = g_RandomGeneratorState.next();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (pairPressure == 0) {
-    maskedRandom = randomValue & 0x7f;
+    maskedRandom = randomValue & FACTION_RELATION_DRIFT_COMMON_IDLE_MASK;
   }
   else {
     if (31 < pairPressure) {
       return;
     }
-    maskedRandom = randomValue & 0x1ff;
+    maskedRandom = randomValue & FACTION_RELATION_DRIFT_COMMON_PRESSURE_MASK;
     if (randomValue >> 28 <= pairPressure) {
       return;
     }
   }
-  if (maskedRandom == 85) {
+  if (maskedRandom == FACTION_RELATION_DRIFT_MATCH) {
     GameFactionRuntime_AdvancePairwiseRelationState
               (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }
@@ -407,7 +407,7 @@ void GameFactionRelations_MaybeResetPairState
   uint32_t randomValue;
 
   randomValue = g_RandomGeneratorState.next();
-  if ((randomValue & 0x180) == 0x80) {
+  if ((randomValue & FACTION_RELATION_RESET_RANDOM_MASK) == FACTION_RELATION_RESET_RANDOM_MATCH) {
     GameFactionRuntime_ResetPairwiseRelationState
               (UINT32_MAX,0,sourceFactionIndex,targetFactionIndex);
   }

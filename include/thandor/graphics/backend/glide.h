@@ -19,6 +19,16 @@
 #define GLIDE_CURSOR_PRESENT_SENTINEL ((IDirectDrawSurface3 *)0x1)
 /* Bit pattern of the float 1.0f (guGammaCorrectionRGB takes floats) */
 #define GLIDE_FLOAT_BITS_ONE 0x3f800000
+/* Screen coordinates of a primitive packet are 12-bit fixed point; Glide3_DrawPrimitiveQueue clamps them to
+   +-2032 pixels before converting them to float. */
+#define GLIDE_SCREEN_COORDINATE_LIMIT 0x7f0000
+/* Added to the bit pattern of a nonzero float these change its exponent: -12 (divide by 4096, the fixed-point
+   scale) and +30 (multiply by 2^30). */
+#define GLIDE_FLOAT_BITS_DIVIDE_BY_4096 0xfa000000
+#define GLIDE_FLOAT_BITS_MULTIPLY_BY_2POW30 0xf000000
+/* Framebuffer capture, RGB565 -> ARGB8888: opaque alpha placed above the 5-bit red field, so the SHLD chain
+   that widens the channels carries it into bits 24..31 */
+#define GLIDE_CAPTURE_ALPHA_ABOVE_RED5 (ARGB8888_CHANNEL_MAX << 5)
 
 /* glide.h GrResolution: one 16-byte entry of the list grQueryResolutions writes (Glide3_InitAndEnumerate,
    GraphicsGlide3_ApplyDisplayModeAndInitializeResources). */

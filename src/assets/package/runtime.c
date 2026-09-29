@@ -110,7 +110,7 @@ StatusResult Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecod
       if (!seekResult.failed) {
         ((PckArchiveHeader *)destination)->entryCount++;
         if (compressionMethod == PCK_COMPRESSION_STORED) {
-          alignedByteCount = unpackedSize + 3 & 0xfffffffc;
+          alignedByteCount = unpackedSize + 3 & PACKAGE_DWORD_ALIGN_MASK;
           *(uint32_t *)(destination + PCK_NEW_ENTRY_PACKED_SIZE) = alignedByteCount;
           /* compressionMethod = PCK_COMPRESSION_STORED and runtimePayloadOffset = 0, byte by byte (a dword
              store schedules differently) */
@@ -709,7 +709,8 @@ PackageFindResult Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,P
               entryCursor = (PckEntryHeader *)(targetCursor[-1].path + 2);
               outputEntries = (PckEntryHeader *)(sourceCursor[-1].path + 2);
             }
-            carryFlag = (PckEntryHeader *)0xfffffdff < entryCursor;
+            /* carry of entryCursor + sizeof(PckEntryHeader) */
+            carryFlag = (PckEntryHeader *)(0xffffffffU - PCK_ENTRY_HEADER_BYTES) < entryCursor;
             entryCursor++;
             remainingCount--;
           } while (remainingCount != 0);

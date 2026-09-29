@@ -20,6 +20,9 @@
 #define WORLD_MOTION_SPLINE_CHANNEL_COUNT 6
 /* Floats of one equation matrix (g_WorldMotionSplineMatrixWorkspaces[channel], 0x400) */
 #define CUBIC_SPLINE_MATRIX_FLOATS (CUBIC_SPLINE_MATRIX_ORDER * CUBIC_SPLINE_MATRIX_ORDER)
+/* Bit 31 as an unsigned int: (uint32_t)value < INTERPOLATION_SIGN_BIT tests a signed value for >= 0 (the
+   original's unsigned compare) */
+#define INTERPOLATION_SIGN_BIT 0x80000000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053CA30 */

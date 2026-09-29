@@ -34,16 +34,16 @@ EndingMoviePathResult LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPa
     /* UTF-16 characters 4 and 5 of the movie path, read as one dword */
     movieNameChars4And5 = *(int *)(path + 8);
     movieNumber = 0;
-    if (movieNameChars4And5 == 0xfc0077) {
+    if (movieNameChars4And5 == LEVEL_ENDING_MOVIE_NAME_W_UUML) {
       movieNumber = 2;
     }
-    else if (movieNameChars4And5 == 0x690065) {
+    else if (movieNameChars4And5 == LEVEL_ENDING_MOVIE_NAME_EI) {
       movieNumber = 3;
     }
-    else if (movieNameChars4And5 == 0x61006c) {
+    else if (movieNameChars4And5 == LEVEL_ENDING_MOVIE_NAME_LA) {
       movieNumber = 4;
     }
-    WidePath_SetExtensionCode(0x6d6c66,(uint16_t *)path); /* "flm" */
+    WidePath_SetExtensionCode(ASSET_MAGIC_FLM,(uint16_t *)path);
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,movieNumber,
                (uint16_t *)(u_flm_ende0000_flm_0050df06 + 8)); /* the "0000" */
@@ -188,7 +188,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
         g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
         g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
         assetPath = (uint8_t *)levelImage + (levelImage->header).pathOffsets.technologyPathOffset;
-        WidePath_SetExtensionCode(0x636574,(uint16_t *)assetPath); /* "tec" */
+        WidePath_SetExtensionCode(ASSET_MAGIC_TEC,(uint16_t *)assetPath);
         loadEntryResult = Package_LoadEntry((uint16_t *)assetPath);
         loadedTechnologyAsset = loadEntryResult.bufferOrError;
         resultOrPointer = loadedTechnologyAsset;
@@ -305,7 +305,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
           for (remainingRecordCount = (levelImage->header).resourceTables.effectAssetPathCount;
                  remainingRecordCount != 0;
               remainingRecordCount--) {
-            WidePath_SetExtensionCode(0x666665,assetPathCursor); /* "eff" */
+            WidePath_SetExtensionCode(ASSET_MAGIC_EFF,assetPathCursor);
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
             if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
             loadEntryResult = Package_LoadEntry(assetPathCursor);
@@ -325,7 +325,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
           for (remainingRecordCount = (levelImage->header).resourceTables.shotAssetPathCount;
                  remainingRecordCount != 0;
               remainingRecordCount--) {
-            WidePath_SetExtensionCode(0x746873,assetPathCursor); /* "sht" */
+            WidePath_SetExtensionCode(ASSET_MAGIC_SHT,assetPathCursor);
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
             if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
             loadEntryResult = Package_LoadEntry(assetPathCursor);
@@ -348,7 +348,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
             for (remainingRecordCount = (levelImage->header).resourceTables.modelAssetPathCount;
                  remainingRecordCount != 0;
                 remainingRecordCount--) {
-              WidePath_SetExtensionCode(0x6c646d,assetPathCursor); /* "mdl" */
+              WidePath_SetExtensionCode(ASSET_MAGIC_MDL,assetPathCursor);
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
               if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
               loadEntryResult = Package_LoadEntry(assetPathCursor);
@@ -368,7 +368,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
             for (remainingRecordCount = (levelImage->header).resourceTables.armyAssetPathCount;
                  remainingRecordCount != 0;
                 remainingRecordCount--) {
-              WidePath_SetExtensionCode(0x6d7261,assetPathCursor); /* "arm" */
+              WidePath_SetExtensionCode(ASSET_MAGIC_ARM,assetPathCursor);
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
               if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
               loadEntryResult = Package_LoadEntry(assetPathCursor);
@@ -387,7 +387,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
             if (g_InGameLoadedResourcePointerCount < INGAME_LOADED_RESOURCE_CAPACITY) {
               g_MoviePlaybackBaseFrameGroup = 1;
               g_MoviePlaybackScheduleCounter = 0;
-              g_MoviePlaybackScheduleSpan = 0x10000;
+              g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
               /* stage 1: terrain textures (surface, ground) and the field grid */
               statusResult = TerrainVisualResources_LoadPrimary
                                  ((uint16_t *)((uint8_t *)levelImage +
@@ -403,7 +403,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                 if (!statusResult.failed) {
                   g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
-                  g_MoviePlaybackScheduleSpan = 0x10000;
+                  g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
                   statusResult = ModelRuntimePool_Init();
                   resultOrPointer = (void *)statusResult.valueOrError;
                   if (!statusResult.failed) {
@@ -519,7 +519,7 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                             soundSlotCursor++;
                           }
                           assetPath = (uint8_t *)levelImage + (levelImage->header).pathOffsets.soundBasePathOffset;
-                          WidePath_SetExtensionCode(0x6d6173,(uint16_t *)assetPath); /* "sam" */
+                          WidePath_SetExtensionCode(ASSET_MAGIC_SAM,(uint16_t *)assetPath);
                           WidePath_SplitParentAndLeaf
                                     ((uint16_t *)&g_InGameLevelSoundLeafOrCombinedPathScratchUtf16,
                                      (uint16_t *)&g_InGameLevelSoundParentDirectoryScratchUtf16,
@@ -1005,7 +1005,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
         g_InGameLevelTitleTextResourceIndex = (levelImage->header).titleTextResourceIndex;
         g_InGameLevelCampaignAssociationIndex = (levelImage->header).campaignAssociationIndex;
         assetPath = (uint8_t *)levelImage + (levelImage->header).pathState.technologyPathOffset;
-        WidePath_SetExtensionCode(0x636574,(uint16_t *)assetPath); /* "tec" */
+        WidePath_SetExtensionCode(ASSET_MAGIC_TEC,(uint16_t *)assetPath);
         loadEntryResult = Package_LoadEntry((uint16_t *)assetPath);
         loadedTechnologyAsset = loadEntryResult.bufferOrError;
         resultOrPointer = loadedTechnologyAsset;
@@ -1027,7 +1027,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                          (levelImage->header).resourceTables.effectAssetPathTableOffset);
           for (remainingPathCount = (levelImage->header).resourceTables.effectAssetPathCount; remainingPathCount != 0;
               remainingPathCount--) {
-            WidePath_SetExtensionCode(0x666665,pathTableCursor); /* "eff" */
+            WidePath_SetExtensionCode(ASSET_MAGIC_EFF,pathTableCursor);
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
             if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
             loadEntryResult = Package_LoadEntry(pathTableCursor);
@@ -1046,7 +1046,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                          (levelImage->header).resourceTables.shotAssetPathTableOffset);
           for (remainingPathCount = (levelImage->header).resourceTables.shotAssetPathCount; remainingPathCount != 0;
               remainingPathCount--) {
-            WidePath_SetExtensionCode(0x746873,pathTableCursor); /* "sht" */
+            WidePath_SetExtensionCode(ASSET_MAGIC_SHT,pathTableCursor);
             resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
             if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
             loadEntryResult = Package_LoadEntry(pathTableCursor);
@@ -1068,7 +1068,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                            (levelImage->header).resourceTables.modelAssetPathTableOffset);
             for (remainingPathCount = (levelImage->header).resourceTables.modelAssetPathCount; remainingPathCount != 0;
                 remainingPathCount--) {
-              WidePath_SetExtensionCode(0x6c646d,pathTableCursor); /* "mdl" */
+              WidePath_SetExtensionCode(ASSET_MAGIC_MDL,pathTableCursor);
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
               if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
               loadEntryResult = Package_LoadEntry(pathTableCursor);
@@ -1087,7 +1087,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                            (levelImage->header).resourceTables.armyAssetPathTableOffset);
             for (remainingPathCount = (levelImage->header).resourceTables.armyAssetPathCount; remainingPathCount != 0;
                 remainingPathCount--) {
-              WidePath_SetExtensionCode(0x6d7261,pathTableCursor); /* "arm" */
+              WidePath_SetExtensionCode(ASSET_MAGIC_ARM,pathTableCursor);
               resultOrPointer = (void *)FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES;
               if (INGAME_LOADED_RESOURCE_CAPACITY - 1 < g_InGameLoadedResourcePointerCount) goto load_failed;
               loadEntryResult = Package_LoadEntry(pathTableCursor);
@@ -1106,7 +1106,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
             if (g_InGameLoadedResourcePointerCount < INGAME_LOADED_RESOURCE_CAPACITY) {
               g_MoviePlaybackBaseFrameGroup = 1;
               g_MoviePlaybackScheduleCounter = 0;
-              g_MoviePlaybackScheduleSpan = 0x10000;
+              g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
               /* stage 1: terrain textures (surface, ground) and the field grid */
               statusResult = TerrainVisualResources_LoadAndClearCellOverlayFlags
                                  ((uint16_t *)((uint8_t *)levelImage +
@@ -1122,7 +1122,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                 if (!statusResult.failed) {
                   g_MoviePlaybackBaseFrameGroup = 2;
                   g_MoviePlaybackScheduleCounter = 0;
-                  g_MoviePlaybackScheduleSpan = 0x10000;
+                  g_MoviePlaybackScheduleSpan = LEVEL_LOAD_MOVIE_SPAN_HOLD;
                   statusResult = ModelRuntimePool_Init();
                   resultOrPointer = (void *)statusResult.valueOrError;
                   if (!statusResult.failed) {
@@ -1229,7 +1229,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                   resultOrPointer = (void *)statusResult.valueOrError;
                                   if (!statusResult.failed) {
                                     statusResult = Package_LoadEntryIntoBuffer
-                                                       (0x4000,(uint8_t *)
+                                                       (sizeof(g_GraphicsShadingRuntimeRecords),(uint8_t *)
                                                   g_GraphicsShadingRuntimeRecords,
                                                   (uint16_t *)u_light_hex_0050e016);
                                     resultOrPointer = (void *)statusResult.valueOrError;
@@ -1253,7 +1253,7 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                                       }
                                       assetPath = (uint8_t *)levelImage +
                                                   (levelImage->header).pathState.soundBasePathOffset;
-                                      WidePath_SetExtensionCode(0x6d6173,(uint16_t *)assetPath); /* "sam" */
+                                      WidePath_SetExtensionCode(ASSET_MAGIC_SAM,(uint16_t *)assetPath);
                                       MoviePlayback_AdvanceScheduledFrameAndTick();
                                       WidePath_SplitParentAndLeaf
                                                 ((uint16_t *)&

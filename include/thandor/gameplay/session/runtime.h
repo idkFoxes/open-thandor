@@ -42,6 +42,27 @@
 /* Keyboard camera (InGameUiRoot_UpdateFrame): pitch and heading step per frame (angle16) and zoom step */
 #define INGAME_CAMERA_KEY_ANGLE_STEP 0x400
 #define INGAME_CAMERA_KEY_DISTANCE_STEP_Q12 0x800
+/* Camera pitch clamp of a session (WorldRuntimeContext.motion, angle16 as unsigned dwords): -0x3C00 and -0x1800 */
+#define INGAME_CAMERA_MINIMUM_PITCH_ANGLE16 0xFFFFC400
+#define INGAME_CAMERA_MAXIMUM_PITCH_ANGLE16 0xFFFFE800
+/* Minimap zoom: minimapSampleScaleQ12 = high dword of committedDistanceQ12 * this, i.e. 3/32 of the camera
+   distance (0.32 fixed point) */
+#define INGAME_MINIMAP_DISTANCE_SCALE_Q32 0x6000000
+/* Field overlay colour (ARGB8888, opaque mid grey) while an army waits for placement */
+#define INGAME_PLACEMENT_OVERLAY_ARGB 0xFF808080
+/* Ambient effect sounds and music: a random delay of 1..64 frames ((Random & mask) + 1) before the next one */
+#define INGAME_AMBIENT_SOUND_DELAY_MASK 0x3F
+/* Faction statistics table sampling (InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState):
+   row simulationTick >> 7 is written while these tick bits are clear (8 of every 128 steps) */
+#define INGAME_STAT_SAMPLE_TICK_MASK 0x78
+/* Reduced update (paused world): the grid refresh runs on even ticks with these bits clear, alternating the
+   influence bands and the classification masks by tick bit 1 */
+#define INGAME_REDUCED_GRID_REFRESH_TICK_MASK 0xC
+/* FieldGridCell.resourceExtractionDescriptor (ArmyRuntime claim, collected into g_TerrainRegionCollectionEntries):
+   support bit | faction << 13 | claimedCellTag (share) << 24 */
+#define RESOURCE_EXTRACTION_FACTION_SHIFT 13
+#define RESOURCE_EXTRACTION_FACTION_MASK 0x7FF /* after the shift: bits 13..23 */
+#define RESOURCE_EXTRACTION_SHARE_SHIFT 24
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00564F70 */

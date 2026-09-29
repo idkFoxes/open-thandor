@@ -400,7 +400,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z =
                g_GeneratedTextureScratchRuntime.samples[11].worldPoint.z - halfDirectionZOrCoordinate;
           g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 =
-               g_GraphicsShadingGridStepQ20Current - 0x1000;
+               g_GraphicsShadingGridStepQ20Current - GRAPHICS_SHADING_SAMPLE_INSET_Q20;
           g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 =
                (int)g_GraphicsShadingGridStepQ20Current >> 1;
           g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 = 0;
@@ -2019,7 +2019,7 @@ void GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               projectedBlocks[GRAPHICS_PROJECTED_PAIR(1,0)] = pointPair0;
               directionYOrGridStep = g_GraphicsShadingGridStepQ20;
               directionXOrTileCoordinate = g_GraphicsShadingGeneratedTextureTileXQ20;
-              halfDirectionYOrCoordinate = (g_GraphicsShadingGridStepQ20 - 0x1000) +
+              halfDirectionYOrCoordinate = (g_GraphicsShadingGridStepQ20 - GRAPHICS_SHADING_SAMPLE_INSET_Q20) +
                        g_GraphicsShadingGeneratedTextureTileXQ20;
               radiusScaleOrCoordinate = ((int)g_GraphicsShadingGridStepQ20 >> 1) +
                        g_GraphicsShadingGeneratedTextureTileXQ20;

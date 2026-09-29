@@ -572,7 +572,7 @@ void GameFactionRuntime_RecomputeProgressAndScoreMetrics
   cellVisibilityCursor = (uint8_t *)&terrainGrid->cells[0].occupancyMask + factionIndex;
   cellsLeftOrBitOrRate = cellOrTechnologyCount;
   do {
-    if ((*cellVisibilityCursor & 0xf8) != 0) {
+    if ((*cellVisibilityCursor & FIELD_CELL_OCCUPANCY_EXPLORED_BITS) != 0) {
       tallyOrComponent++;
     }
     cellVisibilityCursor = cellVisibilityCursor + sizeof(FieldGridCell);
@@ -748,7 +748,9 @@ void GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntit
 
   ownerModelNode = (entityRuntime->common).ownership.modelNode;
   commandFlagsField = &(entityRuntime->common).commandFlags;
-  *commandFlagsField = *commandFlagsField & ~0x39u;
+  *commandFlagsField = *commandFlagsField &
+                      ~(uint32_t)(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_WAYPOINTS_QUEUED |
+                                  ARMY_MOVEMENT_ROUTE_POINT_REACHED | ARMY_MOVEMENT_TARGET_FOLLOWING);
   modelX = (ownerModelNode->worldTransform).translation.x;
   modelY = (ownerModelNode->worldTransform).translation.y;
   (entityRuntime->common).pathCoordinate0Q12 = modelX;
@@ -1048,7 +1050,7 @@ cancelInStructures:
                   refundAmount = armyDefinition[2].registryId;
                   modelPayload[29] = 0;
                   modelPayload[46] = 0;
-                  modelPayload[0x3b] = modelPayload[59] & ~(uint32_t)ARMY_MODEL_STATE_PRODUCING;
+                  modelPayload[59] = modelPayload[59] & ~(uint32_t)ARMY_MODEL_STATE_PRODUCING;
                   modelPayload[24] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
@@ -1064,7 +1066,7 @@ cancelInStructures:
                   refundAmount = armyDefinition[2].registryId;
                   modelPayload[29] = 0;
                   modelPayload[46] = 0;
-                  modelPayload[0x3b] = modelPayload[59] & ~(uint32_t)ARMY_MODEL_STATE_PRODUCING;
+                  modelPayload[59] = modelPayload[59] & ~(uint32_t)ARMY_MODEL_STATE_PRODUCING;
                   modelPayload[24] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
@@ -1079,7 +1081,7 @@ cancelInStructures:
                 refundAmount = armyDefinition[2].registryId;
                 modelPayload[29] = 0;
                 modelPayload[43] = 0;
-                modelPayload[0x3b] = modelPayload[59] & ~(uint32_t)ARMY_MODEL_STATE_PRODUCING;
+                modelPayload[59] = modelPayload[59] & ~(uint32_t)ARMY_MODEL_STATE_PRODUCING;
                 modelPayload[24] = 0;
                 g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                      g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
@@ -1547,7 +1549,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
   }
   else {
     randomValue = g_RandomGeneratorState.next();
-    swapMergeDirection = (randomValue & 0x2000) == 0;
+    swapMergeDirection = (randomValue & FACTION_MERGE_RANDOM_DIRECTION_BIT) == 0;
   }
   /* from here on firstFactionIndex survives and secondFactionIndex is absorbed */
   if (swapMergeDirection) {

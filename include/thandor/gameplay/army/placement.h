@@ -20,12 +20,18 @@
                                                           same-faction support that a candidate must be near */
 #define ARMY_PLACEMENT_MODE_MEASURE_SUPPORT_DISTANCE 0x2 /* do not accept at the first supporting neighbour:
                                                             return the free distance to the nearest one */
-#define ARMY_PLACEMENT_MODE_DEPTH_CLASS_90_ONLY 0x4    /* the runtime-list collision only considers armies whose
+#define ARMY_PLACEMENT_MODE_STRUCTURES_ONLY 0x4    /* the runtime-list collision only considers armies whose
                                                           g_ArmyRuntimeDepthBinClassByModelClass entry is 0x90 */
 /* Clearance (3.0 in Q12) kept around a model's (1,5) anchor point, the point placement offsets by the model's
    heading (ArmyPlacementCandidate_TestOffsetClearance, ArmyPlacement_TestModelTerrainAndRuntimeClearance,
    ArmyPlacementCandidate_TestModelAnchorDistance). */
 #define ARMY_PLACEMENT_ANCHOR_CLEARANCE_Q12 0xc00
+/* ArmyPlacement_ValidateAssetAtPointAndCellCorners: offset (Q12, each axis) of the retry corners from the point
+   rounded down to a multiple of 0x100 */
+#define ARMY_PLACEMENT_CORNER_OFFSET_Q12 0x240
+/* nearest-support search: a squared distance above this still has the INT64_MAX start value's high dword
+   (no supporting model found) */
+#define ARMY_PLACEMENT_NO_SUPPORT_DISTANCE_SQUARED (INT64_MAX - ((int64_t)1 << 32))
 /* Placement contact kinds (model definition +0x278): index into g_ArmyPlacementContactKindDispatchTable and
    g_TerrainClassPlacementAndOverlayCallbacks10.placementTests. 0 terrain height, 1 water surface, 2 terrain
    height and normal, 3 articulated suspension, 4 top surface. */

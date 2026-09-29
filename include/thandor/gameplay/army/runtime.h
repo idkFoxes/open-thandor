@@ -31,6 +31,9 @@
 #define ARMY_COMMAND_MODE_INTERRUPTED 0x4     /* a target command was cancelled; commandGeneration re-stamped */
 #define ARMY_COMMAND_MODE_AI_COMBAT_TARGET 0x8 /* target picked by the AI combat target selection: target-following
                                                   moves are clamped (ArmyRuntime_StartClampedMoveCommand) */
+#define ARMY_COMMAND_MODE_SELECTION_ORDER 0x10 /* target/position order given to the selection (set with INTERRUPTED);
+                                                  cleared by move commands and SelectionRuntime_CancelTargets */
+#define ARMY_COMMAND_MODE_UNUSED_400 0x400    /* cleared by ArmyRuntime_AppendWaypointOrStartMove; never set or tested */
 /* Army model runtime stateFlags (+0xEC) bits set and tested by the class update callbacks
    (ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive, the production slots 11/13/22) */
 #define ARMY_MODEL_STATE_SWITCHED_OFF 0x1         /* powered down: no Energy demand, health decays to 3/4 */
@@ -78,6 +81,9 @@
 /* ArmyAssetRecord.flags bits that select the production class able to build a queued secondary asset */
 #define ARMY_ASSET_FLAG_BUILT_AT_AIRCRAFT_PAD 0x8 /* class-22 aircraft pad */
 #define ARMY_ASSET_FLAG_BUILT_BY_CLASS11 0x10     /* production class 11 */
+#define ARMY_ASSET_FLAGS_BUILT_BY_FACTORY 0xee    /* unit factory (class 13): matched against its classParameterC4 */
+#define ARMY_ASSET_FLAG_PRODUCTION_MASK 0xfe      /* bits 1-7: built by some production class (bit 0 = enabled);
+                                                     such assets get the panel preview textures */
 /* impact damage of a model crushed by a structure placed over it or run over by a vehicle
    (ArmyRuntime_ClassCommandHandlerGroupA, ArmyRuntime_HandleCollisionPartner) */
 #define ARMY_CRUSH_IMPACT_DAMAGE 0x100000
@@ -86,6 +92,23 @@
    and one 0x20-byte subresource record */
 #define ARMY_PREVIEW_WORLD_POSITION_Q12 0x6000000
 #define ARMY_PREVIEW_TEXTURE_HEADER_BYTES 0x220
+/* ArmyRuntime_RenderPreviewTexture view setup: auxiliary orientation angles (135 and -36 degrees), the two
+   scene colours (opaque light and dark grey), view angle 0 (-180 degrees) */
+#define ARMY_PREVIEW_AUXILIARY_ORIENTATION0_ANGLE16 (3 * FIXED_ANGLE16_EIGHTH_TURN)
+#define ARMY_PREVIEW_AUXILIARY_ORIENTATION1_ANGLE16 (0U - FIXED_ANGLE16_FULL_TURN / 10)
+#define ARMY_PREVIEW_PRIMARY_COLOR_ARGB 0xffc0c0c0
+#define ARMY_PREVIEW_SECONDARY_COLOR_ARGB 0xff606060
+#define ARMY_PREVIEW_VIEW_ANGLE0 (0U - FIXED_ANGLE16_HALF_TURN)
+/* a byte * this repeats it in both halves of a 16-bit MMX lane (PUNPCKLBW mm,mm) */
+#define ARMY_PREVIEW_BYTE_TO_WORD_REPEAT 0x101u
+/* Camera heading of the "army built" notification relative to the new army's heading: unit factory (class 13)
+   and production class 11 */
+#define ARMY_FACTORY_NOTIFICATION_HEADING_OFFSET_ANGLE16 0x8800U
+#define ARMY_PRODUCTION_NOTIFICATION_HEADING_OFFSET_ANGLE16 0x1800
+/* g_ArmyRuntimeDepthBinClassByModelClass entries (ArmyRuntimeSlot.depthBinClass): the occupancy bits an army
+   marks in its faction's byte of the field cells. Structure classes (4, 11, 13-16, 20, 22, 23) use 0x90. */
+#define ARMY_DEPTH_BIN_STRUCTURE_BIT 0x10
+#define ARMY_DEPTH_BIN_CLASS_STRUCTURE 0x90   /* persistent bit 7 | ARMY_DEPTH_BIN_STRUCTURE_BIT */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */

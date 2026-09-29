@@ -12,8 +12,8 @@
 
 /* Address: 0x0053B0E0.
    Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units
-   (command flags 0x01/0x10) wait for their behaviour cooldown (common +0x8C), skips units with command
-   flag 0x02, and dispatches the rest by model class: class 18 to UpdateSpecialClass12Entity, the ground,
+   (ARMY_MOVEMENT_ACTIVE / _ROUTE_POINT_REACHED in the movement state at +0x18, the entity's commandFlags) wait
+   for their behaviour cooldown (common +0x8C), skips units with ARMY_MOVEMENT_LOCKED, and dispatches the rest by model class: class 18 to UpdateSpecialClass12Entity, the ground,
    tracked, walker, water and glider classes (1/2/3/19/17) to SelectBestAnchorAction. The class is read with a
    single dereference from the model at +0x4C.
 */
@@ -35,8 +35,9 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
     unitModelRuntime = workspaceEntryCursor->modelRuntime;
     if (unitModelRuntime == NULL) continue;
     slotEntityRuntime = unitModelRuntime->ownerArmyRuntimeOrSavedOffset.entityRuntime;
-    if ((slotEntityRuntime->common.commandFlags & 0x13) != 0) {
-      if ((slotEntityRuntime->common.commandFlags & 2) != 0) continue;
+    if ((slotEntityRuntime->common.commandFlags &
+         (ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ROUTE_POINT_REACHED)) != 0) {
+      if ((slotEntityRuntime->common.commandFlags & ARMY_MOVEMENT_LOCKED) != 0) continue;
       /* Busy entities only get a behavior update when their cooldown runs out (or was already negative,
          which the increment below undoes). */
       behaviorCooldownCounter = &slotEntityRuntime->common.aiCommandCooldownTicks;

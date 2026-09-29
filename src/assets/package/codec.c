@@ -204,7 +204,7 @@ PckCodecResult PckCodec_EncodeStored(PckOutputCapacityBytes destinationCapacityB
       source = source + 4;
       destination = destination + 4;
     }
-    successResult.byteCountOrError = sourceSizeBytes + 3 & 0xfffffffc;
+    successResult.byteCountOrError = sourceSizeBytes + 3 & PACKAGE_DWORD_ALIGN_MASK;
     successResult.failed = false;
     return successResult;
   }
@@ -275,9 +275,8 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
   PckHuffmanNodePtr nextInternalNode;
   uint8_t currentSymbolByte;
 
-  /* 0x900 dwords: symbol table (0x100) + leaf nodes (0x400) + internal nodes (0x400) */
   workspaceClearCursor = (uint32_t *)g_PckHuffmanSymbolWorkspace256;
-  for (countOrShiftOrCodeLength = 0x900;
+  for (countOrShiftOrCodeLength = PCK_HUFFMAN_WORKSPACE_DWORDS;
        bytesRemaining = sourceSizeBytes, sourceByteCursor = source, countOrShiftOrCodeLength != 0;
        countOrShiftOrCodeLength--) {
     *workspaceClearCursor = 0;
@@ -386,13 +385,13 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
         }
         currentLeafNode = ancestorNode;
       } while (ancestorNode->weight == 0);
-      symbolState->frequencyCount = secondWeightOrCode | countOrShiftOrCodeLength * 0x1000000;
+      symbolState->frequencyCount = secondWeightOrCode | countOrShiftOrCodeLength * (1 << PCK_HUFFMAN_CODE_LENGTH_SHIFT);
     }
     maxCountOrWeightOrSize++;
     symbolState++;
   } while (maxCountOrWeightOrSize < PCK_HUFFMAN_SYMBOL_COUNT);
   /* Zero the dword-aligned output area, since the tokens are ORed into it. */
-  maxCountOrWeightOrSize = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) & 0xfffffffc;
+  maxCountOrWeightOrSize = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) & PACKAGE_DWORD_ALIGN_MASK;
   if (maxCountOrWeightOrSize != 0) {
     outputClearCursor = outputWriteCursor;
     for (secondWeightOrCode = (destinationCapacityBytes - PCK_HUFFMAN_FREQUENCY_TABLE_BYTES) >> 2; secondWeightOrCode != 0; secondWeightOrCode--) {
@@ -423,7 +422,7 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
           *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode * 2 - 5) << (outputBitOffset & 31);
           secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
           *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 5 & 31);
-          for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> 24); 7 < outputBitOffset;
+          for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> PCK_HUFFMAN_CODE_LENGTH_SHIFT); 7 < outputBitOffset;
               outputBitOffset = outputBitOffset - 8) {
             /* advance the dword write window by one byte */
             outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
@@ -436,7 +435,7 @@ PckCodecResult PckCodec_EncodeHuffmanRle(PckOutputCapacityBytes destinationCapac
         /* Literal token: flag bit 0, then the byte's code. */
         secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
         *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 1 & 31);
-        for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> 24); 7 < outputBitOffset;
+        for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> PCK_HUFFMAN_CODE_LENGTH_SHIFT); 7 < outputBitOffset;
             outputBitOffset = outputBitOffset - 8) {
           outputWriteCursor = (uint32_t *)((uint8_t *)outputWriteCursor + 1);
           maxCountOrWeightOrSize++;
