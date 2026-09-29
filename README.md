@@ -17,12 +17,15 @@ movies) come from an installation.
 | Functions reimplemented in C | `████████████████████` | **100 %** (2,068 / 2,068) |
 | Original data compiled in, verified byte for byte | `████████████████████` | **100 %** (885,420 bytes, 2,393 pointers) |
 | Functions with a header comment (what, why, who calls it) | `████████████████████` | **100 %** |
-| Functions without raw memory offsets | `████████████████████` | **98.6 %** |
+| Functions without raw memory offsets | `████████████████████` | **99.0 %** |
 | Functions without placeholder names | `███████████████████░` | **94.9 %** |
 | Functions without `goto` / `while (true)` | `██████████████████░░` | **91.7 %** |
-| Functions that pass all readability checks | `█████████████████░░░` | **86.6 %** (1,790) |
+| Functions that pass all readability checks | `█████████████████░░░` | **86.7 %** (1,793) |
+| Magic hex numbers named (constants, fixed-point shifts, masks) | `████████████████░░░░` | **77 %** (5,513 → 1,280 left) |
 
-The readability numbers come from [`tools/readability_report.py`](tools/readability_report.py).
+The readability numbers come from [`tools/readability_report.py`](tools/readability_report.py). The hex numbers
+left are mostly bit patterns (MMX lane and colour masks), packed text codes and flags whose meaning is not known
+yet; original addresses and the sample codec's MMX tables are not counted.
 
 ### What works
 
@@ -42,8 +45,9 @@ The readability numbers come from [`tools/readability_report.py`](tools/readabil
 - **Differential self-tests** run parts of the C code and the original machine code on the same inputs:
   rasterizer, blitters, bilinear scaling, water simulation, movie decoder. `imagecmp` checks the compiled-in data
   against the original executable.
-- **Byte-identical refactoring.** Every readability pass so far (names, constants, comments, typed structs) was
-  checked function by function: the generated machine code of our build did not change. Restructuring that
+- **Byte-identical refactoring.** Every readability pass so far (names, constants, comments, typed structs and
+  parameter types, fixed-point helpers such as `FIXED_MUL_SHR`) was checked function by function: the generated
+  machine code of our build did not change. Restructuring that
   changes code (loops, splitting large functions, helpers) is the next stage and needs behaviour tests instead.
 - **Game runs**: a scripted skirmish after every change, plus the all-missions run for larger changes.
 

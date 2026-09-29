@@ -50,6 +50,16 @@ def main():
         print("%-11s %5d / %d  %5.1f %%" % (column, n, total, 100.0 * n / total))
     clean = sum(1 for r in rows if all(r[2:]))
     print("%-11s %5d / %d  %5.1f %%" % ("clean", clean, total, 100.0 * clean / total))
+    # hex literals in code (not in comments), without original addresses 0x004xxxxx-0x006xxxxx and without the
+    # sample codec's MMX tables (audio/codec/sam.c), whose offsets are genuine table positions
+    hex_count = 0
+    for path in (ROOT / "src").rglob("*.c"):
+        if "generated" in path.parts or path.name.startswith("selftest") or path.name == "sam.c":
+            continue
+        code = re.sub(r"/\*.*?\*/|//[^\n]*", " ", path.read_text(encoding="utf-8", errors="replace"), flags=re.S)
+        hex_count += sum(1 for h in re.findall(r"\b0x([0-9a-fA-F]+)", code)
+                         if not (len(h) >= 6 and 0x400000 <= int(h, 16) < 0x700000))
+    print("%-11s %5d hex literals in code" % ("numbers", hex_count))
     if "--list" in sys.argv:
         column = sys.argv[sys.argv.index("--list") + 1]
         i = 2 + columns.index(column)
