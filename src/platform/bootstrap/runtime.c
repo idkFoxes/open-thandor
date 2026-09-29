@@ -11,6 +11,7 @@
 #include <thandor/platform/bootstrap/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/debug/test_aids.h>
 #include <thandor/platform/debug/movie_player.h>
 
 /* Implementation ownership: platform/bootstrap/runtime. */

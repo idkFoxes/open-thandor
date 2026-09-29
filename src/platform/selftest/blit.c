@@ -1,7 +1,7 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/bootstrap/selftest_blit.c
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/selftest/blit.c
  */
 
 /*

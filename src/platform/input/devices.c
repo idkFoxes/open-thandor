@@ -9,6 +9,7 @@
 #include <thandor/thandor.h>
 #ifdef THANDOR_TEST_AIDS
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/debug/test_aids.h>
 #endif
 #include <intrin.h>
 

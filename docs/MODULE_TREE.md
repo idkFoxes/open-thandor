@@ -107,6 +107,16 @@ Browse the curated source by ownership. Every leaf module links directly to its 
 | Module | Functions | Source | Header | Call graph | Changes |
 | --- | ---: | --- | --- | --- | --- |
 | [`platform/bootstrap/runtime`](SOURCE_FILE_GUIDE.md#module-platform-bootstrap-runtime) | 17 | [`.c`](../src/platform/bootstrap/runtime.c) | [`.h`](../include/thandor/platform/bootstrap/runtime.h) | [graph](callgraphs/platform/bootstrap/runtime.md) | [dev](../CHANGELOG.md#module-platform-bootstrap-runtime) · [full](../CHANGELOG_FULL.md#module-platform-bootstrap-runtime) |
+| [`platform/debug/autoshot`](SOURCE_FILE_GUIDE.md#module-platform-debug-autoshot) | 0 | [`.c`](../src/platform/debug/autoshot.c) | [`.h`](../include/thandor/platform/debug/autoshot.h) | - | - |
+| [`platform/debug/campaign`](SOURCE_FILE_GUIDE.md#module-platform-debug-campaign) | 0 | [`.c`](../src/platform/debug/campaign.c) | [`.h`](../include/thandor/platform/debug/campaign.h) | - | - |
+| [`platform/debug/movie_decoder`](SOURCE_FILE_GUIDE.md#module-platform-debug-movie-decoder) | 0 | [`.c`](../src/platform/debug/movie_decoder.c) | [`.h`](../include/thandor/platform/debug/movie_decoder.h) | - | - |
+| [`platform/debug/script`](SOURCE_FILE_GUIDE.md#module-platform-debug-script) | 0 | [`.c`](../src/platform/debug/script.c) | [`.h`](../include/thandor/platform/debug/script.h) | - | - |
+| [`platform/debug/test_aids`](SOURCE_FILE_GUIDE.md#module-platform-debug-test-aids) | 0 | [`.c`](../src/platform/debug/test_aids.c) | [`.h`](../include/thandor/platform/debug/test_aids.h) | - | - |
+| [`platform/selftest/selftests`](SOURCE_FILE_GUIDE.md#module-platform-selftest-selftests) | 0 | [`.c`](../src/platform/selftest/selftests.c) | [`.h`](../include/thandor/platform/selftest/selftest.h) | - | - |
+| [`platform/selftest/raster`](SOURCE_FILE_GUIDE.md#module-platform-selftest-raster) | 0 | [`.c`](../src/platform/selftest/raster.c) | - | - | - |
+| [`platform/selftest/blit`](SOURCE_FILE_GUIDE.md#module-platform-selftest-blit) | 0 | [`.c`](../src/platform/selftest/blit.c) | - | - | - |
+| [`platform/selftest/blendscale`](SOURCE_FILE_GUIDE.md#module-platform-selftest-blendscale) | 0 | [`.c`](../src/platform/selftest/blendscale.c) | - | - | - |
+| [`platform/selftest/relax`](SOURCE_FILE_GUIDE.md#module-platform-selftest-relax) | 0 | [`.c`](../src/platform/selftest/relax.c) | - | - | - |
 | [`platform/debug/font`](SOURCE_FILE_GUIDE.md#module-platform-debug-font) | 0 | [`.c`](../src/platform/debug/font.c) | [`.h`](../include/thandor/platform/debug/font.h) | - | - |
 | [`platform/debug/movie_player`](SOURCE_FILE_GUIDE.md#module-platform-debug-movie-player) | 0 | [`.c`](../src/platform/debug/movie_player.c) | [`.h`](../include/thandor/platform/debug/movie_player.h) | - | - |
 | [`platform/filesystem/win32`](SOURCE_FILE_GUIDE.md#module-platform-filesystem-win32) | 29 | [`.c`](../src/platform/filesystem/win32.c) | [`.h`](../include/thandor/platform/filesystem/win32.h) | [graph](callgraphs/platform/filesystem/win32.md) | [full](../CHANGELOG_FULL.md#module-platform-filesystem-win32) |

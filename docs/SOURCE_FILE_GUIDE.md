@@ -1234,6 +1234,76 @@ This file owns runtime state and lifecycle operations within platform bootstrap,
 
 **Calls into:** [`assets/fnc/runtime`](#module-assets-fnc-runtime), [`assets/package/runtime`](#module-assets-package-runtime), [`assets/resource/runtime`](#module-assets-resource-runtime), [`assets/text/resources`](#module-assets-text-resources), [`assets/text/richtext`](#module-assets-text-richtext), [`audio/backend/runtime`](#module-audio-backend-runtime), [`audio/spatial/runtime`](#module-audio-spatial-runtime), [`core/error/runtime`](#module-core-error-runtime), [`core/memory/allocator`](#module-core-memory-allocator), [`core/memory/synchronization`](#module-core-memory-synchronization), [`core/settings/persistent`](#module-core-settings-persistent), [`core/text/path`](#module-core-text-path), [`core/text/string`](#module-core-text-string), [`gameplay/ai/workspaces`](#module-gameplay-ai-workspaces), [`graphics/backend/software`](#module-graphics-backend-software), [`graphics/core/runtime`](#module-graphics-core-runtime), [`graphics/render/primitives`](#module-graphics-render-primitives), [`graphics/render/shading`](#module-graphics-render-shading), [`movie/runtime/playback`](#module-movie-runtime-playback), [`network/backend/runtime`](#module-network-backend-runtime), [`platform/filesystem/win32`](#module-platform-filesystem-win32), [`platform/input/devices`](#module-platform-input-devices), [`platform/system/time_locale`](#module-platform-system-time-locale), [`ui/controls/layout`](#module-ui-controls-layout), [`ui/core/runtime`](#module-ui-core-runtime), [`ui/frontend/runtime`](#module-ui-frontend-runtime), [`world/terrain/visuals`](#module-world-terrain-visuals).
 
+<a id="module-platform-debug-autoshot"></a>
+### `platform/debug/autoshot`
+
+[Source](../src/platform/debug/autoshot.c) · [Header](../include/thandor/platform/debug/autoshot.h)
+
+Project code, not in the original game. OPEN_THANDOR_AUTOSHOT: saves the framebuffer every n ms to shots\shot_NNNN.bmp (called from the message pump).
+
+<a id="module-platform-debug-campaign"></a>
+### `platform/debug/campaign`
+
+[Source](../src/platform/debug/campaign.c) · [Header](../include/thandor/platform/debug/campaign.h)
+
+Project code, not in the original game. Campaign test aids (test build): OPEN_THANDOR_LIST_SCENARIOS, OPEN_THANDOR_CAMPAIGN / _LEVEL (start a campaign level), OPEN_THANDOR_AUTOWIN / _LEVELS (win a level through its forward end trigger) and the carry-over log at level start.
+
+<a id="module-platform-debug-movie-decoder"></a>
+### `platform/debug/movie_decoder`
+
+[Source](../src/platform/debug/movie_decoder.c) · [Header](../include/thandor/platform/debug/movie_decoder.h)
+
+Project code, not in the original game. OPEN_THANDOR_MOVIEDUMP (log and dump decoded frames) and OPEN_THANDOR_MOVIECMP (compare the decoder with the original machine code), hooked into Movie_AdvanceFrame.
+
+<a id="module-platform-debug-script"></a>
+### `platform/debug/script`
+
+[Source](../src/platform/debug/script.c) · [Header](../include/thandor/platform/debug/script.h)
+
+Project code, not in the original game. OPEN_THANDOR_SCRIPT: replays timed input (click, drag, key, ingame, clickuntilingame, clickuntilnextlevel, quit ...) for the automated game runs.
+
+<a id="module-platform-debug-test-aids"></a>
+### `platform/debug/test_aids`
+
+[Source](../src/platform/debug/test_aids.c) · [Header](../include/thandor/platform/debug/test_aids.h)
+
+Project code, not in the original game. Test build aids: windowed mode, a second instance, UDP port and datagram log for local multiplayer tests (OPEN_THANDOR_WINDOWED, _MULTI_INSTANCE, _NET_PORT, _NETLOG).
+
+<a id="module-platform-selftest-selftests"></a>
+### `platform/selftest/selftests`
+
+[Source](../src/platform/selftest/selftests.c) · [Header](../include/thandor/platform/selftest/selftest.h)
+
+Project code, not in the original game. SelfTest_Run for OPEN_THANDOR_SELFTEST (codec, path, stretch, stretchcmp, imagecmp, scanaddr, crash, and the compare tests below), plus the OPEN_THANDOR_SCANFILES / _DUMPTEXT data tools.
+
+<a id="module-platform-selftest-raster"></a>
+### `platform/selftest/raster`
+
+[Source](../src/platform/selftest/raster.c) · [Header](../include/thandor/platform/selftest/selftest.h)
+
+Project code, not in the original game. rastercmp: the software rasterizer handlers against the original machine code (mapped build).
+
+<a id="module-platform-selftest-blit"></a>
+### `platform/selftest/blit`
+
+[Source](../src/platform/selftest/blit.c) · [Header](../include/thandor/platform/selftest/selftest.h)
+
+Project code, not in the original game. blitcmp: the blitters against the original machine code (mapped build).
+
+<a id="module-platform-selftest-blendscale"></a>
+### `platform/selftest/blendscale`
+
+[Source](../src/platform/selftest/blendscale.c) · [Header](../include/thandor/platform/selftest/selftest.h)
+
+Project code, not in the original game. blendscalecmp: bilinear blend scaling against the original machine code (mapped build).
+
+<a id="module-platform-selftest-relax"></a>
+### `platform/selftest/relax`
+
+[Source](../src/platform/selftest/relax.c) · [Header](../include/thandor/platform/selftest/selftest.h)
+
+Project code, not in the original game. relaxcmp: the water relax passes against the original machine code (mapped build).
+
 <a id="module-platform-debug-font"></a>
 ### `platform/debug/font`
 

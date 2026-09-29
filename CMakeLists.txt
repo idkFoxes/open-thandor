@@ -96,8 +96,13 @@ add_library(thandor_curated STATIC
     src/network/protocol/commands.c
     src/network/protocol/transfer.c
     src/platform/bootstrap/runtime.c
+    src/platform/debug/autoshot.c
+    src/platform/debug/campaign.c
     src/platform/debug/font.c
+    src/platform/debug/movie_decoder.c
     src/platform/debug/movie_player.c
+    src/platform/debug/script.c
+    src/platform/debug/test_aids.c
     src/platform/filesystem/win32.c
     src/platform/input/devices.c
     src/platform/system/time_locale.c
@@ -146,10 +151,11 @@ target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 add_executable(thandor WIN32
     src/platform/bootstrap/main.c
     src/platform/bootstrap/image.c
-    src/platform/bootstrap/selftest_raster.c
-    src/platform/bootstrap/selftest_blendscale.c
-    src/platform/bootstrap/selftest_blit.c
-    src/platform/bootstrap/selftest_relax.c
+    src/platform/selftest/selftests.c
+    src/platform/selftest/raster.c
+    src/platform/selftest/blendscale.c
+    src/platform/selftest/blit.c
+    src/platform/selftest/relax.c
     src/generated/function_map.c
     src/generated/image_data.c
 )

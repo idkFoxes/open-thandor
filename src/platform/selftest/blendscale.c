@@ -1,7 +1,7 @@
 /*
  * Open Thandor
  * Project: https://github.com/idkFoxes/open-thandor/tree/main
- * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/bootstrap/selftest_blendscale.c
+ * File: https://github.com/idkFoxes/open-thandor/blob/main/src/platform/selftest/blendscale.c
  */
 
 /*

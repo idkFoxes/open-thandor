@@ -8,6 +8,7 @@
 #include <thandor/graphics/core/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/debug/test_aids.h>
 
 /* Implementation ownership: graphics/core/runtime. */
 

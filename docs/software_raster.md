@@ -189,7 +189,7 @@ from `thandor_original.exe`) on the same random input:
 - scan state
 
 It then compares colour, depth, guard bytes and scan state. Harness:
-`src/platform/bootstrap/selftest_raster.c`. It only works in the mapped-image build.
+`src/platform/selftest/raster.c`. It only works in the mapped-image build.
 
 ```bat
 call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars32.bat"
@@ -261,7 +261,7 @@ rectangle straight into the framebuffer. They are installed per framebuffer dept
 the Glide3 versions in `glide.c`. Like the rasterizer they were hand-written MMX, and the
 decompiled C was full of `CONCAT`/`pmulhw` emulation.
 
-`OPEN_THANDOR_SELFTEST=blitcmp` (`src/platform/bootstrap/selftest_blit.c`) compares each of them
+`OPEN_THANDOR_SELFTEST=blitcmp` (`src/platform/selftest/blit.c`) compares each of them
 with the original machine code:
 
 | function | original | C status |
