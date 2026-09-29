@@ -22,11 +22,18 @@
 #define GRAPHICS_TILED_BLIT_ONE_TILE (-0x80000000)
 
 /* Subresource table of a 'gfx' texture source: one 32-byte record per subresource at
-   asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE). The code reaches it through
-   the address of buildMetadata.reserved28_2F, which lies GFX_ASSET_ANCHOR28_OFFSET bytes into the asset, so
-   every field offset below appears as (GFX_SUBRESOURCE_* - GFX_ASSET_ANCHOR28_OFFSET). The pixel data offset is
-   relative to the asset start as well. */
+   asset + subresourceTableOffset (+ index * GFX_SUBRESOURCE_RECORD_SIZE). The pixel data offset is relative to
+   the asset start as well. */
+/* Offset of buildMetadata.assetAnchor28 in an asset. Some functions address the asset through that field and
+   compile differently from the plain (uint8_t *)asset + offset form, so they keep the anchor. */
 #define GFX_ASSET_ANCHOR28_OFFSET 0x28
+/* Address of the byte at an asset-relative offset, computed through the anchor field (asset + 0x28). */
+#define GFX_ANCHORED_ASSET_BYTES(asset,offset) \
+  ((asset)->common.buildMetadata.assetAnchor28 + (offset) - GFX_ASSET_ANCHOR28_OFFSET)
+/* argb8888 of entry `index` of the palette bank that starts at `bank` (8-byte GraphicsTexturePaletteEntry),
+   computed through the anchor field. */
+#define GFX_ANCHORED_PALETTE_ARGB(bank,index) \
+  (*(uint32_t *)GFX_ANCHORED_ASSET_BYTES(bank,(uint32_t)(index) * 8))
 /* The 0x200-byte asset header (sizeof(GraphicsTextureSourceAsset)) is followed by paletteBankCount palette banks
    of 256 eight-byte entries (argb8888, framebuffer pixel); the subresource table and the pixels lie at the
    offsets the header and the records name. */

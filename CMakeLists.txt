@@ -96,6 +96,8 @@ add_library(thandor_curated STATIC
     src/network/protocol/commands.c
     src/network/protocol/transfer.c
     src/platform/bootstrap/runtime.c
+    src/platform/debug/font.c
+    src/platform/debug/movie_player.c
     src/platform/filesystem/win32.c
     src/platform/input/devices.c
     src/platform/system/time_locale.c

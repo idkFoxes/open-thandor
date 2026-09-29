@@ -557,10 +557,10 @@ void GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
     }
     sourceEntry = sourceEntry + 2;
   }
-  /* the subresource table (&buildMetadata.reserved28_2F - 0x28 is the asset base) */
+  /* the subresource table */
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
-  subresourceEntry = (GraphicsTextureSourceEntry *)((textureSource->common).buildMetadata.reserved28_2F +
-                   ((textureSource->tableDescriptor).subresourceTableOffset - GFX_ASSET_ANCHOR28_OFFSET));
+  subresourceEntry = (GraphicsTextureSourceEntry *)
+                     ((uint8_t *)textureSource + (textureSource->tableDescriptor).subresourceTableOffset);
   do {
     if (sourcePaletteBank == subresourceEntry->paletteIndex) {
       subresourceEntry->paletteIndex = destinationPaletteBank;

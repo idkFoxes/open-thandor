@@ -1009,15 +1009,14 @@ void UiSelectionGeometryControl_DrawClipped
              stepTermOrRowStartU * 2 * (((control->base).left + (control->base).right >> 1) - clipLeft));
     sourceTexture = control->textureSource;
     subresourceTable = (sourceTexture->tableDescriptor).subresourceTableOffset;
-    /* the subresource entry fields (paletteIndex, dataOffset, pixelWidth, pixelHeight) are read relative to
-       the asset's address anchor */
-    if (*(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET))) < 0) {
+    /* fields of the first subresource record (asset + subresourceTableOffset) */
+    if (*(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PALETTE_INDEX) < 0) {
       sourceWidth =
-           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET)));
+           *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_WIDTH);
       sourceHeight =
-           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET)));
+           *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_HEIGHT);
       pixelDataOffset =
-           *(int *)((sourceTexture->common).buildMetadata.reserved28_2F + (subresourceTable + (GFX_SUBRESOURCE_PIXEL_OFFSET - GFX_ASSET_ANCHOR28_OFFSET)));
+           *(int *)((uint8_t *)sourceTexture + subresourceTable + GFX_SUBRESOURCE_PIXEL_OFFSET);
       framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
       if (!framebufferUnavailable) {
         rowStepUHigh = (int)(rowStepU >> 32);
@@ -1047,28 +1046,24 @@ void UiSelectionGeometryControl_DrawClipped
                   if (-1 < sourceColumn) {
                     sourcePixelSample0 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
+                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample1 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
+                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset + 4);
                   }
                 }
                 if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
                   if (-1 < sourceColumn) {
                     sourcePixelSample2 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
+                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample3 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
+                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + 4);
                   }
                 }
               }
@@ -1120,28 +1115,24 @@ void UiSelectionGeometryControl_DrawClipped
                   if (-1 < sourceColumn) {
                     sourcePixelSample0 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
+                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample1 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          texelIndexOrFraction * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
+                          ((uint8_t *)sourceTexture + texelIndexOrFraction * 4 + pixelDataOffset + 4);
                   }
                 }
                 if (((-1 < sourceRow + 1) && (sourceRow + 1 < sourceHeight)) && (sourceColumn < sourceWidth)) {
                   if (-1 < sourceColumn) {
                     sourcePixelSample2 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset - GFX_ASSET_ANCHOR28_OFFSET);
+                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset);
                   }
                   if ((-1 < clipHeightOrColumnTerm) && (clipHeightOrColumnTerm < sourceWidth)) {
                     sourcePixelSample3 =
                          *(PackedArgb32 *)
-                          ((sourceTexture->common).buildMetadata.reserved28_2F +
-                          (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + (4 - GFX_ASSET_ANCHOR28_OFFSET));
+                          ((uint8_t *)sourceTexture + (texelIndexOrFraction + sourceWidth) * 4 + pixelDataOffset + 4);
                   }
                 }
               }

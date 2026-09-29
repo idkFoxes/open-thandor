@@ -41,6 +41,11 @@
 /* Action handler table g_UiActionHandlerPages: 256 pages of 256 handlers; action id bits 8..15 pick the page,
    bits 0..7 the handler (UiActionQueue_DispatchPending). */
 #define UI_ACTION_HANDLER_PAGE_COUNT 256
+/* Handler pages Game_LoadCoreAssets installs (UiActionHandlers_SetPage); page = action id >> 8 */
+#define UI_ACTION_PAGE_INGAME 0x10              /* g_InGameUiActionHandlersPage10: INGAME_ACTION_* 0x10xx */
+#define UI_ACTION_PAGE_INGAME_COMMAND_MODE 0x11 /* g_InGameUiCommandModeActionHandlers30 */
+#define UI_ACTION_PAGE_INGAME_MENU 0x12         /* g_InGameUiActionHandlersPage12: settings and save pages, 0x12xx */
+#define UI_ACTION_PAGE_FRONTEND 0x20            /* g_FrontendUiActionHandlersPage20: frontend menus, 0x20xx */
 
 /* 0x004228F0 */
 bool UiRootCallbacks_Free(UiRootNode *root);

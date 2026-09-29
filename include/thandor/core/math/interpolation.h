@@ -18,6 +18,8 @@
 #define CUBIC_SPLINE_MATRIX_ORDER 32
 /* Channels of a world-motion keyframe (position/origin x, y, z, magnitude/distance, yaw, pitch) */
 #define WORLD_MOTION_SPLINE_CHANNEL_COUNT 6
+/* Floats of one equation matrix (g_WorldMotionSplineMatrixWorkspaces[channel], 0x400) */
+#define CUBIC_SPLINE_MATRIX_FLOATS (CUBIC_SPLINE_MATRIX_ORDER * CUBIC_SPLINE_MATRIX_ORDER)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053CA30 */

@@ -15,6 +15,11 @@
 #define AI_SCAN_CELL_BYTES ((int)sizeof(FieldGridCell))
 #define AI_SCAN_OCCUPANCY_OFFSET ((int)offsetof(FieldGridCell, occupancyMask))
 
+/* Candidate cache of the faction runtime record at factionImageByteOffset (faction * 0x740) */
+#define AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset) \
+  ((AiFactionCandidateCacheState *)((uint8_t *)&g_GameFactionRuntimeImage.records[0].candidateCache + \
+                                    (factionImageByteOffset)))
+
 /* Address: 0x0053A1E0.
    Proposes armyAssetId at the first workspace 08 site of that asset where it can be placed (placement mode 4),
    unless one of it is still unassigned. Weight: 3 * baseWeight / (existing count + 3); for assets other than
@@ -605,11 +610,9 @@ void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImage
   if (2 < g_AiCandidateWorkspaceEntryCount) {
     entryCountOrDwordsRemaining = 3;
   }
-  *(int *)((int)(g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries + 3) +
-          factionImageByteOffset) = entryCountOrDwordsRemaining;
+  AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount = entryCountOrDwordsRemaining;
   factionImageDestinationCursor =
-       (uint32_t *)((int)&g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries[0].
-                       weightedScoreAndKind + factionImageByteOffset);
+       &AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntries[0].weightedScoreAndKind;
   entryCountOrDwordsRemaining = entryCountOrDwordsRemaining * 2; /* two dwords per entry */
   if (entryCountOrDwordsRemaining != 0) {
     for (; entryCountOrDwordsRemaining != 0; entryCountOrDwordsRemaining--) {
@@ -633,12 +636,9 @@ void AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionIma
   uint32_t *factionImageSourceCursor;
   uint32_t *candidateWorkspaceDestinationCursor;
   
-  g_AiCandidateWorkspaceEntryCount =
-       *(int *)((int)(g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries + 3) +
-               factionImageByteOffset);
+  g_AiCandidateWorkspaceEntryCount = AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntryCount;
   factionImageSourceCursor =
-       (uint32_t *)((int)&g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries[0].
-                       weightedScoreAndKind + factionImageByteOffset);
+       &AI_FACTION_CANDIDATE_CACHE(factionImageByteOffset)->savedEntries[0].weightedScoreAndKind;
   copyDwordsRemaining = g_AiCandidateWorkspaceEntryCount * 2;
   candidateWorkspaceDestinationCursor = &g_AiWorkspace13Candidates->weightedScoreAndKind;
   if (copyDwordsRemaining != 0) {

@@ -1019,7 +1019,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
     InGameBuildCatalog_RebuildGrid((UiNodeBase *)node);
     if ((transferModeFlags & SELECTION_TRANSFER_CENTER_VIEW) != 0) {
       averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
-      if (!averagePosition.unresolved) {
+      if (!averagePosition.noPosition) {
         WorldRuntime_PointCameraAtTarget
                   (node->worldRuntime.motion.pitchAngle,
                    node->worldRuntime.motion.headingAngle,

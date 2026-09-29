@@ -682,9 +682,9 @@ ModelNodeCreateResult RomRuntime_BuildNodeTreeRecursive
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
   /* four byte stores in this form: indexing the bytes changes the store order in the build */
   *(uint8_t *)&newNode->textureSubresourceBaseIndex = 0;
-  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
-  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
-  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
+  *((uint8_t *)&newNode->textureSubresourceBaseIndex + 1) = 0;
+  *((uint8_t *)&newNode->textureSubresourceBaseIndex + 2) = 0;
+  *((uint8_t *)&newNode->textureSubresourceBaseIndex + 3) = 0;
   newNode->tintArgb = stateTintArgb;
   centralTextureSet = g_FrontendCentralTextureSet;
   spriteModelResource = romNodeRecord->spriteAssetReference.modelResource;

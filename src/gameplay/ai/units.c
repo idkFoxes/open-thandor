@@ -39,11 +39,11 @@ void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntime
       if ((slotEntityRuntime->common.commandFlags & 2) != 0) continue;
       /* Busy entities only get a behavior update when their cooldown runs out (or was already negative,
          which the increment below undoes). */
-      behaviorCooldownCounter = (int *)(slotEntityRuntime->common.reserved80_9F + 12);
+      behaviorCooldownCounter = &slotEntityRuntime->common.aiCommandCooldownTicks;
       *behaviorCooldownCounter = *behaviorCooldownCounter + -1;
       if (*behaviorCooldownCounter != 0) {
         if (-1 < *behaviorCooldownCounter) continue;
-        cooldownCounterBytes = slotEntityRuntime->common.reserved80_9F + 12;
+        cooldownCounterBytes = (uint8_t *)&slotEntityRuntime->common.aiCommandCooldownTicks;
         *(int *)cooldownCounterBytes = *(int *)cooldownCounterBytes + 1;
       }
     }

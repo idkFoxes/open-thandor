@@ -121,10 +121,7 @@ StatusResult TerrainCompositeTexture_Create(void)
     (compositeTexture->textureSource).tableDescriptor.subresourceCount = 3;
     (compositeTexture->textureSource).tableDescriptor.paletteBankCount = 0;
     (compositeTexture->textureSource).tableDescriptor.subresourceTableOffset = TERRAIN_COMPOSITE_TEXTURE_HEADER_BYTES;
-    (compositeTexture->textureSource).reservedBC_FF[0] = 0;
-    (compositeTexture->textureSource).reservedBC_FF[1] = 0;
-    (compositeTexture->textureSource).reservedBC_FF[2] = 0;
-    (compositeTexture->textureSource).reservedBC_FF[3] = 0;
+    (compositeTexture->textureSource).unusedHeaderDwordBC = 0;
     (compositeTexture->textureSource).common.allocationSizeBytes = totalImageBytes;
     TerrainCompositeTexture_FillPlane1();
     TerrainCompositeTexture_FillPlane2();
@@ -387,7 +384,7 @@ StatusResult TerrainVisualResources_LoadPrimary
     if (!packageLoad.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_TerrainSurfacePacketTablePayload =
-           &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
+           (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
       WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
       textureSetLoad = g_GraphicsTextureSetLoadPackage(primaryResourcePath);
       loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
@@ -416,7 +413,7 @@ StatusResult TerrainVisualResources_LoadPrimary
             if (!packageLoad.failed) {
               MoviePlayback_AdvanceScheduledFrameAndTick();
               g_TerrainSoilPacketTablePayload =
-                   &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
+                   (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
               FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
               /* random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F)
@@ -556,7 +553,7 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
     if (!packageLoad.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_TerrainSurfacePacketTablePayload =
-           &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
+           (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
       WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
       textureSetLoad = g_GraphicsTextureSetLoadPackage(primaryResourcePath);
       loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
@@ -585,7 +582,7 @@ StatusResult TerrainVisualResources_LoadAndClearCellOverlayFlags
             if (!packageLoad.failed) {
               MoviePlayback_AdvanceScheduledFrameAndTick();
               g_TerrainSoilPacketTablePayload =
-                   &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
+                   (uint8_t *)loadedResourceOrError + TERRAIN_PACKET_TABLE_HEADER_BYTES;
               FieldGrid_RebuildCellLookupPointers(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
               /* random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F)
@@ -669,10 +666,10 @@ void TerrainVisualResources_Shutdown(void)
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
   if (g_TerrainSoilPacketTablePayload != NULL) {
-    Resource_Release((void *)((int)g_TerrainSoilPacketTablePayload - 0x20));
+    Resource_Release((void *)((int)g_TerrainSoilPacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   if (surfacePacketTablePayload != NULL) {
-    Resource_Release((void *)((int)surfacePacketTablePayload - 0x20));
+    Resource_Release((void *)((int)surfacePacketTablePayload - TERRAIN_PACKET_TABLE_HEADER_BYTES));
   }
   g_TerrainPrimaryTextureSet = NULL;
   g_TerrainSecondaryPalette = NULL;

@@ -401,6 +401,7 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
   int *leftDeltaCursor;
   int *rightDeltaCursor;
   int spanStartColumn;
+  FieldGridCell *rightCell;
 
   referenceMaterial = g_TerrainMaterialEditReferenceMaterialByte;
   if ((((-1 < gridY) && (-1 < gridX)) &&
@@ -408,10 +409,10 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
       gridY < (int)((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->gridHeight)) && (gridX < widthOrColumn)) {
     cellIndexOrColumn = gridY * widthOrColumn + gridX;
     rightDeltaCursor = (int *)(g_TerrainMaterialEditDeltaBuffer + cellIndexOrColumn * 4);
-    cellIndexOrColumn = (int)&((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->cells[cellIndexOrColumn];
-    cellMaterial = (uint32_t)((FieldGridCell *)cellIndexOrColumn)->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    rightCell = &((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->cells[cellIndexOrColumn];
+    cellMaterial = (uint32_t)rightCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
     columnOrMaterialDelta = gridX;
-    leftCell = (FieldGridCell *)cellIndexOrColumn;
+    leftCell = rightCell;
     leftDeltaCursor = rightDeltaCursor;
     if (g_TerrainMaterialEditReferenceMaterialByte == cellMaterial) {
       /* the start cell and the matching cells to its left */
@@ -430,11 +431,11 @@ void TerrainMaterialEdit_PropagateMatchingRegionReplacement(FieldGridCellCoordin
       while( true ) {
         gridX = gridX + 1;
         rightDeltaCursor = rightDeltaCursor + 1;
-        if ((widthOrColumn <= gridX) || (cellMaterial = (uint32_t)((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial != cellMaterial)) break;
+        if ((widthOrColumn <= gridX) || (cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial != cellMaterial)) break;
         columnOrMaterialDelta = cellMaterial - g_TerrainMaterialEditReplacementMaterialByte;
-        ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial = ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial - columnOrMaterialDelta;
+        rightCell[1].flagsAndMaterial = rightCell[1].flagsAndMaterial - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
-        cellIndexOrColumn = cellIndexOrColumn + sizeof(FieldGridCell);
+        rightCell = rightCell + 1;
       }
       widthOrColumn = spanStartColumn;
       do {
@@ -473,6 +474,7 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
   int *leftDeltaCursor;
   int *rightDeltaCursor;
   int spanStartColumn;
+  FieldGridCell *rightCell;
 
   referenceMaterial = g_TerrainMaterialEditReferenceMaterialByte;
   if ((((-1 < gridY) && (-1 < gridX)) &&
@@ -480,10 +482,10 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
       gridY < (int)((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->gridHeight)) && (gridX < widthOrColumn)) {
     cellIndexOrColumn = gridY * widthOrColumn + gridX;
     rightDeltaCursor = (int *)(g_TerrainMaterialEditDeltaBuffer + cellIndexOrColumn * 4);
-    cellIndexOrColumn = (int)&((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->cells[cellIndexOrColumn];
-    cellMaterial = (uint32_t)((FieldGridCell *)cellIndexOrColumn)->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
+    rightCell = &((FieldGridAsset *)g_TerrainMaterialEditFieldGrid)->cells[cellIndexOrColumn];
+    cellMaterial = (uint32_t)rightCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
     columnOrMaterialDelta = gridX;
-    leftCell = (FieldGridCell *)cellIndexOrColumn;
+    leftCell = rightCell;
     leftDeltaCursor = rightDeltaCursor;
     if (g_TerrainMaterialEditReferenceMaterialByte != cellMaterial) {
       do {
@@ -499,11 +501,11 @@ void TerrainMaterialEdit_PropagateNonTargetRegionReplacement
       while( true ) {
         gridX = gridX + 1;
         rightDeltaCursor = rightDeltaCursor + 1;
-        if ((widthOrColumn <= gridX) || (cellMaterial = (uint32_t)((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial == cellMaterial)) break;
+        if ((widthOrColumn <= gridX) || (cellMaterial = (uint32_t)rightCell[1].flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK, referenceMaterial == cellMaterial)) break;
         columnOrMaterialDelta = cellMaterial - referenceMaterial;
-        ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial = ((FieldGridCell *)cellIndexOrColumn)[1].flagsAndMaterial - columnOrMaterialDelta;
+        rightCell[1].flagsAndMaterial = rightCell[1].flagsAndMaterial - columnOrMaterialDelta;
         *rightDeltaCursor = *rightDeltaCursor + columnOrMaterialDelta;
-        cellIndexOrColumn = cellIndexOrColumn + sizeof(FieldGridCell);
+        rightCell = rightCell + 1;
       }
       widthOrColumn = spanStartColumn;
       do {

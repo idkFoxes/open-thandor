@@ -841,10 +841,8 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
         payloadSizeBytes = receivedDwords[4];
         /* The level's relative path (asset base + path offset) becomes <exe dir>\<level>.fld, the path the
            game uses for the field grid; afterwards the offset field holds the received field grid. */
-        levelPathOrCurrentLevelField = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
-                 reserved28_2F +
-                 ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
-                 LEVEL_ASSET_OFFSET_BASE);
+        levelPathOrCurrentLevelField = (uint8_t *)g_FrontendLoadedLevelAsset +
+                                       (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
         WidePath_SetExtensionCode(ASSET_MAGIC_FLD,(uint16_t *)levelPathOrCurrentLevelField);
         WidePath_CombineDirectoryAndLeaf
                   ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrCurrentLevelField,
@@ -905,8 +903,8 @@ void FrontendScenarioTransfer_ProcessReceivedAsset(void)
         g_FrontendLoadedLevelAsset = levelAsset;
         PckCodec_DecodeHuffmanRle(*receivedDwords,(uint8_t *)levelAsset,receivedDwords[2],(uint8_t *)(receivedDwords + 4));
         payloadSizeBytes = receivedDwords[2];
-        levelPathOrCurrentLevelField = (levelAsset->header).common.buildMetadata.reserved28_2F +
-                 ((levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid - LEVEL_ASSET_OFFSET_BASE);
+        levelPathOrCurrentLevelField = (uint8_t *)levelAsset +
+                                       (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
         WidePath_SetExtensionCode(ASSET_MAGIC_FLD,(uint16_t *)levelPathOrCurrentLevelField);
         WidePath_CombineDirectoryAndLeaf
                   ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrCurrentLevelField,
@@ -983,7 +981,7 @@ void FrontendScenarioSession_LoadOrRequestFieldGrid(uint32_t playerRuntimeId)
       *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
       /* the level's own path (an offset into the asset) with the extension changed to .fld; the loaded grid
          later replaces that offset */
-      pathOrEncodeBuffer = (levelAsset->header).common.buildMetadata.reserved28_2F + (levelPathOffset - LEVEL_ASSET_OFFSET_BASE);
+      pathOrEncodeBuffer = (uint8_t *)levelAsset + levelPathOffset;
       WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)pathOrEncodeBuffer);
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)pathOrEncodeBuffer,
@@ -1134,9 +1132,8 @@ void FrontendScenarioSession_LoadOrRequestCampaignBundle
     loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
     checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
     g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedResult.valueOrError;
-    cursorOrSize = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.reserved28_2F
-             + ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
-               LEVEL_ASSET_OFFSET_BASE);
+    cursorOrSize = (uint8_t *)g_FrontendLoadedLevelAsset +
+                   (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid;
     WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)cursorOrSize);
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)cursorOrSize,

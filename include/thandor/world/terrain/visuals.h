@@ -35,6 +35,10 @@
 #define TERRAIN_COMPOSITE_TEXTURE_PIXELS_OFFSET 0x260 /* dataOffset of plane 0 */
 /* ".dat" extension code for WidePath_SetExtensionCode (see WIDE_PATH_EXTENSION_* in core/text/path.h) */
 #define WIDE_PATH_EXTENSION_DAT 0x746164
+/* <primary>.dat / <secondary>.dat packet tables: a 0x20-byte header (first dword: phase seed bit width, read by
+   FieldGrid_InitializeRuntimeCellsAndBoundaryFlags), then the 0x20-byte packets. g_TerrainSurfacePacketTablePayload / g_TerrainSoilPacketTablePayload
+   point past the header; release subtracts it again. */
+#define TERRAIN_PACKET_TABLE_HEADER_BYTES 0x20
 /* (argb & mask) >> 1 halves all four 8-bit channels at once (each channel's low bit cleared first); two
    halved pixels added give their average (TerrainCompositeTexture_RebuildPlane0) */
 #define TERRAIN_ARGB_HALVE_MASK 0xfefefefe

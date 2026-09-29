@@ -551,7 +551,7 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
   if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
     limitOffsetOrCellRow = factionOffsetOrLimitOrCellColumn + 20; /* tritiumStorageLimitQ4 */
   }
-  factionOffsetOrLimitOrCellColumn = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + limitOffsetOrCellRow + -120);
+  factionOffsetOrLimitOrCellColumn = *(int *)((uint8_t *)g_GameFactionRuntimeImage.records + limitOffsetOrCellRow);
   /* the stock (the dword before the limit) loses the share this storage held */
   if ((((int)modelRuntime->health < 2) && (factionOffsetOrLimitOrCellColumn != 0)) &&
      (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
@@ -559,7 +559,7 @@ void ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
          *(int *)(limitOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
          (int)(((int64_t)(int)storageContribution * (int64_t)*(int *)(limitOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (int64_t)factionOffsetOrLimitOrCellColumn);
   }
-  storageLimit = g_GameFactionRuntimeImage.records[0].reserved78_87 + limitOffsetOrCellRow + -120;
+  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + limitOffsetOrCellRow;
   *(uint32_t *)storageLimit = *(int *)storageLimit - storageContribution;
   inGameRoot = g_InGameRuntimeRoot;
   gridCoordinates = FieldGrid_WorldToGridQ12
@@ -608,7 +608,7 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
   if (((ModelDefinition *)modelDefinition)->classParameterC0 != 0) {
     storageLimitOffset = factionOffsetOrStorageLimit + 20; /* tritiumStorageLimitQ4 */
   }
-  factionOffsetOrStorageLimit = *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + storageLimitOffset + -120);
+  factionOffsetOrStorageLimit = *(int *)((uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset);
   /* the stock (the dword before the limit) loses the share this storage held */
   if ((((int)modelRuntime->health < 2) && (factionOffsetOrStorageLimit != 0)) &&
      (((modelRuntime->classState).stateFlags & ARMY_MODEL_STATE_DESTRUCTION_STARTED) == 0)) {
@@ -616,7 +616,7 @@ void ArmyPlacement_ReleaseFactionCapacity(ModelDefinitionRecordPrefix *modelDefi
          *(int *)(storageLimitOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
          (int)(((int64_t)(int)storageContribution * (int64_t)*(int *)(storageLimitOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (int64_t)factionOffsetOrStorageLimit);
   }
-  storageLimit = g_GameFactionRuntimeImage.records[0].reserved78_87 + storageLimitOffset + -120;
+  storageLimit = (uint8_t *)g_GameFactionRuntimeImage.records + storageLimitOffset;
   *(uint32_t *)storageLimit = *(int *)storageLimit - storageContribution;
   return;
 }

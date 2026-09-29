@@ -61,31 +61,25 @@ static __inline uint64_t Glide_UnpackArgbToWordLanes(uint32_t argb,int shift)
                              GLIDE_DUP_BYTE(argb >> 8) >> shift,GLIDE_DUP_BYTE(argb) >> shift);
 }
 
-/* 'gfx' texture source access (layout: GFX_* in graphics/resources/texture.h). The original addresses the
-   asset through buildMetadata.reserved28_2F, GFX_ASSET_ANCHOR28_OFFSET bytes into it; these
-   macros keep that addressing and name the field instead of the biased offset. */
+/* 'gfx' texture source access (layout: GFX_* in graphics/resources/texture.h). */
 /* Asset-relative offset of the subresource record of subresourceIndex. */
 #define GLIDE_RECORD_OFFSET(asset,subresourceIndex) \
   ((subresourceIndex) * GFX_SUBRESOURCE_RECORD_SIZE + ((asset)->tableDescriptor).subresourceTableOffset)
 /* Field GFX_SUBRESOURCE_<field> of the subresource record at asset-relative recordOffset. */
 #define GLIDE_RECORD_INT(asset,recordOffset,field) \
-  (*(int *)((asset)->common.buildMetadata.reserved28_2F + (recordOffset) + \
-            (GFX_SUBRESOURCE_##field - GFX_ASSET_ANCHOR28_OFFSET)))
+  (*(int *)((uint8_t *)(asset) + (recordOffset) + GFX_SUBRESOURCE_##field))
 #define GLIDE_RECORD_UINT(asset,recordOffset,field) \
-  (*(uint32_t *)((asset)->common.buildMetadata.reserved28_2F + (recordOffset) + \
-                 (GFX_SUBRESOURCE_##field - GFX_ASSET_ANCHOR28_OFFSET)))
+  (*(uint32_t *)((uint8_t *)(asset) + (recordOffset) + GFX_SUBRESOURCE_##field))
 /* Address of the byte at an asset-relative offset (a record's GFX_SUBRESOURCE_PIXEL_OFFSET). */
 #define GLIDE_ASSET_BYTES(asset,offset) \
-  ((asset)->common.buildMetadata.reserved28_2F + (offset) - GFX_ASSET_ANCHOR28_OFFSET)
+  ((uint8_t *)(asset) + (offset))
 /* Palette entry `index` of palette bank `bank`: 8 bytes at asset + GFX_ASSET_HEADER_SIZE +
    bank * GFX_PALETTE_BANK_SIZE + index * 8 (asset[bank * 4 + 1], the asset struct being 0x200 bytes), holding
    the ARGB8888 colour and then the native framebuffer pixel. */
 #define GLIDE_PALETTE_ARGB(asset,bank,index) \
-  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.reserved28_2F + (index) * 8 - \
-                 GFX_ASSET_ANCHOR28_OFFSET))
+  (*(uint32_t *)((uint8_t *)&(asset)[(bank) * 4 + 1] + (index) * 8))
 #define GLIDE_PALETTE_NATIVE(asset,bank,index) \
-  (*(uint32_t *)((asset)[(bank) * 4 + 1].common.buildMetadata.reserved28_2F + (index) * 8 + \
-                 (4 - GFX_ASSET_ANCHOR28_OFFSET)))
+  (*(uint32_t *)((uint8_t *)&(asset)[(bank) * 4 + 1] + (index) * 8 + 4))
 
 /* Address: 0x005801B0.
    Glide backend of texture-set creation: gives every subresource of the set's source asset a fresh

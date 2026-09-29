@@ -1194,7 +1194,7 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimePrefix 
   allocation = g_MemoryApi.alloc(INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord));
   rootCursorOrError = (InGameRuntimeRoot *)allocation.payloadOrError;
   if (!allocation.failed) {
-    g_RuntimeObjectRebaseBaseMinusOne = rootCursorOrError[-1].reservedA06C_C3E3 + 0x2377;
+    g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)rootCursorOrError - 1;
     g_InGameWorldObjectRecords = (WorldObjectRecord *)rootCursorOrError;
     for (countOrPlayerId = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; countOrPlayerId != 0; countOrPlayerId--) {
       (rootCursorOrError->rootUi).base.nextSibling = NULL;
@@ -1615,7 +1615,7 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
       rootCursorOrError = (InGameRuntimeRoot *)allocation.payloadOrError;
       loadedLevelAsset = levelImage;
       if (!allocation.failed) {
-        g_RuntimeObjectRebaseBaseMinusOne = rootCursorOrError[-1].reservedA06C_C3E3 + 0x2377;
+        g_RuntimeObjectRebaseBaseMinusOne = (uint8_t *)rootCursorOrError - 1;
         g_InGameWorldObjectRecords = (WorldObjectRecord *)rootCursorOrError;
         for (remainingCount = INGAME_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingCount != 0; remainingCount--) {
           (rootCursorOrError->rootUi).base.nextSibling = NULL;
@@ -1671,7 +1671,7 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
               UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
               WidePath_CombineDirectoryAndLeaf
                         (&g_FrontendScenarioPathScratchUtf16,
-                         (uint16_t *)(levelImage->header).opaque100_16F,(uint16_t *)u_level_0050daac);
+                         (levelImage->header).levelFileNameUtf16,(uint16_t *)u_level_0050daac);
               WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16); /* "lev" */
               endingMoviePath = LevelAsset_PrepareEndingMoviePath
                                  (savePackagePath,(LevelAssetHeader *)levelImage);
@@ -2350,6 +2350,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
   int resourceOffsetOrValue;
   GameFactionRuntimeImage *factionImageCursor;
   GameFactionRuntimeRecord *reverseFactionRecord;
+  GameFactionRuntimeRecord *statFactionRecord;
   int *runtimeOrStatCursor;
   uint32_t *pairPressureRow;
   FieldGridCell *firstCell;
@@ -2647,9 +2648,9 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         if (queueCapacityNotification) {
           /* Level header text starting with UTF-16 "t00_tu": a fixed notification, and both cooldowns never
              expire. */
-          if (((*(int *)(levelConditionStorage->levelImage).header.opaque100_16F == 0x300074) &&
-              (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 4) == 0x5f0030)) &&
-             (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 8) == 0x750074)) {
+          if (((*(int *)&(levelConditionStorage->levelImage).header.levelFileNameUtf16[0] == 0x300074) &&
+              (*(int *)&(levelConditionStorage->levelImage).header.levelFileNameUtf16[2] == 0x5f0030)) &&
+             (*(int *)&(levelConditionStorage->levelImage).header.levelFileNameUtf16[4] == 0x750074)) {
             notificationMovieId = 402;
             reverseFactionRecord->anchorCooldown1 = INT32_MAX;
             reverseFactionRecord->anchorCooldown2 = INT32_MAX;
@@ -2666,7 +2667,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
   /* 4. every 128 steps: stat table row simulationTick / 128 (0x1000 rows of 7 factions x 2 dwords), the two
      metrics combinedProgressScore/activeArmyContribution clamped at zero */
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 0x78) == 0) {
-    counterOrValue = (int)&g_GameFactionRuntimeImage.records[1];
+    statFactionRecord = &g_GameFactionRuntimeImage.records[1];
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime;
     if (g_GameFactionRuntimeImage.tail.simulationTick >> 7 < 4096) {
       entryCountOrValue = 1;
@@ -2674,8 +2675,8 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
                        (int)g_GameStatTableImage);
       do {
         GameFactionRuntime_RecomputeProgressAndScoreMetrics(entryCountOrValue,worldRuntime);
-        cellCountOrValue = ((GameFactionRuntimeRecord *)counterOrValue)->combinedProgressScore;
-        resourceOffsetOrValue = ((GameFactionRuntimeRecord *)counterOrValue)->activeArmyContribution;
+        cellCountOrValue = statFactionRecord->combinedProgressScore;
+        resourceOffsetOrValue = statFactionRecord->activeArmyContribution;
         if (cellCountOrValue < 0) {
           cellCountOrValue = 0;
         }
@@ -2685,7 +2686,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         *runtimeOrStatCursor = cellCountOrValue;
         runtimeOrStatCursor[1] = resourceOffsetOrValue;
         entryCountOrValue++;
-        counterOrValue = counterOrValue + sizeof(GameFactionRuntimeRecord);
+        statFactionRecord++;
         runtimeOrStatCursor = runtimeOrStatCursor + 2;
       } while (entryCountOrValue < 8);
     }

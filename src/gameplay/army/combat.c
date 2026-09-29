@@ -123,7 +123,7 @@ void ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     aimZQ12 = aimPoint.worldZQ12;
     aimYQ12 = aimPoint.worldYQ12;
     aimXQ12 = aimPoint.worldXQ12;
-    if (aimPoint.unresolved) {
+    if (aimPoint.noPosition) {
       movementResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)ownerEntity);
       if (((!movementResult.arrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
@@ -219,7 +219,7 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
 
   classDefinition = modelRuntime->modelDefinition;
   /* byte offset of the faction record's xeniteCurrentQ4 / xeniteStorageLimitQ4 pair, or with +0x10 of
-     tritiumCurrentQ4 / tritiumStorageLimitQ4 (reserved78_87 - 0x78 is the record start) */
+     tritiumCurrentQ4 / tritiumStorageLimitQ4 */
   factionRecordByteOffset = modelRuntime->ownerArmyRuntime->factionIndex * GAME_FACTION_RUNTIME_RECORD_BYTES;
   if (classDefinition->classParameterC0 == 1) {
     factionRecordByteOffset = factionRecordByteOffset + 16;
@@ -230,8 +230,8 @@ void ArmyRuntimeClass_UpdateTransformAndDamageEffect
     (childNode->modelPayload).localTranslationZQ12 =
          (int)(((int64_t)(int)(classDefinition->runtimeValue28 - classDefinition->runtimeValue24) *
                (int64_t)
-               *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -120)) /
-              (int64_t)*(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -116)
+               *(int *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordByteOffset)) /
+              (int64_t)*(int *)((uint8_t *)g_GameFactionRuntimeImage.records + factionRecordByteOffset + 4)
               ) + classDefinition->runtimeValue24;
     childNode->runtimeFlags = childNode->runtimeFlags | 1;
     ModelNodeRuntime_RebuildTransformsFromRoot(rootModelNodeRuntime);

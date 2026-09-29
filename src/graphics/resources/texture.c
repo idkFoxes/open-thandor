@@ -1492,7 +1492,7 @@ void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
   int paletteIndexOrCounter;
   DirectDrawPaletteEntry grayPaletteEntry;
   uint8_t *sourcePixel;
-  GraphicsTextureSourceAsset *paletteSourceCursor;
+  GraphicsTexturePaletteEntry *paletteSourceCursor;
   uint16_t *destinationWord;
   uint8_t *byteCursorOrSourceRow;
   DirectDrawPaletteEntry *paletteEntryCursor;
@@ -1731,17 +1731,18 @@ void GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               } while (rowsRemaining != 0);
               stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 256;
-              paletteSourceCursor = paletteBank;
+              /* the four bytes of each entry's argb8888 word, copied in memory order */
+              paletteSourceCursor = (GraphicsTexturePaletteEntry *)paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(uint8_t *)&(paletteSourceCursor->common).magic;
+                paletteGreen = ((uint8_t *)&paletteSourceCursor->argb8888)[1];
+                paletteBlue = ((uint8_t *)&paletteSourceCursor->argb8888)[2];
+                paletteFlags = ((uint8_t *)&paletteSourceCursor->argb8888)[3];
+                paletteEntryCursor->red = ((uint8_t *)&paletteSourceCursor->argb8888)[0];
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
-                paletteSourceCursor = (GraphicsTextureSourceAsset *)&(paletteSourceCursor->common).formatVersion;
+                paletteSourceCursor++;
                 paletteEntryCursor++;
                 paletteIndexOrCounter--;
               } while (paletteIndexOrCounter != 0);
@@ -1907,7 +1908,7 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
   DirectDrawPaletteEntry grayPaletteEntry;
   int offsetOrRemaining;
   uint8_t *byteCursor;
-  GraphicsTextureSourceAsset *paletteSourceCursor;
+  GraphicsTexturePaletteEntry *paletteSourceCursor;
   AssetProducerSourceNames *sourceTexel;
   uint8_t *byteCursorOrRow;
   uint16_t *destinationWord;
@@ -1970,8 +1971,7 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
         offsetOrRemaining = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrRemaining))->dataOffset;
         if (paletteIndexOrCounter < 0) {
           sourceTexel = (AssetProducerSourceNames *)
-                    ((sourceAsset->common).buildMetadata.reserved28_2F +
-                    offsetOrRemaining - GFX_ASSET_ANCHOR28_OFFSET);
+                    GFX_ANCHORED_ASSET_BYTES(sourceAsset,offsetOrRemaining);
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             paletteIndexOrCounter = sourceWidth;
             byteCursor = g_SurfaceDesc.lpSurface;
@@ -2198,17 +2198,18 @@ void GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               } while (offsetOrRemaining != 0 && hasMore);
               stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 256;
-              paletteSourceCursor = paletteBank;
+              /* the four bytes of each entry's argb8888 word, copied in memory order */
+              paletteSourceCursor = (GraphicsTexturePaletteEntry *)paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(uint8_t *)&(paletteSourceCursor->common).magic;
+                paletteGreen = ((uint8_t *)&paletteSourceCursor->argb8888)[1];
+                paletteBlue = ((uint8_t *)&paletteSourceCursor->argb8888)[2];
+                paletteFlags = ((uint8_t *)&paletteSourceCursor->argb8888)[3];
+                paletteEntryCursor->red = ((uint8_t *)&paletteSourceCursor->argb8888)[0];
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
-                paletteSourceCursor = (GraphicsTextureSourceAsset *)&(paletteSourceCursor->common).formatVersion;
+                paletteSourceCursor++;
                 paletteEntryCursor++;
                 paletteIndexOrCounter--;
               } while (paletteIndexOrCounter != 0);
@@ -2422,7 +2423,7 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
   uint32_t nextColumnsOrMask;
   uint32_t columnsOrMask;
   uint8_t *byteCursor;
-  GraphicsTextureSourceAsset *paletteSourceCursor;
+  GraphicsTexturePaletteEntry *paletteSourceCursor;
   uint16_t *sourceTexel;
   uint8_t *byteCursorOrRow;
   uint16_t *destinationWord;
@@ -2479,16 +2480,15 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                               (sourceAsset->tableDescriptor).subresourceTableOffset;
         savedPitch = g_SurfaceDesc.lPitch;
         savedSurfaceBits = g_SurfaceDesc.lpSurface;
-        paletteIndexOrCounter = *(int *)((sourceAsset->common).buildMetadata.reserved28_2F +
-                         offsetOrGreenTopBit + (GFX_SUBRESOURCE_PALETTE_INDEX - GFX_ASSET_ANCHOR28_OFFSET));
-        sourceWidth = *(uint32_t *)((sourceAsset->common).buildMetadata.reserved28_2F +
-                             offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_WIDTH - GFX_ASSET_ANCHOR28_OFFSET));
-        rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.reserved28_2F +
-                            offsetOrGreenTopBit + (GFX_SUBRESOURCE_PIXEL_HEIGHT - GFX_ASSET_ANCHOR28_OFFSET));
+        paletteIndexOrCounter = *(int *)(GFX_ANCHORED_ASSET_BYTES(sourceAsset,offsetOrGreenTopBit) +
+                                         GFX_SUBRESOURCE_PALETTE_INDEX);
+        sourceWidth = *(uint32_t *)(GFX_ANCHORED_ASSET_BYTES(sourceAsset,offsetOrGreenTopBit) +
+                                    GFX_SUBRESOURCE_PIXEL_WIDTH);
+        rowsRemaining = *(int *)(GFX_ANCHORED_ASSET_BYTES(sourceAsset,offsetOrGreenTopBit) +
+                                 GFX_SUBRESOURCE_PIXEL_HEIGHT);
         offsetOrGreenTopBit = ((GraphicsTextureSourceEntry *)((uint8_t *)sourceAsset + offsetOrGreenTopBit))->dataOffset;
         if (paletteIndexOrCounter < 0) {
-          sourceTexel = (uint16_t *)((sourceAsset->common).buildMetadata.reserved28_2F +
-                            offsetOrGreenTopBit - GFX_ASSET_ANCHOR28_OFFSET);
+          sourceTexel = (uint16_t *)GFX_ANCHORED_ASSET_BYTES(sourceAsset,offsetOrGreenTopBit);
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             columnsOrMask = sourceWidth;
             byteCursor = g_SurfaceDesc.lpSurface;
@@ -2761,9 +2761,7 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
           }
         }
         else {
-          byteCursor = (sourceAsset->common).buildMetadata.reserved28_2F + offsetOrGreenTopBit -
-                       GFX_ASSET_ANCHOR28_OFFSET
-          ;
+          byteCursor = (uint8_t *)sourceAsset + offsetOrGreenTopBit;
           paletteBank = sourceAsset + paletteIndexOrCounter * 4 + 1;
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             columnsOrMask = sourceWidth;
@@ -2791,17 +2789,18 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               } while (paletteIndexOrCounter != 0 && hasMore);
               stagingSurface3->lpVtbl->Unlock(stagingSurface3,surfaceBits);
               paletteIndexOrCounter = 256;
-              paletteSourceCursor = paletteBank;
+              /* the four bytes of each entry's argb8888 word, copied in memory order */
+              paletteSourceCursor = (GraphicsTexturePaletteEntry *)paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(uint8_t *)&(paletteSourceCursor->common).magic;
+                paletteGreen = ((uint8_t *)&paletteSourceCursor->argb8888)[1];
+                paletteBlue = ((uint8_t *)&paletteSourceCursor->argb8888)[2];
+                paletteFlags = ((uint8_t *)&paletteSourceCursor->argb8888)[3];
+                paletteEntryCursor->red = ((uint8_t *)&paletteSourceCursor->argb8888)[0];
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
-                paletteSourceCursor = (GraphicsTextureSourceAsset *)&(paletteSourceCursor->common).formatVersion;
+                paletteSourceCursor++;
                 paletteEntryCursor++;
                 paletteIndexOrCounter--;
               } while (paletteIndexOrCounter != 0);
@@ -2879,55 +2878,23 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 17) {
                 do {
                   do {
-                    texel00 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel01 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel02 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel03 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel04 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel05 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel06 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel07 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[sourceWidth + 3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    texel00 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,*byteCursor);
+                    texel01 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[1]);
+                    texel02 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth]);
+                    texel03 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 1]);
+                    texel04 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[2]);
+                    texel05 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[3]);
+                    texel06 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 2]);
+                    texel07 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 3]);
                     byteCursor = byteCursor + sourceWidth * 2;
-                    texel08 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel09 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel10 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel11 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel12 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel13 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel14 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel15 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[sourceWidth + 3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    texel08 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,*byteCursor);
+                    texel09 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[1]);
+                    texel10 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth]);
+                    texel11 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 1]);
+                    texel12 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[2]);
+                    texel13 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[3]);
+                    texel14 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 2]);
+                    texel15 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 3]);
                     averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
                                           TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
                                           TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
@@ -2991,27 +2958,13 @@ void GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    texel00 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)*byteCursor * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel01 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel02 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[sourceWidth] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel03 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[sourceWidth + 1] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel04 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel05 = *(uint32_t *)
-                             ((paletteBank->common).buildMetadata.reserved28_2F +
-                             (uint32_t)byteCursor[3] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
-                    texel06 = *(uint32_t *)
-                              ((paletteBank->common).buildMetadata.reserved28_2F +
-                              (uint32_t)byteCursor[sourceWidth + 2] * 8 - GFX_ASSET_ANCHOR28_OFFSET);
+                    texel00 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,*byteCursor);
+                    texel01 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[1]);
+                    texel02 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth]);
+                    texel03 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 1]);
+                    texel04 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[2]);
+                    texel05 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[3]);
+                    texel06 = GFX_ANCHORED_PALETTE_ARGB(paletteBank,byteCursor[sourceWidth + 2]);
                     texel07 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)byteCursor[sourceWidth + 3]].argb8888;
                     byteCursor = byteCursor + sourceWidth * 2;
                     texel08 = ((GraphicsTexturePaletteEntry *)paletteBank)[(uint32_t)*byteCursor].argb8888;

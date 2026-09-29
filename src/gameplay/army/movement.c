@@ -154,7 +154,7 @@ void ArmyRuntimeClass_UpdateArticulatedMovement(WorldRuntimeContext *worldRuntim
       commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPosition
                          ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime);
       speedHeadingOrWorldY.signedValue = commandTargetPosition.worldZQ12;
-      if (!commandTargetPosition.unresolved) {
+      if (!commandTargetPosition.noPosition) {
         advanceOrHeading = FixedMath_Atan2Angle16
                           (commandTargetPosition.worldYQ12 - (rootNode->worldTransform).translation.y,
                            commandTargetPosition.worldXQ12 - (rootNode->worldTransform).translation.x);
@@ -198,7 +198,7 @@ AdvanceWaypoint:
         commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPosition
                            ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime);
         speedHeadingOrWorldY.signedValue = commandTargetPosition.worldZQ12;
-        if (commandTargetPosition.unresolved) goto SharedContinuation;
+        if (commandTargetPosition.noPosition) goto SharedContinuation;
         targetAngleLength.angle =
              FixedMath_Atan2Angle16
                        (commandTargetPosition.worldYQ12 - (rootNode->worldTransform).translation.y,
@@ -504,7 +504,7 @@ void ArmyRuntimeClass_UpdateSingleBarrelTurret
     aimWorldZ = aimPoint.worldZQ12;
     aimWorldY = aimPoint.worldYQ12;
     aimWorldX = aimPoint.worldXQ12;
-    if (aimPoint.unresolved) {
+    if (aimPoint.noPosition) {
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)ownerEntity);
       if (((!waypointResult.arrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
@@ -674,7 +674,7 @@ void ArmyRuntimeClass_UpdateTwinBarrelTurret
     aimWorldZ = aimPoint.worldZQ12;
     aimWorldY = aimPoint.worldYQ12;
     aimWorldX = aimPoint.worldXQ12;
-    if (aimPoint.unresolved) {
+    if (aimPoint.noPosition) {
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)ownerEntity);
       if (((!waypointResult.arrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||

@@ -1111,7 +1111,7 @@ void SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 
 
 /* Address: 0x0052FB70.
-   Returns the average world position (model node translation) of the local selection's entities; unresolved
+   Returns the average world position (model node translation) of the local selection's entities; noPosition
    (CF) when the selection is empty, with all coordinates 0.
 */
 WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs(void)
@@ -1150,7 +1150,7 @@ WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPosition
   }
   averagePosition.worldYQ12 = worldYAggregateQ12;
   averagePosition.worldXQ12 = worldXAggregateQ12;
-  averagePosition.unresolved = selectedEntityCount == 0;
+  averagePosition.noPosition = selectedEntityCount == 0;
   averagePosition.worldZQ12 = worldZAggregateQ12;
   return averagePosition;
 }

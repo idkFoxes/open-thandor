@@ -1444,10 +1444,12 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     *sdwordField = *sdwordField + subresourceWidth;
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,minimapView,offsetof(UiNodeBase,bottomOffset),enum UiNodeFlags);
     *nodeFlagsField = *nodeFlagsField + subresourceWidth;
+    /* modePreviewPageStack's topOffset/bottomOffset (int32 pixels) are added to as node pointers plus bytes:
+       the plain int32 addition swaps the operands of the original's LEA. */
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *) =
-         (UiNodeBase *)((int)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *))->nextSibling + subresourceWidth);
+         (UiNodeBase *)((uint8_t *)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *))->nextSibling + subresourceWidth);
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,bottomOffset),struct UiNodeBase *);
-    *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->nextSibling + subresourceWidth);
+    *nodePointerField = (UiNodeBase *)((uint8_t *)&(*nodePointerField)->nextSibling + subresourceWidth);
     anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,offsetof(UiNodeBase,topOffset),uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource36Height;
@@ -1462,9 +1464,9 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,minimapView,offsetof(UiNodeBase,bottomOffset),enum UiNodeFlags);
     *nodeFlagsField = *nodeFlagsField + subresourceWidth;
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *) =
-         (UiNodeBase *)((int)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *))->nextSibling + subresourceWidth);
+         (UiNodeBase *)((uint8_t *)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *))->nextSibling + subresourceWidth);
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,bottomOffset),struct UiNodeBase *);
-    *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->nextSibling + subresourceWidth);
+    *nodePointerField = (UiNodeBase *)((uint8_t *)&(*nodePointerField)->nextSibling + subresourceWidth);
     anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,offsetof(UiNodeBase,topOffset),uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource03Height;
@@ -1475,9 +1477,9 @@ StatusResult InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRo
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,offsetof(UiNodeBase,bottomOffset),enum UiNodeFlags);
     *nodeFlagsField = *nodeFlagsField + subresourceWidth;
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *) =
-         (UiNodeBase *)((int)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *))->nextSibling + subresourceWidth);
+         (UiNodeBase *)((uint8_t *)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,topOffset),struct UiNodeBase *))->nextSibling + subresourceWidth);
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,offsetof(UiNodeBase,bottomOffset),struct UiNodeBase *);
-    *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->nextSibling + subresourceWidth);
+    *nodePointerField = (UiNodeBase *)((uint8_t *)&(*nodePointerField)->nextSibling + subresourceWidth);
     anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,offsetof(UiNodeBase,topOffset),uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource37Height;
@@ -3128,7 +3130,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
   }
   case INGAME_KEY_CAMERA_TO_SELECTION: {
     WorldPositionResult center = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
-    if (center.unresolved) {
+    if (center.noPosition) {
       break;
     }
     WorldRuntime_PointCameraAtTarget
@@ -5431,7 +5433,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
   int slotCounterOrOffset;
   int workValue;
   ModelDefinitionHierarchyNodeAddress32 hierarchyNodeAddress;
-  ModelLinkedDefinitionBranchView18 *linkedDefinitionListView;
+  ArmyModelTreeNodeAddressView *linkedDefinitionListView;
   InGameRuntimeRoot *rootCursor;
   GameEntityRuntime *lastSelectedEntity;
   int *recordCursor;
@@ -5620,7 +5622,7 @@ void InGameSelectionDetailPanel_Rebuild(void)
           linkedArmyAsset = foundArmyAsset.recordOrError;
         }
         linkedDefinitionListView =
-             (ModelLinkedDefinitionBranchView18 *)linkedArmyAsset->rootNodeOffsetOrPointer;
+             (ArmyModelTreeNodeAddressView *)linkedArmyAsset->rootNodeOffsetOrPointer;
         if (linkedArmyAsset->selectionDetailTemplateVariantIndex < 8) {
           ((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text =
                (uint16_t *)((int)((UiWrappedTextControl *)INGAME_UI(rootCursor,singleSelectionStatsText))->text +
@@ -5695,10 +5697,10 @@ void InGameSelectionDetailPanel_Rebuild(void)
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,displayedEnergy >> 4,g_InGameSelectionDetailEnergyTextUtf16
               );
-    workValue = *(int *)(definitionNode->reserved00_07 + 4) + TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE;
+    workValue = definitionNode->selectionDetailTemplateVariantIndex + TEXT_ID_SELECTION_DETAIL_HOVER_TEMPLATE_BASE;
     ((UiWrappedTextControl *)INGAME_UI(rootCursor,hoverItemStatsText))->text = (uint16_t *)workValue;
     ((UiWrappedTextControl *)INGAME_UI(rootCursor,unitPlacementStatsText))->text = (uint16_t *)workValue;
-    linkedDefinitionListView = *(ModelLinkedDefinitionBranchView18 **)definitionNode->reserved0C_13;
+    linkedDefinitionListView = (ArmyModelTreeNodeAddressView *)definitionNode->rootNodeOffsetOrPointer;
     unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        ((rootCursor->worldRuntime).activeFactionRuntimeIndex,
                         (ModelLinkedDefinitionListAddress32)linkedDefinitionListView);

@@ -1234,6 +1234,20 @@ This file owns runtime state and lifecycle operations within platform bootstrap,
 
 **Calls into:** [`assets/fnc/runtime`](#module-assets-fnc-runtime), [`assets/package/runtime`](#module-assets-package-runtime), [`assets/resource/runtime`](#module-assets-resource-runtime), [`assets/text/resources`](#module-assets-text-resources), [`assets/text/richtext`](#module-assets-text-richtext), [`audio/backend/runtime`](#module-audio-backend-runtime), [`audio/spatial/runtime`](#module-audio-spatial-runtime), [`core/error/runtime`](#module-core-error-runtime), [`core/memory/allocator`](#module-core-memory-allocator), [`core/memory/synchronization`](#module-core-memory-synchronization), [`core/settings/persistent`](#module-core-settings-persistent), [`core/text/path`](#module-core-text-path), [`core/text/string`](#module-core-text-string), [`gameplay/ai/workspaces`](#module-gameplay-ai-workspaces), [`graphics/backend/software`](#module-graphics-backend-software), [`graphics/core/runtime`](#module-graphics-core-runtime), [`graphics/render/primitives`](#module-graphics-render-primitives), [`graphics/render/shading`](#module-graphics-render-shading), [`movie/runtime/playback`](#module-movie-runtime-playback), [`network/backend/runtime`](#module-network-backend-runtime), [`platform/filesystem/win32`](#module-platform-filesystem-win32), [`platform/input/devices`](#module-platform-input-devices), [`platform/system/time_locale`](#module-platform-system-time-locale), [`ui/controls/layout`](#module-ui-controls-layout), [`ui/core/runtime`](#module-ui-core-runtime), [`ui/frontend/runtime`](#module-ui-frontend-runtime), [`world/terrain/visuals`](#module-world-terrain-visuals).
 
+<a id="module-platform-debug-font"></a>
+### `platform/debug/font`
+
+[Source](../src/platform/debug/font.c) · [Header](../include/thandor/platform/debug/font.h)
+
+Project code, not in the original game. The built-in 5x7 debug font (`g_DebugFont5x7`, written as pixel pictures) and `DebugFont_DrawText`, which draws a text line with a black box straight into the locked framebuffer at 32 or 16 bits per pixel. Used by the debug movie player.
+
+<a id="module-platform-debug-movie-player"></a>
+### `platform/debug/movie_player`
+
+[Source](../src/platform/debug/movie_player.c) · [Header](../include/thandor/platform/debug/movie_player.h)
+
+Project code, not in the original game. The debug movie tools started from `Game_PlayIntroMovies` by environment switches: `DebugMovie_Run` (`OPEN_THANDOR_MOVIE`, `_STRETCH`, `_START`: plays one movie or the list in `movies.txt` with a name and frame counter overlay) and `DebugMovie_ExportOne` (`OPEN_THANDOR_MOVIEEXPORT`: writes the decoded frames and audio to `moviedump\`). See [BUILDING.md](BUILDING.md).
+
 <a id="module-platform-filesystem-win32"></a>
 ### `platform/filesystem/win32`
 

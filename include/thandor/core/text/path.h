@@ -25,6 +25,13 @@
 #define WIDE_PATH_EXTENSION_CGN 0x6E6763 /* ".cgn" campaign */
 #define WIDE_PATH_EXTENSION_SVE 0x657673 /* ".sve" saved game */
 #endif
+/* Utf16DecimalDigitPair4.packedDigits of the numbered path templates (patchNN.pck, levelNN.pck, ...):
+   codeUnits[0] (low half) is the tens digit, codeUnits[1] the ones digit, e.g. UTF16_DIGIT_PAIR('0','0') is
+   "00" = 0x300030. Adding UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP (0x9FFFF) takes one from the tens digit and adds
+   ten to the ones digit (0xFFFF is -1 on the low half plus a carry, 9 + 1 on the high half), so a ones digit
+   of '0' - 1 becomes '9'. */
+#define UTF16_DIGIT_PAIR(tens,ones) ((ones) << 16 | (tens))
+#define UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP ((10 << 16) - 1)
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

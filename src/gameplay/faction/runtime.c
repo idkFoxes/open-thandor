@@ -126,7 +126,8 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   uint32_t skipMaskBits;
   int copyCountOrAnchorY;
   int scenarioRecord;
-  int factionFieldCursorOrOffsetY;
+  int destinationY;
+  CampaignLevelRecord *factionExitZoneCursor;
   /* The original multiplies a stale caller ESI by the active faction index here; the loop then walks
      all eight 0x740-byte faction records, which only stays inside the table from records[0]. */
   int staleCallerEsi = 0;
@@ -159,9 +160,9 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
     return;
   }
   /* Per-faction exit zones of the level record; carry-over and skip hold one bit per outcome.
-     factionFieldCursorOrOffsetY walks the level record 4 bytes (one faction) per group, so element 0 of each
+     factionExitZoneCursor walks the level record 4 bytes (one faction) per group, so element 0 of each
      per-faction array is the current faction's. */
-  factionFieldCursorOrOffsetY = (int)&((CampaignAsset *)scenarioRecord)->levels[0];
+  factionExitZoneCursor = &((CampaignAsset *)scenarioRecord)->levels[0];
   carryOverMaskBits =
        ((CampaignAsset *)scenarioRecord)->levels[0].carryOverMask >> ((uint8_t)g_EndMovieSelectionIndex & 31);
   skipMaskBits = ((CampaignAsset *)scenarioRecord)->levels[0].skipMask >> ((uint8_t)g_EndMovieSelectionIndex & 31);
@@ -169,11 +170,11 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   /* Eight groups, one per faction record. The masks are not shifted per group (as in the original). */
   for (remainingOrWorldY = 8; remainingOrWorldY != 0; remainingOrWorldY--) {
     if (((skipMaskBits & 1) == 0) && ((carryOverMaskBits & 1) != 0) &&
-        (((((CampaignLevelRecord *)factionFieldCursorOrOffsetY)->exitZoneCenterX[0] != 0 ||
-           (((CampaignLevelRecord *)factionFieldCursorOrOffsetY)->exitZoneCenterY[0] != 0)) ||
-          (((CampaignLevelRecord *)factionFieldCursorOrOffsetY)->exitZoneDestinationX[0] != 0)) ||
-         ((((CampaignLevelRecord *)factionFieldCursorOrOffsetY)->exitZoneDestinationY[0] != 0 ||
-           (((CampaignLevelRecord *)factionFieldCursorOrOffsetY)->exitZoneRadius[0] != 0))))) {
+        (((factionExitZoneCursor->exitZoneCenterX[0] != 0 ||
+           (factionExitZoneCursor->exitZoneCenterY[0] != 0)) ||
+          (factionExitZoneCursor->exitZoneDestinationX[0] != 0)) ||
+         ((factionExitZoneCursor->exitZoneDestinationY[0] != 0 ||
+           (factionExitZoneCursor->exitZoneRadius[0] != 0))))) {
       for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY--) {
         *secondaryTableCursor = *sourceOrRecordCursor;
         sourceOrRecordCursor++;
@@ -191,7 +192,8 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
     }
     /* on to the next faction record's technology masks */
     sourceOrRecordCursor = sourceOrRecordCursor + GAME_FACTION_RUNTIME_RECORD_BYTES / 4 - 8;
-    factionFieldCursorOrOffsetY = factionFieldCursorOrOffsetY + 4;
+    factionExitZoneCursor =
+         (CampaignLevelRecord *)((uint8_t *)factionExitZoneCursor + sizeof(factionExitZoneCursor->exitZoneCenterX[0]));
   }
   /* Primary records (8 dwords each, at most 0x200): [0] army asset id, [1] faction, [2] X, [3] Y,
      [4] rotation angle. */
@@ -212,13 +214,13 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
                                          ownerNode->worldXQ12),
          (int)distanceToAnchor <= ((CampaignAsset *)scenarioRecord)->levels[0].exitZoneRadius[unitFactionOrAssetId])) {
         remainingOrWorldY = ownerNode->worldYQ12;
-        factionFieldCursorOrOffsetY =
+        destinationY =
              ((CampaignAsset *)scenarioRecord)->levels[0].exitZoneDestinationY[unitFactionOrAssetId];
         copyCountOrAnchorY = ((CampaignAsset *)scenarioRecord)->levels[0].exitZoneCenterY[unitFactionOrAssetId];
         sourceOrRecordCursor[2] = (ownerNode->worldXQ12 +
              ((CampaignAsset *)scenarioRecord)->levels[0].exitZoneDestinationX[unitFactionOrAssetId]) -
                      ((CampaignAsset *)scenarioRecord)->levels[0].exitZoneCenterX[unitFactionOrAssetId];
-        sourceOrRecordCursor[3] = (remainingOrWorldY + factionFieldCursorOrOffsetY) - copyCountOrAnchorY;
+        sourceOrRecordCursor[3] = (remainingOrWorldY + destinationY) - copyCountOrAnchorY;
         sourceOrRecordCursor[1] = unitFactionOrAssetId;
         if (((ModelRuntimeSlot *)ownerNode->runtimePayload)->classState.linkedArmyRuntimeOrSavedOffset.modelRuntime ==
             NULL) {
@@ -379,14 +381,14 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
   uint32_t otherFactionIndex;
   uint32_t sourceFactionIndex;
   TechnologyId sourceTechnologyIndex;
-  int sourceRecordBase;
+  GameFactionRuntimeRecord *sourceRecordBase;
   
-  sourceRecordBase = (int)&g_GameFactionRuntimeImage.records[1];
+  sourceRecordBase = &g_GameFactionRuntimeImage.records[1];
   for (sourceFactionIndex = 1; sourceFactionIndex < 7; sourceFactionIndex++) {
     /* otherRecordBase trails the other faction's record by one record, so the other record is
        ((GameFactionRuntimeRecord *)otherRecordBase)[1]. Its technology masks are read with explicit
        int arithmetic; the pointer form changes the register allocation. */
-    otherRecordBase = sourceRecordBase;
+    otherRecordBase = (int)sourceRecordBase;
     for (otherFactionIndex = sourceFactionIndex + 1; otherFactionIndex < 8;
         otherFactionIndex++) {
       /* the other faction's relation-state nibble towards the source faction */
@@ -401,7 +403,7 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
         maskWordIndex = 0;
         sourceTechnologyIndex = 0;
         do {
-          if (((((GameFactionRuntimeRecord *)sourceRecordBase)->technologyMasks256Bits[maskWordIndex] & bitMask) !=
+          if (((sourceRecordBase->technologyMasks256Bits[maskWordIndex] & bitMask) !=
                0) &&
              ((*(uint32_t *)(otherRecordBase +
                              (int)(sizeof(GameFactionRuntimeRecord) +
@@ -422,7 +424,7 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
                                (int)(sizeof(GameFactionRuntimeRecord) +
                                     offsetof(GameFactionRuntimeRecord, technologyMasks256Bits)) +
                                maskWordIndex * 4) & bitMask) != 0) &&
-               ((((GameFactionRuntimeRecord *)sourceRecordBase)->technologyMasks256Bits[maskWordIndex] & bitMask) ==
+               ((sourceRecordBase->technologyMasks256Bits[maskWordIndex] & bitMask) ==
                 0)) {
               Technology_UnlockForFaction(0,0,otherTechnologyIndex,sourceFactionIndex);
               Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
@@ -437,7 +439,7 @@ void GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
       }
       otherRecordBase = otherRecordBase + (int)sizeof(GameFactionRuntimeRecord);
     }
-    sourceRecordBase = sourceRecordBase + (int)sizeof(GameFactionRuntimeRecord);
+    sourceRecordBase++;
   }
   InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
   return;
@@ -781,13 +783,13 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
   position.worldXQ12 = 0;
   position.worldYQ12 = 0;
   position.worldZQ12 = 0;
-  position.unresolved = true;
+  position.noPosition = true;
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
       position.worldXQ12 = (targetState->common).commandTarget.targetWorldXQ12;
       position.worldYQ12 = (targetState->common).commandTarget.targetWorldYQ12;
       position.worldZQ12 = (targetState->common).commandTarget.targetWorldZQ12;
-      position.unresolved = false;
+      position.noPosition = false;
     }
   }
   else {
@@ -807,7 +809,7 @@ GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
         position.worldZQ12 =
              (targetModelNode->worldTransform).translation.z +
              ((ModelRuntimeSlot *)targetDefinitionRecord)->definitionOrSavedId.runtimeDefinition->aimHeightOffsetQ12;
-        position.unresolved = false;
+        position.noPosition = false;
         return position;
       }
       (targetState->common).commandTarget.targetEntity = NULL;

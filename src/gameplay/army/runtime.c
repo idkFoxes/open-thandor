@@ -1705,7 +1705,7 @@ void ArmyRuntime_ApplyTargetPositionCommand
    command, or the target entity's model (the flying body of an aircraft) raised by its definition's aim height.
    A moving target is led along its heading by the distance it covers during the shot's flight time, unless it
    stands still within that lead range. A target entity the shooter's faction can no longer see is dropped from
-   the command. unresolved (CF) is set when there is nothing to aim at.
+   the command. noPosition (CF) is set when there is nothing to aim at.
 */
 WorldPositionResult
 ArmyRuntime_ResolveShotAimPoint
@@ -1737,13 +1737,13 @@ ArmyRuntime_ResolveShotAimPoint
   position.worldXQ12 = 0;
   position.worldYQ12 = 0;
   position.worldZQ12 = 0;
-  position.unresolved = true;
+  position.noPosition = true;
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
       position.worldXQ12 = (targetState->common).commandTarget.targetWorldXQ12;
       position.worldYQ12 = (targetState->common).commandTarget.targetWorldYQ12;
       position.worldZQ12 = (targetState->common).commandTarget.targetWorldZQ12;
-      position.unresolved = false;
+      position.noPosition = false;
     }
   }
   else {
@@ -1800,7 +1800,7 @@ ArmyRuntime_ResolveShotAimPoint
                    (((targetEntity->common).ownership.modelNode)->worldTransform).translation.z +
                    ((ModelRuntimeSlot *)(targetEntity->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
                    runtimeDefinition->aimHeightOffsetQ12;
-              position.unresolved = false;
+              position.noPosition = false;
               return position;
             }
           }
@@ -1811,7 +1811,7 @@ ArmyRuntime_ResolveShotAimPoint
         position.worldXQ12 = aimWorldX;
         position.worldYQ12 = aimWorldY;
         position.worldZQ12 = aimWorldZ;
-        position.unresolved = false;
+        position.noPosition = false;
         return position;
       }
       (targetState->common).commandTarget.targetEntity = NULL;

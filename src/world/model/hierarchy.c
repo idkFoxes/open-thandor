@@ -597,14 +597,14 @@ ModelHitTestResult ModelRuntimeNode_HitTestProjectedBoundsAndChildren
 ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  GraphicsFixedVec3 **triangleCountField;
+  int *triangleCountField;
   ModelResource *resourceView;
   int64_t projectionOrDiscriminant;
   int64_t projectedDistanceWide;
   uint32_t negatedAngle2;
   int deltaXOrNodeY;
   int deltaYOrNodeZ;
-  GraphicsFixedVec3 *trianglesRemaining;
+  int trianglesRemaining;
   uint32_t childrenRemaining;
   int deltaZ;
   ModelRaycastNearestNodeOrScratch4 edxCarrier;
@@ -682,12 +682,12 @@ ModelRaycastResult ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *mo
         triangle = (ModelRaycastTriangleDescriptor *)(meshGroupCursor + 8);
         radiusNodeXOrNearest = MODEL_RAYCAST_NO_HIT_DISTANCE;
         for (meshRecordsRemaining = meshGroupCursor[1]; meshRecordsRemaining != 0; meshRecordsRemaining--) {
-          triangleCountField = &triangle->vertex1;
+          /* triangle points at a ModelMeshHeader here: skip it and its vertex records */
+          triangleCountField = &((ModelMeshHeader *)triangle)->triangleCount;
           triangle = (ModelRaycastTriangleDescriptor *)
-                     (triangle[*(int *)(triangle->reservedVertex0Metadata04_0B + 4)].
-                      reservedVertex2Metadata1C_23 + 4);
-          for (trianglesRemaining = *triangleCountField; trianglesRemaining != NULL;
-              trianglesRemaining = (GraphicsFixedVec3 *)((int)&trianglesRemaining[-1].z + 3)) {
+                     ((uint8_t *)((ModelMeshHeader *)triangle + 1) +
+                      ((ModelMeshHeader *)triangle)->vertexCount * MODEL_MESH_RECORD_SIZE);
+          for (trianglesRemaining = *triangleCountField; trianglesRemaining != 0; trianglesRemaining--) {
             triangleHit = ModelMesh_IntersectTriangleRayDistance(triangle);
             if ((triangleHit.hit) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
               radiusNodeXOrNearest = triangleHit.distanceQ12;
@@ -1012,10 +1012,11 @@ ModelNodeCreateResult ModelNodeRuntime_CreateHierarchyRecursive
   if (ownerArmy->factionIndex != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x20;
   }
-  *(uint8_t *)&newNode->textureSubresourceBaseIndex = 0;
-  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
-  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
-  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
+  /* the four bytes of textureSubresourceBaseIndex are cleared one by one */
+  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[0] = 0;
+  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[1] = 0;
+  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[2] = 0;
+  ((uint8_t *)&newNode->textureSubresourceBaseIndex)[3] = 0;
   definitionOrChildrenRemaining = modelRuntime->definitionOrSavedId.savedIdOrOffset;
   newNode->tintArgb = 0xffffffff;
   /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */

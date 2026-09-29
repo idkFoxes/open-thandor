@@ -375,10 +375,8 @@ loadSelectedLevel:
       packageLoadResult = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16);
       checkedResult = FatalError_ExitIfFailed((uint32_t)packageLoadResult.bufferOrError,packageLoadResult.failed);
       g_FrontendLoadedLevelAsset = (FrontendLoadedLevelAsset *)checkedResult.valueOrError;
-      encodeCursorOrSize = g_FrontendLoadedLevelAsset->header.common.buildMetadata.
-                reserved28_2F +
-                (g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid -
-                GFX_ASSET_ANCHOR28_OFFSET);
+      encodeCursorOrSize = (uint8_t *)g_FrontendLoadedLevelAsset +
+                           g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid;
       /* the field grid file: the level's path with the extension "fld", under the executable directory */
       WidePath_SetExtensionCode(WIDE_PATH_EXTENSION_FLD,(uint16_t *)encodeCursorOrSize);
       WidePath_CombineDirectoryAndLeaf
@@ -2816,11 +2814,11 @@ loadCentralRom:
             /* the world object records of the 3D menu room, zeroed */
             g_FrontendWorldObjectRecords = (WorldObjectRecord *)fillCursorOrResult;
             for (remainingDwords = FRONTEND_WORLD_OBJECT_RECORD_COUNT * sizeof(WorldObjectRecord) / 4; remainingDwords != 0; remainingDwords--) {
-              fillCursorOrResult->opaqueGap0000_05DF[0] = 0;
-              fillCursorOrResult->opaqueGap0000_05DF[1] = 0;
-              fillCursorOrResult->opaqueGap0000_05DF[2] = 0;
-              fillCursorOrResult->opaqueGap0000_05DF[3] = 0;
-              fillCursorOrResult = (FrontendRootResourceSlots *)(fillCursorOrResult->opaqueGap0000_05DF + 4);
+              ((uint8_t *)fillCursorOrResult)[0] = 0;
+              ((uint8_t *)fillCursorOrResult)[1] = 0;
+              ((uint8_t *)fillCursorOrResult)[2] = 0;
+              ((uint8_t *)fillCursorOrResult)[3] = 0;
+              fillCursorOrResult = (FrontendRootResourceSlots *)((uint8_t *)fillCursorOrResult + 4);
             }
             allocResult = g_MemoryApi.alloc(sizeof(FrontendUiImage));
             frontendUiState = (FrontendRootResourceSlots *)allocResult.payloadOrError;
@@ -2830,9 +2828,9 @@ loadCentralRom:
               frontendInitTemplateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
               g_FrontendRootNode = frontendUiState;
               for (remainingDwords = sizeof(FrontendUiImage) / 4; remainingDwords != 0; remainingDwords--) {
-                *(uint32_t *)fillCursorOrResult->opaqueGap0000_05DF = *frontendInitTemplateDwords;
+                *(uint32_t *)fillCursorOrResult = *frontendInitTemplateDwords;
                 frontendInitTemplateDwords = frontendInitTemplateDwords + 1;
-                fillCursorOrResult = (FrontendRootResourceSlots *)(fillCursorOrResult->opaqueGap0000_05DF + 4);
+                fillCursorOrResult = (FrontendRootResourceSlots *)((uint32_t *)fillCursorOrResult + 1);
               }
               FrontendMenu_BindSharedResources(frontendUiState);
               UiRootStack_Push(&g_UiRootCallbacks_0053DA70,(UiRootNode *)frontendUiState);

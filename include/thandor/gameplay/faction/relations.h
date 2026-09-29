@@ -29,6 +29,9 @@
 /* GameFactionRuntimeRecord.packedRelationStates: one relation-state nibble per faction; the nibble bits of
    state (e.g. FACTION_RELATION_STATE_ALLIED) at the given faction */
 #define FACTION_RELATION_PACKED(state,factionIndex) ((uint32_t)(state) << ((factionIndex) * 4))
+/* GameData_ResetDefaults: packedRelationStates of faction 0 (own nibble 0xF, state 1 toward the seven others);
+   each following record gets it rotated left by one nibble, so the 0xF sits at the record's own faction. */
+#define FACTION_RELATION_DEFAULT_PATTERN 0x1111111f
 
 /* 0x0053C010 */
 void GameFactionRelations_UpdateAllPairsForFaction

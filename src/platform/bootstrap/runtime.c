@@ -11,6 +11,7 @@
 #include <thandor/platform/bootstrap/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <thandor/platform/debug/movie_player.h>
 
 /* Implementation ownership: platform/bootstrap/runtime. */
 
@@ -159,7 +160,7 @@ StatusResult GameData_ResetDefaults(void)
   factionRecord = g_GameFactionRuntimeImage.records;
   remainingCount = sizeof g_GameFactionRuntimeImage.records / sizeof g_GameFactionRuntimeImage.records[0];
   factionBit = 1;
-  relationStatePattern = 0x1111111f; /* one nibble per faction, rotated by one nibble per record */
+  relationStatePattern = FACTION_RELATION_DEFAULT_PATTERN; /* one nibble per faction, rotated by one nibble per record */
   do {
     capabilityFlagsSlot = &factionRecord->capabilityFlags;
     *capabilityFlagsSlot = *capabilityFlagsSlot | factionBit;
@@ -721,10 +722,10 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
     Thandor_Log("movie CD path: \"%s\"", narrow);
   }
   /* patchNN.pck and then levelNN.pck, NN counting down to "00". decimalDigits.codeUnits[0] is the tens
-     digit, [1] the ones digit; adding 0x9FFFF to the packed pair decrements the tens digit and, through the
-     carry, turns the ones digit from '0' - 1 back into '9'. The patch count starts at "00", so only
+     digit, [1] the ones digit; adding UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP to the packed pair decrements the
+     tens digit and turns the ones digit from '0' - 1 back into '9'. The patch count starts at "00", so only
      patch00.pck is tried. */
-  g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x300030; /* "00" */
+  g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('0','0');
   do {
     do {
       Package_Mount(g_PatchArchivePathTemplateUtf16.prefixCodeUnits);
@@ -732,9 +733,9 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
            g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1] - 1;
     } while ('0' - 1 < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
     g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits =
-         g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
+         g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits + UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP;
   } while ('0' - 1 < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
-  g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x390039; /* "99" */
+  g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits = UTF16_DIGIT_PAIR('9','9');
   do {
     do {
       LevelPackage_ValidateAndMount(g_LevelArchivePathTemplateUtf16.prefixCodeUnits);
@@ -742,7 +743,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
            g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[1] - 1;
     } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[1]);
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
-         g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
+         g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + UTF16_DIGIT_PAIR_TENS_DOWN_ONES_UP;
   } while ('0' - 1 < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
   status = Package_Mount((uint16_t *)u_daten_pck_00572e56);
   if (!status.failed) {
@@ -891,13 +892,14 @@ bindDebugOverlayTexts:
                             (13,g_FrontendDebugOverlayTextSlot13Utf16,textBuffer);
                 } while (resourceId < TEXT_ID_WORLD_VIEW_INFO_LAST + 1);
                 UiActionHandlers_SetPage
-                          (0x10,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
+                          (UI_ACTION_PAGE_INGAME,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
                 UiActionHandlers_SetPage
-                          (0x11,(UiActionHandlerPage *)&g_InGameUiCommandModeActionHandlers30);
+                          (UI_ACTION_PAGE_INGAME_COMMAND_MODE,
+                           (UiActionHandlerPage *)&g_InGameUiCommandModeActionHandlers30);
                 UiActionHandlers_SetPage
-                          (0x12,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
+                          (UI_ACTION_PAGE_INGAME_MENU,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
                 UiActionHandlers_SetPage
-                          (0x20,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
+                          (UI_ACTION_PAGE_FRONTEND,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
                 textPageLoadResult = TextResourcePage_Load(GAME_TEXT_PAGE_NETERROR,(uint16_t *)u_texte_neterror_str_0050f104);
                 if (textPageLoadResult.failed) {
                   return textPageLoadResult.errorOrValue;
@@ -988,7 +990,8 @@ bindDebugOverlayTexts:
                         return (uint32_t)panelTextureResult.textureSource;
                       }
                       g_InGameStatusPanelTextureSource = panelTextureResult.textureSource;
-                      allocResult = g_MemoryApi.alloc(0x800);
+                      allocResult = g_MemoryApi.alloc
+                                              (RECENT_TEXT_HISTORY_SLOT_COUNT * sizeof(RecentTextHistorySlot));
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
@@ -1003,80 +1006,87 @@ bindDebugOverlayTexts:
                         return allocResult.payloadOrError;
                       }
                       g_OldUnitPrimaryTable = (uint32_t *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x400);
+                      allocResult = g_MemoryApi.alloc
+                                              (FRONTEND_PLAYER_LIST_ROW_COUNT * FRONTEND_PLAYER_LIST_ROW_BYTES);
                       soundOptionsOrBufferBase = allocResult.payloadOrError;
                       if (allocResult.failed) {
                         return soundOptionsOrBufferBase;
                       }
-                      g_FrontendPlayerListRow1 = soundOptionsOrBufferBase + 0x80;
-                      g_FrontendPlayerListRow2 = soundOptionsOrBufferBase + 0x100;
-                      g_FrontendPlayerListRow3 = soundOptionsOrBufferBase + 0x180;
-                      g_FrontendPlayerListRow4 = soundOptionsOrBufferBase + 0x200;
-                      g_FrontendPlayerListRow5 = soundOptionsOrBufferBase + 0x280;
-                      g_FrontendPlayerListRow6 = soundOptionsOrBufferBase + 0x300;
-                      g_FrontendPlayerListRow7 = soundOptionsOrBufferBase + 0x380;
+                      g_FrontendPlayerListRow1 = soundOptionsOrBufferBase + 1 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                      g_FrontendPlayerListRow2 = soundOptionsOrBufferBase + 2 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                      g_FrontendPlayerListRow3 = soundOptionsOrBufferBase + 3 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                      g_FrontendPlayerListRow4 = soundOptionsOrBufferBase + 4 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                      g_FrontendPlayerListRow5 = soundOptionsOrBufferBase + 5 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                      g_FrontendPlayerListRow6 = soundOptionsOrBufferBase + 6 * FRONTEND_PLAYER_LIST_ROW_BYTES;
+                      g_FrontendPlayerListRow7 = soundOptionsOrBufferBase + 7 * FRONTEND_PLAYER_LIST_ROW_BYTES;
                       g_FrontendPlayerListRows = soundOptionsOrBufferBase;
-                      allocResult = g_MemoryApi.alloc(0x800);
+                      allocResult = g_MemoryApi.alloc(ROM_REGISTRY_SLOT_COUNT * sizeof(RomRegistrySlot));
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
                       g_RomRegistrySlots = (RomRegistrySlot *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x80);
+                      allocResult = g_MemoryApi.alloc
+                                              (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord *));
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
                       g_FrontendSessionListRows = (FrontendSessionDiscoveryRecord **)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x1600);
+                      allocResult = g_MemoryApi.alloc
+                                              (FRONTEND_SESSION_LIST_CAPACITY * sizeof(FrontendSessionDiscoveryRecord));
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
                       g_FrontendSessionDiscoveryRecords =
                            (FrontendSessionDiscoveryRecord *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x2000);
+                      allocResult = g_MemoryApi.alloc(INGAME_FACTION_STATUS_TEXT_BYTES);
                       textBuffer = (uint16_t *)allocResult.payloadOrError;
                       if (allocResult.failed) {
                         return (uint32_t)textBuffer;
                       }
                       g_InGameFactionStatusTextScratchUtf16 = textBuffer;
                       g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
-                      allocResult = g_MemoryApi.alloc(0x160);
+                      allocResult = g_MemoryApi.alloc(INGAME_PLAYER_LIST_TEXT_BYTES);
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
                       g_InGamePlayerListTextScratchUtf16 = (uint16_t *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x6000);
+                      allocResult = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                                      CUBIC_SPLINE_MATRIX_FLOATS * sizeof(float));
                       splineBuffer = (float *)allocResult.payloadOrError;
                       if (allocResult.failed) {
                         return (uint32_t)splineBuffer;
                       }
-                      g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 0x400;
-                      g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 0x800;
-                      g_WorldMotionSplineMatrixWorkspaces[3] = splineBuffer + 0xc00;
-                      g_WorldMotionSplineMatrixWorkspaces[4] = splineBuffer + 0x1000;
-                      g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 0x1400;
+                      g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_FLOATS;
+                      g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_FLOATS;
+                      g_WorldMotionSplineMatrixWorkspaces[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_FLOATS;
+                      g_WorldMotionSplineMatrixWorkspaces[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_FLOATS;
+                      g_WorldMotionSplineMatrixWorkspaces[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_FLOATS;
                       g_WorldMotionSplineMatrixWorkspaces[0] = splineBuffer;
-                      allocResult = g_MemoryApi.alloc(0x300);
+                      /* one coefficient vector of CUBIC_SPLINE_MATRIX_ORDER floats per channel */
+                      allocResult = g_MemoryApi.alloc(WORLD_MOTION_SPLINE_CHANNEL_COUNT *
+                                                      CUBIC_SPLINE_MATRIX_ORDER * sizeof(float));
                       splineBuffer = (float *)allocResult.payloadOrError;
                       if (allocResult.failed) {
                         return (uint32_t)splineBuffer;
                       }
-                      g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 0x20;
-                      g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 0x40;
-                      g_WorldMotionSplineCoefficientTables[3] = splineBuffer + 0x60;
-                      g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 0x80;
-                      g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 0xa0;
+                      g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 1 * CUBIC_SPLINE_MATRIX_ORDER;
+                      g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 2 * CUBIC_SPLINE_MATRIX_ORDER;
+                      g_WorldMotionSplineCoefficientTables[3] = splineBuffer + 3 * CUBIC_SPLINE_MATRIX_ORDER;
+                      g_WorldMotionSplineCoefficientTables[4] = splineBuffer + 4 * CUBIC_SPLINE_MATRIX_ORDER;
+                      g_WorldMotionSplineCoefficientTables[5] = splineBuffer + 5 * CUBIC_SPLINE_MATRIX_ORDER;
                       g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
-                      allocResult = g_MemoryApi.alloc(0x408c0);
+                      allocResult = g_MemoryApi.alloc
+                                              (SELECTION_PLAYER_BLOCK_COUNT * sizeof(SelectionPlayerRuntimeBlock));
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
                       g_SelectionPlayerBlocks = (SelectionPlayerRuntimeBlock *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x1300);
+                      allocResult = g_MemoryApi.alloc(FRONTEND_SNAPSHOT_PAYLOAD_BYTES);
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
                       g_FrontendLocalPlayerPcxPreview = allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x4000);
+                      allocResult = g_MemoryApi.alloc(TERRAIN_REGION_COLLECTION_CAPACITY * 8); /* 8-byte records */
                       if (allocResult.failed) {
                         return allocResult.payloadOrError;
                       }
@@ -1086,7 +1096,8 @@ bindDebugOverlayTexts:
                         return allocResult.payloadOrError;
                       }
                       g_FrontendPlayerMessageBuffers = allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x9d80);
+                      allocResult = g_MemoryApi.alloc
+                                    (FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT * sizeof(FrontendPlayerRuntimeRecord));
                       playerRecordCursor = (FrontendPlayerRuntimeRecord *)allocResult.payloadOrError;
                       if (allocResult.failed) {
                         return (uint32_t)playerRecordCursor;
@@ -1101,6 +1112,8 @@ bindDebugOverlayTexts:
                       playerRecordCursor->playerRuntimeId = 0;
                       (playerRecordCursor->factionAssignment).roleStateFlags = 0;
                       playerRecordCursor->snapshotTransferFlags = 0;
+                      /* pointers to 32 consecutive records, although only the first
+                         FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated */
                       statusOrCount = 32;
                       do {
                         *playerRuntimePointerTableWriteCursor = playerRecordCursor;
@@ -1108,19 +1121,21 @@ bindDebugOverlayTexts:
                         playerRecordCursor++;
                         statusOrCount--;
                       } while (statusOrCount != 0);
-                      allocResult = g_MemoryApi.alloc(0xe00);
+                      allocResult = g_MemoryApi.alloc
+                                    (CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES);
                       scratchCursor = (uint8_t *)allocResult.payloadOrError;
                       if (allocResult.failed) {
                         return (uint32_t)scratchCursor;
                       }
-                      g_CoreAssetScratchSlice1 = scratchCursor + 0x200;
-                      g_CoreAssetScratchSlice2 = scratchCursor + 0x400;
-                      g_CoreAssetScratchSlice3 = scratchCursor + 0x600;
-                      g_CoreAssetScratchSlice4 = scratchCursor + 0x800;
-                      g_CoreAssetScratchSlice5 = scratchCursor + 0xa00;
-                      g_CoreAssetScratchSlice6 = scratchCursor + 0xc00;
+                      g_CoreAssetScratchSlice1 = scratchCursor + 1 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                      g_CoreAssetScratchSlice2 = scratchCursor + 2 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                      g_CoreAssetScratchSlice3 = scratchCursor + 3 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                      g_CoreAssetScratchSlice4 = scratchCursor + 4 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                      g_CoreAssetScratchSlice5 = scratchCursor + 5 * CORE_ASSET_SCRATCH_SLICE_BYTES;
+                      g_CoreAssetScratchSlice6 = scratchCursor + 6 * CORE_ASSET_SCRATCH_SLICE_BYTES;
                       g_CoreAssetScratchSlice0 = scratchCursor;
-                      for (statusOrCount = 0xe00 / 4; statusOrCount != 0; statusOrCount--) {
+                      for (statusOrCount = CORE_ASSET_SCRATCH_SLICE_COUNT * CORE_ASSET_SCRATCH_SLICE_BYTES / 4;
+                           statusOrCount != 0; statusOrCount--) {
                         scratchCursor[0] = 0;
                         scratchCursor[1] = 0;
                         scratchCursor[2] = 0;
@@ -1142,322 +1157,6 @@ bindDebugOverlayTexts:
   return (uint32_t)module;
 }
 
-
-/* Debug tool: movie test player.
-   OPEN_THANDOR_MOVIE=<name>  plays flm\<name>.flm,
-   OPEN_THANDOR_MOVIE=all     plays every name listed in movies.txt (one per line, working dir).
-   Each movie runs at its own rate for at most 10 seconds; a key or mouse click skips to the next.
-   The name and frame counter are drawn top left. OPEN_THANDOR_MOVIE_STRETCH=1 draws full screen
-   with the end-movie bilinear stretch. The process exits after the last movie. */
-
-static const uint8_t g_DebugFont5x7[][8] = {
-  /* char, 7 rows of 5 bits */
-  {' ',0x00,0x00,0x00,0x00,0x00,0x00,0x00},{'.',0x00,0x00,0x00,0x00,0x00,0x0c,0x0c},
-  {'/',0x01,0x02,0x02,0x04,0x08,0x08,0x10},{':',0x00,0x0c,0x0c,0x00,0x0c,0x0c,0x00},
-  {'-',0x00,0x00,0x00,0x1f,0x00,0x00,0x00},{'_',0x00,0x00,0x00,0x00,0x00,0x00,0x1f},
-  {'0',0x0e,0x11,0x13,0x15,0x19,0x11,0x0e},{'1',0x04,0x0c,0x04,0x04,0x04,0x04,0x0e},
-  {'2',0x0e,0x11,0x01,0x02,0x04,0x08,0x1f},{'3',0x1f,0x02,0x04,0x02,0x01,0x11,0x0e},
-  {'4',0x02,0x06,0x0a,0x12,0x1f,0x02,0x02},{'5',0x1f,0x10,0x1e,0x01,0x01,0x11,0x0e},
-  {'6',0x06,0x08,0x10,0x1e,0x11,0x11,0x0e},{'7',0x1f,0x01,0x02,0x04,0x08,0x08,0x08},
-  {'8',0x0e,0x11,0x11,0x0e,0x11,0x11,0x0e},{'9',0x0e,0x11,0x11,0x0f,0x01,0x02,0x0c},
-  {'a',0x0e,0x11,0x11,0x1f,0x11,0x11,0x11},{'b',0x1e,0x11,0x11,0x1e,0x11,0x11,0x1e},
-  {'c',0x0e,0x11,0x10,0x10,0x10,0x11,0x0e},{'d',0x1c,0x12,0x11,0x11,0x11,0x12,0x1c},
-  {'e',0x1f,0x10,0x10,0x1e,0x10,0x10,0x1f},{'f',0x1f,0x10,0x10,0x1e,0x10,0x10,0x10},
-  {'g',0x0e,0x11,0x10,0x17,0x11,0x11,0x0f},{'h',0x11,0x11,0x11,0x1f,0x11,0x11,0x11},
-  {'i',0x0e,0x04,0x04,0x04,0x04,0x04,0x0e},{'j',0x07,0x02,0x02,0x02,0x02,0x12,0x0c},
-  {'k',0x11,0x12,0x14,0x18,0x14,0x12,0x11},{'l',0x10,0x10,0x10,0x10,0x10,0x10,0x1f},
-  {'m',0x11,0x1b,0x15,0x15,0x11,0x11,0x11},{'n',0x11,0x11,0x19,0x15,0x13,0x11,0x11},
-  {'o',0x0e,0x11,0x11,0x11,0x11,0x11,0x0e},{'p',0x1e,0x11,0x11,0x1e,0x10,0x10,0x10},
-  {'q',0x0e,0x11,0x11,0x11,0x15,0x12,0x0d},{'r',0x1e,0x11,0x11,0x1e,0x14,0x12,0x11},
-  {'s',0x0f,0x10,0x10,0x0e,0x01,0x01,0x1e},{'t',0x1f,0x04,0x04,0x04,0x04,0x04,0x04},
-  {'u',0x11,0x11,0x11,0x11,0x11,0x11,0x0e},{'v',0x11,0x11,0x11,0x11,0x11,0x0a,0x04},
-  {'w',0x11,0x11,0x11,0x15,0x15,0x15,0x0a},{'x',0x11,0x11,0x0a,0x04,0x0a,0x11,0x11},
-  {'y',0x11,0x11,0x11,0x0a,0x04,0x04,0x04},{'z',0x1f,0x01,0x02,0x04,0x08,0x10,0x1f},
-};
-
-/* Draws text at 1x scale with a black box behind it; framebuffer: [0] pitch in pixels,
-   [2] bytes per pixel, [3] pixels. */
-static void DebugMovie_DrawText(int x0, int y0, const char *text)
-{
-  uint32_t *fb = (uint32_t *)g_FramebufferAccess;
-  int scale = 1;
-  int length = (int)strlen(text);
-  int boxWidth = length * 6 * scale + 2 * scale;
-  int boxHeight = 9 * scale;
-  uint32_t pitch;
-  uint32_t bpp;
-  uint8_t *pixels;
-  int x;
-  int y;
-  int c;
-  if (fb == NULL) {
-    return;
-  }
-  pitch = fb[0];
-  bpp = fb[2];
-  pixels = (uint8_t *)(uintptr_t)fb[3];
-  if ((pixels == NULL) || ((bpp != 4) && (bpp != 2))) {
-    return;
-  }
-  if (x0 + boxWidth > (int)g_FramebufferWidth) boxWidth = (int)g_FramebufferWidth - x0;
-#define DEBUG_PUT(px, py, white)                                                          \
-  do {                                                                                    \
-    if (bpp == 4) ((uint32_t *)pixels)[(py) * pitch + (px)] = (white) ? 0xffffff40 : 0xff000000; \
-    else ((uint16_t *)pixels)[(py) * pitch + (px)] = (white) ? 0xffe8 : 0;                    \
-  } while (0)
-  for (y = 0; y < boxHeight; y++) {
-    for (x = 0; x < boxWidth; x++) {
-      DEBUG_PUT(x0 + x, y0 + y, 0);
-    }
-  }
-  for (c = 0; c < length; c++) {
-    char ch = text[c];
-    const uint8_t *glyph = NULL;
-    unsigned g;
-    if ((ch >= 'A') && (ch <= 'Z')) ch = (char)(ch - 'A' + 'a');
-    for (g = 0; g < sizeof g_DebugFont5x7 / sizeof g_DebugFont5x7[0]; g++) {
-      if (g_DebugFont5x7[g][0] == (uint8_t)ch) { glyph = g_DebugFont5x7[g] + 1; break; }
-    }
-    if (glyph == NULL) continue;
-    for (y = 0; y < 7 * scale; y++) {
-      for (x = 0; x < 5 * scale; x++) {
-        int px = x0 + scale + c * 6 * scale + x;
-        if (px >= (int)g_FramebufferWidth) break;
-        if ((glyph[y / scale] >> (4 - x / scale)) & 1) {
-          DEBUG_PUT(px, y0 + scale + y, 1);
-        }
-      }
-    }
-  }
-#undef DEBUG_PUT
-}
-
-/* Fills the framebuffer with opaque black and presents it (called twice to clear both page buffers). */
-static void DebugMovie_ClearScreen(void)
-{
-  if (!g_GraphicsFramebufferBeginAccess()) {
-    g_GraphicsFramebufferFillRectArgb
-              (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0,
-               0xff000000,g_FramebufferAccess);
-    g_GraphicsFramebufferEndAccess();
-    g_GraphicsFramebufferPresent(g_FramebufferAccess);
-  }
-}
-
-/* Plays one movie; returns after the end, 10 seconds, or a key/click. */
-static void DebugMovie_PlayOne(const char *name, int index, int count, int stretch)
-{
-  uint16_t path[64];
-  char label[128];
-  int pathLength = 0;
-  int nameIndex;
-  unsigned start;
-  MovieOpenResult opened;
-  MovieFrameResult frame;
-  /* UTF-16 path "flm\<name>.flm"; the name is cut so ".flm" and the terminator still fit */
-  path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
-  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 56; nameIndex++) {
-    path[pathLength++] = (uint16_t)name[nameIndex];
-  }
-  path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
-  path[pathLength] = 0;
-  DebugMovie_ClearScreen();
-  DebugMovie_ClearScreen();
-  opened = Movie_Open(1,path);
-  if (opened.failed) {
-    Thandor_Log("debug movie %d/%d %s: Movie_Open failed (eax=%08x)", index, count, name, opened.frameCountOrError);
-    sprintf(label, "Video %d/%d: %s.flm - OEFFNEN FEHLGESCHLAGEN", index, count, name);
-    if (!g_GraphicsFramebufferBeginAccess()) {
-      DebugMovie_DrawText(8, 8, label);
-      g_GraphicsFramebufferEndAccess();
-      g_GraphicsFramebufferPresent(g_FramebufferAccess);
-    }
-    Thandor_SleepMs(1500);
-    return;
-  }
-  frame = Movie_AdvanceFrame();
-  if (frame.ended) {
-    Thandor_Log("debug movie %d/%d %s: first frame failed", index, count, name);
-    Movie_Close();
-    return;
-  }
-  Thandor_Log("debug movie %d/%d %s: playing, %u frames at %u Hz", index, count, name,
-              g_ActiveMovie->fileHeader->frameCount, opened.playbackRateHz);
-  g_IntroMoviePendingTicks = 0;
-  UiFrame_FlushInputAndResetPendingTicks();
-  g_TimerRegisterPeriodic(opened.playbackRateHz,IntroMovie_TimerTick);
-  start = Thandor_TickCount();
-  for (;;) {
-    KeyboardEventResult key;
-    CursorEventResult cursor;
-    g_Win32PumpMessages();
-    key = g_KeyboardReadEvent();
-    if (!key.queueEmpty) break;
-    cursor = g_GraphicsCursorConsumeEvent();
-    if (!cursor.queueEmpty && RIGHT_PRESS < cursor.eventType) break;
-    if (Thandor_TickCount() - start > 10000) break;
-    if (g_IntroMoviePendingTicks != 0) {
-      int burst = 3;
-      MovieFrameResult next;
-      int ended = 0;
-      do {
-        next = Movie_AdvanceFrame();
-        if (next.ended) { ended = 1; break; }
-        g_IntroMoviePendingTicks--;
-      } while ((g_IntroMoviePendingTicks != 0) && (--burst != 0));
-      if (ended) break;
-      if (g_GraphicsFramebufferBeginAccess()) break;
-      if (stretch) {
-        g_GraphicsTextureSourceStretchDirectColorBilinear
-                  (g_FramebufferHeight,g_FramebufferWidth,0,0,0,
-                   (GraphicsTextureSourceAsset *)frame.movieOrError,g_FramebufferAccess);
-      }
-      else {
-        MovieFrameDimensionsEdxEax8 size = Movie_GetFrameDimensions();
-        uint32_t height = g_FramebufferHeight;
-        g_GraphicsTextureSourceBlitSourceAlpha
-                  (g_FramebufferHeight,g_FramebufferWidth,0,0,
-                   ((int)((height - (height >> 2)) - (int)(size >> 32)) >> 1) + (height >> 3),
-                   (int)(g_FramebufferWidth - (int)size) >> 1,0,
-                   (GraphicsTextureSourceAsset *)frame.movieOrError,g_FramebufferAccess);
-      }
-      sprintf(label, "Video %d/%d: %s.flm  Frame %u/%u", index, count, name,
-              g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount);
-      DebugMovie_DrawText(8, 8, label);
-      g_GraphicsFramebufferEndAccess();
-      g_GraphicsFramebufferPresent(g_FramebufferAccess);
-    }
-  }
-  Thandor_Log("debug movie %d/%d %s: stopped at frame %u/%u after %u ms", index, count, name,
-              g_ActiveMovie->currentFrameIndex, g_ActiveMovie->fileHeader->frameCount,
-              Thandor_TickCount() - start);
-  g_TimerUnregisterPeriodic(IntroMovie_TimerTick);
-  Movie_Close();
-}
-
-/* Debug tool: OPEN_THANDOR_MOVIEEXPORT=<name>[,<name>...] decodes flm\<name>.flm frame by frame (as fast
-   as the stream allows) and writes moviedump\<name>.rgb (32-bit BGRA frames, top-down), moviedump\<name>.wav
-   (the chosen audio track as the DirectSound buffer holds it) and moviedump\<name>.txt (width height
-   frames rate). The process exits afterwards. */
-static void DebugMovie_ExportOne(const char *name)
-{
-  uint16_t path[64];
-  char fileName[128];
-  int pathLength = 0;
-  int nameIndex;
-  uint32_t frames = 0;
-  uint32_t width;
-  uint32_t height;
-  MovieOpenResult opened;
-  MovieFrameResult frame;
-  FILE *video;
-  FILE *info;
-  /* L"flm\<name>.flm", the name cut so that the extension and terminator still fit */
-  path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
-  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 56; nameIndex++) {
-    path[pathLength++] = (uint16_t)name[nameIndex];
-  }
-  path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
-  path[pathLength] = 0;
-  CreateDirectoryA("moviedump", NULL);
-  opened = Movie_Open(1,path);
-  if (opened.failed) {
-    Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, opened.frameCountOrError);
-    return;
-  }
-  width = g_ActiveMovie->fileHeader->widthPixels;
-  height = g_ActiveMovie->fileHeader->heightPixels;
-  if (g_ActiveMovie->audioVoiceSet != NULL && g_ActiveMovie->audioVoiceSet->voices[0] != NULL) {
-    IDirectSoundBuffer *buffer = g_ActiveMovie->audioVoiceSet->voices[0];
-    WAVEFORMATEX format;
-    uint32_t formatBytes = 0;
-    void *part1 = NULL;
-    void *part2 = NULL;
-    uint32_t bytes1 = 0;
-    uint32_t bytes2 = 0;
-    memset(&format, 0, sizeof format);
-    buffer->lpVtbl->GetFormat(buffer, &format, sizeof format, &formatBytes);
-    if (buffer->lpVtbl->Lock(buffer, 0, 0, &part1, &bytes1, &part2, &bytes2, DSBLOCK_ENTIREBUFFER) == 0) {
-      FILE *wav;
-      sprintf(fileName, "moviedump\\%s.wav", name);
-      wav = fopen(fileName, "wb");
-      if (wav != NULL) {
-        uint32_t dataBytes = bytes1 + bytes2;
-        uint32_t riffBytes = 36 + dataBytes;
-        uint32_t fmtBytes = 16;
-        fwrite("RIFF", 1, 4, wav); fwrite(&riffBytes, 4, 1, wav);
-        fwrite("WAVEfmt ", 1, 8, wav); fwrite(&fmtBytes, 4, 1, wav);
-        fwrite(&format, 1, 16, wav);
-        fwrite("data", 1, 4, wav); fwrite(&dataBytes, 4, 1, wav);
-        fwrite(part1, 1, bytes1, wav);
-        if (part2 != NULL) fwrite(part2, 1, bytes2, wav);
-        fclose(wav);
-      }
-      buffer->lpVtbl->Unlock(buffer, part1, bytes1, part2, bytes2);
-      Thandor_Log("movie export %s: audio %u Hz, %u ch, %u bit, %u bytes", name, format.nSamplesPerSec,
-                  format.nChannels, format.wBitsPerSample, bytes1 + bytes2);
-    }
-  }
-  sprintf(fileName, "moviedump\\%s.rgb", name);
-  video = fopen(fileName, "wb");
-  for (;;) {
-    int attempts = 0;
-    do {
-      frame = Movie_AdvanceFrame();
-      if (!frame.ended) break;
-      Thandor_SleepMs(5); /* the refill worker may not have loaded the next frame yet */
-    } while (++attempts < 200 && g_ActiveMovie != NULL &&
-             g_ActiveMovie->currentFrameIndex < g_ActiveMovie->fileHeader->frameCount);
-    if (frame.ended) break;
-    if (video != NULL) fwrite(g_ActiveMovie->argbPixels, 4, width * height, video);
-    frames++;
-  }
-  if (video != NULL) fclose(video);
-  sprintf(fileName, "moviedump\\%s.txt", name);
-  info = fopen(fileName, "w");
-  if (info != NULL) {
-    fprintf(info, "%u %u %u %u\n", width, height, frames, opened.playbackRateHz);
-    fclose(info);
-  }
-  Thandor_Log("movie export %s: %ux%u, %u frames at %u Hz", name, width, height, frames, opened.playbackRateHz);
-  Movie_Close();
-}
-
-/* Debug tool: OPEN_THANDOR_MOVIE=<name> plays flm\<name>.flm, OPEN_THANDOR_MOVIE=all plays every name
-   listed in movies.txt (up to 256, one per line) one after another, each with a frame counter overlay.
-   OPEN_THANDOR_MOVIE_STRETCH=1 stretches the frames to the screen. The process exits afterwards. */
-static void DebugMovie_Run(const char *which)
-{
-  const char *stretchValue = getenv("OPEN_THANDOR_MOVIE_STRETCH");
-  int stretch = (stretchValue != NULL) && (stretchValue[0] == '1');
-  if (strcmp(which, "all") == 0) {
-    static char names[256][24];
-    int count = 0;
-    int i;
-    FILE *list = fopen("movies.txt", "r");
-    if (list == NULL) {
-      Thandor_Log("debug movie: movies.txt not found");
-      ExitProcess(1);
-    }
-    while ((count < 256) && (fgets(names[count], sizeof names[count], list) != NULL)) {
-      char *end = names[count] + strlen(names[count]);
-      while ((end > names[count]) && ((end[-1] == '\n') || (end[-1] == '\r') || (end[-1] == ' '))) *--end = 0;
-      if (names[count][0] != 0) count++;
-    }
-    fclose(list);
-    /* OPEN_THANDOR_MOVIE_START=<n> resumes the list at movie n (1-based). */
-    i = (getenv("OPEN_THANDOR_MOVIE_START") != NULL) ? atoi(getenv("OPEN_THANDOR_MOVIE_START")) - 1 : 0;
-    if (i < 0) i = 0;
-    for (; i < count; i++) {
-      DebugMovie_PlayOne(names[i], i + 1, count, stretch);
-    }
-  }
-  else {
-    DebugMovie_PlayOne(which, 1, 1, stretch);
-  }
-  Thandor_Log("debug movie: finished");
-  ExitProcess(0);
-}
 
 /* Address: 0x005739D0.
    Plays the intro movies flm\intro0.flm, intro1.flm, ... until one cannot be opened, unless -NOINTRO is given.

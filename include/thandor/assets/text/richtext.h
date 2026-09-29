@@ -37,6 +37,20 @@
 #define RICHTEXT_OP_CALL_NESTED 0x18 /* payload: nested stream pointer, 32-bit selector; returns afterwards */
 #define RICHTEXT_OP_JUMP_NESTED 0x19 /* payload as 0x18, but continues in the nested stream without return */
 #define RICHTEXT_OP_INLINE_IMAGE 0x1A /* payload: texture source pointer, 32-bit subresource */
+/* Opcodes no interpreter handles (skipped as a single code unit; flattening drops them). 0x17 is the fourth
+   inline-value variant, which carries no payload. */
+#define RICHTEXT_OP_UNUSED_07 0x07
+#define RICHTEXT_OP_UNUSED_13 0x13
+#define RICHTEXT_OP_UNUSED_17 0x17
+#define RICHTEXT_OP_UNUSED_1B 0x1B
+#define RICHTEXT_OP_UNUSED_1C 0x1C
+#define RICHTEXT_OP_UNUSED_1D 0x1D
+#define RICHTEXT_OP_UNUSED_1E 0x1E
+#define RICHTEXT_OP_UNUSED_1F 0x1F
+/* RICHTEXT_OP_LITERAL_COLOR payload: the low nibble of each payload code unit is one hex digit of the ARGB
+   value. The interpreters shift each digit in at bits 28-31 and the value right by one digit per step. */
+#define RICHTEXT_COLOR_DIGIT_BITS 4
+#define RICHTEXT_COLOR_DIGIT_SHIFT 28
 #define RICHTEXT_RECORD_UNITS_LITERAL_COLOR 9
 #define RICHTEXT_RECORD_UNITS_INLINE_VALUE 3
 #define RICHTEXT_RECORD_UNITS_NESTED 5 /* RICHTEXT_OP_CALL_NESTED and RICHTEXT_OP_JUMP_NESTED */
@@ -46,6 +60,13 @@
 /* Code units of g_FontRuntimeBuffer that RichTextCommandStream_FlattenNestedToRuntimeBuffer fills (the terminator
    is written behind them). */
 #define RICHTEXT_RUNTIME_BUFFER_UNITS 0x2000
+
+/* TXT2STR markup (RichTextMarkup_ParseAndBuildStringAsset): '#@'..'#~' select code page (c - '@'), which adds
+   (c - '@') * RICHTEXT_MARKUP_CODE_PAGE_UNITS to the following bytes; '#!' makes '@'..'_' command code units. */
+#define RICHTEXT_MARKUP_CODE_PAGE_UNITS 0x80
+#define RICHTEXT_MARKUP_COMMAND_BIAS (RICHTEXT_COMMAND_FLAG - '@') /* '@' + bias = RICHTEXT_COMMAND_FLAG | 0 */
+/* Code unit of the "TXT2STR: unknown character" message where the byte offset is written (+0x4C). */
+#define RICHTEXT_MARKUP_ERROR_OFFSET_UNIT 38
 
 /* UiPackedTextStyle fields as the rich-text interpreters decode them. */
 #define TEXT_STYLE_ALIGN_RIGHT 0x1 /* the line ends at the given x */

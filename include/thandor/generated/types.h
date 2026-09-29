@@ -735,7 +735,7 @@ typedef struct InGameRuntimeRootUiGridView InGameRuntimeRootUiGridView, *PInGame
 typedef struct InGameRuntimeRootFrameView InGameRuntimeRootFrameView, *PInGameRuntimeRootFrameView;
 typedef struct WidePathPrefix4 WidePathPrefix4, *PWidePathPrefix4;
 typedef struct FrontendModelPointerContext FrontendModelPointerContext, *PFrontendModelPointerContext;
-typedef struct ModelLinkedDefinitionBranchView18 ModelLinkedDefinitionBranchView18, *PModelLinkedDefinitionBranchView18;
+typedef struct ArmyModelTreeNodeAddressView ArmyModelTreeNodeAddressView, *PArmyModelTreeNodeAddressView;
 typedef struct WorldRuntimeExtendedMapControlView WorldRuntimeExtendedMapControlView, *PWorldRuntimeExtendedMapControlView;
 typedef struct ArmyRuntimeClassUpdate21DefinitionView ArmyRuntimeClassUpdate21DefinitionView, *PArmyRuntimeClassUpdate21DefinitionView;
 typedef struct FixedTriangleJointAngles FixedTriangleJointAngles, *PFixedTriangleJointAngles;
@@ -2370,7 +2370,7 @@ typedef enum FieldCellPackedFlagsAndMaterial {
     FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK=6144,
     FIELD_CELL_FIRST_COLUMN_BOUNDARY=8192,
     FIELD_CELL_FIRST_ROW_BOUNDARY=16384,
-    FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15=32768,
+    FIELD_CELL_DEBUG_MARKED=32768, // no code in the game sets it; cleared at grid init, drawn by a debug overlay
     FIELD_CELL_CONNECTED_REGION_VISITED=65536,
     FIELD_CELL_LAST_COLUMN_BOUNDARY=134217728,
     FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28=268435456,
@@ -3350,7 +3350,9 @@ struct GameEntityRuntimeCommon {
     uint8_t reserved68_77[16]; // Unresolved common entity state before the tracked-coordinate pair.
     Q12 trackedCoordinate0Q12; // First machine-proven tracked coordinate mirrored with path/model coordinate 0.
     Q12 trackedCoordinate1Q12; // Second machine-proven tracked coordinate mirrored with path/model coordinate 1.
-    uint8_t reserved80_9F[32]; // Unresolved common entity state after the tracked-coordinate pair.
+    uint8_t reserved80_8B[12]; // Same bytes as ArmyRuntimeSlot.aiSiteScoreWeight .. aiSecondaryWorkspaceScoreWeight.
+    int aiCommandCooldownTicks; // +0x8C same dword as ArmyRuntimeSlot.aiUnitState: set to AI_UNIT_COMMANDED_STATE (8) on an AI order, counted down per AI tick of busy units.
+    uint8_t reserved90_9F[16]; // Same bytes as ArmyRuntimeSlot.occupancyMarkRadius .. depthBinClass.
     RuntimeToken runtimeIdentityOrArmyAssetId; // Runtime identity or army asset identifier.
     uint8_t reservedA4_B7[20]; // Unresolved prefix retained.
     Q12 pathCoordinate0Q12; // First stored path/aim coordinate, consumed by AI distance, shot aim and overlay routines; axis naming differs between callers.
@@ -3396,7 +3398,7 @@ struct AssetBuildTimestampSet {
 
 struct GeneratedAssetBuildMetadata {
     struct AssetBuildTimestampSet timestamps;
-    uint8_t reserved28_2F[8]; // Zero in every asset; code only uses its address as an asset-relative anchor (reserved28_2F + (offset - 0x28) = asset + offset).
+    uint8_t assetAnchor28[8]; // Asset +0x28, zero in every asset. Only its address is used, as an anchor for asset-relative offsets (assetAnchor28 + offset - 0x28 = asset + offset) where the plain (uint8_t *)asset + offset form compiles differently (GFX_ANCHORED_ASSET_BYTES).
     struct AssetProducerSourceNames names;
 };
 
@@ -4088,7 +4090,8 @@ struct GraphicsTextureSet {
 struct GraphicsTextureSourceAsset {
     struct GeneratedAssetCommonPrefix common;
     struct GraphicsTextureSourceTableDescriptor tableDescriptor;
-    uint8_t reservedBC_FF[68]; // Only cleared (TerrainCompositeTexture clears the dword at +0xBC).
+    uint32_t unusedHeaderDwordBC; // Never read; TerrainCompositeTexture_Create clears it.
+    uint8_t reservedC0_FF[64];
     char unusedText[256]; // Zero-terminated text that is empty in every stock asset and never read; asset writers clear its first byte.
 };
 
@@ -6215,7 +6218,7 @@ struct LevelAssetHeader {
     struct LevelAssetPathOffsets pathOffsets;
     LevelAssetRecordCount initialArmyPlacementRecordCount; // Number of 0x20-byte initial army placement records at resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset.
     struct LevelAssetResourceTables resourceTables; // Counts and UTF-16 path-table offsets for ARM, MDL, EFF, and SHT assets.
-    uint8_t opaque100_16F[112]; // Level-header region without closed field evidence.
+    uint16_t levelFileNameUtf16[56]; // UTF-16 level file base name (level\<name>.lev); "t00_tu..." marks the tutorial levels.
     UiTextResourceId titleTextResourceIndex; // Localized level title resource identifier.
     uint8_t opaque174_18F[28]; // Level-header region without closed field evidence.
     LevelCampaignAssociationIndex campaignAssociationIndex; // Campaign association index.
@@ -9101,7 +9104,8 @@ struct SoftwarePixelFormatConfig {
 struct GraphicsCapturedTextureSourceAsset {
     struct GeneratedAssetCommonPrefix common; 
     struct GraphicsTextureSourceTableDescriptor tableDescriptor;
-    uint8_t reservedBC_FF[68];
+    uint32_t unusedHeaderDwordBC; // See GraphicsTextureSourceAsset.unusedHeaderDwordBC.
+    uint8_t reservedC0_FF[64];
     char unusedText[256]; // See GraphicsTextureSourceAsset.unusedText; the capture functions clear its first byte.
     struct GraphicsTextureSourceEntry sourceEntry;
     uint32_t argb8888Pixels[1];
@@ -9571,9 +9575,11 @@ struct UiPayloadPairTextButton {
 };
 
 struct UiCommandRuntimeRecordPrefix {
-    uint8_t reserved00_07[8]; 
+    AssetRecordByteCount byteSize; /* ArmyAssetRecord.byteSize */
+    ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex; /* +0x04 added to the hover text id base */
     enum PckArmyAssetIdCatalog armyAssetId;
-    uint8_t reserved0C_13[8];
+    uint32_t rootNodeOffsetOrPointer; /* +0x0C ArmyAssetRecord.rootNodeOffsetOrPointer (ArmyModelTreeNode * after registration) */
+    void *linkedRuntimeOrRecord10;
     uint32_t assetFlags14; /* +0x14 army asset flags (ArmyAssetRecord.flags): 1 buildable, 0x10 special catalog, rest capability bits */
     uint8_t reserved18_1B[4];
     struct GraphicsTextureSourceAsset *textureSource;
@@ -10953,7 +10959,7 @@ struct WorldPositionResult {
     Q12 worldXQ12; // EAX world X
     Q12 worldYQ12; // ECX world Y
     Q12 worldZQ12; // EDX world Z
-    bool unresolved; // CF validity/status
+    bool noPosition; // CF set when there is no position (no/lost command target, empty selection)
 };
 
 struct SpatialSoundSlotResult {
@@ -11587,7 +11593,8 @@ struct FrontendModelPointerContext {
     uint32_t reserved178; // Trailing dword; never accessed.
 };
 
-struct ModelLinkedDefinitionBranchView18 {
+/* ArmyModelTreeNode (assets/army/catalog.h) with its children read as ModelLinkedDefinitionListAddress32. */
+struct ArmyModelTreeNodeAddressView {
     uint8_t unresolved00_07[8];
     uint32_t childListCount;
     ModelLinkedDefinitionListAddress32 childList0Address;
@@ -12099,7 +12106,7 @@ struct FrontendLoadedLevelHeader {
     struct FrontendLoadedLevelPathOffsets pathState;
     LevelAssetRecordCount initialArmyPlacementRecordCount; // Same slot as LevelAssetHeader.initialArmyPlacementRecordCount; unused by the frontend.
     struct LevelAssetResourceTables resourceTables;
-    uint8_t opaque100_16F[112];
+    uint16_t levelFileNameUtf16[56]; // Same slot as LevelAssetHeader.levelFileNameUtf16.
     UiTextResourceId titleTextResourceIndex;
     uint8_t opaque174_18F[28];
     LevelCampaignAssociationIndex campaignAssociationIndex;
@@ -14499,7 +14506,7 @@ struct LevelInitialArmyPlacementRecord20 {
     Q12 worldYQ12;
     Q12 worldXQ12;
     AngleTurn32 orientationAngle;
-    uint8_t reserved14_1F[12]; // Unresolved trailing bytes of the 0x20 placement record.
+    uint8_t zeroPadding[12]; // Written as zero by the level saver, ignored by the loader.
 };
 
 

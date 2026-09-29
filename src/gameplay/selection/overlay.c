@@ -611,8 +611,8 @@ void SelectionOverlay_DrawGridVertexMarkers
     gridColumns = fieldGrid->gridWidth;
     columnCount = gridColumns >> 2;
     rowsRemaining = fieldGrid->gridHeight >> 2;
-    /* &fieldGrid->cells[gridColumns + 1]: row 1, column 1 (the FieldGridAsset header, then the cells) */
-    vertexCursor = fieldGrid[1].common.buildMetadata.reserved28_2F + gridColumns * sizeof(FieldGridCell) + -0x28;
+    /* row 1, column 1 */
+    vertexCursor = (uint8_t *)&fieldGrid->cells[gridColumns + 1];
     columnsRemaining = columnCount;
     rowStart = vertexCursor;
     if ((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0) {
@@ -819,8 +819,8 @@ void SelectionOverlay_DrawResourceCellMarkers
 
 
 /* Address: 0x0052FA20.
-   Marks the field cells with FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15 with the
-   SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED marker at their projected point A. Called by
+   Debug overlay: draws the SELECTION_OVERLAY_MARKER_FLUID_RECEIVER_EXCLUDED marker at the projected point A of
+   every field cell with FIELD_CELL_DEBUG_MARKED (which no code in the game sets). Called by
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x4000 and g_UiCommandRuntimeFlags
    bit 0x40 are set and a field grid is attached.
 */
@@ -851,7 +851,7 @@ void SelectionOverlay_DrawUnresolvedCellMarkers
     rowStartCell = cellCursor;
     do {
       do {
-        if (((cellCursor->flagsAndMaterial & FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15) != 0) &&
+        if (((cellCursor->flagsAndMaterial & FIELD_CELL_DEBUG_MARKED) != 0) &&
            ((cellCursor->flagsAndMaterial & TERRAIN_VERTEX_POINT_A_NOT_PROJECTED) == 0)) {
           screenX = cellCursor->groundScreenPoint.projectedX >> 12;
           screenY = cellCursor->groundScreenPoint.projectedY >> 12;

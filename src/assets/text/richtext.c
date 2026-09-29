@@ -162,10 +162,14 @@ bool RichTextCommandStream_DrawSingleLine
       /* The eight payload code units are hex digits (only their low nibble is used, SHRD EDX,EAX,4 in the
          original): units 1-2 form the lowest colour byte, 7-8 the highest, each pair high digit first. */
       g_RichTextCurrentColorArgb =
-           ((((((((uint8_t)commandCursor[2] & 0xf) << 0x18 | (uint32_t)(uint8_t)*commandStream << 0x1c) >> 4 |
-               (uint32_t)(uint8_t)commandCursor[4] << 0x1c) >> 4 | (uint32_t)(uint8_t)commandCursor[3] << 0x1c) >> 4 |
-             (uint32_t)(uint8_t)commandCursor[6] << 0x1c) >> 4 | (uint32_t)(uint8_t)commandCursor[5] << 0x1c) >> 4 |
-           (uint32_t)(uint8_t)commandCursor[8] << 0x1c) >> 4 | (uint32_t)(uint8_t)commandCursor[7] << 0x1c;
+           ((((((((uint8_t)commandCursor[2] & 0xf) << (RICHTEXT_COLOR_DIGIT_SHIFT - RICHTEXT_COLOR_DIGIT_BITS) |
+                 (uint32_t)(uint8_t)*commandStream << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+                (uint32_t)(uint8_t)commandCursor[4] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+               (uint32_t)(uint8_t)commandCursor[3] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+              (uint32_t)(uint8_t)commandCursor[6] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+             (uint32_t)(uint8_t)commandCursor[5] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+            (uint32_t)(uint8_t)commandCursor[8] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+           (uint32_t)(uint8_t)commandCursor[7] << RICHTEXT_COLOR_DIGIT_SHIFT;
       commandStream = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       break;
     case RICHTEXT_OP_SELECT_FONT_FIRST:
@@ -518,7 +522,7 @@ bool RichTextCommandStream_SetNthInlineValueFlags(int commandOrdinal,uint32_t fl
       remainingCount--;
       streamCursor = (uint32_t *)((uint8_t *)commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE * 2);
       if (remainingCount == 0) {
-        *commandCursor = *commandCursor & 0xffff8014;
+        *commandCursor = *commandCursor & (0xffff0000U | RICHTEXT_COMMAND_FLAG | RICHTEXT_OP_INLINE_VALUE_0);
         *commandCursor = *commandCursor | flagBits;
         return false;
       }
@@ -694,8 +698,8 @@ capacityError:
    break, and '#.' ends the input and groups the strings by key: a 0x200-byte header, then per key (in the order
    of the key's first string) a 0x10-byte group header {size, string count, key, 0}, the string offsets
    (relative to the group header) and the strings.
-   An unknown character returns the formatted "TXT2STR: unknown character" message (with its byte offset)
-   in EAX and CF set; running out of arena space returns FATAL_ERROR_GENERAL_FAILURE and CF set.
+   An invalid character (control byte, unknown escape, misplaced tag) returns the formatted
+   "TXT2STR: unknown character" message (with its byte offset) in EAX and CF set; running out of arena space returns FATAL_ERROR_GENERAL_FAILURE and CF set.
    On success the original also returns the asset size in ECX and asset + 0x100 in EDX; RichTextAssetResult
    keeps only EAX and CF (there is no caller).
 */
@@ -720,6 +724,8 @@ RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes
   bool insideTag;
   uint32_t tagCount;
   uint32_t *asset;
+  TextResourceAssetHeader *header;
+  AssetBuildTimestampSet *timestamps;
   uint32_t *assetCursor;
   uint32_t *groupHeader;
   uint32_t *offsetCursor;
@@ -750,12 +756,13 @@ RichTextAssetResult RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes
   for (;;) {
     markupByte = *markupCursor++;
     switch (markupByte) {
+    /* control characters other than tab, LF and CR, and DEL */
     case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
-    case 0xb: case 0xc: case 0xe: case 0xf:
-    case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-    case 0x18: case 0x19: case 0x1a: case 0x1b: case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-    case 0x7f:
-      goto reportUnknownCharacter;
+    case 11: case 12: case 14: case 15:
+    case 16: case 17: case 18: case 19: case 20: case 21: case 22: case 23:
+    case 24: case 25: case 26: case 27: case 28: case 29: case 30: case 31:
+    case 127:
+      goto reportInvalidCharacter;
     case '\t':
     case '\n':
       continue;
@@ -780,19 +787,19 @@ emitCodeUnit:
     markupByte = *markupCursor++;
     switch (markupByte) {
     default:
-      goto reportUnknownCharacter;
+      goto reportInvalidCharacter;
     case '\n':
     case '\r':
       /* line continuation: skip the line end */
       for (;;) {
         markupByte = *markupCursor;
-        if (markupByte >= 0x20) break;
+        if (markupByte >= ' ') break;
         markupCursor++;
-        if ((markupByte != '\n') && (markupByte != '\r')) goto reportUnknownCharacter;
+        if ((markupByte != '\n') && (markupByte != '\r')) goto reportInvalidCharacter;
       }
       continue;
     case '!':
-      codeUnitBias = 0x7fc0; /* '@'..'_' become RICHTEXT_COMMAND_FLAG | 0x00..0x1F */
+      codeUnitBias = RICHTEXT_MARKUP_COMMAND_BIAS; /* '@'..'_' become RICHTEXT_COMMAND_FLAG | 0x00..0x1F */
       continue;
     case '#':
       goto emitCodeUnit;
@@ -805,14 +812,14 @@ emitCodeUnit:
     case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
       /* '#ddd': three decimal digits, the key of the following tags (EDX in the original) */
       key = (int32_t)(markupByte - '0') * 10;
-      if ((markupCursor[0] < '0') || ('9' < markupCursor[0])) goto reportUnknownCharacter;
+      if ((markupCursor[0] < '0') || ('9' < markupCursor[0])) goto reportInvalidCharacter;
       key = key + (markupCursor[0] - '0');
-      if ((markupCursor[1] < '0') || ('9' < markupCursor[1])) goto reportUnknownCharacter;
+      if ((markupCursor[1] < '0') || ('9' < markupCursor[1])) goto reportInvalidCharacter;
       key = key * 10 + (markupCursor[1] - '0');
       markupCursor += 2;
       continue;
     case '<':
-      if (insideTag) goto reportUnknownCharacter;
+      if (insideTag) goto reportInvalidCharacter;
       /* PUSH EDI / PUSH EDX: the string starts here and gets the current key */
       if (tagCount >= RICHTEXT_MARKUP_TAG_LIMIT - 1) goto freePrimaryBufferAndFail;
       tagStarts[tagCount] = outputCursor;
@@ -822,7 +829,7 @@ emitCodeUnit:
       continue;
     case '>':
       /* ends the string: NUL terminator, padded to a dword boundary */
-      if (!insideTag) goto reportUnknownCharacter;
+      if (!insideTag) goto reportInvalidCharacter;
       insideTag = false;
       if (((uint32_t)(uintptr_t)outputCursor & 2) == 0) {
         if (remainingCapacityBytes <= 4) goto freePrimaryBufferAndFail;
@@ -838,18 +845,18 @@ emitCodeUnit:
       }
       continue;
     case '.':
-      if ((tagCount == 0) || insideTag) goto reportUnknownCharacter;
+      if ((tagCount == 0) || insideTag) goto reportInvalidCharacter;
       goto buildAsset;
-    case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
-    case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4e: case 0x4f:
-    case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
-    case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d: case 0x5e: case 0x5f:
-    case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x65: case 0x66: case 0x67:
-    case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
-    case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
-    case 0x78: case 0x79: case 0x7a: case 0x7b: case 0x7c: case 0x7d: case 0x7e:
+    case '@': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G':
+    case 'H': case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O':
+    case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W':
+    case 'X': case 'Y': case 'Z': case '[': case '\\': case ']': case '^': case '_':
+    case '`': case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g':
+    case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n': case 'o':
+    case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w':
+    case 'x': case 'y': case 'z': case '{': case '|': case '}': case '~':
       /* '#@'..'#~': code page select, following bytes are emitted + (c - '@') * 0x80 */
-      codeUnitBias = markupByte * 0x80 - 0x2000;
+      codeUnitBias = markupByte * RICHTEXT_MARKUP_CODE_PAGE_UNITS - '@' * RICHTEXT_MARKUP_CODE_PAGE_UNITS;
       continue;
     }
   }
@@ -865,12 +872,12 @@ buildAsset:
   largestBlock = g_MemoryApi.allocLargestFreeBlock();
   if (largestBlock.failed) goto freePrimaryBufferAndFail;
   asset = (uint32_t *)(uintptr_t)largestBlock.allocationOrError;
-  if (largestBlock.blockSizeOrSentinel <= 0x200) goto freeAssetBufferAndFail;
-  remainingCapacityBytes = largestBlock.blockSizeOrSentinel - 0x200;
-  for (index = 0; index < 0x80; index++) {
+  if (largestBlock.blockSizeOrSentinel <= sizeof(TextResourceAssetHeader)) goto freeAssetBufferAndFail;
+  remainingCapacityBytes = largestBlock.blockSizeOrSentinel - sizeof(TextResourceAssetHeader);
+  for (index = 0; index < sizeof(TextResourceAssetHeader) / sizeof(uint32_t); index++) {
     asset[index] = 0;
   }
-  assetCursor = asset + 0x80;
+  assetCursor = asset + sizeof(TextResourceAssetHeader) / sizeof(uint32_t);
   groupCount = 0;
   for (;;) {
     /* the next key in the order of its first string; copied strings carry key -1 */
@@ -878,11 +885,12 @@ buildAsset:
     }
     if (first == tagCount) break;
     groupKey = tagKeys[first];
-    if (remainingCapacityBytes <= 0x10) goto freeAssetBufferAndFail;
-    remainingCapacityBytes -= 0x10;
+    if (remainingCapacityBytes <= sizeof(TextResourceLocaleBlockPrefix)) goto freeAssetBufferAndFail;
+    remainingCapacityBytes -= sizeof(TextResourceLocaleBlockPrefix);
+    /* groupHeader is a TextResourceLocaleBlockPrefix: [0] block size, [1] string count, [2] key */
     groupHeader = assetCursor;
     groupHeader[2] = (uint32_t)groupKey;
-    groupHeader[0] = 0x10;
+    groupHeader[0] = sizeof(TextResourceLocaleBlockPrefix);
     groupHeader[1] = 0;
     for (index = first; index < tagCount; index++) {
       if (tagKeys[index] == groupKey) {
@@ -894,7 +902,7 @@ buildAsset:
       }
     }
     groupCount++;
-    offsetCursor = groupHeader + 4;
+    offsetCursor = groupHeader + sizeof(TextResourceLocaleBlockPrefix) / sizeof(uint32_t);
     assetCursor = offsetCursor + groupHeader[1];
     for (index = 0; index < tagCount; index++) {
       if (tagKeys[index] == groupKey) {
@@ -911,19 +919,21 @@ buildAsset:
   g_MemoryApi.free(memory);
   assetSize = (uint32_t)((uint8_t *)assetCursor - (uint8_t *)asset);
   g_MemoryApi.shrinkInPlace(assetSize,asset);
-  asset[0x2c] = groupCount; /* +0xB0 */
-  asset[1] = assetSize;
-  asset[0] = ASSET_MAGIC_STR;
-  asset[2] = 1;
-  asset[3] = 0;
-  asset[4] = g_LocaleGetPackedCurrentTime();
-  asset[6] = asset[4];
-  asset[8] = asset[4];
-  asset[5] = g_LocaleGetPackedCurrentDate();
-  asset[7] = asset[5];
-  asset[9] = asset[5];
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(asset + 0xc));  /* +0x30 */
-  g_LocaleCopyDefaultComputerLabelUtf16((uint16_t *)(asset + 0x1c)); /* +0x70 */
+  header = (TextResourceAssetHeader *)asset;
+  header->localeCountHeader.localeBlockCount = groupCount; /* +0xB0 */
+  header->localeCountHeader.common.allocationSizeBytes = assetSize;
+  header->localeCountHeader.common.magic = ASSET_MAGIC_STR;
+  header->localeCountHeader.common.formatVersion = 1;
+  header->localeCountHeader.common.converterVersion = 0;
+  timestamps = &header->localeCountHeader.common.buildMetadata.timestamps;
+  timestamps->timeValue0 = g_LocaleGetPackedCurrentTime();
+  timestamps->timeValue1 = timestamps->timeValue0;
+  timestamps->timeValue2 = timestamps->timeValue0;
+  timestamps->dateValue0 = g_LocaleGetPackedCurrentDate();
+  timestamps->dateValue1 = timestamps->dateValue0;
+  timestamps->dateValue2 = timestamps->dateValue0;
+  g_LocaleCopyDefaultComputerLabelUtf16(header->localeCountHeader.common.buildMetadata.names.producerName);
+  g_LocaleCopyDefaultComputerLabelUtf16(header->localeCountHeader.common.buildMetadata.names.sourceName);
   result.assetOrError = asset;
   result.failed = false;
   return result;
@@ -936,12 +946,12 @@ freePrimaryBufferAndFail:
   result.failed = true;
   return result;
 
-reportUnknownCharacter:
+reportInvalidCharacter:
   g_MemoryApi.free(memory);
   /* the byte offset after the offending character(s), written into the message at +0x4C */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)(markupCursor - markupBytes),
-             &u_error__TXT2STR__unknown_characte_0041afac[0x26]);
+             &u_error__TXT2STR__unknown_characte_0041afac[RICHTEXT_MARKUP_ERROR_OFFSET_UNIT]);
   result.assetOrError = u_error__TXT2STR__unknown_characte_0041afac;
   result.failed = true;
   return result;
@@ -1104,13 +1114,13 @@ RichTextExtentRegs RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedSty
       commandStream = command + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       break;
     case RICHTEXT_OP_SELECT_FONT_FIRST:
-    case 9:
-    case 10:
-    case 0xb:
-    case 0xc:
-    case 0xd:
-    case 0xe:
-    case 0xf:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 1:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 2:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 3:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 4:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 5:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 6:
+    case RICHTEXT_OP_SELECT_FONT_FIRST + 7:
       g_ActiveFontIndex = value & 0xf;
       break;
     case RICHTEXT_OP_FIXED_SPACE:
@@ -1423,10 +1433,14 @@ commitWrapBoundary:
       /* eight hex-digit code units (low byte of unit k at scanCursor[2k]), as in
          RichTextCommandStream_DrawSingleLine */
       g_RichTextCurrentColorArgb =
-           (((((((scanCursor[4] & 0xf) << 0x18 | (uint32_t)*drawCursor << 0x1c) >> 4 | (uint32_t)scanCursor[8] << 0x1c) >>
-               4 | (uint32_t)scanCursor[6] << 0x1c) >> 4 | (uint32_t)scanCursor[0xc] << 0x1c) >> 4 |
-            (uint32_t)scanCursor[10] << 0x1c) >> 4 | (uint32_t)scanCursor[0x10] << 0x1c) >> 4 |
-           (uint32_t)scanCursor[0xe] << 0x1c;
+           (((((((scanCursor[4] & 0xf) << (RICHTEXT_COLOR_DIGIT_SHIFT - RICHTEXT_COLOR_DIGIT_BITS) |
+                (uint32_t)*drawCursor << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+               (uint32_t)scanCursor[8] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+              (uint32_t)scanCursor[6] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+             (uint32_t)scanCursor[12] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+            (uint32_t)scanCursor[10] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+           (uint32_t)scanCursor[16] << RICHTEXT_COLOR_DIGIT_SHIFT) >> RICHTEXT_COLOR_DIGIT_BITS |
+           (uint32_t)scanCursor[14] << RICHTEXT_COLOR_DIGIT_SHIFT;
       drawCursor = scanCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * sizeof(uint16_t);
       break;
     case RICHTEXT_OP_SELECT_FONT_FIRST:
@@ -1533,17 +1547,17 @@ void RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
       break;
     /* dropped; only the command code unit is skipped, so an inline value's payload units follow as code
        units of their own */
-    case 7:
-    case 0x13:
+    case RICHTEXT_OP_UNUSED_07:
+    case RICHTEXT_OP_UNUSED_13:
     case RICHTEXT_OP_INLINE_VALUE_0:
     case RICHTEXT_OP_INLINE_VALUE_1:
     case RICHTEXT_OP_INLINE_VALUE_2:
-    case 0x17:
-    case 0x1b:
-    case 0x1c:
-    case 0x1d:
-    case 0x1e:
-    case 0x1f:
+    case RICHTEXT_OP_UNUSED_17:
+    case RICHTEXT_OP_UNUSED_1B:
+    case RICHTEXT_OP_UNUSED_1C:
+    case RICHTEXT_OP_UNUSED_1D:
+    case RICHTEXT_OP_UNUSED_1E:
+    case RICHTEXT_OP_UNUSED_1F:
       break;
     case RICHTEXT_OP_CALL_NESTED:
       if (nestedDepth == RICHTEXT_NESTING_LIMIT) {

@@ -2852,15 +2852,13 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
   uint8_t *alphaCursor;
   
   g_GeneratedTextureScratchRuntime.downsampleBorderOffset = g_TextureDownsampleShift << 2;
-  /* asset + first source entry's dataOffset (reserved28_2F lies at asset + 0x28), moved half
-     a tile down and right */
+  /* asset + first source entry's dataOffset, moved half a tile down and right */
   g_GraphicsShadingGeneratedTexturePixelCursor =
-       (g_GraphicsShadingGeneratedAsset->common).buildMetadata.reserved28_2F +
+       (uint8_t *)g_GraphicsShadingGeneratedAsset +
        ((g_GraphicsShadingTextureDimension + 1) * g_GraphicsShadingGridHalfSize >> 1) +
        (int)((GraphicsTextureSourceEntry *)
              ((uint8_t *)g_GraphicsShadingGeneratedAsset +
-              (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset))->dataOffset
-       - GFX_ASSET_ANCHOR28_OFFSET;
+              (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset))->dataOffset;
   g_GraphicsShadingGeneratedTextureTileX = 0;
   g_GraphicsShadingGeneratedTextureTileY = 0;
   g_GraphicsShadingGeneratedTextureSubresourceIndex = 0;
@@ -2869,8 +2867,8 @@ void GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
   g_GraphicsShadingGeneratedTextureCompletedTraversalCount = 0;
   tableOffset = (g_GraphicsShadingGeneratedAsset->tableDescriptor).subresourceTableOffset;
   /* pixels follow the 0x20-byte source entries; size = count * width * height of the first entry */
-  alphaCursor = (g_GraphicsShadingGeneratedAsset->common).buildMetadata.reserved28_2F +
-           g_GraphicsShadingSubresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + tableOffset - GFX_ASSET_ANCHOR28_OFFSET;
+  alphaCursor = (uint8_t *)g_GraphicsShadingGeneratedAsset +
+                g_GraphicsShadingSubresourceCount * GFX_SUBRESOURCE_RECORD_SIZE + tableOffset;
   for (dwordsRemaining = g_GraphicsShadingSubresourceCount *
                ((GraphicsTextureSourceEntry *)((uint8_t *)g_GraphicsShadingGeneratedAsset + tableOffset))->pixelWidth *
                ((GraphicsTextureSourceEntry *)((uint8_t *)g_GraphicsShadingGeneratedAsset +
