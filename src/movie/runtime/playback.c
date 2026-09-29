@@ -717,7 +717,7 @@ void EndMovieUiRuntime_DispatchCommandByFlags
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0) {
       /* always true here: the direct call below is unreachable in the original as well */
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_MARK_PLAYER_READY_101B,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_RESULTS_READY,0,0,0);
       }
       else {
         FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(g_LocalPlayerRuntimeId);

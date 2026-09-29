@@ -189,7 +189,7 @@ void InGameResultsScreen_ContinueOrMarkReady(void *source)
     FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton(g_LocalPlayerRuntimeId);
   }
   else {
-    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_MARK_PLAYER_READY_101B,0,0,0);
+    InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_RESULTS_READY,0,0,0);
   }
   return;
 }

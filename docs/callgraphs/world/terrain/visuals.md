@@ -16,7 +16,7 @@
 - `0x00561EA0` **[`TerrainLighting_AdjustDirectionAndRecomputeField`](../../../../src/world/terrain/visuals.c#L711)** — cross: [`WorldRuntime_RecomputeFieldRegionNormalsAndLighting`](../../../../src/world/runtime/core.c#L1504) → [`world/runtime/core`](../runtime/core.md)
 - `0x0053D560` **[`TerrainCompositeTexture_FillPlane1`](../../../../src/world/terrain/visuals.c#L737)**
 - `0x0053D680` **[`TerrainCompositeTexture_FillPlane2`](../../../../src/world/terrain/visuals.c#L874)**
-- `0x0053D840` **[`TerrainCompositeTexture_RebuildPlane0`](../../../../src/world/terrain/visuals.c#L1112)** — cross: [`FieldGrid_WorldToGridQ12`](../../../../src/world/terrain/grid.c#L3515) → [`world/terrain/grid`](grid.md), [`SelectionInfo_FindEntry`](../../../../src/gameplay/selection/runtime.c#L1505) → [`gameplay/selection/runtime`](../../gameplay/selection/runtime.md)
+- `0x0053D840` **[`TerrainCompositeTexture_RebuildPlane0`](../../../../src/world/terrain/visuals.c#L1112)** — cross: [`FieldGrid_WorldToGridQ12`](../../../../src/world/terrain/grid.c#L3515) → [`world/terrain/grid`](grid.md), [`SelectionInfo_IsEntryAbsent`](../../../../src/gameplay/selection/runtime.c#L1505) → [`gameplay/selection/runtime`](../../gameplay/selection/runtime.md)
 
 ## Called by
 

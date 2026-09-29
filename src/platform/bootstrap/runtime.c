@@ -1114,7 +1114,11 @@ bindDebugOverlayTexts:
                       (playerRecordCursor->factionAssignment).roleStateFlags = 0;
                       playerRecordCursor->snapshotTransferFlags = 0;
                       /* pointers to 32 consecutive records, although only the first
-                         FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated */
+                         FRONTEND_PLAYER_RUNTIME_RECORD_ALLOC_COUNT are allocated.
+                         Original quirk: entries 8..31 point past the buffer (the original
+                         also allocates 0x9D80 and loops 0x20 times with stride 0x13B0). Harmless:
+                         the table is only the hostLobbyPlayerList row table, whose rowCount is
+                         capped by maxPlayersSlider (range 2..8), so only rows 0..7 are used. */
                       statusOrCount = 32;
                       do {
                         *playerRuntimePointerTableWriteCursor = playerRecordCursor;

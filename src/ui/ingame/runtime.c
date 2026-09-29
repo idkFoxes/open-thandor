@@ -2761,7 +2761,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
           FrontendPlayerRuntime_SetSlowRenderingFlagById(g_LocalPlayerRuntimeId,0,0,PLAYER_SESSION_FLAG_SLOW_RENDERING);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SESSION_FLAGS,0,0,
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SLOW_RENDERING,0,0,
                                                       PLAYER_SESSION_FLAG_SLOW_RENDERING);
         }
         g_InGameReadyStateToggleFlags = g_InGameReadyStateToggleFlags ^ 1;
@@ -2773,7 +2773,7 @@ void InGameHud_UpdateStatusCountersAndSessionPrompts(void)
         FrontendPlayerRuntime_SetSlowRenderingFlagById(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SESSION_FLAGS,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SLOW_RENDERING,0,0,0);
       }
       g_InGameReadyStateToggleFlags = g_InGameReadyStateToggleFlags ^ 1;
     }
@@ -2995,12 +2995,12 @@ enum InGameKeyCommandContinuation {
   INGAME_KEY_CAMERA_TO_NOTIFICATION = 0x567e40,      /* Alt+Space */
   INGAME_KEY_CAMERA_TO_SELECTION = 0x567ea0,         /* Numpad 5 */
   INGAME_KEY_CAMERA_TO_CLASS11_MODEL = 0x567ed0,     /* B */
-  INGAME_KEY_SELECTION_STOP = 0x567f60,              /* S, Shift+Alt+S */
-  INGAME_KEY_SELECTION_RESET_ANCHORS = 0x567fc0,     /* Shift+S */
-  INGAME_KEY_SELECTION_INTERRUPT_TARGETS = 0x568020, /* Alt+S */
+  INGAME_KEY_SELECTION_RESET_MOVEMENT = 0x567f60,    /* S, Shift+Alt+S */
+  INGAME_KEY_SELECTION_STOP_MOVEMENT = 0x567fc0,     /* Shift+S */
+  INGAME_KEY_SELECTION_CANCEL_TARGETS = 0x568020,    /* Alt+S */
   INGAME_KEY_UPGRADE_PAGE_TOGGLE = 0x568080,         /* F */
   INGAME_KEY_SELECT_OWNED_CLASS16 = 0x5680f0,        /* A */
-  INGAME_KEY_SELECTION_APPLY_FLAGS418 = 0x568130,    /* Alt+D */
+  INGAME_KEY_SELECTION_SELF_DESTRUCT = 0x568130,     /* Alt+D */
   INGAME_KEY_FREE_CAMERA_TOGGLE = 0x568190,          /* Alt+C */
   INGAME_KEY_WRAPPED_STATUS_TEXT_TOGGLE = 0x5681a0,  /* O */
   INGAME_KEY_CHEAT_OCCUPANCY_TOGGLE = 0x5681b0       /* Ctrl+Alt+V */
@@ -3159,15 +3159,15 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     }
     break;
   }
-  case INGAME_KEY_SELECTION_STOP:
-  case INGAME_KEY_SELECTION_RESET_ANCHORS:
-  case INGAME_KEY_SELECTION_INTERRUPT_TARGETS:
-  case INGAME_KEY_SELECTION_APPLY_FLAGS418: {
-    static const uint32_t queuedCommandCodes[4] = {INGAME_COMMAND_SELECTION_STOP,INGAME_COMMAND_SELECTION_RESET_ANCHORS,
-                                                   INGAME_COMMAND_SELECTION_INTERRUPT_TARGETS,INGAME_COMMAND_SELECTION_APPLY_FLAGS418};
-    int commandIndex = (target == INGAME_KEY_SELECTION_STOP) ? 0 :
-                       (target == INGAME_KEY_SELECTION_RESET_ANCHORS) ? 1 :
-                       (target == INGAME_KEY_SELECTION_INTERRUPT_TARGETS) ? 2 : 3;
+  case INGAME_KEY_SELECTION_RESET_MOVEMENT:
+  case INGAME_KEY_SELECTION_STOP_MOVEMENT:
+  case INGAME_KEY_SELECTION_CANCEL_TARGETS:
+  case INGAME_KEY_SELECTION_SELF_DESTRUCT: {
+    static const uint32_t queuedCommandCodes[4] = {INGAME_COMMAND_SELECTION_RESET_MOVEMENT,INGAME_COMMAND_SELECTION_STOP_MOVEMENT,
+                                                   INGAME_COMMAND_SELECTION_CANCEL_TARGETS,INGAME_COMMAND_SELECTION_SELF_DESTRUCT};
+    int commandIndex = (target == INGAME_KEY_SELECTION_RESET_MOVEMENT) ? 0 :
+                       (target == INGAME_KEY_SELECTION_STOP_MOVEMENT) ? 1 :
+                       (target == INGAME_KEY_SELECTION_CANCEL_TARGETS) ? 2 : 3;
     if (commandsBlocked || SelectionInfo_AllEntriesEmptyOrMatchOwner(world->activeFactionRuntimeIndex)) {
       break;
     }
@@ -4529,7 +4529,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
         payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
         conditionResult = WorldRuntimeNode_IsPositionInsideBounds(runtimeNode,mapControl);
         if (conditionResult) {
-          conditionResult = SelectionInfo_FindEntry(entry);
+          conditionResult = SelectionInfo_IsEntryAbsent(entry);
           encodedValue = g_InGameSelectionInsertTripletDwordCount;
           if (((conditionResult) &&
               (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,
@@ -4541,7 +4541,7 @@ void InGameUiCommand_UpdateInteractionByMode(UiPointerRegionCode pointerRegionCo
           }
         }
         else {
-          conditionResult = SelectionInfo_FindEntry(entry);
+          conditionResult = SelectionInfo_IsEntryAbsent(entry);
           encodedValue = g_InGameSelectionRemoveTripletDwordCount;
           if (((!conditionResult) &&
               (conditionResult = InGameCommandQueue_ContainsTripletValue(payloadValue,

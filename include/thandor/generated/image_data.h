@@ -60,15 +60,15 @@ extern ImageData_00403080 g_ImageData_00403080;
 /* original 0x00403158-0x00407160 */
 typedef struct ImageData_00403158 {
     uint8_t at_gap_00403158[8]; /* 00403158 gap */
-    uint32_t at_g_RandomPrimaryNibbleMixTable0[16][16]; /* 00403160 g_RandomPrimaryNibbleMixTable0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
-    uint32_t at_g_RandomPrimaryNibbleMixTable1[16][16]; /* 00403560 g_RandomPrimaryNibbleMixTable1: Encryption S-box 1 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 1, column = data nibble 1, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_RandomPrimaryNibbleMixTable2[16][16]; /* 00403960 g_RandomPrimaryNibbleMixTable2: Encryption S-box 2 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 2, column = data nibble 2, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_RandomPrimaryNibbleMixTable3[16][16]; /* 00403D60 g_RandomPrimaryNibbleMixTable3: Encryption S-box 3 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 3, column = data nibble 3, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_RandomPrimaryNibbleMixTable4[16][16]; /* 00404160 g_RandomPrimaryNibbleMixTable4: Encryption S-box 4 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 4, column = data nibble 4, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_RandomPrimaryNibbleMixTable5[16][16]; /* 00404560 g_RandomPrimaryNibbleMixTable5: Encryption S-box 5 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 5, column = data nibble 5, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it (+0x140). */
-    uint32_t at_g_RandomPrimaryNibbleMixTable6[16][16]; /* 00404960 g_RandomPrimaryNibbleMixTable6: Encryption S-box 6 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 6, column = data nibble 6, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_RandomPrimaryNibbleMixTable7[16][16]; /* 00404D60 g_RandomPrimaryNibbleMixTable7: Encryption S-box 7 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 7, column = data nibble 7, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
-    uint32_t at_g_UiTransferCipherSubstitution[8][16][16]; /* 00405160 g_UiTransferCipherSubstitution: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_RandomPrimaryNibbleMixTable0..7); used by UiTransfer_DecryptPacketBlocks. */
+    uint32_t at_g_UiTransferEncryptSbox0[16][16]; /* 00403160 g_UiTransferEncryptSbox0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
+    uint32_t at_g_UiTransferEncryptSbox1[16][16]; /* 00403560 g_UiTransferEncryptSbox1: Encryption S-box 1 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 1, column = data nibble 1, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    uint32_t at_g_UiTransferEncryptSbox2[16][16]; /* 00403960 g_UiTransferEncryptSbox2: Encryption S-box 2 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 2, column = data nibble 2, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    uint32_t at_g_UiTransferEncryptSbox3[16][16]; /* 00403D60 g_UiTransferEncryptSbox3: Encryption S-box 3 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 3, column = data nibble 3, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    uint32_t at_g_UiTransferEncryptSbox4[16][16]; /* 00404160 g_UiTransferEncryptSbox4: Encryption S-box 4 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 4, column = data nibble 4, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    uint32_t at_g_UiTransferEncryptSbox5[16][16]; /* 00404560 g_UiTransferEncryptSbox5: Encryption S-box 5 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 5, column = data nibble 5, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it (+0x140). */
+    uint32_t at_g_UiTransferEncryptSbox6[16][16]; /* 00404960 g_UiTransferEncryptSbox6: Encryption S-box 6 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 6, column = data nibble 6, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    uint32_t at_g_UiTransferEncryptSbox7[16][16]; /* 00404D60 g_UiTransferEncryptSbox7: Encryption S-box 7 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 7, column = data nibble 7, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    uint32_t at_g_UiTransferDecryptSboxes[8][16][16]; /* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSbox0..7); used by UiTransfer_DecryptPacketBlocks. */
 } ImageData_00403158;
 extern ImageData_00403158 g_ImageData_00403158;
 
@@ -3647,16 +3647,16 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004027d0 ((uintptr_t)&g_ImageData_00401000.at_g_FileSystemConfigCharacterNormalizationMap)
 #define THANDOR_IMAGE_0x004028d0 ((uintptr_t)&g_ImageData_00401000.at_g_PersistentSettings)
 #define THANDOR_IMAGE_0x004030a0 ((uintptr_t)&g_ImageData_00403080.at_g_RandomGeneratorState)
-#define THANDOR_IMAGE_0x00403160 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable0)
-#define THANDOR_IMAGE_0x00403560 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable1)
-#define THANDOR_IMAGE_0x00403960 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable2)
-#define THANDOR_IMAGE_0x00403d60 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable3)
-#define THANDOR_IMAGE_0x00404160 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable4)
-#define THANDOR_IMAGE_0x00404560 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable5)
+#define THANDOR_IMAGE_0x00403160 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox0)
+#define THANDOR_IMAGE_0x00403560 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox1)
+#define THANDOR_IMAGE_0x00403960 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox2)
+#define THANDOR_IMAGE_0x00403d60 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox3)
+#define THANDOR_IMAGE_0x00404160 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox4)
+#define THANDOR_IMAGE_0x00404560 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox5)
 #define THANDOR_IMAGE_0x004046a0 ((uintptr_t)&g_ImageData_00403158 + 0x1548)
-#define THANDOR_IMAGE_0x00404960 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable6)
-#define THANDOR_IMAGE_0x00404d60 ((uintptr_t)&g_ImageData_00403158.at_g_RandomPrimaryNibbleMixTable7)
-#define THANDOR_IMAGE_0x00405160 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferCipherSubstitution)
+#define THANDOR_IMAGE_0x00404960 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox6)
+#define THANDOR_IMAGE_0x00404d60 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferEncryptSbox7)
+#define THANDOR_IMAGE_0x00405160 ((uintptr_t)&g_ImageData_00403158.at_g_UiTransferDecryptSboxes)
 #define THANDOR_IMAGE_0x00407514 ((uintptr_t)&g_ImageData_00407510.at_g_PackageLastErrorPath)
 #define THANDOR_IMAGE_0x00407714 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail1Utf16)
 #define THANDOR_IMAGE_0x00407914 ((uintptr_t)&g_ImageData_00407510.at_g_FatalErrorDetail2Utf16)

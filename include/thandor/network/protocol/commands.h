@@ -22,16 +22,16 @@
 #define INGAME_COMMAND_SELECTION_INSERT 0xA60 /* FrontendPlayerSelection_InsertThreeEntriesAndRefresh */
 #define INGAME_COMMAND_SELECTION_REMOVE 0xB00 /* FrontendPlayerSelection_RemoveThreeEntriesAndRefresh */
 #define INGAME_COMMAND_SELECTION_CLEAR 0xBA0 /* FrontendPlayerSelection_ClearAndRefreshLocalPanels */
-#define INGAME_COMMAND_POSITION_VARIANT_B 0xD40 /* InGamePlayerSelection_ApplyMoveCommand */
+#define INGAME_COMMAND_MOVE 0xD40 /* InGamePlayerSelection_ApplyMoveCommand */
 #define INGAME_COMMAND_POSITION 0xD70 /* InGamePlayerSelection_ApplyPositionCommand */
 #define INGAME_COMMAND_SELECT_ARMY 0xDA0 /* InGamePlayerSelection_SelectArmyRuntimeIndex */
 #define INGAME_COMMAND_TARGET_POSITION 0xDE0 /* InGamePlayerSelection_ApplyTargetPositionCommand */
 #define INGAME_COMMAND_PLACE_ARMY 0x13A0 /* InGameCommand_ExecuteLocalPlacementFromSelection */
 #define INGAME_COMMAND_SELECT_MODEL_AND_ARMY 0x1620 /* FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel */
-#define INGAME_COMMAND_SET_SESSION_FLAGS 0x340 /* FrontendPlayerRuntime_SetSlowRenderingFlagById */
+#define INGAME_COMMAND_SET_SLOW_RENDERING 0x340 /* FrontendPlayerRuntime_SetSlowRenderingFlagById */
 #define INGAME_COMMAND_ASSIGN_ARMY_TOKEN 0x16B0 /* FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch */
 #define INGAME_COMMAND_APPLY_UI_FLAG_MASKS 0x310 /* UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
-#define INGAME_COMMAND_MARK_PLAYER_READY_101B 0x470 /* FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton */
+#define INGAME_COMMAND_RESULTS_READY 0x470 /* FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton */
 /* Commands issued by the in-game command buttons (ui/ingame/commands) */
 #define INGAME_COMMAND_PLAYER_DEPARTURE 0x150 /* InGameCommand_HandlePlayerDeparture */
 #define INGAME_COMMAND_SELECTION_GROUP 0xBE0 /* FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh */

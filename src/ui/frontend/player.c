@@ -667,7 +667,7 @@ void FrontendPlayerRuntime_UpdateStartButtonByCdShare(void)
 
 
 /* Address: 0x0055F470.
-   Handler of INGAME_COMMAND_SET_SESSION_FLAGS: sets or clears PLAYER_SESSION_FLAG_SLOW_RENDERING of a player
+   Handler of INGAME_COMMAND_SET_SLOW_RENDERING: sets or clears PLAYER_SESSION_FLAG_SLOW_RENDERING of a player
    (slowRenderingFlag is that bit or 0), which the player roster shows as a highlighted "W". Other session
    flags are kept.
 */

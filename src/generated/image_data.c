@@ -91,7 +91,7 @@ ImageData_00403080 g_ImageData_00403080 = {
 
 ImageData_00403158 g_ImageData_00403158 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00403158 gap */
-    /* 00403160 g_RandomPrimaryNibbleMixTable0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
+    /* 00403160 g_UiTransferEncryptSbox0: Encryption S-box 0 of the UI transfer 64-bit block cipher (UiTransfer_EncryptPacketBlocks): uint32_t[16][16], row = round-key nibble 0, column = data nibble 0, each entry a 4-bit output (each row a permutation of 0..15). The eight tables 0..7 are contiguous 0x00403160-0x00405160. */
     {
         {13, 10, 0, 1, 15, 11, 5, 12, 4, 6, 14, 2, 8, 3, 9, 7},
         {0, 1, 7, 15, 3, 10, 2, 8, 9, 6, 14, 11, 12, 13, 4, 5},
@@ -109,7 +109,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {9, 6, 7, 8, 15, 0, 2, 11, 1, 3, 4, 14, 12, 10, 5, 13},
         {0, 15, 2, 6, 12, 10, 5, 1, 14, 8, 3, 7, 11, 13, 4, 9},
         {15, 1, 7, 3, 0, 6, 11, 8, 5, 12, 14, 13, 4, 9, 2, 10}},
-    /* 00403560 g_RandomPrimaryNibbleMixTable1: Encryption S-box 1 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 1, column = data nibble 1, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00403560 g_UiTransferEncryptSbox1: Encryption S-box 1 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 1, column = data nibble 1, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     {
         {0, 4, 1, 15, 6, 11, 14, 2, 9, 7, 3, 5, 8, 10, 12, 13},
         {0, 15, 2, 1, 6, 9, 4, 3, 14, 11, 7, 8, 10, 5, 12, 13},
@@ -127,7 +127,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {4, 6, 9, 14, 0, 11, 8, 7, 3, 1, 2, 15, 10, 12, 5, 13},
         {7, 6, 9, 14, 0, 15, 1, 13, 4, 5, 3, 11, 12, 8, 2, 10},
         {14, 13, 7, 12, 4, 15, 5, 10, 9, 1, 11, 8, 0, 6, 2, 3}},
-    /* 00403960 g_RandomPrimaryNibbleMixTable2: Encryption S-box 2 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 2, column = data nibble 2, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00403960 g_UiTransferEncryptSbox2: Encryption S-box 2 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 2, column = data nibble 2, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     {
         {0, 14, 8, 7, 15, 9, 12, 3, 5, 1, 6, 10, 4, 11, 13, 2},
         {0, 1, 14, 8, 5, 12, 6, 4, 2, 10, 3, 15, 7, 13, 11, 9},
@@ -145,7 +145,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {8, 0, 3, 15, 6, 11, 4, 5, 1, 9, 10, 14, 13, 12, 7, 2},
         {1, 11, 3, 9, 8, 0, 10, 14, 7, 15, 12, 13, 5, 6, 2, 4},
         {1, 0, 4, 3, 10, 8, 15, 7, 2, 6, 12, 13, 9, 14, 5, 11}},
-    /* 00403D60 g_RandomPrimaryNibbleMixTable3: Encryption S-box 3 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 3, column = data nibble 3, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00403D60 g_UiTransferEncryptSbox3: Encryption S-box 3 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 3, column = data nibble 3, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     {
         {8, 10, 14, 13, 0, 11, 15, 3, 1, 4, 12, 9, 5, 6, 7, 2},
         {12, 0, 9, 5, 6, 7, 4, 8, 10, 2, 1, 14, 15, 11, 3, 13},
@@ -163,7 +163,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {1, 0, 5, 2, 15, 10, 8, 13, 3, 6, 9, 12, 4, 11, 14, 7},
         {8, 0, 4, 15, 3, 13, 5, 2, 9, 1, 10, 6, 12, 7, 14, 11},
         {0, 5, 2, 15, 10, 9, 14, 4, 1, 12, 13, 6, 7, 3, 8, 11}},
-    /* 00404160 g_RandomPrimaryNibbleMixTable4: Encryption S-box 4 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 4, column = data nibble 4, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00404160 g_UiTransferEncryptSbox4: Encryption S-box 4 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 4, column = data nibble 4, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     {
         {0, 5, 2, 15, 10, 9, 14, 4, 1, 12, 13, 3, 11, 8, 7, 6},
         {0, 5, 2, 6, 12, 15, 7, 8, 9, 14, 4, 1, 11, 10, 3, 13},
@@ -181,7 +181,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {0, 2, 9, 12, 3, 5, 1, 10, 7, 13, 15, 6, 14, 8, 11, 4},
         {0, 2, 9, 13, 6, 12, 14, 7, 15, 10, 5, 4, 3, 11, 8, 1},
         {3, 12, 0, 15, 1, 9, 13, 11, 2, 4, 5, 8, 6, 7, 14, 10}},
-    /* 00404560 g_RandomPrimaryNibbleMixTable5: Encryption S-box 5 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 5, column = data nibble 5, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it (+0x140). */
+    /* 00404560 g_UiTransferEncryptSbox5: Encryption S-box 5 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 5, column = data nibble 5, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. k_SpatialSoundStereoCosineSecondHalfBaseBias is only an address inside it (+0x140). */
     {
         {8, 2, 0, 5, 9, 11, 3, 6, 14, 4, 12, 1, 13, 10, 15, 7},
         {0, 4, 6, 3, 2, 8, 15, 5, 7, 13, 14, 1, 10, 12, 11, 9},
@@ -199,7 +199,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {1, 0, 15, 5, 8, 6, 2, 12, 4, 10, 7, 3, 13, 11, 9, 14},
         {6, 15, 2, 9, 1, 0, 11, 8, 3, 12, 10, 7, 13, 5, 4, 14},
         {12, 11, 4, 14, 10, 0, 5, 1, 8, 7, 9, 3, 6, 15, 13, 2}},
-    /* 00404960 g_RandomPrimaryNibbleMixTable6: Encryption S-box 6 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 6, column = data nibble 6, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00404960 g_UiTransferEncryptSbox6: Encryption S-box 6 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 6, column = data nibble 6, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     {
         {0, 1, 8, 15, 5, 7, 12, 3, 4, 11, 9, 2, 6, 14, 10, 13},
         {15, 11, 12, 6, 1, 0, 8, 14, 2, 5, 9, 3, 4, 7, 13, 10},
@@ -217,7 +217,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {14, 3, 15, 5, 0, 1, 8, 7, 2, 4, 12, 9, 11, 10, 13, 6},
         {3, 8, 6, 13, 15, 2, 0, 9, 12, 10, 11, 5, 4, 7, 1, 14},
         {15, 5, 12, 0, 4, 6, 7, 2, 8, 1, 9, 13, 11, 3, 10, 14}},
-    /* 00404D60 g_RandomPrimaryNibbleMixTable7: Encryption S-box 7 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 7, column = data nibble 7, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
+    /* 00404D60 g_UiTransferEncryptSbox7: Encryption S-box 7 of the UI transfer block cipher: uint32_t[16][16], row = round-key nibble 7, column = data nibble 7, 4-bit outputs; used by UiTransfer_EncryptPacketBlocks. */
     {
         {4, 9, 1, 6, 12, 3, 14, 11, 13, 8, 15, 0, 5, 2, 10, 7},
         {6, 5, 9, 15, 0, 1, 8, 11, 12, 3, 13, 4, 14, 2, 7, 10},
@@ -235,7 +235,7 @@ ImageData_00403158 g_ImageData_00403158 = {
         {12, 13, 10, 11, 2, 4, 0, 3, 5, 9, 15, 8, 7, 1, 14, 6},
         {3, 4, 15, 0, 6, 7, 5, 8, 13, 14, 2, 1, 9, 12, 11, 10},
         {1, 0, 11, 13, 4, 8, 15, 5, 3, 10, 6, 2, 14, 9, 12, 7}},
-    /* 00405160 g_UiTransferCipherSubstitution: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_RandomPrimaryNibbleMixTable0..7); used by UiTransfer_DecryptPacketBlocks. */
+    /* 00405160 g_UiTransferDecryptSboxes: Decryption S-boxes of the UI transfer block cipher: uint32_t[8][16][16], table n indexed [round-key nibble n][data nibble], 4-bit outputs (a separate table set from g_UiTransferEncryptSbox0..7); used by UiTransfer_DecryptPacketBlocks. */
     {
         {
             {2, 3, 11, 13, 8, 6, 9, 15, 12, 14, 1, 5, 7, 0, 10, 4},

@@ -1019,7 +1019,7 @@ endScene:
                    (overlayClipBottom,overlayClipRight,overlayClipTop,
                     overlayClipLeft),
         control->selectedOverlayEntity != NULL)) &&
-       (entryFound = SelectionInfo_FindEntry(control->selectedOverlayEntity), entryFound)) {
+       (entryFound = SelectionInfo_IsEntryAbsent(control->selectedOverlayEntity), entryFound)) {
       SelectionOverlay_RenderArmyMetricsForEntity
                 (overlayClipBottom,overlayClipRight,overlayClipTop,
                  overlayClipLeft,control->selectedOverlayEntity);

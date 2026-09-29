@@ -996,7 +996,8 @@ void TerrainCompositeTexture_FillPlane2(void)
    minimapResourceButtonStateFlags, plane 2 (resources), hides cells the active faction has never seen
    (almost black) and darkens those it does not see now, then draws a pixel for each model runtime with an
    alpha tint whose faction has a non-zero colorIndex, in the panel colour of variant
-   colorIndex when selected, variant 0 otherwise (blended 50/50 for a tint alpha below 0xFF).
+   colorIndex, or variant 0 (white) for units in the local selection, so the selection stands out (blended 50/50 for
+   a tint alpha below 0xFF).
 */
 void TerrainCompositeTexture_RebuildPlane0(void)
 
@@ -1018,7 +1019,7 @@ void TerrainCompositeTexture_RebuildPlane0(void)
   FieldGridCell *fieldCell;
   uint8_t *plane0Pixels;
   uint8_t *plane0WriteCursor;
-  bool isSelected;
+  bool notSelected;
   FieldGridCoordinates gridCoordinates;
   
   inGameRoot = g_InGameRuntimeRoot;
@@ -1071,10 +1072,14 @@ void TerrainCompositeTexture_RebuildPlane0(void)
                  colorIndex;
         assetOffset = (g_InGamePanelTextureSource->tableDescriptor).subresourceTableOffset;
         if (colorVariant != 0) {
-          isSelected = SelectionInfo_FindEntry(ownerEntity);
-          if (!isSelected) {
+          /* SelectionInfo_IsEntryAbsent is true (CF set) when the entry is NOT in the selection */
+          notSelected = SelectionInfo_IsEntryAbsent(ownerEntity);
+          if (!notSelected) {
             colorVariant = 0;
           }
+          /* Original quirk: the bank is scaled by 4 entries (SHL EAX,5 on the 8-byte entries), not by a whole
+             bank like in FillPlane1/FillPlane2 (SHL EBX,0xB), so only bank 0 gives the right colour. Harmless:
+             subresource 36 of panel0/1/2.gfx uses bank 0. */
           pixelArgb = ((GraphicsPaletteTextureSourceAsset *)g_InGamePanelTextureSource)->paletteEntries[TERRAIN_MINIMAP_PANEL_COLOR_FACTION_FIRST +((GraphicsTextureSourceEntry *)((uint8_t *)panelTextureSource + assetOffset))[36].paletteIndex * 4 + colorVariant].argb8888;
           if (ownerNode->modelTintArgb < ARGB8888_ALPHA_MASK) {
             pixelArgb = (pixelArgb & TERRAIN_ARGB_HALVE_MASK) +

@@ -274,7 +274,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     if (testResult) {
       return WORLD_CURSOR_TARGET;
     }
-    testResult = SelectionInfo_FindEntry(entry);
+    testResult = SelectionInfo_IsEntryAbsent(entry);
     if (testResult) {
       return WORLD_CURSOR_TARGET_REJECTED;
     }
@@ -290,7 +290,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
   }
   scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix *)entry);
   if ((int)scaleRatio != (int)(scaleRatio >> 32)) {
-    testResult = SelectionInfo_FindEntry(entry);
+    testResult = SelectionInfo_IsEntryAbsent(entry);
     if (testResult) {
       return WORLD_CURSOR_TARGET;
     }
@@ -451,7 +451,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
                                   (runtimeNode,
                                    (WorldRuntimeExtendedMapControlView *)inGameRuntime);
                 if (testResult) {
-                  testResult = SelectionInfo_FindEntry(entry);
+                  testResult = SelectionInfo_IsEntryAbsent(entry);
                   deltaXOrTripletCount = g_InGameSelectionInsertTripletDwordCount;
                   if (testResult) {
                     testResult = InGameCommandQueue_ContainsTripletValue
@@ -466,7 +466,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
                   }
                 }
                 else {
-                  testResult = SelectionInfo_FindEntry(entry);
+                  testResult = SelectionInfo_IsEntryAbsent(entry);
                   deltaXOrTripletCount = g_InGameSelectionRemoveTripletDwordCount;
                   if (!testResult) {
                     testResult = InGameCommandQueue_ContainsTripletValue
@@ -699,7 +699,7 @@ void InGameWorldInput_CommitPointerAction
                       (g_LocalPlayerRuntimeId,0,pointerWorldXQ12,pointerWorldYQ12);
           }
           else {
-            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_POSITION_VARIANT_B,0,pointerWorldXQ12,
+            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_MOVE,0,pointerWorldXQ12,
                                                         pointerWorldYQ12);
           }
         }
@@ -777,7 +777,7 @@ test_candidate_capability:
     if (!testResult) goto test_candidate_capability;
     testResult = GameFactionRuntime_TestCapabilityBitClear
                       ((entry->common).ownership.ownerIndex,ownerIndex);
-    if ((!testResult) && (testResult = SelectionInfo_FindEntry(entry), !testResult)) goto release_pointer_capture;
+    if ((!testResult) && (testResult = SelectionInfo_IsEntryAbsent(entry), !testResult)) goto release_pointer_capture;
 select_candidate_army:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -790,11 +790,11 @@ select_candidate_army:
     }
     goto release_pointer_capture;
   }
-  /* Shift/Alt-click (with or without Ctrl): toggle an own army in the selection (SelectionInfo_FindEntry is true when the entry
+  /* Shift/Alt-click (with or without Ctrl): toggle an own army in the selection (SelectionInfo_IsEntryAbsent is true when the entry
      is absent), select a foreign one alone */
   if (candidateNode != NULL) {
     if (ownerIndex == (entry->common).ownership.ownerIndex) {
-      testResult = SelectionInfo_FindEntry(entry);
+      testResult = SelectionInfo_IsEntryAbsent(entry);
       if (testResult) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {

@@ -102,10 +102,10 @@
 #define INGAME_PANEL_SUBRESOURCE_NOTIFICATION_IDLE 0x25
 /* Queued player command codes of the selection hotkeys (network games; see the key table in ui/ingame/runtime.c) */
 #define INGAME_COMMAND_SELECT_OWN_AIRCRAFT_PADS 0x8F0 /* InGameSelection_SelectAllOwnAircraftPads */
-#define INGAME_COMMAND_SELECTION_STOP 0xE10
-#define INGAME_COMMAND_SELECTION_RESET_ANCHORS 0xE30
-#define INGAME_COMMAND_SELECTION_INTERRUPT_TARGETS 0xE50
-#define INGAME_COMMAND_SELECTION_APPLY_FLAGS418 0xE70
+#define INGAME_COMMAND_SELECTION_RESET_MOVEMENT 0xE10 /* S: PlayerSelection_ResetMovementPruneAndRecenterEntries */
+#define INGAME_COMMAND_SELECTION_STOP_MOVEMENT 0xE30 /* Shift+S: PlayerSelection_StopMovement (stay where they are) */
+#define INGAME_COMMAND_SELECTION_CANCEL_TARGETS 0xE50 /* Alt+S: PlayerSelection_CancelTargets */
+#define INGAME_COMMAND_SELECTION_SELF_DESTRUCT 0xE70 /* Alt+D: PlayerSelection_SelfDestruct */
 
 /* The 0x200-byte header at the start of a save-game package, patched by InGameSaveGame_WritePackage
    after the entries are written (the save path's directory is split off behind the header, at +0x200). */

@@ -1261,7 +1261,7 @@ const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {
     {0x00530050u, (void *)&SelectionInfo_TestNoEntryHasWeaponDamage},
     {0x005300A0u, (void *)&SelectionInfo_TestAnyEntryWeaponDamageNonnegative},
     {0x005300E0u, (void *)&SelectionInfo_GetFirstEntry},
-    {0x00530100u, (void *)&SelectionInfo_FindEntry},
+    {0x00530100u, (void *)&SelectionInfo_IsEntryAbsent},
     {0x00530130u, (void *)&SelectionPointerArray_ApplyArmyRuntimeTarget},
     {0x00530190u, (void *)&SelectionPointerArray_ApplyTargetPositionCommand},
     {0x005301F0u, (void *)&SelectionPointerArray_IsSpatialSpreadTooLarge},

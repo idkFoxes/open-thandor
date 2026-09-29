@@ -29,7 +29,7 @@ digraph thandor {
   "SelectionInfo_TestNoEntryHasWeaponDamage" [label="0x00530050\nSelectionInfo_TestAllStateField100NonpositiveCf"];
   "SelectionInfo_TestAnyEntryWeaponDamageNonnegative" [label="0x005300A0\nSelectionInfo_TestAnyStateField100NonnegativeCf"];
   "SelectionInfo_GetFirstEntry" [label="0x005300E0\nSelectionInfo_GetFirstEntry"];
-  "SelectionInfo_FindEntry" [label="0x00530100\nSelectionInfo_FindEntryCf"];
+  "SelectionInfo_IsEntryAbsent" [label="0x00530100\nSelectionInfo_FindEntryCf"];
   "SelectionInfo_CollectAttachmentEffectVariantMask" [label="0x00530770\nSelectionInfo_CollectAttachmentEffectVariantMask"];
   "SelectionInfo_CollectCapabilityFlags" [label="0x005307C0\nSelectionInfo_CollectCapabilityFlags"];
   "SelectionPlayerRuntime_ClearTerrainEditSelectionState" [label="0x00561000\nSelectionPlayerRuntime_ClearTerrainEditSelectionState"];

@@ -15,7 +15,7 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 
 /* ---- network/protocol/transfer: 64-bit block cipher, eight 16x16 nibble substitution tables
    (table n maps round-key nibble n and data nibble to a 4-bit output, stored as dwords). */
-#define g_UiTransferCipherSubstitution (*(uint32_t (*)[8][16][16])THANDOR_IMAGE(0x00405160))
+#define g_UiTransferDecryptSboxes (*(uint32_t (*)[8][16][16])THANDOR_IMAGE(0x00405160))
 
 /* ---- platform/system/time_locale: function-pointer slot statically holding
    Locale_MapTelephoneCountryCodeToRegionTagPacked (no code reference to the slot found). */

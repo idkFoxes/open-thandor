@@ -160,7 +160,7 @@ bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void);
 GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void);
 
 /* 0x00530100 */
-bool SelectionInfo_FindEntry(GameEntityRuntime *entry);
+bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry);
 
 /* 0x00530770 */
 uint32_t SelectionInfo_CollectAttachmentEffectVariantMask(void);

@@ -530,7 +530,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
 
 
 /* Address: 0x0055FE70.
-   In-game command handler INGAME_COMMAND_POSITION_VARIANT_B (plain click on the ground): sends the player's
+   In-game command handler INGAME_COMMAND_MOVE (plain click on the ground): sends the player's
    selection to the world point, each entry keeping its formation offset unless the selection is spread too wide.
    A lone class-0x0D entry takes the point into its definition record instead and the selection is cleared.
 */
@@ -1469,9 +1469,9 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 }
 
 /* Address: 0x00530100.
-   Tests whether entry is part of the local selection: false (CF clear) when found, true when absent.
+   Tests whether entry is missing from the local selection: true (CF set) when absent, false (CF clear) when it is selected.
 */
-bool SelectionInfo_FindEntry(GameEntityRuntime *entry)
+bool SelectionInfo_IsEntryAbsent(GameEntityRuntime *entry)
 
 {
   /* REPNE SCASD over the 32 selection slots in the original */

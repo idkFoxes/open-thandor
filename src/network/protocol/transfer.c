@@ -1500,25 +1500,25 @@ void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks
         roundIndex++;
         /* one nibble per table: table n, row = key nibble n, column = input nibble n */
         /* byte offsets into the uint32_t[16][16] tables: row = key nibble * 64, column = input nibble * 4 */
-        rightState =(((((((*(int *)((uint8_t *)g_RandomPrimaryNibbleMixTable0 +
+        rightState =(((((((*(int *)((uint8_t *)g_UiTransferEncryptSbox0 +
                                     (roundInputHalf & 0xf) * 4 + (*roundKeyNibble0 & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES) << 4 |
-                           *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable1 +
+                           *(uint32_t *)((uint8_t *)g_UiTransferEncryptSbox1 +
                                     ((roundInputHalf & 0xf0) >> 4) * 4 + (*roundKeyNibble1 & 0xf0) * 4)) << 4
-                          | *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable2 +
+                          | *(uint32_t *)((uint8_t *)g_UiTransferEncryptSbox2 +
                                      ((roundInputHalf & 0xf00) >> 8) * 4 + ((*roundKeyNibble2 & 0xf00) >> 2))
-                          ) << 4 | *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable3 +
+                          ) << 4 | *(uint32_t *)((uint8_t *)g_UiTransferEncryptSbox3 +
                                             ((roundInputHalf & 0xf000) >> 12) * 4 +
                                             ((*roundKeyNibble3 & 0xf000) >> 6))) << 4 |
-                        *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable4 +
+                        *(uint32_t *)((uint8_t *)g_UiTransferEncryptSbox4 +
                                  ((roundInputHalf & 0xf0000) >> 16) * 4 +
                                  ((*roundKeyNibble4 & 0xf0000) >> 10))) << 4 |
-                       *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable5 +
+                       *(uint32_t *)((uint8_t *)g_UiTransferEncryptSbox5 +
                                 ((roundInputHalf & 0xf00000) >> 20) * 4 +
                                 ((*roundKeyNibble5 & 0xf00000) >> 14))) << 4 |
-                      *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable6 +
+                      *(uint32_t *)((uint8_t *)g_UiTransferEncryptSbox6 +
                                ((roundInputHalf & 0xf000000) >> 24) * 4 +
                                ((*roundKeyNibble6 & 0xf000000) >> 18))) << 4 |
-                     *(uint32_t *)((uint8_t *)g_RandomPrimaryNibbleMixTable7 +
+                     *(uint32_t *)((uint8_t *)g_UiTransferEncryptSbox7 +
                               (roundInputHalf >> 28) * 4 + ((*roundKeyNibble7 & 0xf0000000) >> 22))) ^
                      leftState;
         roundInputHalf = leftState;
@@ -1537,7 +1537,7 @@ void UiTransfer_EncryptPacketBlocks(uint32_t *roundKeys16,uint32_t *outputBlocks
 /* Address: 0x004072F0.
    Decrypts a received packet in place or into destination (they may alias): the inverse of
    UiTransfer_EncryptPacketBlocks, running the 16 rounds backwards with the second table set
-   (g_UiTransferCipherSubstitution, 0x00405160) and XORing each result with the previous ciphertext block (CBC).
+   (g_UiTransferDecryptSboxes, 0x00405160) and XORing each result with the previous ciphertext block (CBC).
 */
 void UiTransfer_DecryptPacketBlocks
           (uint32_t *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source)
@@ -1562,21 +1562,21 @@ void UiTransfer_DecryptPacketBlocks
       do {
         savedHalf = leftHalf;
         rightHalf = rightHalf ^ savedHalf;
-        leftHalf = ((((((*(int *)(((roundKeys16[roundIndex] & 0xf0000000) >> 22) + THANDOR_ADDR(g_UiTransferCipherSubstitution,7 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+        leftHalf = ((((((*(int *)(((roundKeys16[roundIndex] & 0xf0000000) >> 22) + THANDOR_ADDR(g_UiTransferDecryptSboxes,7 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                               (rightHalf & 0xf) * 4) << 4 |
-                     *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000000) >> 18) + THANDOR_ADDR(g_UiTransferCipherSubstitution,6 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                     *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000000) >> 18) + THANDOR_ADDR(g_UiTransferDecryptSboxes,6 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                               ((rightHalf & 0xf0) >> 4) * 4)) << 4 |
-                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00000) >> 14) + THANDOR_ADDR(g_UiTransferCipherSubstitution,5 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                    *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00000) >> 14) + THANDOR_ADDR(g_UiTransferDecryptSboxes,5 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                              ((rightHalf & 0xf00) >> 8) * 4)) << 4 |
-                   *(uint32_t *)(((roundKeys16[roundIndex] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferCipherSubstitution,4 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                   *(uint32_t *)(((roundKeys16[roundIndex] & 0xf0000) >> 10) + THANDOR_ADDR(g_UiTransferDecryptSboxes,4 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                             ((rightHalf & 0xf000) >> 12) * 4)) << 4 |
-                  *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferCipherSubstitution,3 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                  *(uint32_t *)(((roundKeys16[roundIndex] & 0xf000) >> 6) + THANDOR_ADDR(g_UiTransferDecryptSboxes,3 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                            ((rightHalf & 0xf0000) >> 16) * 4)) << 4 |
-                 *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferCipherSubstitution,2 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                 *(uint32_t *)(((roundKeys16[roundIndex] & 0xf00) >> 2) + THANDOR_ADDR(g_UiTransferDecryptSboxes,2 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                           ((rightHalf & 0xf00000) >> 20) * 4)) << 4 |
-                *(uint32_t *)((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferCipherSubstitution,1 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
+                *(uint32_t *)((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferDecryptSboxes,1 * UI_TRANSFER_CIPHER_TABLE_BYTES) +
                          ((rightHalf & 0xf000000) >> 24) * 4)) << 4 |
-                *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES + THANDOR_ADDR(g_UiTransferCipherSubstitution,0) + (rightHalf >> 28) * 4);
+                *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * UI_TRANSFER_CIPHER_ROW_BYTES + THANDOR_ADDR(g_UiTransferDecryptSboxes,0) + (rightHalf >> 28) * 4);
         roundIndex--;
         rightHalf = savedHalf;
       } while (-1 < roundIndex);
