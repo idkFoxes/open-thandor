@@ -38,7 +38,7 @@ digraph thandor {
   "FieldGrid_SetOccupancyMaskByteBit0AllCells" [label="0x00505240\nFieldGrid_SetOccupancyMaskByteBit0AllCells"];
   "FieldGrid_ClearOccupancyMaskByteBit0AllCells" [label="0x00505290\nFieldGrid_ClearOccupancyMaskByteBit0AllCells"];
   "TerrainGrid_TestProjectedCellMaskBits01" [label="0x00507580\nTerrainGrid_TestProjectedCellMaskBits01Cf"];
-  "FieldGrid_ClearCellFlag8000AcrossGrid" [label="0x005092A0\nFieldGrid_ClearCellFlag8000AcrossGrid"];
+  "FieldGrid_ClearUnresolvedFlagInAllCells" [label="0x005092A0\nFieldGrid_ClearCellFlag8000AcrossGrid"];
   "FieldGrid_SetAllCellOverlayColors" [label="0x005092E0\nFieldGrid_SetAllCellOverlayColors"];
   "FieldGrid_SaveAssetImageFromRuntimeState" [label="0x00532B60\nFieldGrid_SaveAssetImageFromRuntimeStateCf"];
   "FieldGrid_ClearPlayerScratchPlane" [label="0x00561050\nFieldGrid_ClearPlayerScratchPlane"];

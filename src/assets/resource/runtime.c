@@ -17,7 +17,7 @@
    Called directly by the save-game writer InGameSaveGame_WritePackage, which creates the
    save directory and retries when it fails.
 */
-StatusResult ResourceRegistration_OpenSource(void *packagePath)
+StatusResult InGameSaveGame_CreatePackage(void *packagePath)
 
 {
   uint8_t *header;
@@ -190,7 +190,7 @@ void Resource_Release(void *resourceBuffer)
    C caller splits the qword the same way, so the swap is internal to the C.
 */
 ResourceRegistrationImagePair
-ResourceRegistration_SelectDomainPair
+InGameSaveGame_PrepareRegistrationRecords
           (ResourceRegistrationRuntimeImageSavedView *runtimeImage)
 
 {
@@ -307,7 +307,7 @@ ResourceRegistration_SelectDomainPair
    InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
 */
-ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void)
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void)
 
 {
   ArmyRuntimeSlot *runtimeMember;
@@ -361,7 +361,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
    directly by the save-game writer InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
 */
-ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void)
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void)
 
 {
   EffectRuntimeCompletionAction slotCompletionAction;
@@ -430,7 +430,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
    InGameSaveGame_WritePackage.
    Return value: (base << 32) | byteSize; the original returns the base in EAX and the size in EDX.
 */
-ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void)
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void)
 
 {
   ShotDefinitionReferenceOrSavedId4 serializedDefinitionId;
@@ -495,7 +495,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
    Called directly by the save-game writer InGameSaveGame_WritePackage.
 */
 
-void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage)
+void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *runtimeImage)
 
 {
   LevelPlayerSlotByteOffset32 playerSlotByteOffset;

@@ -21,7 +21,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053B0E0 */
-void AiUnitBehavior_UpdateWorkspace01Entities(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B4C0 */
 void AiUnitBehavior_SelectBestAnchorAction
@@ -29,7 +29,7 @@ void AiUnitBehavior_SelectBestAnchorAction
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B1D0 */
-AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeWorkspace05DistanceScore
+AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeGeneralSiteDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot);
 
@@ -55,7 +55,7 @@ void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,Arm
 void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,WorldRuntimeContext *worldRuntimeContext);
 
 /* 0x0053B620 */
-void AiUnitBehavior_UpdateSpecialClass12Entity
+void AiUnitBehavior_UpdatePioneerVehicle
           (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 

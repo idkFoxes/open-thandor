@@ -893,7 +893,7 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
    Snaps a world position to the nearest grid vertex (cell) like FieldGrid_GetNearestTerrainPoint, but returns
    the height of the top surface there (terrainHeight + waterSurfaceDelta): worldX (EAX), worldY (ECX) and
    height (EDX) with CF clear. Outside the grid CF is set and the input position comes back with height 0.
-   Used by SelectionOverlay_DrawMarkerACForWorldSurfacePoint (0x0052F5A0).
+   Used by SelectionOverlay_DrawWorldPointMarker (0x0052F5A0).
 */
 SurfacePointResult
 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
@@ -2572,7 +2572,7 @@ bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRu
    Clears cell flag bit 15 (FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15) in every cell of the grid. No caller
    found in src/ or the image tables.
 */
-void FieldGrid_ClearCellFlag8000AcrossGrid(FieldGridAsset *fieldGrid)
+void FieldGrid_ClearUnresolvedFlagInAllCells(FieldGridAsset *fieldGrid)
 
 {
   int cellsRemaining;

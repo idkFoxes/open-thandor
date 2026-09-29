@@ -376,7 +376,7 @@ void ShotRuntimePool_CreateProjectileFromDefinition
   if (allocatedRecord.failed) {
     return;
   }
-  WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode *)shotModelNode);
+  WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)shotModelNode);
   shotRuntimeCursor->modelNodeOrSavedOffset.modelNode = (ModelRuntimeNode *)shotModelNode;
   shotRuntimeCursor->definitionOrSavedId.definition = shotDefinition;
   shotModelNode->ownerClassId = WORLD_OWNER_RUNTIME_SHOT;

@@ -7,8 +7,8 @@
 ## Functions
 
 - `0x00575890` **[`ErrorSystem_Init`](../../../../src/core/error/runtime.c#L5)** — local: [`FatalError_Exit`](../../../../src/core/error/runtime.c#L168); cross: [`TextResourcePage_Load`](../../../../src/assets/text/resources.c#L255) → [`assets/text/resources`](../../assets/text/resources.md)
-- `0x00407F50` **[`ErrorRuntime_CallbackAlwaysFail`](../../../../src/core/error/runtime.c#L22)**
-- `0x00407F60` **[`ErrorRuntime_CallbackReturnCode8`](../../../../src/core/error/runtime.c#L32)**
+- `0x00407F50` **[`FatalErrorDialog_BlockMissedPointerPress`](../../../../src/core/error/runtime.c#L22)**
+- `0x00407F60` **[`FatalErrorDialog_BlockMissedPointerMotion`](../../../../src/core/error/runtime.c#L32)**
 - `0x00407F70` **[`FatalErrorDialog_DismissAndPopRoot`](../../../../src/core/error/runtime.c#L42)** — cross: [`UiRootStack_Pop`](../../../../src/ui/controls/layout.c#L556) → [`ui/controls/layout`](../../ui/controls/layout.md)
 - `0x00407F90` **[`FatalErrorRuntime_DispatchPendingError`](../../../../src/core/error/runtime.c#L57)** — cross: [`TextResource_Resolve`](../../../../src/assets/text/resources.c#L400) → [`assets/text/resources`](../../assets/text/resources.md), [`RichTextCommandStream_PatchPayloadBySelector`](../../../../src/assets/text/richtext.c#L222) → [`assets/text/richtext`](../../assets/text/richtext.md), [`RichTextCommandStream_MeasureWrappedBlockRegs`](../../../../src/assets/text/richtext.c#L5) → [`assets/text/richtext`](../../assets/text/richtext.md), [`UiRootStack_Push`](../../../../src/ui/controls/layout.c#L504) → [`ui/controls/layout`](../../ui/controls/layout.md), [`UiFrame_FlushInputAndResetPendingTicks`](../../../../src/ui/controls/layout.c#L1123) → [`ui/controls/layout`](../../ui/controls/layout.md), [`UiRootStack_InvalidateAll`](../../../../src/ui/controls/layout.c#L1918) → [`ui/controls/layout`](../../ui/controls/layout.md), [`UiFrame_ProcessAndPresentWithLockTransition`](../../../../src/ui/controls/layout.c#L311) → [`ui/controls/layout`](../../ui/controls/layout.md)
 - `0x00408090` **[`ErrorRuntime_InstallUiHandlerAndAllocateState`](../../../../src/core/error/runtime.c#L122)**

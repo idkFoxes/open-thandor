@@ -34,7 +34,7 @@ void __cdecl ErrorSystem_Init(void)
    a pointer event that misses the dialog ends the root-stack hit test there instead of reaching the roots
    below (the dialog is modal).
 */
-bool ErrorRuntime_CallbackAlwaysFail(UiRootNode *root)
+bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;
@@ -46,7 +46,7 @@ bool ErrorRuntime_CallbackAlwaysFail(UiRootNode *root)
    stops the pointer traversal at the dialog, so the roots below it get no pointer input. The value 8 itself
    carries no meaning beyond being non-negative.
 */
-int ErrorRuntime_CallbackReturnCode8(UiRootNode *root)
+int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root)
 
 {
   return 8;

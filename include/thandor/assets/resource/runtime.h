@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0040E2E0 */
-StatusResult ResourceRegistration_OpenSource(void *packagePath);
+StatusResult InGameSaveGame_CreatePackage(void *packagePath);
 
 /* 0x0040F000 */
 ResourceLoadResult Resource_Load(uint16_t *path);
@@ -24,18 +24,18 @@ ResourceLoadResult Resource_Load(uint16_t *path);
 void Resource_Release(void *resourceBuffer);
 
 /* 0x0050E890 */
-ResourceRegistrationImagePair ResourceRegistration_SelectDomainPair (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
+ResourceRegistrationImagePair InGameSaveGame_PrepareRegistrationRecords (ResourceRegistrationRuntimeImageSavedView *runtimeImage);
 
 /* 0x00513020 */
-ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void);
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareFactionImage(void);
 
 /* 0x0051E2B0 */
-ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void);
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareEffectSlots(void);
 
 /* 0x0052B6D0 */
-ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void);
+ResourceRegistrationImagePair __cdecl InGameSaveGame_PrepareShotSlots(void);
 
 /* 0x00532B00 */
-void ResourceRegistration_ResolveRuntimeRecord(ResourceRegistrationRuntimeImage *runtimeImage);
+void InGameSaveGame_StoreCameraAsPlayerStart(ResourceRegistrationRuntimeImage *runtimeImage);
 
 #endif /* THANDOR_ASSETS_RESOURCE_RUNTIME_H */

@@ -2,7 +2,7 @@ digraph thandor {
   rankdir=LR;
   node [shape=box];
   "UiRootCallbacks_Free" [label="0x004228F0\nUiRootCallbacks_FreeCf"];
-  "UiRootCallbacks_NoOpMethod08" [label="0x00422980\nUiRootCallbacks_NoOpMethod08"];
+  "UiModalDialogRoot_BlockMissedPointerPress" [label="0x00422980\nUiRootCallbacks_NoOpMethod08"];
   "UiDisplaySettingsRoot_FormatColorReadouts" [label="0x00424270\nUiRuntime_FormatSignedValues140And144"];
   "UiRuntime_OpenFourValueDialog" [label="0x004244E0\nUiRuntime_OpenFourValueDialogCf"];
   "UiRuntimeRecordRing_DiscardOldest" [label="0x004AEF00\nUiRuntimeRecordRing_DiscardOldestCf"];

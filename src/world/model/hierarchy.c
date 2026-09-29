@@ -8,7 +8,7 @@
 #include <thandor/world/model/hierarchy.h>
 #include <thandor/thandor.h>
 
-static void ModelRuntimeHierarchy_ApplyFlags418From(ModelRuntimeSlot *node);
+static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node);
 
 /* Implementation ownership: world/model/hierarchy. */
 
@@ -85,7 +85,7 @@ void ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRunti
 /* Address: 0x0051D870.
    Gives a model node and all its descendants the palette and texture set. Only
    called by itself in the executable; the faction code uses
-   ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB.
+   ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive.
 */
 void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,ModelRuntimeNode *node)
@@ -311,7 +311,7 @@ ModelNodeRuntime_TransformLocalPointRegs
 
 /* Address: 0x004BEBC0.
    Converts a world direction (elevation, azimuth) into the frame of a model node for aiming turrets and weapons
-   (ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA/B, ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments):
+   (ArmyRuntimeClass_UpdateSingleBarrelTurret/B, ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments):
    rotates a unit vector by the inverse of the node's world rotation and returns its angles, the yaw made
    relative by adding the node's local rotation angle 2 (+0x2C).
 */
@@ -777,7 +777,7 @@ bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
    ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive it expects a non-NULL node and skips empty child
    slots itself.
 */
-void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
+void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeNode *modelNode)
 
@@ -789,7 +789,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
   modelNode->modelPayload.paletteAsset = paletteAsset;
   for (; childrenRemaining != 0; childrenRemaining--) {
     if (modelNode->childNodes[0] != NULL) {
-      ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
+      ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
                 (paletteAsset,textureSet,modelNode->childNodes[0]);
     }
     /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
@@ -831,12 +831,12 @@ void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRunti
    Sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on every node of the model hierarchy rooted at *modelRuntime
    that does not have flag 0x08 yet; the world context is not used.
 */
-void ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(WorldRuntimeContext *contextArg,int *modelRuntime)
+void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,int *modelRuntime)
 
 {
   /* Rewritten from the assembly (0x0051C100-0x0051C162). */
   (void)contextArg;
-  ModelRuntimeHierarchy_ApplyFlags418From((ModelRuntimeSlot *)(uintptr_t)*modelRuntime);
+  ModelRuntimeHierarchy_MarkDestroyedFrom((ModelRuntimeSlot *)(uintptr_t)*modelRuntime);
 }
 
 
@@ -860,9 +860,9 @@ static int ModelRuntimeHierarchy_SumArmourFrom(ModelRuntimeSlot *node)
   return sum;
 }
 
-/* Body of ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive: ORs 0x418 into the runtime flags (+0xEC) of
+/* Body of ModelRuntimeHierarchy_MarkDestroyedRecursive: ORs 0x418 into the runtime flags (+0xEC) of
    node unless flag 0x08 is already set, then recurses into the non-NULL children (same layout as above). */
-static void ModelRuntimeHierarchy_ApplyFlags418From(ModelRuntimeSlot *node)
+static void ModelRuntimeHierarchy_MarkDestroyedFrom(ModelRuntimeSlot *node)
 {
   int childCount;
   int childIndex;
@@ -873,7 +873,7 @@ static void ModelRuntimeHierarchy_ApplyFlags418From(ModelRuntimeSlot *node)
   for (childIndex = 0; childIndex < childCount; childIndex++) {
     ModelRuntimeSlot *child = node->attachments[childIndex].childModelRuntimeOrSavedOffset;
     if (child != NULL) {
-      ModelRuntimeHierarchy_ApplyFlags418From(child);
+      ModelRuntimeHierarchy_MarkDestroyedFrom(child);
     }
   }
 }
@@ -1131,7 +1131,7 @@ void ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
       childSlotCursor = (ModelRuntimeNode *)((uint32_t *)childSlotCursor + 1);
     }
   }
-  WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)node);
+  WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)node);
   return;
 }
 
@@ -1286,7 +1286,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
 
 /* Address: 0x0052AAC0.
    Turns a weapon or turret node's yaw (localRotationAngle2) toward targetYawAngle16 over the shorter way, for
-   the army aim updates (ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA/B,
+   the army aim updates (ArmyRuntimeClass_UpdateSingleBarrelTurret/B,
    ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments): the turn velocity grows by the weapon definition's
    acceleration up to its rate limit and is reset when it points away; the target is taken exactly once it is
    within one step. outsideTolerance (CF) is set while the remaining difference exceeds +-0x3FF.

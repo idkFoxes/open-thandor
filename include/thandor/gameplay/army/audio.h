@@ -25,14 +25,14 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
           ArmyGraphicsAssetAddress32 armyGraphicsAsset);
 
 /* 0x00520740 */
-void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
+void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00520E60 */
 void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00523240 */
-void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
+void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00523DD0 */

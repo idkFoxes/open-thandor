@@ -527,8 +527,8 @@ ImageData_00407510 g_ImageData_00407510 = {
     0, /* 00407E24 g_FatalErrorDialogDismissed */
     /* 00407E28 g_UiRootCallbacks_00407E28 */
     {
-        .method08 = (void *)ErrorRuntime_CallbackAlwaysFail,
-        .pointerMissPolicy = (void *)ErrorRuntime_CallbackReturnCode8},
+        .method08 = (void *)FatalErrorDialog_BlockMissedPointerPress,
+        .pointerMissPolicy = (void *)FatalErrorDialog_BlockMissedPointerMotion},
     /* 00407E3C g_FatalErrorUiRootTemplateImage */
     {
         { /* +0000 fatalErrorPanel g_UiPanelControlVtable */
@@ -706,14 +706,14 @@ ImageData_0041A53C g_ImageData_0041A53C = {
     0, /* 0041A540 g_NetworkBackendInstanceTable */
     0, /* 0041A544 g_NetworkBackendInstanceCount */
     0, /* 0041A548 g_NetworkBackendSessionContext */
-    (void *)NetworkBackendFallback_Slot0_ReturnError43, /* 0041A54C g_NetworkBackendSlot0 */
-    (void *)NetworkBackendFallback_Slot1_NoOp, /* 0041A550 g_NetworkBackendSlot1 */
-    (void *)NetworkBackendFallback_Slot2_ReturnError43, /* 0041A554 g_NetworkBackendSlot2 */
-    (void *)NetworkBackendFallback_Slot3_NoOp, /* 0041A558 g_NetworkBackendSlot3 */
-    (void *)NetworkBackendFallback_Slot4_ThreeArgFailure, /* 0041A55C g_NetworkBackendSlot4 */
-    (void *)NetworkBackendFallback_Slot5_ThreeArgSuccess, /* 0041A560 g_NetworkBackendSlot5 */
-    (void *)NetworkBackendFallback_Slot6_TwoArgFailure, /* 0041A564 g_NetworkBackendSlot6 */
-    (void *)NetworkBackendFallback_Slot7_ClearOutput, /* 0041A568 g_NetworkBackendSlot7 */
+    (void *)NetworkBackendFallback_SetSessionContext, /* 0041A54C g_NetworkBackendSlot0 */
+    (void *)NetworkBackendFallback_Cleanup, /* 0041A550 g_NetworkBackendSlot1 */
+    (void *)NetworkBackendFallback_OpenAndBindUdpSocket, /* 0041A554 g_NetworkBackendSlot2 */
+    (void *)NetworkBackendFallback_CloseActiveSocket, /* 0041A558 g_NetworkBackendSlot3 */
+    (void *)NetworkBackendFallback_ReceiveDatagram, /* 0041A55C g_NetworkBackendSlot4 */
+    (void *)NetworkBackendFallback_SendDatagram, /* 0041A560 g_NetworkBackendSlot5 */
+    (void *)NetworkBackendFallback_ParsePeerEndpoint, /* 0041A564 g_NetworkBackendSlot6 */
+    (void *)NetworkBackendFallback_FormatPeerAddress, /* 0041A568 g_NetworkBackendSlot7 */
     {0}, /* 0041A56C g_NetworkLocalEndpointDescriptor16 */
     {
         0x90909090},
@@ -1139,8 +1139,8 @@ ImageData_00422978 g_ImageData_00422978 = {
     {
         .vetoClose = (void *)UiRootCallbacks_Free,
         .frameUpdate = (void *)UiDisplaySettingsRoot_RefreshModeSelection,
-        .method08 = (void *)UiRootCallbacks_NoOpMethod08,
-        .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8},
+        .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
+        .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion},
     /* 004229B4 g_UiDisplaySettingsRootTemplate */
     {
         { /* +0000 displaySettingsWindow g_UiResizableWindowControlVtable */
@@ -1354,10 +1354,10 @@ ImageData_00422978 g_ImageData_00422978 = {
     {
         .handlers = {
             /*  0 */ (void *)UiDisplayModeAction_ApplyPendingMode,
-            /*  1 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
-            /*  2 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
-            /*  3 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
-            /*  4 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+            /*  1 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
+            /*  2 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
+            /*  3 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
+            /*  4 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
             /*  5 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
             /*  6 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
             /*  7 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
@@ -1368,11 +1368,11 @@ ImageData_00422978 g_ImageData_00422978 = {
             /* 12 */ (void *)UiDisplayModeAction_UpdateResolutionSelection,
             /* 13 */ (void *)UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings,
             /* 14 */ (void *)UiDisplayModeAction_CancelAndRebuildPixelPacking,
-            /* 15 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
-            /* 16 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
-            /* 17 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
-            /* 18 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection,
-            /* 19 */ (void *)UiDisplayModeAction_UpdateColorDepthSelection
+            /* 15 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+            /* 16 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+            /* 17 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+            /* 18 */ (void *)UiDisplayModeAction_UpdateAdapterSelection,
+            /* 19 */ (void *)UiDisplayModeAction_UpdateAdapterSelection
         }},
     0, /* 004235D8 g_UiDisplayModeDistinctValueScratch0 */
     0, /* 004235DC g_UiDisplayModeDistinctValueScratch1 */
@@ -1391,8 +1391,8 @@ ImageData_00424324 g_ImageData_00424324 = {
     {
         .vetoClose = (void *)UiRootCallbacks_Free,
         .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose,
-        .method08 = (void *)UiRootCallbacks_NoOpMethod08,
-        .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8},
+        .method08 = (void *)UiModalDialogRoot_BlockMissedPointerPress,
+        .pointerMissPolicy = (void *)UiModalDialogRoot_BlockMissedPointerMotion},
     /* 00424338 g_UiFourValueDialogTemplateImage */
     {
         { /* +0000 confirmModeDialogPanel g_UiPanelControlVtable */
@@ -1874,7 +1874,7 @@ ImageData_004B3A48 g_ImageData_004B3A48 = {
         .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
-        .hitTest = (void *)UiContainer_HitTestChildrenOrNoneA,
+        .hitTest = (void *)UiFillPanelControl_HitTestChildrenOnly,
         .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
@@ -1899,7 +1899,7 @@ ImageData_004B3C1C g_ImageData_004B3C1C = {
         .rightRelease = (void *)UiNode_DefaultRightRelease,
         .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
         .rightDrag = (void *)UiNode_DefaultRightDrag,
-        .pointerMove = (void *)UiContainer_PointerMoveReturnCode6,
+        .pointerMove = (void *)UiHorizontalGaugeControl_PointerMoveBusyCursor,
         .hitTest = (void *)UiContainer_HitTestChildren,
         .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
@@ -1954,7 +1954,7 @@ ImageData_004B4648 g_ImageData_004B4648 = {
         .nonRightDrag = (void *)UiNode_DefaultNonRightDrag,
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
-        .hitTest = (void *)UiContainer_HitTestChildrenOrNoneB,
+        .hitTest = (void *)UiLayoutContainerControl_HitTestChildrenOnly,
         .keyboardEvent = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiLayoutContainerControl_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiLayoutContainerControl_SuppressActionIdRecursive,
@@ -3247,7 +3247,7 @@ ImageData_005162BC g_ImageData_005162BC = {
         .rightRelease = (void *)UiCommandSpriteButtonControl_RightRelease,
         .nonRightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
         .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
-        .pointerMove = (void *)UiCommandSpriteVariantA_PointerMove,
+        .pointerMove = (void *)InGameArmyStock_PointerMoveShowSlotDetails,
         .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
         .keyboardEvent = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
@@ -3803,34 +3803,34 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
     {
         .runtimeUpdate = {
             /*  0 */ (void *)ArmyRuntime_UpdateTimedShotAndEffectEmitters,
-            /*  1 */ (void *)ArmyRuntimeClass_UpdateGroundMovementVariantA,
+            /*  1 */ (void *)ArmyRuntimeClass_UpdateGroundMovement,
             /*  2 */ (void *)ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation,
             /*  3 */ (void *)ArmyRuntimeClass_UpdateArticulatedMovement,
             /*  4 */ (void *)ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage,
-            /*  5 */ (void *)UnifiedRuntimeTable_Method5_TwoArgNoOp,
-            /*  6 */ (void *)UnifiedRuntimeTable_Method6_TwoArgNoOp,
-            /*  7 */ (void *)ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA,
-            /*  8 */ (void *)ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB,
+            /*  5 */ (void *)ArmyRuntimeClass_NoOpTickUpdateForClass5,
+            /*  6 */ (void *)ArmyRuntimeClass_NoOpTickUpdateForClass6,
+            /*  7 */ (void *)ArmyRuntimeClass_UpdateSingleBarrelTurret,
+            /*  8 */ (void *)ArmyRuntimeClass_UpdateTwinBarrelTurret,
             /*  9 */ (void *)ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments,
             /* 10 */ (void *)ArmyRuntime_UpdateAnimatedModelSubnodes,
-            /* 11 */ (void *)ArmyRuntimeClassUpdateSlot11_DispatchByClassId,
+            /* 11 */ (void *)ArmyRuntimeClass_UpdateStructureFactory,
             /* 12 */ (void *)ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy,
-            /* 13 */ (void *)ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId,
+            /* 13 */ (void *)ArmyRuntimeClass_UpdateUnitFactory,
             /* 14 */ (void *)ArmyRuntimeClass_UpdateGridBoundEffectsAndModels,
             /* 15 */ (void *)ArmyRuntimeClass_UpdateTransformAndDamageEffect,
             /* 16 */ (void *)ArmyRuntime_UpdateTimedShotAndEffectEmitters,
             /* 17 */ (void *)ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation,
             /* 18 */ (void *)ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement,
-            /* 19 */ (void *)ArmyRuntimeClass_UpdateGroundMovementVariantB,
+            /* 19 */ (void *)ArmyRuntimeClass_UpdateWaterSurfaceMovement,
             /* 20 */ (void *)ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects,
-            /* 21 */ (void *)ArmyRuntimeClassUpdateSlot21_DispatchByClassId,
+            /* 21 */ (void *)ArmyRuntimeClass_UpdateAircraft,
             /* 22 */ (void *)ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode,
             /* 23 */ (void *)ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
         },
         .classMethodD = {
             /*  0 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD,
-            /*  1 */ (void *)ArmyRuntimeClass_UpdatePositionedSoundsVariantA,
-            /*  2 */ (void *)ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA,
+            /*  1 */ (void *)ArmyRuntimeClass_UpdateGroundPositionedSounds,
+            /*  2 */ (void *)ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds,
             /*  3 */ (void *)ArmyRuntimeClass_NoOpUpdate,
             /*  4 */ (void *)ArmyRuntimeAudio_UpdateLoopingSoundWhenEnabled,
             /*  5 */ (void *)ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound,
@@ -3845,9 +3845,9 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /* 14 */ (void *)ArmyRuntime_UpdateLoopingPositionedSound,
             /* 15 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD,
             /* 16 */ (void *)ArmyRuntime_UpdateLoopingPositionedSound,
-            /* 17 */ (void *)ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB,
+            /* 17 */ (void *)ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds,
             /* 18 */ (void *)ArmyRuntimeAudio_DispatchPositionedSoundVariant,
-            /* 19 */ (void *)ArmyRuntimeClass_UpdatePositionedSoundsVariantB,
+            /* 19 */ (void *)ArmyRuntimeClass_UpdateWaterPositionedSounds,
             /* 20 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpD,
             /* 21 */ (void *)ArmyRuntimeAudio_UpdateAssetProjectedSound,
             /* 22 */ (void *)ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds,
@@ -3917,7 +3917,7 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /*  8 */ (void *)ModelRuntimeSlotClassInit_NoOp,
             /*  9 */ (void *)ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters,
             /* 10 */ (void *)ModelRuntimeSlotClassInit_NoOp,
-            /* 11 */ (void *)ModelRuntimeSlotClassInit_ClearFields64_68_74_B8,
+            /* 11 */ (void *)ModelRuntimeSlotClassInit_ResetStructureFactoryBuild,
             /* 12 */ (void *)ModelRuntimeSlotClassInit_ClearField60,
             /* 13 */ (void *)ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0,
             /* 14 */ (void *)ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3,
@@ -4412,7 +4412,7 @@ ImageData_0053B9CC g_ImageData_0053B9CC = {
     {0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0053B9CC gap */
     /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
     {
-        (void *)AiWorkspace12Score_DefaultZero,
+        (void *)AiTechnologyScore_AlwaysZero,
         (void *)AiTechnologyScore_ComputeFactionScaledCandidateValue,
         (void *)AiTechnologyScore_ReturnBaseCandidateValueForKind2,
         (void *)AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue,
@@ -6600,15 +6600,15 @@ ImageData_005456F0 g_ImageData_005456F0 = {
             /*  6 */ (void *)FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag,
             /*  7 */ (void *)FrontendNetworkSettings_SetPlayerCount,
             /*  8 */ (void *)FrontendNetworkSettings_SetGameName,
-            /*  9 */ (void *)FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish,
+            /*  9 */ (void *)FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick,
             /* 10 */ (void *)FrontendTransferPage_ResetSessionOpenAndRequestMailbox,
             /* 11 */ (void *)FrontendPlayerSetup_ExpireSelectedRuntimeBlock,
-            /* 12 */ (void *)FrontendUiAction200C_Handler,
+            /* 12 */ (void *)FrontendHostLobby_UpdateKickButtonForSelection,
             /* 13 */ (void *)FrontendTransferPage_ValidateInputAndRequestMailbox,
             /* 14 */ (void *)FrontendRecentText_TrimAndSortTopFive,
-            /* 15 */ (void *)FrontendUiAction200F_Handler,
-            /* 16 */ (void *)FrontendUiAction2010_Handler,
-            /* 17 */ (void *)FrontendUiAction2011_Handler,
+            /* 15 */ (void *)FrontendNetworkSetup_OpenSelectedBackend,
+            /* 16 */ (void *)FrontendOptionsAction_ReturnToMainOrOptionsPage,
+            /* 17 */ (void *)FrontendDisplaySettingsAction_OpenPageAndListModes,
             /* 18 */ (void *)FrontendGraphicsSettings_OpenAndSynchronize,
             /* 19 */ (void *)FrontendAudioSettings_OpenAndSynchronize,
             /* 20 */ (void *)FrontendShadingSettings_SetEnabled,
@@ -6635,42 +6635,42 @@ ImageData_005456F0 g_ImageData_005456F0 = {
             /* 41 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
             /* 42 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
             /* 43 */ (void *)FrontendDisplaySettingsAction_ApplyPendingResolution,
-            /* 44 */ (void *)FrontendUiAction202CTo2030_SharedHandler,
-            /* 45 */ (void *)FrontendUiAction202CTo2030_SharedHandler,
-            /* 46 */ (void *)FrontendUiAction202CTo2030_SharedHandler,
-            /* 47 */ (void *)FrontendUiAction202CTo2030_SharedHandler,
-            /* 48 */ (void *)FrontendUiAction202CTo2030_SharedHandler,
+            /* 44 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+            /* 45 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+            /* 46 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+            /* 47 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
+            /* 48 */ (void *)FrontendDisplaySettingsAction_SelectAdapter,
             /* 49 */ (void *)FrontendDisplaySettings_ApplyMode,
             /* 50 */ (void *)FrontendNetworkSettings_SetPlayerName,
-            /* 51 */ (void *)FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary,
+            /* 51 */ (void *)FrontendQuitDialogAction_ReturnToMainPage,
             /* 52 */ (void *)FrontendCallback_ReturnToMainPageOrDispatchState4,
             /* 53 */ (void *)FrontendScenarioPage_OpenSaveRecordsAndRefresh,
             /* 54 */ (void *)FrontendScenarioPage_OpenLevelRecordsAndRefresh,
             /* 55 */ (void *)FrontendScenarioPage_OpenCampaignRecordsAndRefresh,
             /* 56 */ (void *)FrontendScenarioSelection_ActivateSelectedRecord,
-            /* 57 */ (void *)FrontendScenarioSelection_ApplyLocalizedTextSelection,
-            /* 58 */ (void *)FrontendScenarioSelection_ApplyField70Selection,
-            /* 59 */ (void *)FrontendScenarioSelection_ApplyField50Selection,
+            /* 57 */ (void *)FrontendScenarioSelection_SelectOrStartSavedGame,
+            /* 58 */ (void *)FrontendScenarioSelection_SelectOrStartLevel,
+            /* 59 */ (void *)FrontendScenarioSelection_SelectOrStartCampaign,
             /* 60 */ (void *)FrontendGameplaySettings_SetAutomaticZoomOff,
             /* 61 */ (void *)FrontendGameplaySettings_SetAutomaticRotationOff,
             /* 62 */ (void *)FrontendGameplaySettings_SetLinkRotationZoom,
             /* 63 */ (void *)FrontendGameplaySettings_SetLinkRotationTilt,
-            /* 64 */ (void *)FrontendCallback_ReturnToMainPageOrDispatch0DC0,
+            /* 64 */ (void *)FrontendFactionSetupAction_ReturnToMainPage,
             /* 65 */ (void *)FrontendScenarioAction_StartFieldGridLoad,
             /* 66 */ (void *)FrontendPlayerConsensus_SubmitSelectedValue,
-            /* 67 */ (void *)FrontendCallback_ApplyGameSpeedOrDispatch02C0,
-            /* 68 */ (void *)FrontendUiAction2044_Handler,
-            /* 69 */ (void *)FrontendUiAction2045_Handler,
-            /* 70 */ (void *)FrontendUiAction2046_Handler,
+            /* 67 */ (void *)FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage,
+            /* 68 */ (void *)FrontendFactionSetupAction_CycleFactionColour,
+            /* 69 */ (void *)FrontendFactionSetupAction_ToggleFactionActive,
+            /* 70 */ (void *)FrontendFactionSetupAction_ChooseFaction,
             /* 71 */ (void *)FrontendSessionAction_ApplySpeedOrToggleReady,
             /* 72 */ (void *)FrontendSessionAction_CloseMovieAndReturnToMainPage,
             /* 73 */ (void *)FrontendGameplaySettings_SetRightButtonDoesNotScroll,
             /* 74 */ (void *)FrontendGameplaySettings_SetGameSpeedPercent,
             /* 75 */ (void *)FrontendGameplaySettings_SetCameraScrollStep,
             /* 76 */ (void *)FrontendPlayerMessage_SubmitSevenSlotText,
-            /* 77 */ (void *)FrontendPlayerSetup_SelectCountAndBuildLabel,
+            /* 77 */ (void *)FrontendNetworkSettings_SetNetworkSpeed,
             /* 78 */ (void *)FrontendAudioSettings_SetMovieAlternateGain,
-            /* 79 */ (void *)FrontendCallback_ReleaseSelectedResourceOrDispatch0320,
+            /* 79 */ (void *)FrontendSessionAction_ReleaseCampaignAndReturnToMainPage,
             /* 80 */ (void *)FrontendCallback_NoOpArg1,
             /* 81 */ (void *)FrontendGameplaySettings_SetHidePanel,
             /* 82 */ (void *)FrontendScenarioPage_OpenSaveRecordsAndRefresh,
@@ -6684,9 +6684,9 @@ ImageData_005456F0 g_ImageData_005456F0 = {
         }},
     /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
     {
-        (void *)ScenarioCatalog_RefreshSelectedRecordLocalizedText,
-        (void *)ScenarioCatalog_RefreshSelectedRecordField70DisplayId,
-        (void *)ScenarioCatalog_RefreshSelectedRecordField50DisplayId},
+        (void *)ScenarioCatalog_SelectSavedGameAndShowDescription,
+        (void *)ScenarioCatalog_SelectLevelAndShowDescription,
+        (void *)ScenarioCatalog_SelectCampaignAndShowDescription},
     L"engine\\zentrale.rom", /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
     L"gfx\\texturen\\zentrale.gfx", /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
     L"gfx\\texturen\\zentrale.pal", /* 00545B00 u_gfx_texturen_zentrale_pal_00545b00 */
@@ -10723,7 +10723,7 @@ ImageData_00562498 g_ImageData_00562498 = {
     {
         .handlers = {
             /*  0 */ (void *)InGameMapAction_RecenterViewFromGridCoordinates,
-            /*  1 */ (void *)InGameCommandSprite_DispatchVariantAControl24,
+            /*  1 */ (void *)InGameArmyStock_TakeOrSellSlotArmy,
             /*  2 */ (void *)InGameSevenSlotCommand_ClosePage,
             /*  3 */ (void *)InGameSettingsPage_ToggleAndSynchronizeControls,
             /*  4 */ (void *)InGameSevenSlotCommand_SubmitTextAndSelectionMask,
@@ -10731,14 +10731,14 @@ ImageData_00562498 g_ImageData_00562498 = {
             /*  6 */ (void *)InGameSelectionPage_RebuildActivePlayerEntries,
             /*  7 */ (void *)InGameSelectionPage_RebuildRuntimeRecordEntries,
             /*  8 */ (void *)InGameSelectionPage_ShowSubpage1,
-            /*  9 */ (void *)InGameCommandAction_ToggleRuntimeFlag0800,
-            /* 10 */ (void *)InGameCommandSprite_DispatchFixedControl8,
-            /* 11 */ (void *)InGameCommandCatalog_SubmitGroup48Entry,
-            /* 12 */ (void *)InGameCommandCatalog_SubmitGroup42Entry,
+            /*  9 */ (void *)InGameEndMovie_Skip,
+            /* 10 */ (void *)InGameSelectionGroupButton_RecallOrStoreGroup,
+            /* 11 */ (void *)InGameBuildCatalog_QueueOrCancelEntry,
+            /* 12 */ (void *)InGameSpecialBuildCatalog_QueueOrCancelEntry,
             /* 13 */ (void *)InGameTargetingContext_AdvanceOrResolveTarget,
             /* 14 */ (void *)InGameTargetingContext_CancelAndRestoreState,
             /* 15 */ (void *)InGameRecentText_TrimHistoryToThree,
-            /* 16 */ (void *)InGameSelectionPage_ToggleAndRefreshPage2,
+            /* 16 */ (void *)InGameTechnologyPanel_ToggleForSelection,
             /* 17 */ (void *)InGameCommandAction_ClearSelectedArmyTokenAndClosePage,
             /* 18 */ (void *)InGameOtherPlayerCommand_DispatchSelectedTarget,
             /* 19 */ (void *)InGameTechnologyResearch_StartSelected,
@@ -10749,19 +10749,19 @@ ImageData_00562498 g_ImageData_00562498 = {
             /* 24 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
             /* 25 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
             /* 26 */ (void *)InGameTechnologyAreaTab_SelectAndRebuild,
-            /* 27 */ (void *)InGameCommandAction_SetFlag1000OrMarkReady,
-            /* 28 */ (void *)InGameUiAction101C_Handler,
-            /* 29 */ (void *)InGameSettingsAction_CloseAndDepartPlayerMode0,
-            /* 30 */ (void *)InGameSettingsAction_CloseAndDepartPlayerMode1,
-            /* 31 */ (void *)InGameUiAction101F_Handler,
+            /* 27 */ (void *)InGameResultsScreen_ContinueOrMarkReady,
+            /* 28 */ (void *)InGameResultsScreen_SelectChartTab,
+            /* 29 */ (void *)InGameQuitMenu_AbortMission,
+            /* 30 */ (void *)InGameQuitMenu_Surrender,
+            /* 31 */ (void *)InGameMissionHelpPage_Toggle,
             /* 32 */ (void *)InGameSettingsAction_CloseAlternatePanel,
-            /* 33 */ (void *)InGameMissionHelpPage_SelectTab0,
-            /* 34 */ (void *)InGameMissionHelpPage_SelectTab1,
-            /* 35 */ (void *)InGameMissionHelpPage_SelectTab2,
-            /* 36 */ (void *)InGameUiAction1024_Handler,
-            /* 37 */ (void *)InGameCommandState_SetRuntimeFlag1000,
+            /* 33 */ (void *)InGameMissionHelpPage_SelectBriefingTab,
+            /* 34 */ (void *)InGameMissionHelpPage_SelectKeyboardTab,
+            /* 35 */ (void *)InGameMissionHelpPage_SelectMouseTab,
+            /* 36 */ (void *)InGameChatInput_SendLineOrCheckCheatPhrase,
+            /* 37 */ (void *)InGameResultsScreen_CloseLocally,
             /* 38 */ (void *)InGameCommandState_SelectAndPropagateBinaryMode,
-            /* 39 */ (void *)InGameCommandState_CloseSettingsAndDispatchOperation150
+            /* 39 */ (void *)InGameQuitMenu_RestartMission
         }},
     /* 00562540 g_InGameUiCommandModeActionHandlers30 */
     {
@@ -10800,7 +10800,7 @@ ImageData_00562498 g_ImageData_00562498 = {
     /* 005625B8 g_InGameUiActionHandlersPage12 */
     {
         .handlers = {
-            /*  0 */ (void *)InGameCommandPanel_OpenPage4AndRefreshAvailability,
+            /*  0 */ (void *)InGameQuitMenu_OpenAndRefreshButtons,
             /*  1 */ (void *)InGameSettingsPage_CloseViaSharedToggle,
             /*  2 */ (void *)InGameGraphicsSettings_OpenAndSynchronize,
             /*  3 */ (void *)InGameAudioSettings_OpenAndSynchronize,
@@ -10990,8 +10990,8 @@ ImageData_00562498 g_ImageData_00562498 = {
     /* 00563748 g_InGamePointerModeHandlers */
     {
         0,
-        (void *)InGameSelection_ApplyType16MarkerCoordinatesVariant1,
-        (void *)InGameSelection_ApplyType16MarkerCoordinatesVariant2,
+        (void *)InGameSelection_SetAircraftPadTargetLane1,
+        (void *)InGameSelection_SetAircraftPadTargetLane2,
         (void *)SelectionMarkerCoordinates_ApplyType3,
         (void *)SelectionMarkerCoordinates_ApplyType4,
         (void *)SelectionMarkerCoordinates_ApplyType5,

@@ -30,7 +30,7 @@ bool UiRootCallbacks_Free(UiRootNode *root)
    pointer press that misses the dialog ends the root-stack hit test there (the dialogs are modal). The
    caller removes the one stack argument.
 */
-bool UiRootCallbacks_NoOpMethod08(UiRootNode *root)
+bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root)
 
 {
   return true;
@@ -40,9 +40,9 @@ bool UiRootCallbacks_NoOpMethod08(UiRootNode *root)
 /* Address: 0x00422990.
    pointerMissPolicy of g_UiDisplaySettingsRootCallbacks and g_UiFourValueDialogRootCallbacks: the
    non-negative result stops pointer motion that misses the dialog from reaching the roots below it. The value
-   8 carries no meaning beyond being non-negative (same as ErrorRuntime_CallbackReturnCode8).
+   8 carries no meaning beyond being non-negative (same as FatalErrorDialog_BlockMissedPointerMotion).
 */
-int UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root)
+int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root)
 
 {
   return 8;

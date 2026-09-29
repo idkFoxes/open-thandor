@@ -32,7 +32,7 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot);
 
 /* 0x005243D0 */
-void ModelRuntimeSlotClassInit_ClearFields64_68_74_B8 (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot);
+void ModelRuntimeSlotClassInit_ResetStructureFactoryBuild (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot);
 
 /* 0x00524CB0 */
 void ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C(ModelRuntimeSlot *modelRuntime);

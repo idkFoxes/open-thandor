@@ -170,7 +170,7 @@ void InGameCommandModeG_Select5(UiSelectableControl *source)
    sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED (the host through command 0x310 so every machine sees it); a network
    client instead reports itself ready, which lets the host show its own continue button.
 */
-void InGameCommandAction_SetFlag1000OrMarkReady(void *source)
+void InGameResultsScreen_ContinueOrMarkReady(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -200,7 +200,7 @@ void InGameCommandAction_SetFlag1000OrMarkReady(void *source)
    it does not toggle but clears UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING (clear mask of command 0x310, sent to
    every machine in a network game).
 */
-void InGameCommandAction_ToggleRuntimeFlag0800(void *source)
+void InGameEndMovie_Skip(void *source)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -221,7 +221,7 @@ void InGameCommandAction_ToggleRuntimeFlag0800(void *source)
    g_InGameUiActionHandlersPage10[39]): deselects and closes the in-game menu, then issues command 0x150 with
    INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION, which ends the session.
 */
-void InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source)
+void InGameQuitMenu_RestartMission(UiNodeBase *source)
 
 {
 
@@ -366,9 +366,9 @@ void UiCommandSpriteButtonControl_RightRelease
 /* Address: 0x00516490.
    Pointer move over an army stock slot (pointerMove of g_UiNodeVtable_005162C0): shows the slot's army asset in
    the selection detail panel and returns the cursor frame, 12 while Ctrl is held (a click then sells the army,
-   see InGameCommandSprite_DispatchVariantAControl24), 10 otherwise.
+   see InGameArmyStock_TakeOrSellSlotArmy), 10 otherwise.
 */
-GraphicsCursorFrameIndex UiCommandSpriteVariantA_PointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control)
 
 {
@@ -546,8 +546,8 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
                    ((GraphicsFixedVec3 *)&modelNodeRuntime->runtimeState94)->x,
                    (EffectDefinition *)slotModelRuntime->attachments[2].childLocalRotationAngle0,
                    worldRuntime);
-        UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-        UiCatalogGroup42_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+        InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+        InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
         if (playerId != g_LocalPlayerRuntimeId) {
           return;
         }
@@ -568,7 +568,7 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
    grid of at most four columns; the frame is sized to the grid (smaller margins below 800 pixels width) and
    hidden when the stock is empty, unused slots are hidden.
 */
-void UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node)
+void InGameArmyStock_RebuildGrid(UiNodeBase *node)
 
 {
   uint32_t *controlFlags;
@@ -706,7 +706,7 @@ void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
    stack). Its restart button is only offered in local games, its surrender button only while the local
    faction is still in play (world input enabled).
 */
-void InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSourceAddress32 source)
+void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 source)
 
 {
   UiNodeBase *firstNode;
@@ -738,7 +738,7 @@ void InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSource
    (activationInputState & KEYBOARD_STATE_CTRL) cancels a queued one with refund. Ignored while paused or while the
    world input is disabled.
 */
-void InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
+void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 
 {
   FactionRuntimeIndex factionIndex;
@@ -794,9 +794,9 @@ void InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source)
 
 /* Address: 0x0056D090.
    Special build catalog entry click (action 0x100C, g_InGameUiActionHandlersPage10[12]): the same as
-   InGameCommandCatalog_SubmitGroup48Entry for the 42 slots of the special build catalog.
+   InGameBuildCatalog_QueueOrCancelEntry for the 42 slots of the special build catalog.
 */
-void InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
+void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source)
 
 {
   FactionRuntimeIndex factionIndex;
@@ -856,7 +856,7 @@ void InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source)
    (activationInputState & KEYBOARD_STATE_CTRL). Ignored while paused, while the world input is disabled and while
    world runtime flag 0x10 is set.
 */
-void InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *control)
+void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control)
 
 {
   int32_t *flagsField;
@@ -936,7 +936,7 @@ void InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl 
    (SELECTION_TRANSFER_TO_GROUP) and a double click also centres the view. Every variant except the plain recall
    is refused when SelectionInfo_AllEntriesEmptyOrMatchOwner reports so for the active faction.
 */
-void InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *control)
+void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl *control)
 
 {
   UiCommandSpriteButtonControl *root;
@@ -995,7 +995,7 @@ void InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *con
    Second results screen button (action 0x1025, g_InGameUiActionHandlersPage10[37]; resultsSecondaryExitButton,
    only offered in network games): sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED on this machine only.
 */
-void InGameCommandState_SetRuntimeFlag1000(UiNodeBase *source)
+void InGameResultsScreen_CloseLocally(UiNodeBase *source)
 
 {
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED;

@@ -105,7 +105,7 @@ void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
    slot, in a grid of at most eight columns with its texture and Xenite cost; the frame is sized to the grid
    (smaller margins below 800 pixels width) and the panel hidden when the catalog is empty.
 */
-void UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
+void InGameBuildCatalog_RebuildGrid(UiNodeBase *node)
 
 {
   UiNodeFlags *gridNodeFlags;
@@ -246,11 +246,11 @@ void UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
 /* Address: 0x0056A050.
    Rebuilds the special build catalog (42 entries), offered only while the active faction owns a model of
    runtime class 11: every registered army asset with flags 1 and 0x10 and a texture that passes the technology
-   and ownership/unlock tests (CF results as in UiCatalogGroup48_RebuildGrid) gets a slot, in a grid of at most
+   and ownership/unlock tests (CF results as in InGameBuildCatalog_RebuildGrid) gets a slot, in a grid of at most
    six columns with its texture and Xenite cost. The frame is sized to the grid (smaller margins below 800
    pixels width); an empty catalog hides its panel, and also the army stock panel when the stock is empty.
 */
-void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
+void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node)
 
 {
   UiNodeFlags *gridNodeFlags;
@@ -339,7 +339,7 @@ void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
     (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -55;
     (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -55;
   }
-  /* pointer forms as in UiCatalogGroup48_RebuildGrid (they keep the original code) */
+  /* pointer forms as in InGameBuildCatalog_RebuildGrid (they keep the original code) */
   layoutOffset = &(inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset;
   *layoutOffset = *layoutOffset - panelWidth;
   layoutOffset = &(inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset;
@@ -363,7 +363,7 @@ void UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
     gridNodeFlags = &(inGameUiGridView->commandSpriteVariantAGridNode8C4C).nodeFlags;
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
   }
-  /* slot controls (UiCatalogEntryControl) as in UiCatalogGroup48_RebuildGrid */
+  /* slot controls (UiCatalogEntryControl) as in InGameBuildCatalog_RebuildGrid */
   slotOffsets = g_UiCatalogGroup42OffsetTables[columnCount];
   recordCursor = g_UiCatalogGroup42Records;
   for (slotIndex = 0; slotIndex < SPECIAL_BUILD_CATALOG_ENTRY_COUNT; ) {

@@ -11547,7 +11547,7 @@ struct FrontendModelPointerContextRuntimeState17C {
     UiPixelCoordinate scratchCoordinate164; // Runtime-reused coordinate: pointer Y in NonRightPress and second selection-overlay frame coordinate in DrawClipped.
     UiPixelCoordinate scratchCoordinate168; // Runtime-reused coordinate: pointer X in NonRightDrag and third selection-overlay frame coordinate in DrawClipped.
     UiPixelCoordinate scratchCoordinate16C; // Runtime-reused coordinate: pointer Y in NonRightDrag and fourth selection-overlay frame coordinate in DrawClipped.
-    int *terrainMarkerCoordinatePairs170; // Pointer consumed as int coordinate pairs by SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints.
+    int *terrainMarkerCoordinatePairs170; // Pointer consumed as int coordinate pairs by SelectionOverlay_DrawTerrainPointMarkers.
     int terrainMarkerPointCount174; // Point count paired with terrainMarkerCoordinatePairs170.
     uint32_t observedState178; // Observed trailing dword; semantics unresolved.
 };

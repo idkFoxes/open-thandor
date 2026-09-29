@@ -24,8 +24,8 @@ digraph thandor {
   "FieldGridTerrainOverlayVariantB_ApplyWedge4" [label="0x0050A050\nFieldGridTerrainOverlayVariantB_ApplyWedge4"];
   "FieldGridTerrainOverlayVariantB_ApplyWedge5" [label="0x0050A0F0\nFieldGridTerrainOverlayVariantB_ApplyWedge5"];
   "TerrainProjectedQuad_QueueAsTwoTrianglesRegs" [label="0x00500CE0\nTerrainProjectedQuad_QueueAsTwoTrianglesRegs"];
-  "TerrainProjectedVertex_TransformProjectAndShadeVariantA" [label="0x005004A0\nTerrainProjectedVertex_TransformProjectAndShadeVariantA"];
-  "TerrainProjectedVertex_TransformProjectAndShadeVariantB" [label="0x005006A0\nTerrainProjectedVertex_TransformProjectAndShadeVariantB"];
+  "TerrainProjectedVertex_TransformProjectAndShade" [label="0x005004A0\nTerrainProjectedVertex_TransformProjectAndShadeVariantA"];
+  "TerrainProjectedVertex_ReshadeKeepingProjection" [label="0x005006A0\nTerrainProjectedVertex_TransformProjectAndShadeVariantB"];
   "TerrainProjectedTriangle_ClipInterpolateAndQueueTextured" [label="0x00500820\nTerrainProjectedTriangle_ClipInterpolateAndQueueTextured"];
   "TerrainProjectedGrid_ClipRowSpansAgainstPlane" [label="0x00500D30\nTerrainProjectedGrid_ClipRowSpansAgainstPlane"];
   "TerrainProjectedOcclusion_ScanDirection0" [label="0x005063B0\nTerrainProjectedOcclusion_ScanDirection0"];
@@ -65,8 +65,8 @@ digraph thandor {
   "FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint" -> "FieldGridTerrainOverlayVariantB_ApplyWedge4";
   "FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint" -> "FieldGridTerrainOverlayVariantB_ApplyWedge5";
   "TerrainProjectedGrid_TransformShadeAndQueue" -> "TerrainProjectedGrid_ClipRowSpansAgainstPlane";
-  "TerrainProjectedGrid_TransformShadeAndQueue" -> "TerrainProjectedVertex_TransformProjectAndShadeVariantB";
-  "TerrainProjectedGrid_TransformShadeAndQueue" -> "TerrainProjectedVertex_TransformProjectAndShadeVariantA";
+  "TerrainProjectedGrid_TransformShadeAndQueue" -> "TerrainProjectedVertex_ReshadeKeepingProjection";
+  "TerrainProjectedGrid_TransformShadeAndQueue" -> "TerrainProjectedVertex_TransformProjectAndShade";
   "TerrainProjectedGrid_TransformShadeAndQueue" -> "TerrainProjectedQuad_QueueAsTwoTrianglesRegs";
   "TerrainProjectedOcclusion_TraceWedge0" -> "TerrainProjectedOcclusion_ScanDirection0";
   "TerrainProjectedOcclusion_TraceWedge0" -> "TerrainProjectedOcclusion_ScanDirection1";

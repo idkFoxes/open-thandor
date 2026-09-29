@@ -2,9 +2,9 @@ digraph thandor {
   rankdir=LR;
   node [shape=box];
   "UiDisplaySettingsRoot_RefreshModeSelection" [label="0x00422910\nUiDisplaySettingsRoot_RefreshModeSelection"];
-  "UiDisplayModeAction_UpdateAdapterSelection" [label="0x00423C40\nUiDisplayModeAction_UpdateAdapterSelection"];
+  "UiDisplayModeAction_UpdateColorDepthSelection" [label="0x00423C40\nUiDisplayModeAction_UpdateAdapterSelection"];
   "UiDisplayModeAction_UpdateResolutionSelection" [label="0x00423C80\nUiDisplayModeAction_UpdateResolutionSelection"];
-  "UiDisplayModeAction_UpdateColorDepthSelection" [label="0x00423CB0\nUiDisplayModeAction_UpdateColorDepthSelection"];
+  "UiDisplayModeAction_UpdateAdapterSelection" [label="0x00423CB0\nUiDisplayModeAction_UpdateColorDepthSelection"];
   "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" [label="0x00424590\nUiDisplayModeAction_ApplyFourValueDialogAndReopenSettings"];
   "UiImageControl_NonRightDrag" [label="0x004BC8B0\nUiImageControl_NonRightDrag"];
   "UiImageControl_TickHover" [label="0x004BCB50\nUiImageControl_TickHover"];
@@ -25,9 +25,9 @@ digraph thandor {
   "UiImageControl_HitTestOpaque" [label="0x004BC9B0\nUiImageControl_HitTestOpaque"];
   "UiDisplayModeSelection_RefreshEnumeratedOptions" [label="0x00423D70\nUiDisplayModeSelection_RefreshEnumeratedOptions"];
   "UiDisplaySettingsRoot_RefreshModeSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
-  "UiDisplayModeAction_UpdateAdapterSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
-  "UiDisplayModeAction_UpdateResolutionSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
   "UiDisplayModeAction_UpdateColorDepthSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+  "UiDisplayModeAction_UpdateResolutionSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+  "UiDisplayModeAction_UpdateAdapterSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
   "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" -> "UiDisplaySettings_OpenAndPopulateModeSelection";
   "UiImageControl_NonRightDrag" -> "UiImageControl_HitTestOpaque";
   "UiImageControl_TickHover" -> "UiImageControl_HitTestOpaque";

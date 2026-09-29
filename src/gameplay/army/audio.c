@@ -82,7 +82,7 @@ void ArmyGraphics_CopyFrontendPlayerPaletteAndTexture(FrontendPlayerRuntimeId fr
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[2] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
+void ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -139,8 +139,8 @@ void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
 
 /* Address: 0x00520E60.
    Picks the positioned-sound update by the placement contact kind at +0x278 of the army's model record:
-   kind 1 (water surface, see g_ArmyPlacementContactKindDispatchTable) uses variant B, every other kind
-   variant A.
+   kind 1 (water surface, see g_ArmyPlacementContactKindDispatchTable) uses
+   ArmyRuntimeClass_UpdateWaterPositionedSounds, every other kind ArmyRuntimeClass_UpdateGroundPositionedSounds.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[18] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
@@ -150,11 +150,11 @@ void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldR
 {
   if (armyRuntime->modelRuntimeOrSavedOffset.modelDefinition->placementContactKindIndex278 ==
       ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
-    ArmyRuntimeClass_UpdatePositionedSoundsVariantB
+    ArmyRuntimeClass_UpdateWaterPositionedSounds
               (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView120 *)armyRuntime);
   }
   else {
-    ArmyRuntimeClass_UpdatePositionedSoundsVariantA
+    ArmyRuntimeClass_UpdateGroundPositionedSounds
               (worldRuntime,(ArmyRuntimeGroundMovementPositionedSoundView120 *)armyRuntime);
   }
   return;
@@ -162,12 +162,12 @@ void ArmyRuntimeAudio_DispatchPositionedSoundVariant(WorldRuntimeContext *worldR
 
 
 /* Address: 0x00523240.
-   Byte-for-byte duplicate of ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA for another class:
+   Byte-for-byte duplicate of ArmyRuntimeAudio_UpdateTrackedTurnAndMoveSounds for another class:
    turn sound (+0xD8) and movement sound (+0xD0) of the model record follow a turning or moving unit.
    Reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classMethodD[17] (0x0051FCF8), which
    ArmyRuntimeHierarchy_DispatchClassMethodDRecursive calls by the model's class id.
 */
-void ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
+void ArmyRuntimeAudio_UpdateGliderTurnAndMoveSounds
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {

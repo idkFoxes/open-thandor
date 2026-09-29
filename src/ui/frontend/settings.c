@@ -396,7 +396,7 @@ void FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
   }
   else {
     UiNodeList_UnsuppressActionId(FRONTEND_ACTION_HOST_GAME,&rootNode->base);
-    FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
+    FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
               ((FrontendNetworkSettingsControlView *)FRONTEND_UI(rootNode,sessionList));
     PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textBuffer,
                                   PERSISTENT_SETTING_PLAYER_NAME);
@@ -1243,7 +1243,7 @@ void FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
    (presumably a double click), it is cleared and the join request is sent at once, as if Join had been pressed.
    The field names of FrontendNetworkSettingsControlView used here do not fit a list (text edit overlay).
 */
-void FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
+void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
           (FrontendNetworkSettingsControlView *networkSettings)
 
 {
@@ -1577,7 +1577,7 @@ hidePlayerControl:
 
 /* Address: 0x0054CD20.
    Handler of the network game page's Join button (FRONTEND_ACTION_JOIN_GAME, slot 2 of
-   g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish):
+   g_FrontendUiActionHandlersPage20; also called by FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick):
    takes the session token (+0x04) and host endpoint (+0xA0, 16 bytes) of the session list's selected row
    (reached at +0x248 from the button, i.e. sessionList +0x60) and sends the join request (player descriptor
    packet 0x20002) to it. Returns the send's CF.

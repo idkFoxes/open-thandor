@@ -35,7 +35,7 @@ void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source)
    and lets the local player leave the session (command 0x150 without flags). A local game runs the handler
    directly, a network game queues the command so every peer executes it.
 */
-void InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
+void InGameQuitMenu_AbortMission(UiNodeBase *source)
 
 {
 
@@ -60,7 +60,7 @@ void InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source)
    closes the game menu and gives up, command 0x150 with INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER destroys every army
    of the local faction. Local games call the handler directly, network games queue the command.
 */
-void InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source)
+void InGameQuitMenu_Surrender(UiNodeBase *source)
 
 {
 
@@ -154,7 +154,7 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
    UI action 0x1021 (missionHelpBriefingTab; g_InGameUiActionHandlersPage10[33]): selects tab 0 of the mission help
    window exclusively among its three tab buttons and shows page 0 (the mission briefing) of its page stack.
 */
-void InGameMissionHelpPage_SelectTab0(UiNodeBase *sourceNode)
+void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpBriefingTab of the in-game UI template copy */
@@ -171,7 +171,7 @@ void InGameMissionHelpPage_SelectTab0(UiNodeBase *sourceNode)
    UI action 0x1022 (missionHelpKeyboardTab; g_InGameUiActionHandlersPage10[34]): selects tab 1 of the mission help
    window exclusively among its three tab buttons and shows page 1 (the keyboard help) of its page stack.
 */
-void InGameMissionHelpPage_SelectTab1(UiNodeBase *sourceNode)
+void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
@@ -188,7 +188,7 @@ void InGameMissionHelpPage_SelectTab1(UiNodeBase *sourceNode)
    UI action 0x1023 (missionHelpMouseTab; g_InGameUiActionHandlersPage10[35]): selects tab 2 of the mission help
    window exclusively among its three tab buttons and shows page 2 (the mouse help) of its page stack.
 */
-void InGameMissionHelpPage_SelectTab2(UiNodeBase *sourceNode)
+void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode)
 
 {
   /* sourceNode is missionHelpMouseTab of the in-game UI template copy */
@@ -949,7 +949,7 @@ void InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
    UI action 0x1003 (game menu button): opening shows the game menu window (page 3) with the gameplay options
    loaded from the persistent settings, blocks the world input and pauses a local game; network games cannot
    save, so the save button is suppressed there. Closing hides the window and resumes as
-   InGameUiAction101F_Handler does.
+   InGameMissionHelpPage_Toggle does.
 */
 void InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle)
 

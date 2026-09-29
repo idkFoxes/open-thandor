@@ -674,7 +674,7 @@ void ModelRuntimePool_DestroyHierarchyAndDetach(WorldRuntimeContext *worldRuntim
   translationY = rootModelNode->worldTransform.translation.y;
   orientationAngle = rootModelNode->modelPayload.worldRotationAngle2;
   parentModelNode = rootModelNode->parentNode;
-  WorldRuntime_ForEachNodeInOwnerListD8
+  WorldRuntime_ForEachOwnerListNode
             (modelRuntime,WorldRuntimeNode_ClearDetachedEntityReferencesCallback,worldRuntime);
   ModelRuntimeNode_ReleaseRecursiveAndDetachParent(rootModelNode);
   modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;

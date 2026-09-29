@@ -3,7 +3,7 @@ digraph thandor {
   node [shape=box];
   "AiWorkspaceAssetCandidate_AddWeightedEntry" [label="0x0053A1E0\nAiWorkspaceAssetCandidate_AddWeightedEntry"];
   "AiPlanning_RebuildFactionWorkspaces" [label="0x00538230\nAiPlanning_RebuildFactionWorkspaces"];
-  "AiStrategicCandidate_AddBestWorkspace12Entry" [label="0x0053BF30\nAiStrategicCandidate_AddBestWorkspace12Entry"];
+  "AiTechnologyCandidate_AddBestResearch" [label="0x0053BF30\nAiStrategicCandidate_AddBestWorkspace12Entry"];
   "AiCandidateWorkspace_Clear" [label="0x00537420\nAiCandidateWorkspace_Clear"];
   "AiCandidateWorkspace_SaveToFactionImage" [label="0x00537430\nAiCandidateWorkspace_SaveToFactionImage"];
   "AiCandidateWorkspace_LoadFromFactionImage" [label="0x00537470\nAiCandidateWorkspace_LoadFromFactionImage"];
@@ -14,14 +14,14 @@ digraph thandor {
   "AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate" [label="0x00538D40\nAiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate"];
   "AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint" [label="0x00538D90\nAiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint"];
   "AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint" [label="0x00538E00\nAiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint"];
-  "AiWorkspace02_GetMinimumManhattanDistanceToPoint" [label="0x00538E80\nAiWorkspace02_GetMinimumManhattanDistanceToPoint"];
-  "AiWorkspace03_GetMinimumManhattanDistanceToPoint" [label="0x00538EF0\nAiWorkspace03_GetMinimumManhattanDistanceToPoint"];
+  "AiHostileWorkspace_GetNearestVisibleHostileDistance" [label="0x00538E80\nAiWorkspace02_GetMinimumManhattanDistanceToPoint"];
+  "AiHostileWorkspace_GetNearestUnseenHostileDistance" [label="0x00538EF0\nAiWorkspace03_GetMinimumManhattanDistanceToPoint"];
   "AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint" [label="0x00538F60\nAiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint"];
   "AiConstructionPlanner_PlaceSpecialAssetFromWorkspace" [label="0x00539240\nAiConstructionPlanner_PlaceSpecialAssetFromWorkspace"];
-  "AiWorkspace12Score_DefaultZero" [label="0x0053BCB0\nAiWorkspace12Score_DefaultZero"];
+  "AiTechnologyScore_AlwaysZero" [label="0x0053BCB0\nAiWorkspace12Score_DefaultZero"];
   "AiRuntime_InitWorkspace" [label="0x0053C6C0\nAiRuntime_InitWorkspace"];
-  "AiEntityCandidateWorkspace09_AddInsidePrimaryExtents" [label="0x00537F80\nAiEntityCandidateWorkspace09_AddInsidePrimaryExtents"];
-  "AiEntityCandidateWorkspace10_AddInsidePrimaryExtents" [label="0x00537FC0\nAiEntityCandidateWorkspace10_AddInsidePrimaryExtents"];
+  "AiBaseSiteWorkspace_AddCellInsideBase" [label="0x00537F80\nAiEntityCandidateWorkspace09_AddInsidePrimaryExtents"];
+  "AiBaseSiteWorkspace_AddLargeCellInsideBase" [label="0x00537FC0\nAiEntityCandidateWorkspace10_AddInsidePrimaryExtents"];
   "AiPrimaryWorkspace_HasUnassignedEntryById" [label="0x00538B90\nAiPrimaryWorkspace_HasUnassignedEntryByIdCf"];
   "AiPrimaryWorkspace_HasEntryById" [label="0x00538BF0\nAiPrimaryWorkspace_HasEntryByIdCf"];
   "AiPrimaryWorkspace_CountAssignedEntriesById" [label="0x00538C40\nAiPrimaryWorkspace_CountAssignedEntriesById"];
@@ -30,10 +30,10 @@ digraph thandor {
   "AiWorkspaceAssetCandidate_AddWeightedEntry" -> "AiPrimaryWorkspace_HasUnassignedEntryById";
   "AiWorkspaceAssetCandidate_AddWeightedEntry" -> "AiPrimaryWorkspace_CountAssignedEntriesById";
   "AiWorkspaceAssetCandidate_AddWeightedEntry" -> "AiCandidateWorkspace_AddOrAccumulateWeightedEntry";
-  "AiPlanning_RebuildFactionWorkspaces" -> "AiEntityCandidateWorkspace09_AddInsidePrimaryExtents";
-  "AiPlanning_RebuildFactionWorkspaces" -> "AiEntityCandidateWorkspace10_AddInsidePrimaryExtents";
-  "AiStrategicCandidate_AddBestWorkspace12Entry" -> "AiPrimaryWorkspace_HasEntryById";
-  "AiStrategicCandidate_AddBestWorkspace12Entry" -> "AiCandidateWorkspace_AddOrAccumulateWeightedEntry";
-  "AiEntityCandidateWorkspace09_AddInsidePrimaryExtents" -> "AiPrimaryWorkspace_IsPointOutsideAllEntryExtents";
-  "AiEntityCandidateWorkspace10_AddInsidePrimaryExtents" -> "AiPrimaryWorkspace_IsPointOutsideAllEntryExtents";
+  "AiPlanning_RebuildFactionWorkspaces" -> "AiBaseSiteWorkspace_AddCellInsideBase";
+  "AiPlanning_RebuildFactionWorkspaces" -> "AiBaseSiteWorkspace_AddLargeCellInsideBase";
+  "AiTechnologyCandidate_AddBestResearch" -> "AiPrimaryWorkspace_HasEntryById";
+  "AiTechnologyCandidate_AddBestResearch" -> "AiCandidateWorkspace_AddOrAccumulateWeightedEntry";
+  "AiBaseSiteWorkspace_AddCellInsideBase" -> "AiPrimaryWorkspace_IsPointOutsideAllEntryExtents";
+  "AiBaseSiteWorkspace_AddLargeCellInsideBase" -> "AiPrimaryWorkspace_IsPointOutsideAllEntryExtents";
 }

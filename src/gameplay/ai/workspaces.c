@@ -376,7 +376,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
                FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) == 0)) &&
              ((fieldCell[widthOrCount * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ==
               0)) {
-            AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(fieldCell + widthOrCount);
+            AiBaseSiteWorkspace_AddCellInsideBase(fieldCell + widthOrCount);
             fieldCell = fieldCell + widthOrCount + -widthOrCount;
           }
           cellByteCursor = (uint8_t *)fieldCell + factionIndex;
@@ -407,7 +407,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
                 (((fieldCell[widthOrCount * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)
                   == 0 && ((fieldCell[widthOrCount].flagsAndMaterial &
                            FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) == 0)))))) {
-              AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(fieldCell + widthOrCount);
+              AiBaseSiteWorkspace_AddLargeCellInsideBase(fieldCell + widthOrCount);
               fieldCell = fieldCell + widthOrCount + -widthOrCount;
             }
             cellByteCursor = (uint8_t *)fieldCell + factionIndex;
@@ -519,7 +519,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
    workspace 12 with the score callback of its kind and proposes the best one (entry kind 2) with
    workspace12BestCandidateBaseWeight, halved while the faction's primary anchor cooldown runs.
 */
-void AiStrategicCandidate_AddBestWorkspace12Entry(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiTechnologyCandidateScore candidateScore;
@@ -889,7 +889,7 @@ int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 w
    Returns the smallest Manhattan distance from the point to an assigned workspace-02 unit, or 0x7FFFFFFF when
    there is none. Arguments are Y first, then X, as every caller passes them.
 */
-int AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
+int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
@@ -927,7 +927,7 @@ int AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
    Returns the smallest Manhattan distance from the point to an assigned workspace-03 unit, or 0x7FFFFFFF when
    there is none. Arguments are Y first, then X, as every caller passes them.
 */
-int AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
+int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
@@ -1067,10 +1067,10 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
 
 /* Address: 0x0053BCB0.
    Technology score callback for score kind 0 (g_AiTechnologyCandidateScoreCallbackTable[0], image 0x0053B9E0,
-   called by AiStrategicCandidate_AddBestWorkspace12Entry): a technology of this kind always scores 0, so it
+   called by AiTechnologyCandidate_AddBestResearch): a technology of this kind always scores 0, so it
    is never chosen for research.
 */
-AiTechnologyCandidateScore AiWorkspace12Score_DefaultZero
+AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime)
 
@@ -1176,7 +1176,7 @@ StatusResult AiRuntime_InitWorkspace(void)
    definition) of some primary-workspace structure, i.e. when AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
    returns false. These cells are the build sites near the AI's own base.
 */
-void AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell)
+void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell)
 
 {
   FieldGridCell **cellBuffer;
@@ -1200,7 +1200,7 @@ void AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *current
 /* Address: 0x00537FC0.
    Same as the workspace-09 variant for workspace 10 (at most 256 cells).
 */
-void AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell)
+void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell)
 
 {
   FieldGridCell **cellBuffer;

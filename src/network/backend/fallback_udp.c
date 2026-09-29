@@ -17,7 +17,7 @@
    Default g_NetworkBackendSlot0 ("select backend instance") in the image data, active until Network_Init
    installs the WinSock backend: every backend index fails with FATAL_ERROR_NETWORK_UNAVAILABLE (CF set).
 */
-StatusResult NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex)
+StatusResult NetworkBackendFallback_SetSessionContext(uint32_t backendIndex)
 
 {
   StatusResult status;
@@ -31,7 +31,7 @@ StatusResult NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex)
 /* Address: 0x0041A590.
    Default g_NetworkBackendSlot1 (backend cleanup) in the image data: nothing to clean up without a backend.
 */
-void __cdecl NetworkBackendFallback_Slot1_NoOp(void)
+void __cdecl NetworkBackendFallback_Cleanup(void)
 
 {
   return;
@@ -41,7 +41,7 @@ void __cdecl NetworkBackendFallback_Slot1_NoOp(void)
    Default g_NetworkBackendSlot2 (open and bind the socket) in the image data: without WinSock no socket can
    be opened, so it fails with FATAL_ERROR_NETWORK_UNAVAILABLE (CF set).
 */
-StatusResult NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort)
+StatusResult NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort)
 
 {
   StatusResult status;
@@ -55,7 +55,7 @@ StatusResult NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort)
 /* Address: 0x0041A5B0.
    Default g_NetworkBackendSlot3 (close the socket) in the image data: there is no socket to close.
 */
-void __cdecl NetworkBackendFallback_Slot3_NoOp(void)
+void __cdecl NetworkBackendFallback_CloseActiveSocket(void)
 
 {
   return;
@@ -65,7 +65,7 @@ void __cdecl NetworkBackendFallback_Slot3_NoOp(void)
    Default g_NetworkBackendSlot4 (receive a datagram) in the image data: sets CF (nothing received) and leaves
    EAX as it was, so UiTransfer receive loops stop at once.
 */
-NetworkReceiveResult NetworkBackendFallback_Slot4_ThreeArgFailure
+NetworkReceiveResult NetworkBackendFallback_ReceiveDatagram
                (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer)
 
 {
@@ -79,7 +79,7 @@ NetworkReceiveResult NetworkBackendFallback_Slot4_ThreeArgFailure
    Default g_NetworkBackendSlot5 (send a datagram) in the image data, called by UiTransfer_StagePacketAndSend:
    drops the packet and reports success (CF clear) so a session without network keeps running.
 */
-NetworkSendResult NetworkBackendFallback_Slot5_ThreeArgSuccess
+NetworkSendResult NetworkBackendFallback_SendDatagram
                (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -92,7 +92,7 @@ NetworkSendResult NetworkBackendFallback_Slot5_ThreeArgSuccess
 /* Address: 0x0041A5E0.
    Default g_NetworkBackendSlot6 (parse a typed peer address) in the image data: always fails (CF set).
 */
-bool NetworkBackendFallback_Slot6_TwoArgFailure(UiTransferEndpointDescriptor *endpoint,char *endpointText)
+bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText)
 
 {
   return true;
@@ -103,7 +103,7 @@ bool NetworkBackendFallback_Slot6_TwoArgFailure(UiTransferEndpointDescriptor *en
    Default g_NetworkBackendSlot7 (format a peer address as text) in the image data: writes an empty UTF-16
    string (one zero dword) to outputText and ignores the address.
 */
-void NetworkBackendFallback_Slot7_ClearOutput(char *outputText,WinSockAddress *socketAddress)
+void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
 
 {
   outputText[0] = '\0';

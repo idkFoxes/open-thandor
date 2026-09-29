@@ -13,7 +13,7 @@
 /* Address: 0x00544270.
    Handler of frontend command FRONTEND_COMMAND_RELEASE_CAMPAIGN (0x320): releases the loaded campaign asset,
    resets the scenario initialisation count and returns to the main page with ROM action record 2. Called
-   directly by FrontendCallback_ReleaseSelectedResourceOrDispatch0320 in a local game, through the command queue
+   directly by FrontendSessionAction_ReleaseCampaignAndReturnToMainPage in a local game, through the command queue
    in a network game. Only the player id is forwarded; the other three arguments are unused.
 */
 void FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
@@ -534,7 +534,7 @@ void FrontendClientSession_TickHostTimeout(void)
    Handler of frontend command FRONTEND_COMMAND_APPLY_GAME_SPEED (0x2C0), leaving the mission briefing: closes
    any playing movie, converts the gameSpeedSlider percent into the simulation's Q8 game speed, sets flag 0x08
    of the briefing image and returns to the main page with ROM action record romActionIndex. Called directly by
-   FrontendSessionAction_ApplySpeedOrToggleReady and FrontendCallback_ApplyGameSpeedOrDispatch02C0 in a local
+   FrontendSessionAction_ApplySpeedOrToggleReady and FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage in a local
    game, through the command queue in a network game.
 */
 void FrontendSession_ApplyGameSpeedAndReturnToMainPage

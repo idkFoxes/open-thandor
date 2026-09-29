@@ -455,7 +455,7 @@ HandleNearestArmyHitAndContinueMotion:
                        directionOffset.z + modelNode->worldTransform.translation.z,
                        directionOffset.y + modelNode->worldTransform.translation.y,
                        directionOffset.x + modelNode->worldTransform.translation.x,effectDefinition,worldRuntime);
-            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNode);
+            WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
             shotRuntime->modelNodeOrSavedOffset.modelNode = NULL;
             return;
           }
@@ -490,7 +490,7 @@ HandleNearestArmyHitAndTerminateProjectile:
                          directionOffset.x + modelNode->worldTransform.translation.x,effectDefinition,worldRuntime
                         );
             }
-            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNode);
+            WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
             shotRuntime->modelNodeOrSavedOffset.modelNode = NULL;
             ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(rotationAngle,ownerFactionIndex,impactValue,ownerOrHitArmy);
             return;
@@ -517,7 +517,7 @@ HandleNearestArmyHitAndTerminateProjectile:
                      0,FIXED_ANGLE16_QUARTER_TURN,0,directionOffset.z + modelNode->worldTransform.translation.z,
                      directionOffset.y + modelNode->worldTransform.translation.y,
                      directionOffset.x + modelNode->worldTransform.translation.x,effectDefinition,worldRuntime);
-          WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNode);
+          WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
           return;
         }
       }
@@ -671,7 +671,7 @@ UnlinkExpiredOrOrphanedProjectileAndReturn:
                 InterpolationState_SetNegatedTargetAndRescaleProgress
                           (shotDefinition->shadingReleaseTransitionDurationTicks,
                            modelNodeRuntime->shadingRecord);
-                WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNodeRuntime);
+                WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
                 shotRuntime->modelNodeOrSavedOffset.modelNode = NULL;
                 return;
               }

@@ -10,12 +10,12 @@
 - `0x00522A90` **[`ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`](../../../../src/world/model/slots.c#L39)**
 - `0x00522B90` **[`ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`](../../../../src/world/model/slots.c#L80)**
 - `0x00523CA0` **[`ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters`](../../../../src/world/model/slots.c#L109)** — cross: [`ModelLookupTable_FindPackedKeyEntryRegs`](../../../../src/assets/model/definitions.c#L188) → [`assets/model/definitions`](../../assets/model/definitions.md)
-- `0x005243D0` **[`ModelRuntimeSlotClassInit_ClearFields64_68_74_B8`](../../../../src/world/model/slots.c#L182)**
+- `0x005243D0` **[`ModelRuntimeSlotClassInit_ResetStructureFactoryBuild`](../../../../src/world/model/slots.c#L182)**
 - `0x00524CB0` **[`ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C`](../../../../src/world/model/slots.c#L198)**
 - `0x00524CE0` **[`ModelRuntimeSlot_RebaseClassArmyLinkOffset6C`](../../../../src/world/model/slots.c#L216)**
 - `0x00524D10` **[`ModelRuntimeSlotClassInit_EnableRootAnimationAndCopyDefinitionC0`](../../../../src/world/model/slots.c#L235)**
-- `0x005251C0` **[`ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3`](../../../../src/world/model/slots.c#L267)** — cross: [`WorldRuntime_UnlinkNodeFromOwnerListD8`](../../../../src/world/runtime/core.c#L1077) → [`world/runtime/core`](../runtime/core.md)
-- `0x00525250` **[`ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1`](../../../../src/world/model/slots.c#L301)** — cross: [`WorldRuntime_UnlinkNodeFromOwnerListD8`](../../../../src/world/runtime/core.c#L1077) → [`world/runtime/core`](../runtime/core.md)
+- `0x005251C0` **[`ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3`](../../../../src/world/model/slots.c#L267)** — cross: [`WorldRuntime_UnlinkOwnerListNode`](../../../../src/world/runtime/core.c#L1077) → [`world/runtime/core`](../runtime/core.md)
+- `0x00525250` **[`ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1`](../../../../src/world/model/slots.c#L301)** — cross: [`WorldRuntime_UnlinkOwnerListNode`](../../../../src/world/runtime/core.c#L1077) → [`world/runtime/core`](../runtime/core.md)
 - `0x005252E0` **[`ModelRuntimeSlotClassInit_AddFactionEnergyGenerationCapacity`](../../../../src/world/model/slots.c#L335)**
 - `0x005254B0` **[`ModelRuntimeSlotClassRelease_SubtractFactionEnergyGenerationCapacity`](../../../../src/world/model/slots.c#L356)**
 - `0x00526340` **[`ModelRuntimeSlot_UnrebaseClassModelLinkOffset60`](../../../../src/world/model/slots.c#L377)**

@@ -30,7 +30,7 @@ digraph thandor {
   "FrontendAudioSettings_SetMusicGain" [label="0x0054C230\nFrontendAudioSettings_SetMusicGain"];
   "FrontendNetworkSettings_SetPlayerCount" [label="0x0054D170\nFrontendNetworkSettings_SetPlayerCount"];
   "FrontendNetworkSettings_SetGameName" [label="0x0054D1F0\nFrontendNetworkSettings_SetGameName"];
-  "FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish" [label="0x0054D250\nFrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish"];
+  "FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick" [label="0x0054D250\nFrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish"];
   "FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls" [label="0x00549620\nFrontendTaskAssignmentPage_RefreshFactionAndPlayerControls"];
   "FrontendNetworkSettings_PublishSelectedPlayerDescriptor" [label="0x0054CD20\nFrontendNetworkSettings_PublishSelectedPlayerDescriptorCf"];
   "FrontendDisplaySettingsPage_UpdateModeActionAvailability" [label="0x0054B160\nFrontendDisplaySettingsPage_UpdateModeActionAvailability"];
@@ -38,6 +38,6 @@ digraph thandor {
   "FrontendDisplaySettingsAction_ApplyPendingResolution" -> "FrontendDisplaySettingsPage_UpdateModeActionAvailability";
   "FrontendDisplaySettingsAction_ApplyPendingColorDepth" -> "FrontendDisplaySettingsPage_UpdateModeActionAvailability";
   "FrontendDisplaySettings_ApplyMode" -> "FrontendDisplaySettingsPage_UpdateModeActionAvailability";
-  "FrontendNetworkSettings_SetPlayerName" -> "FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish";
-  "FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish" -> "FrontendNetworkSettings_PublishSelectedPlayerDescriptor";
+  "FrontendNetworkSettings_SetPlayerName" -> "FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick";
+  "FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick" -> "FrontendNetworkSettings_PublishSelectedPlayerDescriptor";
 }

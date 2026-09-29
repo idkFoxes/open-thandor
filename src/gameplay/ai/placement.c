@@ -135,7 +135,7 @@ void AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
         }
         primaryCapOrWeight = (knowledgeData->parameters).unknownParameterDwords36_37[1];
         workspace02CapOrWeight = (knowledgeData->parameters).unknownParameterDwords36_37[0];
-        workspace02Distance = AiWorkspace02_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+        workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
         if ((int)workspace02CapOrWeight < (int)workspace02Distance) {
           workspace02Distance = workspace02CapOrWeight;
         }
@@ -207,7 +207,7 @@ void AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
         }
         deltaYOrDistanceOrWeight = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[1];
         workspace02CapOrScore = ((AiKnowledgeParameters *)siteEntryBytes)->unknownParameterDwords52_54[0];
-        workspace02Distance = AiWorkspace02_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
+        workspace02Distance = AiHostileWorkspace_GetNearestVisibleHostileDistance(cellWorldY,cellWorldX);
         if (workspace02CapOrScore < workspace02Distance) {
           workspace02Distance = workspace02CapOrScore;
         }
@@ -562,9 +562,9 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
                       (featureEntry->armyAssetId,workspaceRecord,factionIndex,worldRuntime);
     if ((!clusterRejected) &&
         ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <=
-         (int)AiWorkspace03_GetMinimumManhattanDistanceToPoint(workspaceRecord->worldY,workspaceRecord->worldX))
+         (int)AiHostileWorkspace_GetNearestUnseenHostileDistance(workspaceRecord->worldY,workspaceRecord->worldX))
         && ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <=
-            (int)AiWorkspace02_GetMinimumManhattanDistanceToPoint
+            (int)AiHostileWorkspace_GetNearestVisibleHostileDistance
                    (workspaceRecord->worldY,workspaceRecord->worldX)))
     break;
     featureEntry++;
@@ -597,7 +597,7 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
    the mode-1 placement query accepts the asset. CF (notFound) is set when no such cell exists.
    Note the argument order: Y first, then X, like ArmyPlacement_DispatchAssetAtFieldPoint.
 */
-AiAnchorResult AiPlacement_FindNearestValidWorkspace09Anchor
+AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -659,7 +659,7 @@ AiAnchorResult AiPlacement_FindNearestValidWorkspace09Anchor
 
 /* Address: 0x00539EF0.
    Probes the ARM_0333 building positions around a workspace cell: up to four times it takes the nearest free
-   workspace-09 anchor (AiPlacement_FindNearestValidWorkspace09Anchor), creates a temporary ARM_0333 instance
+   workspace-09 anchor (AiPlacement_FindNearestPlaceableBaseSite), creates a temporary ARM_0333 instance
    there (so the next search finds the next anchor) and checks its Manhattan distance to the cell. CF is clear
    as soon as one of them lies closer than specialSiteSeparationQuantumQ12, and set when all are at least that
    far or an anchor/instance is missing. Every temporary instance is destroyed again before returning; the
@@ -681,7 +681,7 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
   AiKnowledgeDataImage *knowledgeData;
   
   knowledgeData = g_AiKnowledgeData;
-  anchor = AiPlacement_FindNearestValidWorkspace09Anchor
+  anchor = AiPlacement_FindNearestPlaceableBaseSite
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
   firstAnchorYQ12 = anchor.worldYQ12;
@@ -705,7 +705,7 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
   }
   if ((uint32_t)(deltaX + deltaY) <
       (knowledgeData->parameters).specialSiteSeparationQuantumQ12) goto destroy_first_and_succeed;
-  anchor = AiPlacement_FindNearestValidWorkspace09Anchor
+  anchor = AiPlacement_FindNearestPlaceableBaseSite
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
   if (anchor.notFound) goto destroy_first_and_fail;
@@ -722,7 +722,7 @@ bool AiPlacement_ReserveSeparatedSpecialSiteChain(PckArmyAssetIdCatalog armyAsse
     deltaY = -deltaY;
   }
   if ((knowledgeData->parameters).specialSiteSeparationQuantumQ12 <= (uint32_t)(deltaX + deltaY)) {
-    anchor = AiPlacement_FindNearestValidWorkspace09Anchor
+    anchor = AiPlacement_FindNearestPlaceableBaseSite
                       (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                        factionIndex,worldRuntime);
     if (!anchor.notFound) {
@@ -743,7 +743,7 @@ destroy_third_second_first_and_succeed:
           ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.armyRuntimeOrError);
           goto destroy_second_first_and_succeed;
         }
-        anchor = AiPlacement_FindNearestValidWorkspace09Anchor
+        anchor = AiPlacement_FindNearestPlaceableBaseSite
                           (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307
                            ,factionIndex,worldRuntime);
         if (!anchor.notFound) {

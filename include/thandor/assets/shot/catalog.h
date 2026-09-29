@@ -46,7 +46,7 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition);
 ShotRangeLimitResult ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition);
 
 /* 0x0052BD80 */
-uint32_t ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition);
+uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition);
 
 /* 0x0052B350 */
 StatusResult ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition);

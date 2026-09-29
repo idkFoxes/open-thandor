@@ -66,7 +66,7 @@ bool ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051BEC0 */
-void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
+void ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeNode *modelNode);
 
@@ -74,7 +74,7 @@ void ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
 void ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime);
 
 /* 0x0051C100 */
-void ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(WorldRuntimeContext *contextArg,int *modelRuntime);
+void ModelRuntimeHierarchy_MarkDestroyedRecursive(WorldRuntimeContext *contextArg,int *modelRuntime);
 
 /* 0x0051C1F0 */
 int ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);

@@ -87,13 +87,13 @@ typedef struct UiFourValueDialogCountdownText {
 void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root);
 
 /* 0x00423C40 */
-void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode);
+void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode);
 
 /* 0x00423C80 */
 void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode);
 
 /* 0x00423CB0 */
-void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode);
+void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode);
 
 /* 0x00424590 */
 void UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode);

@@ -73,7 +73,7 @@ static int ScenarioCatalog_TestAidApplyScenarioOptions(void)
     if (_stricmp(name,wanted) == 0 ||
         (wanted[0] >= '0' && wanted[0] <= '9' && (uint32_t)atoi(wanted) == row)) {
       Thandor_Log("test aid: starting campaign %u \"%s\"",row,name);
-      ScenarioCatalog_RefreshSelectedRecordField50DisplayId(g_LocalPlayerRuntimeId,0,0,row);
+      ScenarioCatalog_SelectCampaignAndShowDescription(g_LocalPlayerRuntimeId,0,0,row);
       FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,row);
       return 1;
     }
@@ -109,7 +109,7 @@ static void ScenarioCatalog_TestAidSelectCampaignLevel(uint8_t *campaignBytes)
    a changed selection shows the saved game's description, locally or on every peer through the frontend
    command queue; a confirmed row (double click) starts it like the Start button.
 */
-void FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *listControl)
+void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *listControl)
 
 {
   ListSelectionResult selectedRow;
@@ -118,7 +118,7 @@ void FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl 
   if (!selectedRow.confirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_RefreshSelectedRecordLocalizedText(g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
+      ScenarioCatalog_SelectSavedGameAndShowDescription(g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
     }
     else {
       FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SAVED_GAME,0,0,selectedRow.rowIndex);
@@ -138,7 +138,7 @@ void FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl 
    or on every peer through the frontend command queue; a confirmed row (double click) starts it like the
    Start button.
 */
-void FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listControl)
+void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listControl)
 
 {
   ListSelectionResult selectedRow;
@@ -147,7 +147,7 @@ void FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listC
   if (!selectedRow.confirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_RefreshSelectedRecordField70DisplayId
+      ScenarioCatalog_SelectLevelAndShowDescription
                 (g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
     }
     else {
@@ -168,7 +168,7 @@ void FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listC
    locally or on every peer through the frontend command queue; a confirmed row (double click) starts it
    like the Start button.
 */
-void FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listControl)
+void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listControl)
 
 {
   ListSelectionResult selectedRow;
@@ -177,7 +177,7 @@ void FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listC
   if (!selectedRow.confirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      ScenarioCatalog_RefreshSelectedRecordField50DisplayId
+      ScenarioCatalog_SelectCampaignAndShowDescription
                 (g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex);
     }
     else {
@@ -332,7 +332,7 @@ void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
             /* Select the mission and load it: directly, or in a network session through the command queue. */
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                 SESSION_NETWORK_ROLE_LOCAL) {
-              ScenarioCatalog_RefreshSelectedRecordField70DisplayId
+              ScenarioCatalog_SelectLevelAndShowDescription
                         (g_LocalPlayerRuntimeId,0,0,selectionIndex);
             }
             else {
@@ -405,7 +405,7 @@ void FrontendScenarioPage_OpenSaveRecordsAndRefresh(UiNodeBase *sourceNode)
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_RefreshSelectedRecordLocalizedText(g_LocalPlayerRuntimeId,0,0,0);
+    ScenarioCatalog_SelectSavedGameAndShowDescription(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SAVED_GAME,0,0,0);
@@ -439,7 +439,7 @@ void FrontendScenarioPage_OpenLevelRecordsAndRefresh(UiNodeBase *sourceNode)
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_RefreshSelectedRecordField70DisplayId(g_LocalPlayerRuntimeId,0,0,0);
+    ScenarioCatalog_SelectLevelAndShowDescription(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_SINGLE_GAME,0,0,0);
@@ -472,7 +472,7 @@ void FrontendScenarioPage_OpenCampaignRecordsAndRefresh(UiNodeBase *sourceNode)
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    ScenarioCatalog_RefreshSelectedRecordField50DisplayId(g_LocalPlayerRuntimeId,0,0,0);
+    ScenarioCatalog_SelectCampaignAndShowDescription(g_LocalPlayerRuntimeId,0,0,0);
   }
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_SELECT_CAMPAIGN,0,0,0);
@@ -1241,7 +1241,7 @@ void ScenarioCatalog_RebuildSaveRecordListPage
     if (rowCount != 0) {
       UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
       UiPointerList_SortByDwordPairFieldDescending(0xf0,(UiPointerListControl *)control);
-      UiPointerList_SelectIndexVariantB(0,(UiPointerListControl *)control);
+      UiPointerList_SelectColumnListIndex(0,(UiPointerListControl *)control);
       UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
       return;
     }
@@ -1314,7 +1314,7 @@ void ScenarioCatalog_RebuildLevelRecordListPage
       /* sorted by the jump record of the level title */
       UiPointerList_SortByExpandedTextFieldAscending
                 (offsetof(ScenarioCatalogRuntimeExpandedRecord100,scenarioDisplayTag),(UiPointerListControl *)control);
-      UiPointerList_SelectIndexVariantB(0,(UiPointerListControl *)control);
+      UiPointerList_SelectColumnListIndex(0,(UiPointerListControl *)control);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SELECT_SINGLE_GAME,firstNode);
@@ -1387,7 +1387,7 @@ void ScenarioCatalog_RebuildCampaignRecordListPage
       UiPointerList_InitializeColumnLayout(rowCount,rowPointers,(UiPointerListControl *)control);
       UiPointerList_SortByDwordFieldAscending
                 (offsetof(ScenarioCatalogRuntimeExpandedRecord100,titleTextResourceId),(UiPointerListControl *)control);
-      UiPointerList_SelectIndexVariantB(0,(UiPointerListControl *)control);
+      UiPointerList_SelectColumnListIndex(0,(UiPointerListControl *)control);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_SELECTED_GAME,firstNode);
         UiNodeList_UnsuppressActionId(FRONTEND_ACTION_SELECT_CAMPAIGN,firstNode);
@@ -1613,7 +1613,7 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
    Reached as frontend command FRONTEND_COMMAND_SELECT_SAVED_GAME and through
    g_FrontendScenarioMapOptionHandlerTable[SCENARIO_SELECTION_TAB_SAVED_GAMES].
 */
-void ScenarioCatalog_RefreshSelectedRecordLocalizedText
+void ScenarioCatalog_SelectSavedGameAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
 
 {
@@ -1630,7 +1630,7 @@ void ScenarioCatalog_RefreshSelectedRecordLocalizedText
   ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,savedGameDescriptionText))->text =
        (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowTableOrRecord != 0) {
-    UiPointerList_SelectIndexVariantB(selectionIndex,control);
+    UiPointerList_SelectColumnListIndex(selectionIndex,control);
     rowTableOrRecord = *(int *)(rowTableOrRecord + selectionIndex * 4);
     if (((ScenarioCatalogSaveRecord *)rowTableOrRecord)->optionalLocalizedStringId90 < 0) {
       resourceId = ((ScenarioCatalogSaveRecord *)rowTableOrRecord)->localizedStringId70;
@@ -1660,7 +1660,7 @@ void ScenarioCatalog_RefreshSelectedRecordLocalizedText
    the empty placeholder while the list has no rows. Reached as frontend command FRONTEND_COMMAND_SELECT_CAMPAIGN
    and through g_FrontendScenarioMapOptionHandlerTable[SCENARIO_SELECTION_TAB_CAMPAIGNS].
 */
-void ScenarioCatalog_RefreshSelectedRecordField50DisplayId
+void ScenarioCatalog_SelectCampaignAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
 
 {
@@ -1674,7 +1674,7 @@ void ScenarioCatalog_RefreshSelectedRecordField50DisplayId
   ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,campaignDescriptionText))->text =
        (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != 0) {
-    UiPointerList_SelectIndexVariantB(selectionIndex,control);
+    UiPointerList_SelectColumnListIndex(selectionIndex,control);
     ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,campaignDescriptionText))->text =
          (uint16_t *)(((ScenarioCatalogRuntimeExpandedRecord100 *)*(int *)(rowPointers + selectionIndex * 4))->
                         titleTextResourceId +
@@ -1765,7 +1765,7 @@ void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionC
    text (TEXT_ID_LEVEL_DESCRIPTION_BASE + TEXT_ID_LEVEL_DESCRIPTION_STRIDE * the record's title index at +0x70) in
    the description box, which keeps the empty placeholder while the list has no rows.
 */
-void ScenarioCatalog_RefreshSelectedRecordField70DisplayId
+void ScenarioCatalog_SelectLevelAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
 
 {
@@ -1779,7 +1779,7 @@ void ScenarioCatalog_RefreshSelectedRecordField70DisplayId
   ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,missionDescriptionText))->text =
        (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != 0) {
-    UiPointerList_SelectIndexVariantB(selectionIndex,listControl);
+    UiPointerList_SelectColumnListIndex(selectionIndex,listControl);
     ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,missionDescriptionText))->text =
          (uint16_t *)(((ScenarioCatalogRuntimeExpandedRecord100 *)*(int *)(rowPointers + selectionIndex * 4))->
                         scenarioTextResourceId * TEXT_ID_LEVEL_DESCRIPTION_STRIDE +

@@ -225,7 +225,7 @@ void InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
     UiPointerList_InitializeColumnLayout(rowCount,(void **)g_ScenarioCatalog,saveList);
     UiPointerList_SortByDwordPairFieldDescending(0xf0,saveList);
     UiPointerList_InitializeColumnLayout(rowCount + 1,(void **)g_ScenarioCatalog,saveList);
-    UiPointerList_SelectIndexVariantB(rowCount,saveList);
+    UiPointerList_SelectColumnListIndex(rowCount,saveList);
     UiPageStack_SetActiveIndex(5,(UiPageStackControl *)INGAME_UI(inGameUi, gameWindowPageStack));
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(inGameUi, saveNameEntryStack));
     parentCursor = saveMenuButton->parent;

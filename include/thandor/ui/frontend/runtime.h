@@ -117,7 +117,7 @@
 /* Host game setup page: networkSpeedLabel's caption id; the text for network speed n (1..7) is this + n. */
 #define TEXT_ID_NETWORK_SPEED_BASE 0x210D
 /* Display settings page: device name shown for an adapter without a 3D device (GRAPHICS_DEVICE_GUID_SOFTWARE,
-   the software rasterizer); FrontendUiAction2011_Handler. */
+   the software rasterizer); FrontendDisplaySettingsAction_OpenPageAndListModes. */
 #define TEXT_ID_DISPLAY_SOFTWARE_DEVICE_NAME 0x212D
 /* Menu room hover hints: hint n of a ROM action record is text id this + n (1 while a page action runs). */
 #define TEXT_ID_MENU_HINT_BASE 0x2000
@@ -154,13 +154,13 @@ void FrontendModelPointerContext_NonRightDrag
           FrontendModelPointerContextRuntimeState17C *callbackContext);
 
 /* 0x00549B40 */
-void FrontendUiAction2044_Handler(UiNodeBase *factionControl);
+void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl);
 
 /* 0x00549BC0 */
-void FrontendUiAction2045_Handler(UiNodeBase *playerControl);
+void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl);
 
 /* 0x00549C40 */
-void FrontendUiAction2046_Handler(UiNodeBase *selectionRowControl);
+void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl);
 
 /* 0x0050BB80 */
 void FrontendModelPointerContext_Relocate
@@ -245,40 +245,40 @@ void FrontendMenuRoom_StopCameraFlight(uint32_t pointerContext);
 void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
 
 /* 0x00549100 */
-void FrontendCallback_ApplyGameSpeedOrDispatch02C0(uint32_t callbackArgument);
+void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackArgument);
 
 /* 0x00549140 */
-void FrontendCallback_ReleaseSelectedResourceOrDispatch0320(uint32_t callbackArgument);
+void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackArgument);
 
 /* 0x00549180 */
 void FrontendCallback_NoOpArg1(void *source);
 
 /* 0x00549AB0 */
-void FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument);
+void FrontendFactionSetupAction_ReturnToMainPage(uint32_t callbackArgument);
 
 /* 0x0054A5A0 */
 void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument);
 
 /* 0x0054A7D0 */
-void FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument);
+void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument);
 
 /* 0x0054AAD0 */
-void FrontendUiAction2010_Handler(UiNodeBase *sourceNode);
+void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode);
 
 /* 0x0054AB70 */
-void FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState *source);
+void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source);
 
 /* 0x0054BA30 */
-void FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode);
+void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode);
 
 /* 0x0054D3F0 */
-void FrontendUiAction200C_Handler(UiPointerListControl *playerListControl);
+void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *playerListControl);
 
 /* 0x0054D460 */
 void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source);
 
 /* 0x0054D4A0 */
-void FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList);
+void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendListPtr backendList);
 
 /* 0x00565A30 */
 void Frontend_PlaySelectedEndMovie(void);

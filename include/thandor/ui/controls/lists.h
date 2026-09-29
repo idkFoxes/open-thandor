@@ -131,7 +131,7 @@ void UiScrollableControl_HandlePointerWheel
           UiScrollableControl *control);
 
 /* 0x004BA500 */
-void UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control);
+void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl *control);
 
 /* 0x004BB020 */
 void UiListControl_SelectRowFromPointer
@@ -212,7 +212,7 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiScrollableControl *control);
 
 /* 0x004BA4E0 */
-void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control);
+void ** UiPointerList_GetTextListRowSlots(UiPointerListControl *control);
 
 /* 0x004BA560 */
 UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control);
@@ -233,7 +233,7 @@ void UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control
 void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control);
 
 /* 0x004BB460 */
-void ** UiPointerList_GetRowSlotsVariantB(UiPointerListControl *control);
+void ** UiPointerList_GetColumnListRowSlots(UiPointerListControl *control);
 
 /* 0x004BB9E0 */
 void UiTimedListControl_RelocateChildren(UiSerializedRelocationDelta relocationDelta,UiTimedListControl *control);
@@ -267,7 +267,7 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
           (UiTimedListTreeRecord *selectedRecord,UiTimedListTreeControl *control);
 
 /* 0x004BB4E0 */
-void UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control);
+void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control);
 
 /* 0x004BB540 */
 ListSelectionResult UiPointerList_GetSelectedIndexAndConfirmed(UiPointerListControl *control);

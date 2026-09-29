@@ -44,12 +44,12 @@ void UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
 
 /* Address: 0x00423C40.
    Handler of the four colour-depth buttons (actions 0x201..0x204, g_UiDisplayModeSelectionActionHandlers20[1..4])
-   of the display settings dialog, despite its name: selects the button's bit depth, keeps the selected
-   adapter and resolution and refreshes the available buttons. Each option button keeps its value in the
-   dword 8 bytes before it (UiDisplayModeOptionPrefix.modeValue). UiDisplayModeAction_UpdateColorDepthSelection is its
-   mirror image for the adapter buttons; the two names are swapped.
+   of the display settings dialog: selects the button's bit depth, keeps the selected adapter and resolution
+   and refreshes the available buttons. Each option button keeps its value in the dword 8 bytes before it
+   (UiDisplayModeOptionPrefix.modeValue). UiDisplayModeAction_UpdateAdapterSelection is its mirror image for the
+   adapter buttons.
 */
-void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
+void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;
@@ -90,11 +90,11 @@ void UiDisplayModeAction_UpdateResolutionSelection(UiNodeBase *sourceNode)
 
 /* Address: 0x00423CB0.
    Handler of the five adapter buttons (actions 0x20F..0x213, g_UiDisplayModeSelectionActionHandlers20[15..19])
-   of the display settings dialog, despite its name: selects the button's adapter (the dword 8 bytes before
-   the button), keeps the selected resolution and bit depth and refreshes the available buttons. See
-   UiDisplayModeAction_UpdateAdapterSelection, whose name it has swapped.
+   of the display settings dialog: selects the button's adapter (the dword 8 bytes before the button), keeps
+   the selected resolution and bit depth and refreshes the available buttons. See
+   UiDisplayModeAction_UpdateColorDepthSelection.
 */
-void UiDisplayModeAction_UpdateColorDepthSelection(UiNodeBase *sourceNode)
+void UiDisplayModeAction_UpdateAdapterSelection(UiNodeBase *sourceNode)
 
 {
   UiNodeBase *displaySettingsRoot;

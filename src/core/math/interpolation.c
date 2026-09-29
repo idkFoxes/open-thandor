@@ -44,7 +44,7 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
                             (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[1]);
       positionZ = CubicSpline_EvaluateValueQ12
                             (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[2]);
-      WorldRuntime_SetPosition60AndDistanceFromPosition80(positionZ,positionY,positionX,runtimeCopy);
+      WorldRuntime_SetCameraPositionKeepingTarget(positionZ,positionY,positionX,runtimeCopy);
       runtimeCopy = worldRuntime;
       magnitude = CubicSpline_EvaluateValueQ12
                             (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[3]);
@@ -53,7 +53,7 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
       yawAngle = yawAngle & FIXED_ANGLE16_MASK; /* 16-bit angle: wrap to one turn */
       pitchAngle = CubicSpline_EvaluateValueQ12
                              (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
-      WorldRuntime_SetMotionParameters6CThrough78Clamped
+      WorldRuntime_SetCameraAnglesAndMagnitudeClamped
                 ((worldRuntime->motion).motionValue78,pitchAngle,yawAngle,magnitude,runtimeCopy);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
@@ -81,9 +81,9 @@ bool WorldMotionSpline_EvaluateAndApplyAtTime
   } while (keyframeCount != 0);
   /* past the end: hold the last keyframe */
   yawAngle = currentKeyframe->channel4Q12;
-  WorldRuntime_SetPosition60AndDistanceFromPosition80
+  WorldRuntime_SetCameraPositionKeepingTarget
             (currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
-  WorldRuntime_SetMotionParameters6CThrough78Clamped
+  WorldRuntime_SetCameraAnglesAndMagnitudeClamped
             ((worldRuntime->motion).motionValue78,currentKeyframe->channel5Q12,yawAngle & FIXED_ANGLE16_MASK,
              currentKeyframe->channel3Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();
@@ -129,7 +129,7 @@ uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
       yawAngle = yawAngle & FIXED_ANGLE16_MASK; /* 16-bit angle: wrap to one turn */
       pitchAngle = CubicSpline_EvaluateValueQ12
                              (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
-      WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+      WorldRuntime_PointCameraAtTarget
                 (pitchAngle,yawAngle,distance,originZ,originY,originX,worldRuntime);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
@@ -156,7 +156,7 @@ uint8_t WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
     keyframes = currentKeyframe + 1;
   } while (keyframeCount != 0);
   /* past the end: hold the last keyframe */
-  WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+  WorldRuntime_PointCameraAtTarget
             (currentKeyframe->channel5Q12,currentKeyframe->channel4Q12 & FIXED_ANGLE16_MASK,currentKeyframe->channel3Q12,
              currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
   WorldMotionSpline_ClearCachedDerivatives();

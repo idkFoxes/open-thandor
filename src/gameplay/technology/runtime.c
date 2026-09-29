@@ -63,8 +63,8 @@ void Technology_UnlockForFaction
       }
     }
     if (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex) {
-      UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
-      UiCatalogGroup42_RebuildGrid((UiNodeBase *)node);
+      InGameBuildCatalog_RebuildGrid((UiNodeBase *)node);
+      InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)node);
     }
   }
   return;

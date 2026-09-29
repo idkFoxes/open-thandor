@@ -156,7 +156,7 @@ void UiWindowControl_RelocateWithFrameInset(UiSerializedRelocationDelta relocati
 void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control);
 
 /* 0x004B3C00 */
-UiNodeBase * UiContainer_HitTestChildrenOrNoneA
+UiNodeBase * UiFillPanelControl_HitTestChildrenOnly
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
 /* 0x004B3C80 */
@@ -171,7 +171,7 @@ void UiLayoutContainerControl_RelocateChildren(UiSerializedRelocationDelta reloc
 void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control);
 
 /* 0x004B4790 */
-UiNodeBase * UiContainer_HitTestChildrenOrNoneB
+UiNodeBase * UiLayoutContainerControl_HitTestChildrenOnly
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
 /* 0x004B47B0 */
@@ -205,7 +205,7 @@ void UiWindowResources_Init(void);
 void UiRootStack_Relayout(void);
 
 /* 0x004B3EE0 */
-GraphicsCursorFrameIndex UiContainer_PointerMoveReturnCode6
+GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
 
 /* 0x004B4740 */

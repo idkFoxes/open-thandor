@@ -1302,7 +1302,7 @@ void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot)
    g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
    command batch). Returns true (CF set) when no batch arrived, so Frontend_StateTick ends its tick early.
 */
-bool FrontendTransfer_ConsumeProcessedFlagFrontend(void)
+bool FrontendTransfer_ConsumeProcessedFlagForMenuTick(void)
 
 {
   int previousFlag;

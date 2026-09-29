@@ -16,7 +16,7 @@ digraph thandor {
   "FrontendPlayerRuntime_MarkScenarioCatalogReceivedById" [label="0x00544D50\nFrontendPlayerRuntime_MarkScenarioCatalogReceivedById"];
   "FrontendPlayerRuntime_InitializeFactionAssignments" [label="0x00549190\nFrontendPlayerRuntime_InitializeFactionAssignments"];
   "FrontendPlayerSetup_OpenLocalPageAndResetRoster" [label="0x0054D000\nFrontendPlayerSetup_OpenLocalPageAndResetRoster"];
-  "FrontendPlayerSetup_SelectCountAndBuildLabel" [label="0x0054D1B0\nFrontendPlayerSetup_SelectCountAndBuildLabel"];
+  "FrontendNetworkSettings_SetNetworkSpeed" [label="0x0054D1B0\nFrontendPlayerSetup_SelectCountAndBuildLabel"];
   "FrontendPlayerRuntime_UpdateStartButtonByCdShare" [label="0x0054D720\nFrontendPlayerRuntime_UpdateStartButtonByCdShare"];
   "FrontendPlayerRuntime_SetSlowRenderingFlagById" [label="0x0055F470\nFrontendPlayerRuntime_SetSlowRenderingFlagById"];
   "FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton" [label="0x0055F5A0\nFrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton"];
@@ -37,12 +37,12 @@ digraph thandor {
   "FrontendPlayerMessageBuffer_PublishTextById" [label="0x00545590\nFrontendPlayerMessageBuffer_PublishTextById"];
   "FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks" [label="0x0054EBD0\nFrontendPlayerRuntime_DecrementExpiryAndCompactBlocks"];
   "FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection" [label="0x0055FAD0\nFrontendPlayerRuntime_AssignModelTokenAndRefreshSelection"];
-  "FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80" [label="0x005607E0\nFrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80"];
+  "FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch" [label="0x005607E0\nFrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80"];
   "FrontendPlayerMessage_SubmitSevenSlotText" -> "FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById";
   "FrontendPlayerMessage_SubmitSevenSlotText" -> "FrontendPlayerMessageBuffer_AppendTripleById";
   "FrontendPlayerMessage_SubmitSevenSlotText" -> "FrontendPlayerMessageBuffer_PublishTextById";
   "FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel" -> "FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection";
-  "FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel" -> "FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80";
+  "FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel" -> "FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch";
   "FrontendPlayerConsensus_SubmitSelectedValue" -> "FrontendPlayerRuntime_SetConsensusValueAndRefresh";
   "FrontendPlayerSetup_ExpireSelectedRuntimeBlock" -> "FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks";
   "FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers" -> "FrontendPlayerRuntime_RecordReadyAndUpdateWaitState";

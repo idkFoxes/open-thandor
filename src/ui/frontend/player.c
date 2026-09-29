@@ -15,7 +15,7 @@
    when the typed line is valid, converts it to 0x30 narrow bytes and sends it to every player as
    FRONTEND_COMMAND_CHAT_BEGIN, four FRONTEND_COMMAND_CHAT_APPEND (12 bytes each) and
    FRONTEND_COMMAND_CHAT_PUBLISH (without a network session the handlers are called directly), then empties
-   the edit field. The in-game counterpart is InGameUiAction1024_Handler.
+   the edit field. The in-game counterpart is InGameChatInput_SendLineOrCheckCheatPhrase.
 */
 void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
 
@@ -113,7 +113,7 @@ void FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditContro
    Handler of INGAME_COMMAND_SELECT_MODEL_AND_ARMY: when both tokens still name live objects, selects the
    object for the player (FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection), shows the technology
    page of the game window for the local player and records the definition token
-   (FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80). Tokens are pointer offsets so they can travel in
+   (FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch). Tokens are pointer offsets so they can travel in
    network commands; dword +4 of the target is non-zero while it is alive.
 */
 void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
@@ -135,7 +135,7 @@ void FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
       UiPageStack_SetActiveIndex(2,&g_InGameRuntimeRoot->gameWindowPageStack0BD0);
       InGameTechnologyPanel_ResetAndSelectCurrentArea(&inGameRoot->rootUi0000);
     }
-    FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80(playerIndex,0,0,armyToken);
+    FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch(playerIndex,0,0,armyToken);
   }
   return;
 }
@@ -275,7 +275,7 @@ void FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 /* Address: 0x00514EF0.
    Tells whether any player other than excludedPlayerId has assignmentToken recorded in assignmentToken80A0
-   (see FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80); the in-game HUD uses it to decide whether the
+   (see FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch); the in-game HUD uses it to decide whether the
    technology window of a selected object is offered. CF set when such a player exists.
 */
 bool FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
@@ -619,7 +619,7 @@ void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source)
    and sets g_SessionNetworkTickInterval to twice the slider value. The label buffer is the one named
    g_FrontendNetworkPlayerCountLabelUtf16.
 */
-void FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
+void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source)
 
 {
   TextResolveResult labelText;
@@ -841,7 +841,7 @@ void FrontendPlayerSelection_InsertThreeEntriesAndRefresh
   }
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
-    UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
   return;
 }
@@ -885,7 +885,7 @@ void FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
              &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
-    UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
   return;
 }
@@ -902,7 +902,7 @@ void FrontendPlayerSelection_ClearAndRefreshLocalPanels
   SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
-    UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
   return;
 }
@@ -1013,11 +1013,11 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   node = g_InGameRuntimeRoot;
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
-    UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)node);
     if ((transferModeFlags & SELECTION_TRANSFER_CENTER_VIEW) != 0) {
       averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
       if (!averagePosition.unresolved) {
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   (node->worldRuntime0A30.motion.pitchAngle,
                    node->worldRuntime0A30.motion.headingAngle,
                    node->worldRuntime0A30.motion.committedDistanceQ12,averagePosition.worldZQ12,
@@ -1035,7 +1035,7 @@ void FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
    player's assignmentToken80A0 is cleared, then a positive technologyIndexOrRestore starts that research
    (Technology_ApplyRecordToEntity, InGameTechnologyResearch_StartSelected), a negative one (cancel,
    InGameCommandAction_ClearSelectedArmyTokenAndClosePage) gives back the flag 0x80 that
-   FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 took away when the page opened, and 0 does neither.
+   FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch took away when the page opened, and 0 does neither.
 */
 void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,
@@ -1067,7 +1067,7 @@ void FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
 
 /* Address: 0x005608A0.
    Handler of INGAME_COMMAND_CHAT_SET_RECIPIENTS, the first command of an in-game chat line
-   (InGameUiAction1024_Handler): stores the recipient mask (bits 8+faction and 16+player, 0xFFFFFF00 for all)
+   (InGameChatInput_SendLineOrCheckCheatPhrase): stores the recipient mask (bits 8+faction and 16+player, 0xFFFFFF00 for all)
    in the player's packedSelectionState809C and resets the staging write offset in its low byte to 0.
 */
 void FrontendPlayerTextCommand_SetPackedState(FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,
@@ -1523,7 +1523,7 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
                 (army,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
       if (playerRuntimeId == g_LocalPlayerRuntimeId) {
         InGameSelectionDetailPanel_Rebuild();
-        UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+        InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
       }
     }
   }
@@ -1537,7 +1537,7 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
    and, if the record is live (dword +4 non-zero), records it for the player in assignmentToken80A0. Bit 0x80
    of the record's flags at +0xEC is moved into assignmentFlags80A4 (and cleared on the record).
 */
-void FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
+void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
           (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,ArmyRuntimeSavedOffset modelOffset)
 
 {

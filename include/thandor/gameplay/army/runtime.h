@@ -47,7 +47,7 @@
 /* INACTIVE_MASK | RESEARCHING | RESEARCH_UNPAID: a production class may start a new build */
 #define ARMY_MODEL_STATE_BUILD_BLOCKING_MASK \
           (ARMY_MODEL_STATE_INACTIVE_MASK | ARMY_MODEL_STATE_RESEARCHING | ARMY_MODEL_STATE_RESEARCH_UNPAID)
-/* Aircraft (class 21) state at model runtime +0xB8 (ArmyRuntimeClassUpdateSlot21_DispatchByClassId) */
+/* Aircraft (class 21) state at model runtime +0xB8 (ArmyRuntimeClass_UpdateAircraft) */
 #define ARMY_AIRCRAFT_STATE_NO_PAD 0       /* no home pad left: stays where it is */
 #define ARMY_AIRCRAFT_STATE_PARKED 1       /* parked on the home pad */
 #define ARMY_AIRCRAFT_STATE_LANDING 2      /* landing arc back onto the pad */
@@ -72,7 +72,7 @@
 #define ARMY_FACTORY_STATE_CLOSING 4
 /* primaryTextureOffsetV of a fully open door or hatch (texture V offset, 0 = closed) */
 #define ARMY_DOOR_TEXTURE_OPEN_V 0x80000
-/* Parking position of an aircraft that has flown off the map (ArmyRuntimeClassUpdateSlot21_DispatchByClassId) */
+/* Parking position of an aircraft that has flown off the map (ArmyRuntimeClass_UpdateAircraft) */
 #define ARMY_AIRCRAFT_OFF_MAP_X_Q12 (-0x100000)
 #define ARMY_AIRCRAFT_OFF_MAP_Y_Q12 0x100000
 /* ArmyAssetRecord.flags bits that select the production class able to build a queued secondary asset */
@@ -84,17 +84,17 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */
-void ArmyRuntimeClassUpdateSlot21_DispatchByClassId (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateAircraft (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView200 *modelRuntime);
 
 /* 0x00526620 */
 void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode (WorldRuntimeContext *worldRuntime, ModelRuntimeLinkedChildSpawnAndBuildView200 *modelRuntime);
 
 /* 0x00524740 */
-void ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
+void ArmyRuntimeClass_UpdateUnitFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
 
 /* 0x005240F0 */
-void ArmyRuntimeClassUpdateSlot11_DispatchByClassId
+void ArmyRuntimeClass_UpdateStructureFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
 
 /* 0x00525020 */
@@ -148,10 +148,10 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode *node);
 
 /* 0x0051D310 */
-bool ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime);
+bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051D330 */
-bool ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime);
+bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051D350 */
 bool ArmyRuntimeNode_DispatchTypedCallback(ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
@@ -169,7 +169,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
 void ArmyRuntimePool_RebaseAfterLoad(void);
 
 /* 0x00520CF0 */
-void ArmyRuntimeClass_UpdatePositionedSoundsVariantA (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime);
+void ArmyRuntimeClass_UpdateGroundPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime);
 
 /* 0x00522B70 */
 void ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
@@ -181,10 +181,10 @@ void ArmyRuntimeClass_SelectProjectileTargetNode (ModelRuntimeTimedTargetProject
 void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (WorldRuntimeContext *worldRuntime,ModelRuntimeTimedTargetProjectileView200 *modelRuntime);
 
 /* 0x00525960 */
-void ArmyRuntimeClass_UpdatePositionedSoundsVariantB (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime);
+void ArmyRuntimeClass_UpdateWaterPositionedSounds (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime);
 
 /* 0x00526FE0 */
-ArmySegmentMeter ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime);
+ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeterRegs(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00527150 */
 int ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRuntime);
@@ -233,7 +233,7 @@ bool ArmyRuntime_TestModelAttachmentProximity(ArmyRuntimeSlot *candidateArmyRunt
 void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,GameEntityRuntime *entityRuntime);
 
 /* 0x005246B0 */
-bool ArmyRuntime_TestClass13ProximityCandidate
+bool ArmyRuntime_TestArmyNearFactoryExit
           (ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime);
 
 /* 0x00526510 */

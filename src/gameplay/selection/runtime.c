@@ -250,7 +250,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                     (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
-          armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
@@ -294,7 +294,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                     (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
-          armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
@@ -339,7 +339,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
                     (clipTop,clipLeft,clipBottom,clipRight,panelBottom,bottomRightAdvance.nextX,
                      bottomLeftAdvance.nextX,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      SELECTION_PANEL_CELL_BOTTOM_BAR);
-          armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
+          armyMetrics = ArmyRuntime_GetLinkedChildSlotMeterRegs((ArmyRuntimeSlot *)armyRuntime);
           halfFilledSegments = armyMetrics.filledSegments >> 1;
           runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
@@ -466,7 +466,7 @@ EndFramebufferAccess:
    definition class 0x16 that the player owns, then rebuilds the selection panels when the player is the local
    one.
 */
-void InGameSelection_RebuildOwnedClass16Selection
+void InGameSelection_SelectAllOwnAircraftPads
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
 
 {
@@ -495,7 +495,7 @@ void InGameSelection_RebuildOwnedClass16Selection
   }
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
-    UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+    InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
   return;
 }
@@ -521,7 +521,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
                 (sourceArmyRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
       if (playerId == g_LocalPlayerRuntimeId) {
         InGameSelectionDetailPanel_Rebuild();
-        UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+        InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
       }
     }
   }
@@ -534,12 +534,12 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
    selection to the world point, each entry keeping its formation offset unless the selection is spread too wide.
    A lone class-0x0D entry takes the point into its definition record instead and the selection is cleared.
 */
-void InGamePlayerSelection_ApplyPositionCommandVariantB
+void InGamePlayerSelection_ApplyMoveCommand
           (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12)
 
 {
-  SelectionPointerArray_ApplyPositionCommandVariantB
+  SelectionPointerArray_ApplyMoveCommand
             (worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
@@ -617,12 +617,12 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId player
    selection and clears their command flag 0x200. The block pointer doubles as its selection array (first
    member).
 */
-void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
+void PlayerSelection_StopMovement
           (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
           CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3)
 
 {
-  SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
+  SelectionRuntime_StopMovement
             ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
@@ -632,12 +632,12 @@ void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
    In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
    selection and clears flag 0x10 of their dword +0x2C.
 */
-void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
+void PlayerSelection_CancelTargets
           (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
           CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3)
 
 {
-  SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
+  SelectionRuntime_CancelTargets
             ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
@@ -645,14 +645,14 @@ void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
 
 /* Address: 0x0055FFA0.
    In-game command handler 0xE70 (Alt+D): applies the model hierarchy flags 0x418 to the eligible entries of the
-   player's selection (SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries).
+   player's selection (SelectionRuntime_SelfDestruct).
 */
-void PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
+void PlayerSelection_SelfDestruct
           (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
           CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3)
 
 {
-  SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries
+  SelectionRuntime_SelfDestruct
             ((GameEntityRuntime **)g_SelectionPlayerRuntimeBlockPointers[playerId]);
   return;
 }
@@ -662,14 +662,14 @@ void PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
    Pointer-mode handler for lane 1 (g_InGamePointerModeHandlers[1], chosen in gameplay/input/world.c when the
    modifier mask (no modifier = 7, Shift = 1) and the attachment variant mask leave 1; networked as command code
    0xE90): stores the pointed world point and preview heading as marker lane 1 of every class-0x16 entity in
-   the player's selection (SelectionPointerArray_ApplyType16MarkerCoordinates).
+   the player's selection (SelectionPointerArray_SetAircraftPadTargets).
 */
-void InGameSelection_ApplyType16MarkerCoordinatesVariant1
+void InGameSelection_SetAircraftPadTargetLane1
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
-  SelectionPointerArray_ApplyType16MarkerCoordinates
+  SelectionPointerArray_SetAircraftPadTargets
             (1,heading16,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   return;
@@ -678,14 +678,14 @@ void InGameSelection_ApplyType16MarkerCoordinatesVariant1
 
 /* Address: 0x0055FFF0.
    Pointer-mode handler for lane 2 (g_InGamePointerModeHandlers[2]: modifier mask & attachment variant mask
-   == 2, Alt = 2; networked as command code 0xEC0): like InGameSelection_ApplyType16MarkerCoordinatesVariant1, for marker lane 2.
+   == 2, Alt = 2; networked as command code 0xEC0): like InGameSelection_SetAircraftPadTargetLane1, for marker lane 2.
 */
-void InGameSelection_ApplyType16MarkerCoordinatesVariant2
+void InGameSelection_SetAircraftPadTargetLane2
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
-  SelectionPointerArray_ApplyType16MarkerCoordinates
+  SelectionPointerArray_SetAircraftPadTargets
             (2,heading16,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   return;
@@ -1230,7 +1230,7 @@ bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
    and at least one of them has a non-zero dword +0x70 in its runtime record; true otherwise (also for an empty
    selection).
 */
-bool SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
+bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex)
 
 {
   ModelRuntimeSlot *classRecord;
@@ -1378,10 +1378,10 @@ bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,W
 
 /* Address: 0x00530050.
    Returns false (CF clear) as soon as one entity of the local selection passes
-   ArmyRuntime_TestStateField100Nonnegative but fails ArmyRuntime_TestStateField100Zero (its state value at
+   ArmyRuntime_TestWeaponDamageNonnegative but fails ArmyRuntime_TestHasNoWeaponDamage (its state value at
    +0x100 is positive); true when none does.
 */
-bool SelectionInfo_TestAllStateField100Nonpositive(void)
+bool SelectionInfo_TestNoEntryHasWeaponDamage(void)
 
 {
   GameEntityRuntime *armyRuntime;
@@ -1394,9 +1394,9 @@ bool SelectionInfo_TestAllStateField100Nonpositive(void)
   do {
     armyRuntime = *selectionEntryCursor;
     if (armyRuntime != NULL) {
-      stateTestResult = ArmyRuntime_TestStateField100Nonnegative((ArmyRuntimeSlot *)armyRuntime);
+      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)armyRuntime);
       if (stateTestResult) {
-        stateTestResult = ArmyRuntime_TestStateField100Zero((ArmyRuntimeSlot *)armyRuntime);
+        stateTestResult = ArmyRuntime_TestHasNoWeaponDamage((ArmyRuntimeSlot *)armyRuntime);
         if (!stateTestResult) {
           return false;
         }
@@ -1410,10 +1410,10 @@ bool SelectionInfo_TestAllStateField100Nonpositive(void)
 
 
 /* Address: 0x005300A0.
-   Returns true (CF set) when ArmyRuntime_TestStateField100Nonnegative holds for any entity of the local
+   Returns true (CF set) when ArmyRuntime_TestWeaponDamageNonnegative holds for any entity of the local
    selection, false otherwise.
 */
-bool SelectionInfo_TestAnyStateField100Nonnegative(void)
+bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void)
 
 {
   int entriesRemaining;
@@ -1424,7 +1424,7 @@ bool SelectionInfo_TestAnyStateField100Nonnegative(void)
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntryCursor != NULL) {
-      stateTestResult = ArmyRuntime_TestStateField100Nonnegative((ArmyRuntimeSlot *)*selectionEntryCursor);
+      stateTestResult = ArmyRuntime_TestWeaponDamageNonnegative((ArmyRuntimeSlot *)*selectionEntryCursor);
       if (stateTestResult) {
         return true;
       }
@@ -1594,13 +1594,13 @@ bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Sel
 
 
 /* Address: 0x005302B0.
-   Move command for a selection (ArmyRuntime_QueueOrStartMoveCommandVariantA per entity): each entity is sent to
+   Move command for a selection (ArmyRuntime_StartRoutedMoveCommand per entity): each entity is sent to
    the target shifted by its offset from the selection's centre, so the group keeps its formation, unless the
    selection is spread too widely, then all go to the target itself. If the selection is exactly one class-0xD
    entity (a production structure, cf. gameplay/faction/runtime.c), the target becomes its point at model
    runtime +0x78/+0x7C (flag 0x800 at +0xEC) and the selection is cleared.
 */
-void SelectionPointerArray_ApplyPositionCommandVariantB
+void SelectionPointerArray_ApplyMoveCommand
           (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
 
 {
@@ -1630,7 +1630,7 @@ void SelectionPointerArray_ApplyPositionCommandVariantB
         entryTargetX = entryTargetX - movementRuntime->classState60;
         entryTargetY = entryTargetY - movementRuntime->ownerValue64;
       }
-      ArmyRuntime_QueueOrStartMoveCommandVariantA(entryTargetY,entryTargetX,movementRuntime);
+      ArmyRuntime_StartRoutedMoveCommand(entryTargetY,entryTargetX,movementRuntime);
       if (!spreadTooLarge) {
         entryTargetX = entryTargetX + movementRuntime->classState60;
         entryTargetY = entryTargetY + movementRuntime->ownerValue64;
@@ -1779,8 +1779,8 @@ void SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
 
 
 /* Address: 0x005303A0.
-   Waypoint move for a selection (ArmyRuntime_QueueWaypointOrStartMoveVariantA per entity): like
-   SelectionPointerArray_ApplyPositionCommandVariantB each entity gets the target shifted by its formation
+   Waypoint move for a selection (ArmyRuntime_AppendWaypointOrStartMove per entity): like
+   SelectionPointerArray_ApplyMoveCommand each entity gets the target shifted by its formation
    offset, unless the selection is spread too widely, but without the class-0xD special case.
 */
 void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
@@ -1800,7 +1800,7 @@ void SelectionPointerArray_ApplyPositionCommand(Q12 targetWorldY,Q12 targetWorld
         targetWorldX = targetWorldX - movementRuntime->classState60;
         targetWorldY = targetWorldY - movementRuntime->ownerValue64;
       }
-      ArmyRuntime_QueueWaypointOrStartMoveVariantA(targetWorldY,targetWorldX,movementRuntime);
+      ArmyRuntime_AppendWaypointOrStartMove(targetWorldY,targetWorldX,movementRuntime);
       if (!spreadTooLarge) {
         targetWorldX = targetWorldX + movementRuntime->classState60;
         targetWorldY = targetWorldY + movementRuntime->ownerValue64;
@@ -2622,7 +2622,7 @@ void SelectionPointerArray_ApplyArmyRuntimeTarget(ArmyRuntimeSlot *targetArmyRun
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
     if (runtimeState != NULL) {
-      stateIsZero = ArmyRuntime_TestStateField100Zero(runtimeState);
+      stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
         runtimeState->runtimeState98 = (uint32_t)targetArmyRuntime;
@@ -2654,7 +2654,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
     if (runtimeState != NULL) {
-      stateIsZero = ArmyRuntime_TestStateField100Zero(runtimeState);
+      stateIsZero = ArmyRuntime_TestHasNoWeaponDamage(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
         runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
@@ -2673,7 +2673,7 @@ void SelectionPointerArray_ApplyTargetPositionCommand
    current model position (GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel) and clears command
    flag 0x200.
 */
-void SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries)
 
 {
   GameEntityCommandFlags *commandFlagsPtr;
@@ -2699,7 +2699,7 @@ void SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries(Game
    For every selected entity without command flag 0x2: drops an active attack/follow target
    (ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) and clears command-mode bit 0x10.
 */
-void SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries)
 
 {
   GameEntityRuntime *armyRuntime;
@@ -2722,9 +2722,9 @@ void SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries(GameEntit
 
 /* Address: 0x00530600.
    For every selected entity without command flag 0x2: sets runtime flags 0x418 on all nodes of its model
-   hierarchy that do not have flag 0x08 yet (ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive).
+   hierarchy that do not have flag 0x08 yet (ModelRuntimeHierarchy_MarkDestroyedRecursive).
 */
-void SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **selectionEntries)
+void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries)
 
 {
   GameEntityRuntime *modelRuntime;
@@ -2737,7 +2737,7 @@ void SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime
     modelRuntime = *selectionEntries;
     if ((modelRuntime != NULL) &&
        (((modelRuntime->common).commandFlags & 2) == 0)) {
-      ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,(int *)modelRuntime);
+      ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,(int *)modelRuntime);
     }
     selectionEntries = selectionEntries + 1;
     entriesRemaining--;
@@ -2904,10 +2904,10 @@ bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *sele
    (g_ArmyLinkedChildAssetIdSlot0/1/2, i.e. g_InGamePointerModePreviewArmyIds[1], [2] and [4]) occurs among the
    13 child asset ids at model runtime +0x78..+0xA8. For every lane bit set in laneMask (1, 2, 4) it stores that
    lane's count byte (+0xDC + lane) and the point (worldYQ12, worldXQ12, heading16) at +0xB8 + lane * 0xC.
-   Called by the pointer-mode handlers InGameSelection_ApplyType16MarkerCoordinatesVariant1/2 and
+   Called by the pointer-mode handlers InGameSelection_SetAircraftPadTargetLane1/2 and
    SelectionMarkerCoordinates_ApplyType3..7.
 */
-void SelectionPointerArray_ApplyType16MarkerCoordinates
+void SelectionPointerArray_SetAircraftPadTargets
           (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12,
           SelectionPointerArray32 *selection)

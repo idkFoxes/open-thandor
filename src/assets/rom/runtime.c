@@ -184,7 +184,7 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
         return true;
       }
       slotCursor->runtimeRootNode = (WorldRuntimeNode *)modelNodeRuntime;
-      WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode *)modelNodeRuntime);
+      WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
       ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
     }
     slotCursor = slotCursor + 1;
@@ -440,11 +440,11 @@ StatusResult FrontendRomTransition_ActivateRecordById(RomRecordId recordId,World
       slotCursor = slotCursor + 1;
       slotsRemaining--;
     } while (slotsRemaining != 0);
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (((RomRecord *)activeRecordResult.valueOrError)->cameraZQ12,
                ((RomRecord *)activeRecordResult.valueOrError)->cameraYQ12,
                ((RomRecord *)activeRecordResult.valueOrError)->cameraXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,((RomRecord *)activeRecordResult.valueOrError)->cameraPitchAngle,
                ((RomRecord *)activeRecordResult.valueOrError)->cameraHeadingAngle,
                ((RomRecord *)activeRecordResult.valueOrError)->cameraMagnitudeQ12,worldRuntime);

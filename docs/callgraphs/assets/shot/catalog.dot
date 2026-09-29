@@ -7,7 +7,7 @@ digraph thandor {
   "ShotDefinition_ComputeLaunchAnglesRegs" [label="0x0052B8C0\nShotDefinition_ComputeLaunchAnglesRegs"];
   "ShotDefinition_ComputeSelectionRange" [label="0x0052BCE0\nShotDefinition_ComputeSelectionRange"];
   "ShotDefinition_GetModeRangeLimitEbx" [label="0x0052BD50\nShotDefinition_GetModeRangeLimitEbx"];
-  "ShotDefinition_ComputeMode3LeadAdjustment" [label="0x0052BD80\nShotDefinition_ComputeMode3LeadAdjustment"];
+  "ShotDefinition_ComputeRampUpLeadTime" [label="0x0052BD80\nShotDefinition_ComputeMode3LeadAdjustment"];
   "ShotDefinition_RegisterAndResolveReferences" [label="0x0052B350\nShotDefinition_RegisterAndResolveReferencesCf"];
   "ShotAsset_PrepareEntries" -> "ShotDefinition_RegisterAndResolveReferences";
 }

@@ -21,7 +21,7 @@
    the terrain and its transforms, emitters and damage effect are refreshed.
 */
 
-void ArmyRuntimeClassUpdateSlot21_DispatchByClassId
+void ArmyRuntimeClass_UpdateAircraft
           (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView200 *modelRuntime)
 
 {
@@ -371,7 +371,7 @@ void ArmyRuntimeClassUpdateSlot21_DispatchByClassId
       }
       break;
     }
-    ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
+    ModelRuntimeHierarchy_MarkDestroyedRecursive
               (worldRuntime,(int *)modelRuntime->ownerArmyRuntime);
     /* no home pad left: falls through */
   case ARMY_AIRCRAFT_STATE_NO_PAD:
@@ -461,7 +461,7 @@ void ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode(WorldR
           (modelRuntime == (ModelRuntimeLinkedChildSpawnAndBuildView200 *)
                            ownerPayload->classLinkState.modelLinkOrState60.modelRuntime)) &&
          ((ownerPayload->classState.stateFlags & ARMY_MODEL_STATE_DISMANTLING) == 0)) {
-        ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
+        ModelRuntimeHierarchy_MarkDestroyedRecursive
                   (worldRuntime,(int *)ownerPayload->ownerArmyRuntimeOrSavedOffset.armyRuntime);
       }
       ownerNodeCursor = ownerNodeCursor->nextNode;
@@ -767,7 +767,7 @@ NextAssetCandidate:
    definition's mask (Xenite paid up front, Energy load held while building), creates the army at the spawn
    point, opens the door, sends the army out to the exit point, waits until it has left and closes the door.
 */
-void ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
+void ArmyRuntimeClass_UpdateUnitFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
@@ -816,7 +816,7 @@ void ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
   stateValue = (modelRuntime->classState).classStateB8;
   semanticDefinition = modelRuntime->modelDefinition;
   if ((3 < rootNode->childCount) && (rootNode->childNodes[3] != NULL)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)rootNode->childNodes[3]);
+    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNode->childNodes[3]);
     rootNode->childNodes[3] = NULL;
   }
   switch(stateValue) {
@@ -1025,7 +1025,7 @@ void ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
    64 entries, from where it is placed) and, for the active faction, the command grid is rebuilt and a
    notification is queued.
 */
-void ArmyRuntimeClassUpdateSlot11_DispatchByClassId
+void ArmyRuntimeClass_UpdateStructureFactory
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
@@ -1127,7 +1127,7 @@ void ArmyRuntimeClassUpdateSlot11_DispatchByClassId
             *assetCountField = *assetCountField + 1;
             if (activeFactionIndex == ownerArmyRuntime->factionIndex) {
               candidateValue = (assetLookup.recordOrError)->rootNodeOffsetOrPointer;
-              UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)worldRuntime);
+              InGameArmyStock_RebuildGrid((UiNodeBase *)worldRuntime);
               definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                                  (ownerArmyRuntime->factionIndex,candidateValue);
               linkedModelDefinition = (ModelDefinition *)definitionLookup.modelDefinition;
@@ -1242,7 +1242,7 @@ void ArmyRuntime_ClassCommandHandlerGroupA(WorldRuntimeContext *worldRuntime,Arm
             (scanArmy->modelRuntimeOrSavedOffset.modelDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_12))))
         {
           /* Damage the candidate unless the class-13 test misses and the attachment proximity test hits. */
-          proximityHit = ArmyRuntime_TestClass13ProximityCandidate(scanArmy,armyRuntime);
+          proximityHit = ArmyRuntime_TestArmyNearFactoryExit(scanArmy,armyRuntime);
           if ((proximityHit) || (proximityHit = ArmyRuntime_TestModelAttachmentProximity(scanArmy,armyRuntime),
                                  !proximityHit)) {
             damageAmount = ARMY_CRUSH_IMPACT_DAMAGE;
@@ -1765,7 +1765,7 @@ ArmyRuntime_ResolveShotAimPoint
           rangeLimit = ShotDefinition_GetModeRangeLimitEbx(shotDefinition);
           leadDistance = (int)(((int64_t)(int)distanceOrAngle * (int64_t)((ModelDefinition *)definitionOrDelta)->movementSpeed0C) /
                        (int64_t)rangeLimit.rangeLimitQ12);
-          distanceOrAngle = ShotDefinition_ComputeMode3LeadAdjustment(shotDefinition);
+          distanceOrAngle = ShotDefinition_ComputeRampUpLeadTime(shotDefinition);
           leadDistance = leadDistance + distanceOrAngle * ((ModelDefinition *)definitionOrDelta)->movementSpeed0C;
           distanceOrAngle = FixedMath_Atan2Angle16
                             (((ArmyRuntimeSlot *)targetClassRecord)->movementPosition1Q12 -
@@ -1898,7 +1898,7 @@ void ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
    Tests the army's state/technology id at +0x100 for zero (CF set when it is zero, SETZ / RCR); used by
    ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
-bool ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestHasNoWeaponDamage(ArmyRuntimeSlot *armyRuntime)
 
 {
   return armyRuntime->stateOrTechnologyId == 0;
@@ -1909,7 +1909,7 @@ bool ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime)
    Tests the army's signed state/technology id at +0x100 for being non-negative (CF set when it is >= 0,
    SETGE / RCR). No C code calls it directly.
 */
-bool ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime)
+bool ArmyRuntime_TestWeaponDamageNonnegative(ArmyRuntimeSlot *armyRuntime)
 
 {
   return -1 < armyRuntime->stateOrTechnologyId;
@@ -2101,10 +2101,10 @@ void ArmyRuntimePool_RebaseAfterLoad(void)
    every placement kind but water). While the army turns it keeps the turning sound (slot index +0x1D8 of the
    model) at the army's position; while it turns or drives it keeps the movement sound (+0x0D0) there; both only
    where the active faction's cell bits 0/1 are set (TerrainGrid_TestProjectedCellMaskBits01). Identical to
-   variant B except for the reload below.
+   ArmyRuntimeClass_UpdateWaterPositionedSounds except for the reload below.
 */
 
-void ArmyRuntimeClass_UpdatePositionedSoundsVariantA(WorldRuntimeContext *worldRuntime,
+void ArmyRuntimeClass_UpdateGroundPositionedSounds(WorldRuntimeContext *worldRuntime,
           ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime)
 
 {
@@ -2198,7 +2198,7 @@ static uint8_t *ArmyRuntimeClass_FindLastClass10Node(uint8_t *node)
 
 /* Address: 0x00523E70.
    Owner-list callback of ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects (passed to
-   WorldRuntime_ForEachNodeInOwnerListD8). For a model of another, non-neutral faction within the shot's
+   WorldRuntime_ForEachOwnerListNode). For a model of another, non-neutral faction within the shot's
    selection range it stores the last radar node (class 10) of that model as the target at +0x60, unless that
    node is destroyed; for a shot of the same shot definition it records that one is still in flight (+0x64).
 */
@@ -2280,7 +2280,7 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
       *meshMaskField = *meshMaskField | 1;
       (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime60 = NULL;
       (modelRuntime->timedTargetLinkState).matchingActiveShotRuntime64 = NULL;
-      WorldRuntime_ForEachNodeInOwnerListD8
+      WorldRuntime_ForEachOwnerListNode
                 (modelRuntime,ArmyRuntimeClass_SelectProjectileTargetNode,worldRuntime);
       selectedTarget = (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime60;
       if (((modelRuntime->timedTargetLinkState).matchingActiveShotRuntime64 ==
@@ -2315,12 +2315,12 @@ void ArmyRuntimeClass_UpdateTimedTargetProjectilesAndEffects
 /* Address: 0x00525960.
    Sound update of a moving army on water, reached through g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes
    .classMethodD[19] (0x0051FCF8) and through ArmyRuntimeAudio_DispatchPositionedSoundVariant (classMethodD[18],
-   placement kind 1 = water surface). Same as ArmyRuntimeClass_UpdatePositionedSoundsVariantA: the turning sound
+   placement kind 1 = water surface). Same as ArmyRuntimeClass_UpdateGroundPositionedSounds: the turning sound
    (+0x1D8) while turning, the movement sound (+0x0D0) while turning or driving, only where the active faction's
    cell bits 0/1 are set.
 */
 
-void ArmyRuntimeClass_UpdatePositionedSoundsVariantB(WorldRuntimeContext *worldRuntime,
+void ArmyRuntimeClass_UpdateWaterPositionedSounds(WorldRuntimeContext *worldRuntime,
           ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime)
 
 {
@@ -2381,7 +2381,7 @@ void ArmyRuntimeClass_UpdatePositionedSoundsVariantB(WorldRuntimeContext *worldR
    segments from +0xC4 of its definition (the linked-child slot capacity). Returned in EBX/ECX.
    Original register convention: result in EBX and ECX; EAX and EDX preserved.
 */
-ArmySegmentMeter ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime)
+ArmySegmentMeter ArmyRuntime_GetLinkedChildSlotMeterRegs(ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmySegmentMeter metricRegs;
@@ -2792,7 +2792,7 @@ ArmyPreviewTextureResult ArmyRuntime_RenderPreviewTexture
     if (((((ModelRuntimeSlot *)(previewArmyOrValue->common).ownership.definitionOrClassRecord)->definitionOrSavedId.
           runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_13) && (3 < rootNodeOrSize->childCount)) &&
        (rootNodeOrSize->childNodes[3] != NULL)) {
-      WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)rootNodeOrSize->childNodes[3]);
+      WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootNodeOrSize->childNodes[3]);
       rootNodeOrSize->childNodes[3] = NULL;
     }
     /* angles are 16-bit turns: 0x2000 = 45 degrees, 0x3000 = 67.5 degrees */
@@ -3240,7 +3240,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   if (entityRuntime == (worldRuntime->selection).selectedEntity) {
     (worldRuntime->selection).selectedEntity = NULL;
   }
-  WorldRuntime_ForEachNodeInOwnerListD8
+  WorldRuntime_ForEachOwnerListNode
             (entityRuntime,WorldRuntimeNode_ClearOwnedModelReferencesCallback,worldRuntime);
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
@@ -3257,8 +3257,8 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
   } while (remainingBlocks != 0);
   GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(entityRuntime);
   (entityRuntime->common).ownership.modelNode = NULL; /* marks the army slot free */
-  UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  UiCatalogGroup42_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   InGameSelectionDetailPanel_Rebuild();
 }
 
@@ -3268,7 +3268,7 @@ void ArmyRuntime_DestroyInstanceAndRefreshUi(WorldRuntimeContext *worldRuntime,G
    within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry (1,5),
    transformed to world space), measured in x/y.
 */
-bool ArmyRuntime_TestClass13ProximityCandidate(ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
+bool ArmyRuntime_TestArmyNearFactoryExit(ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime)
 
 {
   uint32_t candidateRadius;
@@ -3298,7 +3298,7 @@ bool ArmyRuntime_TestClass13ProximityCandidate(ArmyRuntimeSlot *candidateArmyRun
 
 
 /* Address: 0x00526510.
-   Air-raid alert (called directly by ArmyRuntimeClassUpdateSlot21_DispatchByClassId on every tick of an attack
+   Air-raid alert (called directly by ArmyRuntimeClass_UpdateAircraft on every tick of an attack
    run): when the aircraft of factionIndex is hostile to the active faction and flies over a grid cell with bit
    0x10 in the active faction's byte (+0x70 + faction of the cell), the sound soundAssetIndex is played
    unpositioned at the effects gain, at most once per 16 ticks of the faction's relationTransitionTick.
@@ -3390,7 +3390,7 @@ uint32_t ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric(ArmyRuntimeLinkedC
 /* Address: 0x00527230.
    Plays the one-shot sound at +0x270 of the army's definition (+0x00) at the army's position, with the
    definition's range and gain (+0x7C/+0x78), where the active faction's cell bits 0/1 are set. Called directly
-   by ArmyRuntimeClassUpdateSlot21_DispatchByClassId for the home pad when an aircraft lands or takes off (the
+   by ArmyRuntimeClass_UpdateAircraft for the home pad when an aircraft lands or takes off (the
    pad's platform sound; despite the name nothing is created).
 */
 void ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeContext *worldRuntime)
@@ -3426,7 +3426,7 @@ void ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRunt
 /* Address: 0x005272B0.
    Plays the one-shot sound at +0x26C of the army's definition (+0x00) at the army's position, with the
    definition's range and gain (+0x7C/+0x78), where the active faction's cell bits 0/1 are set. Called directly
-   by ArmyRuntimeClassUpdateSlot21_DispatchByClassId when a returning aircraft opens its home pad. Despite the
+   by ArmyRuntimeClass_UpdateAircraft when a returning aircraft opens its home pad. Despite the
    name no effect is spawned; it is the hatch sound class 22 plays itself in
    ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode.
 */
@@ -3497,7 +3497,7 @@ bool ArmyRuntime_TestPositionDistanceWithinCombinedRadius
 
 
 /* Address: 0x005297D0.
-   Bomb release of an aircraft on its attack run (called directly by ArmyRuntimeClassUpdateSlot21_DispatchByClassId):
+   Bomb release of an aircraft on its attack run (called directly by ArmyRuntimeClass_UpdateAircraft):
    scores every intact model (stateFlags bit 8 clear) of another, non-neutral faction with AiCombatTarget_EvaluateCandidateScore. If the
    best one is within 1.0 (Q12) of its radius from the given point, every shot aims at it; otherwise each shot
    aims at the given point shifted by its launch point's offset from the aircraft. One shot of
@@ -3912,7 +3912,7 @@ ScanAssetRegistry:
         ;
         resultOrModelNode = (ModelRuntimeNode *)worldYQ12;
         if (!childCreateFailed) {
-          WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode *)modelNodeRuntime);
+          WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)modelNodeRuntime);
           ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
           /* remainingOrDefinition: the model runtime's definition (its first dword). Terrain contact by the
              definition's contact kind; depth class by its model class; depth radius from the definition. */

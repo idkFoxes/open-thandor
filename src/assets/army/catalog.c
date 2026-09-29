@@ -15,7 +15,7 @@
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
@@ -26,7 +26,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckA
   searchResult.notFound = idAbsent;
   searchResult.armyAssetId = recordId;
   if (idAbsent) {
-    searchResult = ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(recordId);
+    searchResult = ArmyAssetRegistry_FindNextPlaceableUnitWrapped(recordId);
   }
   normalizedResult.armyAssetId = searchResult.armyAssetId;
   normalizedResult.notFound = searchResult.notFound;
@@ -40,7 +40,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckA
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in unit-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -72,7 +72,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAss
    run, so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in unit-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -104,7 +104,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAs
    the step functions this jumps between id blocks. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014) in unit-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
@@ -138,7 +138,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped
    otherwise moves on to the next such id with wrap-around. Called by
    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState when the in-game command UI is activated.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
@@ -149,7 +149,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmy
   searchResult.notFound = idAbsent;
   searchResult.armyAssetId = recordId;
   if (idAbsent) {
-    searchResult = ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(recordId);
+    searchResult = ArmyAssetRegistry_FindNextPlaceableObjectWrapped(recordId);
   }
   normalizedResult.armyAssetId = searchResult.armyAssetId;
   normalizedResult.notFound = searchResult.notFound;
@@ -163,7 +163,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmy
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EAA0, command 0x10011) in object-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -195,7 +195,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetI
    so the step cycles within one contiguous id block. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056EC10, command 0x10019) in object-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -227,7 +227,7 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAsset
    from the in-game keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E7C0, command 0x10014)
    in object-placement mode.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
@@ -462,9 +462,9 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
    returns the next placeable unit (0x0100 set, 0x0200 clear), wrapping from 0x1000 to 0. Unlike the step
    functions this jumps between id blocks. Called from the in-game keyboard dispatch table
    g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in unit-placement mode, and by
-   ArmyAssetRegistry_NormalizeIdForFlag0100Without0200.
+   ArmyAssetRegistry_NormalizeIdToPlaceableUnit.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
@@ -492,9 +492,9 @@ ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(Arm
    Moves the editor's object-placement army id forward out of its current run of object ids (flag 0x0200 set) and
    returns the next placeable object (0x0100 and 0x0200 set), wrapping from 0x1000 to 0. Called from the in-game
    keyboard dispatch table g_InGameKeyboardDispatchRecords (handler 0x0056E930, command 0x10016) in
-   object-placement mode, and by ArmyAssetRegistry_NormalizeIdForFlags0100And0200.
+   object-placement mode, and by ArmyAssetRegistry_NormalizeIdToPlaceableObject.
 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId)
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;

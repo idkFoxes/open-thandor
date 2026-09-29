@@ -25,7 +25,7 @@
 #define ARMY_MOVEMENT_TARGET_FOLLOWING 0x20 /* started by ArmyRuntimeCommand_UpdateTargetFollowingState; a new
                                                command resets the move first */
 #define ARMY_MOVEMENT_DIRECT 0x80           /* ArmyRuntime_StartDirectMoveCommand: orders are never queued */
-#define ARMY_MOVEMENT_SPECIAL_BEHAVIOR 0x100 /* class 18: AiUnitBehavior_UpdateSpecialClass12Entity runs each tick */
+#define ARMY_MOVEMENT_SPECIAL_BEHAVIOR 0x100 /* class 18: AiUnitBehavior_UpdatePioneerVehicle runs each tick */
 #define ARMY_MOVEMENT_ROUTED 0x200          /* routed move command: kept by the reset/target-following paths */
 #define ARMY_MOVEMENT_MIRROR_TARGET 0x400   /* ArmyRuntime_SetPendingMoveTarget also sets movementTargetWorld*Q12 */
 /* retryCountdown after every route (re)build; while it is non-zero and the model has not moved,
@@ -65,10 +65,10 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
 void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
 
 /* 0x00523410 */
-void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateSingleBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime);
 
 /* 0x00523690 */
-void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime);
+void ArmyRuntimeClass_UpdateTwinBarrelTurret (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime);
 
 /* 0x00520140 */
 void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementTrackView200 *modelRuntime);
@@ -98,15 +98,15 @@ void ArmyArticulatedRuntime_InitializeTerrainContactGeometry
 void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051C8E0 */
-void ArmyRuntime_QueueOrStartMoveCommandVariantA
+void ArmyRuntime_StartRoutedMoveCommand
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime);
 
 /* 0x0051C9A0 */
-void ArmyRuntime_QueueOrStartMoveCommandVariantB
+void ArmyRuntime_StartNextQueuedWaypointMove
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime);
 
 /* 0x00520840 */
-void ArmyRuntimeClass_UpdateGroundMovementVariantA (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
+void ArmyRuntimeClass_UpdateGroundMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
 
 /* 0x00522090 */
 void ArmyArticulatedRuntime_UpdateLeftTerrainContact(AngleTurn32 headingAngle16,Q12 routeDistanceQ12,
@@ -117,7 +117,7 @@ void ArmyArticulatedRuntime_UpdateRightTerrainContact(AngleTurn32 headingAngle16
           ArmyArticulatedRuntimeSlotView *armyRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x005254F0 */
-void ArmyRuntimeClass_UpdateGroundMovementVariantB (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
+void ArmyRuntimeClass_UpdateWaterSurfaceMovement (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime );
 
 /* 0x0051CC60 */
 void ArmyRuntime_StartClampedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime);
@@ -153,7 +153,7 @@ bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targe
           WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051CA60 */
-void ArmyRuntime_QueueWaypointOrStartMoveVariantA
+void ArmyRuntime_AppendWaypointOrStartMove
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime);
 
 /* 0x0051CB90 */

@@ -46,7 +46,7 @@ void AiPlanning_RebuildFactionWorkspaces(AiPlanningPhaseIndex planningPhaseDispa
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BF30 */
-void AiStrategicCandidate_AddBestWorkspace12Entry(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiTechnologyCandidate_AddBestResearch(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00537420 */
 void AiCandidateWorkspace_Clear(void);
@@ -79,10 +79,10 @@ int AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 world
 int AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538E80 */
-int AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
+int AiHostileWorkspace_GetNearestVisibleHostileDistance(Q12 worldY,Q12 worldX);
 
 /* 0x00538EF0 */
-int AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
+int AiHostileWorkspace_GetNearestUnseenHostileDistance(Q12 worldY,Q12 worldX);
 
 /* 0x00538F60 */
 int AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
@@ -93,7 +93,7 @@ void AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053BCB0 */
-AiTechnologyCandidateScore AiWorkspace12Score_DefaultZero
+AiTechnologyCandidateScore AiTechnologyScore_AlwaysZero
           (FactionRuntimeIndex factionIndex,PckTechnologyIdCatalog technologyId,
           WorldRuntimeContext *worldRuntime);
 
@@ -101,10 +101,10 @@ AiTechnologyCandidateScore AiWorkspace12Score_DefaultZero
 StatusResult AiRuntime_InitWorkspace(void);
 
 /* 0x00537F80 */
-void AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell);
+void AiBaseSiteWorkspace_AddCellInsideBase(FieldGridCell *currentCell);
 
 /* 0x00537FC0 */
-void AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell);
+void AiBaseSiteWorkspace_AddLargeCellInsideBase(FieldGridCell *currentCell);
 
 /* 0x00538B90 */
 bool AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);

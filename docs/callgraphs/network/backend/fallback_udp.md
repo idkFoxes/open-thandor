@@ -6,14 +6,14 @@
 
 ## Functions
 
-- `0x0041A580` **[`NetworkBackendFallback_Slot0_ReturnError43`](../../../../src/network/backend/fallback_udp.c#L5)**
-- `0x0041A590` **[`NetworkBackendFallback_Slot1_NoOp`](../../../../src/network/backend/fallback_udp.c#L16)**
-- `0x0041A5A0` **[`NetworkBackendFallback_Slot2_ReturnError43`](../../../../src/network/backend/fallback_udp.c#L26)**
-- `0x0041A5B0` **[`NetworkBackendFallback_Slot3_NoOp`](../../../../src/network/backend/fallback_udp.c#L37)**
-- `0x0041A5C0` **[`NetworkBackendFallback_Slot4_ThreeArgFailure`](../../../../src/network/backend/fallback_udp.c#L47)**
-- `0x0041A5D0` **[`NetworkBackendFallback_Slot5_ThreeArgSuccess`](../../../../src/network/backend/fallback_udp.c#L59)**
-- `0x0041A5E0` **[`NetworkBackendFallback_Slot6_TwoArgFailure`](../../../../src/network/backend/fallback_udp.c#L72)**
-- `0x0041A5F0` **[`NetworkBackendFallback_Slot7_ClearOutput`](../../../../src/network/backend/fallback_udp.c#L84)**
+- `0x0041A580` **[`NetworkBackendFallback_SetSessionContext`](../../../../src/network/backend/fallback_udp.c#L5)**
+- `0x0041A590` **[`NetworkBackendFallback_Cleanup`](../../../../src/network/backend/fallback_udp.c#L16)**
+- `0x0041A5A0` **[`NetworkBackendFallback_OpenAndBindUdpSocket`](../../../../src/network/backend/fallback_udp.c#L26)**
+- `0x0041A5B0` **[`NetworkBackendFallback_CloseActiveSocket`](../../../../src/network/backend/fallback_udp.c#L37)**
+- `0x0041A5C0` **[`NetworkBackendFallback_ReceiveDatagram`](../../../../src/network/backend/fallback_udp.c#L47)**
+- `0x0041A5D0` **[`NetworkBackendFallback_SendDatagram`](../../../../src/network/backend/fallback_udp.c#L59)**
+- `0x0041A5E0` **[`NetworkBackendFallback_ParsePeerEndpoint`](../../../../src/network/backend/fallback_udp.c#L72)**
+- `0x0041A5F0` **[`NetworkBackendFallback_FormatPeerAddress`](../../../../src/network/backend/fallback_udp.c#L84)**
 - `0x00584E70` **[`NetworkFallback_NoOpBackendCleanup`](../../../../src/network/backend/fallback_udp.c#L99)**
 - `0x00584E80` **[`NetworkFallback_OpenAndBindUdpSocket`](../../../../src/network/backend/fallback_udp.c#L109)**
 - `0x00585030` **[`NetworkFallback_CloseActiveSocket`](../../../../src/network/backend/fallback_udp.c#L210)**

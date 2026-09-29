@@ -1,14 +1,14 @@
 digraph thandor {
   rankdir=LR;
   node [shape=box];
-  "NetworkBackendFallback_Slot0_ReturnError43" [label="0x0041A580\nNetworkBackendFallback_Slot0_ReturnError43Cf"];
-  "NetworkBackendFallback_Slot1_NoOp" [label="0x0041A590\nNetworkBackendFallback_Slot1_NoOp"];
-  "NetworkBackendFallback_Slot2_ReturnError43" [label="0x0041A5A0\nNetworkBackendFallback_Slot2_ReturnError43Cf"];
-  "NetworkBackendFallback_Slot3_NoOp" [label="0x0041A5B0\nNetworkBackendFallback_Slot3_NoOp"];
-  "NetworkBackendFallback_Slot4_ThreeArgFailure" [label="0x0041A5C0\nNetworkBackendFallback_Slot4_ThreeArgFailureCf"];
-  "NetworkBackendFallback_Slot5_ThreeArgSuccess" [label="0x0041A5D0\nNetworkBackendFallback_Slot5_ThreeArgSuccessCf"];
-  "NetworkBackendFallback_Slot6_TwoArgFailure" [label="0x0041A5E0\nNetworkBackendFallback_Slot6_TwoArgFailureCf"];
-  "NetworkBackendFallback_Slot7_ClearOutput" [label="0x0041A5F0\nNetworkBackendFallback_Slot7_ClearOutput"];
+  "NetworkBackendFallback_SetSessionContext" [label="0x0041A580\nNetworkBackendFallback_Slot0_ReturnError43Cf"];
+  "NetworkBackendFallback_Cleanup" [label="0x0041A590\nNetworkBackendFallback_Slot1_NoOp"];
+  "NetworkBackendFallback_OpenAndBindUdpSocket" [label="0x0041A5A0\nNetworkBackendFallback_Slot2_ReturnError43Cf"];
+  "NetworkBackendFallback_CloseActiveSocket" [label="0x0041A5B0\nNetworkBackendFallback_Slot3_NoOp"];
+  "NetworkBackendFallback_ReceiveDatagram" [label="0x0041A5C0\nNetworkBackendFallback_Slot4_ThreeArgFailureCf"];
+  "NetworkBackendFallback_SendDatagram" [label="0x0041A5D0\nNetworkBackendFallback_Slot5_ThreeArgSuccessCf"];
+  "NetworkBackendFallback_ParsePeerEndpoint" [label="0x0041A5E0\nNetworkBackendFallback_Slot6_TwoArgFailureCf"];
+  "NetworkBackendFallback_FormatPeerAddress" [label="0x0041A5F0\nNetworkBackendFallback_Slot7_ClearOutput"];
   "NetworkFallback_NoOpBackendCleanup" [label="0x00584E70\nNetworkFallback_NoOpBackendCleanup"];
   "NetworkFallback_OpenAndBindUdpSocket" [label="0x00584E80\nNetworkFallback_OpenAndBindUdpSocketCf"];
   "NetworkFallback_CloseActiveSocket" [label="0x00585030\nNetworkFallback_CloseActiveSocket"];

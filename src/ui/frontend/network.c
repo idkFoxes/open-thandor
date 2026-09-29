@@ -133,7 +133,7 @@ void FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     openBindResult = g_NetworkBackendSlot2(NETWORK_GAME_UDP_PORT);
     if (!openBindResult.failed) {
 backendOpened:
-      UiPointerList_SelectIndexVariantA
+      UiPointerList_SelectTextListIndex
                 (backendIndex,(UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
       localEndpointCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;

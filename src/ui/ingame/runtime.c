@@ -143,7 +143,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        previousModeGArmy = ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped
+        previousModeGArmy = ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped
                            (g_UiCommandModeGArmyAssetId);
         g_UiCommandModeGArmyAssetId = previousModeGArmy.armyAssetId;
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
@@ -155,7 +155,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        previousMode4Army = ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped
+        previousMode4Army = ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped
                            (g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = previousMode4Army.armyAssetId;
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
@@ -200,7 +200,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        nextModeGArmy = ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(g_UiCommandModeGArmyAssetId);
+        nextModeGArmy = ArmyAssetRegistry_FindNextPlaceableUnitWrapped(g_UiCommandModeGArmyAssetId);
         g_UiCommandModeGArmyAssetId = nextModeGArmy.armyAssetId;
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
@@ -211,7 +211,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        nextMode4Army = ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(g_UiCommandMode4ArmyAssetId);
+        nextMode4Army = ArmyAssetRegistry_FindNextPlaceableObjectWrapped(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = nextMode4Army.armyAssetId;
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
@@ -257,7 +257,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        steppedForwardModeGArmy = ArmyAssetRegistry_StepForwardFlag0100Without0200(g_UiCommandModeGArmyAssetId);
+        steppedForwardModeGArmy = ArmyAssetRegistry_StepForwardPlaceableUnit(g_UiCommandModeGArmyAssetId);
         g_UiCommandModeGArmyAssetId = steppedForwardModeGArmy.armyAssetId;
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
@@ -268,7 +268,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        steppedForwardMode4Army = ArmyAssetRegistry_StepForwardFlags0100And0200(g_UiCommandMode4ArmyAssetId);
+        steppedForwardMode4Army = ArmyAssetRegistry_StepForwardPlaceableObject(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = steppedForwardMode4Army.armyAssetId;
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
@@ -314,7 +314,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         UiCommandMatrix_SelectIndex(materialIndex,&uiRoot->base);
       }
       else if (g_UiCommandModeG == EDITOR_MODE_UNIT_PLACEMENT) {
-        steppedBackwardModeGArmy = ArmyAssetRegistry_StepBackwardFlag0100Without0200(g_UiCommandModeGArmyAssetId);
+        steppedBackwardModeGArmy = ArmyAssetRegistry_StepBackwardPlaceableUnit(g_UiCommandModeGArmyAssetId);
         g_UiCommandModeGArmyAssetId = steppedBackwardModeGArmy.armyAssetId;
         modeGPreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
@@ -325,7 +325,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == EDITOR_MODE_OBJECT_PLACEMENT) {
-        steppedBackwardMode4Army = ArmyAssetRegistry_StepBackwardFlags0100And0200(g_UiCommandMode4ArmyAssetId);
+        steppedBackwardMode4Army = ArmyAssetRegistry_StepBackwardPlaceableObject(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = steppedBackwardMode4Army.armyAssetId;
         mode4PreviewTexture = (GraphicsTextureSourceAsset *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
@@ -539,7 +539,7 @@ void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source)
    with a message. In a network game the text is sent to the recipients chosen in the message window (all, the
    ticked factions or the ticked session players) and the line is cleared. Either way the command page closes.
 */
-void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
+void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEditPtr commandTextEdit)
 
 {
   int countOrTabOffset;
@@ -746,14 +746,14 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
               (playerBlock->playerRuntimeId,0,0,(playerBlock->factionAssignment).factionAssignmentIndex);
     playerBlock++;
   }
-  upsertStatus = ResourceRegistration_OpenSource(savePath);
+  upsertStatus = InGameSaveGame_CreatePackage(savePath);
   handle = (void *)upsertStatus.valueOrError;
   if (upsertStatus.failed) {
     WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),savePath);
     upsertStatus = g_FileSystemCreateDirectoryRecursive
                       (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
     if (upsertStatus.failed) goto failed;
-    upsertStatus = ResourceRegistration_OpenSource(savePath);
+    upsertStatus = InGameSaveGame_CreatePackage(savePath);
     handle = (void *)upsertStatus.valueOrError;
     if (upsertStatus.failed) goto failed;
   }
@@ -773,21 +773,21 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ModelRuntimePool_RebaseAfterLoad();
   if ((upsertFailed & 1) != 0) goto failed;
-  domainImagePair = ResourceRegistration_QueryDomain2Pair();
+  domainImagePair = InGameSaveGame_PrepareShotSlots();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_shot_hex_0050dfdc,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   ShotRuntime_RebaseSlotsAfterLoad();
   if ((upsertFailed & 1) != 0) goto failed;
-  domainImagePair = ResourceRegistration_QueryDomain1Pair();
+  domainImagePair = InGameSaveGame_PrepareEffectSlots();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_effect_hex_0050dfc6,
                               (EngineFileHandle)handle);
   upsertFailed = (uint32_t)(upsertStatus.failed & 1);
   EffectRuntime_RebaseSlotsAfterLoad();
   if ((upsertFailed & 1) != 0) goto failed;
-  domainImagePair = ResourceRegistration_SelectDomainPair(worldView);
+  domainImagePair = InGameSaveGame_PrepareRegistrationRecords(worldView);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_widget_hex_0050e02a,
                               (EngineFileHandle)handle);
@@ -808,13 +808,13 @@ bool InGameSaveGame_WritePackage(void *worldView,void *savePath)
   RuntimeHexSegment_AfterFieldImageNoOp(worldView);
   sourceData = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   if ((upsertFailed & 1) != 0) goto failed;
-  ResourceRegistration_ResolveRuntimeRecord(worldView);
+  InGameSaveGame_StoreCameraAsPlayerStart(worldView);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (sourceData->levelImage).header.resourceTables.
                               runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)sourceData
                               ,(uint16_t *)u_level_hex_0050e040,(EngineFileHandle)handle);
   if (upsertStatus.failed) goto failed;
-  domainImagePair = ResourceRegistration_QueryDomain0Pair();
+  domainImagePair = InGameSaveGame_PrepareFactionImage();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
                               (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_daten_hex_0050e054,
                               (EngineFileHandle)handle);
@@ -3016,7 +3016,7 @@ enum InGameKeyCommandContinuation {
      Shift+S                reset the selection's movement anchors                     [0xE30]
      Alt+S                  interrupt the selection's active targets                   [0xE50]
      Alt+D                  apply model hierarchy flags 0x418 to the selection         [0xE70]
-     A                      InGameSelection_RebuildOwnedClass16Selection               [0x8F0]
+     A                      InGameSelection_SelectAllOwnAircraftPads               [0x8F0]
      B                      camera to the first own model of runtime class 11
      Space / Backspace      advance/resolve or cancel the notification target (as the notification button)
      Alt+Space              camera to the last notification target position
@@ -3118,7 +3118,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     }
     point = FieldGrid_GetNearestTerrainPoint(root->targetingSecondaryWorldCoordinateQ12_9E5C,
                                              root->targetingPrimaryWorldCoordinateQ12_9E58,world->fieldGrid);
-    WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+    WorldRuntime_PointCameraAtTarget
               ((world->motion).pitchAngle,(world->motion).headingAngle,(world->motion).targetDistanceQ12,
                point.terrainHeightQ12,root->targetingSecondaryWorldCoordinateQ12_9E5C,
                root->targetingPrimaryWorldCoordinateQ12_9E58,world);
@@ -3129,7 +3129,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     if (center.unresolved) {
       break;
     }
-    WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+    WorldRuntime_PointCameraAtTarget
               ((world->motion).pitchAngle,(world->motion).headingAngle,(world->motion).committedDistanceQ12,
                center.worldZQ12,center.worldYQ12,center.worldXQ12,world);
     break;
@@ -3147,7 +3147,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
       modelRuntime = (uint8_t *)ownerNode->runtimePayload;
       if ((faction == (uint32_t)((ModelRuntimeSlot *)modelRuntime)->ownerArmyRuntimeOrSavedOffset.armyRuntime->factionIndex) &&
           (((ModelRuntimeSlot *)modelRuntime)->definitionOrSavedId.runtimeDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_11)) {
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   ((world->motion).pitchAngle,(world->motion).headingAngle,(world->motion).committedDistanceQ12,
                    ownerNode->worldZQ12,ownerNode->worldYQ12,ownerNode->worldXQ12,world);
         break;
@@ -3173,13 +3173,13 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
       PlayerSelection_ResetMovementPruneAndRecenterEntries(g_LocalPlayerRuntimeId,0,0,0);
     }
     else if (commandIndex == 1) {
-      PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries(g_LocalPlayerRuntimeId,0,0,0);
+      PlayerSelection_StopMovement(g_LocalPlayerRuntimeId,0,0,0);
     }
     else if (commandIndex == 2) {
-      PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries(g_LocalPlayerRuntimeId,0,0,0);
+      PlayerSelection_CancelTargets(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries(g_LocalPlayerRuntimeId,0,0,0);
+      PlayerSelection_SelfDestruct(g_LocalPlayerRuntimeId,0,0,0);
     }
     break;
   }
@@ -3199,7 +3199,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
     if ((((upgradeButton->selectable).stateFlags & 0x200) != 0) && (upgradeButton->activationSoundId != 0)) {
       g_SoundPlayOneShot(g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)upgradeButton->activationSoundId);
     }
-    InGameSelectionPage_ToggleAndRefreshPage2((UiNodeBase *)world);
+    InGameTechnologyPanel_ToggleForSelection((UiNodeBase *)world);
     break;
   }
   case INGAME_KEY_SELECT_OWNED_CLASS16:
@@ -3207,7 +3207,7 @@ void InGameUiRuntime_DispatchCommandByCodeAndModifierFlags(UiKeyboardStateMask m
       break;
     }
     if (localSession) {
-      InGameSelection_RebuildOwnedClass16Selection(g_LocalPlayerRuntimeId,0,0,0);
+      InGameSelection_SelectAllOwnAircraftPads(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
       InGameCommandQueue_AppendLocalPlayerCommand(0x8f0,0,0,0);
@@ -3266,7 +3266,7 @@ void InGameUiRuntime_ResetNotificationButtonCursor(void *worldView)
    blocked: a running camera move (runtimeFlags 0x10) is aborted and the saved camera restored; otherwise a
    pending unit placement is dropped (GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid, network command
    0x14F0), or else the selection is cleared (network command 0xBA0). Both outcomes of the
-   SelectionInfo_ValidateOwnerType16AndAnyActive test clear the selection, as in the original.
+   SelectionInfo_TestNotOwnAircraftPadsWithAircraft test clear the selection, as in the original.
 */
 void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *world)
 
@@ -3279,7 +3279,7 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *wor
      ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0)) {
     if ((world->runtimeFlags & 0x10) == 0) {
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
-        hasActiveOwnerType16 = SelectionInfo_ValidateOwnerType16AndAnyActive(world->activeFactionRuntimeIndex);
+        hasActiveOwnerType16 = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(world->activeFactionRuntimeIndex);
         if (hasActiveOwnerType16) {
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
               SESSION_NETWORK_ROLE_LOCAL) {
@@ -3612,7 +3612,7 @@ uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId
    was already paused before the window opened.
 */
 
-void InGameUiAction101F_Handler(UiNodeBase *source)
+void InGameMissionHelpPage_Toggle(UiNodeBase *source)
 
 {
   WorldInteractionFlags *interactionFlagsField;
@@ -3692,7 +3692,7 @@ void InGameUiAction101F_Handler(UiNodeBase *source)
    (resultsTabThird / Economy / Military) was clicked. Selects it exclusively and shows the chart page of the
    selected tab.
 */
-void InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
+void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl)
 
 {
   SelectableGroupNodeResult visibleSelection;
@@ -3786,7 +3786,7 @@ void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonContro
    entity's definition is assigned to the player (command INGAME_COMMAND_ASSIGN_ARMY_TOKEN). Ignored while the
    game is paused or the world input is disabled.
 */
-void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
+void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source)
 
 {
   UiPageStackControl *gameWindowStack;
@@ -3819,7 +3819,7 @@ void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
       modelOffset = (int)definitionRecord - g_ModelRuntimeRebaseDelta;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
+        FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
                   (g_LocalPlayerRuntimeId,0,0,modelOffset);
       }
       else {
@@ -4350,14 +4350,14 @@ void InGameUiCommand_BeginInteractionByMode
       if (pointerRegionCode != WORLD_POINTER_NO_HIT) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          PlayerRuntime_SetState8090(g_LocalPlayerRuntimeId,0,0,commandPayload);
+          PlayerRuntime_SetPlacementFaction(g_LocalPlayerRuntimeId,0,0,commandPayload);
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_SET_FACTION,0,0,commandPayload);
         }
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          PlayerRuntime_ResolveAndStoreState8094
+          PlayerRuntime_CreatePlacementArmy
                     (g_LocalPlayerRuntimeId,pointerX,pointerY,lookupToken);
         }
         else {
@@ -4398,7 +4398,7 @@ void InGameUiCommand_BeginInteractionByMode
                 (int)g_ArmyRuntimeRebaseBaseMinusOne;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          PlayerRuntime_SetState8094(g_LocalPlayerRuntimeId,0,0,commandPayload);
+          PlayerRuntime_SetPlacementArmy(g_LocalPlayerRuntimeId,0,0,commandPayload);
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_SET_ARMY,0,0,commandPayload);
@@ -4946,7 +4946,7 @@ void InGameUiCommand_EndInteractionByMode
     if (placementSubMode != 1) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
-        PlayerRuntime_ClearState8094(g_LocalPlayerRuntimeId,0,0,0);
+        PlayerRuntime_ClearPlacementArmy(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
         InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLACEMENT_CLEAR_ARMY,0,0,0);
@@ -5098,18 +5098,18 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       root->notificationPlaybackCompletionCode9B54 = 0x25;
       ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource = textureSourceValue;
       UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,(UiNodeBase *)root);
-      normalizedModeGArmy = ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(g_UiCommandModeGArmyAssetId);
+      normalizedModeGArmy = ArmyAssetRegistry_NormalizeIdToPlaceableUnit(g_UiCommandModeGArmyAssetId);
       g_UiCommandModeGArmyAssetId = normalizedModeGArmy.armyAssetId;
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
       ((UiImagePanelControl *)INGAME_UI(root,unitPlacementPreviewImage))->textureSource = (GraphicsTextureSourceAsset *)modeOrValue;
-      normalizedMode4Army = ArmyAssetRegistry_NormalizeIdForFlags0100And0200(g_UiCommandMode4ArmyAssetId);
+      normalizedMode4Army = ArmyAssetRegistry_NormalizeIdToPlaceableObject(g_UiCommandMode4ArmyAssetId);
       g_UiCommandMode4ArmyAssetId = normalizedMode4Army.armyAssetId;
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
       ((UiImagePanelControl *)INGAME_UI(root,objectPlacementPreviewImage))->textureSource = (GraphicsTextureSourceAsset *)modeOrValue;
       FieldGrid_SetOccupancyMaskByteBit0AllCells
                 ((root->worldRuntime0A30).activeFactionRuntimeIndex,
                  (root->worldRuntime0A30).fieldGrid);
-      WorldRuntime_ForEachNodeInOwnerListD8
+      WorldRuntime_ForEachOwnerListNode
                 (&root->worldRuntime0A30,
                  ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
                  &root->worldRuntime0A30);
@@ -5188,7 +5188,7 @@ void InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
                 ((root->worldRuntime0A30).activeFactionRuntimeIndex,
                  (root->worldRuntime0A30).fieldGrid);
     }
-    WorldRuntime_ForEachNodeInOwnerListD8
+    WorldRuntime_ForEachOwnerListNode
               (&root->worldRuntime0A30,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
                ,&root->worldRuntime0A30);
     node = &root->worldRuntime0A30;
@@ -5277,7 +5277,7 @@ void InGameSevenSlotCommand_ClosePage(UiNodeBase *source)
    UI action 0x1004 (g_InGameUiActionHandlersPage10[4], InGameUiImage.messageSendButton; also called by
    InGameSevenSlotCommand_SubmitAndClosePage): sends the text of the message window. The text is narrowed to
    48 bytes, the recipient mask is built from the selected tab and its check boxes (as in
-   InGameUiAction1024_Handler), then the mask, the text as four 12-byte chat commands and the publish command
+   InGameChatInput_SendLineOrCheckCheatPhrase), then the mask, the text as four 12-byte chat commands and the publish command
    are issued, and the text field is cleared.
 */
 void InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)

@@ -22,14 +22,14 @@
 #define INGAME_COMMAND_SELECTION_INSERT 0xA60 /* FrontendPlayerSelection_InsertThreeEntriesAndRefresh */
 #define INGAME_COMMAND_SELECTION_REMOVE 0xB00 /* FrontendPlayerSelection_RemoveThreeEntriesAndRefresh */
 #define INGAME_COMMAND_SELECTION_CLEAR 0xBA0 /* FrontendPlayerSelection_ClearAndRefreshLocalPanels */
-#define INGAME_COMMAND_POSITION_VARIANT_B 0xD40 /* InGamePlayerSelection_ApplyPositionCommandVariantB */
+#define INGAME_COMMAND_POSITION_VARIANT_B 0xD40 /* InGamePlayerSelection_ApplyMoveCommand */
 #define INGAME_COMMAND_POSITION 0xD70 /* InGamePlayerSelection_ApplyPositionCommand */
 #define INGAME_COMMAND_SELECT_ARMY 0xDA0 /* InGamePlayerSelection_SelectArmyRuntimeIndex */
 #define INGAME_COMMAND_TARGET_POSITION 0xDE0 /* InGamePlayerSelection_ApplyTargetPositionCommand */
 #define INGAME_COMMAND_PLACE_ARMY 0x13A0 /* InGameCommand_ExecuteLocalPlacementFromSelection */
 #define INGAME_COMMAND_SELECT_MODEL_AND_ARMY 0x1620 /* FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel */
 #define INGAME_COMMAND_SET_SESSION_FLAGS 0x340 /* FrontendPlayerRuntime_SetSlowRenderingFlagById */
-#define INGAME_COMMAND_ASSIGN_ARMY_TOKEN 0x16B0 /* FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 */
+#define INGAME_COMMAND_ASSIGN_ARMY_TOKEN 0x16B0 /* FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch */
 #define INGAME_COMMAND_APPLY_UI_FLAG_MASKS 0x310 /* UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
 #define INGAME_COMMAND_MARK_PLAYER_READY_101B 0x470 /* FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton */
 /* Commands issued by the in-game command buttons (ui/ingame/commands) */
@@ -42,10 +42,10 @@
 #define INGAME_COMMAND_CANCEL_QUEUED_ARMY 0x1030 /* GameFactionRuntime_CancelQueuedArmyAssetsAndRefund */
 #define INGAME_COMMAND_TAKE_ARMY_FOR_PLACEMENT 0x12D0 /* GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer */
 #define INGAME_COMMAND_SELL_ARMY 0x1570 /* GameFactionRuntime_SellArmyAssetAndRefundSevenEighths */
-#define INGAME_COMMAND_PLACEMENT_CREATE_ARMY 0x2E50 /* PlayerRuntime_ResolveAndStoreState8094 */
-#define INGAME_COMMAND_PLACEMENT_SET_FACTION 0x2EC0 /* PlayerRuntime_SetState8090 */
-#define INGAME_COMMAND_PLACEMENT_SET_ARMY 0x2EF0 /* PlayerRuntime_SetState8094 */
-#define INGAME_COMMAND_PLACEMENT_CLEAR_ARMY 0x3190 /* PlayerRuntime_ClearState8094 */
+#define INGAME_COMMAND_PLACEMENT_CREATE_ARMY 0x2E50 /* PlayerRuntime_CreatePlacementArmy */
+#define INGAME_COMMAND_PLACEMENT_SET_FACTION 0x2EC0 /* PlayerRuntime_SetPlacementFaction */
+#define INGAME_COMMAND_PLACEMENT_SET_ARMY 0x2EF0 /* PlayerRuntime_SetPlacementArmy */
+#define INGAME_COMMAND_PLACEMENT_CLEAR_ARMY 0x3190 /* PlayerRuntime_ClearPlacementArmy */
 /* Technology page, chat and army removal (ui/frontend/player) */
 #define INGAME_COMMAND_CLOSE_TECHNOLOGY_PAGE 0x1700 /* FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology */
 #define INGAME_COMMAND_CHAT_SET_RECIPIENTS 0x1770 /* FrontendPlayerTextCommand_SetPackedState */
@@ -105,9 +105,9 @@
 #define FRONTEND_COMMAND_SHOW_SAVED_GAMES 0xE70 /* ScenarioCatalog_RebuildSaveRecordListPage */
 #define FRONTEND_COMMAND_SHOW_SINGLE_GAMES 0xF50 /* ScenarioCatalog_RebuildLevelRecordListPage */
 #define FRONTEND_COMMAND_SHOW_CAMPAIGNS 0x10D0 /* ScenarioCatalog_RebuildCampaignRecordListPage */
-#define FRONTEND_COMMAND_SELECT_SAVED_GAME 0x11F0 /* ScenarioCatalog_RefreshSelectedRecordLocalizedText */
-#define FRONTEND_COMMAND_SELECT_SINGLE_GAME 0x12A0 /* ScenarioCatalog_RefreshSelectedRecordField70DisplayId */
-#define FRONTEND_COMMAND_SELECT_CAMPAIGN 0x12F0 /* ScenarioCatalog_RefreshSelectedRecordField50DisplayId */
+#define FRONTEND_COMMAND_SELECT_SAVED_GAME 0x11F0 /* ScenarioCatalog_SelectSavedGameAndShowDescription */
+#define FRONTEND_COMMAND_SELECT_SINGLE_GAME 0x12A0 /* ScenarioCatalog_SelectLevelAndShowDescription */
+#define FRONTEND_COMMAND_SELECT_CAMPAIGN 0x12F0 /* ScenarioCatalog_SelectCampaignAndShowDescription */
 /* Scenario transfer acknowledgements of a network client (FrontendScenarioTransfer_ProcessReceivedAsset) */
 #define FRONTEND_COMMAND_LEVEL_RECEIVED 0x8D0 /* FrontendPlayerRuntime_MarkTaskAssignmentReadyById */
 #define FRONTEND_COMMAND_FIELD_GRID_RECEIVED 0x360 /* FrontendPlayerRuntime_MarkLevelReceivedById */

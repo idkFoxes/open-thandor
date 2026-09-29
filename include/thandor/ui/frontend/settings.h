@@ -118,7 +118,7 @@ void FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control);
 void FrontendNetworkSettings_SetGameName(UiTextEditControl *control);
 
 /* 0x0054D250 */
-void FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
+void FrontendNetworkSettings_UpdateJoinButtonAndJoinOnDoubleClick
           (FrontendNetworkSettingsControlView *networkSettings);
 
 /* 0x00549620 */

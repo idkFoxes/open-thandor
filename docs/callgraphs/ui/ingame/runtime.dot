@@ -3,7 +3,7 @@ digraph thandor {
   node [shape=box];
   "InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags" [label="0x0056E3C0\nInGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf"];
   "InGameSevenSlotCommand_SubmitAndClosePage" [label="0x0056BAD0\nInGameSevenSlotCommand_SubmitAndClosePage"];
-  "InGameUiAction1024_Handler" [label="0x0056A610\nInGameUiAction1024_Handler"];
+  "InGameChatInput_SendLineOrCheckCheatPhrase" [label="0x0056A610\nInGameUiAction1024_Handler"];
   "InGameSaveGame_WritePackage" [label="0x0050ECE0\nInGameSaveGame_WritePackage"];
   "InGameMapAction_RecenterViewFromGridCoordinates" [label="0x0053D9F0\nInGameMapAction_RecenterViewFromGridCoordinates"];
   "InGameUiRuntime_InitializeControlTreeResources" [label="0x0055C990\nInGameUiRuntime_InitializeControlTreeResourcesCf"];
@@ -15,10 +15,10 @@ digraph thandor {
   "InGameNotificationQueue_InsertPriorityRecord" [label="0x00569890\nInGameNotificationQueue_InsertPriorityRecord"];
   "InGameOtherPlayerCommand_RebuildTargetEntries" [label="0x00569B00\nInGameOtherPlayerCommand_RebuildTargetEntries"];
   "InGameMusic_ComputeTrackSuitabilityScore" [label="0x0056A460\nInGameMusic_ComputeTrackSuitabilityScore"];
-  "InGameUiAction101F_Handler" [label="0x0056A8A0\nInGameUiAction101F_Handler"];
-  "InGameUiAction101C_Handler" [label="0x0056AD00\nInGameUiAction101C_Handler"];
+  "InGameMissionHelpPage_Toggle" [label="0x0056A8A0\nInGameUiAction101F_Handler"];
+  "InGameResultsScreen_SelectChartTab" [label="0x0056AD00\nInGameUiAction101C_Handler"];
   "InGameOtherPlayerCommand_DispatchSelectedTarget" [label="0x0056AD80\nInGameOtherPlayerCommand_DispatchSelectedTarget"];
-  "InGameSelectionPage_ToggleAndRefreshPage2" [label="0x0056B520\nInGameSelectionPage_ToggleAndRefreshPage2"];
+  "InGameTechnologyPanel_ToggleForSelection" [label="0x0056B520\nInGameSelectionPage_ToggleAndRefreshPage2"];
   "InGameSelectionPage_RebuildActivePlayerEntries" [label="0x0056B5D0\nInGameSelectionPage_RebuildActivePlayerEntries"];
   "InGameSelectionPage_RebuildRuntimeRecordEntries" [label="0x0056B6E0\nInGameSelectionPage_RebuildRuntimeRecordEntries"];
   "InGameSelectionPage_ShowSubpage1" [label="0x0056B7E0\nInGameSelectionPage_ShowSubpage1"];
@@ -39,6 +39,6 @@ digraph thandor {
   "InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags" -> "InGameSelectionDetailPanel_Rebuild";
   "InGameSevenSlotCommand_SubmitAndClosePage" -> "InGameSevenSlotCommand_SubmitTextAndSelectionMask";
   "InGameSevenSlotCommand_SubmitAndClosePage" -> "InGameSevenSlotCommand_ClosePage";
-  "InGameUiAction1024_Handler" -> "InGameRecentTextHistory_InsertAndRebuild8";
+  "InGameChatInput_SendLineOrCheckCheatPhrase" -> "InGameRecentTextHistory_InsertAndRebuild8";
   "InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState" -> "InGameSelectionDetailPanel_Rebuild";
 }

@@ -213,7 +213,7 @@ void FieldGrid_ClearOccupancyMaskByteBit0AllCells
 bool TerrainGrid_TestProjectedCellMaskBits01(Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x005092A0 */
-void FieldGrid_ClearCellFlag8000AcrossGrid(FieldGridAsset *fieldGrid);
+void FieldGrid_ClearUnresolvedFlagInAllCells(FieldGridAsset *fieldGrid);
 
 /* 0x005092E0 */
 void FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);

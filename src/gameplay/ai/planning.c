@@ -335,7 +335,7 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,Wor
                  worldRuntime);
       switch(planningPhaseDispatchIndex) {
       case 0:
-        AiUnitBehavior_UpdateWorkspace01Entities(factionIndex,worldRuntime);
+        AiUnitBehavior_UpdateOwnUnits(factionIndex,worldRuntime);
         AiUnitGroup_AssignCollectedEntitiesToBestTarget();
         break;
       case 1:
@@ -350,29 +350,29 @@ void AiRuntime_DispatchFactionPlanningPhase(FactionRuntimeIndex factionIndex,Wor
               || (49 < (int)g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown)
               ) || (49 < (int)g_GameFactionRuntimeImage.records[factionIndex].anchorCooldown0)) {
             AiCandidateWorkspace_Clear();
-            AiResourceCandidate_AddWeightedId136(factionIndex);
+            AiResourceCandidate_AddPowerPlant(factionIndex);
             AiWorkspaceAssetCandidate_AddWeightedEntry
                       ((knowledgeData->parameters).specialSite14aBaseWeight,
                        ARM_0330_BUILDING_MDL0303,factionIndex,worldRuntime);
             AiWorkspaceAssetCandidate_AddWeightedEntry
                       ((knowledgeData->parameters).specialSite14cBaseWeight,
                        ARM_0332_BUILDING_MDL0302,factionIndex,worldRuntime);
-            AiStructureCandidate_AddWeightedId14BOr14CCandidate
+            AiStructureCandidate_AddResourceStorage
                       ((knowledgeData->parameters).structure14bBaseWeight,ARM_0331_BUILDING_MDL0308,
                        factionIndex,worldRuntime);
-            AiStructureCandidate_AddWeightedId14BOr14CCandidate
+            AiStructureCandidate_AddResourceStorage
                       ((knowledgeData->parameters).structure14dBaseWeight,ARM_0333_BUILDING_MDL0307,
                        factionIndex,worldRuntime);
             AiCandidatePlanning_AddSpecialSiteCandidate
                       (factionIndex,worldRuntime);
-            AiArmyCandidate_AddBestScoredVariantA(factionIndex,worldRuntime);
-            AiArmyCandidate_AddBestScoredVariantB(factionIndex,worldRuntime);
-            AiArmyCandidate_AddBestScoredVariantC(factionIndex,worldRuntime);
-            AiStrategicClass_AddCandidate12DOr12FTo132
+            AiArmyCandidate_AddBestDefenseAsset(factionIndex,worldRuntime);
+            AiArmyCandidate_AddBestExplorationAsset(factionIndex,worldRuntime);
+            AiArmyCandidate_AddBestAttackAsset(factionIndex,worldRuntime);
+            AiStrategicClass_AddArmsFactoriesStageBuilding
                       (factionIndex,worldRuntime);
             AiStrategicClass_AddWeightedClassCandidate
                       (factionIndex,worldRuntime);
-            AiStrategicCandidate_AddBestWorkspace12Entry
+            AiTechnologyCandidate_AddBestResearch
                       (factionIndex,worldRuntime);
             phaseResult = AiPurchasePlanner_ExecuteAffordableCandidates(factionIndex);
             if (phaseResult) {
@@ -433,7 +433,7 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
                 (armyAssetId,factionIndex,worldRuntime);
     }
     else if (armyAssetId == ARM_0333_BUILDING_MDL0307) {
-      AiConstructionPlanner_PlaceDerivedAsset14D
+      AiConstructionPlanner_PlaceTritiumStorageNearResourceSite
                 (ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime);
     }
     else if (armyAssetId < ARM_0340_BUILDING_MDL0314) {
@@ -512,7 +512,7 @@ bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIn
    planners, starts its effect and removes it from the pending list (a failed creation ends the attempt). Without
    such a site it falls back to AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate.
 */
-void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
+void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime)
 
 {
@@ -538,7 +538,7 @@ void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetI
         siteRejected = AiPlacement_ReserveAdditionalSpecialSite
                           (arm0330SiteEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
         if (!siteRejected) {
-          anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
+          anchorResult = AiPlacement_FindNearestPlaceableBaseSite
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
           if (!anchorResult.notFound) {
             createdInstance = ArmyRuntime_CreateInstanceFromAsset
@@ -580,7 +580,7 @@ void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetI
         siteRejected = AiPlacement_ReserveAdditionalSpecialSite
                           (arm0332SiteEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
         if (!siteRejected) {
-          anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
+          anchorResult = AiPlacement_FindNearestPlaceableBaseSite
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
           if (!anchorResult.notFound) {
             createdInstance = ArmyRuntime_CreateInstanceFromAsset
@@ -627,7 +627,7 @@ void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetI
    anchor cooldown is 0, else x2. Assets below ARM 300 are only proposed while workspace 01 has at most 10
    entries.
 */
-void AiArmyCandidate_AddBestScoredVariantA(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiArmyCandidate_AddBestDefenseAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiCandidateScore32 candidateScore;
@@ -692,7 +692,7 @@ void AiArmyCandidate_AddBestScoredVariantA(FactionRuntimeIndex factionIndex,Worl
    ARM 301 (0x12D) if it has none and the capacity allows; after the research it proposes the best class of the
    ARM 302..306 (0x12E..0x132) family, its weight divided by twice the class's existing count (if any).
 */
-void AiStrategicClass_AddCandidate12DOr12FTo132(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiStrategicClass_AddArmsFactoriesStageBuilding(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t weightRange;
@@ -721,7 +721,7 @@ void AiStrategicClass_AddCandidate12DOr12FTo132(FactionRuntimeIndex factionIndex
       conditionMet = AiFactionRuntime_TestPlanningCapacityExceeded
                         (knowledgeData->parameters.strategic12fTo132AdditionalPlanningCapacity,factionIndex);
       if (!conditionMet) {
-        classSelection = AiStrategicClass_SelectBestCandidate12ETo132(factionIndex,worldRuntime);
+        classSelection = AiStrategicClass_SelectTerrainSuitedBuilding(factionIndex,worldRuntime);
         if (classSelection.selectedRuntimeToken != 0) {
           weightRange = knowledgeData->parameters.strategicClass12fTo132BaseWeight;
           if (classSelection.existingCountOrPressure != 0) {
@@ -756,7 +756,7 @@ void AiStrategicClass_AddWeightedClassCandidate(FactionRuntimeIndex factionIndex
     conditionMet = AiFactionRuntime_TestPlanningCapacityExceeded
                       (knowledgeData->parameters.strategic12dAnd141To143AdditionalPlanningCapacity,factionIndex);
     if (!conditionMet) {
-      classSelection = AiStrategicClass_SelectWeightedClass141To143(factionIndex,worldRuntime);
+      classSelection = AiStrategicClass_SelectPressureWeightedBuilding(factionIndex,worldRuntime);
       if (classSelection.selectedRuntimeToken != 0) {
         weightRange = knowledgeData->parameters.strategicClass141To143BaseWeight;
         if (classSelection.existingCountOrPressure != 0) {
@@ -819,7 +819,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
                             (candidateCell->worldY,candidateCell->worldX), 0x1fff < workspaceDistanceOrScore)) {
         /* Distance to the nearest workspace-02 site (x4, at most 0x5000), or without any such site to the
            nearest workspace-03 site (x2, at most 0x8000). */
-        workspaceDistanceOrScore = AiWorkspace02_GetMinimumManhattanDistanceToPoint
+        workspaceDistanceOrScore = AiHostileWorkspace_GetNearestVisibleHostileDistance
                           (candidateCell->worldY,candidateCell->worldX);
         if (workspaceDistanceOrScore < 0x7fffffff) {
           siteDistanceInRange = workspaceDistanceOrScore < 0x5001;
@@ -828,7 +828,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
           }
         }
         else {
-          workspaceDistanceOrScore = AiWorkspace03_GetMinimumManhattanDistanceToPoint
+          workspaceDistanceOrScore = AiHostileWorkspace_GetNearestUnseenHostileDistance
                             (candidateCell->worldY,candidateCell->worldX);
           siteDistanceInRange = workspaceDistanceOrScore < 0x8001;
           if (siteDistanceInRange) {
@@ -887,7 +887,7 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
    with the unexplored share of the terrain, (100 - explored %) * coefficient / (32 * (workspace 01 count + 1)),
    halved while there are targets (workspace 07).
 */
-void AiArmyCandidate_AddBestScoredVariantB(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiCandidateScore32 candidateScore;
@@ -937,7 +937,7 @@ void AiArmyCandidate_AddBestScoredVariantB(FactionRuntimeIndex factionIndex,Worl
    The halving for an empty workspace 07 can never apply (the entry check requires targets); the original
    (0x0053A95D) has the same dead test.
 */
-void AiArmyCandidate_AddBestScoredVariantC(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   AiCandidateScore32 candidateScore;
@@ -1168,14 +1168,14 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
             runtimeWorkspaceEntry = g_AiWorkspace01Units, thresholdOrRemaining != 0; thresholdOrRemaining--)
         {
           if (primaryEntry->runtimeSlotAddressOrZero != 0) {
-            ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
+            ModelRuntimeHierarchy_MarkDestroyedRecursive
                       (contextArg,*(int **)(primaryEntry->runtimeSlotAddressOrZero + 8));
           }
           primaryEntry++;
         }
         for (; remainingEntries != 0; remainingEntries--) {
           if (runtimeWorkspaceEntry->armyRuntime != NULL) {
-            ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
+            ModelRuntimeHierarchy_MarkDestroyedRecursive
                       (contextArg,(int *)runtimeWorkspaceEntry->armyRuntime->linkedEntityRuntime);
           }
           runtimeWorkspaceEntry++;
@@ -1207,7 +1207,7 @@ void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factio
    first workspace 08 site that still allows an extra special site adds the candidate again with a weight
    3 * derived / (existing count of that site's structure + 3).
 */
-void AiStructureCandidate_AddWeightedId14BOr14CCandidate
+void AiStructureCandidate_AddResourceStorage
           (AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog candidateArmyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -1277,7 +1277,7 @@ void AiStructureCandidate_AddWeightedId14BOr14CCandidate
    Weight: surplus * demand / capacity * resource136DeficitScoreNumerator / resource136DeficitScoreDenominator
    (Q4 values taken as integers, demand at least 1).
 */
-void AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
+void AiResourceCandidate_AddPowerPlant(FactionRuntimeIndex factionIndex)
 
 {
   int energySupply;
@@ -1321,7 +1321,7 @@ void AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
    buildings already present in ECX.
    Original register convention: result in EBX and ECX; EAX and EDX preserved.
 */
-AiStrategicClassSelectionRegs8 AiStrategicClass_SelectBestCandidate12ETo132
+AiStrategicClassSelectionRegs8 AiStrategicClass_SelectTerrainSuitedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1464,7 +1464,7 @@ AiStrategicClassSelectionRegs8 AiStrategicClass_SelectBestCandidate12ETo132
    buildings already present in ECX.
    Original register convention: result in EBX and ECX; EAX and EDX preserved.
 */
-AiStrategicClassSelectionRegs8 AiStrategicClass_SelectWeightedClass141To143
+AiStrategicClassSelectionRegs8 AiStrategicClass_SelectPressureWeightedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {

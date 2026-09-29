@@ -388,7 +388,8 @@ void ArmyRuntime_ResolveCommandTargetAndRoute(GameEntityRuntime *targetRuntime,A
    Runtime update of model class 18 (runtimeUpdate slot 18 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive): runs the AI special
    behaviour while the owner has movement flag 0x100 (set by that behaviour), then moves the unit with ground
-   movement variant B when it sits on the water surface, otherwise with variant A.
+   ArmyRuntimeClass_UpdateWaterSurfaceMovement when it sits on the water surface, otherwise with
+   ArmyRuntimeClass_UpdateGroundMovement.
 */
 
 void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
@@ -402,15 +403,15 @@ void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
   armyRuntime = modelRuntime->ownerArmyRuntime;
   placementContactKind = modelRuntime->modelDefinition->placementContactKindIndex278;
   if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_SPECIAL_BEHAVIOR) != 0) {
-    AiUnitBehavior_UpdateSpecialClass12Entity
+    AiUnitBehavior_UpdatePioneerVehicle
               ((MdlDefinitionSemanticPrefix80 *)modelRuntime->modelDefinition,armyRuntime,
                armyRuntime->factionIndex,worldRuntime);
   }
   if (placementContactKind == ARMY_PLACEMENT_CONTACT_KIND_WATER_SURFACE) {
-    ArmyRuntimeClass_UpdateGroundMovementVariantB(worldRuntime,modelRuntime);
+    ArmyRuntimeClass_UpdateWaterSurfaceMovement(worldRuntime,modelRuntime);
   }
   else {
-    ArmyRuntimeClass_UpdateGroundMovementVariantA(worldRuntime,modelRuntime);
+    ArmyRuntimeClass_UpdateGroundMovement(worldRuntime,modelRuntime);
   }
   return;
 }
@@ -426,7 +427,7 @@ void ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
    while the owner moves or it is still turning. Skipped while destroyed.
 */
 
-void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
+void ArmyRuntimeClass_UpdateSingleBarrelTurret
           (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime)
 
 {
@@ -574,12 +575,12 @@ void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
 /* Address: 0x00523690.
    Turret with two alternating barrels (runtimeUpdate slot 8 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). Same as
-   ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA, but the pitch node has two barrels (children 0 and
+   ArmyRuntimeClass_UpdateSingleBarrelTurret, but the pitch node has two barrels (children 0 and
    1) with their own recoil countdowns; the shots alternate between them, the even sequence numbers firing from
    barrel 1 and its muzzle point.
 */
 
-void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
+void ArmyRuntimeClass_UpdateTwinBarrelTurret
           (WorldRuntimeContext *worldRuntime,ModelRuntimeWeaponAimStateView200 *modelRuntime)
 
 {
@@ -755,7 +756,7 @@ void ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
 /* Address: 0x00520140.
    Ground movement of tracked vehicles (runtimeUpdate slot 2 of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes,
    called by model class from ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). Moves exactly like
-   ArmyRuntimeClass_UpdateGroundMovementVariantA and then scrolls the texture of the left and right track by the
+   ArmyRuntimeClass_UpdateGroundMovement and then scrolls the texture of the left and right track by the
    signed distance each track side travelled this tick (so the tracks also run while turning on the spot),
    wrapping the offsets at +-0x100000.
 */
@@ -830,7 +831,7 @@ void ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
     else {
       angleAndLength = FixedMath_Vector2AngleAndLengthRegs(secondaryDelta,primaryDelta);
     }
-    /* accelerated turning as in ArmyRuntimeClass_UpdateGroundMovementVariantA */
+    /* accelerated turning as in ArmyRuntimeClass_UpdateGroundMovement */
     desiredHeading = angleAndLength.angle;
     movementDefinition = modelRuntime->modelDefinition;
     facingAngle = (rootNode->modelPayload).worldRotationAngle2;
@@ -925,7 +926,7 @@ SnapToHeading:
     placedRootNode = modelRuntime->rootModelNode;
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (heightOffsetQ12,(Q12)(nextPosition >> 32),(Q12)nextPosition,rootNode,dispatchWorldRuntime);
-    /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovementVariantA */
+    /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovement */
     primaryDelta = linkedOrOwnerArmy->actionVector1Q12 - 1;
     if (primaryDelta < 0) goto FinalizeTick;
     primaryDelta = primaryDelta * linkedOrOwnerArmy->actionVector2Q12;
@@ -1043,7 +1044,7 @@ FinalizeTick:
    Movement of banking units with three animated child parts (runtimeUpdate slot 17 of
    g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes, called by model class from
    ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive). The unit slides straight towards the route
-   point while it turns (turning like ArmyRuntimeClass_UpdateGroundMovementVariantA, but it keeps its heading
+   point while it turns (turning like ArmyRuntimeClass_UpdateGroundMovement, but it keeps its heading
    when it is close and not turning), stops at blocking armies and is placed by its placement callback. It then
    banks: while moving the bank value (+0x60) sinks from 0x4000 (level) to at least 0x3800 and the bank heading
    (+0x64) follows the travel direction by at most 0x400 per tick; when stopped it returns to level. When the
@@ -1257,7 +1258,7 @@ SnapToHeading:
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (heightOffsetQ12,(Q12)(nextPosition >> 32),(Q12)nextPosition,rootNode,dispatchWorldRuntime);
     rootNode = modelRuntime->rootModelNode;
-    /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovementVariantA */
+    /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovement */
     primaryDelta = armyOrWaypointY->actionVector1Q12 - 1;
     if (primaryDelta < 0) goto FinalizeTick;
     primaryDelta = primaryDelta * armyOrWaypointY->actionVector2Q12;
@@ -1396,7 +1397,7 @@ void ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
        armyRuntime->movementStateFlags &
        ~(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_WAYPOINTS_QUEUED | ARMY_MOVEMENT_ROUTE_POINT_REACHED |
          ARMY_MOVEMENT_TARGET_FOLLOWING);
-  stateField100Zero = ArmyRuntime_TestStateField100Zero(armyRuntime);
+  stateField100Zero = ArmyRuntime_TestHasNoWeaponDamage(armyRuntime);
   if ((!stateField100Zero) &&
       ((armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) != 0)) {
     armyRuntime->commandModeFlags =
@@ -1624,7 +1625,7 @@ void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ArmyRuntimeS
    queue and target mirroring. While the movement is locked the target replaces the waypoint queue instead.
    Entities whose definition record has zero at +0x18 ignore the order.
 */
-void ArmyRuntime_QueueOrStartMoveCommandVariantA(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_StartRoutedMoveCommand(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -1659,7 +1660,7 @@ void ArmyRuntime_QueueOrStartMoveCommandVariantA(Q12 targetWorldY,Q12 targetWorl
     }
     else {
       movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_WAYPOINTS_QUEUED;
-      ArmyRuntime_QueueWaypointOrStartMoveVariantA(targetWorldY,targetWorldX,movementRuntime);
+      ArmyRuntime_AppendWaypointOrStartMove(targetWorldY,targetWorldX,movementRuntime);
     }
   }
   return;
@@ -1667,10 +1668,10 @@ void ArmyRuntime_QueueOrStartMoveCommandVariantA(Q12 targetWorldY,Q12 targetWorl
 
 
 /* Address: 0x0051C9A0.
-   Same as ArmyRuntime_QueueOrStartMoveCommandVariantA, but keeps the waypoint queue and target mirroring:
+   Same as ArmyRuntime_StartRoutedMoveCommand, but keeps the waypoint queue and target mirroring:
    used by ArmyRuntime_UpdateMovementAndWaypoints to start the next queued waypoint.
 */
-void ArmyRuntime_QueueOrStartMoveCommandVariantB(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
+void ArmyRuntime_StartNextQueuedWaypointMove(Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
@@ -1703,7 +1704,7 @@ void ArmyRuntime_QueueOrStartMoveCommandVariantB(Q12 targetWorldY,Q12 targetWorl
     }
     else {
       movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_WAYPOINTS_QUEUED;
-      ArmyRuntime_QueueWaypointOrStartMoveVariantA(targetWorldY,targetWorldX,movementRuntime);
+      ArmyRuntime_AppendWaypointOrStartMove(targetWorldY,targetWorldX,movementRuntime);
     }
   }
   return;
@@ -1719,7 +1720,7 @@ void ArmyRuntime_QueueOrStartMoveCommandVariantB(Q12 targetWorldY,Q12 targetWorl
    Also applies water damage, drops a linked army that is out of reach and does the moved/turned bookkeeping.
 */
 
-void ArmyRuntimeClass_UpdateGroundMovementVariantA
+void ArmyRuntimeClass_UpdateGroundMovement
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime
           )
 
@@ -2214,12 +2215,12 @@ ComputeStepFromContact:
 
 /* Address: 0x005254F0.
    Ground movement without water damage and without notifying the blocking army on a collision (the unit just
-   stops); otherwise identical to ArmyRuntimeClass_UpdateGroundMovementVariantA. Used by runtimeUpdate slot 19
+   stops); otherwise identical to ArmyRuntimeClass_UpdateGroundMovement. Used by runtimeUpdate slot 19
    of g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes and, for units on the water surface, by slot 18
    (ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement).
 */
 
-void ArmyRuntimeClass_UpdateGroundMovementVariantB
+void ArmyRuntimeClass_UpdateWaterSurfaceMovement
           (WorldRuntimeContext *worldRuntime,ModelRuntimeGroundMovementSteeringView200 *modelRuntime
           )
 
@@ -2280,7 +2281,7 @@ void ArmyRuntimeClass_UpdateGroundMovementVariantB
     else {
       angleAndLength = FixedMath_Vector2AngleAndLengthRegs(deltaYOrTurnLimit,deltaXOrTilt);
     }
-    /* accelerated turning as in ArmyRuntimeClass_UpdateGroundMovementVariantA */
+    /* accelerated turning as in ArmyRuntimeClass_UpdateGroundMovement */
     desiredHeading = angleAndLength.angle;
     movementDefinition = modelRuntime->modelDefinition;
     facingAngle = (rootNode->modelPayload).worldRotationAngle2;
@@ -2371,7 +2372,7 @@ SnapToHeading:
     g_ArmyPlacementContactKindDispatchTable.callbacks[placementContactKind]
               (heightOffsetQ12,(Q12)(nextPosition >> 32),(Q12)nextPosition,rootNode,dispatchWorldRuntime);
     rootNode = modelRuntime->rootModelNode;
-    /* recoil after a shot, as in variant A */
+    /* recoil after a shot, as in ArmyRuntimeClass_UpdateGroundMovement */
     deltaXOrTilt = linkedOrOwnerArmy->actionVector1Q12 - 1;
     if (deltaXOrTilt < 0) goto FinalizeTick;
     deltaXOrTilt = deltaXOrTilt * linkedOrOwnerArmy->actionVector2Q12;
@@ -3270,9 +3271,9 @@ bool ArmyRuntimeCommand_UpdateTargetFollowingState(Q12 targetWorldZQ12,Q12 targe
 /* Address: 0x0051CA60.
    While a non-direct move is active or the movement is locked, appends the target to the waypoint queue
    (starting a new queue if none is in use; when full the last entry is overwritten); otherwise starts it
-   at once with ArmyRuntime_QueueOrStartMoveCommandVariantA.
+   at once with ArmyRuntime_StartRoutedMoveCommand.
 */
-void ArmyRuntime_QueueWaypointOrStartMoveVariantA
+void ArmyRuntime_AppendWaypointOrStartMove
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
@@ -3295,7 +3296,7 @@ void ArmyRuntime_QueueWaypointOrStartMoveVariantA
     movementRuntime->queuedWaypointCount = waypointCount;
   }
   else {
-    ArmyRuntime_QueueOrStartMoveCommandVariantA(targetWorldY,targetWorldX,movementRuntime);
+    ArmyRuntime_StartRoutedMoveCommand(targetWorldY,targetWorldX,movementRuntime);
   }
   return;
 }
@@ -3492,7 +3493,7 @@ MovementStepResult ArmyRuntime_UpdateMovementAndWaypoints
             queuedCoordinateWrite++;
           }
         }
-        ArmyRuntime_QueueOrStartMoveCommandVariantB(queuedWorldYQ12,queuedWorldXQ12,movementRuntime)
+        ArmyRuntime_StartNextQueuedWaypointMove(queuedWorldYQ12,queuedWorldXQ12,movementRuntime)
         ;
         resolvedPosition = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,movementRuntime);
         return resolvedPosition;

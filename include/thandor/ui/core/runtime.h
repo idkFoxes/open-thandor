@@ -35,7 +35,7 @@
 bool UiRootCallbacks_Free(UiRootNode *root);
 
 /* 0x00422980 */
-bool UiRootCallbacks_NoOpMethod08(UiRootNode *root);
+bool UiModalDialogRoot_BlockMissedPointerPress(UiRootNode *root);
 
 /* 0x00424270 */
 void UiDisplaySettingsRoot_FormatColorReadouts(void *root);
@@ -122,6 +122,6 @@ PackedArgb32 ModelRuntimeNode_GetStateTintArgb(ModelRuntimeNode *node);
 
 
 /* 0x00422990 */
-int UiRootPointerMissPolicy_ReturnCode8(UiRootNode *root);
+int UiModalDialogRoot_BlockMissedPointerMotion(UiRootNode *root);
 
 #endif /* THANDOR_UI_CORE_RUNTIME_H */

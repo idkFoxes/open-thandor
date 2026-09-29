@@ -11,11 +11,11 @@ digraph thandor {
   "AiPlacement_QueryReachableSiteBucketCount" [label="0x0053B570\nAiPlacement_QueryReachableSiteBucketCount"];
   "AiPlacement_ReserveMode3SiteCluster" [label="0x0053ACD0\nAiPlacement_ReserveMode3SiteCluster"];
   "AiCandidatePlanning_ComputeSpecialSiteWeight" [label="0x0053AD50\nAiCandidatePlanning_ComputeSpecialSiteWeight"];
-  "AiPlacement_FindNearestValidWorkspace09Anchor" [label="0x00539330\nAiPlacement_FindNearestValidWorkspace09Anchor"];
+  "AiPlacement_FindNearestPlaceableBaseSite" [label="0x00539330\nAiPlacement_FindNearestValidWorkspace09Anchor"];
   "AiPlacement_ReserveSeparatedSpecialSiteChain" [label="0x00539EF0\nAiPlacement_ReserveSeparatedSpecialSiteChain"];
   "AiPlacement_ReserveAdditionalSpecialSite" -> "AiPlacement_ReserveSeparatedSpecialSiteChain";
   "AiCandidatePlanning_AddSpecialSiteCandidate" -> "AiCandidatePlanning_ComputeSpecialSiteWeight";
   "AiPlacement_ReserveMode3SiteCluster" -> "AiPlacement_ReserveSeparatedSpecialSiteChain";
   "AiCandidatePlanning_ComputeSpecialSiteWeight" -> "AiPlacement_ReserveMode3SiteCluster";
-  "AiPlacement_ReserveSeparatedSpecialSiteChain" -> "AiPlacement_FindNearestValidWorkspace09Anchor";
+  "AiPlacement_ReserveSeparatedSpecialSiteChain" -> "AiPlacement_FindNearestPlaceableBaseSite";
 }

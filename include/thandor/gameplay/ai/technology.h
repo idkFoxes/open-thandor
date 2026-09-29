@@ -55,7 +55,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ComputeCategoryCompatibleCandidateV
           WorldRuntimeContext *worldRuntime);
 
 /* EDX side channel of the score callbacks: the category mask the only caller
-   (AiStrategicCandidate_AddBestWorkspace12Entry) computes before its loop. */
+   (AiTechnologyCandidate_AddBestResearch) computes before its loop. */
 extern AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
 
 /* 0x0053BC00 */

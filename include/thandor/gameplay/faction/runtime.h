@@ -102,19 +102,19 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           FactionRuntimeIndex factionIndex);
 
 /* 0x00561F80 */
-void PlayerRuntime_ResolveAndStoreState8094(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
+void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
           PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId);
 
 /* 0x00561FF0 */
-void PlayerRuntime_SetState8090(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlayerState8090Value placementFactionIndex);
 
 /* 0x00562020 */
-void PlayerRuntime_SetState8094(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlayerState8094Value armyToken);
 
 /* 0x005622C0 */
-void PlayerRuntime_ClearState8094(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           uint32_t unusedZero2);
 
 /* 0x00565590 */

@@ -15,28 +15,28 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041A580 */
-StatusResult NetworkBackendFallback_Slot0_ReturnError43(uint32_t backendIndex);
+StatusResult NetworkBackendFallback_SetSessionContext(uint32_t backendIndex);
 
 /* 0x0041A590 */
-void __cdecl NetworkBackendFallback_Slot1_NoOp(void);
+void __cdecl NetworkBackendFallback_Cleanup(void);
 
 /* 0x0041A5A0 */
-StatusResult NetworkBackendFallback_Slot2_ReturnError43(uint32_t localPort);
+StatusResult NetworkBackendFallback_OpenAndBindUdpSocket(uint32_t localPort);
 
 /* 0x0041A5B0 */
-void __cdecl NetworkBackendFallback_Slot3_NoOp(void);
+void __cdecl NetworkBackendFallback_CloseActiveSocket(void);
 
 /* 0x0041A5C0 */
-NetworkReceiveResult NetworkBackendFallback_Slot4_ThreeArgFailure (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
+NetworkReceiveResult NetworkBackendFallback_ReceiveDatagram (WinSockAddress *sourceAddress,uint32_t byteCount,uint8_t *buffer);
 
 /* 0x0041A5D0 */
-NetworkSendResult NetworkBackendFallback_Slot5_ThreeArgSuccess (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
+NetworkSendResult NetworkBackendFallback_SendDatagram (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer);
 
 /* 0x0041A5E0 */
-bool NetworkBackendFallback_Slot6_TwoArgFailure(UiTransferEndpointDescriptor *endpoint,char *endpointText);
+bool NetworkBackendFallback_ParsePeerEndpoint(UiTransferEndpointDescriptor *endpoint,char *endpointText);
 
 /* 0x0041A5F0 */
-void NetworkBackendFallback_Slot7_ClearOutput(char *outputText,WinSockAddress *socketAddress);
+void NetworkBackendFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress);
 
 /* 0x00584E70 */
 void NetworkFallback_NoOpBackendCleanup(void);

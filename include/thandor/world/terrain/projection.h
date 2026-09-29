@@ -13,7 +13,7 @@
 
 /* Submodule: world/terrain/projection. */
 
-/* FieldGridCell.flagsAndMaterial bits of TerrainProjectedVertex_TransformProjectAndShadeVariantA (a field cell is
+/* FieldGridCell.flagsAndMaterial bits of TerrainProjectedVertex_TransformProjectAndShade (a field cell is
    also its TerrainProjectedVertexWorkRecord): set when point A (projectedPointA, the terrain point) or point B
    (projectedPointB, the offset secondary point) is not beyond the near plane and got no screen position. */
 #define TERRAIN_VERTEX_POINT_A_NOT_PROJECTED 0x200000
@@ -22,7 +22,7 @@
    terrain at this vertex, nothing is drawn); per projected point one bit per side of g_ProjectionClipRect the
    point lies on the inner side of (x >= minX, y >= minY, x < maxX, y < maxY), so the OR over a triangle's
    vertices tells whether its screen bounding box can overlap the clip rectangle; SECONDARY_VISIBLE is set on
-   the vertices of a queued secondary-surface triangle and makes TerrainProjectedVertex_TransformProjectAndShadeVariantB
+   the vertices of a queued secondary-surface triangle and makes TerrainProjectedVertex_ReshadeKeepingProjection
    project point B again. */
 #define TERRAIN_VERTEX_MATERIAL_MASK 0xff
 #define TERRAIN_VERTEX_MATERIAL_NONE 0xff
@@ -144,10 +144,10 @@ void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
           FrontendModelPointerContextRuntimeState17C *renderContext);
 
 /* 0x005004A0 */
-void TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWorkRecord *vertex);
+void TerrainProjectedVertex_TransformProjectAndShade(TerrainProjectedVertexWorkRecord *vertex);
 
 /* 0x005006A0 */
-void TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWorkRecord *vertex);
+void TerrainProjectedVertex_ReshadeKeepingProjection(TerrainProjectedVertexWorkRecord *vertex);
 
 /* 0x00500820 */
 void TerrainProjectedTriangle_ClipInterpolateAndQueueTextured

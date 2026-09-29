@@ -55,7 +55,7 @@
 #define TEXT_ID_PLAYER_STATUS_STATE_ZERO 0xFF05
 #define TEXT_ID_PLAYER_STATUS_STATE_SET 0xFF06
 /* Mission help text: TEXT_ID_LEVEL_DESCRIPTION_BASE + 7 + TEXT_ID_LEVEL_DESCRIPTION_STRIDE * level title index +
-   active faction (InGameUiAction101F_Handler) */
+   active faction (InGameMissionHelpPage_Toggle) */
 #define TEXT_ID_MISSION_HELP_BASE 0x230017
 /* Slots of the in-game notification queue (notificationQueue9E60, InGameNotificationQueue_InsertPriorityRecord) */
 #define INGAME_NOTIFICATION_QUEUE_SLOTS 4
@@ -85,7 +85,7 @@ void InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
 void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source);
 
 /* 0x0056A610 */
-void InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit);
+void InGameChatInput_SendLineOrCheckCheatPhrase(InGameCommandTextEntryPageTextEditPtr commandTextEdit);
 
 /* 0x0050ECE0 */
 bool InGameSaveGame_WritePackage(void *worldView,void *savePath); /* CF: true = failed */
@@ -125,16 +125,16 @@ void InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node);
 uint32_t InGameMusic_ComputeTrackSuitabilityScore(MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime);
 
 /* 0x0056A8A0 */
-void InGameUiAction101F_Handler(UiNodeBase *source);
+void InGameMissionHelpPage_Toggle(UiNodeBase *source);
 
 /* 0x0056AD00 */
-void InGameUiAction101C_Handler(UiSelectableControl *selectableControl);
+void InGameResultsScreen_SelectChartTab(UiSelectableControl *selectableControl);
 
 /* 0x0056AD80 */
 void InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *control);
 
 /* 0x0056B520 */
-void InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source);
+void InGameTechnologyPanel_ToggleForSelection(UiNodeBase *source);
 
 /* 0x0056B5D0 */
 void InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source);

@@ -2,14 +2,14 @@ digraph thandor {
   rankdir=LR;
   node [shape=box];
   "InGameSettingsAction_CloseAlternatePanel" [label="0x0056AB50\nInGameSettingsAction_CloseAlternatePanel"];
-  "InGameSettingsAction_CloseAndDepartPlayerMode0" [label="0x0056AB90\nInGameSettingsAction_CloseAndDepartPlayerMode0"];
-  "InGameSettingsAction_CloseAndDepartPlayerMode1" [label="0x0056ABF0\nInGameSettingsAction_CloseAndDepartPlayerMode1"];
+  "InGameQuitMenu_AbortMission" [label="0x0056AB90\nInGameSettingsAction_CloseAndDepartPlayerMode0"];
+  "InGameQuitMenu_Surrender" [label="0x0056ABF0\nInGameSettingsAction_CloseAndDepartPlayerMode1"];
   "InGameSettingsPage_CloseViaSharedToggle" [label="0x0056C5E0\nInGameSettingsPage_CloseViaSharedToggle"];
   "InGameSettingsPage_OpenViaSharedToggle" [label="0x0056C620\nInGameSettingsPage_OpenViaSharedToggle"];
   "InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks" [label="0x0055F520\nInGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks"];
-  "InGameMissionHelpPage_SelectTab0" [label="0x0056AA90\nInGameMissionHelpPage_SelectTab0"];
-  "InGameMissionHelpPage_SelectTab1" [label="0x0056AAD0\nInGameMissionHelpPage_SelectTab1"];
-  "InGameMissionHelpPage_SelectTab2" [label="0x0056AB10\nInGameMissionHelpPage_SelectTab2"];
+  "InGameMissionHelpPage_SelectBriefingTab" [label="0x0056AA90\nInGameMissionHelpPage_SelectTab0"];
+  "InGameMissionHelpPage_SelectKeyboardTab" [label="0x0056AAD0\nInGameMissionHelpPage_SelectTab1"];
+  "InGameMissionHelpPage_SelectMouseTab" [label="0x0056AB10\nInGameMissionHelpPage_SelectTab2"];
   "InGameGameplaySettings_SetRightButtonDoesNotScroll" [label="0x0056BAF0\nInGameGameplaySettings_SetRightButtonDoesNotScroll"];
   "InGameGameplaySettings_SetCameraScrollStep" [label="0x0056BBB0\nInGameGameplaySettings_SetCameraScrollStep"];
   "InGameGameplaySettings_SetAutomaticZoomOff" [label="0x0056BBD0\nInGameGameplaySettings_SetAutomaticZoomOff"];
@@ -32,8 +32,8 @@ digraph thandor {
   "InGameAudioSettings_SetMovieAlternateGain" [label="0x0056CF70\nInGameAudioSettings_SetMovieAlternateGain"];
   "InGameSettingsPage_ToggleAndSynchronizeControls" [label="0x0056C440\nInGameSettingsPage_ToggleAndSynchronizeControls"];
   "InGameSettingsAction_CloseAlternatePanel" -> "InGameSettingsPage_ToggleAndSynchronizeControls";
-  "InGameSettingsAction_CloseAndDepartPlayerMode0" -> "InGameSettingsPage_ToggleAndSynchronizeControls";
-  "InGameSettingsAction_CloseAndDepartPlayerMode1" -> "InGameSettingsPage_ToggleAndSynchronizeControls";
+  "InGameQuitMenu_AbortMission" -> "InGameSettingsPage_ToggleAndSynchronizeControls";
+  "InGameQuitMenu_Surrender" -> "InGameSettingsPage_ToggleAndSynchronizeControls";
   "InGameSettingsPage_CloseViaSharedToggle" -> "InGameSettingsPage_ToggleAndSynchronizeControls";
   "InGameSettingsPage_OpenViaSharedToggle" -> "InGameSettingsPage_ToggleAndSynchronizeControls";
 }

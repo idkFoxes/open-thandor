@@ -17,7 +17,7 @@
    tracked, walker, water and glider classes (1/2/3/19/17) to SelectBestAnchorAction. The class is read with a
    single dereference from the model at +0x4C.
 */
-void AiUnitBehavior_UpdateWorkspace01Entities(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
+void AiUnitBehavior_UpdateOwnUnits(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
   uint8_t *cooldownCounterBytes;
@@ -50,7 +50,7 @@ void AiUnitBehavior_UpdateWorkspace01Entities(FactionRuntimeIndex factionIndex,W
     modelDefinition =
          (MdlDefinitionSemanticPrefix80 *)armySlot->modelRuntimeOrSavedOffset.modelRuntime;
     if (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
-      AiUnitBehavior_UpdateSpecialClass12Entity
+      AiUnitBehavior_UpdatePioneerVehicle
                 (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
                  worldRuntime);
     }
@@ -89,7 +89,7 @@ void AiUnitBehavior_SelectBestAnchorAction
   AiWorkspace05DistanceSelectionRegs8 workspaceSelection;
   AiSecondaryWorkspaceDistanceSelectionRegs8 secondarySelection;
   
-  workspaceSelection = AiUnitBehavior_ComputeWorkspace05DistanceScore(0,modelDefinition,armyRuntimeSlot);
+  workspaceSelection = AiUnitBehavior_ComputeGeneralSiteDistanceScore(0,modelDefinition,armyRuntimeSlot);
   workspaceScore = workspaceSelection.score;
   currentBestScore = 0;
   if (workspaceScore != 0) {
@@ -132,7 +132,7 @@ void AiUnitBehavior_SelectBestAnchorAction
    modelDefinition is not used.
    Original register convention: result in EAX and EBX, CF set on failure; ECX and EDX preserved.
 */
-AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeWorkspace05DistanceScore
+AiWorkspace05DistanceSelectionRegs8 AiUnitBehavior_ComputeGeneralSiteDistanceScore
           (AiCandidateScore32 currentBestScore,MdlDefinitionSemanticPrefix80 *modelDefinition,
           ArmyRuntimeSlot *armyRuntimeSlot)
 
@@ -305,7 +305,7 @@ AiSecondaryWorkspaceDistanceSelectionRegs8 AiUnitBehavior_ComputeSecondaryWorksp
 /* Address: 0x0053B3E0.
    Sends the unit to a general site (a workspace-05 AiScoredSiteWorkspaceEntry: X, Y, score): marks it as
    AI-commanded and no longer group-assigned, zeroes the site's score (the bonus
-   AiUnitBehavior_ComputeWorkspace05DistanceScore adds for it, so the next unit is less drawn there) and queues
+   AiUnitBehavior_ComputeGeneralSiteDistanceScore adds for it, so the next unit is less drawn there) and queues
    the move. worldRuntimeContext is not used.
 */
 void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
@@ -315,7 +315,7 @@ void AiUnitCommand_AssignWorkspacePoint(uint32_t *workspacePoint,ArmyRuntimeSlot
   armyRuntime->runtimeState8C = AI_UNIT_COMMANDED_STATE;
   armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
   workspacePoint[2] = 0; /* AiScoredSiteWorkspaceEntry.score */
-  ArmyRuntime_QueueOrStartMoveCommandVariantA
+  ArmyRuntime_StartRoutedMoveCommand
             (workspacePoint[1],*workspacePoint,(ArmyMovementRuntime *)armyRuntime);
   return;
 }
@@ -343,7 +343,7 @@ void AiUnitCommand_AssignFactionAnchorPoint(FactionRuntimeIndex factionIndex,Arm
   }
   armyRuntime->runtimeState8C = AI_UNIT_COMMANDED_STATE;
   armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
-  ArmyRuntime_QueueOrStartMoveCommandVariantA
+  ArmyRuntime_StartRoutedMoveCommand
             (targetWorldY,targetWorldX,(ArmyMovementRuntime *)armyRuntime);
   return;
 }
@@ -367,7 +367,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
 
 
 /* Address: 0x0053B620.
-   AI behaviour of a runtime-class-18 unit, called from AiUnitBehavior_UpdateWorkspace01Entities and, while
+   AI behaviour of a runtime-class-18 unit, called from AiUnitBehavior_UpdateOwnUnits and, while
    movement flag 0x100 is set, from its movement update. Once it has arrived (flag clear): with as many
    workspace-00 as workspace-04 entries it moves on 0x2D05 along its heading; otherwise it drives to the best
    resource site of workspace 08 that is far enough from workspaces 03/02, scored by priority, distances to
@@ -377,7 +377,7 @@ void AiUnitBehavior_CollectUnassignedEntity(ArmyRuntimeSlot *armyRuntimeSlot,Wor
    Not arrived or flag set: sets the flag and resets the movement once within 0x1B03 of its fallback position
    on both axes.
 */
-void AiUnitBehavior_UpdateSpecialClass12Entity
+void AiUnitBehavior_UpdatePioneerVehicle
           (MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntime,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -409,7 +409,7 @@ void AiUnitBehavior_UpdateSpecialClass12Entity
       sitesRemainingOrX = (modelNode->worldTransform).translation.x;
       siteScoreOrY = (modelNode->worldTransform).translation.y;
       armyRuntime->runtimeState8C = 8;
-      ArmyRuntime_QueueOrStartMoveCommandVariantA
+      ArmyRuntime_StartRoutedMoveCommand
                 ((int)(headingOffset >> 0x20) + siteScoreOrY,(int)headingOffset + sitesRemainingOrX,
                  (ArmyMovementRuntime *)armyRuntime)
       ;
@@ -421,10 +421,10 @@ void AiUnitBehavior_UpdateSpecialClass12Entity
       do {
         knowledgeData = g_AiKnowledgeData;
         workspaceRecord = terrainFeatureEntry->cell;
-        siteScoreOrY = AiWorkspace03_GetMinimumManhattanDistanceToPoint
+        siteScoreOrY = AiHostileWorkspace_GetNearestUnseenHostileDistance
                           (workspaceRecord->worldY,workspaceRecord->worldX);
         if (((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= siteScoreOrY) &&
-           (siteScoreOrY = AiWorkspace02_GetMinimumManhattanDistanceToPoint
+           (siteScoreOrY = AiHostileWorkspace_GetNearestVisibleHostileDistance
                               (workspaceRecord->worldY,workspaceRecord->worldX),
            (int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= siteScoreOrY)) {
           bucketCount = AiPlacement_QueryReachableSiteBucketCount
@@ -443,7 +443,7 @@ void AiUnitBehavior_UpdateSpecialClass12Entity
             siteScoreOrY = terrainFeatureEntry->priority *
                     (knowledgeData->parameters).specialClass12Workspace08Field0cCoefficient;
             if (((knowledgeData->parameters).specialClass12Workspace02NearDistanceCoefficient != 0) &&
-               (distanceTerm = AiWorkspace02_GetMinimumManhattanDistanceToPoint
+               (distanceTerm = AiHostileWorkspace_GetNearestVisibleHostileDistance
                                   (workspaceRecord->worldY,workspaceRecord->worldX),
                (int)(distanceTerm - (knowledgeData->parameters).specialClass12Workspace02NearDistanceThresholdQ12)
                < 0)) {
@@ -496,7 +496,7 @@ void AiUnitBehavior_UpdateSpecialClass12Entity
       } while (sitesRemainingOrX != 0);
       if (bestScore != 0) {
         armyRuntime->runtimeState8C = 8;
-        ArmyRuntime_QueueOrStartMoveCommandVariantA
+        ArmyRuntime_StartRoutedMoveCommand
                   (bestCell->worldY,bestCell->worldX,(ArmyMovementRuntime *)armyRuntime);
       }
     }

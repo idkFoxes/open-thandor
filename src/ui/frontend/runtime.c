@@ -663,7 +663,7 @@ void FrontendModelPointerContext_NonRightDrag
    that faction's colour (FrontendFactionSetup_CycleFactionColour directly in a local game,
    FRONTEND_COMMAND_CYCLE_FACTION_COLOUR in a network game).
 */
-void FrontendUiAction2044_Handler(UiNodeBase *factionControl)
+void FrontendFactionSetupAction_CycleFactionColour(UiNodeBase *factionControl)
 
 {
   CommandPayloadDword04 rowIndex;
@@ -693,7 +693,7 @@ void FrontendUiAction2044_Handler(UiNodeBase *factionControl)
    whether that faction takes part (FrontendFactionSetup_ToggleFactionActive directly in a local game,
    FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE in a network game).
 */
-void FrontendUiAction2045_Handler(UiNodeBase *playerControl)
+void FrontendFactionSetupAction_ToggleFactionActive(UiNodeBase *playerControl)
 
 {
   CommandPayloadDword04 rowIndex;
@@ -723,7 +723,7 @@ void FrontendUiAction2045_Handler(UiNodeBase *playerControl)
    that faction the local player's (FrontendFactionSetup_ChooseFaction directly in a local game,
    FRONTEND_COMMAND_CHOOSE_FACTION in a network game).
 */
-void FrontendUiAction2046_Handler(UiNodeBase *selectionRowControl)
+void FrontendFactionSetupAction_ChooseFaction(UiNodeBase *selectionRowControl)
 
 {
   CommandPayloadDword04 rowIndex;
@@ -1032,37 +1032,37 @@ endScene:
                  control->scratchCoordinate160);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS) != 0) {
-      SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
+      SelectionOverlay_DrawTerrainPointMarkers
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->terrainMarkerPointCount174,
                  control->terrainMarkerCoordinatePairs170,control->fieldGrid);
     }
     if (((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER) != 0) && (control->callbackArgumentF0 != WORLD_POINTER_NO_HIT)) {
-      SelectionOverlay_DrawMarkerACForWorldSurfacePoint
+      SelectionOverlay_DrawWorldPointMarker
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,
                  (uint32_t)((g_UiCommandModeGColorVariantLimit & 0xff000000) != 0),
                  control->callbackArgumentEC,control->callbackArgumentE8,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS) != 0) {
-      SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
+      SelectionOverlay_DrawGridVertexMarkers
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) != 0) {
-      SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
+      SelectionOverlay_DrawFluidExclusionMarkers
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->fieldGrid);
     }
     if ((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS) != 0) {
-      SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
+      SelectionOverlay_DrawResourceCellMarkers
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,(uint8_t)control->overlayMarkerStateB4,
                  control->fieldGrid);
     }
     if ((((control->contextFlags & WORLD_RUNTIME_FLAG_DRAW_TERRAIN) != 0) && (control->fieldGrid != NULL))
        && ((g_UiCommandRuntimeFlags & 0x40) != 0)) {
-      SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
+      SelectionOverlay_DrawUnresolvedCellMarkers
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->fieldGrid);
     }
@@ -1799,7 +1799,7 @@ void FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
    "Back" button: applies the game speed and returns to the main page with ROM action record 0
    (FRONTEND_COMMAND_APPLY_GAME_SPEED in a network game).
 */
-void FrontendCallback_ApplyGameSpeedOrDispatch02C0(uint32_t callbackArgument)
+void FrontendSessionAction_ApplyGameSpeedAndReturnToMainPage(uint32_t callbackArgument)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1818,7 +1818,7 @@ void FrontendCallback_ApplyGameSpeedOrDispatch02C0(uint32_t callbackArgument)
    the in-game variant of the mission briefing: releases the loaded campaign and returns to the main page
    (FRONTEND_COMMAND_RELEASE_CAMPAIGN in a network game).
 */
-void FrontendCallback_ReleaseSelectedResourceOrDispatch0320(uint32_t callbackArgument)
+void FrontendSessionAction_ReleaseCampaignAndReturnToMainPage(uint32_t callbackArgument)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1848,7 +1848,7 @@ void FrontendCallback_NoOpArg1(void *source)
    page's "Back" button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE
    in a network game).
 */
-void FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument)
+void FrontendFactionSetupAction_ReturnToMainPage(uint32_t callbackArgument)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1897,7 +1897,7 @@ void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument
    button: returns to the main page with ROM action record 0 (FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a
    network game).
 */
-void FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument)
+void FrontendQuitDialogAction_ReturnToMainPage(uint32_t callbackArgument)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1916,7 +1916,7 @@ void FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callback
    page's "Ok" button and the display settings page's "Back" button: "Ok" returns to the main page (ROM action
    record 0, FRONTEND_COMMAND_RETURN_TO_MAIN_PAGE in a network game), "Back" reopens the options page.
 */
-void FrontendUiAction2010_Handler(UiNodeBase *sourceNode)
+void FrontendOptionsAction_ReturnToMainOrOptionsPage(UiNodeBase *sourceNode)
 
 {
   FrontendModelPointerContextFlags *compactLayoutFlags;
@@ -1956,7 +1956,7 @@ void FrontendUiAction2010_Handler(UiNodeBase *sourceNode)
    collected by an insertion into a sorted list with 0xFFFFFFFF as the empty mark, and the name and device of
    up to five adapters. The saved adapter, resolution and colour depth become the current selection.
 */
-void FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState *source)
+void FrontendDisplaySettingsAction_OpenPageAndListModes(FrontendDisplaySettingsPageOptionState *source)
 
 {
   FrontendModelPointerContextFlags *menuRoomContextFlags;
@@ -2327,7 +2327,7 @@ void FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState *source
    adapter choices of the display settings page: selects the adapter whose button was pressed (identified by
    its offset in the parent container, 0x68 bytes apart) and refreshes which modes can be chosen.
 */
-void FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode)
+void FrontendDisplaySettingsAction_SelectAdapter(UiNodeBase *sourceNode)
 
 {
   int controlOffsetFromParent;
@@ -2356,7 +2356,7 @@ void FrontendUiAction202CTo2030_SharedHandler(UiNodeBase *sourceNode)
    the host lobby's player list: the Kick button (FRONTEND_ACTION_KICK_PLAYER) is hidden while the first row,
    the host itself, is selected and shown for any other player.
 */
-void FrontendUiAction200C_Handler(UiPointerListControl *playerListControl)
+void FrontendHostLobby_UpdateKickButtonForSelection(UiPointerListControl *playerListControl)
 
 {
   UiPointerListControl *frontendRoot;
@@ -2405,7 +2405,7 @@ void FrontendRecentText_TrimAndSortTopFive(UiNodeBase *source)
    g_FrontendNetworkEndpointTextUtf16, the session list is emptied, Join hidden and a discovery probe sent. A failure is reported and the backend opened once more without a report; if that
    fails too, the menu returns to the main page and the random generator to the primary stream.
 */
-void FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
+void FrontendNetworkSetup_OpenSelectedBackend(FrontendNetworkSetupPageBackendListPtr backendList)
 
 {
   UiListRowIndex selectedBackendIndex;
@@ -3095,7 +3095,7 @@ void Frontend_StateTick(void)
                          (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,
                          frontendRoot);
     } while (!callResult);
-    callResult = FrontendTransfer_ConsumeProcessedFlagFrontend();
+    callResult = FrontendTransfer_ConsumeProcessedFlagForMenuTick();
     if (callResult) goto unlock;
   }
   if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
@@ -3245,7 +3245,7 @@ void FrontendMenu_BindSharedResources(FrontendRootResourceSlots *frontendUiState
 
 /* Address: 0x005445A0.
    Handler of frontend command FRONTEND_COMMAND_CYCLE_FACTION_COLOUR (0x650), called directly by
-   FrontendUiAction2044_Handler in a local game: advances the colour of faction row rowIndex + 1 (0-based index)
+   FrontendFactionSetupAction_CycleFactionColour in a local game: advances the colour of faction row rowIndex + 1 (0-based index)
    by one, wrapping after 7 colours (8 when the requesting player has colourCycleFlags bit 0); the row's caption
    (faction colour name) and the level player slot's colour index (the field typed aiClassOrMode) move together.
    Nothing happens for an unknown player id.
@@ -3299,7 +3299,7 @@ void FrontendFactionSetup_CycleFactionColour
 
 /* Address: 0x00544640.
    Handler of frontend command FRONTEND_COMMAND_TOGGLE_FACTION_ACTIVE (0x6F0), called directly by
-   FrontendUiAction2045_Handler in a local game: unless a player has chosen faction rowIndex + 1, toggles
+   FrontendFactionSetupAction_ToggleFactionActive in a local game: unless a player has chosen faction rowIndex + 1, toggles
    whether that faction takes part (FACTION_RUNTIME_LIFECYCLE_ACTIVE: computer or nobody) and refreshes the
    faction setup page.
 */
@@ -3330,7 +3330,7 @@ void FrontendFactionSetup_ToggleFactionActive
 
 /* Address: 0x005446A0.
    Handler of frontend command FRONTEND_COMMAND_CHOOSE_FACTION (0x750), called directly by
-   FrontendUiAction2046_Handler in a local game: unless the row is inactive (FRONTEND_CONTROL_INACTIVE), the
+   FrontendFactionSetupAction_ChooseFaction in a local game: unless the row is inactive (FRONTEND_CONTROL_INACTIVE), the
    player chooses faction rowIndex + 1. For the local player the row's checkbox becomes the only one checked.
    The player's record (the first one in a local game) gets the faction and the next ready-state generation,
    which orders the choices, then the faction setup page is refreshed.

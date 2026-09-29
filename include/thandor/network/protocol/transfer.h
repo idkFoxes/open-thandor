@@ -129,7 +129,7 @@ void FrontendTransfer_HandleSessionListAndJoinAckPackets
 void FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRoot);
 
 /* 0x0054FBA0 */
-bool FrontendTransfer_ConsumeProcessedFlagFrontend(void);
+bool FrontendTransfer_ConsumeProcessedFlagForMenuTick(void);
 
 /* 0x005722C0 */
 void FrontendTransfer_HostHandleCommandSubmitOrWaitAck

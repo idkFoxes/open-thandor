@@ -41,28 +41,28 @@ typedef struct ArmyModelTreeNode {
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005719F0 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableUnit(PckArmyAssetIdCatalog recordId);
 
 /* 0x00571A10 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableUnit(ArmyAssetId recordId);
 
 /* 0x00571A60 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableUnit(ArmyAssetId recordId);
 
 /* 0x00571B00 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableUnitWrapped(ArmyAssetId recordId);
 
 /* 0x00571C30 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_NormalizeIdToPlaceableObject(PckArmyAssetIdCatalog recordId);
 
 /* 0x00571C50 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepForwardPlaceableObject(ArmyAssetId recordId);
 
 /* 0x00571CA0 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_StepBackwardPlaceableObject(ArmyAssetId recordId);
 
 /* 0x00571D40 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindPreviousPlaceableObjectWrapped(ArmyAssetId recordId);
 
 /* 0x0051B5E0 */
 StatusResult ArmyAsset_PrepareRecords(ArmyAssetHeader *asset);
@@ -87,10 +87,10 @@ EnergyDemandQ4 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 /* 0x00571AB0 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableUnitWrapped(ArmyAssetId recordId);
 
 /* 0x00571CF0 */
-ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId);
+ArmyAssetIdSearchResult ArmyAssetRegistry_FindNextPlaceableObjectWrapped(ArmyAssetId recordId);
 
 /* 0x0051B4A0 */
 StatusResult ArmyAssetRecord_RegisterAndRelocate(ArmyAssetRecord *record,ArmyAssetHeader *assetBase);

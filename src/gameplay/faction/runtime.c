@@ -1142,7 +1142,7 @@ void GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
         if (factionIndex != byteOffsetOrActiveFaction) {
           return;
         }
-        UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)runtimeRoot);
+        InGameArmyStock_RebuildGrid((UiNodeBase *)runtimeRoot);
         if (playerRuntimeId != g_LocalPlayerRuntimeId) {
           return;
         }
@@ -1188,7 +1188,7 @@ void GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
       *primaryCount = *primaryCount + 1;
     }
     if (factionIndex == runtimeRoot->worldRuntime0A30.activeFactionRuntimeIndex) {
-      UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)runtimeRoot);
+      InGameArmyStock_RebuildGrid((UiNodeBase *)runtimeRoot);
       if (playerRuntimeId == g_LocalPlayerRuntimeId) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
         g_InGamePendingPlacementArmyAsset = 0;
@@ -1245,7 +1245,7 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
         if (byteOffsetOrActiveFaction != factionIndex) {
           return;
         }
-        UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)runtimeRoot);
+        InGameArmyStock_RebuildGrid((UiNodeBase *)runtimeRoot);
         return;
       }
       byteOffsetOrActiveFaction += 4;
@@ -1257,10 +1257,10 @@ void GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
 /* Address: 0x00561F80.
    In-game command INGAME_COMMAND_PLACEMENT_CREATE_ARMY (map click while placing an army in command mode 3/4, from
    InGameUiCommand_BeginInteractionByMode): creates army armyAssetId at the clicked position for the faction set
-   by PlayerRuntime_SetState8090 and keeps it as the player's placed army (+0x8094, as an offset from
+   by PlayerRuntime_SetPlacementFaction and keeps it as the player's placed army (+0x8094, as an offset from
    g_ArmyRuntimeRebaseBaseMinusOne), or 0 when it could not be created.
 */
-void PlayerRuntime_ResolveAndStoreState8094(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
+void PlayerRuntime_CreatePlacementArmy(PlayerRuntimeId playerRuntimeId,PlayerStateLookupValue0 worldXQ12,
           PlayerStateLookupValue1 worldYQ12,RuntimeToken armyAssetId)
 
 {
@@ -1285,7 +1285,7 @@ void PlayerRuntime_ResolveAndStoreState8094(PlayerRuntimeId playerRuntimeId,Play
    In-game command INGAME_COMMAND_PLACEMENT_SET_FACTION (from InGameUiCommand_BeginInteractionByMode, before
    INGAME_COMMAND_PLACEMENT_CREATE_ARMY): sets the faction (+0x8090) that the player's next placed army belongs to.
 */
-void PlayerRuntime_SetState8090(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_SetPlacementFaction(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlayerState8090Value placementFactionIndex)
 
 {
@@ -1298,7 +1298,7 @@ void PlayerRuntime_SetState8090(PlayerRuntimeId playerRuntimeId,uint32_t unusedZ
    InGameUiCommand_BeginInteractionByMode): makes it the player's placed army (+0x8094); armyToken is its offset from
    g_ArmyRuntimeRebaseBaseMinusOne.
 */
-void PlayerRuntime_SetState8094(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_SetPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           PlayerState8094Value armyToken)
 
 {
@@ -1310,7 +1310,7 @@ void PlayerRuntime_SetState8094(PlayerRuntimeId playerRuntimeId,uint32_t unusedZ
    In-game command INGAME_COMMAND_PLACEMENT_CLEAR_ARMY (end of a placement interaction, from
    InGameUiCommand_EndInteractionByMode): forgets the player's placed army (+0x8094).
 */
-void PlayerRuntime_ClearState8094(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
+void PlayerRuntime_ClearPlacementArmy(PlayerRuntimeId playerRuntimeId,uint32_t unusedZero0,uint32_t unusedZero1,
           uint32_t unusedZero2)
 
 {
@@ -1369,10 +1369,10 @@ void OldUnitRuntime_MergeMasksAndReplayRecords(void)
       primaryRecordCursor = primaryRecordCursor + 8; /* 0x20-byte records */
       recordsRemaining--;
     } while (recordsRemaining != 0);
-    WorldRuntime_ForEachNodeInOwnerListD8
+    WorldRuntime_ForEachOwnerListNode
               (worldRuntime,ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
                worldRuntime);
-    WorldRuntime_ForEachNodeInOwnerListD8
+    WorldRuntime_ForEachOwnerListNode
               (worldRuntime,ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
                worldRuntime);
     FieldGrid_ClassifyCellFlagsToRuntimeByte
@@ -1567,7 +1567,7 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
         (int)((ModelRuntimeSlot *)ownerNode->runtimePayload)->ownerArmyRuntimeOrSavedOffset.armyRuntime,
        ((ArmyRuntimeSlot *)recordOrCountOrIndex)->factionIndex == secondFactionIndex)) {
       ((ArmyRuntimeSlot *)recordOrCountOrIndex)->factionIndex = firstFactionIndex;
-      ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
+      ModelRuntimeHierarchy_SetPaletteAndTextureSetNonNullRecursive
                 (survivingFactionPaletteAsset,survivingFactionTextureSet,
                  ((ArmyRuntimeSlot *)recordOrCountOrIndex)->modelNodeRuntime);
     }
@@ -1688,9 +1688,9 @@ void GameFactionRuntime_ApplyPairwiseRelationTransition(FactionNotificationCodeB
     recordOrCountOrIndex++;
     assetsRemaining--;
   }
-  UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  UiCatalogGroup42_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
-  UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameArmyStock_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
+  InGameBuildCatalog_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
 rebuild_target_entries:
   InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
   return;

@@ -211,7 +211,7 @@ void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
    Moves the camera (motion.position, +0x60) to the given point and keeps its target point (+0x80): the
    target and committed distances become the new distance between the two.
 */
-void WorldRuntime_SetPosition60AndDistanceFromPosition80
+void WorldRuntime_SetCameraPositionKeepingTarget
           (Q12 positionZ,Q12 positionY,Q12 positionX,WorldRuntimeContext *runtime)
 
 {
@@ -236,7 +236,7 @@ void WorldRuntime_SetPosition60AndDistanceFromPosition80
    motion value at +0x78. The pitch is clamped to the world's pitch limits (unless the camera is unlimited)
    and always to a quarter turn up or down (+-0x4000).
 */
-void WorldRuntime_SetMotionParameters6CThrough78Clamped
+void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
           (WorldMotionValue78 value78,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
           ,WorldRuntimeContext *runtime)
 
@@ -274,7 +274,7 @@ void WorldRuntime_SetMotionParameters6CThrough78Clamped
    distance, and places the camera (motion.position, +0x60) that distance away from the target, looking at it
    along the given angles (the offset uses the reversed direction: negated pitch, heading + half a turn).
 */
-void WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+void WorldRuntime_PointCameraAtTarget
           (AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 distance,Q12 originZ,Q12 originY,
           Q12 originX,WorldRuntimeContext *runtime)
 
@@ -543,7 +543,7 @@ void WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
    Commits the camera's target distance (+0x8C) as its committed distance (+0x7C), the base that later
    distance input is added to.
 */
-void WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContext *world)
+void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world)
 
 {
   world->motion.committedDistanceQ12 = world->motion.targetDistanceQ12;
@@ -759,7 +759,7 @@ WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *
    Marks node as linked and puts it at the head of its world's owner list (head at +0xD8; the head is
    swapped with XCHG, the neighbour links are then set without a lock).
 */
-void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode *node)
+void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node)
 
 {
   WorldOwnerListNode **ownerListHeadLink;
@@ -786,7 +786,7 @@ void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode *node)
    Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
    of its runtime flags, the linked mark included.
 */
-void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode *node)
+void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node)
 
 {
   WorldOwnerListNode *previousNode;
@@ -814,7 +814,7 @@ void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode *node)
    Calls callback(callbackContext, node) for every node of the world's owner list (head at +0xD8), from the most
    recently linked one on.
 */
-void WorldRuntime_ForEachNodeInOwnerListD8(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
+void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
           WorldRuntimeContext *world)
 
 {
@@ -881,7 +881,7 @@ void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldI
 }
 
 /* Address: 0x0051BFA0.
-   Callback of WorldRuntime_ForEachNodeInOwnerListD8 from ArmyRuntime_DestroyInstanceAndRefreshUi: removes
+   Callback of WorldRuntime_ForEachOwnerListNode from ArmyRuntime_DestroyInstanceAndRefreshUi: removes
    every reference to the destroyed object from one world node, so nothing keeps targeting it. For a model
    node: its hierarchy's targets and two fields of the entity linked at payload dword 2; for an effect node:
    its target at +0x1C.
@@ -979,7 +979,7 @@ void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRunti
    Per-tick update of army class 5 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[5]):
    that class has nothing to update, so this does nothing.
 */
-void UnifiedRuntimeTable_Method5_TwoArgNoOp
+void ArmyRuntimeClass_NoOpTickUpdateForClass5
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
@@ -991,7 +991,7 @@ void UnifiedRuntimeTable_Method5_TwoArgNoOp
    Per-tick update of army class 6 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[6]):
    that class has nothing to update, so this does nothing.
 */
-void UnifiedRuntimeTable_Method6_TwoArgNoOp
+void ArmyRuntimeClass_NoOpTickUpdateForClass6
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
@@ -1058,7 +1058,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRun
 
 
 /* Address: 0x00529430.
-   WorldRuntime_ForEachNodeInOwnerListD8 callback run while a model runtime is destroyed
+   WorldRuntime_ForEachOwnerListNode callback run while a model runtime is destroyed
    (detachedObject = that model runtime): every effect (+0x1C), shot (+0x14) or entity (+0xF0, and +0x60 for
    definition class 0x15) that still points at it gets the pointer cleared, so nothing keeps a dangling reference.
 */
@@ -1095,7 +1095,7 @@ void WorldRuntimeNode_ClearDetachedEntityReferencesCallback(void *detachedObject
 
 
 /* Address: 0x00565110.
-   WorldRuntime_ForEachNodeInOwnerListD8 callback used when an in-game session shuts down, before the level
+   WorldRuntime_ForEachOwnerListNode callback used when an in-game session shuts down, before the level
    resources are destroyed: destroys the army of every model node; for shot and effect nodes it clears flag bits
    31 (linked into the owner list) and 30 and zeroes one back-reference field of their runtime payload (+0x10 for
    shots, +4 for effects).

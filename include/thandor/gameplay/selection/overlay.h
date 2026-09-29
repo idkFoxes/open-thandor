@@ -63,34 +63,34 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinat
           UiPixelCoordinate cornerBY,UiPixelCoordinate cornerBX);
 
 /* 0x0052F490 */
-void SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
+void SelectionOverlay_DrawTerrainPointMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int markerPointCount,int *gridCoordinatePairs,
           FieldGridAsset *fieldGrid);
 
 /* 0x0052F5A0 */
-void SelectionOverlay_DrawMarkerACForWorldSurfacePoint
+void SelectionOverlay_DrawWorldPointMarker
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x0052F680 */
-void SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
+void SelectionOverlay_DrawGridVertexMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
 
 /* 0x0052F780 */
-void SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
+void SelectionOverlay_DrawFluidExclusionMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
 
 /* 0x0052F8C0 */
-void SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
+void SelectionOverlay_DrawResourceCellMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid);
 
 /* 0x0052FA20 */
-void SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
+void SelectionOverlay_DrawUnresolvedCellMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid);
 

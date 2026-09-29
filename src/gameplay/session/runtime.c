@@ -356,7 +356,7 @@ void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 
         if ((int)clampedPitchAngle < (int)(endGameResultsRuntime->worldRuntime0A30).motion.minimumPitchAngle) {
           clampedPitchAngle = (endGameResultsRuntime->worldRuntime0A30).motion.minimumPitchAngle;
         }
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   (clampedPitchAngle,(endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
@@ -369,7 +369,7 @@ void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 
         if ((int)(endGameResultsRuntime->worldRuntime0A30).motion.maximumPitchAngle < (int)clampedPitchAngle) {
           clampedPitchAngle = (endGameResultsRuntime->worldRuntime0A30).motion.maximumPitchAngle;
         }
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   (clampedPitchAngle,(endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
@@ -378,7 +378,7 @@ void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 
         ;
       }
       if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_INSERT] != 0) {
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle - 0x400 & 0xffff,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
@@ -388,7 +388,7 @@ void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 
         ;
       }
       if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DELETE] != 0) {
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle + 0x400 & 0xffff,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12,
@@ -402,7 +402,7 @@ void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 
         if ((int)clampedTargetDistance < (int)(endGameResultsRuntime->worldRuntime0A30).minimumCameraDistanceQ12) {
           clampedTargetDistance = (endGameResultsRuntime->worldRuntime0A30).minimumCameraDistanceQ12;
         }
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,clampedTargetDistance,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
@@ -415,7 +415,7 @@ void EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 
         if ((int)(endGameResultsRuntime->worldRuntime0A30).maximumCameraDistanceQ12 < (int)clampedTargetDistance) {
           clampedTargetDistance = (endGameResultsRuntime->worldRuntime0A30).maximumCameraDistanceQ12;
         }
-        WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+        WorldRuntime_PointCameraAtTarget
                   ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle,clampedTargetDistance,
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionZQ12,
@@ -697,12 +697,12 @@ bool InGameHotkeys_DispatchCommandByFlags(UiKeyboardStateMask modifierFlags,UiAc
                             (DirectSoundVoiceSet *)((UiSpriteButtonControl *)toggle)->activationSoundId);
     }
     if (target == 0x567460) {
-      InGameUiAction101F_Handler((UiNodeBase *)toggle);
+      InGameMissionHelpPage_Toggle((UiNodeBase *)toggle);
       break;
     }
     InGameSettingsPage_ToggleAndSynchronizeControls(toggle);
     if (target == 0x567340) {
-      InGameCommandPanel_OpenPage4AndRefreshAvailability((InGameCommandPanelSourceAddress32)INGAME_UI(rt,
+      InGameQuitMenu_OpenAndRefreshButtons((InGameCommandPanelSourceAddress32)INGAME_UI(rt,
            gameMenuQuitButton));
     }
     else if (target == 0x5673a0) {
@@ -1237,9 +1237,9 @@ NewSessionInitResult InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePr
                             inGameRoot->localNetworkUiStateFlags24E0 =
                                  inGameRoot->localNetworkUiStateFlags24E0 & 0xfffffff7;
                           }
-                          UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
-                          UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
-                          UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
+                          InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
+                          InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
+                          InGameArmyStock_RebuildGrid((UiNodeBase *)inGameRoot);
                           InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
                           WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
                           /* report this player as loaded */
@@ -1553,9 +1553,9 @@ LoadedSessionInitResult InGameRuntime_InitializeLoadedSession(uint16_t *savePack
                           if (!statusResult.failed) {
                             /* hold the step off while the world is finished */
                             g_SpinLockAcquire(&g_InGameStateTickSpinLock);
-                            UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
-                            UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
-                            UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
+                            InGameBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
+                            InGameSpecialBuildCatalog_RebuildGrid((UiNodeBase *)inGameRoot);
+                            InGameArmyStock_RebuildGrid((UiNodeBase *)inGameRoot);
                             InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
                             g_InGameSimulationStepTicks = 1;
                             settingOrFactionToken =
@@ -1713,7 +1713,7 @@ void InGameRuntime_ShutdownAndReleaseResources(void)
   if (inGameRoot != NULL) {
     InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi0000);
     world = &inGameRoot->worldRuntime0A30;
-    WorldRuntime_ForEachNodeInOwnerListD8
+    WorldRuntime_ForEachOwnerListNode
               (world,WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
     InGameLevelRuntime_ShutdownLoadedAssetResources(world);
     if ((inGameRoot->rootUi0000).previousRoot != NULL) {
@@ -2051,7 +2051,7 @@ next_condition:
                      (conditionArmy = ((ModelRuntimeSlot *)worldNode->runtimePayload)->
                                       ownerArmyRuntimeOrSavedOffset.armyRuntime,
                      cellsLeftOrFaction == conditionArmy->factionIndex)) {
-                    ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,(int *)conditionArmy);
+                    ModelRuntimeHierarchy_MarkDestroyedRecursive(contextArg,(int *)conditionArmy);
                   }
                   worldNode = worldNode->nextNode;
                 } while (worldNode != NULL);

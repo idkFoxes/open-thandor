@@ -716,7 +716,7 @@ void UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *co
    hitTest of g_UiFillPanelControlVtable: like UiContainer_HitTestChildren, but the container itself is never
    hit (UI_NODE_NONE instead), so the pointer passes through the panel to what lies below it.
 */
-UiNodeBase * UiContainer_HitTestChildrenOrNoneA
+UiNodeBase * UiFillPanelControl_HitTestChildrenOnly
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
@@ -903,7 +903,7 @@ void UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
    hitTest of g_UiLayoutContainerControlVtable (the page stack): hit-tests the shown page like
    UiContainer_HitTestChildren, but the stack itself is never hit (UI_NODE_NONE instead).
 */
-UiNodeBase * UiContainer_HitTestChildrenOrNoneB
+UiNodeBase * UiLayoutContainerControl_HitTestChildrenOnly
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {
@@ -1344,7 +1344,7 @@ void UiRootStack_Relayout(void)
    bar under the pointer shows it where the caller applies the frame (the in-game and scenario hover code
    pass it to g_GraphicsCursorSetFrame; the generic pointer-move dispatch ignores it).
 */
-GraphicsCursorFrameIndex UiContainer_PointerMoveReturnCode6
+GraphicsCursorFrameIndex UiHorizontalGaugeControl_PointerMoveBusyCursor
           (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
 
 {

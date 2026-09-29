@@ -59,7 +59,7 @@ void InGameWorldOverlay_RebuildOrReleaseTransientMarkers
     return;
   }
   if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
-    checkResult = SelectionInfo_ValidateOwnerType16AndAnyActive
+    checkResult = SelectionInfo_TestNotOwnAircraftPadsWithAircraft
                        (worldRuntime->activeFactionRuntimeIndex);
     if (!checkResult) {
       /* command mode: ghost of the army the previewed pointer-mode command would create */
@@ -257,7 +257,7 @@ RefreshMarkers:
         effectSlot = *ownedEffectCursor;
         currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
         InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)currentModelNode);
+        WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)currentModelNode);
         (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
         ownedEffectCursor = ownedEffectCursor + 1;
         recordOrCount--;
@@ -271,7 +271,7 @@ RefreshMarkers:
         effectSlot = *commandTargetEffectCursor;
         currentModelNode = (effectSlot->modelNodeOrSavedOffset).modelNode;
         InterpolationState_SetNegatedTargetAndRescaleProgress(0,currentModelNode->shadingRecord);
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)currentModelNode);
+        WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)currentModelNode);
         (effectSlot->modelNodeOrSavedOffset).modelNode = NULL;
         commandTargetEffectCursor = commandTargetEffectCursor + 1;
         indexOrCount = indexOrCount - 1;
@@ -451,7 +451,7 @@ void SelectionOverlay_DrawBoundsFrame(UiPixelCoordinate clipTop,UiPixelCoordinat
    FrontendModelPointerContext_RenderWorldViewQueuesClipped with its terrainMarkerCoordinatePairs170 when context
    flag 0x200000 is set.
 */
-void SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
+void SelectionOverlay_DrawTerrainPointMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int markerPointCount,int *gridCoordinatePairs,
           FieldGridAsset *fieldGrid)
@@ -521,7 +521,7 @@ void SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
    context flag 0x100000 is set and callbackArgumentF0 is not WORLD_POINTER_NO_HIT; useTopSurface is set when the
    high byte of g_UiCommandModeGColorVariantLimit is nonzero.
 */
-void SelectionOverlay_DrawMarkerACForWorldSurfacePoint
+void SelectionOverlay_DrawWorldPointMarker
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,int useTopSurface,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -583,7 +583,7 @@ void SelectionOverlay_DrawMarkerACForWorldSurfacePoint
    when the high byte of g_UiCommandModeGColorVariantLimit is nonzero; cells whose point A was not projected are
    skipped. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x800000 is set.
 */
-void SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
+void SelectionOverlay_DrawGridVertexMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
@@ -651,7 +651,7 @@ void SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
    not projected. Called by FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x1000000
    is set.
 */
-void SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
+void SelectionOverlay_DrawFluidExclusionMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
@@ -736,7 +736,7 @@ void SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
    FrontendModelPointerContext_RenderWorldViewQueuesClipped with the low byte of its overlayMarkerStateB4 when
    context flag 0x2000000 is set.
 */
-void SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
+void SelectionOverlay_DrawResourceCellMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint8_t selectedResourceIndex,FieldGridAsset *fieldGrid)
 
@@ -822,7 +822,7 @@ void SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
    FrontendModelPointerContext_RenderWorldViewQueuesClipped when context flag 0x4000 and g_UiCommandRuntimeFlags
    bit 0x40 are set and a field grid is attached.
 */
-void SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
+void SelectionOverlay_DrawUnresolvedCellMarkers
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
@@ -879,7 +879,7 @@ void SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
 
 /* Address: 0x00560020.
    Pointer-mode handler 3 (g_InGamePointerModeHandlers[3]; networked games queue it as a command
-   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 3 (lanes 1 and 2) on the player's
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 3 (lanes 1 and 2) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
@@ -887,7 +887,7 @@ void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,Selecti
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
-  SelectionPointerArray_ApplyType16MarkerCoordinates
+  SelectionPointerArray_SetAircraftPadTargets
             (3,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
@@ -896,7 +896,7 @@ void SelectionMarkerCoordinates_ApplyType3(SelectionMarkerIndex playerId,Selecti
 
 /* Address: 0x00560050.
    Pointer-mode handler 4 (g_InGamePointerModeHandlers[4]; networked games queue it as a command
-   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 4 (lane 4) on the player's
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 4 (lane 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
@@ -904,7 +904,7 @@ void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,Selecti
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
-  SelectionPointerArray_ApplyType16MarkerCoordinates
+  SelectionPointerArray_SetAircraftPadTargets
             (4,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
@@ -913,7 +913,7 @@ void SelectionMarkerCoordinates_ApplyType4(SelectionMarkerIndex playerId,Selecti
 
 /* Address: 0x00560080.
    Pointer-mode handler 5 (g_InGamePointerModeHandlers[5]; networked games queue it as a command
-   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 5 (lanes 1 and 4) on the player's
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 5 (lanes 1 and 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
@@ -921,7 +921,7 @@ void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,Selecti
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
-  SelectionPointerArray_ApplyType16MarkerCoordinates
+  SelectionPointerArray_SetAircraftPadTargets
             (5,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
@@ -930,7 +930,7 @@ void SelectionMarkerCoordinates_ApplyType5(SelectionMarkerIndex playerId,Selecti
 
 /* Address: 0x005600B0.
    Pointer-mode handler 6 (g_InGamePointerModeHandlers[6]; networked games queue it as a command
-   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 6 (lanes 2 and 4) on the player's
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 6 (lanes 2 and 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
@@ -938,7 +938,7 @@ void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,Selecti
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
-  SelectionPointerArray_ApplyType16MarkerCoordinates
+  SelectionPointerArray_SetAircraftPadTargets
             (6,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
@@ -947,7 +947,7 @@ void SelectionMarkerCoordinates_ApplyType6(SelectionMarkerIndex playerId,Selecti
 
 /* Address: 0x005600E0.
    Pointer-mode handler 7 (g_InGamePointerModeHandlers[7]; networked games queue it as a command
-   instead): SelectionPointerArray_ApplyType16MarkerCoordinates with lane mask 7 (lanes 1, 2 and 4) on the player's
+   instead): SelectionPointerArray_SetAircraftPadTargets with lane mask 7 (lanes 1, 2 and 4) on the player's
    selection, which stores the pointer point and heading as the marker target of those linked-child lanes
    in every selected class-0x16 army.
 */
@@ -955,7 +955,7 @@ void SelectionMarkerCoordinates_ApplyType7(SelectionMarkerIndex playerId,Selecti
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12)
 
 {
-  SelectionPointerArray_ApplyType16MarkerCoordinates
+  SelectionPointerArray_SetAircraftPadTargets
             (7,heading,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;

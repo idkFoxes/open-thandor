@@ -46,7 +46,7 @@
 #define UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN 0x2000 /* the placement overlay was drawn onto the field
                                                                   grid (EndGameResultsUiRuntime_UpdateAndHandleInput) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED 0x40000 /* toggled by typing the cheat code into the chat line
-                                                          (InGameUiAction1024_Handler) */
+                                                          (InGameChatInput_SendLineOrCheckCheatPhrase) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD 0x100000 /* cheat hotkey: build and research times / 16 */
 /* SelectionPlayerRuntimeBlock.sessionFlags bit: the player asks for a pause (shown as "P" in the player roster;
    toggled by InGameCommand_TogglePauseRequest) */
@@ -55,10 +55,10 @@
    InGameHud_UpdateStatusCountersAndSessionPrompts; shown as a highlighted "W" in the player roster) */
 #define PLAYER_SESSION_FLAG_SLOW_RENDERING 0x02
 /* g_UiCommandRuntimeFlags bits of windows that pause a local game while open (mission help:
-   InGameUiAction101F_Handler, settings: InGameSettingsPage_ToggleAndSynchronizeControls) */
+   InGameMissionHelpPage_Toggle, settings: InGameSettingsPage_ToggleAndSynchronizeControls) */
 #define UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE 0x4000 /* an open window paused the game */
 #define UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW 0x400 /* the game was already paused when it opened */
-/* UI action toggling the technology window (InGameSelectionPage_ToggleAndRefreshPage2); suppressed by
+/* UI action toggling the technology window (InGameTechnologyPanel_ToggleForSelection); suppressed by
    InGameSelectionDetailPanel_Rebuild when the single selected army has no available technology */
 #define INGAME_ACTION_TECHNOLOGY_WINDOW 0x1010
 /* Buttons of the quit game window (InGameUiImage.quitMenuSurrenderButton / quitMenuRestartMissionButton) */
@@ -68,7 +68,7 @@
 #define INGAME_PLAYER_DEPARTURE_FLAG_SURRENDER 0x01 /* destroy every army of the player's faction */
 #define INGAME_PLAYER_DEPARTURE_FLAG_CLOSE_SESSION 0x02 /* sets UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED */
 
-/* Action id of the results screen's resultsContinueButton (InGameCommandAction_SetFlag1000OrMarkReady);
+/* Action id of the results screen's resultsContinueButton (InGameResultsScreen_ContinueOrMarkReady);
    a network host only shows it once every client has pressed its own
    (FrontendPlayerRuntime_MarkResultsReadyAndUpdateContinueButton). */
 #define INGAME_ACTION_RESULTS_CONTINUE 0x101B
@@ -134,13 +134,13 @@ void InGameCommandModeG_Select4(UiSelectableControl *source);
 void InGameCommandModeG_Select5(UiSelectableControl *source);
 
 /* 0x0056AC50 */
-void InGameCommandAction_SetFlag1000OrMarkReady(void *source);
+void InGameResultsScreen_ContinueOrMarkReady(void *source);
 
 /* 0x0056ACC0 */
-void InGameCommandAction_ToggleRuntimeFlag0800(void *source);
+void InGameEndMovie_Skip(void *source);
 
 /* 0x0056D6C0 */
-void InGameCommandState_CloseSettingsAndDispatchOperation150(UiNodeBase *source);
+void InGameQuitMenu_RestartMission(UiNodeBase *source);
 
 /* 0x0056DFD0 */
 void InGameCommandMatrix_SelectMappedControl(UiNodeBase *source);
@@ -161,7 +161,7 @@ void UiCommandSpriteButtonControl_RightRelease
           UiCommandSpriteButtonControl *control);
 
 /* 0x00516490 */
-GraphicsCursorFrameIndex UiCommandSpriteVariantA_PointerMove(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
+GraphicsCursorFrameIndex InGameArmyStock_PointerMoveShowSlotDetails(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
           UiCommandSpriteButtonControl *control);
 
 /* 0x00517F60 */
@@ -183,28 +183,28 @@ void InGameCommand_ExecuteLocalPlacementFromSelection(PlayerRuntimeId playerId,C
           CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12);
 
 /* 0x0056A2A0 */
-void UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node);
+void InGameArmyStock_RebuildGrid(UiNodeBase *node);
 
 /* 0x0056AFD0 */
 void InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control);
 
 /* 0x0056C660 */
-void InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSourceAddress32 source);
+void InGameQuitMenu_OpenAndRefreshButtons(InGameCommandPanelSourceAddress32 source);
 
 /* 0x0056CFA0 */
-void InGameCommandCatalog_SubmitGroup48Entry(UiCatalogEntryControl *source);
+void InGameBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source);
 
 /* 0x0056D090 */
-void InGameCommandCatalog_SubmitGroup42Entry(UiCatalogEntryControl *source);
+void InGameSpecialBuildCatalog_QueueOrCancelEntry(UiCatalogEntryControl *source);
 
 /* 0x0056D180 */
-void InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *control);
+void InGameArmyStock_TakeOrSellSlotArmy(UiCommandSpriteButtonControl *control);
 
 /* 0x0056D540 */
-void InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *control);
+void InGameSelectionGroupButton_RecallOrStoreGroup(UiCommandSpriteButtonControl *control);
 
 /* 0x0056D620 */
-void InGameCommandState_SetRuntimeFlag1000(UiNodeBase *source);
+void InGameResultsScreen_CloseLocally(UiNodeBase *source);
 
 /* 0x0056D640 */
 void InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source);

@@ -34,14 +34,14 @@ bool AiConstructionPlanner_ProcessPendingAssetRequests
 bool AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex);
 
 /* 0x005393F0 */
-void AiConstructionPlanner_PlaceDerivedAsset14D(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
+void AiConstructionPlanner_PlaceTritiumStorageNearResourceSite(PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex,
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053A6E0 */
-void AiArmyCandidate_AddBestScoredVariantA(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiArmyCandidate_AddBestDefenseAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AC20 */
-void AiStrategicClass_AddCandidate12DOr12FTo132(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiStrategicClass_AddArmsFactoriesStageBuilding(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B070 */
 void AiStrategicClass_AddWeightedClassCandidate(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
@@ -52,10 +52,10 @@ void AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053A800 */
-void AiArmyCandidate_AddBestScoredVariantB(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiArmyCandidate_AddBestExplorationAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053A8D0 */
-void AiArmyCandidate_AddBestScoredVariantC(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
+void AiArmyCandidate_AddBestAttackAsset(FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00537630 */
 bool AiPurchaseCandidate_HasEligibleProducer
@@ -68,19 +68,19 @@ void AiPurchaseCandidate_ApplyToFaction(AiCandidateWorkspaceEntry *candidateEntr
 void AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionIndex);
 
 /* 0x00539D20 */
-void AiStructureCandidate_AddWeightedId14BOr14CCandidate
+void AiStructureCandidate_AddResourceStorage
           (AiCandidateScore32 baseWeight,PckArmyAssetIdCatalog candidateArmyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539E60 */
-void AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex);
+void AiResourceCandidate_AddPowerPlant(FactionRuntimeIndex factionIndex);
 
 /* 0x0053A9D0 */
-AiStrategicClassSelectionRegs8 AiStrategicClass_SelectBestCandidate12ETo132
+AiStrategicClassSelectionRegs8 AiStrategicClass_SelectTerrainSuitedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AF00 */
-AiStrategicClassSelectionRegs8 AiStrategicClass_SelectWeightedClass141To143
+AiStrategicClassSelectionRegs8 AiStrategicClass_SelectPressureWeightedBuilding
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539600 */

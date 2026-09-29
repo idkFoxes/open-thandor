@@ -281,7 +281,7 @@ AiTechnologyCandidateScore AiTechnologyScore_ReturnBaseCandidateValueForKind4
 }
 
 
-/* The original passes the category mask in EDX; AiStrategicCandidate_AddBestWorkspace12Entry stores it
+/* The original passes the category mask in EDX; AiTechnologyCandidate_AddBestResearch stores it
    here before its scoring loop. */
 AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
 

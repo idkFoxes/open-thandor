@@ -152,10 +152,10 @@
 void __cdecl ErrorSystem_Init(void);
 
 /* 0x00407F50 */
-bool ErrorRuntime_CallbackAlwaysFail(UiRootNode *root);
+bool FatalErrorDialog_BlockMissedPointerPress(UiRootNode *root);
 
 /* 0x00407F60 */
-int ErrorRuntime_CallbackReturnCode8(UiRootNode *root);
+int FatalErrorDialog_BlockMissedPointerMotion(UiRootNode *root);
 
 /* 0x00407F70 */
 void FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode);

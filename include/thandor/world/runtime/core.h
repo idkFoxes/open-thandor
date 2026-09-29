@@ -36,10 +36,10 @@
    FrontendModelPointerContext_RenderWorldViewQueuesClipped; the editor mode tabs InGameCommandModeG_Select0..5
    set them per tool through the UiCommandModeG_Show/Hide* helpers). */
 #define WORLD_RUNTIME_FLAG_DRAW_ARMY_METRICS 0x400 /* SelectionOverlay_RenderSelectedArmyMetrics */
-#define WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER 0x100000 /* SelectionOverlay_DrawMarkerACForWorldSurfacePoint */
-#define WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS 0x200000 /* SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints */
-#define WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS 0x800000 /* SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices */
-#define WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS 0x2000000 /* SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800 */
+#define WORLD_RUNTIME_FLAG_DRAW_SURFACE_POINT_MARKER 0x100000 /* SelectionOverlay_DrawWorldPointMarker */
+#define WORLD_RUNTIME_FLAG_DRAW_TERRAIN_POINT_MARKERS 0x200000 /* SelectionOverlay_DrawTerrainPointMarkers */
+#define WORLD_RUNTIME_FLAG_DRAW_GRID_VERTEX_MARKERS 0x800000 /* SelectionOverlay_DrawGridVertexMarkers */
+#define WORLD_RUNTIME_FLAG_DRAW_REGION_MARKERS 0x2000000 /* SelectionOverlay_DrawResourceCellMarkers */
 /* More WorldRuntimeContext.runtimeFlags bits read by FrontendModelPointerContext_RenderWorldViewQueuesClipped:
    the view draws the attached field grid (terrain pass), and the spatial sound listener follows the camera. */
 #define WORLD_RUNTIME_FLAG_DRAW_TERRAIN 0x4000
@@ -49,7 +49,7 @@
 /* Range of the auxiliary elevation angle (fieldRegion.regionHeight) set by WorldRuntime_AdjustFieldOriginWrappedClamped */
 #define WORLD_AUXILIARY_ELEVATION_MINIMUM (-0x4000) /* a quarter turn down */
 #define WORLD_AUXILIARY_ELEVATION_MAXIMUM (-0x1000)
-/* Smallest camera magnitude WorldRuntime_SetMotionParameters6CThrough78Clamped accepts (0.25 in Q12) */
+/* Smallest camera magnitude WorldRuntime_SetCameraAnglesAndMagnitudeClamped accepts (0.25 in Q12) */
 #define WORLD_MOTION_MINIMUM_MAGNITUDE_Q12 0x400
 /* Height returned by the WorldRuntime_Interpolate*HeightOrSentinel functions when no field grid is attached. */
 #define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
@@ -59,16 +59,16 @@
 void WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void);
 
 /* 0x0050D100 */
-void WorldRuntime_SetPosition60AndDistanceFromPosition80
+void WorldRuntime_SetCameraPositionKeepingTarget
           (Q12 positionZ,Q12 positionY,Q12 positionX,WorldRuntimeContext *runtime);
 
 /* 0x0050D150 */
-void WorldRuntime_SetMotionParameters6CThrough78Clamped
+void WorldRuntime_SetCameraAnglesAndMagnitudeClamped
           (WorldMotionValue78 value78,AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 magnitude
           ,WorldRuntimeContext *runtime);
 
 /* 0x0050D1E0 */
-void WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+void WorldRuntime_PointCameraAtTarget
           (AngleTurn32 pitchAngle,AngleTurn32 headingAngle,UQ12 distance,Q12 originZ,Q12 originY,
           Q12 originX,WorldRuntimeContext *runtime);
 
@@ -102,7 +102,7 @@ void WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime
 void WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D4F0 */
-void WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContext *world);
+void WorldRuntime_CommitCameraTargetDistance(WorldRuntimeContext *world);
 
 /* 0x0050D510 */
 void WorldRuntime_AttachObjectArray
@@ -148,13 +148,13 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
 WorldObjectAllocResult WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D830 */
-void WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode *node);
+void WorldRuntime_LinkOwnerListNode(WorldOwnerListNode *node);
 
 /* 0x0050D880 */
-void WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode *node);
+void WorldRuntime_UnlinkOwnerListNode(WorldOwnerListNode *node);
 
 /* 0x0050D8F0 */
-void WorldRuntime_ForEachNodeInOwnerListD8(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
+void WorldRuntime_ForEachOwnerListNode(void *callbackContext,WorldRuntimeNodeTraversalCallback *callback,
           WorldRuntimeContext *world);
 
 /* 0x0050EC80 */
@@ -176,11 +176,11 @@ void WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,Wor
 void WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries(void *sourceRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x005233F0 */
-void UnifiedRuntimeTable_Method5_TwoArgNoOp
+void ArmyRuntimeClass_NoOpTickUpdateForClass5
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
 
 /* 0x00523400 */
-void UnifiedRuntimeTable_Method6_TwoArgNoOp
+void ArmyRuntimeClass_NoOpTickUpdateForClass6
                (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime);
 
 /* 0x00527B70 */

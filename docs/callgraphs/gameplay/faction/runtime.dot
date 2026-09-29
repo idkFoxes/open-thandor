@@ -21,10 +21,10 @@ digraph thandor {
   "GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer" [label="0x00560400\nGameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer"];
   "GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid" [label="0x00560620\nGameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid"];
   "GameFactionRuntime_SellArmyAssetAndRefundSevenEighths" [label="0x005606A0\nGameFactionRuntime_SellArmyAssetAndRefundSevenEighths"];
-  "PlayerRuntime_ResolveAndStoreState8094" [label="0x00561F80\nPlayerRuntime_ResolveAndStoreState8094"];
-  "PlayerRuntime_SetState8090" [label="0x00561FF0\nPlayerRuntime_SetState8090"];
-  "PlayerRuntime_SetState8094" [label="0x00562020\nPlayerRuntime_SetState8094"];
-  "PlayerRuntime_ClearState8094" [label="0x005622C0\nPlayerRuntime_ClearState8094"];
+  "PlayerRuntime_CreatePlacementArmy" [label="0x00561F80\nPlayerRuntime_ResolveAndStoreState8094"];
+  "PlayerRuntime_SetPlacementFaction" [label="0x00561FF0\nPlayerRuntime_SetState8090"];
+  "PlayerRuntime_SetPlacementArmy" [label="0x00562020\nPlayerRuntime_SetState8094"];
+  "PlayerRuntime_ClearPlacementArmy" [label="0x005622C0\nPlayerRuntime_ClearState8094"];
   "OldUnitRuntime_MergeMasksAndReplayRecords" [label="0x00565590\nOldUnitRuntime_MergeMasksAndReplayRecords"];
   "GameFactionRuntime_IsRecentTimedRelationState" [label="0x00513D00\nGameFactionRuntime_IsRecentTimedRelationStateCf"];
   "OldUnitRuntime_ResetPendingTables" [label="0x00565650\nOldUnitRuntime_ResetPendingTables"];

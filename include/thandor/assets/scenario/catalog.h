@@ -33,7 +33,7 @@
 /* A campaign's description text is 0x230000 + its title index (record +0x50). */
 #define TEXT_ID_CAMPAIGN_DESCRIPTION_BASE 0x230000
 /* Saved-game description: a template whose rich-text payload selectors 0 and 1 receive the texts of the save
-   record's +0x90 and +0x70 ids (ScenarioCatalog_RefreshSelectedRecordLocalizedText). */
+   record's +0x90 and +0x70 ids (ScenarioCatalog_SelectSavedGameAndShowDescription). */
 #define TEXT_ID_SAVED_GAME_DESCRIPTION_TEMPLATE 0x215E
 /* Text id bases of the other single-game list columns (index at level record +0x50, +0x60 and +0x80). */
 #define TEXT_ID_LEVEL_COLUMN50_BASE 0x220A
@@ -109,13 +109,13 @@ typedef struct ScenarioLevelBundleHeader {
 } ScenarioLevelBundleHeader;
 
 /* 0x00549E50 */
-void FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *listControl);
+void FrontendScenarioSelection_SelectOrStartSavedGame(UiPointerListControl *listControl);
 
 /* 0x00549EB0 */
-void FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listControl);
+void FrontendScenarioSelection_SelectOrStartLevel(UiPointerListControl *listControl);
 
 /* 0x00549F10 */
-void FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listControl);
+void FrontendScenarioSelection_SelectOrStartCampaign(UiPointerListControl *listControl);
 
 /* 0x0054A280 */
 void FrontendScenarioSelectionPage_InitializeAndApplyMapOption
@@ -172,18 +172,18 @@ void FrontendScenarioSession_LoadOrRequestLevelAsset
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRowIndex);
 
 /* 0x00545140 */
-void ScenarioCatalog_RefreshSelectedRecordLocalizedText
+void ScenarioCatalog_SelectSavedGameAndShowDescription
           (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
 
 /* 0x00545240 */
-void ScenarioCatalog_RefreshSelectedRecordField50DisplayId
+void ScenarioCatalog_SelectCampaignAndShowDescription
           (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
 
 /* 0x00549CC0 */
 void FrontendScenarioSelection_ActivateSelectedRecord(FrontendScenarioSelectionControlAddress32 selectionControl);
 
 /* 0x005451F0 */
-void ScenarioCatalog_RefreshSelectedRecordField70DisplayId
+void ScenarioCatalog_SelectLevelAndShowDescription
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
 #endif /* THANDOR_ASSETS_SCENARIO_CATALOG_H */

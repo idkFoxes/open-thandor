@@ -198,7 +198,7 @@ void ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
    Class initializer of model class 11 (modelClassInitialize[11]): clears the class fields +0x64, +0x68, +0x74
    and +0xB8.
 */
-void ModelRuntimeSlotClassInit_ClearFields64_68_74_B8
+void ModelRuntimeSlotClassInit_ResetStructureFactoryBuild
                (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
@@ -301,7 +301,7 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
   *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
   if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != 0x6000000) &&
       (3 < rootModelNode->childCount)) && (rootModelNode->childNodes[3] != NULL)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)rootModelNode->childNodes[3]);
+    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[3]);
     rootModelNode->childNodes[3] = NULL;
   }
   return;
@@ -335,7 +335,7 @@ void ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
   *(uint32_t *)storageLimit = *(int *)storageLimit + ((ModelDefinition *)modelDefinition)->classParameterC4;
   if (((ownerArmy->articulatedContact.fallbackPosition1Q12 != 0x6000000) &&
       (1 < rootModelNode->childCount)) && (rootModelNode->childNodes[1] != NULL)) {
-    WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)rootModelNode->childNodes[1]);
+    WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)rootModelNode->childNodes[1]);
     rootModelNode->childNodes[1] = NULL;
   }
   return;

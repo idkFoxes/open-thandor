@@ -170,7 +170,7 @@ void EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         InterpolationState_SetNegatedTargetAndRescaleProgress
                   (effectDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord
                   );
-        WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNode);
+        WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
         effectSlot->modelNodeOrSavedOffset.modelNode = NULL;
         return;
       }
@@ -427,7 +427,7 @@ SpawnArmyFromOwner:
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (effectDefinition->shadingReleaseTransitionDurationTicks,
                        modelNode->shadingRecord);
-            WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode *)modelNode);
+            WorldRuntime_UnlinkOwnerListNode((WorldOwnerListNode *)modelNode);
             effectSlot->modelNodeOrSavedOffset.modelNode = NULL;
             return;
           }

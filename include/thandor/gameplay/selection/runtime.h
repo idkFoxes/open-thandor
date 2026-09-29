@@ -53,7 +53,7 @@ void SelectionPanel_RenderArmyRuntimeMetrics
           RuntimeModelFactionPrefix *runtimeEntry);
 
 /* 0x0055FA20 */
-void InGameSelection_RebuildOwnedClass16Selection
+void InGameSelection_SelectAllOwnAircraftPads
           (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x0055FB30 */
@@ -62,7 +62,7 @@ void InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
           RuntimeToken armyRuntimeIndex);
 
 /* 0x0055FE70 */
-void InGamePlayerSelection_ApplyPositionCommandVariantB
+void InGamePlayerSelection_ApplyMoveCommand
           (PlayerRuntimeId playerId,uint32_t unusedPayload1,CommandPayloadDword08 worldXQ12,
           CommandPayloadDword0C worldYQ12);
 
@@ -85,27 +85,27 @@ void PlayerSelection_ResetMovementPruneAndRecenterEntries(PlayerRuntimeId player
           CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FF60 */
-void PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
+void PlayerSelection_StopMovement
           (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
           CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FF80 */
-void PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
+void PlayerSelection_CancelTargets
           (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
           CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FFA0 */
-void PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
+void PlayerSelection_SelfDestruct
           (PlayerRuntimeId playerId,CommandPayloadDword04 unusedPayload1,
           CommandPayloadDword08 unusedPayload2,CommandPayloadDword0C unusedPayload3);
 
 /* 0x0055FFC0 */
-void InGameSelection_ApplyType16MarkerCoordinatesVariant1
+void InGameSelection_SetAircraftPadTargetLane1
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
 /* 0x0055FFF0 */
-void InGameSelection_ApplyType16MarkerCoordinatesVariant2
+void InGameSelection_SetAircraftPadTargetLane2
           (SelectionMarkerIndex playerRuntimeId,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12);
 
@@ -139,7 +139,7 @@ bool SelectionInfo_HasAnyEntry(void);
 bool SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
 
 /* 0x0052FE30 */
-bool SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex);
+bool SelectionInfo_TestNotOwnAircraftPadsWithAircraft(FactionRuntimeIndex ownerIndex);
 
 /* 0x0052FEB0 */
 bool SelectionInfo_TestAnyActiveOrSingleClass13(void);
@@ -148,10 +148,10 @@ bool SelectionInfo_TestAnyActiveOrSingleClass13(void);
 bool SelectionInfo_TestPositionCommandAtWorldPoint(Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
 
 /* 0x00530050 */
-bool SelectionInfo_TestAllStateField100Nonpositive(void);
+bool SelectionInfo_TestNoEntryHasWeaponDamage(void);
 
 /* 0x005300A0 */
-bool SelectionInfo_TestAnyStateField100Nonnegative(void);
+bool SelectionInfo_TestAnyEntryWeaponDamageNonnegative(void);
 
 /* 0x005300E0 */
 GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void);
@@ -175,7 +175,7 @@ bool SelectionPlayerPairList_ContainsPair(SelectionPlayerPairValue worldYQ12,Sel
           PlayerRuntimeId playerRuntimeId);
 
 /* 0x005302B0 */
-void SelectionPointerArray_ApplyPositionCommandVariantB
+void SelectionPointerArray_ApplyMoveCommand
           (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection);
 
 /* 0x00530420 */
@@ -246,13 +246,13 @@ void SelectionPointerArray_ApplyTargetPositionCommand
           (Q12 coordinateA,uint32_t coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection);
 
 /* 0x00530540 */
-void SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries(GameEntityRuntime **selectionEntries);
+void SelectionRuntime_StopMovement(GameEntityRuntime **selectionEntries);
 
 /* 0x005305A0 */
-void SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries(GameEntityRuntime **selectionEntries);
+void SelectionRuntime_CancelTargets(GameEntityRuntime **selectionEntries);
 
 /* 0x00530600 */
-void SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **selectionEntries);
+void SelectionRuntime_SelfDestruct(GameEntityRuntime **selectionEntries);
 
 /* 0x0052FCA0 */
 void SelectionPointerArray_InsertUniqueAndRecenter(GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection);
@@ -267,7 +267,7 @@ bool SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerAr
 bool SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
 
 /* 0x00530650 */
-void SelectionPointerArray_ApplyType16MarkerCoordinates
+void SelectionPointerArray_SetAircraftPadTargets
           (SelectionMarkerLaneMask laneMask,SelectionMarkerCoordinateValue32 heading16,
           SelectionMarkerCoordinateValue32 worldXQ12,SelectionMarkerCoordinateValue32 worldYQ12,
           SelectionPointerArray32 *selection);

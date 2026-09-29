@@ -35,7 +35,7 @@
 
 ## Called by
 
-- [`assets/resource/runtime`](../../assets/resource/runtime.md): [`ResourceRegistration_OpenSource`](../../../../src/assets/resource/runtime.c#L5) → [`FileSystem_WriteBufferToPath`](../../../../src/platform/filesystem/win32.c#L289)
+- [`assets/resource/runtime`](../../assets/resource/runtime.md): [`InGameSaveGame_CreatePackage`](../../../../src/assets/resource/runtime.c#L5) → [`FileSystem_WriteBufferToPath`](../../../../src/platform/filesystem/win32.c#L289)
 - [`core/memory/synchronization`](../../core/memory/synchronization.md): [`Runtime_Shutdown`](../../../../src/core/memory/synchronization.c#L79) → [`Win32FileSystem_RestoreInitialDirectory`](../../../../src/platform/filesystem/win32.c#L253)
 - [`core/settings/persistent`](../../core/settings/persistent.md): [`PersistentSettings_Flush`](../../../../src/core/settings/persistent.c#L5) → [`FileSystem_WriteBufferToPath`](../../../../src/platform/filesystem/win32.c#L289)
 - [`gameplay/session/level`](../../gameplay/session/level.md): [`InGameLevelRuntime_SaveLevelAssetImageFromWorldState`](../../../../src/gameplay/session/level.c#L1596) → [`FileSystem_WriteBufferToPath`](../../../../src/platform/filesystem/win32.c#L289)

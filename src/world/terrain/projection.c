@@ -430,7 +430,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
       if (columnOrVertexCount != 0 && firstColumnOrRowsLeft <= rowSpan->endColumnExclusive) {
         vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + firstColumnOrRowsLeft);
         do {
-          TerrainProjectedVertex_TransformProjectAndShadeVariantB(vertexCursor);
+          TerrainProjectedVertex_ReshadeKeepingProjection(vertexCursor);
           vertexCursor = vertexCursor + 1;
           columnOrVertexCount = columnOrVertexCount - 1;
         } while (columnOrVertexCount != 0);
@@ -450,7 +450,7 @@ void TerrainProjectedGrid_TransformShadeAndQueue
       if (columnOrVertexCount != 0 && firstColumnOrRowsLeft <= rowSpan->endColumnExclusive) {
         vertexCursor = (TerrainProjectedVertexWorkRecord *)(rowCells + firstColumnOrRowsLeft);
         do {
-          TerrainProjectedVertex_TransformProjectAndShadeVariantA(vertexCursor);
+          TerrainProjectedVertex_TransformProjectAndShade(vertexCursor);
           vertexCursor = vertexCursor + 1;
           columnOrVertexCount = columnOrVertexCount - 1;
         } while (columnOrVertexCount != 0);
@@ -1497,7 +1497,7 @@ void TerrainProjectedQuad_QueueAsTwoTrianglesRegs
    0xFF). Does the same for point B, the secondary surface point (terrain point + secondaryOffset, raised by
    secondaryProjectionDepthQ12). Vertices without terrain (material 0xFF) are skipped.
 */
-void TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWorkRecord *vertex)
+void TerrainProjectedVertex_TransformProjectAndShade(TerrainProjectedVertexWorkRecord *vertex)
 
 {
   GraphicsWorldCoordinateQ12 *sourceCoordinate;
@@ -1603,7 +1603,7 @@ void TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVer
    the terrain point and only re-shades it; point B (the secondary surface point) is projected and shaded again
    only when the vertex belonged to a visible secondary-surface triangle last frame.
 */
-void TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWorkRecord *vertex)
+void TerrainProjectedVertex_ReshadeKeepingProjection(TerrainProjectedVertexWorkRecord *vertex)
 
 {
   GraphicsWorldCoordinateQ12 *sourceCoordinate;

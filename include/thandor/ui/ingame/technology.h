@@ -35,7 +35,7 @@
 /* Technology slots of a model definition (researchTechnologyIds1C4[1..28]), dealt out over the seven area tabs */
 #define TECHNOLOGY_DEFINITION_SLOT_COUNT 28
 #define TECHNOLOGY_AREA_TAB_COUNT 7
-/* Build catalog (UiCatalogGroup48_RebuildGrid) and special build catalog (UiCatalogGroup42_RebuildGrid) */
+/* Build catalog (InGameBuildCatalog_RebuildGrid) and special build catalog (InGameSpecialBuildCatalog_RebuildGrid) */
 #define BUILD_CATALOG_ENTRY_COUNT 48
 #define BUILD_CATALOG_MAX_COLUMNS 8
 #define SPECIAL_BUILD_CATALOG_ENTRY_COUNT 42
@@ -60,10 +60,10 @@ void InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableCon
 void InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot);
 
 /* 0x00569DF0 */
-void UiCatalogGroup48_RebuildGrid(UiNodeBase *node);
+void InGameBuildCatalog_RebuildGrid(UiNodeBase *node);
 
 /* 0x0056A050 */
-void UiCatalogGroup42_RebuildGrid(UiNodeBase *node);
+void InGameSpecialBuildCatalog_RebuildGrid(UiNodeBase *node);
 
 /* 0x0056AEF0 */
 void InGameTechnologyResearch_StartSelected(void *source);

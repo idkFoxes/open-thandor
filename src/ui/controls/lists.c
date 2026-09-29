@@ -303,7 +303,7 @@ void UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   control->base.bottomOffset = control->rowHeight * control->rowCount + 1;
   parentVtable->layout(parentNode);
   selectedIndex = UiPointerList_GetSelectedIndexAndConfirmed(control);
-  UiPointerList_SelectIndexVariantB(selectedIndex.rowIndex,control);
+  UiPointerList_SelectColumnListIndex(selectedIndex.rowIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
 }
@@ -772,7 +772,7 @@ void UiScrollableControl_HandlePointerWheel
    Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
    parent so the row is visible. Out-of-range indices are ignored.
 */
-void UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control)
+void UiPointerList_SelectTextListIndex(UiListRowIndex index,UiPointerListControl *control)
 
 {
   int rowTop;
@@ -2768,10 +2768,10 @@ UiNodeBase * UiScrollableControl_HitTestContentAndScrollbars
 
 
 /* Address: 0x004BA4E0.
-   Returns the row pointer array of a pointer list (identical to UiPointerList_GetRowSlotsVariantB). No
+   Returns the row pointer array of a pointer list (identical to UiPointerList_GetColumnListRowSlots). No
    caller found in src/ or image_data.c (only the function map).
 */
-void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
+void ** UiPointerList_GetTextListRowSlots(UiPointerListControl *control)
 
 {
   return control->rowSlots;
@@ -2782,7 +2782,7 @@ void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
    Returns the index of the selected row of a pointer list. The original also reports
    UI_LIST_SELECTION_CONFIRMED in CF (CLC 0x004BA57F / STC 0x004BA587), which this C signature does not carry
    (both branches return the index). No caller reads it: FrontendNetworkSetupPage_InitializeBackendMode
-   (0x0054C29C) passes EAX straight to the backend call, FrontendUiAction200F_Handler (0x0054D4AD) overwrites
+   (0x0054C29C) passes EAX straight to the backend call, FrontendNetworkSetup_OpenSelectedBackend (0x0054D4AD) overwrites
    CF with a CMP.
 */
 UiListRowIndex UiPointerList_GetSelectedIndex(UiPointerListControl *control)
@@ -3005,10 +3005,10 @@ void UiPointerList_InitializeColumnLayout(UiListRowCount rowCount,void **rowPoin
 
 
 /* Address: 0x004BB460.
-   Returns the row pointer array of a pointer list (identical to UiPointerList_GetRowSlotsVariantA). No
+   Returns the row pointer array of a pointer list (identical to UiPointerList_GetTextListRowSlots). No
    caller found in src/ or image_data.c (only the function map).
 */
-void ** UiPointerList_GetRowSlotsVariantB(UiPointerListControl *control)
+void ** UiPointerList_GetColumnListRowSlots(UiPointerListControl *control)
 
 {
   return control->rowSlots;
@@ -3546,10 +3546,10 @@ void UiTimedListControl_SelectRecordAndScrollIntoView
 
 /* Address: 0x004BB4E0.
    Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
-   parent so the row is visible; the same as UiPointerList_SelectIndexVariantA. Out-of-range indices are
+   parent so the row is visible; the same as UiPointerList_SelectTextListIndex. Out-of-range indices are
    ignored.
 */
-void UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control)
+void UiPointerList_SelectColumnListIndex(UiListRowIndex index,UiPointerListControl *control)
 
 {
   int rowTop;

@@ -52,7 +52,7 @@ SiteWeightResult AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539330 */
-AiAnchorResult AiPlacement_FindNearestValidWorkspace09Anchor
+AiAnchorResult AiPlacement_FindNearestPlaceableBaseSite
           (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 

@@ -471,21 +471,21 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                           MoviePlayback_AdvanceScheduledFrameAndTick();
                           countOrPackedValue = *(uint32_t *)((uint8_t *)&levelImage->playerSlots[0].
                                                   packedHeadingLow16PitchHigh16 + playerSlotByteOffset);
-                          WorldRuntime_SetPosition60AndDistanceFromPosition80
+                          WorldRuntime_SetCameraPositionKeepingTarget
                                     (*(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraZQ12 +
                                              playerSlotByteOffset),
                                      *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraYQ12 +
                                              playerSlotByteOffset),
                                      *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraXQ12 +
                                              playerSlotByteOffset),worldRuntime);
-                          WorldRuntime_SetMotionParameters6CThrough78Clamped
+                          WorldRuntime_SetCameraAnglesAndMagnitudeClamped
                                     (2,(int)countOrPackedValue >> 0x10,countOrPackedValue & 0xffff,
                                      *(UQ12 *)((uint8_t *)&levelImage->playerSlots[0].
                                                      startCameraMagnitudeQ12 + playerSlotByteOffset),worldRuntime);
                           countOrPackedValue = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
                           WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
                           regionOriginOrRelationMask = countOrPackedValue;
-                          WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+                          WorldRuntime_CommitCameraTargetDistance(worldRuntime);
                           flagsOrRelationMask = (levelImage->runtimeTail2E0).
                                    packedFieldRegionHeightHigh16WidthLow16;
                           WorldRuntime_RecomputeFieldRegionNormalsAndLighting
@@ -513,11 +513,11 @@ LevelDefaultLoadResult InGameLevelRuntime_LoadResourcesAfterDefaultReset
                             placementCursor++;
                           }
                           MoviePlayback_AdvanceScheduledFrameAndTick();
-                          WorldRuntime_ForEachNodeInOwnerListD8
+                          WorldRuntime_ForEachOwnerListNode
                                     (worldRuntime,
                                      ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
                                      worldRuntime);
-                          WorldRuntime_ForEachNodeInOwnerListD8
+                          WorldRuntime_ForEachOwnerListNode
                                     (worldRuntime,
                                      ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback,
                                      worldRuntime);
@@ -1208,21 +1208,21 @@ LevelLoadResult InGameLevelRuntime_LoadResourcesAfterExternalTables
                           MoviePlayback_AdvanceScheduledFrameAndTick();
                           countOrPackedValue = *(uint32_t *)((uint8_t *)&levelImage->playerSlots[0].
                                                   packedHeadingLow16PitchHigh16 + playerSlotByteOffset);
-                          WorldRuntime_SetPosition60AndDistanceFromPosition80
+                          WorldRuntime_SetCameraPositionKeepingTarget
                                     (*(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraZQ12 +
                                              playerSlotByteOffset),
                                      *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraYQ12 +
                                              playerSlotByteOffset),
                                      *(Q12 *)((uint8_t *)&levelImage->playerSlots[0].startCameraXQ12 +
                                              playerSlotByteOffset),worldRuntime);
-                          WorldRuntime_SetMotionParameters6CThrough78Clamped
+                          WorldRuntime_SetCameraAnglesAndMagnitudeClamped
                                     (2,(int)countOrPackedValue >> 0x10,countOrPackedValue & 0xffff,
                                      *(UQ12 *)((uint8_t *)&levelImage->playerSlots[0].
                                                      startCameraMagnitudeQ12 + playerSlotByteOffset),worldRuntime);
                           countOrPackedValue = (levelImage->runtimeTail2E0).packedFieldRegionOriginYHigh16XLow16;
                           WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
                           packedRegionValue = countOrPackedValue;
-                          WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+                          WorldRuntime_CommitCameraTargetDistance(worldRuntime);
                           countOrPackedValue = countOrPackedValue & 0xffff;
                           factionIndexOrOriginY = (int)packedRegionValue >> 0x10;
                           packedRegionValue = (levelImage->runtimeTail2E0).

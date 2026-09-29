@@ -253,7 +253,7 @@ ShotRangeLimitResult ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definit
    thirds (0xAB / 256) of the ramp-up ticks (+0x270), during which the shot is still accelerating; 0 for all
    other shots. The aim-point computation in gameplay/army/runtime.c multiplies it by the target's speed.
 */
-uint32_t ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition)
+uint32_t ShotDefinition_ComputeRampUpLeadTime(ShotDefinition *definition)
 
 {
   uint32_t leadAdjustmentQ12;

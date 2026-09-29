@@ -253,7 +253,7 @@ EffectCreateResult EffectRuntimePool_CreateInstanceFromDefinition
       recordAlloc = WorldObjectArray_AllocateFreeRecord(worldRuntime);
       effectModelNode = (EffectModelRuntimeNode *)recordAlloc.recordOrError;
       if (!recordAlloc.failed) {
-        WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode *)effectModelNode);
+        WorldRuntime_LinkOwnerListNode((WorldOwnerListNode *)effectModelNode);
         effectRuntimeCursor->modelNodeOrSavedOffset.modelNode =
              (ModelRuntimeNode *)effectModelNode;
         effectRuntimeCursor->definitionOrSavedId.definition = effectDefinition;

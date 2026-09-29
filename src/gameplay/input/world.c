@@ -11,7 +11,7 @@
 
 /* Implementation ownership: gameplay/input/world. */
 
-/* Entries of g_InGamePointerModeHandlers (InGameSelection_ApplyType16MarkerCoordinatesVariant1/2,
+/* Entries of g_InGamePointerModeHandlers (InGameSelection_SetAircraftPadTargetLane1/2,
    SelectionMarkerCoordinates_ApplyType3..7): four stack arguments, RET 0x10. */
 typedef void InGamePointerModeHandler
           (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
@@ -96,7 +96,7 @@ void InGameTargetingContext_AdvanceOrResolveTarget(InGameTargetingRootTraversalV
                          (targetingContext->activeNotificationPayload9E40).
                          primaryWorldCoordinateQ12_00,(targetingContext->worldRuntime0A30).fieldGrid
                         );
-      WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
+      WorldRuntime_PointCameraAtTarget
                 ((targetingContext->worldRuntime0A30).motion.pitchAngle,
                  (targetingContext->activeNotificationPayload9E40).primaryOrientationAngle08,
                  (targetingContext->worldRuntime0A30).motion.targetDistanceQ12,nearestTerrainPoint.terrainHeightQ12,
@@ -166,7 +166,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     InGameSelectionDetailPanel_Rebuild();
     return cursorOrVariantMask;
   }
-  testResult = SelectionInfo_ValidateOwnerType16AndAnyActive(ownerIndex);
+  testResult = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(ownerIndex);
   if (!testResult) {
     /* command mode: an own army under the pointer (candidate height at most 1.0 in Q12 above the picked
        height) is selected on click; otherwise the modifier keys pick the pointer-mode command to preview */
@@ -242,7 +242,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
     if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) != 0) {
       return (ownerIndex == (entry->common).ownership.ownerIndex) ? WORLD_CURSOR_OWN_ARMY : WORLD_CURSOR_FOREIGN_ARMY;
     }
-    testResult = SelectionInfo_TestAnyStateField100Nonnegative();
+    testResult = SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
     if (testResult) {
       testResult = GameFactionRuntime_TestCapabilityBitClear
                         ((entry->common).ownership.ownerIndex,ownerIndex);
@@ -259,10 +259,10 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursor
       }
       return (ownerIndex == (entry->common).ownership.ownerIndex) ? WORLD_CURSOR_OWN_ARMY : WORLD_CURSOR_FOREIGN_ARMY;
     }
-    classifySelectedState = SelectionInfo_TestAnyStateField100Nonnegative();
+    classifySelectedState = SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
   }
   if (classifySelectedState) {
-    testResult = SelectionInfo_TestAllStateField100Nonpositive();
+    testResult = SelectionInfo_TestNoEntryHasWeaponDamage();
     if (testResult) {
       return GRAPHICS_CURSOR_FRAME_ARROW;
     }
@@ -327,7 +327,7 @@ void InGameWorldInput_BeginPointerCapture
     ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
     if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0) {
       if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
-        testResult = SelectionInfo_ValidateOwnerType16AndAnyActive(ownerIndex);
+        testResult = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(ownerIndex);
         if (testResult) {
           g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags |
                WORLD_POINTER_STATE_SELECTION_CAPTURE;
@@ -401,7 +401,7 @@ void InGameWorldInput_UpdateDragSelectionAndCamera
       ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0)) &&
      ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_NOTIFICATION_GOTO) == 0)) {
     if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
-      testResult = SelectionInfo_ValidateOwnerType16AndAnyActive
+      testResult = SelectionInfo_TestNotOwnAircraftPadsWithAircraft
                         (inGameRuntime->activeFactionRuntimeIndex);
       if (testResult) {
         if ((inGameRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_DRAG_SELECTING) == 0) {
@@ -610,7 +610,7 @@ void InGameWorldInput_CommitPointerAction
     }
     goto release_pointer_capture;
   }
-  testResult = SelectionInfo_ValidateOwnerType16AndAnyActive(inGameRuntime->activeFactionRuntimeIndex);
+  testResult = SelectionInfo_TestNotOwnAircraftPadsWithAircraft(inGameRuntime->activeFactionRuntimeIndex);
   if (!testResult) {
     if (((pickedHeightQ12 != WORLD_POINTER_NO_HIT) &&
         ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED) != 0)) &&
@@ -695,7 +695,7 @@ void InGameWorldInput_CommitPointerAction
         if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
               SESSION_NETWORK_ROLE_LOCAL) {
-            InGamePlayerSelection_ApplyPositionCommandVariantB
+            InGamePlayerSelection_ApplyMoveCommand
                       (g_LocalPlayerRuntimeId,0,pointerWorldXQ12,pointerWorldYQ12);
           }
           else {
@@ -715,7 +715,7 @@ void InGameWorldInput_CommitPointerAction
       goto release_pointer_capture;
     }
     if ((g_KeyboardStateMask & (KEYBOARD_STATE_SHIFT | KEYBOARD_STATE_ALT)) == 0) {
-      testResult = SelectionInfo_TestAnyStateField100Nonnegative();
+      testResult = SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
       if (testResult) {
         testResult = GameFactionRuntime_TestCapabilityBitClear
                           ((entry->common).ownership.ownerIndex,ownerIndex);
@@ -773,7 +773,7 @@ test_candidate_capability:
       }
       goto release_pointer_capture;
     }
-    testResult = SelectionInfo_TestAnyStateField100Nonnegative();
+    testResult = SelectionInfo_TestAnyEntryWeaponDamageNonnegative();
     if (!testResult) goto test_candidate_capability;
     testResult = GameFactionRuntime_TestCapabilityBitClear
                       ((entry->common).ownership.ownerIndex,ownerIndex);
@@ -886,81 +886,81 @@ void InGameCameraCommand_DispatchByCodeAndModifierFlags
   /* The original jumps to the record's continuation address; the cases are those addresses. */
   switch(currentRecord->records[0].continuationEntryAddress) {
   case 0x56f360: /* 1..7: recall bookmark n */
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (g_LevelCameraBookmark1PositionZQ12,g_LevelCameraBookmark1PositionYQ12,
                g_LevelCameraBookmark1PositionXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,(int)bookmark1PackedAngles >> 16,bookmark1PackedAngles & 0xffff,
                g_LevelCameraBookmark1PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
     break;
   case 0x56f3b0:
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (g_LevelCameraBookmark2PositionZQ12,g_LevelCameraBookmark2PositionYQ12,
                g_LevelCameraBookmark2PositionXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,(int)bookmark2PackedAngles >> 16,bookmark2PackedAngles & 0xffff,
                g_LevelCameraBookmark2PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
     break;
   case 0x56f400:
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (g_LevelCameraBookmark3PositionZQ12,g_LevelCameraBookmark3PositionYQ12,
                g_LevelCameraBookmark3PositionXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,(int)bookmark3PackedAngles >> 16,bookmark3PackedAngles & 0xffff,
                g_LevelCameraBookmark3PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
     break;
   case 0x56f450:
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (g_LevelCameraBookmark4PositionZQ12,g_LevelCameraBookmark4PositionYQ12,
                g_LevelCameraBookmark4PositionXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,(int)bookmark4PackedAngles >> 16,bookmark4PackedAngles & 0xffff,
                g_LevelCameraBookmark4PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
     break;
   case 0x56f4a0:
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (g_LevelCameraBookmark5PositionZQ12,g_LevelCameraBookmark5PositionYQ12,
                g_LevelCameraBookmark5PositionXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,(int)bookmark5PackedAngles >> 16,bookmark5PackedAngles & 0xffff,
                g_LevelCameraBookmark5PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
     break;
   case 0x56f4f0:
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (g_LevelCameraBookmark6PositionZQ12,g_LevelCameraBookmark6PositionYQ12,
                g_LevelCameraBookmark6PositionXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,(int)bookmark6PackedAngles >> 16,bookmark6PackedAngles & 0xffff,
                g_LevelCameraBookmark6PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
     break;
   case 0x56f540:
-    WorldRuntime_SetPosition60AndDistanceFromPosition80
+    WorldRuntime_SetCameraPositionKeepingTarget
               (g_LevelCameraBookmark7PositionZQ12,g_LevelCameraBookmark7PositionYQ12,
                g_LevelCameraBookmark7PositionXQ12,worldRuntime);
-    WorldRuntime_SetMotionParameters6CThrough78Clamped
+    WorldRuntime_SetCameraAnglesAndMagnitudeClamped
               (2,(int)bookmark7PackedAngles >> 16,bookmark7PackedAngles & 0xffff,
                g_LevelCameraBookmark7PositionMagnitudeQ12,
                worldRuntime);
     WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-    WorldRuntime_CommitScalar7CFrom8C(worldRuntime);
+    WorldRuntime_CommitCameraTargetDistance(worldRuntime);
     break;
   case 0x56f590: /* Alt+1..7: store the camera as bookmark n (heading low word, pitch high word) */
     g_LevelCameraBookmark1PositionXQ12 = (worldRuntime->motion).positionXQ12;

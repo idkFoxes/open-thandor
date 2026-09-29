@@ -36,10 +36,10 @@
 void InGameSettingsAction_CloseAlternatePanel(UiNodeBase *source);
 
 /* 0x0056AB90 */
-void InGameSettingsAction_CloseAndDepartPlayerMode0(UiNodeBase *source);
+void InGameQuitMenu_AbortMission(UiNodeBase *source);
 
 /* 0x0056ABF0 */
-void InGameSettingsAction_CloseAndDepartPlayerMode1(UiNodeBase *source);
+void InGameQuitMenu_Surrender(UiNodeBase *source);
 
 /* 0x0056C5E0 */
 void InGameSettingsPage_CloseViaSharedToggle(UiNodeBase *source);
@@ -53,13 +53,13 @@ void InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
           int stepDelta);
 
 /* 0x0056AA90 */
-void InGameMissionHelpPage_SelectTab0(UiNodeBase *sourceNode);
+void InGameMissionHelpPage_SelectBriefingTab(UiNodeBase *sourceNode);
 
 /* 0x0056AAD0 */
-void InGameMissionHelpPage_SelectTab1(UiNodeBase *sourceNode);
+void InGameMissionHelpPage_SelectKeyboardTab(UiNodeBase *sourceNode);
 
 /* 0x0056AB10 */
-void InGameMissionHelpPage_SelectTab2(UiNodeBase *sourceNode);
+void InGameMissionHelpPage_SelectMouseTab(UiNodeBase *sourceNode);
 
 /* 0x0056BAF0 */
 void InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control);

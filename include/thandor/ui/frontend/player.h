@@ -98,7 +98,7 @@ void FrontendPlayerRuntime_InitializeFactionAssignments(void);
 void FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNodeBase *source);
 
 /* 0x0054D1B0 */
-void FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source);
+void FrontendNetworkSettings_SetNetworkSpeed(UiNodeBase *source);
 
 /* 0x0054D720 */
 void FrontendPlayerRuntime_UpdateStartButtonByCdShare(void);
@@ -187,7 +187,7 @@ void FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
           RuntimeToken armyRuntimeOffset);
 
 /* 0x005607E0 */
-void FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
+void FrontendPlayerRuntime_AssignTechnologyBuildingAndHoldUnpaidResearch
           (FrontendPlayerIndex playerIndex,uint32_t arg1,uint32_t arg2,ArmyRuntimeSavedOffset modelOffset);
 
 #endif /* THANDOR_UI_FRONTEND_PLAYER_H */
