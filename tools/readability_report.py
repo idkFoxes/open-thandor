@@ -40,7 +40,7 @@ FLOW = re.compile(r"while\( true \)|\bgoto\b")
 
 def functions():
     for path in sorted((ROOT / "src").rglob("*.c")):
-        if "generated" in path.parts or path.name.startswith("selftest"):
+        if "generated" in path.parts or "selftest" in path.parts or path.name.startswith("selftest"):
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
         starts = [m.start() for m in re.finditer(r"/\* Address: 0x", text)] + [len(text)]
@@ -73,7 +73,7 @@ def main():
     # (is_mask) and the sample codec's MMX tables (RAW_EXEMPT)
     hex_count = masks = 0
     for path in (ROOT / "src").rglob("*.c"):
-        if "generated" in path.parts or path.name.startswith("selftest") or path.name in RAW_EXEMPT:
+        if "generated" in path.parts or "selftest" in path.parts or path.name.startswith("selftest") or path.name in RAW_EXEMPT:
             continue
         code = re.sub(r"/\*.*?\*/|//[^\n]*", " ", path.read_text(encoding="utf-8", errors="replace"), flags=re.S)
         # the value of a #define is where a number gets its name
