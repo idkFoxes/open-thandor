@@ -10,6 +10,7 @@
 #include <thandor/platform/bootstrap/image.h>
 #include <thandor/platform/debug/test_aids.h>
 #include <thandor/platform/debug/campaign.h>
+#include <thandor/platform/debug/statehash.h>
 
 /* Implementation ownership: gameplay/session/runtime. */
 
@@ -43,6 +44,7 @@ SessionRunResult InGameRuntime_RunSessionUntilExit(LevelAssetRuntimePrefix *leve
   }
 #ifdef THANDOR_TEST_AIDS
   g_TestAidSessionCount++;
+  DebugStateHash_SessionStart();
 #endif
   do {
     g_TestAidInGameFrames++; /* project test aid, not part of the original code */
@@ -2814,6 +2816,9 @@ void InGameRuntime_UpdateSimulationAndNetworkTick(void)
                     ((inGameRoot->worldRuntime).fieldGrid);
         }
       }
+#ifdef THANDOR_TEST_AIDS
+      DebugStateHash_AfterStep();
+#endif
     }
   }
   else {

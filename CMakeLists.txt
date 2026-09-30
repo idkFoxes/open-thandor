@@ -102,6 +102,7 @@ add_library(thandor_curated STATIC
     src/platform/debug/movie_decoder.c
     src/platform/debug/movie_player.c
     src/platform/debug/script.c
+    src/platform/debug/statehash.c
     src/platform/debug/test_aids.c
     src/platform/filesystem/win32.c
     src/platform/input/devices.c
